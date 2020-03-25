@@ -719,17 +719,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Generic interface should also be implemented</source>
-        <target state="needs-review-translation">Las colecciones deben implementar la interfaz genérica</target>
+        <target state="translated">La interfaz genérica también debe implementarse</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
-        <target state="needs-review-translation">Para ampliar la utilidad de una colección, implemente una de las interfaces de colección genéricas. Después, la colección se puede usar para rellenar los tipos de colecciones genéricas.</target>
+        <target state="translated">Para ampliar la capacidad de uso de un tipo, implemente alguna de las interfaces genéricas, especialmente con las colecciones, porque así se pueden usar para rellenar tipos de colección genéricos.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="needs-review-translation">La colección "{0}" hereda de manera directa o indirecta "{1}" sin implementar "{2}". Las colecciones visibles públicamente deben implementar la versión genérica para ampliar la facilidad de uso.</target>
+        <target state="translated">El tipo "{0}" hereda "{1}" de manera directa o indirecta sin implementar "{2}". Los tipos visibles públicamente deben implementar la versión genérica para ampliar su capacidad de uso.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
