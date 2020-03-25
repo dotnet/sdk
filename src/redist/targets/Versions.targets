@@ -3,7 +3,7 @@
     <VersionMajor>3</VersionMajor>
     <VersionMinor>1</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
-    <VersionPatch>03</VersionPatch>
+    <VersionPatch>04</VersionPatch>
     <ReleaseSuffix Condition=" '$(ReleaseSuffix)' == '' ">servicing</ReleaseSuffix>
     <!--
         When DropSuffix is set to 'true', this branch will produce stable outputs for 'Shipping' packages
