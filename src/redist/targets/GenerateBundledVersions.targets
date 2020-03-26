@@ -12,6 +12,9 @@
     <Task>
       <Using Namespace="System.IO" />
       <Code Type="Fragment" Language="cs">
+        var dir = Path.GetDirectoryName(Path);
+        if(!string.IsNullOrEmpty(dir))
+          Directory.CreateDirectory(dir);
         File.WriteAllText(Path, Content);
       </Code>
     </Task>
