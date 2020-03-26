@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
-        <target state="needs-review-translation">安全ではない暗号モードを使用しないでください。</target>
+        <target state="translated">暗号の専門家と暗号モードの使用を再検討する</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
         <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">これらのモードは、攻撃に対して脆弱です。承認されたモード (CBC、CTS) のみを使用してください。</target>
+        <target state="translated">これらの暗号モードは攻撃に対して脆弱である可能性があります。推奨モード (CBC、CTS) の使用をご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
         <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">安全ではない暗号モード {0} を使用します</target>
+        <target state="translated">暗号の専門家と暗号モード '{0}' の使用を再検討してください。推奨モード (CBC、CTS) の使用をご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -159,12 +159,12 @@
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
         <source>HttpClients should enable certificate revocation list checks</source>
-        <target state="new">HttpClients should enable certificate revocation list checks</target>
+        <target state="translated">HttpClients では証明書失効リストの確認を有効にする必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheckMessage">
         <source>HttpClient is created without enabling CheckCertificateRevocationList</source>
-        <target state="new">HttpClient is created without enabling CheckCertificateRevocationList</target>
+        <target state="translated">HttpClient は、CheckCertificateRevocationList を有効にせずに作成されました</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyInstallRootCert">
@@ -179,12 +179,12 @@
       </trans-unit>
       <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIV">
         <source>Do not use CreateEncryptor with non-default IV</source>
-        <target state="new">Do not use CreateEncryptor with non-default IV</target>
+        <target state="translated">既定以外の IV で CreateEncryptor を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseCreateEncryptorWithNonDefaultIVMessage">
         <source>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</source>
-        <target state="new">Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</target>
+        <target state="translated">対称暗号化で既定以外の初期化ベクトルが使用されています。これは反復使用できる可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
@@ -414,7 +414,7 @@
       </trans-unit>
       <trans-unit id="DoNotDisableHttpClientCRLCheckDescription">
         <source>Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</source>
-        <target state="new">Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.</target>
+        <target state="translated">CheckCertificateRevocationList プロパティが true に設定されている場合、プラットフォーム固有のハンドラー (WinHttpHandler、CurlHandler、HttpClientHandler のいずれか) を指定せずに HttpClient を使用すると、失効した証明書が有効な証明書として HttpClient に受け入れられます。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableHTTPHeaderChecking">
@@ -474,32 +474,32 @@
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
-        <target state="new">Do not hard-code certificate</target>
+        <target state="translated">証明書をハードコーディングしない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificateDescription">
         <source>Hard-coded certificates in source code are vulnerable to being exploited.</source>
-        <target state="new">Hard-coded certificates in source code are vulnerable to being exploited.</target>
+        <target state="translated">ソース コード内のハードコーディングされた証明書は、悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificateMessage">
         <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</source>
-        <target state="new">Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded certificate from '{2}' in method '{3}'</target>
+        <target state="translated">潜在的なセキュリティの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのハードコーディングされた証明書によって汚染される可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKey">
         <source>Do not hard-code encryption key</source>
-        <target state="needs-review-translation">暗号化キーをハード コードしない</target>
+        <target state="translated">暗号化キーをハードコーディングしない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKeyDescription">
         <source>SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.</source>
-        <target state="needs-review-translation">SymmetricAlgorithm の .Key プロパティまたはメソッドの rgbKey パラメーターをハードコードされた値にすることはできません。</target>
+        <target state="translated">SymmetricAlgorithm の .Key プロパティまたはメソッドの rgbKey パラメーターをハードコーディングされた値にすることはできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeEncryptionKeyMessage">
         <source>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</source>
-        <target state="needs-review-translation">潜在的なセキュリティの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのハードコードされたキーによって悪用される可能性があります</target>
+        <target state="translated">潜在的なセキュリティの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのハードコーディングされたキーによって汚染される可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
@@ -619,37 +619,37 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription">
         <source>For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</source>
-        <target state="new">For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.</target>
+        <target state="translated">空ではないコレクションで、CountAsync() と LongCountAsync() ではシーケンス全体が列挙されますが、AnyAsync() では最初の項目または条件を満たす最初の項目で停止します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
         <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="new">{0}() is used where AnyAsync() could be used instead to improve performance.</target>
+        <target state="translated">パフォーマンスを向上させるために AnyAsync() を代わりに使用できるところで {0}() が使用されています。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
         <source>Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</source>
-        <target state="new">Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used</target>
+        <target state="translated">AnyAsync() を使用できる場合は、CountAsync() または LongCountAsync() を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedDescription">
         <source>For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</source>
-        <target state="new">For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.</target>
+        <target state="translated">空はでないコレクションで、Count() と LongCount() ではシーケンス全体が列挙されますが、Any() では最初の項目または条件を満たす最初の項目で停止します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
         <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="new">{0}() is used where Any() could be used instead to improve performance.</target>
+        <target state="translated">パフォーマンスを向上させるために Any() を代わりに使用できるところで {0}() が使用されています。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
         <source>Do not use Count() or LongCount() when Any() can be used</source>
-        <target state="new">Do not use Count() or LongCount() when Any() can be used</target>
+        <target state="translated">Any() を使用できる場合は、Count() または LongCount() を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCreateEncryptorWithNonDefaultIVDescription">
         <source>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</source>
-        <target state="new">Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</target>
+        <target state="translated">対称暗号化では、辞書攻撃を防ぐために、反復不能な初期化ベクトルを常に使用する必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDeprecatedSecurityProtocols">
@@ -704,7 +704,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessDescription">
         <source>Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.</source>
-        <target state="needs-review-translation">暗号強度の低い擬似乱数ジェネレーターを使用すると、セキュリティ上注意が必要などのような値が生成されるかを攻撃者が予測できる可能性があります。予測できない値が必要な場合は暗号強度の高い乱数ジェネレーターを使用するか、または暗号強度の低い疑似乱数がセキュリティ上注意が必要な形で使用されていないことを確認してください。</target>
+        <target state="translated">暗号強度の低い擬似乱数ジェネレーターを使用すると、セキュリティ上注意が必要などのような値が生成されるかを攻撃者が予測できる可能性があります。予測できない値が必要な場合は暗号強度の高い乱数ジェネレーターを使用するか、または暗号強度の低い擬似乱数がセキュリティ上注意が必要な形で使用されていないことを確認してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
@@ -1004,7 +1004,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver が指定されずに JavaScriptSerializer が初期化されていること、または逆シリアル化されたオブジェクト グラフ内のオブジェクトの種類を制限する JavaScriptTypeResolver で初期化されていることをご確認ください。</target>
+        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver が指定されずに JavaScriptSerializer が初期化されていること、または逆シリアル化されたオブジェクト グラフ内のオブジェクトの型を制限する JavaScriptTypeResolver で初期化されていることをご確認ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
@@ -1014,7 +1014,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver を指定せずに JavaScriptSerializer を初期化するか、逆シリアル化されたオブジェクト グラフ内のオブジェクトの種類を制限する JavaScriptTypeResolver で初期化します。</target>
+        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver を指定せずに JavaScriptSerializer を初期化するか、逆シリアル化されたオブジェクト グラフ内のオブジェクトの型を制限する JavaScriptTypeResolver で初期化します。</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
@@ -1154,12 +1154,12 @@
       </trans-unit>
       <trans-unit id="MaybeDisableHttpClientCRLCheck">
         <source>Ensure HttpClient certificate revocation list check is not disabled</source>
-        <target state="new">Ensure HttpClient certificate revocation list check is not disabled</target>
+        <target state="translated">HttpClient 証明書失効リストの確認が無効になっていないことをご確認ください</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeDisableHttpClientCRLCheckMessage">
         <source>HttpClient may be created without enabling CheckCertificateRevocationList</source>
-        <target state="new">HttpClient may be created without enabling CheckCertificateRevocationList</target>
+        <target state="translated">HttpClient は、CheckCertificateRevocationList を有効にせずに作成できます</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeInstallRootCert">
@@ -1174,12 +1174,12 @@
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
         <source>Use CreateEncryptor with the default IV </source>
-        <target state="new">Use CreateEncryptor with the default IV </target>
+        <target state="translated">既定の IV で CreateEncryptor を使用する </target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
         <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
-        <target state="new">The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</target>
+        <target state="translated">暗号化で既定以外の初期化ベクトルが使用されており、これは反復使用できる可能性があります。必ず既定のものをご使用ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
@@ -1744,17 +1744,17 @@
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
         <source>Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</source>
-        <target state="new">Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.</target>
+        <target state="translated">Enumerable.Count() は、Length または Count プロパティが直接アクセスの場合、シーケンスを列挙する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
         <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="new">Use the "{0}" property instead of Enumerable.Count().</target>
+        <target state="translated">Enumerable.Count() の代わりに "{0}" プロパティを使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
         <source>Use Length/Count property instead of Count() when available</source>
-        <target state="new">Use Length/Count property instead of Count() when available</target>
+        <target state="translated">使用可能な場合は Count() の代わりに Length または Count プロパティを使用</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">

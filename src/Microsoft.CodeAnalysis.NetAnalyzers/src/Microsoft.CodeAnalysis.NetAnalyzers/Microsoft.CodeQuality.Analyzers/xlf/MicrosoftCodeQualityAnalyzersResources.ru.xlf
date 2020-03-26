@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">Присваивать значения символу и его элементу (полю/свойству) в одном операторе не рекомендуется. При обращении к элементу не ясно, следует ли использовать старое значение символа до присвоения в этом операторе или новое значение. Для ясности рекомендуется присваивать значения в отдельных операторах.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">Символу "{0}" и его элементу "{1}" присваиваются значения в одном операторе. Есть риск, что значение будет присвоено элементу не требуемого объекта.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">Присвоение значения символу и его элементу в одном операторе</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">Общее исключение, такое как System.Exception или System.SystemException, перехватывается в выражении catch или используется общее выражение catch. Общие исключения не должны перехватываться.</target>
+        <target state="translated">Общее исключение, такое как System.Exception, System.SystemException или недопустимый тип исключения, перехватывается в выражении catch либо используется общее выражение catch. Общие и недопустимые исключения не должны перехватываться.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">Изменить "{0}", чтобы перехватывать исключение более конкретного типа, или выдать исключение повторно.</target>
+        <target state="translated">Изменить "{0}", чтобы перехватывать исключение более конкретного типа, или выдать исключение повторно.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -673,18 +673,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">Коллекции должны реализовать универсальный интерфейс</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="translated">Также необходимо реализовать универсальный интерфейс</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Чтобы расширить возможности по использованию коллекции, реализуйте один из универсальных интерфейсов коллекции. После этого коллекцию можно использовать для заполнения универсальных типов коллекции.</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="translated">Чтобы расширить использование типа, реализуйте один из универсальных интерфейсов. Это особенно важно для коллекций, так как в этом случае их можно использовать для заполнения универсальных типов коллекций.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">Коллекция "{0}" прямо или косвенно наследует "{1}" без реализации "{2}". Видимые всем коллекции должны реализовывать универсальную версию для более широкого использования.</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">Тип "{0}" прямо или косвенно наследует "{1}" без реализации "{2}". Общедоступные типы должны реализовывать универсальную версию для более широкого использования.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Поле "{0}" объявлено как "static readonly", но инициализировано как константа. Вместо этого пометьте поле как "const".</target>
+        <target state="translated">Поле "{0}" объявлено как "readonly", но инициализировано как константа. Вместо этого пометьте поле как "const".</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Поле "{0}" объявлено как "static readonly", но инициализировано как пустая строка (""). Вместо этого пометьте поле как "const".</target>
+        <target state="translated">Поле "{0}" объявлено как "readonly", но инициализировано как пустая строка (""). Вместо этого пометьте поле как "const".</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1903,13 +1903,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Члены, которые не обращаются к данным экземпляров и не вызывают методы экземпляров, можно пометить как статические (Shared в Visual Basic). После этого компилятор создаст невиртуальные места для вызова этих членов. Это может привести к ощутимому росту производительности для чувствительного к производительности кода.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="translated">Члены, которые не обращаются к данным экземпляров и не вызывают методы экземпляров, можно пометить как статические. После этого компилятор создаст невиртуальные места для вызова этих членов. Это может привести к ощутимому росту производительности для чувствительного к производительности кода.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Член {0} не обращается к данным экземпляров, поэтому его можно пометить как статический (Shared в Visual Basic).</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="translated">Член "{0}" не обращается к данным экземпляров, поэтому его можно пометить как статический.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

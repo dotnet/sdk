@@ -9,17 +9,17 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementDescription">
         <source>Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</source>
-        <target state="new">Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.</target>
+        <target state="translated">Die Zuweisung zu einem Symbol und dem zugehörigen Member (Feld/Eigenschaft) in derselben Anweisung wird nicht empfohlen. In diesem Fall bleibt unklar, ob beim Memberzugriff der alte Wert des Symbols vor der Zuweisung oder der neue Wert aus der Zuweisung in dieser Anweisung verwendet werden soll. Aus Gründen der Übersichtlichkeit sollten die Zuweisungen in separate Anweisungen aufgeteilt werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementMessage">
         <source>Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</source>
-        <target state="new">Symbol '{0}' and its member '{1}' are both assigned in the same statement. You are at risk of assigning the member of an unintended object.</target>
+        <target state="translated">Das Symbol "{0}" und der zugehörige Member "{1}" werden beide in derselben Anweisung zugewiesen. Damit riskieren Sie, dass der Member eines unbeabsichtigten Objekts zugewiesen wird.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement.</source>
-        <target state="new">Assigning symbol and its member in the same statement.</target>
+        <target state="translated">Das Symbol und der zugehörige Member werden in der gleichen Anweisung zugewiesen.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
-        <target state="needs-review-translation">Eine allgemeine Ausnahme wie "System.Exception" oder "System.SystemException" wurde durch eine catch-Anweisung abgefangen, oder es wird eine Klausel verwendet, um Ausnahmen generell abzufangen. Allgemeine Ausnahmen sollten jedoch nicht abgefangen werden.</target>
+        <target state="translated">Eine allgemeine Ausnahme wie "System.Exception" oder "System.SystemException" oder ein unzulässiger Ausnahmetyp wurde durch eine catch-Anweisung abgefangen, oder es wird eine Klausel verwendet, um Ausnahmen generell abzufangen. Allgemeine und unzulässige Ausnahmen sollten jedoch nicht abgefangen werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="needs-review-translation">Ändern Sie "{0}", um spezifischere Ausnahmetypen abzufangen, oder lösen Sie die Ausnahme erneut aus.</target>
+        <target state="translated">Ändern Sie "{0}", um spezifischere zulässige Ausnahmetypen abzufangen, oder lösen Sie die Ausnahme erneut aus.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -673,18 +673,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">Sammlungen müssen eine generische Schnittstelle implementieren</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="translated">Die generische Schnittstelle muss ebenfalls implementiert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Um die Verwendbarkeit einer Sammlung zu erweitern, implementieren Sie eine der generischen Sammlungsschnittstellen. Anschließend kann die Sammlung zum Auffüllen generischer Sammlungstypen verwendet werden.</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="translated">Implementieren Sie eine der generischen Schnittstellen, um die Einsatzmöglichkeiten eines Typs zu erweitern. Dies gilt insbesondere für Sammlungen, weil sie dann zum Auffüllen generischer Sammlungstypen verwendet werden können.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">Die Sammlung "{0}" erbt "{1}" direkt oder indirekt ohne Implementierung von "{2}". Öffentlich sichtbare Sammlungen müssen die generische Version implementieren, um die Nutzbarkeit zu erweitern.</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">Der Typ "{0}" erbt "{1}" direkt oder indirekt ohne Implementierung von "{2}". Öffentlich sichtbare Typen müssen die generische Version implementieren, um die Nutzbarkeit zu erweitern.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageDefault">
         <source>Field '{0}' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Das Feld "{0}" wird als "static readonly" deklariert, wird jedoch mit einem konstanten Wert initialisiert. Markieren Sie dieses Feld stattdessen als "const".</target>
+        <target state="translated">Das Feld "{0}" wurde als "readonly" deklariert, wird jedoch mit einem konstanten Wert initialisiert. Markieren Sie dieses Feld stattdessen als "const".</target>
         <note />
       </trans-unit>
       <trans-unit id="UseLiteralsWhereAppropriateMessageEmptyString">
         <source>Field '{0}' is declared as 'readonly' but is initialized with an empty string (""). Mark this field as 'const' instead.</source>
-        <target state="needs-review-translation">Das Feld "{0}" wird als "static readonly" deklariert, wird jedoch mit einer leeren Zeichenfolge ("") initialisiert. Markieren Sie dieses Feld stattdessen als "const".</target>
+        <target state="translated">Das Feld "{0}" wurde als "readonly" deklariert, wird jedoch mit einer leeren Zeichenfolge ("") initialisiert. Markieren Sie dieses Feld stattdessen als "const".</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyTitle">
@@ -1903,13 +1903,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Member, die nicht auf Instanzdaten zugreifen oder Instanzmethoden aufrufen, können als "static" markiert werden ("Shared" in Visual Basic). Nachdem Sie die Methoden als statisch markiert haben, gibt der Compiler nicht virtuelle Aufrufsites an diese Member aus. Dadurch kann sich für leistungsabhängigen Code eine spürbare Leistungssteigerung ergeben.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="translated">Member, die nicht auf Instanzdaten zugreifen oder Instanzmethoden aufrufen, können als "static" markiert werden. Nachdem Sie die Methoden als statisch markiert haben, gibt der Compiler nicht virtuelle Aufrufsites an diese Member aus. Dadurch kann sich für leistungsabhängigen Code eine spürbare Leistungssteigerung ergeben.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Der Member "{0}" greift nicht auf Instanzdaten zu und kann als "static" markiert werden ("Shared" in VisualBasic).</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="translated">Der Member "{0}" greift nicht auf Instanzdaten zu und kann als "static" markiert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

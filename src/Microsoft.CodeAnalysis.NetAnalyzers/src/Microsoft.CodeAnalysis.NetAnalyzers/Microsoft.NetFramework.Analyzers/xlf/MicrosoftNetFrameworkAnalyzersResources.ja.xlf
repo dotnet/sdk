@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXmlDescription">
         <source>Do not use unsafe overloads of System.Data.DataSet.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">System.Data.DataSet.ReadXml の安全でないオーバーロードを使用しないでください。この API により、使用されている XML リーダー インスタンスでの DTD 処理が内部で有効になり、外部 XML エンティティの解決に UrlResolver が使用されます。その結果は情報漏えいです。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクターとして使用する可能性があります。</target>
+        <target state="translated">System.Data.DataSet.ReadXml の安全でないオーバーロードを使用しないでください。この API により、使用されている XML リーダー インスタンスでの DTD 処理が内部で有効になり、外部 XML エンティティの解決に UrlResolver が使用されます。その結果は情報漏えいです。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクトルとして使用する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXmlMessage">
@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaDescription">
         <source>Do not use unsafe overloads of System.Data.DataSet.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">System.Data.DataSet.ReadXmlSchema の安全でないオーバーロードを使用しないでください。この API により、使用されている XML リーダー インスタンスでの DTD 処理が内部で有効になり、外部 XML エンティティの解決に UrlResolver が使用されます。その結果は情報漏えいです。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクターとして使用する可能性があります。</target>
+        <target state="translated">System.Data.DataSet.ReadXmlSchema の安全でないオーバーロードを使用しないでください。この API により、使用されている XML リーダー インスタンスでの DTD 処理が内部で有効になり、外部 XML エンティティの解決に UrlResolver が使用されます。その結果は情報漏えいです。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクトルとして使用する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXmlSchemaMessage">
@@ -129,7 +129,7 @@
       </trans-unit>
       <trans-unit id="ReviewDataViewCollectionStringDescription">
         <source>Review code to insure that usage of System.Data.DataViewManager.DataViewSettingCollectionString input is sanitized to not contain DTD. Enabling DTD processing on the XML reader and using UrlResolver for resolving external XML entities may lead to information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">コードをレビューして、System.Data.DataViewManager.DataViewSettingCollectionString 入力の使用が DTD を含まないように校正されていることを確認してください。XML リーダーで DTD 処理を有効にし、外部 XML エンティティの解決に UrlResolver を使用すると、情報漏えいにつながる可能性があります。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクターとして使用する可能性があります。</target>
+        <target state="translated">コードをレビューして、System.Data.DataViewManager.DataViewSettingCollectionString 入力の使用が DTD を含まないように校正されていることを確認してください。XML リーダーで DTD 処理を有効にし、外部 XML エンティティの解決に UrlResolver を使用すると、情報漏えいにつながる可能性があります。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクトルとして使用する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewDataViewCollectionStringMessage">
@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataTableReadXmlDescription">
         <source>Do not use unsafe overloads of System.Data.DataTable.ReadXml. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">System.Data.DataTable.ReadXml の安全でないオーバーロードを使用しないでください。この API により、使用されている XML リーダー インスタンスでの DTD 処理が内部で有効になり、外部 XML エンティティの解決に UrlResolver が使用されます。その結果は情報漏えいです。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクターとして使用する可能性があります。</target>
+        <target state="translated">System.Data.DataTable.ReadXml の安全でないオーバーロードを使用しないでください。この API により、使用されている XML リーダー インスタンスでの DTD 処理が内部で有効になり、外部 XML エンティティの解決に UrlResolver が使用されます。その結果は情報漏えいです。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクトルとして使用する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataTableReadXmlMessage">
@@ -159,7 +159,7 @@
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaDescription">
         <source>Checks for usage of an unsafe overload of  System.Data.DataTable.ReadXmlSchema. This API internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">System.Data.DataTable.ReadXmlSchema の安全でないオーバーロードの使用状況を確認します。この API により、使用されている XML リーダー インスタンスでの DTD 処理が内部で有効になり、外部 XML エンティティの解決に UrlResolver が使用されます。その結果は情報漏えいです。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクターとして使用する可能性があります。</target>
+        <target state="translated">System.Data.DataTable.ReadXmlSchema の安全でないオーバーロードの使用状況を確認します。この API により、使用されている XML リーダー インスタンスでの DTD 処理が内部で有効になり、外部 XML エンティティの解決に UrlResolver が使用されます。その結果は情報漏えいです。XML を処理しているコンピューターのファイル システムまたはネットワーク共有のコンテンツは、攻撃者にさらされる可能性があります。また、攻撃者はこれを DoS ベクトルとして使用する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataTableReadXmlSchemaMessage">
