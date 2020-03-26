@@ -1,7 +1,21 @@
 <Project>
 
   <Target Name="GenerateBundledVersions"
-          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps" />
+          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps" >
+          
+    <WriteLinesToFile
+      File="$(ArtifactsShippingPackagesDir)productVersion.txt"
+      Lines="$(PackageVersion)"
+      Overwrite="true"
+      Encoding="ASCII"/>
+
+    <WriteLinesToFile
+      File="$(ArtifactsShippingPackagesDir)productCommit.txt"
+      Lines="$(PackageVersion)%0x0A$(BUILD_SOURCEVERSION)"
+      Overwrite="true"
+      Encoding="ASCII"/>
+
+  </Target>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
     <PropertyGroup>
