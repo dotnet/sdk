@@ -10,12 +10,11 @@
       <Content Required="true" />
     </ParameterGroup>
     <Task>
-      <Using Namespace="System.IO" />
       <Code Type="Fragment" Language="cs">
-        var dir = Path.GetDirectoryName(Path);
+        var dir = System.IO.Path.GetDirectoryName(Path);
         if(!string.IsNullOrEmpty(dir))
-          Directory.CreateDirectory(dir);
-        File.WriteAllText(Path, Content);
+          System.IO.Directory.CreateDirectory(dir);
+        System.IO.File.WriteAllText(Path, Content);
       </Code>
     </Task>
   </UsingTask>
