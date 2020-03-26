@@ -33,7 +33,6 @@
   <UsingTask TaskName="Chmod" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="DotNetDebTool" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="BuildFPMToolPreReqs" AssemblyFile="$(CoreSdkTaskDll)"/>
-  <UsingTask TaskName="GetUseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GenerateDefaultRuntimeFrameworkVersion" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="AddMetadataIsPE" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="Crossgen" AssemblyFile="$(CoreSdkTaskDll)"/>

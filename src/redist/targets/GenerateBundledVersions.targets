@@ -83,16 +83,6 @@
     </ItemGroup>
 
     <!--
-        Setting the property to true if patch == 0 and preview == true. SDK will set DefaultNetCorePatchVersion according to this flag.
-        So that we don't need to manually update the version selection logic between when we ship a final release and when we ship the first patch
-      -->
-    <GetUseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion
-      BundledNETCoreAppPackageVersion="$(_NETCoreAppPackageVersion)">
-      <Output TaskParameter="UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion"
-              PropertyName="_UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion" />
-    </GetUseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion>
-
-    <!--
         Generate default runtime framework versions
       -->
     <GenerateDefaultRuntimeFrameworkVersion RuntimePackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
@@ -167,7 +157,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
     <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
-    <UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion>$(_UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion)</UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion>
     <BundledNETStandardTargetFrameworkVersion>$(_NETStandardTargetFrameworkVersion)</BundledNETStandardTargetFrameworkVersion>
     <BundledNETStandardPackageVersion>$(_NETStandardLibraryPackageVersion)</BundledNETStandardPackageVersion>
     <BundledNETCorePlatformsPackageVersion>$(_NETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
