@@ -673,17 +673,17 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
+        <source>Generic interface should also be implemented</source>
         <target state="translated">應同時實作一般介面</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
         <target state="translated">若要擴大類型的可用性，請實作其中一個一般介面。這項做法特別適用於集合，原因是可以讓集合用於填入一般集合類型。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
         <target state="translated">類型 '{0}' 未實作 '{2}' 便直接或間接繼承 '{1}'。公開顯示的類型應實作一般版本以擴大可用性。</target>
         <note />
       </trans-unit>
@@ -1903,12 +1903,12 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
         <target state="translated">不會存取執行個體資料或呼叫執行個體方法的成員，可標記為靜態。當您將方法標記為靜態之後，編譯器會對這些成員發出非虛擬呼叫位置。您如此即可針對重視效能的程式碼，取得可衡量的效能提升。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
         <target state="translated">成員 '{0}' 不會存取執行個體資料，因而可標記為靜態</target>
         <note />
       </trans-unit>
