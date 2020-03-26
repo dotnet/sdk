@@ -7,8 +7,8 @@
     <PropertyGroup>
       <BundledVersionsPropsFileName>Microsoft.NETCoreSdk.BundledVersions.props</BundledVersionsPropsFileName>
     </PropertyGroup>
-
    
+    
     <PropertyGroup>
       <_NETCoreAppPackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NETCoreAppPackageVersion>
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
@@ -92,6 +92,19 @@
               PropertyName="_UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion" />
     </GetUseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion>
 
+    <!--
+        Generate default runtime framework versions
+      -->
+    <GenerateDefaultRuntimeFrameworkVersion RuntimePackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
+      <Output TaskParameter="DefaultRuntimeFrameworkVersion" PropertyName="MicrosoftNETCoreAppDefaultRuntimePackageVersion" />
+    </GenerateDefaultRuntimeFrameworkVersion>
+    <GenerateDefaultRuntimeFrameworkVersion RuntimePackVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)">
+      <Output TaskParameter="DefaultRuntimeFrameworkVersion" PropertyName="MicrosoftWindowsDesktopAppDefaultRuntimePackageVersion" />
+    </GenerateDefaultRuntimeFrameworkVersion>
+    <GenerateDefaultRuntimeFrameworkVersion RuntimePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)">
+      <Output TaskParameter="DefaultRuntimeFrameworkVersion" PropertyName="MicrosoftAspNetCoreAppDefaultRuntimePackageVersion" />
+    </GenerateDefaultRuntimeFrameworkVersion>
+    
     <ItemGroup>
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="1.0"
@@ -170,7 +183,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="netcoreapp5.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftNETCoreAppDefaultRuntimePackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
@@ -196,7 +209,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="netcoreapp5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimePackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
@@ -208,7 +221,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
                               TargetFramework="netcoreapp5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimePackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
@@ -221,7 +234,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
                               TargetFramework="netcoreapp5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimePackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
@@ -234,7 +247,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
                               TargetFramework="netcoreapp5.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppDefaultRuntimePackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
