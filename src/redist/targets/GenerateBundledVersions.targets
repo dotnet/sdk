@@ -28,7 +28,7 @@
 
     <WriteTextToFile
       Path="$(ArtifactsShippingPackagesDir)productCommit.txt"
-      Content="$(PackageVersion)%0A$(BUILD_SOURCEVERSION)" />
+      Content="$(BUILD_SOURCEVERSION)%0A$(PackageVersion)" />
 
   </Target>
 
