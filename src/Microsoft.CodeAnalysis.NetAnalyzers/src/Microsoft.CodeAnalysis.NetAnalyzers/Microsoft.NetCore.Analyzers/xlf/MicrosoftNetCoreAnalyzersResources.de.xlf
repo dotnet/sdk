@@ -767,6 +767,21 @@
         <target state="translated">Dieser Typ implementiert SHA1, eine kryptografisch unsichere Hashfunktion. Hashkollisionen sind für die Algorithmen SHA-1 und SHA-0 rechnerisch möglich. Ersetzen Sie diese Verwendung durch einen Hashalgorithmus der SHA-2-Familie (SHA512, SHA384, SHA256).</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">Regelmäßige Aktivitäten mit einer höheren Frequenz belasten die CPU und beeinflussen energiesparende Leerlauftimer, mit denen die Anzeige sowie die Festplatten ausgeschaltet werden.</target>

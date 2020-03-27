@@ -767,6 +767,21 @@
         <target state="translated">この型は、暗号として安全でないハッシュ関数である SHA1 を実装しています。SHA-1 と SHA-0 アルゴリズムでは、計算上、ハッシュの競合が起こる可能性があります。この使用を SHA-2 ファミリのハッシュ アルゴリズム (SHA512、SHA384、SHA256) に置き換えてください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">頻度の高い定期的な動作は CPU のビジー状態を維持し、画面およびハード ディスクの電源を切る節電アイドル タイマーに影響します。</target>

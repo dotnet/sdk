@@ -767,6 +767,21 @@
         <target state="translated">此類型會實作 SHA1，此雜湊函數在密碼編譯方面有安全性疑慮。SHA-1 與 SHA-0 演算法在運算方面可能會發生雜湊衝突。請以 SHA-2 系列雜湊演算法 (SHA512、SHA384、SHA256) 取代此用法。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">更高頻率的週期性活動，會讓 CPU 一直處於忙碌狀態，且會干擾關閉顯示器與硬碟的省電閒置計時器。</target>

@@ -767,6 +767,21 @@
         <target state="translated">이 형식은 안전하지 않게 암호화된 해시 알고리즘인 SHA1을 구현합니다. SHA-1 및 SHA-0 알고리즘에서 계산상 해시 충돌이 발생할 수 있습니다. 이 사용법을 SHA-2 패밀리 해시 알고리즘(SHA512, SHA384, SHA256)으로 바꾸세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">정기적인 작업의 실행 빈도가 높아지면 CPU 사용률도 높아져 디스플레이 및 하드 디스크를 끄는 절전 유휴 타이머에 방해가 됩니다.</target>
