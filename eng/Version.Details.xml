@@ -25,7 +25,7 @@
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="3.1.4">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>6b982c293f07b541ef92b5531f73e9493bc765af</Sha>
+      <Sha>03aef6fa23911f5e375a320be9e9b44da4bf2095</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
