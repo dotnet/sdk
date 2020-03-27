@@ -1,34 +1,19 @@
 <Project>
 
-  <!-- Used for creating productVersion and productCommit text files. -->
-  <UsingTask
-    TaskName="WriteTextToFile"
-    TaskFactory="RoslynCodeTaskFactory"
-    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
-    <ParameterGroup>
-      <Path Required="true" />
-      <Content Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Code Type="Fragment" Language="cs">
-        var dir = System.IO.Path.GetDirectoryName(Path);
-        if(!string.IsNullOrEmpty(dir))
-          System.IO.Directory.CreateDirectory(dir);
-        System.IO.File.WriteAllText(Path, Content);
-      </Code>
-    </Task>
-  </UsingTask>
-
   <Target Name="GenerateBundledVersions"
           DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps" >
-          
-    <WriteTextToFile
-      Path="$(ArtifactsShippingPackagesDir)productVersion.txt"
-      Content="$(PackageVersion)" />
 
-    <WriteTextToFile
-      Path="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
-      Content="$(BUILD_SOURCEVERSION)%0A$(PackageVersion)" />
+    <WriteLinesToFile
+      File="$(ArtifactsShippingPackagesDir)productVersion.txt"
+      Lines="$(PackageVersion)"
+      Overwrite="true"
+      Encoding="ASCII"/>
+
+    <WriteLinesToFile
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
+      Lines="$(BUILD_SOURCEVERSION)%0A$(PackageVersion)"
+      Overwrite="true"
+      Encoding="ASCII"/>
 
   </Target>
 
