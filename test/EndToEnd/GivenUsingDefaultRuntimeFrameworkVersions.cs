@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.Versioning;
 using Xunit;
@@ -20,18 +19,16 @@ namespace EndToEnd
         [Fact]
         public void DefaultRuntimeVersionsAreUpToDate()
         {
-            var directory = TestAssets.CreateTestDirectory();
-            string projectDirectory = directory.FullName;
             var outputFile = "resolvedVersions.txt";
+            var testProjectCreator = new TestProjectCreator()
+            {
+                PackageName = "DefaultRuntimeVersionsAreUpToDate",
+                MinorVersion = "3.0"
+            };
+            var testProject = testProjectCreator.Create();
 
-            new NewCommandShim()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute("console --no-restore")
-                .Should().Pass();
-
-            var projectFile = new DirectoryInfo(projectDirectory).GetFiles("*.csproj").First().FullName;
+            var projectFile = new DirectoryInfo(testProject.Root.FullName).GetFiles("*.csproj").First().FullName;
             var project = XDocument.Load(projectFile);
-            var ns = project.Root.Name.Namespace;
             string writeResolvedVersionsTarget = @$"
     <Target Name=`WriteResolvedVersions` AfterTargets=`PrepareForBuild;ProcessFrameworkReferences`>
         <ItemGroup>
@@ -44,18 +41,23 @@ namespace EndToEnd
 
       </Target>";
             writeResolvedVersionsTarget = writeResolvedVersionsTarget.Replace('`', '"');
-            project.Root.Add(XElement.Parse(writeResolvedVersionsTarget));
+            var targetElement = XElement.Parse(writeResolvedVersionsTarget);
+            var ns = project.Root.Name.Namespace;
+            foreach (var elem in targetElement.Descendants())
+                elem.Name = ns + elem.Name.LocalName;
+            targetElement.Name = ns + targetElement.Name.LocalName;
+            project.Root.Add(targetElement);
             using (var file = File.CreateText(projectFile))
             {
                 project.Save(file);
             }
 
-            new BuildCommand()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute()
-                .Should().Pass();
+            new RestoreCommand()
+                    .WithWorkingDirectory(testProject.Root.FullName)
+                    .Execute()
+                    .Should().Pass();
 
-            var binDirectory = new DirectoryInfo(projectDirectory).Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault();
+            var binDirectory = new DirectoryInfo(testProject.Root.FullName).Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault();
             binDirectory.Should().HaveFilesMatching(outputFile, SearchOption.TopDirectoryOnly);
             var resolvedVersionsFile = File.ReadAllLines(Path.Combine(binDirectory.FullName, outputFile));
             foreach (var framework in frameworks)
