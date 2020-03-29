@@ -97,6 +97,21 @@
         <target state="translated">Ne pas intercepter les types d'exception générale</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
+        <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="new">Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
+        <source>Do not declare event fields as virtual.</source>
+        <target state="new">Do not declare event fields as virtual.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
+        <source>Do not declare event fields as virtual</source>
+        <target state="new">Do not declare event fields as virtual</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">Ne pas passer de lambdas asynchrones en tant que types délégués retournant void</target>

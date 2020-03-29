@@ -1370,4 +1370,13 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="DoNotDeclareEventFieldsAsVirtualDescription" xml:space="preserve">
+    <value>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</value>
+  </data>
+  <data name="DoNotDeclareEventFieldsAsVirtualMessage" xml:space="preserve">
+    <value>Do not declare event fields as virtual.</value>
+  </data>
+  <data name="DoNotDeclareEventFieldsAsVirtualTitle" xml:space="preserve">
+    <value>Do not declare event fields as virtual</value>
+  </data>
 </root>
