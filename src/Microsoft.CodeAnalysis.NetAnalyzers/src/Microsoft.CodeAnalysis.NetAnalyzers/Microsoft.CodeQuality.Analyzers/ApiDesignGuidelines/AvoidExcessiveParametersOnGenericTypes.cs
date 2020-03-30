@@ -22,7 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Design,
-            RuleLevel.IdeSuggestion,
+            RuleLevel.Disabled,
             s_localizableDescription,
             isPortedFxCopRule: true,
             isDataflowRule: false);
@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 if (namedType.IsGenericType &&
                     namedType.TypeParameters.Length > 2)
                 {
-                    context.ReportDiagnostic(namedType.CreateDiagnostic(Rule, namedType.ToDisplayString()));
+                    context.ReportDiagnostic(namedType.CreateDiagnostic(Rule, namedType.Name));
                 }
             }, SymbolKind.NamedType);
         }
