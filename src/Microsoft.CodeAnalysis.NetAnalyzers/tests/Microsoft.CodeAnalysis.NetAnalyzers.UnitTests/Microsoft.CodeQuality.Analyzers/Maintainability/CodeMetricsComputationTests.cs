@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.CodeMetrics.UnitTests
     {
         protected override string GetMetricsDataString(Compilation compilation)
         {
-            return CodeAnalysisMetricData.ComputeAsync(compilation, CancellationToken.None).Result.ToString();
+            return CodeAnalysisMetricData.ComputeAsync(new CodeMetricsAnalysisContext(compilation, CancellationToken.None)).Result.ToString();
         }
 
         [Fact]
