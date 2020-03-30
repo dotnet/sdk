@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotPassTypesByReference,
@@ -24,16 +23,16 @@ public class Class1
     {
     }
 }",
-                GetCA1045CSharpResultAt(4, 36, "s"),
-                GetCA1045CSharpResultAt(4, 50, "o"));
+                VerifyCS.Diagnostic().WithSpan(4, 36, 4, 37).WithArguments("s"),
+                VerifyCS.Diagnostic().WithSpan(4, 50, 4, 51).WithArguments("o"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
     Public Sub Method1(ByRef s As String, ByRef o As Object)
     End Sub
 End Class",
-                GetCA1045BasicResultAt(3, 30, "s"),
-                GetCA1045BasicResultAt(3, 49, "o"));
+                VerifyVB.Diagnostic().WithSpan(3, 30, 3, 31).WithArguments("s"),
+                VerifyVB.Diagnostic().WithSpan(3, 49, 3, 50).WithArguments("o"));
         }
 
         [Fact]
@@ -60,7 +59,7 @@ End Class");
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class BaseClass
 {
-    public virtual void Method1(ref string {|CA1045:s|}) // issue here...
+    public virtual void Method1(ref string [|s|]) // issue here...
     {
     }
 }
@@ -74,7 +73,7 @@ public class Class1 : BaseClass
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class BaseClass
-    Public Overridable Sub Method1(ByRef {|CA1045:s|} As String) ' issue here...
+    Public Overridable Sub Method1(ByRef [|s|] As String) ' issue here...
     End Sub
 End Class
 
@@ -93,7 +92,7 @@ End Class
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface Interface1
 {
-    void Method1(ref string {|CA1045:s|}); // issue here...
+    void Method1(ref string [|s|]); // issue here...
 }
 
 public class Class1 : Interface1
@@ -105,7 +104,7 @@ public class Class1 : Interface1
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface Interface1
-    Sub Method1(ByRef {|CA1045:s|} As String) ' issue here...
+    Sub Method1(ByRef [|s|] As String) ' issue here...
 End Interface
 
 Public Class Class1
@@ -132,7 +131,7 @@ public class Class1
 Imports System.Runtime.InteropServices
 
 Public Class Class1
-    Public Sub Method1(s As String, <Out> ByRef c1 As Class1, ByRef {|CA1045:c2|} As Class1)
+    Public Sub Method1(s As String, <Out> ByRef c1 As Class1, ByRef [|c2|] As Class1)
         c1 = Nothing
     End Sub
 End Class");
@@ -148,7 +147,7 @@ using System.Runtime.InteropServices;
 public class Class1
 {
     [DllImport(""Advapi32.dll"", CharSet=CharSet.Auto)]
-    public static extern Boolean FileEncryptionStatus(String filename, ref UInt32 {|CA1045:status|});
+    public static extern Boolean FileEncryptionStatus(String filename, ref UInt32 [|status|]);
 }");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -156,7 +155,7 @@ Imports System.Runtime.InteropServices
 
 Public Class Class1
     <DllImport(""Advapi32.dll"", CharSet:=CharSet.Auto)>
-    Public Shared Function FileEncryptionStatus(ByVal filename As String, ByRef {|CA1045:status|} As UInteger) As Boolean
+    Public Shared Function FileEncryptionStatus(ByVal filename As String, ByRef [|status|] As UInteger) As Boolean
     End Function
 End Class");
         }
@@ -173,14 +172,92 @@ public class Class1
 }");
         }
 
-        private static DiagnosticResult GetCA1045CSharpResultAt(int line, int column, string parameterName)
-            => VerifyCS.Diagnostic()
-                .WithSpan(startLine: line, startColumn: column, endLine: line, endColumn: column + parameterName.Length)
-                .WithArguments(parameterName);
+        [Theory]
+        // General analyzer option
+        [InlineData("public", "dotnet_code_quality.api_surface = public")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private, internal, public")]
+        [InlineData("public", "dotnet_code_quality.api_surface = all")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = public")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = private, internal, public")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = all")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = internal")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = private, internal")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = all")]
+        [InlineData("private", "dotnet_code_quality.api_surface = private")]
+        [InlineData("private", "dotnet_code_quality.api_surface = private, public")]
+        [InlineData("private", "dotnet_code_quality.api_surface = all")]
+        // Specific analyzer option
+        [InlineData("internal", "dotnet_code_quality.CA1045.api_surface = all")]
+        [InlineData("internal", "dotnet_code_quality.Design.api_surface = all")]
+        // General + Specific analyzer option
+        [InlineData("internal", @"dotnet_code_quality.api_surface = private
+                                  dotnet_code_quality.CA1045.api_surface = all")]
+        // Case-insensitive analyzer option
+        [InlineData("internal", "DOTNET_code_quality.CA1045.API_SURFACE = ALL")]
+        // Invalid analyzer option ignored
+        [InlineData("internal", @"dotnet_code_quality.api_surface = all
+                                  dotnet_code_quality.CA1045.api_surface_2 = private")]
+        public async Task CSharp_ApiSurfaceOption(string accessibility, string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+public class C
+{{
+    {accessibility} void M(ref string [|s|]) {{ }}
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            }.RunAsync();
+        }
 
-        private static DiagnosticResult GetCA1045BasicResultAt(int line, int column, string parameterName)
-            => VerifyVB.Diagnostic()
-                .WithSpan(startLine: line, startColumn: column, endLine: line, endColumn: column + parameterName.Length)
-                .WithArguments(parameterName);
+        [Theory]
+        // General analyzer option
+        [InlineData("Public", "dotnet_code_quality.api_surface = Public")]
+        [InlineData("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [InlineData("Public", "dotnet_code_quality.api_surface = All")]
+        [InlineData("Protected", "dotnet_code_quality.api_surface = Public")]
+        [InlineData("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [InlineData("Protected", "dotnet_code_quality.api_surface = All")]
+        [InlineData("Friend", "dotnet_code_quality.api_surface = Friend")]
+        [InlineData("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
+        [InlineData("Friend", "dotnet_code_quality.api_surface = All")]
+        [InlineData("Private", "dotnet_code_quality.api_surface = Private")]
+        [InlineData("Private", "dotnet_code_quality.api_surface = Private, Public")]
+        [InlineData("Private", "dotnet_code_quality.api_surface = All")]
+        // Specific analyzer option
+        [InlineData("Friend", "dotnet_code_quality.CA1045.api_surface = All")]
+        [InlineData("Friend", "dotnet_code_quality.Design.api_surface = All")]
+        // General + Specific analyzer option
+        [InlineData("Friend", @"dotnet_code_quality.api_surface = Private
+                                dotnet_code_quality.CA1045.api_surface = All")]
+        // Case-insensitive analyzer option
+        [InlineData("Friend", "DOTNET_code_quality.CA1045.API_SURFACE = ALL")]
+        // Invalid analyzer option ignored
+        [InlineData("Friend", @"dotnet_code_quality.api_surface = All
+                                dotnet_code_quality.CA1045.api_surface_2 = Private")]
+        public async Task VisualBasic_ApiSurfaceOption(string accessibility, string editorConfigText)
+        {
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Public Class C
+    {accessibility} Sub M(ByRef [|s|] As String)
+    End Sub
+End Class",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            }.RunAsync();
+        }
     }
 }
