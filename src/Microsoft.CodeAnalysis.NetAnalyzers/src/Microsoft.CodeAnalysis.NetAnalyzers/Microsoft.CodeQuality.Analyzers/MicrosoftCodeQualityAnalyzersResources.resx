@@ -1370,4 +1370,13 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="AvoidExcessiveParametersOnGenericTypesDescription" xml:space="preserve">
+    <value>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</value>
+  </data>
+  <data name="AvoidExcessiveParametersOnGenericTypesMessage" xml:space="preserve">
+    <value>Consider a design where '{0}' has no more than 2 type parameters.</value>
+  </data>
+  <data name="AvoidExcessiveParametersOnGenericTypesTitle" xml:space="preserve">
+    <value>Avoid excessive parameters on generic types</value>
+  </data>
 </root>

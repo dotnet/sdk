@@ -52,6 +52,21 @@
         <target state="translated">Les noms de méthodes Async doivent finir par Async</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
+        <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
+        <target state="new">The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
+        <source>Consider a design where '{0}' has no more than 2 type parameters.</source>
+        <target state="new">Consider a design where '{0}' has no more than 2 type parameters.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
+        <source>Avoid excessive parameters on generic types</source>
+        <target state="new">Avoid excessive parameters on generic types</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
         <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
         <target state="translated">N'affectez pas la propriété dans sa méthode setter. Cet appel peut entraîner une récursivité infinie.</target>

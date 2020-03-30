@@ -1,6 +1,7 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+CA1005 | Design | Info | AvoidExcessiveParametersOnGenericTypes, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1005)
 CA1021 | Design | Disabled | AvoidOutParameters, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1021)
 CA1069 | Design | Info | EnumShouldNotHaveDuplicatedValues, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1069)
 CA2011 | Reliability | Info | AvoidInfiniteRecursion, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2011)
