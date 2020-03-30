@@ -127,7 +127,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
 
                 var baseTypes = excludeIndirectBaseTypes
-                    ? (new[] { namedTypeSymbol.BaseType })
+                    ? namedTypeSymbol.BaseType != null ? ImmutableArray.Create(namedTypeSymbol.BaseType) : ImmutableArray<INamedTypeSymbol>.Empty
                     : namedTypeSymbol.GetBaseTypes();
 
                 if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typeSuffixInfo))
