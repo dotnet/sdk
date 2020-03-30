@@ -97,6 +97,21 @@
         <target state="translated">Ne pas intercepter les types d'exception générale</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesDescription">
+        <source>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</source>
+        <target state="new">Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
+        <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</source>
+        <target state="new">'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
+        <source>Do not declare protected member in sealed type</source>
+        <target state="new">Do not declare protected member in sealed type</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">Ne pas passer de lambdas asynchrones en tant que types délégués retournant void</target>

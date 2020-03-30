@@ -1370,4 +1370,13 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesDescription" xml:space="preserve">
+    <value>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</value>
+  </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesMessage" xml:space="preserve">
+    <value>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</value>
+  </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesTitle" xml:space="preserve">
+    <value>Do not declare protected member in sealed type</value>
+  </data>
 </root>
