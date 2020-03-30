@@ -66,7 +66,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    var lazyValueContentResult = new Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?>(
+                    Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?> lazyValueContentResult = new Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?>(
                         valueFactory: ComputeValueContentAnalysisResult, isThreadSafe: false);
 
                     operationBlockStartContext.RegisterOperationAction(operationContext =>

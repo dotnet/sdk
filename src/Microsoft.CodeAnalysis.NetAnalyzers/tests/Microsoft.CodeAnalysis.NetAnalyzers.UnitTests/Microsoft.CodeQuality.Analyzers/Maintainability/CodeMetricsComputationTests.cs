@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.CodeMetrics.UnitTests
     {
         protected override string GetMetricsDataString(Compilation compilation)
         {
-            return CodeAnalysisMetricData.ComputeAsync(compilation, CancellationToken.None).Result.ToString();
+            return CodeAnalysisMetricData.ComputeAsync(new CodeMetricsAnalysisContext(compilation, CancellationToken.None)).Result.ToString();
         }
 
         [Fact]
@@ -600,6 +600,67 @@ Assembly: (Lines: 15, ExecutableLines: 5, MntIndex: 93, CycCxty: 4, CoupledTypes
    C1: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
    C2: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
    G<T>: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+";
+
+            VerifyCSharp(source, expectedMetricsText);
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public void CountCorrectlyGenericTypes()
+        {
+            var source = @"
+using System.Collections.Generic;
+
+public class A {}
+public class B {}
+
+public class C
+{
+    void M1()
+    {
+        IEnumerable<A> a = null;
+        IEnumerable<B> b = null;
+        new object[] { a, b }.ToString(); // Avoid unused variable diagnostics
+    }
+}";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 12, ExecutableLines: 3, MntIndex: 93, CycCxty: 3, CoupledTypes: {A, B, System.Collections.Generic.IEnumerable<T>}, DepthInherit: 1)
+    A: (Lines: 2, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+    B: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+    C: (Lines: 9, ExecutableLines: 3, MntIndex: 80, CycCxty: 1, CoupledTypes: {A, B, System.Collections.Generic.IEnumerable<T>}, DepthInherit: 1)
+        C.M1(): (Lines: 6, ExecutableLines: 3, MntIndex: 80, CycCxty: 1, CoupledTypes: {A, B, System.Collections.Generic.IEnumerable<T>})
+";
+
+            VerifyCSharp(source, expectedMetricsText);
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public void ExcludeCompilerGeneratedTypes()
+        {
+            var source = @"
+[System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+public class A {}
+
+[System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")]
+public class B {}
+
+public class C
+{
+    void M1()
+    {
+        A a = null;
+        B b = null;
+        new object[] { a, b }.ToString(); // Avoid unused variable diagnostics
+    }
+}";
+
+            var expectedMetricsText = @"
+Assembly: (Lines: 15, ExecutableLines: 5, MntIndex: 93, CycCxty: 3, CoupledTypes: {System.CodeDom.Compiler.GeneratedCodeAttribute, System.Runtime.CompilerServices.CompilerGeneratedAttribute}, DepthInherit: 1)
+    A: (Lines: 3, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Runtime.CompilerServices.CompilerGeneratedAttribute}, DepthInherit: 1)
+    B: (Lines: 3, ExecutableLines: 2, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.CodeDom.Compiler.GeneratedCodeAttribute}, DepthInherit: 1)
+    C: (Lines: 9, ExecutableLines: 3, MntIndex: 80, CycCxty: 1, DepthInherit: 1)
+        C.M1(): (Lines: 6, ExecutableLines: 3, MntIndex: 80, CycCxty: 1)
 ";
 
             VerifyCSharp(source, expectedMetricsText);

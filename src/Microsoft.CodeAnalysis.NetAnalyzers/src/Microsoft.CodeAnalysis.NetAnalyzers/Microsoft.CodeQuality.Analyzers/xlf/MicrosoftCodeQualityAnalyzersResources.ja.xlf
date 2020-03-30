@@ -718,18 +718,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">コレクションは、ジェネリック インターフェイスを実装しなければなりません</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="translated">ジェネリック インターフェイスも実装する必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">コレクションの操作性を拡充するために、ジェネリック コレクション インターフェイスの 1 つを実装します。次に、コレクションを使用して、ジェネリック コレクション型を設定できます。</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="translated">型の操作性を拡充するには、ジェネリック インターフェイスの 1 つを実装します。これは特にコレクションの場合に有効です。これらを使用してジェネリック コレクション型にデータを設定できるようになるためです。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">コレクション '{0}' は、'{2}' を実装することなく '{1}' を直接または間接的に継承します。公開されているコレクションは、操作性の拡充のためジェネリック バージョンを実装する必要があります。</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">型 '{0}' は、'{2}' を実装することなく '{1}' を直接または間接的に継承します。公開されている型は、操作性の拡充のためジェネリック バージョンを実装する必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1949,12 +1949,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="new">Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</target>
+        <target state="translated">インスタンス データにアクセスしないメンバーまたはインスタンス メソッドを呼び出さないメンバーは、static にマークできます。メソッドを static にマークすると、コンパイラではこれらのメンバーに対する非仮想呼び出しサイトを出力します。これにより、パフォーマンスを要求されるコードでは、大幅にパフォーマンスが改善されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member '{0}' does not access instance data and can be marked as static</source>
-        <target state="new">Member '{0}' does not access instance data and can be marked as static</target>
+        <target state="translated">メンバー '{0}' はインスタンス データにアクセスしないため、static にマークできます</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

@@ -178,25 +178,6 @@
             ]
           }
         },
-        "CA1821": {
-          "id": "CA1821",
-          "shortDescription": "Remove empty Finalizers",
-          "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpRemoveEmptyFinalizersAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA1824": {
           "id": "CA1824",
           "shortDescription": "Mark assemblies with NeutralResourcesLanguageAttribute",
@@ -415,8 +396,8 @@
         },
         "CA1010": {
           "id": "CA1010",
-          "shortDescription": "Collections should implement generic interface",
-          "fullDescription": "To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.",
+          "shortDescription": "Generic interface should also be implemented",
+          "fullDescription": "To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1010",
           "properties": {
@@ -1057,7 +1038,7 @@
           "id": "CA1067",
           "shortDescription": "Override Object.Equals(object) when implementing IEquatable<T>",
           "fullDescription": "When a type T implements the interface IEquatable<T>, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the \"principle of least surprise\".",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1067",
           "properties": {
             "category": "Design",
@@ -1714,7 +1695,7 @@
           "id": "CA1816",
           "shortDescription": "Dispose methods should call SuppressFinalize",
           "fullDescription": "A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1816",
           "properties": {
             "category": "Usage",
@@ -1762,6 +1743,26 @@
             "typeName": "TestForEmptyStringsUsingStringLengthAnalyzer",
             "languages": [
               "C#"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1821": {
+          "id": "CA1821",
+          "shortDescription": "Remove empty Finalizers",
+          "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "RemoveEmptyFinalizersAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
             ],
             "tags": [
               "PortedFromFxCop",
@@ -1983,6 +1984,62 @@
             ]
           }
         },
+        "CA2012": {
+          "id": "CA2012",
+          "shortDescription": "Use ValueTasks correctly",
+          "fullDescription": "ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2012",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "UseValueTasksCorrectlyAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2013": {
+          "id": "CA2013",
+          "shortDescription": "Do not use ReferenceEquals with value types",
+          "fullDescription": "Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2013",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseReferenceEqualsWithValueTypesAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2014": {
+          "id": "CA2014",
+          "shortDescription": "Do not use stackalloc in loops.",
+          "fullDescription": "Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2014",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseStackallocInLoopsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
@@ -2008,7 +2065,7 @@
           "id": "CA2101",
           "shortDescription": "Specify marshaling for P/Invoke string arguments",
           "fullDescription": "A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2101",
           "properties": {
             "category": "Globalization",
@@ -2388,7 +2445,7 @@
           "id": "CA2241",
           "shortDescription": "Provide correct arguments to formatting methods",
           "fullDescription": "The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2241",
           "properties": {
             "category": "Usage",
@@ -2408,7 +2465,7 @@
           "id": "CA2242",
           "shortDescription": "Test for NaN correctly",
           "fullDescription": "This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2242",
           "properties": {
             "category": "Usage",
@@ -2466,7 +2523,7 @@
           "id": "CA2245",
           "shortDescription": "Do not assign a property to itself.",
           "fullDescription": "The property {0} should not be assigned to itself.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2245",
           "properties": {
             "category": "Usage",
@@ -3131,8 +3188,8 @@
         },
         "CA5358": {
           "id": "CA5358",
-          "shortDescription": "Do Not Use Unsafe Cipher Modes",
-          "fullDescription": "These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).",
+          "shortDescription": "Review cipher mode usage with cryptography experts",
+          "fullDescription": "These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5358",
           "properties": {
@@ -4190,25 +4247,6 @@
             "category": "Performance",
             "isEnabledByDefault": false,
             "typeName": "BasicInitializeStaticFieldsInlineAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
-        "CA1821": {
-          "id": "CA1821",
-          "shortDescription": "Remove empty Finalizers",
-          "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "BasicRemoveEmptyFinalizersAnalyzer",
             "languages": [
               "Visual Basic"
             ],

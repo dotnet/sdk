@@ -718,18 +718,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">컬렉션은 제네릭 인터페이스를 구현해야 합니다.</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="translated">제네릭 인터페이스도 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">컬렉션의 유용성을 확대하려면 제네릭 컬렉션 인터페이스 중 하나를 구현하세요. 그러면 컬렉션을 제네릭 컬렉션 형식을 전파하는 데 사용할 수 있습니다.</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="translated">형식의 유용성을 확대하려면 제네릭 인터페이스 중 하나를 구현하세요. 제네릭 컬렉션 형식을 채우는 데 사용할 수 있는 컬렉션의 경우에는 특히 그렇습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">컬렉션 '{0}'은(는) '{2}'을(를) 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 컬렉션의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">형식 '{0}'은(는) '{2}'을(를) 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 형식의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1949,12 +1949,12 @@
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
         <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="new">Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</target>
+        <target state="translated">인스턴스 데이터에 액세스하지 않거나 인스턴스 메서드를 호출하지 않는 멤버는 static으로 표시할 수 있습니다. 메서드를 static으로 표시하면 컴파일러가 이와 같은 멤버에 비가상 호출 사이트를 내보냅니다. 성능에 민감한 코드의 경우 이 방법으로 성능을 크게 향상할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
         <source>Member '{0}' does not access instance data and can be marked as static</source>
-        <target state="new">Member '{0}' does not access instance data and can be marked as static</target>
+        <target state="translated">'{0}' 멤버는 인스턴스 데이터에 액세스하지 않으며 static으로 표시할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

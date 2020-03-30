@@ -26,13 +26,13 @@ class FirstDerivedClass : BaseClass { }
 class SecondDerivedClass : FirstDerivedClass { }
 class ThirdDerivedClass : SecondDerivedClass { }
 class FourthDerivedClass : ThirdDerivedClass { }
+class FifthDerivedClass : FourthDerivedClass { }
 
 // This class violates the rule.
-class FifthDerivedClass : FourthDerivedClass { }
+class SixthDerivedClass : FifthDerivedClass { }
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.cs(9, 7): warning CA1501: 'FifthDerivedClass' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object'
-                GetCSharpCA1501ExpectedDiagnostic(9, 7, "FifthDerivedClass", 6, 6, "FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object")};
+                 GetCSharpCA1501ExpectedDiagnostic(10, 7, "SixthDerivedClass", 6, 6, "FifthDerivedClass, FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass")};
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
@@ -62,10 +62,13 @@ End Class
 Class FifthDerivedClass
     Inherits FourthDerivedClass
 End Class
+
+Class SixthDerivedClass
+    Inherits FifthDerivedClass
+End Class
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.vb(21, 7): warning CA1501: 'FifthDerivedClass' has an object hierarchy '6' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '6': 'FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object'
-                GetBasicCA1501ExpectedDiagnostic(21, 7, "FifthDerivedClass", 6, 6, "FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass, Object")};
+                 GetBasicCA1501ExpectedDiagnostic(25, 7, "SixthDerivedClass", 6, 6, "FifthDerivedClass, FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass")};
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
@@ -80,11 +83,10 @@ class FirstDerivedClass : BaseClass { }
 # FORMAT:
 # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1501: 1
+CA1501: 0
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.cs(3, 7): warning CA1501: 'BaseClass' has an object hierarchy '2' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '2': 'BaseClass, Object'
-                GetCSharpCA1501ExpectedDiagnostic(3, 7, "FirstDerivedClass", 2, 2, "BaseClass, Object")};
+                GetCSharpCA1501ExpectedDiagnostic(3, 7, "FirstDerivedClass", 1, 1, "BaseClass")};
             await VerifyCSharpAsync(source, additionalText, expected);
         }
 
@@ -103,12 +105,401 @@ End Class
 # FORMAT:
 # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1501: 1
+CA1501: 0
 ";
             DiagnosticResult[] expected = new[] {
-                // Test0.vb(5, 7): warning CA1501: 'BaseClass' has an object hierarchy '2' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '2': 'BaseClass, Object'
-                GetBasicCA1501ExpectedDiagnostic(5, 7, "FirstDerivedClass", 2, 2, "BaseClass, Object")};
+                GetBasicCA1501ExpectedDiagnostic(5, 7, "FirstDerivedClass", 1, 1, "BaseClass")};
             await VerifyBasicAsync(source, additionalText, expected);
+        }
+
+        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass")]
+        // The following entries are invalid but won't remove the default filter
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = *Contro*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = User*ontrol")]
+        public async Task CA1501_AlwaysExcludesTypesInSystemNamespace(string editorConfigText)
+        {
+            // This test assumes that WinForms UserControl is over the default threshold.
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { "public class MyUC : System.Windows.Forms.UserControl {}", },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class MyUC
+    Inherits System.Windows.Forms.UserControl
+End Class",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:MyCompany.MyProduct.MyFunction.SomeClass*")]
+        public async Task CA1501_WildcardTypePrefixNoNamespace(string editorConfigText)
+        {
+            var codeMetricsConfigText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1501: 0
+";
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace MyCompany.MyProduct.MyFunction
+{
+    public class SomeClass {}
+    public class C1 : SomeClass {}
+
+    public class SomeClass1 {}
+    public class SomeClass2 : SomeClass1 {}
+    public class C2 : SomeClass2 {}
+}
+
+public class SomeClass {}
+public class C1 : SomeClass {}
+
+public class SomeClass1 {}
+public class SomeClass2 : SomeClass1 {}
+public class C2 : SomeClass2 {}"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                },
+            };
+
+            if (editorConfigText.Contains("T:SomeClass"))
+            {
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCSharpCA1501ExpectedDiagnostic(5, 18, "C1", 1, 1, "SomeClass"),
+                    GetCSharpCA1501ExpectedDiagnostic(8, 18, "SomeClass2", 1, 1, "SomeClass1"),
+                    GetCSharpCA1501ExpectedDiagnostic(9, 18, "C2", 2, 1, "SomeClass2, SomeClass1"),
+                });
+            }
+            else
+            {
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCSharpCA1501ExpectedDiagnostic(13, 14, "C1", 1, 1, "SomeClass"),
+                    GetCSharpCA1501ExpectedDiagnostic(16, 14, "SomeClass2", 1, 1, "SomeClass1"),
+                    GetCSharpCA1501ExpectedDiagnostic(17, 14, "C2", 2, 1, "SomeClass2, SomeClass1"),
+                });
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbnetTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace MyCompany.MyProduct.MyFunction
+    Public Class SomeClass
+    End Class
+
+    Public Class C1
+        Inherits SomeClass
+    End Class
+
+    Public Class SomeClass1
+    End Class
+
+    Public Class SomeClass2
+        Inherits SomeClass1
+    End Class
+
+    Public Class C2
+        Inherits SomeClass2
+    End Class
+End Namespace
+
+Public Class SomeClass
+End Class
+
+Public Class C1
+    Inherits SomeClass
+End Class
+
+Public Class SomeClass1
+End Class
+
+Public Class SomeClass2
+    Inherits SomeClass1
+End Class
+
+Public Class C2
+    Inherits SomeClass2
+End Class"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                },
+            };
+
+            if (editorConfigText.Contains("T:SomeClass"))
+            {
+                vbnetTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCSharpCA1501ExpectedDiagnostic(6, 18, "C1", 1, 1, "SomeClass"),
+                    GetCSharpCA1501ExpectedDiagnostic(13, 18, "SomeClass2", 1, 1, "SomeClass1"),
+                    GetCSharpCA1501ExpectedDiagnostic(17, 18, "C2", 2, 1, "SomeClass2, SomeClass1"),
+                });
+            }
+            else
+            {
+                vbnetTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCSharpCA1501ExpectedDiagnostic(25, 14, "C1", 1, 1, "SomeClass"),
+                    GetCSharpCA1501ExpectedDiagnostic(32, 14, "SomeClass2", 1, 1, "SomeClass1"),
+                    GetCSharpCA1501ExpectedDiagnostic(36, 14, "C2", 2, 1, "SomeClass2, SomeClass1"),
+                });
+            }
+
+            await vbnetTest.RunAsync();
+        }
+
+        [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunction.*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.*")]
+        // The presence of the '.' before the wildcard matters for the match
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany*")]
+        public async Task CA1501_WildcardNamespacePrefix(string editorConfigText)
+        {
+            var codeMetricsConfigText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1501: 0
+";
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace MyCompany.MyProduct.MyFunction
+{
+    public class SomeClass {}
+    public class C1 : SomeClass {}
+}
+
+namespace MyCompany2.SomeOtherProduct
+{
+    public class SomeClass {}
+    public class C1 : SomeClass {}
+}
+
+public class SomeClass {}
+public class C1 : SomeClass {}
+"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    ExpectedDiagnostics =
+                    {
+                         GetCSharpCA1501ExpectedDiagnostic(15, 14, "C1", 1, 1, "SomeClass"),
+                    },
+                },
+            };
+
+            if (!editorConfigText.Contains("N:MyCompany*"))
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 1, 1, "SomeClass"));
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbnetTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace MyCompany.MyProduct.MyFunction
+    Public Class SomeClass
+    End Class
+
+    Public Class C1
+        Inherits SomeClass
+    End Class
+End Namespace
+
+Namespace MyCompany2.SomeOtherProduct
+    Public Class SomeClass
+    End Class
+
+    Public Class C1
+        Inherits SomeClass
+    End Class
+End Namespace
+
+Public Class SomeClass
+End Class
+
+Public Class C1
+    Inherits SomeClass
+End Class"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                    ExpectedDiagnostics =
+                    {
+                         GetBasicCA1501ExpectedDiagnostic(23, 14, "C1", 1, 1, "SomeClass"),
+                    },
+                },
+            };
+
+            if (!editorConfigText.Contains("N:MyCompany*"))
+            {
+                vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 1, 1, "SomeClass"));
+            }
+
+            await vbnetTest.RunAsync();
+        }
+
+        [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
+        public async Task CA1501_WildcardNoPrefix()
+        {
+            var editorConfigText = "dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = Some*";
+
+            var codeMetricsConfigText = @"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1501: 1
+";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace SomeNamespace
+{
+    public class C {}
+    public class C1 : C {}
+}
+
+namespace MyCompany.SomeProduct
+{
+    public class C {}
+    public class C1 : C {}
+}
+
+namespace MyNamespace
+{
+    public class SomeClass
+    {
+        public class C {}
+    }
+
+    public class C2 : SomeClass.C {} // excluded because C's containing type starts with 'Some'
+}
+
+public class SomeClass {}
+public class C1 : SomeClass {}
+"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace SomeNamespace
+    Public Class C
+    End Class
+
+    Public Class C1
+        Inherits C
+    End Class
+End Namespace
+
+Namespace MyCompany.SomeProduct
+    Public Class C
+    End Class
+
+    Public Class C1
+        Inherits C
+    End Class
+End Namespace
+
+Namespace MyNamespace
+    Public Class SomeClass
+        Public Class C
+        End Class
+    End Class
+
+    Public Class C2
+        Inherits SomeClass.C
+    End Class
+End Namespace
+
+Public Class SomeClass
+End Class
+
+Public Class C1
+    Inherits SomeClass
+End Class"
+                    },
+                    AdditionalFiles =
+                    {
+                        (".editorconfig", editorConfigText),
+                        (AdditionalFileName, codeMetricsConfigText),
+                    },
+                },
+            }.RunAsync();
         }
 
         #endregion
@@ -557,6 +948,128 @@ CA1506(Type): 10
                 // Test0.vb(3,17): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetBasicCA1506ExpectedDiagnostic(3, 17, "M1", 4, 2, 3)};
             await VerifyBasicAsync(source, additionalText, expected);
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_CountCorrectlyGenericTypes()
+        {
+            await VerifyCSharpAsync(@"
+using System.Collections.Generic;
+
+public class A {}
+public class B {}
+
+public class C
+{
+    private IEnumerable<A> a;
+    private IEnumerable<B> b;
+}",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 2
+",
+                GetCSharpCA1506ExpectedDiagnostic(7, 14, "C", 3, 2, 3));
+
+            await VerifyBasicAsync(@"
+Imports System.Collections.Generic
+
+Public Class A
+End Class
+
+Public Class B
+End Class
+
+Public Class C
+    Private a As IEnumerable(Of A)
+    Private b As IEnumerable(Of B)
+End Class",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 2
+",
+    GetCSharpCA1506ExpectedDiagnostic(10, 14, "C", 3, 2, 3));
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_LinqAnonymousType()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+public static class Ca1506Tester
+{
+    public static IEnumerable<int> TestCa1506()
+    {
+        var ints = new[] { 1, 2 };
+        return from a in ints
+               from b in ints
+               from c in ints
+               from d in ints
+               from e in ints
+               from f in ints
+               from g in ints
+               from h in ints
+               from i in ints
+               from j in ints
+               from k in ints
+               from l in ints
+               from m in ints
+               from n in ints
+               from o in ints
+               from p in ints
+               select p;
+    }
+}");
+        }
+
+        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        public async Task CA1506_ExcludeCompilerGeneratedTypes()
+        {
+            await VerifyCSharpAsync(@"
+[System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+public class A {}
+
+[System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")]
+public class B {}
+
+public class C
+{
+    private A a;
+    private B b;
+}",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 1
+");
+
+            await VerifyBasicAsync(@"
+Imports System.Collections.Generic
+
+<System.Runtime.CompilerServices.CompilerGeneratedAttribute>
+Public Class A
+End Class
+
+<System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")>
+Public Class B
+End Class
+
+Public Class C
+    Private a As A
+    Private b As B
+End Class",
+@"
+# FORMAT:
+# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+CA1506: 1
+");
         }
 
         #endregion

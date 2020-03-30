@@ -159,7 +159,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             });
         }
 
-        static bool IsConfiguredToSkipAnalysis(DiagnosticDescriptor rule, OperationAnalysisContext context)
+        private static bool IsConfiguredToSkipAnalysis(DiagnosticDescriptor rule, OperationAnalysisContext context)
             => context.ContainingSymbol.IsConfiguredToSkipAnalysis(context.Options, rule, context.Compilation, context.CancellationToken);
     }
 }

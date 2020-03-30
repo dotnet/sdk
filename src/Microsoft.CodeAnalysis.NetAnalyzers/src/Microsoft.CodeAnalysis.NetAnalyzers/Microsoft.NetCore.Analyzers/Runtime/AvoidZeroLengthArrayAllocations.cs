@@ -121,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsCompilerGeneratedParamsArray(IArrayCreationOperation arrayCreationExpression, OperationAnalysisContext context)
         {
-            var model = context.Compilation.GetSemanticModel(arrayCreationExpression.Syntax.SyntaxTree);
+            var model = arrayCreationExpression.SemanticModel;
 
             // Compiler generated array creation seems to just use the syntax from the parent.
             var parent = model.GetOperation(arrayCreationExpression.Syntax, context.CancellationToken);

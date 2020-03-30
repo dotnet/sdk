@@ -28,18 +28,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
-        <source>Do Not Use Unsafe Cipher Modes</source>
-        <target state="translated">Не использовать небезопасные режимы шифрования</target>
+        <source>Review cipher mode usage with cryptography experts</source>
+        <target state="translated">Проверьте используемый режим шифрования с экспертами по криптографии</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
-        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
-        <target state="translated">Эти режимы являются уязвимыми для атак. Используйте только утвержденные режимы (CBC, CTS).</target>
+        <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">Эти режимы шифрования могут быть уязвимы для атак. Используйте рекомендуемые режимы (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
-        <source>It uses an unsafe Cipher Mode {0}</source>
-        <target state="translated">Он использует небезопасный режим шифрования {0}</target>
+        <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">Проверьте используемый режим шифрования "{0}" с экспертами по криптографии. Используйте рекомендуемые режимы (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -737,6 +737,26 @@
         <target state="translated">Вызов устаревшей функции формирования ключа {0}.{1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">Не передавайте аргумент с типом значения "{0}" методу "Equals" в "ReferenceEqualityComparer". Из-за упаковки-преобразования значения этот вызов "Equals" будет всегда возвращать "false".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">При каждом вызове этого метода отдельно выполняется упаковка-преобразование типизированных аргументов типа значения. Поэтому результат всегда равен false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">Не передавайте аргумент с типом значения "{0}" в "ReferenceEquals". Из-за упаковки-преобразования значения этот вызов "ReferenceEquals" будет всегда возвращать "false".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">Не используйте ReferenceEquals с типами значений</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">Не используйте небезопасный алгоритм шифрования SHA1.</target>
@@ -745,6 +765,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">Этот тип реализует криптографически небезопасную хэш-функцию SHA1. С точки зрения вычислений для алгоритмов SHA-1 и SHA-0 возможны хэш-конфликты. Замените на хэш-алгоритм из семейства SHA-2 (SHA512, SHA384, SHA256).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1790,6 +1825,36 @@
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
         <target state="translated">Если возможно, попробуйте использовать управление доступом на основе ролей Azure, а не подписанный URL-адрес (SAS). Если все-таки требуется использовать SAS, укажите SharedAccessProtocol.HttpsOnly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="translated">ValueTask, возвращаемые в результате вызова членов, должны ожидаться напрямую. Попытки использовать ValueTask несколько раз или получить прямой доступ к результату, прежде чем он будет получен, могут привести к выдаче исключения или повреждению данных. Пропуск такого ValueTask, вероятно, свидетельствует о функциональной ошибке и может привести к снижению производительности.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="translated">Прямой доступ к результатам экземпляров ValueTask не должен осуществляться, если обработка экземпляра не была завершена. В отличие от Tasks, вызов Result или GetAwaiter().GetResult() для ValueTask может не блокироваться до завершения операции. Если вы не можете просто ожидать экземпляр, проверьте свойство IsCompleted экземпляра (или убедитесь, что оно имеет значение true, если оно должно иметь такое значение).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="translated">Экземпляры ValueTask следует использовать только один раз, например через await. Использование одного и того же экземпляра ValueTask несколько раз может привести к выдаче исключений и повреждению данных.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="translated">Экземпляры ValueTask, возвращаемые из вызовов методов, необходимо непосредственно ожидать, возвращать или передавать в качестве аргумента в другой вызов метода. Другое использование экземпляров (например, сохранение экземпляра в локальной переменной или в поле), вероятно, свидетельствует об ошибке, так как экземпляры ValueTask всегда должны использоваться только один раз.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="translated">Экземпляры ValueTask, возвращаемые из вызовов методов, всегда должны использоваться (как правило, они должны ожидаться). Если они не используются, это часто является функциональной ошибкой, но, даже если ошибки нет, это может привести к снижению производительности, если целевой метод добавляет экземпляры ValueTasks в пулы объектов для использования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="translated">Используйте ValueTasks правильно</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

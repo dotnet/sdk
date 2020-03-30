@@ -97,7 +97,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return false;
             }
 
-            taskTypes = ImmutableArray.Create(taskType, taskOfTType);
+            INamedTypeSymbol? valueTaskType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask);
+            INamedTypeSymbol? valueTaskOfTType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericValueTask);
+
+            taskTypes = valueTaskType != null && valueTaskOfTType != null ?
+                ImmutableArray.Create(taskType, taskOfTType, valueTaskType, valueTaskOfTType) :
+                ImmutableArray.Create(taskType, taskOfTType);
+
             return true;
         }
     }
