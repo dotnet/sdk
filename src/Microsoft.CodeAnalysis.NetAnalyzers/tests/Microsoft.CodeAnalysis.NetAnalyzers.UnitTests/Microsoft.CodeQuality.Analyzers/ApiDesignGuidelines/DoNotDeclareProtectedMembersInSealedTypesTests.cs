@@ -18,7 +18,7 @@ Public NotInheritable Class C
     Protected Sub M()
     End Sub
 End Class",
-                VerifyVB.Diagnostic().WithSpan(3, 19, 3, 20).WithArguments("Protected Sub M()", "C"));
+                VerifyVB.Diagnostic().WithSpan(3, 19, 3, 20).WithArguments("M", "C"));
         }
 
         [Fact]
@@ -113,6 +113,16 @@ End Class"
                     AdditionalFiles = { (".editorconfig", editorConfigText), },
                 },
             }.RunAsync();
+        }
+
+        [Fact]
+        public async Task Finalize_NoDiagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public NotInheritable Class C
+    Protected Overrides Sub Finalize()
+    End Sub
+End Class");
         }
     }
 }

@@ -29,6 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             description: s_localizableDescription,
             isPortedFxCopRule: true,
             isDataflowRule: false);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext analysisContext)
@@ -46,12 +47,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                if (symbol.IsProtected() &&
-                    !symbol.IsOverride &&
-                    symbol.ContainingType.IsSealed)
+                if (!symbol.IsProtected() ||
+                    symbol.IsOverride ||
+                    !symbol.ContainingType.IsSealed)
                 {
-                    context.ReportDiagnostic(symbol.CreateDiagnostic(Rule, symbol.ToDisplayString(), symbol.ContainingType.ToDisplayString()));
+                    return;
                 }
+
+                if (symbol is IMethodSymbol method && method.IsFinalizer())
+                {
+                    return;
+                }
+
+                context.ReportDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name, symbol.ContainingType.Name));
             }, SymbolKind.Method, SymbolKind.Property, SymbolKind.Event, SymbolKind.Field);
         }
     }
