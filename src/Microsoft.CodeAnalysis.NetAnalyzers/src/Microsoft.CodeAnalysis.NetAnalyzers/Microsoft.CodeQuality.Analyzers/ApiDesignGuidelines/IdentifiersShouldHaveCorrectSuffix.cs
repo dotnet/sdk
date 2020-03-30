@@ -127,7 +127,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
 
                 var baseTypes = excludeIndirectBaseTypes
-                    ? (new[] { namedTypeSymbol.BaseType })
+                    ? namedTypeSymbol.BaseType != null ? ImmutableArray.Create(namedTypeSymbol.BaseType) : ImmutableArray<INamedTypeSymbol>.Empty
                     : namedTypeSymbol.GetBaseTypes();
 
                 if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typeSuffixInfo))
@@ -199,7 +199,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
     }
 
-    class SuffixInfo
+    internal class SuffixInfo
     {
         public string Suffix { get; private set; }
         public bool CanSuffixBeCollection { get; private set; }

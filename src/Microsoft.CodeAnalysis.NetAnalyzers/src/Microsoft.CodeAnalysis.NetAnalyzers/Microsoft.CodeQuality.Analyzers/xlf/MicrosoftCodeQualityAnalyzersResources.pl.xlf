@@ -734,17 +734,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Generic interface should also be implemented</source>
-        <target state="needs-review-translation">Kolekcje powinny implementować interfejs ogólny</target>
+        <target state="translated">Interfejs ogólny powinien być także zaimplementowany</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
-        <target state="needs-review-translation">Aby zwiększyć użyteczność kolekcji, zaimplementuj jeden z ogólnych interfejsów kolekcji. Wtedy w kolekcji będzie można umieszczać typy ogólne.</target>
+        <target state="translated">Aby rozszerzyć przydatność typu, zaimplementuj jeden z interfejsów ogólnych. Jest to szczególnie prawdziwe w przypadku kolekcji, które można następnie wykorzystać do wypełniania ogólnych typów kolekcji.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="needs-review-translation">Kolekcja „{0}” bezpośrednio lub pośrednio dziedziczy element „{1}” bez implementowania elementu „{2}”. Kolekcje widoczne publicznie powinny dziedziczyć wersję ogólną w celu rozszerzenia użyteczności.</target>
+        <target state="translated">Typ „{0}” bezpośrednio lub pośrednio dziedziczy element „{1}” bez implementowania elementu „{2}”. Typy widoczne publicznie powinny dziedziczyć wersję ogólną w celu rozszerzenia użyteczności.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
