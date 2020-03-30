@@ -21,7 +21,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             RuleId,
             s_localizableTitle,
             s_localizableMessage,
-            DiagnosticCategory.LegacyDesign,
+            DiagnosticCategory.Design,
             RuleLevel.Disabled,
             description: s_localizableDescription,
             isPortedFxCopRule: true,
