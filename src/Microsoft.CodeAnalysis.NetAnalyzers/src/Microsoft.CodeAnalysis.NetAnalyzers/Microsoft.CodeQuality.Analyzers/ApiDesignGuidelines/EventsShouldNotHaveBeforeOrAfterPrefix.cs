@@ -20,16 +20,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EventsShouldNotHaveBeforeOrAfterPrefixMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EventsShouldNotHaveBeforeOrAfterPrefixDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule =
-            DiagnosticDescriptorHelper.Create(
-                RuleId,
-                s_localizableTitle,
-                s_localizableMessage,
-                DiagnosticCategory.Naming,
-                RuleLevel.IdeSuggestion,
-                description: s_localizableDescription,
-                isPortedFxCopRule: true,
-                isDataflowRule: false);
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            s_localizableMessage,
+            DiagnosticCategory.Naming,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
