@@ -142,21 +142,6 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 // The "0.9% case" is delegating to and returning another call's returned awaitable. Also good.
                                 return;
 
-                            case OperationKind.Conditional:
-                                // This is a branch of a ternary, so consider the ternary expression instead.
-                                operation = operation.Parent;
-                                continue;
-
-                            case OperationKind.SwitchExpressionArm when operation.Parent.Parent is ISwitchExpressionOperation:
-                                // This is a case of a switch expression arm, so consider the switch expression instead.
-                                operation = operation.Parent.Parent;
-                                continue;
-
-                            case OperationKind.ExpressionStatement:
-                                // Warn! This is a statement. The result should have been used.
-                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
-                                return;
-
                             case OperationKind.Argument:
                                 // The "0.09% case" is passing the result of a call directly as an argument to another method.
                                 // This could later result in a problem, as now there's a parameter inside the callee that's
@@ -177,9 +162,27 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 }
                                 goto default;
 
+                            // At this point, we're "in the weeds", but there are still some rare-but-used valid patterns to check for.
+
+                            case OperationKind.Coalesce:
+                            case OperationKind.Conditional:
+                            case OperationKind.ConditionalAccess:
+                            case OperationKind.SwitchExpression:
+                            case OperationKind.SwitchExpressionArm:
+                                // This is a ternary, null conditional, or switch expression, so consider the parent expression instead.
+                                operation = operation.Parent;
+                                continue;
+
                             default:
                                 // Handle atypical / difficult cases that require more analysis.
                                 HandleAtypicalValueTaskUsage(operationContext, debugType, operation, invocation);
+                                return;
+
+                            case OperationKind.ExpressionStatement:
+                            case OperationKind.Discard:
+                            case OperationKind.DiscardPattern:
+                                // Warn! This is a statement or discard. The result should have been used.
+                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
                                 return;
                         }
                     }
@@ -354,10 +357,10 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             public bool ThisConsumption { get; set; }
         }
 
-        private static bool TryGetLocalSymbolAssigned(IOperation operation, [NotNullWhen(true)] out ISymbol? symbol, [NotNullWhen(true)] out BasicBlock? startingBlock)
+        private static bool TryGetLocalSymbolAssigned(IOperation? operation, [NotNullWhen(true)] out ISymbol? symbol, [NotNullWhen(true)] out BasicBlock? startingBlock)
         {
             ControlFlowGraph? cfg;
-            switch (operation.Kind)
+            switch (operation?.Kind)
             {
                 case OperationKind.VariableInitializer when operation.Parent is IVariableDeclaratorOperation decl:
                     if (decl.TryGetEnclosingControlFlowGraph(out cfg))
@@ -406,7 +409,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             foreach (var op in block.DescendantOperations())
             {
                 if (IsLocalOrParameterSymbolReference(op, valueTaskSymbol) &&
-                    op.Parent.Kind switch
+                    op.Parent?.Kind switch
                     {
                         OperationKind.Await => true,
                         OperationKind.Return => true,
@@ -444,7 +447,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                         assert.TargetMethod?.Name == nameof(Debug.Assert) &&
                         assert.TargetMethod.ContainingType.Equals(debugType) &&
                         assert.Arguments.Length >= 1 &&
-                        OperationImpliesCompletion(valueTaskSymbol, (assert.Arguments[0] as IArgumentOperation)?.Value) == true)
+                        OperationImpliesCompletion(valueTaskSymbol, assert.Arguments[0].Value) == true)
                     {
                         return i;
                     }
@@ -490,7 +493,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             // Determines if the operation itself is a direct access to the ValueTask's Result or GetAwaiter().GetResult().
             bool HasDirectResultAccess(IOperation op) =>
                 IsLocalOrParameterSymbolReference(op, valueTaskSymbol) &&
-                op.Parent.Kind switch
+                op.Parent?.Kind switch
                 {
                     OperationKind.PropertyReference when op.Parent is IPropertyReferenceOperation { Property: { Name: nameof(ValueTask<int>.Result) } } => true,
                     OperationKind.Invocation when op.Parent is IInvocationOperation { TargetMethod: { Name: nameof(ValueTask.GetAwaiter) } } => true,
@@ -532,7 +535,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         }
 
         private static bool IsLocalOrParameterSymbolReference(IOperation op, ISymbol valueTaskSymbol) =>
-            op.Kind switch
+            op?.Kind switch
             {
                 OperationKind.LocalReference => ((ILocalReferenceOperation)op).Local.Equals(valueTaskSymbol),
                 OperationKind.ParameterReference => ((IParameterReferenceOperation)op).Parameter.Equals(valueTaskSymbol),
