@@ -2,6 +2,7 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 CA1021 | Design | Disabled | AvoidOutParameters, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1021)
+CA1045 | LegacyDesign | Disabled | DoNotPassTypesByReference, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1045)
 CA1069 | Design | Info | EnumShouldNotHaveDuplicatedValues, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1069)
 CA2011 | Reliability | Info | AvoidInfiniteRecursion, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2011)
 CA2012 | Reliability | Hidden | UseValueTasksCorrectlyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2012)
