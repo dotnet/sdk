@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
-        <target state="needs-review-translation">安全ではない暗号モードを使用しないでください。</target>
+        <target state="translated">暗号の専門家と暗号モードの使用を再検討する</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
         <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">これらのモードは、攻撃に対して脆弱です。承認されたモード (CBC、CTS) のみを使用してください。</target>
+        <target state="translated">これらの暗号モードは攻撃に対して脆弱である可能性があります。推奨モード (CBC、CTS) の使用をご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
         <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">安全ではない暗号モード {0} を使用します</target>
+        <target state="translated">暗号の専門家と暗号モード '{0}' の使用を再検討してください。推奨モード (CBC、CTS) の使用をご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -739,22 +739,22 @@
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</target>
+        <target state="translated">値の型が '{0}' の引数を 'ReferenceEqualityComparer' の 'Equals' メソッドに渡さないでください。値のボックス化により、'Equals' へのこの呼び出しは、常に 'false' を返します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
-        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</target>
+        <target state="translated">値の型に型指定された引数は、このメソッドの呼び出しごとに一意にボックス化されるため、結果は常に false になります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</target>
+        <target state="translated">値の型が '{0}' の引数を 'ReferenceEquals' に渡さないでください。値のボックス化により、'ReferenceEquals' へのこの呼び出しは、常に 'false' を返します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
         <source>Do not use ReferenceEquals with value types</source>
-        <target state="new">Do not use ReferenceEquals with value types</target>
+        <target state="translated">値の型で ReferenceEquals を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseSHA1">
@@ -765,6 +765,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">この型は、暗号として安全でないハッシュ関数である SHA1 を実装しています。SHA-1 と SHA-0 アルゴリズムでは、計算上、ハッシュの競合が起こる可能性があります。この使用を SHA-2 ファミリのハッシュ アルゴリズム (SHA512、SHA384、SHA256) に置き換えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1814,32 +1829,32 @@
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
-        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <target state="translated">メンバー呼び出しから返される ValueTask は、直接待機されるよう意図されています。1 つの ValueTask を複数回使用しようとしたり、完了が判明する前に結果に直接アクセスしようとしたりすると、例外または破損が発生する可能性があります。このような ValueTask を無視することは、機能的なバグを示していることが多く、パフォーマンスを低下させる可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
         <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
-        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <target state="translated">ValueTask インスタンスがまだ完了していない場合は、そのインスタンスの結果に直接アクセスさせないようにしてください。Task とは異なり、ValueTask に対する Result または GetAwaiter().GetResult() の呼び出しは、操作が完了するまでブロックされることが保証されていません。単純にインスタンスを待機することができない場合は、最初にその IsCompleted プロパティを確認することをお勧めします (あるいは、該当する場合は、それが true であることをアサートします)。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
         <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
-        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <target state="translated">ValueTask インスタンスは、await を使用するなどして、1 回限り使用する必要があります。同じ ValueTask インスタンスを複数回使用すると、例外やデータの破損が発生する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_General">
         <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
-        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <target state="translated">メソッド呼び出しから返される ValueTask インスタンスは、直接待機されるか、返されるか、または別のメソッド呼び出しへの引数として渡される必要があります。ValueTask インスタンスの使用は 1 回限りにする必要があるため、ローカルまたはフィールドにインスタンスを保存するなどの他の使用方法は、バグを示している可能性が高くなります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
         <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
-        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <target state="translated">メソッド呼び出しから返される ValueTask インスタンスは常に使用する必要があり、通常は待機される必要があります。そのようにしないことは機能的なバグを表すことが多く、そうでなくても、ValueTask で使用するオブジェクトがターゲット メソッドでプールされるとパフォーマンスが低下する可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyTitle">
         <source>Use ValueTasks correctly</source>
-        <target state="new">Use ValueTasks correctly</target>
+        <target state="translated">ValueTask を正しく使用する必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">
