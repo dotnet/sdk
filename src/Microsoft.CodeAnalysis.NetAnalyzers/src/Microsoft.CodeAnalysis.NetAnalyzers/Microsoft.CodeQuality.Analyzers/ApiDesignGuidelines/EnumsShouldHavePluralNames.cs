@@ -15,6 +15,8 @@ using Humanizer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
+#pragma warning disable RS1029 // Do not use reserved diagnostic IDs. - fires for this analyzer file included in unit test project.
+
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     /// <summary>

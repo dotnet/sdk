@@ -28,18 +28,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
-        <source>Do Not Use Unsafe Cipher Modes</source>
-        <target state="translated">Nie używaj niebezpiecznych trybów szyfrowania</target>
+        <source>Review cipher mode usage with cryptography experts</source>
+        <target state="translated">Przejrzyj użycie trybu szyfrowania wspólnie z ekspertami od kryptografii</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
-        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
-        <target state="translated">Te tryby są podatne na ataki. Używaj jedynie zatwierdzonych trybów (CBC, CTS).</target>
+        <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">Te tryby szyfrowania mogą być podatne na ataki. Rozważ użycie zalecanych trybów (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
-        <source>It uses an unsafe Cipher Mode {0}</source>
-        <target state="translated">Używa niebezpiecznego trybu szyfrowania {0}</target>
+        <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">Przejrzyj użycie trybu szyfrowania „{0}” wspólnie z ekspertami od kryptografii. Rozważ użycie zalecanych trybów (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -738,6 +738,26 @@
         <target state="translated">Wywołanie przestarzałej funkcji wyprowadzania klucza {0}.{1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">Nie przekazuj argumentu z typem wartości „{0}” do metody „Equals” w elemencie „ReferenceEqualityComparer”. Z powodu opakowywania wartości to wywołanie metody „Equals” zawsze zwróci wartość „false”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">Argumenty z typem ustawionym na typ wartości są unikatowo opakowywane dla każdego wywołania tej metody, dlatego wynik ma zawsze wartość false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">Nie przekazuj argumentu z typem wartości „{0}” do metody „ReferenceEquals”. Z powodu opakowywania wartości to wywołanie metody „ReferenceEquals” zawsze zwróci wartość „false”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">Nie używaj metody ReferenceEquals z typami wartości</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">Nie używaj niezabezpieczonego algorytmu kryptograficznego SHA1.</target>
@@ -746,6 +766,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">Ten typ implementuje niezabezpieczoną kryptograficznie funkcję skrótu SHA1. Istnieje możliwość wystąpienia kolizji skrótów w przypadku algorytmów SHA-1 i SHA-0. Zastąp to użycie algorytmem wartości skrótu z rodziny SHA-2 (SHA512, SHA384, SHA256).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1795,32 +1830,32 @@
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
-        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <target state="translated">Elementy ValueTask zwracane przez wywołania elementów członkowskich są przeznaczone do bezpośredniego oczekiwania. Próby wielokrotnego użycia elementu ValueTask lub uzyskania bezpośredniego dostępu do wyniku elementu zanim jest wiadomo, że został on zakończony, mogą spowodować wystąpienie wyjątku lub uszkodzenia. Zignorowanie takiego elementu ValueTask prawdopodobnie wskazuje na usterkę funkcjonalną i może obniżyć wydajność.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
         <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
-        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <target state="translated">Nie należy bezpośrednio uzyskiwać dostępu do wystąpień elementu ValueTask, chyba że wystąpienie jest już zakończone. W przeciwieństwie do zadań, wywołanie elementu Result lub GetAwaiter().GetResult() nie gwarantuje blokowania do momentu zakończenia operacji. Jeśli nie można po prostu oczekiwać na wystąpienie, zastanów się nad sprawdzeniem w pierwszej kolejności jego właściwości IsCompleted (lub założeniem, że ma wartość true, jeśli wiesz, że tak jest).</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
         <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
-        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <target state="translated">Wystąpienia elementu ValueTask powinny być używane tylko raz, na przykład za pośrednictwem operatora await. Wielokrotne użycie tego samego wystąpienia elementu ValueTask może spowodować zgłaszanie wyjątków i uszkodzenie danych.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_General">
         <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
-        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <target state="translated">Wystąpienia elementu ValueTask zwracane przez wywołania metod powinny być w sposób bezpośredni oczekiwane, zwracane lub przekazywane jako argumenty do wywołania innych metod. Inne użycie, takie jak zapisanie wystąpienia w elemencie lokalnym lub w polu, prawdopodobnie wskazuje na usterkę, ponieważ wystąpienia elementu ValueTask mogą być zawsze używane tylko raz.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
         <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
-        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <target state="translated">Wystąpienia elementów ValueTask zwracane przez wywołania metod powinny zawsze zostać użyte, zazwyczaj przez oczekiwanie. Jeśli tak się nie dzieje, często oznacza to usterkę funkcjonalną, ale nawet jeśli usterka nie występuje, może to spowodować obniżenie wydajności, jeśli metoda docelowa grupuje obiekty w pule do użycia za pomocą elementów ValueTask.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyTitle">
         <source>Use ValueTasks correctly</source>
-        <target state="new">Use ValueTasks correctly</target>
+        <target state="translated">Użyj elementów ValueTask poprawnie</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">
