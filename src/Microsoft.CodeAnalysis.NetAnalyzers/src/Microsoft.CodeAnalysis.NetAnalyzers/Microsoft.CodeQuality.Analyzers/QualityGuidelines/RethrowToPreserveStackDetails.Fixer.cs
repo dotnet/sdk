@@ -44,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 diagnostics);
         }
 
-        private async Task<Document> MakeThrowAsync(Document document, SyntaxNode nodeToReplace, CancellationToken cancellationToken)
+        private static async Task<Document> MakeThrowAsync(Document document, SyntaxNode nodeToReplace, CancellationToken cancellationToken)
         {
             var formattednewLocal = SyntaxGenerator.GetGenerator(document).ThrowStatement()
                 .WithLeadingTrivia(nodeToReplace.GetLeadingTrivia())

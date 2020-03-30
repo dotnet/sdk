@@ -1855,6 +1855,15 @@ End Class"
             await vbTest.RunAsync();
         }
 
+        [Fact, WorkItem(3414, "https://github.com/dotnet/roslyn-analyzers/issues/3414")]
+        public async Task CA1710_Interfaces()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface I
+{
+}");
+        }
+
         private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
             VerifyVB.Diagnostic(isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
                 .WithLocation(line, column)

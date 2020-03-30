@@ -724,17 +724,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Generic interface should also be implemented</source>
-        <target state="needs-review-translation">Коллекции должны реализовать универсальный интерфейс</target>
+        <target state="translated">Также необходимо реализовать универсальный интерфейс</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
-        <target state="needs-review-translation">Чтобы расширить возможности по использованию коллекции, реализуйте один из универсальных интерфейсов коллекции. После этого коллекцию можно использовать для заполнения универсальных типов коллекции.</target>
+        <target state="translated">Чтобы расширить использование типа, реализуйте один из универсальных интерфейсов. Это особенно важно для коллекций, так как в этом случае их можно использовать для заполнения универсальных типов коллекций.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="needs-review-translation">Коллекция "{0}" прямо или косвенно наследует "{1}" без реализации "{2}". Видимые всем коллекции должны реализовывать универсальную версию для более широкого использования.</target>
+        <target state="translated">Тип "{0}" прямо или косвенно наследует "{1}" без реализации "{2}". Общедоступные типы должны реализовывать универсальную версию для более широкого использования.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">

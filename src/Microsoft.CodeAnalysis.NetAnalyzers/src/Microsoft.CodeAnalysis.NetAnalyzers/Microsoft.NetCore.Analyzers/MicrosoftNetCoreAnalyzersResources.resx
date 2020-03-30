@@ -1242,4 +1242,13 @@
   <data name="DoNotUseCreateEncryptorWithNonDefaultIVDescription" xml:space="preserve">
     <value>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</value>
   </data>
+  <data name="DoNotUseStackallocInLoopsTitle" xml:space="preserve">
+    <value>Do not use stackalloc in loops.</value>
+  </data>
+  <data name="DoNotUseStackallocInLoopsDescription" xml:space="preserve">
+    <value>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</value>
+  </data>
+  <data name="DoNotUseStackallocInLoopsMessage" xml:space="preserve">
+    <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
+  </data>
 </root>

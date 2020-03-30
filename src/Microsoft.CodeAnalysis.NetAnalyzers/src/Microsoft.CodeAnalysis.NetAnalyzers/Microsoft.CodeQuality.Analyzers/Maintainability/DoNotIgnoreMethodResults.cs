@@ -74,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         internal static DiagnosticDescriptor ObjectCreationRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageObjectCreation,
-                                                                             DiagnosticCategory.Usage,
+                                                                             DiagnosticCategory.Performance,
                                                                              RuleLevel.IdeSuggestion,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
