@@ -719,17 +719,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Generic interface should also be implemented</source>
-        <target state="needs-review-translation">集合應實作泛型介面</target>
+        <target state="translated">應同時實作一般介面</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
-        <target state="needs-review-translation">若要放寬集合的可用性，請實作其中一個泛型集合介面。接著，可使用該集合填入泛型集合類型。</target>
+        <target state="translated">若要擴大類型的可用性，請實作其中一個一般介面。這項做法特別適用於集合，原因是可以讓集合用於填入一般集合類型。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="needs-review-translation">集合 '{0}' 沒有實作 '{2}' 便直接或間接繼承 '{1}'。公開可見的集合應實作一般版本以擴大可用性。</target>
+        <target state="translated">類型 '{0}' 未實作 '{2}' 便直接或間接繼承 '{1}'。公開顯示的類型應實作一般版本以擴大可用性。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">

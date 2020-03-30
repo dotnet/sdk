@@ -719,17 +719,17 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
         <source>Generic interface should also be implemented</source>
-        <target state="needs-review-translation">Sammlungen müssen eine generische Schnittstelle implementieren</target>
+        <target state="translated">Die generische Schnittstelle muss ebenfalls implementiert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
         <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
-        <target state="needs-review-translation">Um die Verwendbarkeit einer Sammlung zu erweitern, implementieren Sie eine der generischen Sammlungsschnittstellen. Anschließend kann die Sammlung zum Auffüllen generischer Sammlungstypen verwendet werden.</target>
+        <target state="translated">Implementieren Sie eine der generischen Schnittstellen, um die Einsatzmöglichkeiten eines Typs zu erweitern. Dies gilt insbesondere für Sammlungen, weil sie dann zum Auffüllen generischer Sammlungstypen verwendet werden können.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
         <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="needs-review-translation">Die Sammlung "{0}" erbt "{1}" direkt oder indirekt ohne Implementierung von "{2}". Öffentlich sichtbare Sammlungen müssen die generische Version implementieren, um die Nutzbarkeit zu erweitern.</target>
+        <target state="translated">Der Typ "{0}" erbt "{1}" direkt oder indirekt ohne Implementierung von "{2}". Öffentlich sichtbare Typen müssen die generische Version implementieren, um die Nutzbarkeit zu erweitern.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">

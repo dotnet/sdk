@@ -28,18 +28,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
-        <source>Do Not Use Unsafe Cipher Modes</source>
-        <target state="translated">Nepoužívat nezabezpečené režimy šifrování</target>
+        <source>Review cipher mode usage with cryptography experts</source>
+        <target state="translated">Zkontrolovat využití režimu šifrování s odborníky na kryptografii</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
-        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
-        <target state="translated">Tyto režimy jsou zranitelné vůči útokům. Používejte jenom schválené režimy (CBC, CTS).</target>
+        <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">Tyto režimy šifrování můžou být ohrožené útoky. Zvažte možnost použít doporučené režimy (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
-        <source>It uses an unsafe Cipher Mode {0}</source>
-        <target state="translated">Používá nezabezpečený režim šifrování {0}</target>
+        <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">Zkontrolujte využití režimu šifrování {0} s odborníky na kryptografii. Zvažte možnost použít doporučené režimy (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -737,6 +737,26 @@
         <target state="translated">Volání zastaralé funkce pro odvození klíče {0}.{1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">Do metody Equals v ReferenceEqualityComparer nepředávejte argument s typem hodnoty {0}. Kvůli balení hodnot toto volání metody Equals vždy vrátí false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">Typové argumenty s typy hodnot se jedinečně balí pro každé volání této metody, proto bude výsledek vždy false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">Do metody ReferenceEquals nepředávejte argument s typem hodnoty {0}. Kvůli balení hodnot toto volání metody ReferenceEquals vždy vrátí false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">Nepoužívejte ReferenceEquals s typy hodnot</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">Nepoužívejte nezabezpečený kryptografický algoritmus SHA1</target>
@@ -745,6 +765,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">Tento typ implementuje SHA1, což je kryptograficky nezabezpečená hashovací funkce. Kolize hashovací funkce jsou výpočetně schůdné u algoritmů SHA-1 a SHA-0. Nahraďte toto použití hashovacím algoritmem z řady SHA-2 (SHA512, SHA384, SHA256).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1794,32 +1829,32 @@
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
-        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <target state="translated">Hodnoty ValueTask vrácené z vyvolání členů jsou určené k tomu, aby byly přímo očekávané. Pokusy o vícenásobné využití ValueTask nebo o přímý přístup k výsledku úkolu před tím, než je známo, že je dokončený, můžou způsobit výjimku nebo poškození. Ignorování takové hodnoty ValueTask je pravděpodobně indikací funkční chyby a může snížit výkon.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
         <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
-        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <target state="translated">S výsledky instancí ValueTask by se nemělo pracovat přímo, pokud instance ještě nebyla dokončena. Na rozdíl od hodnoty Tasks není u volání metody Result nebo GetAwaiter().GetResult() u hodnoty ValueTask zaručeno zablokování, dokud se operace nedokončí. Pokud jednoduše nemůžete očekávat instanci, zvažte, jestli nejprve nezkontrolujete její vlastnost IsCompleted (nebo se nepřesvědčíte, že je to pravda, pokud víte, že jde o tento případ).</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
         <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
-        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <target state="translated">Instance ValueTask by se měly využít jenom jednou, například přes očekávání. Vícenásobné využití stejné instance ValueTask může způsobit výjimky nebo poškození dat.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_General">
         <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
-        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <target state="translated">Instance ValueTask vrácené z volání metod by měly být přímo očekávány, vráceny nebo předány jako argument jinému volání metody. Další použití, například uložení instance do místního úložiště nebo pole, pravděpodobně znamená chybu, protože instance ValueTask musí být vždy využity jenom jednou.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
         <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
-        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <target state="translated">Instance ValueTask vrácené z volání metod by měly být vždy využity, obvykle pomocí očekávání. Pokud k tomu nedochází, často to představuje funkční chybu, ale i v případě, že ne, může to způsobit snížení výkonu, pokud cílová metoda vytváří fondy objektů pro použití s hodnotami ValueTask.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyTitle">
         <source>Use ValueTasks correctly</source>
-        <target state="new">Use ValueTasks correctly</target>
+        <target state="translated">Správně použít hodnot ValueTask</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

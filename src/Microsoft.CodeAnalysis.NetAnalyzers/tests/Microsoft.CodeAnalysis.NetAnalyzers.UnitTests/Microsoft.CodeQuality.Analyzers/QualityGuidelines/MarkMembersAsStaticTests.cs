@@ -542,7 +542,7 @@ End Class
             {
                 (true, false, false) => AdditionalMetadataReferences.DefaultWithMSTest,
                 (false, true, false) => AdditionalMetadataReferences.DefaultWithNUnit,
-                (false, false, true) => AdditionalMetadataReferences.DefaultWithxunit,
+                (false, false, true) => AdditionalMetadataReferences.DefaultWithXUnit,
                 _ => throw new InvalidOperationException("Invalid combination of test framework")
             };
 
@@ -614,7 +614,7 @@ End Namespace
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithxunit,
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit,
                 TestState =
                 {
                     Sources =
@@ -648,7 +648,7 @@ public class Program
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithxunit,
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit,
                 TestState =
                 {
                     Sources =
