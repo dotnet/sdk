@@ -1251,4 +1251,16 @@
   <data name="DoNotUseStackallocInLoopsMessage" xml:space="preserve">
     <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
   </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsTitle" xml:space="preserve">
+    <value>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsDescription" xml:space="preserve">
+    <value>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsMessage" xml:space="preserve">
+    <value>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsRemoveToString" xml:space="preserve">
+    <value>Remove the ToString call</value>
+  </data>
 </root>
