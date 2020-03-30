@@ -361,6 +361,44 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
+        public async Task NoDiagnostics_AssignVariableThenReturnValueTask()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public ValueTask ReturnValueTaskExpression() => Helpers.ReturnsValueTask();
+
+                    public ValueTask<T> ReturnValueTaskOfTExpression<T>() => Helpers.ReturnsValueTaskOfT<T>();
+
+                    public ValueTask<int> ReturnValueTaskOfIntExpression() => Helpers.ReturnsValueTaskOfInt();
+
+                    public ValueTask ReturnValueTask()
+                    {
+                        var inst = this;
+                        var vt = inst.ReturnValueTaskExpression();
+                        return vt;
+                    }
+
+                    public ValueTask<T> ReturnValueTaskOfT<T>()
+                    {
+                        var inst = this;
+                        var vt = inst.ReturnValueTaskOfTExpression<T>();
+                        return vt;
+                    }
+
+                    public ValueTask<int> ReturnValueTaskOfInt()
+                    {
+                        var inst = this;
+                        var vt = inst.ReturnValueTaskOfIntExpression();
+                        return vt;
+                    }
+                }"));
+        }
+
+        [Fact]
         public async Task NoDiagnostics_OutValueTask()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -697,6 +735,61 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         catch
                         {
                             await t;
+                        }
+                    }
+                }"));
+        }
+
+        [Fact]
+        public async Task NoDiagnostics_ReturnOutOfPropertyExpressionBodied()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public ValueTask Prop => Helpers.ReturnsValueTask();
+                    public ValueTask<string> PropString => Helpers.ReturnsValueTaskOfT<string>();
+                    public ValueTask<int> PropInt => Helpers.ReturnsValueTaskOfInt();
+                }"));
+        }
+
+        [Fact]
+        public async Task NoDiagnostics_ReturnOutOfPropertyStatements()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public ValueTask Prop
+                    {
+                        get
+                        {
+                            var vt = Helpers.ReturnsValueTask();
+                            return vt;
+                        }
+                    }
+
+                    public ValueTask<string> PropString
+                    {
+                        get
+                        {
+                            var vt = Helpers.ReturnsValueTaskOfT<string>();
+                            return vt;
+                        }
+                    }
+
+                    public ValueTask<int> PropInt
+                    {
+                        get
+                        {
+                            var vt = Helpers.ReturnsValueTaskOfInt();
+                            return vt;
                         }
                     }
                 }"));
