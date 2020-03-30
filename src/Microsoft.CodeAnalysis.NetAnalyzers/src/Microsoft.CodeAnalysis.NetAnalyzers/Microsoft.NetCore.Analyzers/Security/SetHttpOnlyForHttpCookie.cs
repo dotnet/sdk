@@ -17,7 +17,7 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 namespace Microsoft.NetCore.Analyzers.Security
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    class SetHttpOnlyForHttpCookie : DiagnosticAnalyzer
+    internal class SetHttpOnlyForHttpCookie : DiagnosticAnalyzer
     {
         internal static DiagnosticDescriptor Rule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5396",

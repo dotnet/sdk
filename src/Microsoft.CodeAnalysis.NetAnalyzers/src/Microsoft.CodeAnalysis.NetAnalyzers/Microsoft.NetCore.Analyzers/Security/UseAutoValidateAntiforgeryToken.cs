@@ -106,7 +106,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 // Verify that validate anti forgery token attributes are used somewhere within this project,
                 // to avoid reporting false positives on projects that use an alternative approach to mitigate CSRF issues.
                 var usingValidateAntiForgeryAttribute = false;
-                var onAuthorizationAsyncMethodSymbols = new ConcurrentDictionary<IMethodSymbol, bool>();
+                ConcurrentDictionary<IMethodSymbol, bool> onAuthorizationAsyncMethodSymbols = new ConcurrentDictionary<IMethodSymbol, bool>();
                 var actionMethodSymbols = new ConcurrentDictionary<(IMethodSymbol, string), bool>();
                 var actionMethodNeedAddingHttpVerbAttributeSymbols = new ConcurrentDictionary<IMethodSymbol, bool>();
 
@@ -140,7 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     break;
 
                                 case IFieldReferenceOperation fieldReferenceOperation:
-                                    var fieldSymbol = (IFieldSymbol)fieldReferenceOperation.Field;
+                                    var fieldSymbol = fieldReferenceOperation.Field;
 
                                     if (fieldSymbol.Type.TypeKind == TypeKind.Delegate)
                                     {
