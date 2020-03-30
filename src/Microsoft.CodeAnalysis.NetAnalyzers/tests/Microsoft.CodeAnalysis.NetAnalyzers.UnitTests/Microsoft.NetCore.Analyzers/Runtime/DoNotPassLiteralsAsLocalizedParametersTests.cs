@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.IdentityModel.Tokens;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -1285,20 +1286,29 @@ End Class
 
         [InlineData("message", false)]
         [InlineData("message", true)]
+        [InlineData("message", null)]
         [InlineData("text", false)]
         [InlineData("text", true)]
+        [InlineData("text", null)]
         [InlineData("caption", false)]
         [InlineData("caption", true)]
+        [InlineData("caption", null)]
         [InlineData("Message", false)]
         [InlineData("Message", true)]
+        [InlineData("Message", null)]
         [InlineData("Text", false)]
         [InlineData("Text", true)]
+        [InlineData("Text", null)]
         [InlineData("Caption", false)]
         [InlineData("Caption", true)]
+        [InlineData("Caption", null)]
         [Theory]
-        public async Task ParameterWithLocalizableName_StringLiteralArgument_Method_Diagnostic(string parameterName, bool useNameHeuristic)
+        public async Task ParameterWithLocalizableName_StringLiteralArgument_Method_Diagnostic(string parameterName, bool? useNameHeuristic)
         {
-            const string editorConfigText = "dotnet_code_quality.CA1303.use_naming_heuristic = true";
+            // The null case represents the default value which is 'false'
+            string editorConfigText = useNameHeuristic != null
+                ? $"dotnet_code_quality.CA1303.use_naming_heuristic = {useNameHeuristic}"
+                : "";
 
             var csharpTest = new VerifyCS.Test
             {
@@ -1324,12 +1334,12 @@ public class Test
 }}
 ",
                     },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
                 },
             };
 
-            if (useNameHeuristic)
+            if (useNameHeuristic == true)
             {
-                csharpTest.TestState.AdditionalFiles.Add((".editorconfig", editorConfigText));
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(14, 13, "void Test.M1(C c)", parameterName, $"void C.M(string {parameterName})", "a"));
             }
 
@@ -1355,12 +1365,12 @@ Public Class Test
 End Class
 ",
                     },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
                 },
             };
 
-            if (useNameHeuristic)
+            if (useNameHeuristic == true)
             {
-                vbTest.TestState.AdditionalFiles.Add((".editorconfig", editorConfigText));
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(10, 13, "Sub Test.M1(c As C)", parameterName, $"Sub C.M({parameterName} As String)", "a"));
             }
 
@@ -1369,20 +1379,29 @@ End Class
 
         [InlineData("message", false)]
         [InlineData("message", true)]
+        [InlineData("message", null)]
         [InlineData("text", false)]
         [InlineData("text", true)]
+        [InlineData("text", null)]
         [InlineData("caption", false)]
         [InlineData("caption", true)]
+        [InlineData("caption", null)]
         [InlineData("Message", false)]
         [InlineData("Message", true)]
+        [InlineData("Message", null)]
         [InlineData("Text", false)]
         [InlineData("Text", true)]
+        [InlineData("Text", null)]
         [InlineData("Caption", false)]
         [InlineData("Caption", true)]
+        [InlineData("Caption", null)]
         [Theory]
-        public async Task PropertyWithLocalizableName_StringLiteralArgument_Diagnostic(string propertyName, bool useNameHeuristic)
+        public async Task PropertyWithLocalizableName_StringLiteralArgument_Diagnostic(string propertyName, bool? useNameHeuristic)
         {
-            const string editorConfigText = "dotnet_code_quality.CA1303.use_naming_heuristic = true";
+            // The null case represents the default value which is 'false'
+            string editorConfigText = useNameHeuristic != null
+                ? $"dotnet_code_quality.CA1303.use_naming_heuristic = {useNameHeuristic}"
+                : "";
 
             var csharpTest = new VerifyCS.Test
             {
@@ -1406,12 +1425,12 @@ public class Test
 }}
 ",
                     },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
                 },
             };
 
-            if (useNameHeuristic)
+            if (useNameHeuristic == true)
             {
-                csharpTest.TestState.AdditionalFiles.Add((".editorconfig", editorConfigText));
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(12, 9, "void Test.M1(C c)", "value", $"void C.{propertyName}.set", "a"));
             }
 
@@ -1436,12 +1455,12 @@ Public Class Test
 End Class
 ",
                     },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
                 },
             };
 
-            if (useNameHeuristic)
+            if (useNameHeuristic == true)
             {
-                vbTest.TestState.AdditionalFiles.Add((".editorconfig", editorConfigText));
                 vbTest.ExpectedDiagnostics.Add(GetBasicResultAt(9, 9, "Sub Test.M1(c As C)", "AutoPropertyValue", $"Property Set C.{propertyName}(AutoPropertyValue As String)", "a"));
             }
 
