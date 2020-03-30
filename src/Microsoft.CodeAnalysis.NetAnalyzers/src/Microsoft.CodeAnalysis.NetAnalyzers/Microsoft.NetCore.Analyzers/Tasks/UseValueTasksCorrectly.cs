@@ -357,10 +357,10 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             public bool ThisConsumption { get; set; }
         }
 
-        private static bool TryGetLocalSymbolAssigned(IOperation operation, [NotNullWhen(true)] out ISymbol? symbol, [NotNullWhen(true)] out BasicBlock? startingBlock)
+        private static bool TryGetLocalSymbolAssigned(IOperation? operation, [NotNullWhen(true)] out ISymbol? symbol, [NotNullWhen(true)] out BasicBlock? startingBlock)
         {
             ControlFlowGraph? cfg;
-            switch (operation.Kind)
+            switch (operation?.Kind)
             {
                 case OperationKind.VariableInitializer when operation.Parent is IVariableDeclaratorOperation decl:
                     if (decl.TryGetEnclosingControlFlowGraph(out cfg))
@@ -409,7 +409,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             foreach (var op in block.DescendantOperations())
             {
                 if (IsLocalOrParameterSymbolReference(op, valueTaskSymbol) &&
-                    op.Parent.Kind switch
+                    op.Parent?.Kind switch
                     {
                         OperationKind.Await => true,
                         OperationKind.Return => true,
@@ -493,7 +493,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             // Determines if the operation itself is a direct access to the ValueTask's Result or GetAwaiter().GetResult().
             bool HasDirectResultAccess(IOperation op) =>
                 IsLocalOrParameterSymbolReference(op, valueTaskSymbol) &&
-                op.Parent.Kind switch
+                op.Parent?.Kind switch
                 {
                     OperationKind.PropertyReference when op.Parent is IPropertyReferenceOperation { Property: { Name: nameof(ValueTask<int>.Result) } } => true,
                     OperationKind.Invocation when op.Parent is IInvocationOperation { TargetMethod: { Name: nameof(ValueTask.GetAwaiter) } } => true,
@@ -535,7 +535,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         }
 
         private static bool IsLocalOrParameterSymbolReference(IOperation op, ISymbol valueTaskSymbol) =>
-            op.Kind switch
+            op?.Kind switch
             {
                 OperationKind.LocalReference => ((ILocalReferenceOperation)op).Local.Equals(valueTaskSymbol),
                 OperationKind.ParameterReference => ((IParameterReferenceOperation)op).Parameter.Equals(valueTaskSymbol),

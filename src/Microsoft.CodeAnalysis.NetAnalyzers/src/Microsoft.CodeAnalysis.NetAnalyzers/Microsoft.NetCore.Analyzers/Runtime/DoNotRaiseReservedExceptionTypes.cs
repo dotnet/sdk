@@ -119,7 +119,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return set != null ? set.ToImmutableHashSet() : ImmutableHashSet<INamedTypeSymbol>.Empty;
         }
 
-        private void AnalyzeObjectCreation(
+        private static void AnalyzeObjectCreation(
             OperationAnalysisContext context,
             ImmutableHashSet<INamedTypeSymbol> tooGenericExceptionSymbols,
             ImmutableHashSet<INamedTypeSymbol> reservedExceptionSymbols)

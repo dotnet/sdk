@@ -1855,6 +1855,15 @@ End Class"
             await vbTest.RunAsync();
         }
 
+        [Fact, WorkItem(3414, "https://github.com/dotnet/roslyn-analyzers/issues/3414")]
+        public async Task CA1710_Interfaces()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface I
+{
+}");
+        }
+
         [Fact]
         public async Task EventArgsNotInheritingFromSystemEventArgs_Diagnostic()
         {

@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
-        <target state="needs-review-translation">Güvenli olmayan şifreleme modlarını kullanmayın</target>
+        <target state="translated">Şifreleme uzmanları ile şifreleme modu kullanımını gözden geçirin</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
         <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Bu modlar saldırılara açıktır. Yalnızca onaylı modları (CBC, CTS) kullanın.</target>
+        <target state="translated">Bu şifreleme modları saldırılara karşı savunmasız olabilir. Önerilen modları (CBC, CTS) kullanmayı düşünün.</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
         <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
-        <target state="needs-review-translation">Güvenli olmayan {0} Şifreleme Modunu kullanıyor</target>
+        <target state="translated">Şifreleme uzmanlarıyla '{0}' şifreleme modunun kullanımını gözden geçirin. Önerilen modları (CBC, CTS) kullanmayı düşünün.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -739,22 +739,22 @@
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</target>
+        <target state="translated">'ReferenceEqualityComparer' üzerindeki 'Equals' metoduna '{0}' değer türüne sahip bir bağımsız değişkeni geçirmeyin. Değer kutulamadan dolayı, bu 'Equals' çağrısı her zaman 'false' değerini döndürür.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
         <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
-        <target state="new">Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</target>
+        <target state="translated">Değer türü kullanan bağımsız değişkenler bu metoda yönelik her çağrı için benzersiz şekilde kutulandığından sonuç her zaman false olur.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
         <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
-        <target state="new">Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</target>
+        <target state="translated">'ReferenceEquals' metoduna '{0}' değer türüne sahip bir bağımsız değişkeni geçirmeyin. Değer kutulamadan dolayı, bu 'ReferenceEquals' çağrısı her zaman 'false' değerini döndürür.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
         <source>Do not use ReferenceEquals with value types</source>
-        <target state="new">Do not use ReferenceEquals with value types</target>
+        <target state="translated">ReferenceEquals metodunu değer türleriyle birlikte kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseSHA1">
@@ -765,6 +765,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">Bu tür, kriptografik olarak güvenli olmayan bir karma işlevi olan SHA1 uygular. SHA-1 ve SHA-0 algoritmaları için karma çakışmaları işlemsel olarak uygundur. Bu kullanımı bir SHA-2 aile karma algoritmasıyla (SHA512, SHA384, SHA256) değiştirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1814,32 +1829,32 @@
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
-        <target state="new">ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</target>
+        <target state="translated">Üye çağırmalarından döndürülen ValueTask'lerin doğrudan beklenmesi amaçlanır. Bir ValueTask'ı birden çok kez kullanmak ya da tamamlandığı bilinmeden önce birinin sonucuna doğrudan erişmek, bir özel duruma veya bozulmaya neden olabilir. Bu tür bir ValueTask'ın yoksayılması, büyük olasılıkla bir işlev hatasının göstergesidir ve performansı düşürebilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
         <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
-        <target state="new">ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</target>
+        <target state="translated">ValueTask örneklerinin sonuçlarına, örnek tamamlanmadığı sürece doğrudan erişilmemelidir. Task'lerin aksine, ValueTask üzerinde Result veya GetAwaiter().GetResult() çağırmak, işlem tamamlanana kadar engellemeyi garantilemez. Örneği bekleyemiyorsanız, önce örneğin IsCompleted özelliğini kontrol etmeyi (veya durumunu biliyorsanız doğruluğunu onaylamayı) deneyin.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
         <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
-        <target state="new">ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</target>
+        <target state="translated">ValueTask örnekleri yalnızca bir kez kullanılmalıdır (örneğin bir await aracılığıyla). Aynı ValueTask örneğini birden çok kez kullanmak, özel durumlara ve veri bozulmasına neden olabilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_General">
         <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
-        <target state="new">ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</target>
+        <target state="translated">Metot çağrılarından döndürülen ValueTask örnekleri doğrudan beklenmeli, döndürülmeli veya başka bir metot çağrısına bağımsız değişken olarak geçirilmelidir. Bir örneğin yerele veya alana depolanması gibi diğer kullanımlar, ValueTask örneklerinin yalnızca bir kez kullanılması gerektiğinden büyük olasılıkla bir hata göstergesidir.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
         <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
-        <target state="new">ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</target>
+        <target state="translated">Metot çağrılarından döndürülen ValueTask örneklerinin her zaman kullanılması ve genellikle beklenmesi gerekir. Bunun sıklıkla yapılmaması bir işlev hatasını temsil eder. Ancak temsil etmese bile, hedef metot nesneleri ValueTask'ler ile kullanılmak üzere biriktiriyorsa bu durum düşük performansa neden olabilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyTitle">
         <source>Use ValueTasks correctly</source>
-        <target state="new">Use ValueTasks correctly</target>
+        <target state="translated">ValueTask'leri doğru kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">
