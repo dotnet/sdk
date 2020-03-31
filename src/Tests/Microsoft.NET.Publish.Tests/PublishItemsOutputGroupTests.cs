@@ -100,6 +100,12 @@ namespace Microsoft.NET.Publish.Tests
                             IsKeyOutput = item.metadata["IsKeyOutput"]
                         };
 
+            Log.WriteLine("PublishItemsOutputGroup contains '{0}' items:", items.Count());
+            foreach (var item in items)
+            {
+                Log.WriteLine("    '{0}': TargetPath = '{1}', IsKeyOutput = '{2}'", item.Identity, item.TargetPath, item.IsKeyOutput);
+            }
+
             if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
             {
                 // Check that there's only one key item, and it's the exe

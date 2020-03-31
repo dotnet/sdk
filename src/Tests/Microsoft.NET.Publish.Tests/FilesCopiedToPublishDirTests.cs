@@ -93,6 +93,12 @@ namespace Microsoft.NET.Publish.Tests
                             RelativePath = item.metadata["RelativePath"]
                         };
 
+            Log.WriteLine("FilesCopiedToPublishDir contains '{0}' items:", items.Count());
+            foreach (var item in items)
+            {
+                Log.WriteLine("    '{0}': RelativePath = '{1}'", item.Identity, item.RelativePath);
+            }
+
             // Check for the main exe
             if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
             {
