@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Build.Utilities;
+using NuGet.Frameworks;
 
 namespace Microsoft.NET.TestFramework.ProjectConstruction
 {
