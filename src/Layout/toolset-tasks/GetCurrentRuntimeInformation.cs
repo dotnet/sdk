@@ -4,7 +4,7 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Cli.Build.Framework;
-using Microsoft.DotNet.PlatformAbstractions;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Build
 {
@@ -16,14 +16,10 @@ namespace Microsoft.DotNet.Cli.Build
         [Output]
         public string OSName { get; set; }
 
-        [Output]
-        public string OSPlatform { get; set; }
-
         public override bool Execute()
         {
             Rid = RuntimeEnvironment.GetRuntimeIdentifier();
             OSName = GetOSShortName();
-            OSPlatform = RuntimeEnvironment.OperatingSystemPlatform.ToString().ToLower();
 
             return true;
         }

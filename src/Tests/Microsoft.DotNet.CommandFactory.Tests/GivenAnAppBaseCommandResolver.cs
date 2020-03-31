@@ -4,8 +4,6 @@
 using System;
 using System.IO;
 using FluentAssertions;
-using Microsoft.DotNet.PlatformAbstractions;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.CommandFactory;
 using Xunit;
 using Microsoft.DotNet.Cli.Utils;

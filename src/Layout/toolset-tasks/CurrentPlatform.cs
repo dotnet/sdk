@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.DotNet.PlatformAbstractions;
-using RuntimeEnvironment = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment;
+using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli.Build.Framework
 {
@@ -111,52 +109,6 @@ namespace Microsoft.DotNet.Cli.Build.Framework
             {
                 return IsUbuntu || IsCentOS || IsRHEL || IsDebian || IsFedora || IsOpenSuse;
             }
-        }
-
-        public static bool IsPlatform(BuildPlatform platform, string version = null)
-        {
-            return IsPlatform(platform) && (version == null || IsVersion(version));
-        }
-
-        public static bool IsAnyPlatform(params BuildPlatform[] platforms)
-        {
-            return platforms.Any(p => IsPlatform(p));
-        }
-
-        public static bool IsPlatform(BuildPlatform platform)
-        {
-            switch (platform)
-            {
-                case BuildPlatform.Windows:
-                    return IsWindows;
-                case BuildPlatform.Ubuntu:
-                    return IsUbuntu;
-                case BuildPlatform.OSX:
-                    return IsOSX;
-                case BuildPlatform.FreeBSD:
-                    return IsFreeBSD;
-                case BuildPlatform.CentOS:
-                    return IsCentOS;
-                case BuildPlatform.RHEL:
-                    return IsRHEL;
-                case BuildPlatform.Debian:
-                    return IsDebian;
-                case BuildPlatform.Fedora:
-                    return IsFedora;
-                case BuildPlatform.OpenSuse:
-                    return IsOpenSuse;
-                case BuildPlatform.Unix:
-                    return IsUnix;
-                case BuildPlatform.Linux:
-                    return IsLinux;
-                default:
-                    throw new Exception("Unrecognized Platform.");
-            }
-        }
-
-        public static bool IsVersion(string version)
-        {
-            return RuntimeEnvironment.OperatingSystemVersion.Equals(version, StringComparison.OrdinalIgnoreCase);
         }
 
         private static BuildPlatform DetermineCurrentPlatform()

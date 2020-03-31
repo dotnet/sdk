@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.PlatformAbstractions;
 using System.IO;
-using System.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework.Commands
@@ -17,8 +15,6 @@ namespace Microsoft.NET.TestFramework.Commands
             : base(log, "ComposeStore", projectPath, relativePathToProject)
         {
         }
-
-       
 
         public override DirectoryInfo GetOutputDirectory(string targetFramework = "netcoreapp1.0", string configuration = "Debug", string runtimeIdentifier = "")
         {
