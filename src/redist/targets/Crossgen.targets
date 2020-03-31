@@ -1,6 +1,6 @@
 <Project>
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == '' and !('$(Architecture)' == 'arm64' and '$(OSName)' == 'win')"
+          Condition="'$(DISABLE_CROSSGEN)' == ''"
           DependsOnTargets="SetSdkBrandingInfo">
     
     <PropertyGroup>
@@ -17,6 +17,7 @@
       <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
       <DIASymReaderCrossgenFilter>*</DIASymReaderCrossgenFilter>
       <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86</DIASymReaderCrossgenFilter>
+      <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm64' And '$(OSName)' == 'win'">amd64</DIASymReaderCrossgenFilter>
     </PropertyGroup>
 
     <!-- Download the runtime package with the crossgen executable in it -->
