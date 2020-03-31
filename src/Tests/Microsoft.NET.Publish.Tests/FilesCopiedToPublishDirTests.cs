@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -102,7 +103,8 @@ namespace Microsoft.NET.Publish.Tests
             // Check for the main exe
             if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
             {
-                items.Should().ContainSingle(i => i.RelativePath.Equals($"{testProject.Name}.exe", StringComparison.OrdinalIgnoreCase));
+                string exeSuffix = specifyRid ? ".exe" : Constants.ExeSuffix;
+                items.Should().ContainSingle(i => i.RelativePath.Equals($"{testProject.Name}{exeSuffix}", StringComparison.OrdinalIgnoreCase));
             }
 
             // Framework assemblies should be there if we specified and rid and this isn't in the single file case
