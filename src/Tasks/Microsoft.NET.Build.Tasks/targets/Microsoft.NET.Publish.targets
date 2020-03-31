@@ -29,6 +29,17 @@ Copyright (c) .NET Foundation. All rights reserved.
                                         Publish
  
     The main publish entry point.
+
+    Extension hooks for injecting custom targets:
+      - BeforeComputeFilesToPublishTargets
+      - AfterComputeFilesToPublishTargets
+      - BeforeILLinkTargets
+      - AfterILLinkTargets
+      - BeforeMonoAOTCompilationTargets
+      - AfterMonoAOTCompilationTargets
+      - BeforeGenerateSingleFileBundleTargets
+      - AfterGenerateSingleFileBundleTargets
+      - AfterPublishTargets
     ============================================================
     -->
 
@@ -62,7 +73,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="Publish"
           Condition="$(IsPublishable) == 'true'"
-          DependsOnTargets="_PublishBuildAlternative;_PublishNoBuildAlternative" >
+          DependsOnTargets="_PublishBuildAlternative;_PublishNoBuildAlternative;$(AfterPublishTargets)" >
 
     <!-- Ensure there is minimal verbosity output pointing to the publish directory and not just the
          build step's minimal output. Otherwise there is no indication at minimal verbosity of where
@@ -276,7 +287,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="CreateReadyToRunImages"
-          Condition="'$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(PublishReadyToRun)' == 'true' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
+          Condition="'$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(PublishReadyToRun)' == 'true' And '$(PublishMonoAOT)' != 'true' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
           DependsOnTargets="_PrepareForReadyToRunCompilation;
                             _CreateR2RImages;
                             _CreateR2RSymbols">
@@ -298,6 +309,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish Include="@(_ReadyToRunFilesToPublish)" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="MonoAOTCompilation"
+          Condition="'$(_TargetFrameworkVersionWithoutV)' >= '5.0' And '$(PublishReadyToRun)' != 'true' And '$(PublishMonoAOT)' == 'true' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
+          DependsOnTargets="$(BeforeMonoAOTCompilationTargets);
+                            CoreMonoAOTCompilation;
+                            $(AfterMonoAOTCompilationTargets)">
   </Target>
 
   <!--
@@ -456,11 +474,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="ComputeFilesToPublish"
-          DependsOnTargets="ComputeResolvedFilesToPublishList;
+          DependsOnTargets="$(BeforeComputeFilesToPublishTargets);
+                            ComputeResolvedFilesToPublishList;
+                            $(BeforeILLinkTargets);
                             ILLink;
+                            $(AfterILLinkTargets);
                             CreateReadyToRunImages;
+                            MonoAOTCompilation;
                             GeneratePublishDependencyFile;
-                            GenerateSingleFileBundle">
+                            $(BeforeGenerateSingleFileBundleTargets);
+                            GenerateSingleFileBundle;
+                            $(AfterGenerateSingleFileBundleTargets);
+                            $(AfterComputeFilesToPublishTargets);">
   </Target>
 
   <PropertyGroup>
