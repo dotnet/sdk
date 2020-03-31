@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tests
         [LinuxOnlyFact]
         public void TelemetryCommonPropertiesShouldContainLibcReleaseAndVersion()
         {
-            if (!DotNet.Cli.Utils.RuntimeEnvironment.OperatingSystem.Contains("Alpine", StringComparison.OrdinalIgnoreCase))
+            if (!RuntimeInformation.RuntimeIdentifier.Contains("alpine", StringComparison.OrdinalIgnoreCase))
             {
                 var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
                 unitUnderTest.GetTelemetryCommonProperties()["Libc Release"].Should().NotBeEmpty();

@@ -11,7 +11,7 @@ public static class AssertionHelper
     {
         string apphost = $"{ProjectName}{Constants.ExeSuffix}";
         // No UseApphost is false by default on macOS
-        return !RuntimeInformation.IsOSPlatform (OSPlatform.OSX)
+        return !RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
             ? expectedFiles.Append(apphost).ToArray()
             : expectedFiles;
     }

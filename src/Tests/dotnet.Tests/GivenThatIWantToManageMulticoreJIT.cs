@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Tests
 
         private static string GetOptimizationRootPath(string version)
         {
-            var rid = DotNet.Cli.Utils.RuntimeEnvironment.GetRuntimeIdentifier();
+            var rid = RuntimeInformation.RuntimeIdentifier;
             
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? $@"Microsoft\dotnet\optimizationdata\{version}\{rid}" 

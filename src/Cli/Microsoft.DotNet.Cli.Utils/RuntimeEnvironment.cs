@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Cli.Utils
             public string VersionId;
         }
 
-        public static string GetOSName()
+        private static string GetOSName()
         {
             switch (GetOSPlatform())
             {
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
         }
 
-        public static string GetOSVersion()
+        private static string GetOSVersion()
         {
             switch (GetOSPlatform())
             {
@@ -183,7 +183,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return string.Empty;
         }
 
-        public static Platform GetOSPlatform()
+        private static Platform GetOSPlatform()
         {
             return _platform.Value;
         }

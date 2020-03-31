@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#if NETCOREAPP
+
 using System;
 using System.Runtime.InteropServices;
 using NuGet.Frameworks;
@@ -19,7 +21,7 @@ namespace Microsoft.NET.TestFramework
 
         public static string GetCompatibleRid(string targetFramework = null)
         {
-            string rid = DotNet.Cli.Utils.RuntimeEnvironment.GetRuntimeIdentifier();
+            string rid = RuntimeInformation.RuntimeIdentifier;
 
             if (targetFramework == null)
             {
@@ -56,7 +58,7 @@ namespace Microsoft.NET.TestFramework
         public static bool SupportsTargetFramework(string targetFramework)
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
-            string currentRid = DotNet.Cli.Utils.RuntimeEnvironment.GetRuntimeIdentifier();
+            string currentRid = RuntimeInformation.RuntimeIdentifier;
 
             string ridOS = currentRid.Split('.')[0];
             if (ridOS.Equals("alpine", StringComparison.OrdinalIgnoreCase))
@@ -162,3 +164,5 @@ namespace Microsoft.NET.TestFramework
         }
     }
 }
+
+#endif
