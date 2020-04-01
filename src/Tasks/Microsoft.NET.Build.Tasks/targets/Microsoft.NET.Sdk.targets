@@ -23,11 +23,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateResourceMSBuildRuntime Condition=" '$(GenerateResourceMSBuildRuntime)' == '' ">CurrentRuntime</GenerateResourceMSBuildRuntime>
   </PropertyGroup>
 
-  <!-- Workaround: https://github.com/microsoft/msbuild/issues/4948 -->
-  <PropertyGroup>
-    <ImportWinFXTargets>false</ImportWinFXTargets>
-  </PropertyGroup>
-
   <Import Project="Microsoft.NET.Sdk.Common.targets" />
 
   <ImportGroup>
