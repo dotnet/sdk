@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Build.Logging;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tools.Formatters;
@@ -181,17 +182,26 @@ namespace Microsoft.CodeAnalysis.Tools
             };
 
             var workspace = MSBuildWorkspace.Create(properties);
-            workspace.ProduceBinaryLog = createBinaryLog;
+
+            Build.Framework.ILogger binlog = null;
+            if (createBinaryLog)
+            {
+                binlog = new BinaryLogger()
+                {
+                    Parameters = Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog"),
+                    Verbosity = Build.Framework.LoggerVerbosity.Diagnostic,
+                };
+            }
 
             if (workspaceType == WorkspaceType.Solution)
             {
-                await workspace.OpenSolutionAsync(solutionOrProjectPath, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
             else
             {
                 try
                 {
-                    await workspace.OpenProjectAsync(solutionOrProjectPath, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 catch (InvalidOperationException)
                 {
