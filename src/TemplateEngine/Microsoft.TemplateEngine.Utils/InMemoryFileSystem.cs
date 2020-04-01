@@ -819,8 +819,10 @@ namespace Microsoft.TemplateEngine.Utils
             if (!IsPathInCone(file, out string processedPath))
             {
                 if (_basis is IFileLastWriteTimeSource lastWriteTimeSource)
+                {
                     return lastWriteTimeSource.GetLastWriteTimeUtc(file);
-                throw new NotImplementedException("Basis file system must implement IFileLastWriteTimeSource");
+                }
+                throw new NotImplementedException($"Basis file system must implement {nameof(IFileLastWriteTimeSource)}");
             }
 
             file = processedPath;
@@ -854,8 +856,10 @@ namespace Microsoft.TemplateEngine.Utils
             if (!IsPathInCone(file, out string processedPath))
             {
                 if (_basis is IFileLastWriteTimeSource lastWriteTimeSource)
+                {
                     lastWriteTimeSource.SetLastWriteTimeUtc(file, lastWriteTimeUtc);
-                throw new NotImplementedException("Basis file system must implement IFileLastWriteTimeSource");
+                }
+                throw new NotImplementedException($"Basis file system must implement {nameof(IFileLastWriteTimeSource)}");
             }
 
             file = processedPath;
