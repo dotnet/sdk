@@ -27,25 +27,11 @@ namespace Microsoft.NET.Publish.Tests
             "WindowsBase.dll",
         };
 
-        [Fact]
-        public void WithRid()
-        {
-            this.RunFilesCopiedToPublishDirTest(specifyRid: true, singleFile: false);
-        }
-
-        [Fact]
-        public void NoRid()
-        {
-            this.RunFilesCopiedToPublishDirTest(specifyRid: false, singleFile: false);
-        }
-
-        [Fact]
-        public void SingleFile()
-        {
-            this.RunFilesCopiedToPublishDirTest(specifyRid: true, singleFile: true);
-        }
-
-        private void RunFilesCopiedToPublishDirTest(bool specifyRid, bool singleFile)
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void RunFilesCopiedToPublishDirTest(bool specifyRid, bool singleFile)
         {
             var testProject = new TestProject()
             {
