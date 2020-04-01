@@ -20,7 +20,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Workaround: https://github.com/microsoft/msbuild/issues/4948 -->
   <PropertyGroup>
-    <ImportWinFXTargets>false</ImportWinFXTargets>
+    <ImportFrameworkWinFXTargets>false</ImportFrameworkWinFXTargets>
   </PropertyGroup>
   
   <PropertyGroup>
