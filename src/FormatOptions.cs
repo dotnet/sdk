@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
         public Matcher FileMatcher { get; }
-        public string ReportPath { get; }
+        public string? ReportPath { get; }
 
         public FormatOptions(
             string workspaceFilePath,
@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools
             bool saveFormattedFiles,
             bool changesAreErrors,
             Matcher fileMatcher,
-            string reportPath)
+            string? reportPath)
         {
             WorkspaceFilePath = workspaceFilePath;
             WorkspaceType = workspaceType;
@@ -40,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Tools
             out bool saveFormattedFiles,
             out bool changesAreErrors,
             out Matcher fileMatcher,
-            out string reportPath)
+            out string? reportPath)
         {
             workspaceFilePath = WorkspaceFilePath;
             workspaceType = WorkspaceType;

@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
         /// <param name="searchDirectory">The base directory to search</param>
         /// <param name="workspacePath">A specific project or solution file to find</param>
         /// </summary>
-        public static (bool isSolution, string workspacePath) FindWorkspace(string searchDirectory, string workspacePath = null)
+        public static (bool isSolution, string workspacePath) FindWorkspace(string searchDirectory, string? workspacePath = null)
         {
             if (!string.IsNullOrEmpty(workspacePath))
             {
@@ -32,8 +32,8 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
                 }
 
                 return Directory.Exists(workspacePath)
-                    ? FindWorkspace(workspacePath)
-                    : FindFile(workspacePath);
+                    ? FindWorkspace(workspacePath!) // IsNullOrEmpty is not annotated on .NET Core 2.1
+                    : FindFile(workspacePath!); // IsNullOrEmpty is not annotated on .NET Core 2.1
             }
 
             var foundSolution = FindMatchingFile(searchDirectory, FindSolutionFiles, Resources.Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_option);
@@ -43,14 +43,18 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
             {
                 throw new FileNotFoundException(string.Format(Resources.Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_option, searchDirectory));
             }
-            else if (string.IsNullOrEmpty(foundSolution) && string.IsNullOrEmpty(foundProject))
+
+            if (!string.IsNullOrEmpty(foundSolution))
             {
-                throw new FileNotFoundException(string.Format(Resources.Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_option, searchDirectory));
+                return (true, foundSolution!); // IsNullOrEmpty is not annotated on .NET Core 2.1
             }
 
-            return !string.IsNullOrEmpty(foundSolution)
-                ? (true, foundSolution)
-                : (false, foundProject);
+            if (!string.IsNullOrEmpty(foundProject))
+            {
+                return (false, foundProject!); // IsNullOrEmpty is not annotated on .NET Core 2.1
+            }
+
+            throw new FileNotFoundException(string.Format(Resources.Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_option, searchDirectory));
         }
 
         private static (bool isSolution, string workspacePath) FindFile(string workspacePath)
@@ -82,7 +86,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
         private static IEnumerable<string> FindProjectFiles(string basePath) => Directory.EnumerateFileSystemEntries(basePath, "*.*proj", SearchOption.TopDirectoryOnly)
                     .Where(f => !DnxProjectExtension.Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
 
-        private static string FindMatchingFile(string searchBase, Func<string, IEnumerable<string>> fileSelector, string multipleFilesFoundError)
+        private static string? FindMatchingFile(string searchBase, Func<string, IEnumerable<string>> fileSelector, string multipleFilesFoundError)
         {
             if (!Directory.Exists(searchBase))
             {

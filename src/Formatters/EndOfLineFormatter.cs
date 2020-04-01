@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Options;
@@ -57,7 +58,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             });
         }
 
-        public static bool TryGetEndOfLine(ICodingConventionsSnapshot codingConventions, out string endOfLine)
+        public static bool TryGetEndOfLine(ICodingConventionsSnapshot codingConventions, [NotNullWhen(true)]  out string? endOfLine)
         {
             if (codingConventions.TryGetConventionValue("end_of_line", out string endOfLineOption))
             {
