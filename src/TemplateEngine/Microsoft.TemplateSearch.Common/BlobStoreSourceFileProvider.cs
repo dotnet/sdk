@@ -51,7 +51,7 @@ namespace Microsoft.TemplateSearch.Common
                 // only download the file if it's been long enough since the last time it was downloaded.
                 if (ShouldDownloadFileFromCloud(environmentSettings, metadataFileTargetLocation))
                 {
-                    bool cloudResult = await TryAcquireFileFromCloudAsync(paths, metadataFileTargetLocation);
+                    bool cloudResult = await TryAcquireFileFromCloudAsync(environmentSettings, paths, metadataFileTargetLocation);
 
                     if (cloudResult)
                     {
@@ -111,7 +111,7 @@ namespace Microsoft.TemplateSearch.Common
         // Attempt to get the search metadata file from cloud storage and place it in the expected search location.
         // Return true on success, false on failure.
         // Implement If-None-Match/ETag headers to avoid re-downloading the same content over and over again.
-        private async Task<bool> TryAcquireFileFromCloudAsync(Paths paths, string searchMetadataFileLocation)
+        private async Task<bool> TryAcquireFileFromCloudAsync(IEngineEnvironmentSettings environmentSettings, Paths paths, string searchMetadataFileLocation)
         {
             try
             {
@@ -143,6 +143,11 @@ namespace Microsoft.TemplateSearch.Common
                         }
                         else if(response.StatusCode == HttpStatusCode.NotModified)
                         {
+                            IPhysicalFileSystem fileSystem = environmentSettings.Host.FileSystem;
+                            if (fileSystem is IFileLastWriteTimeSource lastWriteTimeSource)
+                            {
+                                lastWriteTimeSource.SetLastWriteTimeUtc(searchMetadataFileLocation, DateTime.UtcNow);
+                            }
                             return true;
                         }
 

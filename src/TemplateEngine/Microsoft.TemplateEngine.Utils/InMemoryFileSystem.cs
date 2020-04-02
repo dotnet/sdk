@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             public FileAttributes Attributes { get; set; }
-            public DateTime LastWriteTimeUtc { get; private set; }
+            public DateTime LastWriteTimeUtc { get; set; }
         }
 
         private class DisposingStream : Stream
@@ -819,8 +819,10 @@ namespace Microsoft.TemplateEngine.Utils
             if (!IsPathInCone(file, out string processedPath))
             {
                 if (_basis is IFileLastWriteTimeSource lastWriteTimeSource)
+                {
                     return lastWriteTimeSource.GetLastWriteTimeUtc(file);
-                throw new NotImplementedException("Basis file system must implement IFileLastWriteTimeSource");
+                }
+                throw new NotImplementedException($"Basis file system must implement {nameof(IFileLastWriteTimeSource)}");
             }
 
             file = processedPath;
@@ -847,6 +849,43 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             return targetFile.LastWriteTimeUtc;
+        }
+
+        public void SetLastWriteTimeUtc(string file, DateTime lastWriteTimeUtc)
+        {
+            if (!IsPathInCone(file, out string processedPath))
+            {
+                if (_basis is IFileLastWriteTimeSource lastWriteTimeSource)
+                {
+                    lastWriteTimeSource.SetLastWriteTimeUtc(file, lastWriteTimeUtc);
+                }
+                throw new NotImplementedException($"Basis file system must implement {nameof(IFileLastWriteTimeSource)}");
+            }
+
+            file = processedPath;
+            string rel = file.Substring(_root.FullPath.Length).Trim('/', '\\');
+            string[] parts = rel.Split('/', '\\');
+            FileSystemDirectory currentDir = _root;
+
+            for (int i = 0; i < parts.Length - 1; ++i)
+            {
+                FileSystemDirectory dir;
+                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                {
+                    dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
+                    currentDir.Directories[parts[i]] = dir;
+                }
+
+                currentDir = dir;
+            }
+
+            FileSystemFile targetFile;
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            {
+                throw new FileNotFoundException("File not found", file);
+            }
+
+            targetFile.LastWriteTimeUtc = lastWriteTimeUtc;
         }
     }
 }
