@@ -58,7 +58,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             });
         }
 
-        public static bool TryGetEndOfLine(ICodingConventionsSnapshot codingConventions, [NotNullWhen(true)]  out string? endOfLine)
+        public static bool TryGetEndOfLine(ICodingConventionsSnapshot codingConventions, [NotNullWhen(true)] out string? endOfLine)
         {
             if (codingConventions.TryGetConventionValue("end_of_line", out string endOfLineOption))
             {
