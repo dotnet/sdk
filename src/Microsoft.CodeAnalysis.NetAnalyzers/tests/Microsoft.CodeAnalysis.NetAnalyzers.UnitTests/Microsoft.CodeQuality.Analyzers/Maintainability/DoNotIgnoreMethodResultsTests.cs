@@ -3,7 +3,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.DoNotIgnoreMethodResultsAnalyzer,
@@ -81,6 +80,7 @@ End Class
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMSTest,
                 TestState =
                 {
                     Sources =
@@ -90,18 +90,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 public class Test
 {
-    [ExpectedException]
+    [ExpectedException(typeof(System.Exception))]
     public void ThrowsException()
     {
         new Test();
     }
-}", MSTestAttributes.CSharp
+}",
                     }
                 }
             }.RunAsync();
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMSTest,
                 TestState =
                 {
                     Sources =
@@ -112,13 +113,13 @@ Imports System.Globalization
 Imports Microsoft.VisualStudio.TestTools.UnitTesting
 
 Class C
-    <ExpectedException>
+    <ExpectedException(GetType(Exception))>
     Public Sub ThrowsException()
         Console.WriteLine(Me)
         Dim sample As String = ""Sample""
         sample.ToLower(CultureInfo.InvariantCulture)
     End Sub
-End Class", MSTestAttributes.VisualBasic
+End Class",
                     }
                 }
             }.RunAsync();
@@ -135,6 +136,7 @@ End Class", MSTestAttributes.VisualBasic
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -149,13 +151,14 @@ public class Test
     {{
         Assert.{method}{(generic.Length == 0 ? string.Empty : $"<{generic}>")}(() => {{ new Test(); }});
     }}
-}}", useXunit ? XunitApis.CSharp : NUnitApis.CSharp
+}}",
                     }
                 }
             }.RunAsync();
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -172,7 +175,7 @@ Class C
                                         sample.ToLower(CultureInfo.InvariantCulture)
                                     End Sub)
     End Sub
-End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
+End Class",
                     }
                 }
             }.RunAsync();
@@ -189,6 +192,7 @@ End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -204,13 +208,14 @@ public class Test
     {{
         Assert.{method}{(generic.Length == 0 ? string.Empty : $"<{generic}>")}(async () => {{ new Test(); }});
     }}
-}}", useXunit ? XunitApis.CSharp : NUnitApis.CSharp
+}}",
                     }
                 }
             }.RunAsync();
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -227,7 +232,7 @@ Class C
                                         sample.ToLower(CultureInfo.InvariantCulture)
                                     End Function)
     End Sub
-End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
+End Class",
                     }
                 }
             }.RunAsync();
@@ -465,6 +470,7 @@ End Module
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -482,7 +488,7 @@ public class Test
             return;
         }});
     }}
-}}", useXunit ? XunitApis.CSharp : NUnitApis.CSharp
+}}",
                     }
                 },
                 ExpectedDiagnostics =
@@ -493,6 +499,7 @@ public class Test
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -510,7 +517,7 @@ Class C
                                         Return
                                     End Sub)
     End Sub
-End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
+End Class",
                     }
                 },
                 ExpectedDiagnostics =
@@ -531,6 +538,7 @@ End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -548,7 +556,7 @@ public class Test
             return;
         }});
     }}
-}}", useXunit ? XunitApis.CSharp : NUnitApis.CSharp
+}}",
                     }
                 },
                 ExpectedDiagnostics =
@@ -559,6 +567,7 @@ public class Test
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = useXunit ? AdditionalMetadataReferences.DefaultWithXUnit : AdditionalMetadataReferences.DefaultWithNUnit,
                 TestState =
                 {
                     Sources =
@@ -576,7 +585,7 @@ Class C
                                         Return
                                     End Function)
     End Sub
-End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
+End Class",
                     }
                 },
                 ExpectedDiagnostics =
@@ -592,6 +601,7 @@ End Class", useXunit ? XunitApis.VisualBasic : NUnitApis.VisualBasic
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMSTest,
                 TestState =
                 {
                     Sources =
@@ -601,13 +611,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 public class Test
 {
-    [ExpectedException]
+    [ExpectedException(typeof(System.Exception))]
     public void ThrowsException()
     {
         new Test();
         return;
     }
-}", MSTestAttributes.CSharp
+}",
                     }
                 },
                 ExpectedDiagnostics =
@@ -618,6 +628,7 @@ public class Test
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithMSTest,
                 TestState =
                 {
                     Sources =
@@ -628,14 +639,14 @@ Imports System.Globalization
 Imports Microsoft.VisualStudio.TestTools.UnitTesting
 
 Class C
-    <ExpectedException>
+    <ExpectedException(GetType(Exception))>
     Public Sub ThrowsException()
         Console.WriteLine(Me)
         Dim sample As String = ""Sample""
         sample.ToLower(CultureInfo.InvariantCulture)
         Return
     End Sub
-End Class", MSTestAttributes.VisualBasic
+End Class",
                     }
                 },
                 ExpectedDiagnostics =

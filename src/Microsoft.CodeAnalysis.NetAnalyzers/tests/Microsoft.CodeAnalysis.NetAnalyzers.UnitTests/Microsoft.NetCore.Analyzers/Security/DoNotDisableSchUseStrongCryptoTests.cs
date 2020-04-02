@@ -239,7 +239,7 @@ class TestClass
         [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality.CA5361.excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var test = new VerifyCS.Test
             {

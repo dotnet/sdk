@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Runtime;
@@ -274,37 +273,25 @@ End Structure",
 
         #region Helpers
 
-        private static DiagnosticResult GetCA1810CSharpDefaultResultAt(int line, int column, string typeName)
-        {
-            string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.InitializeStaticFieldsInlineMessage, typeName);
-            return new DiagnosticResult(CSharpInitializeStaticFieldsInlineAnalyzer.CA1810Rule)
+        private static DiagnosticResult GetCA1810CSharpDefaultResultAt(int line, int column, string typeName) =>
+            VerifyCS.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName);
 
-        private static DiagnosticResult GetCA1810BasicDefaultResultAt(int line, int column, string typeName)
-        {
-            string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.InitializeStaticFieldsInlineMessage, typeName);
-            return new DiagnosticResult(CSharpInitializeStaticFieldsInlineAnalyzer.CA1810Rule)
+        private static DiagnosticResult GetCA1810BasicDefaultResultAt(int line, int column, string typeName) =>
+            VerifyVB.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName);
 
-        private static DiagnosticResult GetCA2207CSharpDefaultResultAt(int line, int column, string typeName)
-        {
-            string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.InitializeStaticFieldsInlineMessage, typeName);
-            return new DiagnosticResult(CSharpInitializeStaticFieldsInlineAnalyzer.CA2207Rule)
+        private static DiagnosticResult GetCA2207CSharpDefaultResultAt(int line, int column, string typeName) =>
+            VerifyCS.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName);
 
-        private static DiagnosticResult GetCA2207BasicDefaultResultAt(int line, int column, string typeName)
-        {
-            string message = string.Format(CultureInfo.CurrentCulture, MicrosoftNetCoreAnalyzersResources.InitializeStaticFieldsInlineMessage, typeName);
-            return new DiagnosticResult(CSharpInitializeStaticFieldsInlineAnalyzer.CA2207Rule)
+        private static DiagnosticResult GetCA2207BasicDefaultResultAt(int line, int column, string typeName) =>
+            VerifyVB.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
-                .WithMessage(message);
-        }
+                .WithArguments(typeName);
 
         #endregion
     }

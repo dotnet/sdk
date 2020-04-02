@@ -54,32 +54,32 @@
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
         <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call might result in an infinite recursion.</target>
+        <target state="translated">setter 내에서 속성을 할당하지 마세요. 이 호출로 인해 무한 재귀가 발생할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageSure">
         <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call will result in an infinite recursion.</target>
+        <target state="translated">setter 내에서 속성을 할당하지 마세요. 이 호출로 인해 무한 재귀가 발생합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionTitle">
         <source>Avoid infinite recursion</source>
-        <target state="new">Avoid infinite recursion</target>
+        <target state="translated">무한 재귀 방지</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</target>
+        <target state="translated">'out' 또는 'ref'를 사용하여 참조로 형식을 전달하려면 포인터 사용 경험, 값 형식과 참조 형식이 어떻게 다른지에 대한 이해 및 반환 값이 여러 개인 메서드 처리가 필요합니다. 또한 'out' 매개 변수와 'ref' 매개 변수의 차이점은 널리 이해되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersMessage">
         <source>Avoid 'out' parameters as they are not designed for general audience.</source>
-        <target state="new">Avoid 'out' parameters as they are not designed for general audience.</target>
+        <target state="translated">'out' 매개 변수는 일반용으로 설계되지 않았으므로 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersTitle">
         <source>Avoid out parameters</source>
-        <target state="new">Avoid out parameters</target>
+        <target state="translated">out 매개 변수를 사용하지 마십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
@@ -110,6 +110,21 @@
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">비동기 람다를 Void 반환 대리자 형식으로 전달하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceDescription">
+        <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
+        <target state="new">Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceMessage">
+        <source>Consider a design that does not require that '{0}' be a reference parameter.</source>
+        <target state="new">Consider a design that does not require that '{0}' be a reference parameter.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceTitle">
+        <source>Do not pass types by reference</source>
+        <target state="new">Do not pass types by reference</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
@@ -144,17 +159,17 @@
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
         <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
-        <target state="new">The field reference '{0}' is duplicated in this bitwise initialization.</target>
+        <target state="translated">이 비트 초기화에서 필드 참조 '{0}'이(가) 중복되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
         <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
-        <target state="new">The enum member '{0}' has the same constant value '{1}' as member '{2}'.</target>
+        <target state="translated">열거형 멤버 '{0}'의 상수 값 '{1}'이(가) '{2}' 멤버와 같습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
         <source>Enums values should not be duplicated</source>
-        <target state="new">Enums values should not be duplicated</target>
+        <target state="translated">열거형 값은 중복되어서는 안 됨</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -718,18 +733,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">컬렉션은 제네릭 인터페이스를 구현해야 합니다.</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="translated">제네릭 인터페이스도 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">컬렉션의 유용성을 확대하려면 제네릭 컬렉션 인터페이스 중 하나를 구현하세요. 그러면 컬렉션을 제네릭 컬렉션 형식을 전파하는 데 사용할 수 있습니다.</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="translated">형식의 유용성을 확대하려면 제네릭 인터페이스 중 하나를 구현하세요. 제네릭 컬렉션 형식을 채우는 데 사용할 수 있는 컬렉션의 경우에는 특히 그렇습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">컬렉션 '{0}'은(는) '{2}'을(를) 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 컬렉션의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">형식 '{0}'은(는) '{2}'을(를) 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 형식의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -839,7 +854,7 @@
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyDescription">
         <source>Although it is acceptable and often necessary to have a read-only property, the design guidelines prohibit the use of write-only properties. This is because letting a user set a value, and then preventing the user from viewing that value, does not provide any security. Also, without read access, the state of shared objects cannot be viewed, which limits their usefulness.</source>
-        <target state="translated">읽기 전용 속성은 사용할 수 있으며 필수로 사용해야 하는 경우가 많지만 디자인 지침에서는 쓰기 전용 속성 사용을 금지합니다. 쓰기 전용 속성 사용을 금지하는 이유는 값을 설정한 사용자가 해당 값을 못 보는 경우, 보안 문제가 발생하기 때문입니다. 또한 읽기 권한이 없어 공유된 개체의 상태를 볼 수 없는 경우 개체의 유용성이 떨어집니다.</target>
+        <target state="translated">읽기 전용 속성은 사용할 수 있으며 필수로 사용해야 하는 경우가 많지만 디자인 지침에서는 쓰기 전용 속성 사용을 금지합니다. 쓰기 전용 속성 사용을 금지하는 이유는 값을 설정한 사용자가 해당 값을 보지 못하는 경우 보안 문제가 발생하기 때문입니다. 또한 읽기 권한이 없어 공유된 개체의 상태를 볼 수 없는 경우 개체의 유용성이 떨어집니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageAddGetter">
@@ -1609,7 +1624,7 @@
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageCoSetProxyBlanket">
         <source>{0} is a P/Invoke declaration to an OLE32 API that cannot be reliably called against a runtime callable wrapper (a managed object wrapping a COM object). Runtime callable wrappers dynamically fetch interface pointers so the effect of the call might be arbitrarily lost. Runtime callable wrappers for a given COM object are also shared across an application domain so the call could possibly affect other users. Replace this call with a native wrapper COM object for the interface pointer that does the appropriate CoSetProxyBlanket calls.</source>
-        <target state="translated">{0}은(는) 런타임 호출 가능 래퍼(COM 개체를 래핑하는 관리형 개체)에 대해 안정적으로 호출할 수 없는 OLE32 API에 대한 P/Invoke 선언입니다. 런타임 호출 가능 래퍼는 인터페이스 포인터를 동적으로 페치하므로 호출 효과가 임의로 사라질 수 있습니다. 지정된 COM 개체의 런타임 호출 가능 래퍼는 애플리케이션 도메인 전체에서도 공유되므로 호출이 다른 사용자에게 영향을 줄 수 있습니다. 이 호출을 적절한 CoSetProxyBlanket 호출을 수행하는 인터페이스 포인터의 네이티브 래퍼 COM 개체로 바꾸세요.</target>
+        <target state="translated">{0}는 런타임 호출 가능 래퍼 (COM 개체를 래핑하는 관리 되는 개체)에 대 한 안정적으로 호출 될 수 없습니다 OLE32 API에는 P/Invoke 선언 이다. 런타임 호출 가능 래퍼는 동적으로 호출의 효과 임의로 손실 될 수 있습니다 그래서 인터페이스 포인터를 가져옵니다. 통화 가능 하 게 다른 사용자에 영향을 미칠 수 있도록 지정된 된 COM 개체에 대 한 런타임 호출 가능 래퍼 또한 응용 프로그램 도메인에 걸쳐 공유 됩니다. 이 호출을 적절 한 CoSetProxyBlanket 호출을 수행 하는 인터페이스 포인터에 대 한 네이티브 래퍼 COM 개체를 바꿉니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
@@ -1948,13 +1963,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">인스턴스 데이터에 액세스하지 않거나 인스턴스 메서드를 호출하지 않는 멤버는 static(Visual Basic의 경우 Shared)으로 표시할 수 있습니다. 메서드를 static으로 표시하면 컴파일러가 멤버에 대한 비가상 호출 사이트를 내보냅니다. 따라서 성능에 민감한 코드의 경우 이 방법으로 성능을 크게 향상시킬 수 있습니다.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="translated">인스턴스 데이터에 액세스하지 않거나 인스턴스 메서드를 호출하지 않는 멤버는 static으로 표시할 수 있습니다. 메서드를 static으로 표시하면 컴파일러가 이와 같은 멤버에 비가상 호출 사이트를 내보냅니다. 성능에 민감한 코드의 경우 이 방법으로 성능을 크게 향상할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">{0} 멤버가 인스턴스 데이터에 액세스하지 않으며 static(Visual Basic의 경우 Shared)으로 표시될 수 있습니다.</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="translated">'{0}' 멤버는 인스턴스 데이터에 액세스하지 않으며 static으로 표시할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

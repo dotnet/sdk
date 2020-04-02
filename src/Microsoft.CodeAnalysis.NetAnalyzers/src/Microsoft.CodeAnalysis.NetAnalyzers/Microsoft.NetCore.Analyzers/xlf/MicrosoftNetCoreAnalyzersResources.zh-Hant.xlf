@@ -28,18 +28,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
-        <source>Do Not Use Unsafe Cipher Modes</source>
-        <target state="translated">不要使用不安全的 Cipher 模式</target>
+        <source>Review cipher mode usage with cryptography experts</source>
+        <target state="translated">與加密專家一同審查 Cipher 模式使用方式</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
-        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
-        <target state="translated">這些模式容易受到攻擊。請只使用經過核准的模式 (CBC，CTS)。</target>
+        <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">這些 Cipher 模式可能容易遭受攻擊。請考慮使用建議的模式 (CBC、CTS)。</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
-        <source>It uses an unsafe Cipher Mode {0}</source>
-        <target state="translated">它會使用不安全的 Cipher 模式 {0}</target>
+        <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">與加密專家一同審查 Cipher 模式 '{0}' 的使用方式。請考慮使用建議的模式 (CBC、CTS)。</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">還原序列化不受信任的資料時，若沒有 SerializationBinder 來限制還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">還原序列化不受信任的資料時，若沒有 SerializationBinder 來限制還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -395,6 +395,21 @@
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
         <source>Do not create tasks without passing a TaskScheduler</source>
         <target state="translated">建立工作時請務必傳遞 TaskScheduler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -737,6 +752,26 @@
         <target state="translated">呼叫已淘汰的金鑰衍生函數 {0}.{1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">請勿對 'ReferenceEqualityComparer' 上的 'Equals' 方法，傳遞實值型別為 '{0}' 的引數。因為值會進行 boxing，而造成對 'Equals' 的呼叫一律會傳回 'false'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">每次呼叫此方法時，實值型別所輸入的引數，都是經過 Box 的唯一值，因此其結果一律會是 False。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">請勿將實值型別為 '{0}' 的引數，傳遞至 'ReferenceEquals'。因為值會進行 Boxing，而造成對 'ReferenceEquals' 的呼叫一律會傳回 'false'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">請勿使用有實值型別的 ReferenceEquals</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">請勿使用不安全的密碼編譯演算法 SHA1。</target>
@@ -745,6 +780,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">此類型會實作 SHA1，此雜湊函數在密碼編譯方面有安全性疑慮。SHA-1 與 SHA-0 演算法在運算方面可能會發生雜湊衝突。請以 SHA-2 系列雜湊演算法 (SHA512、SHA384、SHA256) 取代此用法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1004,7 +1054,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 來將未受信任的資料還原序列化，方法 '{0}' 會不安全。請確認 JavaScriptSerializer 在初始化時未指定 JavaScriptTypeResolver，或使用在還原序列化物件圖形中限制該物件類型的 JavaScriptTypeResolver。</target>
+        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 將未受信任的資料還原序列化，方法 '{0}' 就不安全。請確認將 JavaScriptSerializer 初始化時，未指定 JavaScriptTypeResolver，或使用 JavaScriptTypeResolver 來限制已還原序列化物件圖中的物件類型。</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
@@ -1014,7 +1064,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 來將未受信任的資料還原序列化，方法 '{0}' 會不安全。請在未指定 JavaScriptTypeResolver 的情況下將 JavaScriptSerializer 初始化，或以在還原序列化物件圖形中限制該物件類型的 JavaScriptTypeResolver 初始化。</target>
+        <target state="translated">若使用以 SimpleTypeResolver 初始化的 JavaScriptSerializer 將未受信任的資料還原序列化，方法 '{0}' 就不安全。將 JavaScriptSerializer 初始化時，請不要指定 JavaScriptTypeResolver，或使用 JavaScriptTypeResolver 來限制已還原序列化物件圖中的物件類型。</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
@@ -1219,7 +1269,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">還原序列化不受信任的資料時，若沒有 SerializationBinder 來限制還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1229,7 +1279,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">還原序列化不受信任的資料時，若沒有 SerializationBinder 來限制還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
+        <target state="translated">將未受信任的資料還原序列化時，若沒有使用 SerializationBinder 來限制已還原序列化物件圖中的物件類型，方法 '{0}' 就不安全。</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
@@ -1312,6 +1362,26 @@
         <target state="translated">不應看得見 P/Invoke</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
+        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
+        <target state="new">Remove the ToString call in order to use a strongly-typed StringBuilder overload.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
+        <source>Remove the ToString call</source>
+        <target state="new">Remove the ToString call</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
+        <target state="new">Prefer strongly-typed Append and Insert method overloads on StringBuilder.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
         <source>The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.</source>
         <target state="translated">傳遞給 System.String.Format 的格式化引數，並未包含與每個物件引數相對應的格式項目，反之亦然。</target>
@@ -1369,7 +1439,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 DLL 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 DLL 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
@@ -1379,7 +1449,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
         <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的檔案路徑插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入檔案路徑弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
@@ -1399,7 +1469,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
         <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 LDAP 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 LDAP 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
@@ -1409,7 +1479,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesMessage">
         <source>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的開啟重新導向弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的開啟重新導向弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesTitle">
@@ -1419,7 +1489,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
         <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的處理序命令插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入處理序命令弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
@@ -1429,7 +1499,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
         <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 regex 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 regex 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
@@ -1439,7 +1509,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
         <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 SQL 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 SQL 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
@@ -1449,7 +1519,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
         <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 XAML 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 XAML 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
@@ -1459,7 +1529,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
         <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 XML 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 XML 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
@@ -1469,7 +1539,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
         <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的 XPath 插入式漏洞，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的插入 XPath 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">
@@ -1479,7 +1549,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesMessage">
         <source>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">發現潛在的跨網站指令碼 (XSS) 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所污染。</target>
+        <target state="translated">發現潛在的跨網站指令碼 (XSS) 弱點，方法 '{1}' 中的 '{0}' 可能被來自方法 '{3}' 中 '{2}' 由使用者控制的資料所感染。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesTitle">
@@ -1790,6 +1860,36 @@
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
         <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請指定 SharedAccessProtocol.HttpsOnly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="translated">應直接等候從成員引動過程傳回的 ValueTask。若在已得知完成 ValueTask 之前，嘗試多次使用 ValueTask 或直接存取其結果，可能會導致發生例外狀況或損毀。忽略這類 ValueTask 可能表示發生功能性 Bug，而且可能會降低效能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="translated">除非 ValueTask 執行個體已經完成，否則不應直接存取其結果。與 Tasks 不同，在 ValueTask 上呼叫 Result 或 GetAwaiter().GetResult() 無法保證會封鎖到作業完成為止。如果您無法耐心等候該執行個體，請考慮先檢查其 IsCompleted 屬性 (或如果您知道確實為 true，則可判斷其為 true)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="translated">ValueTask 執行個體應只能使用一次，例如透過 await。多次使用同一個 ValueTask 執行個體可能會導致發生例外狀況及資料損毀。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="translated">從方法呼叫傳回的 ValueTask 執行個體應直接等候、傳回，或作為引數傳遞給另一個方法呼叫。其他使用方式，例如將執行個體儲存到本機或欄位，則可能表示發生 Bug，原因是 ValueTask 執行個體一律只能使用一次。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="translated">應一律使用 (通常為等候) 從方法呼叫傳回的 ValueTask 執行個體。未使用通常表示發生功能性 Bug，但即便不是這種情況，如果目標方法集區物件搭配 ValueTasks 使用，也可能會造成效能下降。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="translated">正確使用 ValueTasks</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

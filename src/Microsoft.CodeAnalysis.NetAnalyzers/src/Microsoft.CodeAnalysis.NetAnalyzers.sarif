@@ -4,15 +4,6 @@
   "runs": [
     {
       "tool": {
-        "name": "Humanizer",
-        "version": "3.0.0",
-        "language": "en-US"
-      },
-      "rules": {
-      }
-    },
-    {
-      "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
         "version": "3.0.0",
         "language": "en-US"
@@ -187,25 +178,6 @@
             ]
           }
         },
-        "CA1821": {
-          "id": "CA1821",
-          "shortDescription": "Remove empty Finalizers",
-          "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpRemoveEmptyFinalizersAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA1824": {
           "id": "CA1824",
           "shortDescription": "Mark assemblies with NeutralResourcesLanguageAttribute",
@@ -298,25 +270,6 @@
             ]
           }
         },
-        "CA2201": {
-          "id": "CA2201",
-          "shortDescription": "Do not raise reserved exception types",
-          "fullDescription": "An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2201",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpDoNotRaiseReservedExceptionTypesAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA2207": {
           "id": "CA2207",
           "shortDescription": "Initialize value type static fields inline",
@@ -359,7 +312,7 @@
           "id": "CA3076",
           "shortDescription": "Insecure XSLT script processing.",
           "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3076",
           "properties": {
             "category": "Security",
@@ -377,7 +330,7 @@
           "id": "CA3077",
           "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
           "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3077",
           "properties": {
             "category": "Security",
@@ -443,8 +396,8 @@
         },
         "CA1010": {
           "id": "CA1010",
-          "shortDescription": "Collections should implement generic interface",
-          "fullDescription": "To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.",
+          "shortDescription": "Generic interface should also be implemented",
+          "fullDescription": "To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1010",
           "properties": {
@@ -1085,7 +1038,7 @@
           "id": "CA1067",
           "shortDescription": "Override Object.Equals(object) when implementing IEquatable<T>",
           "fullDescription": "When a type T implements the interface IEquatable<T>, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the \"principle of least surprise\".",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1067",
           "properties": {
             "category": "Design",
@@ -1478,26 +1431,6 @@
             ]
           }
         },
-        "CA1714": {
-          "id": "CA1714",
-          "shortDescription": "Flags enums should have plural names",
-          "fullDescription": "A public enumeration has the System.FlagsAttribute attribute, and its name does not end in \"\"s\"\". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1714",
-          "properties": {
-            "category": "Naming",
-            "isEnabledByDefault": false,
-            "typeName": "EnumsShouldHavePluralNamesAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA1715": {
           "id": "CA1715",
           "shortDescription": "Identifiers should have correct prefix",
@@ -1528,26 +1461,6 @@
             "category": "Naming",
             "isEnabledByDefault": true,
             "typeName": "IdentifiersShouldNotMatchKeywordsAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
-        "CA1717": {
-          "id": "CA1717",
-          "shortDescription": "Only FlagsAttribute enums should have plural names",
-          "fullDescription": "Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1717",
-          "properties": {
-            "category": "Naming",
-            "isEnabledByDefault": false,
-            "typeName": "EnumsShouldHavePluralNamesAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -1782,7 +1695,7 @@
           "id": "CA1816",
           "shortDescription": "Dispose methods should call SuppressFinalize",
           "fullDescription": "A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1816",
           "properties": {
             "category": "Usage",
@@ -1837,10 +1750,30 @@
             ]
           }
         },
+        "CA1821": {
+          "id": "CA1821",
+          "shortDescription": "Remove empty Finalizers",
+          "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "RemoveEmptyFinalizersAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
         "CA1822": {
           "id": "CA1822",
           "shortDescription": "Mark members as static",
-          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
+          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1822",
           "properties": {
@@ -2051,6 +1984,62 @@
             ]
           }
         },
+        "CA2012": {
+          "id": "CA2012",
+          "shortDescription": "Use ValueTasks correctly",
+          "fullDescription": "ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2012",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "UseValueTasksCorrectlyAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2013": {
+          "id": "CA2013",
+          "shortDescription": "Do not use ReferenceEquals with value types",
+          "fullDescription": "Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2013",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseReferenceEqualsWithValueTypesAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2014": {
+          "id": "CA2014",
+          "shortDescription": "Do not use stackalloc in loops.",
+          "fullDescription": "Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2014",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseStackallocInLoopsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
@@ -2076,7 +2065,7 @@
           "id": "CA2101",
           "shortDescription": "Specify marshaling for P/Invoke string arguments",
           "fullDescription": "A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2101",
           "properties": {
             "category": "Globalization",
@@ -2127,6 +2116,26 @@
               "Visual Basic"
             ],
             "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2201": {
+          "id": "CA2201",
+          "shortDescription": "Do not raise reserved exception types",
+          "fullDescription": "An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2201",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotRaiseReservedExceptionTypesAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
               "Telemetry"
             ]
           }
@@ -2436,7 +2445,7 @@
           "id": "CA2241",
           "shortDescription": "Provide correct arguments to formatting methods",
           "fullDescription": "The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2241",
           "properties": {
             "category": "Usage",
@@ -2456,7 +2465,7 @@
           "id": "CA2242",
           "shortDescription": "Test for NaN correctly",
           "fullDescription": "This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2242",
           "properties": {
             "category": "Usage",
@@ -2514,7 +2523,7 @@
           "id": "CA2245",
           "shortDescription": "Do not assign a property to itself.",
           "fullDescription": "The property {0} should not be assigned to itself.",
-          "defaultLevel": "warning",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2245",
           "properties": {
             "category": "Usage",
@@ -3086,7 +3095,7 @@
           "id": "CA3061",
           "shortDescription": "Do Not Add Schema By URL",
           "fullDescription": "This overload of XmlSchemaCollection.Add method internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3061",
           "properties": {
             "category": "Security",
@@ -3105,7 +3114,7 @@
           "id": "CA3075",
           "shortDescription": "Insecure DTD processing in XML",
           "fullDescription": "Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null. ",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3075",
           "properties": {
             "category": "Security",
@@ -3124,7 +3133,7 @@
           "id": "CA3147",
           "shortDescription": "Mark Verb Handlers With Validate Antiforgery Token",
           "fullDescription": "Missing ValidateAntiForgeryTokenAttribute on controller action {0}.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3147",
           "properties": {
             "category": "Security",
@@ -3143,7 +3152,7 @@
           "id": "CA5350",
           "shortDescription": "Do Not Use Weak Cryptographic Algorithms",
           "fullDescription": "Cryptographic algorithms degrade over time as attacks become for advances to attacker get access to more computation. Depending on the type and application of this cryptographic algorithm, further degradation of the cryptographic strength of it may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA-2 512, SHA-2 384, or SHA-2 256.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5350",
           "properties": {
             "category": "Security",
@@ -3162,7 +3171,7 @@
           "id": "CA5351",
           "shortDescription": "Do Not Use Broken Cryptographic Algorithms",
           "fullDescription": "An attack making it computationally feasible to break this algorithm exists. This allows attackers to break the cryptographic guarantees it is designed to provide. Depending on the type and application of this cryptographic algorithm, this may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA512, SHA384, or SHA256. Replace digital signature uses with RSA with a key length greater than or equal to 2048-bits, or ECDSA with a key length greater than or equal to 256 bits.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5351",
           "properties": {
             "category": "Security",
@@ -3179,8 +3188,8 @@
         },
         "CA5358": {
           "id": "CA5358",
-          "shortDescription": "Do Not Use Unsafe Cipher Modes",
-          "fullDescription": "These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).",
+          "shortDescription": "Review cipher mode usage with cryptography experts",
+          "fullDescription": "These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5358",
           "properties": {
@@ -3200,7 +3209,7 @@
           "id": "CA5359",
           "shortDescription": "Do Not Disable Certificate Validation",
           "fullDescription": "A certificate can help authenticate the identity of the server. Clients should validate the server certificate to ensure requests are sent to the intended server. If the ServerCertificateValidationCallback always returns 'true', any certificate will pass validation.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5359",
           "properties": {
             "category": "Security",
@@ -3219,7 +3228,7 @@
           "id": "CA5360",
           "shortDescription": "Do Not Call Dangerous Methods In Deserialization",
           "fullDescription": "Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5360",
           "properties": {
             "category": "Security",
@@ -3277,7 +3286,7 @@
           "id": "CA5363",
           "shortDescription": "Do Not Disable Request Validation",
           "fullDescription": "Request validation is a feature in ASP.NET that examines HTTP requests and determines whether they contain potentially dangerous content. This check adds protection from markup or code in the URL query string, cookies, or posted form values that might have been added for malicious purposes. So, it is generally desirable and should be left enabled for defense in depth.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5363",
           "properties": {
             "category": "Security",
@@ -3296,7 +3305,7 @@
           "id": "CA5364",
           "shortDescription": "Do Not Use Deprecated Security Protocols",
           "fullDescription": "Using a deprecated security protocol rather than the system default is risky.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5364",
           "properties": {
             "category": "Security",
@@ -3315,7 +3324,7 @@
           "id": "CA5365",
           "shortDescription": "Do Not Disable HTTP Header Checking",
           "fullDescription": "HTTP header checking enables encoding of the carriage return and newline characters, \\r and \\n, that are found in response headers. This encoding can help to avoid injection attacks that exploit an application that echoes untrusted data contained by the header.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5365",
           "properties": {
             "category": "Security",
@@ -3334,7 +3343,7 @@
           "id": "CA5366",
           "shortDescription": "Use XmlReader For DataSet Read Xml",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5366",
           "properties": {
             "category": "Security",
@@ -3372,7 +3381,7 @@
           "id": "CA5368",
           "shortDescription": "Set ViewStateUserKey For Classes Derived From Page",
           "fullDescription": "Setting the ViewStateUserKey property can help you prevent attacks on your application by allowing you to assign an identifier to the view-state variable for individual users so that they cannot use the variable to generate an attack. Otherwise, there will be cross-site request forgery vulnerabilities.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5368",
           "properties": {
             "category": "Security",
@@ -3391,7 +3400,7 @@
           "id": "CA5369",
           "shortDescription": "Use XmlReader For Deserialize",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5369",
           "properties": {
             "category": "Security",
@@ -3410,7 +3419,7 @@
           "id": "CA5370",
           "shortDescription": "Use XmlReader For Validating Reader",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5370",
           "properties": {
             "category": "Security",
@@ -3429,7 +3438,7 @@
           "id": "CA5371",
           "shortDescription": "Use XmlReader For Schema Read",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5371",
           "properties": {
             "category": "Security",
@@ -3448,7 +3457,7 @@
           "id": "CA5372",
           "shortDescription": "Use XmlReader For XPathDocument",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5372",
           "properties": {
             "category": "Security",
@@ -3467,7 +3476,7 @@
           "id": "CA5373",
           "shortDescription": "Do not use obsolete key derivation function",
           "fullDescription": "Password-based key derivation should use PBKDF2 with SHA-2. Avoid using PasswordDeriveBytes since it generates a PBKDF1 key. Avoid using Rfc2898DeriveBytes.CryptDeriveKey since it doesn't use the iteration count or salt.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5373",
           "properties": {
             "category": "Security",
@@ -3486,7 +3495,7 @@
           "id": "CA5374",
           "shortDescription": "Do Not Use XslTransform",
           "fullDescription": "Do not use XslTransform. It does not restrict potentially dangerous external references.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5374",
           "properties": {
             "category": "Security",
@@ -3584,7 +3593,7 @@
           "id": "CA5379",
           "shortDescription": "Do Not Use Weak Key Derivation Function Algorithm",
           "fullDescription": "Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5379",
           "properties": {
             "category": "Security",
@@ -3683,7 +3692,7 @@
           "id": "CA5384",
           "shortDescription": "Do Not Use Digital Signature Algorithm (DSA)",
           "fullDescription": "DSA is too weak to use.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5384",
           "properties": {
             "category": "Security",
@@ -3702,7 +3711,7 @@
           "id": "CA5385",
           "shortDescription": "Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size",
           "fullDescription": "Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5385",
           "properties": {
             "category": "Security",
@@ -3935,7 +3944,7 @@
           "id": "CA5397",
           "shortDescription": "Do not use deprecated SslProtocols values",
           "fullDescription": "Older protocol versions of Transport Layer Security (TLS) are less secure than TLS 1.2 and TLS 1.3, and are more likely to have new vulnerabilities. Avoid older protocol versions to minimize risk.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5397",
           "properties": {
             "category": "Security",
@@ -4247,25 +4256,6 @@
             ]
           }
         },
-        "CA1821": {
-          "id": "CA1821",
-          "shortDescription": "Remove empty Finalizers",
-          "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "BasicRemoveEmptyFinalizersAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA1824": {
           "id": "CA1824",
           "shortDescription": "Mark assemblies with NeutralResourcesLanguageAttribute",
@@ -4358,25 +4348,6 @@
             ]
           }
         },
-        "CA2201": {
-          "id": "CA2201",
-          "shortDescription": "Do not raise reserved exception types",
-          "fullDescription": "An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2201",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "BasicDoNotRaiseReservedExceptionTypesAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA2207": {
           "id": "CA2207",
           "shortDescription": "Initialize value type static fields inline",
@@ -4457,7 +4428,7 @@
           "id": "CA3076",
           "shortDescription": "Insecure XSLT script processing.",
           "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3076",
           "properties": {
             "category": "Security",
@@ -4475,7 +4446,7 @@
           "id": "CA3077",
           "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
           "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
-          "defaultLevel": "warning",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3077",
           "properties": {
             "category": "Security",

@@ -3,7 +3,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Data.ReviewSqlQueriesForSecurityVulnerabilities,
@@ -1647,7 +1646,7 @@ End Class");
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality." + ReviewSqlQueriesForSecurityVulnerabilities.RuleId + ".excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {

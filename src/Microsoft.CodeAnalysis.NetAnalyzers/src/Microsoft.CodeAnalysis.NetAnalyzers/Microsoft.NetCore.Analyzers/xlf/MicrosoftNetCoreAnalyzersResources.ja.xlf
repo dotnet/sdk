@@ -28,18 +28,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
-        <source>Do Not Use Unsafe Cipher Modes</source>
-        <target state="translated">安全ではない暗号モードを使用しないでください。</target>
+        <source>Review cipher mode usage with cryptography experts</source>
+        <target state="translated">暗号の専門家と暗号モードの使用を再検討する</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
-        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
-        <target state="translated">これらのモードは、攻撃に対して脆弱です。承認されたモード (CBC、CTS) のみを使用してください。</target>
+        <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">これらの暗号モードは攻撃に対して脆弱である可能性があります。推奨モード (CBC、CTS) の使用をご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
-        <source>It uses an unsafe Cipher Mode {0}</source>
-        <target state="translated">安全ではない暗号モード {0} を使用します</target>
+        <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">暗号の専門家と暗号モード '{0}' の使用を再検討してください。推奨モード (CBC、CTS) の使用をご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer BinaryFormatter</source>
-        <target state="translated">安全でない逆シリアライザー BinaryFormatter を使用しない</target>
+        <target state="translated">安全でないデシリアライザー BinaryFormatter を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
@@ -274,12 +274,12 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="translated">推奨された破棄パターンを使用して、'{0}' が作成したオブジェクトがすべてのパスで破棄されるようにします。可能なら、'using' ステートメントまたは 'using' 宣言内で作成を折り返します。または、try-finally パターンを、try 領域の前で宣言された専用のローカル変数と、'finally' 領域の非 null 値での条件なしの Dispose の呼び出し (例: 'x?.Dispose()') とともに使用します。オブジェクトが try 領域内で明示的に破棄されるか、dispose の所有権が他のオブジェクトまたはメソッドに移される場合、その操作のすぐ後で 'null' をローカル変数に割り当てて、'finally' 内での dispose の重複を回避します。</target>
+        <target state="translated">推奨された dispose パターンを使用して、'{0}' が作成したオブジェクトがすべてのパスで破棄されるようにします。可能なら、'using' ステートメントまたは 'using' 宣言内で作成をラップします。または、try-finally パターンを、try 領域の前で宣言された専用のローカル変数と、'finally' 領域の非 null 値での条件なしの Dispose の呼び出し (例: 'x?.Dispose()') とともに使用します。オブジェクトが try 領域内で明示的に破棄されるか、dispose の所有権が他のオブジェクトまたはメソッドに移される場合、その操作のすぐ後で 'null' をローカル変数に割り当てて、'finally' 内での dispose の重複を回避します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="translated">推奨された破棄パターンを使用して、'{0}' が作成したオブジェクトがすべての例外パスで破棄されるようにします。可能なら、'using' ステートメントまたは 'using' 宣言内で作成を折り返します。または、try-finally パターンを、try 領域の前で宣言された専用のローカル変数と、'finally' 領域の非 null 値での条件なしの Dispose の呼び出し (例: 'x?.Dispose()') とともに使用します。オブジェクトが try 領域内で明示的に破棄されるか、dispose の所有権が他のオブジェクトまたはメソッドに移される場合、その操作のすぐ後で 'null' をローカル変数に割り当てて、'finally' 内での dispose の重複を回避します。</target>
+        <target state="translated">推奨された dispose パターンを使用して、'{0}' が作成したオブジェクトがすべての例外パスで破棄されるようにします。可能なら、'using' ステートメントまたは 'using' 宣言内で作成をラップします。または、try-finally パターンを、try 領域の前で宣言された専用のローカル変数と、'finally' 領域の非 null 値での条件なしの Dispose の呼び出し (例: 'x?.Dispose()') とともに使用します。オブジェクトが try 領域内で明示的に破棄されるか、dispose の所有権が他のオブジェクトまたはメソッドに移される場合、その操作のすぐ後で 'null' をローカル変数に割り当てて、'finally' 内での dispose の重複を回避します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
@@ -319,7 +319,7 @@
       </trans-unit>
       <trans-unit id="DoNotAddSchemaByURLDescription">
         <source>This overload of XmlSchemaCollection.Add method internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.</source>
-        <target state="translated">XmlSchemaCollection.Add メソッドのこのオーバーロードは、使用される XML リーダー インスタンスでの DTD の処理を内部的に有効にし、外部の XML エンティティの解決に UrlResolver を使用します。結果として情報が漏えいします。XML を処理するマシンのファイル システムまたはネットワーク共有からのコンテンツが攻撃者に対して流出する可能性があります。また、攻撃者はこれを DoS ベクトルとして使用する可能性もあります。</target>
+        <target state="translated">XmlSchemaCollection.Add メソッドのこのオーバーロードは、使用される XML リーダー インスタンスでの DTD の処理を内部的に有効にし、外部の XML エンティティの解決に UrlResolver を使用します。結果として情報が漏えいします。XML を処理するマシンのファイル システムまたはネットワーク共有からのコンテンツが攻撃者に対して流出する可能性があります。また、攻撃者はこれを DoS ベクターとして使用する可能性もあります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAddSchemaByURLMessage">
@@ -395,6 +395,21 @@
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
         <source>Do not create tasks without passing a TaskScheduler</source>
         <target state="translated">TaskScheduler を渡さずにタスクを作成しない</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -737,6 +752,26 @@
         <target state="translated">非推奨のキー派生関数 {0}.{1} への呼び出し</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">値の型が '{0}' の引数を 'ReferenceEqualityComparer' の 'Equals' メソッドに渡さないでください。値のボックス化により、'Equals' へのこの呼び出しは、常に 'false' を返します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">値の型に型指定された引数は、このメソッドの呼び出しごとに一意にボックス化されるため、結果は常に false になります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">値の型が '{0}' の引数を 'ReferenceEquals' に渡さないでください。値のボックス化により、'ReferenceEquals' へのこの呼び出しは、常に 'false' を返します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">値の型で ReferenceEquals を使用しない</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">安全でない暗号アルゴリズム SHA1 を使用しない。</target>
@@ -745,6 +780,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">この型は、暗号として安全でないハッシュ関数である SHA1 を実装しています。SHA-1 と SHA-0 アルゴリズムでは、計算上、ハッシュの競合が起こる可能性があります。この使用を SHA-2 ファミリのハッシュ アルゴリズム (SHA512、SHA384、SHA256) に置き換えてください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1004,7 +1054,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver が指定されずに JavaScriptSerializer が初期化されていること、または逆シリアル化されたオブジェクト グラフ内のオブジェクトの種類を制限する JavaScriptTypeResolver で初期化されていることをご確認ください。</target>
+        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver が指定されずに JavaScriptSerializer が初期化されていること、または逆シリアル化されたオブジェクト グラフ内のオブジェクトの型を制限する JavaScriptTypeResolver で初期化されていることをご確認ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverTitle">
@@ -1014,7 +1064,7 @@
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.</source>
-        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver を指定せずに JavaScriptSerializer を初期化するか、逆シリアル化されたオブジェクト グラフ内のオブジェクトの種類を制限する JavaScriptTypeResolver で初期化します。</target>
+        <target state="translated">SimpleTypeResolver で初期化された JavaScriptSerializer で信頼されていないデータを逆シリアル化している場合、メソッド '{0}' は安全ではありません。JavaScriptTypeResolver を指定せずに JavaScriptSerializer を初期化するか、逆シリアル化されたオブジェクト グラフ内のオブジェクトの型を制限する JavaScriptTypeResolver で初期化します。</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerWithSimpleTypeResolverTitle">
@@ -1084,7 +1134,7 @@
       </trans-unit>
       <trans-unit id="LosFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer LosFormatter</source>
-        <target state="translated">安全でない逆シリアライザー LosFormatter を使用しない</target>
+        <target state="translated">安全でないデシリアライザー LosFormatter を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
@@ -1249,7 +1299,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerMethodUsedTitle">
         <source>Do not use insecure deserializer NetDataContractSerializer</source>
-        <target state="translated">安全でない逆シリアライザー NetDataContractSerializer を使用しない</target>
+        <target state="translated">安全でないデシリアライザー NetDataContractSerializer を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseDescription">
@@ -1274,7 +1324,7 @@
       </trans-unit>
       <trans-unit id="ObjectStateFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer ObjectStateFormatter</source>
-        <target state="translated">安全でない逆シリアライザー ObjectStateFormatter を使用しない</target>
+        <target state="translated">安全でないデシリアライザー ObjectStateFormatter を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1310,6 +1360,26 @@
       <trans-unit id="PInvokesShouldNotBeVisibleTitle">
         <source>P/Invokes should not be visible</source>
         <target state="translated">P/Invokes は参照可能にすることはできません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
+        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
+        <target state="new">Remove the ToString call in order to use a strongly-typed StringBuilder overload.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
+        <source>Remove the ToString call</source>
+        <target state="new">Remove the ToString call</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
+        <target state="new">Prefer strongly-typed Append and Insert method overloads on StringBuilder.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1369,7 +1439,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的な DLL インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的な DLL インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
@@ -1379,7 +1449,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
         <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的なファイル パス インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的なファイル パス インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
@@ -1399,7 +1469,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
         <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的な LDAP インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的な LDAP インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
@@ -1409,7 +1479,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesMessage">
         <source>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的なオープン リダイレクトの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的なオープン リダイレクトの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesTitle">
@@ -1419,7 +1489,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
         <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的なプロセス コマンド インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的なプロセス コマンド インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
@@ -1429,7 +1499,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
         <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的な正規表現インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的な正規表現インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
@@ -1439,7 +1509,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
         <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的な SQL インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的な SQL インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
@@ -1449,7 +1519,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
         <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的な XAML インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的な XAML インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
@@ -1459,7 +1529,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
         <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的な XML インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的な XML インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
@@ -1469,7 +1539,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
         <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的な XPath インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的な XPath インジェクションの脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">
@@ -1479,7 +1549,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesMessage">
         <source>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">潜在的なクロスサイト スクリプト (XSS) の脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって汚染される可能性があります。</target>
+        <target state="translated">潜在的なクロスサイト スクリプト (XSS) の脆弱性が見つかりました。メソッド '{1}' の '{0}' は、メソッド '{3}' の '{2}' からのユーザーが制御するデータによって悪用される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesTitle">
@@ -1790,6 +1860,36 @@
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
         <target state="translated">可能な場合は、Shared Access Signature (SAS) の代わりに、Azure のロールベースのアクセス制御を使用することを検討してください。依然として SAS を使用する必要がある場合は、SharedAccessProtocol を指定します。 HttpsOnly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="translated">メンバー呼び出しから返される ValueTask は、直接待機されるよう意図されています。1 つの ValueTask を複数回使用しようとしたり、完了が判明する前に結果に直接アクセスしようとしたりすると、例外または破損が発生する可能性があります。このような ValueTask を無視することは、機能的なバグを示していることが多く、パフォーマンスを低下させる可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="translated">ValueTask インスタンスがまだ完了していない場合は、そのインスタンスの結果に直接アクセスさせないようにしてください。Task とは異なり、ValueTask に対する Result または GetAwaiter().GetResult() の呼び出しは、操作が完了するまでブロックされることが保証されていません。単純にインスタンスを待機することができない場合は、最初にその IsCompleted プロパティを確認することをお勧めします (あるいは、該当する場合は、それが true であることをアサートします)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="translated">ValueTask インスタンスは、await を使用するなどして、1 回限り使用する必要があります。同じ ValueTask インスタンスを複数回使用すると、例外やデータの破損が発生する可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="translated">メソッド呼び出しから返される ValueTask インスタンスは、直接待機されるか、返されるか、または別のメソッド呼び出しへの引数として渡される必要があります。ValueTask インスタンスの使用は 1 回限りにする必要があるため、ローカルまたはフィールドにインスタンスを保存するなどの他の使用方法は、バグを示している可能性が高くなります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="translated">メソッド呼び出しから返される ValueTask インスタンスは常に使用する必要があり、通常は待機される必要があります。そのようにしないことは機能的なバグを表すことが多く、そうでなくても、ValueTask で使用するオブジェクトがターゲット メソッドでプールされるとパフォーマンスが低下する可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="translated">ValueTask を正しく使用する必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

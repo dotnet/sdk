@@ -32,7 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 s_Title,
                 s_Message,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_Description,
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
             context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
             {
-                var compilation = compilationStartAnalysisContext.Compilation;
+                Compilation compilation = compilationStartAnalysisContext.Compilation;
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationStartAnalysisContext.Compilation);
 
                 if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebUIPage, out var pageTypeSymbol) ||

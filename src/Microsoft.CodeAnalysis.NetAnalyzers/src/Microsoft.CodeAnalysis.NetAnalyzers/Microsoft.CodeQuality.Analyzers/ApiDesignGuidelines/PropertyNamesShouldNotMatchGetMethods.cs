@@ -40,11 +40,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            // Analyze properties, methods
-            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property, SymbolKind.Method);
+            analysisContext.RegisterCompilationStartAction(context =>
+            {
+                var obsoleteAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+
+                // Analyze properties, methods
+                context.RegisterSymbolAction(ctx => AnalyzeSymbol(ctx, obsoleteAttributeType), SymbolKind.Property, SymbolKind.Method);
+            });
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, INamedTypeSymbol? obsoleteAttributeType)
         {
             string identifier;
             var symbol = context.Symbol;
@@ -62,6 +67,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // Bail out if the method/property is not exposed (public, protected, or protected internal) by default
             var configuredVisibilities = context.Options.GetSymbolVisibilityGroupOption(Rule, SymbolVisibilityGroup.Public, context.CancellationToken);
             if (!configuredVisibilities.Contains(symbol.GetResultantVisibility()))
+            {
+                return;
+            }
+
+            // If either the property or method is marked as obsolete, bail out
+            // see https://github.com/dotnet/roslyn-analyzers/issues/2956
+            if (symbol.HasAttribute(obsoleteAttributeType))
             {
                 return;
             }
@@ -99,6 +111,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // Ignore members whose IsStatic does not match with the symbol's IsStatic
                     if (symbol.IsStatic != member.IsStatic)
+                    {
+                        continue;
+                    }
+
+                    // If either the property or method is marked as obsolete, bail out
+                    // see https://github.com/dotnet/roslyn-analyzers/issues/2956
+                    if (member.HasAttribute(obsoleteAttributeType))
                     {
                         continue;
                     }

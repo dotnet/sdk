@@ -54,32 +54,32 @@
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
         <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call might result in an infinite recursion.</target>
+        <target state="translated">請不要在屬性的 setter 中指派屬性。此呼叫可能會導致無限遞迴。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageSure">
         <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call will result in an infinite recursion.</target>
+        <target state="translated">請不要在屬性的 setter 中指派屬性。此呼叫將會導致無限遞迴。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionTitle">
         <source>Avoid infinite recursion</source>
-        <target state="new">Avoid infinite recursion</target>
+        <target state="translated">避免無限遞迴</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</target>
+        <target state="translated">藉傳址傳遞類型 (使用 'out' 或 'ref') 需有指標經驗、了解實值型別與參考型別之間的差異，以及處理具有多個傳回值的方法。而且，大家普遍不了解 'out' 與 'ref' 參數之間的差異。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersMessage">
         <source>Avoid 'out' parameters as they are not designed for general audience.</source>
-        <target state="new">Avoid 'out' parameters as they are not designed for general audience.</target>
+        <target state="translated">因為不是為一般對象設計，所以請避免使用 'out' 參數。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersTitle">
         <source>Avoid out parameters</source>
-        <target state="new">Avoid out parameters</target>
+        <target state="translated">避免使用 out 參數</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
@@ -110,6 +110,21 @@
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">請勿將 Async Lambdas 傳遞為 Void 傳回委派類型</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceDescription">
+        <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
+        <target state="new">Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceMessage">
+        <source>Consider a design that does not require that '{0}' be a reference parameter.</source>
+        <target state="new">Consider a design that does not require that '{0}' be a reference parameter.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceTitle">
+        <source>Do not pass types by reference</source>
+        <target state="new">Do not pass types by reference</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
@@ -144,17 +159,17 @@
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
         <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
-        <target state="new">The field reference '{0}' is duplicated in this bitwise initialization.</target>
+        <target state="translated">欄位參考 '{0}' 在此位元初始化中重複。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
         <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
-        <target state="new">The enum member '{0}' has the same constant value '{1}' as member '{2}'.</target>
+        <target state="translated">列舉成員 '{0}' 具有與成員 '{2}' 相同的常數值 '{1}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
         <source>Enums values should not be duplicated</source>
-        <target state="new">Enums values should not be duplicated</target>
+        <target state="translated">列舉值不應重複</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -718,18 +733,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">集合應實作泛型介面</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="translated">應同時實作一般介面</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">若要放寬集合的可用性，請實作其中一個泛型集合介面。接著，可使用該集合填入泛型集合類型。</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="translated">若要擴大類型的可用性，請實作其中一個一般介面。這項做法特別適用於集合，原因是可以讓集合用於填入一般集合類型。</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">集合 '{0}' 沒有實作 '{2}' 便直接或間接繼承 '{1}'。公開可見的集合應實作一般版本以擴大可用性。</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">類型 '{0}' 未實作 '{2}' 便直接或間接繼承 '{1}'。公開顯示的類型應實作一般版本以擴大可用性。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1948,13 +1963,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">不會存取執行個體資料或呼叫執行個體方法的成員，可標記為 Static (在 Visual Basic 中為 Shared)。當您將方法標記為靜態之後，編譯器會發出這些成員的非虛擬呼叫位置。如此即可讓重視效能的程式碼能獲得可觀的效能。</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="translated">不會存取執行個體資料或呼叫執行個體方法的成員，可標記為靜態。當您將方法標記為靜態之後，編譯器會對這些成員發出非虛擬呼叫位置。您如此即可針對重視效能的程式碼，取得可衡量的效能提升。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">成員 {0} 不會存取執行個體資料，且可標記為 Static (在 VisualBasic 中為 Shared)</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="translated">成員 '{0}' 不會存取執行個體資料，因而可標記為靜態</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

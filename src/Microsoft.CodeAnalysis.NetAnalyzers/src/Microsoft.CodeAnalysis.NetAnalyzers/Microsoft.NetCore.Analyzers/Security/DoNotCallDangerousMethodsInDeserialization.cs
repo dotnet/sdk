@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 s_Title,
                 s_Message,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_Description,
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
@@ -160,7 +160,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         break;
 
                                     case IFieldReferenceOperation fieldReferenceOperation:
-                                        var fieldSymbol = (IFieldSymbol)fieldReferenceOperation.Field;
+                                        var fieldSymbol = fieldReferenceOperation.Field;
                                         possibleDelegateSymbol = fieldSymbol.Type; // Delegate field.
 
                                         if (possibleDelegateSymbol.TypeKind != TypeKind.Delegate)

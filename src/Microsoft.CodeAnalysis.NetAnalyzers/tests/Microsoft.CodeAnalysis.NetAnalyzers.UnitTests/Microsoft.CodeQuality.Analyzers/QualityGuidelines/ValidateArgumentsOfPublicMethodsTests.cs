@@ -6084,12 +6084,12 @@ public class Class1
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality." + ValidateArgumentsOfPublicMethods.RuleId + ".excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.cs(6,17): warning CA1062: In externally visible method 'void Test.M1(string str)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(6, 17, "void Test.M1(string str)", "str")
@@ -6122,7 +6122,7 @@ public class Test
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.vb(4,17): warning CA1062: In externally visible method 'Sub Test.M1(str As String)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetBasicResultAt(4, 17, "Sub Test.M1(str As String)", "str")
@@ -6161,7 +6161,7 @@ End Class
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.cs(6,17): warning CA1062: In externally visible method 'void Test.M1(string str)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(6, 17, "void Test.M1(string str)", "str")
@@ -6193,7 +6193,7 @@ public static class Test
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.vb(7,17): warning CA1062: In externally visible method 'Sub Test.M1(str As String)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetBasicResultAt(7, 17, "Sub Test.M1(str As String)", "str")

@@ -113,7 +113,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var interfaceTypeSuffixMap = interfaceTypeSuffixMapBuilder.ToImmutable();
 
             var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
-                defaultValue: false, cancellationToken: context.CancellationToken);
+                defaultValue: true, cancellationToken: context.CancellationToken);
 
             context.RegisterSymbolAction((saContext) =>
             {
@@ -127,7 +127,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
 
                 var baseTypes = excludeIndirectBaseTypes
-                    ? (new[] { namedTypeSymbol.BaseType })
+                    ? namedTypeSymbol.BaseType != null ? ImmutableArray.Create(namedTypeSymbol.BaseType) : ImmutableArray<INamedTypeSymbol>.Empty
                     : namedTypeSymbol.GetBaseTypes();
 
                 if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typeSuffixInfo))
@@ -176,7 +176,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
 
         private static bool TryGetTypeSuffix(IEnumerable<INamedTypeSymbol> typeSymbols, ImmutableDictionary<INamedTypeSymbol, SuffixInfo> hardcodedMap,
-            SymbolNamesOption userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
+            SymbolNamesWithValueOption<string> userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
         {
             foreach (var type in typeSymbols)
             {
@@ -199,7 +199,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
     }
 
-    class SuffixInfo
+    internal class SuffixInfo
     {
         public string Suffix { get; private set; }
         public bool CanSuffixBeCollection { get; private set; }

@@ -19,7 +19,7 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 namespace Microsoft.NetCore.Analyzers.Security
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    class DoNotDisableHttpClientCRLCheck : DiagnosticAnalyzer
+    internal class DoNotDisableHttpClientCRLCheck : DiagnosticAnalyzer
     {
         internal static DiagnosticDescriptor DefinitelyDisableHttpClientCRLCheckRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5399",
@@ -105,8 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         private static readonly ImmutableHashSet<string> typeToTrackMetadataNames = ImmutableHashSet.Create<string>(
             WellKnownTypeNames.SystemNetHttpWinHttpHandler,
-            WellKnownTypeNames.SystemNetHttpHttpClientHandler,
-            WellKnownTypeNames.SystemNetHttpCurlHandler);
+            WellKnownTypeNames.SystemNetHttpHttpClientHandler);
 
         public override void Initialize(AnalysisContext context)
         {

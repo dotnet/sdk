@@ -1,5 +1,11 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+// Enable "Humanizer" based rules only in FxCopAnalyzers package.
+// We do not have separate tests for FxCopAnalyzers package, so also keep it enabled for NetAnalyzers test project to retain test coverage.
+#if FXCOP_ANALYZERS || NET_ANALYZERS_TEST
+
+#nullable enable
+
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -8,6 +14,8 @@ using Analyzer.Utilities.Extensions;
 using Humanizer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+
+#pragma warning disable RS1029 // Do not use reserved diagnostic IDs. - fires for this analyzer file included in unit test project.
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -18,7 +26,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class EnumsShouldHavePluralNamesAnalyzer : DiagnosticAnalyzer
     {
-        #region CA1714
         internal const string RuleId_Plural = "CA1714";
 
         private static readonly LocalizableString s_localizableTitle_CA1714 =
@@ -50,9 +57,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 isPortedFxCopRule: true,
                 isDataflowRule: false);
 
-        #endregion
-
-        #region CA1717
         internal const string RuleId_NoPlural = "CA1717";
 
         private static readonly LocalizableString s_localizableTitle_CA1717 =
@@ -83,8 +87,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 description: s_localizableDescription_CA1717,
                 isPortedFxCopRule: true,
                 isDataflowRule: false);
-
-        #endregion
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule_CA1714, Rule_CA1717);
 
@@ -155,3 +157,4 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     }
 }
 
+#endif

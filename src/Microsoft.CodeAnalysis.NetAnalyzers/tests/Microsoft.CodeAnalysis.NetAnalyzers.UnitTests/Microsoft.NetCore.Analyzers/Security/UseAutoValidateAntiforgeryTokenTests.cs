@@ -2,10 +2,8 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseAutoValidateAntiforgeryToken,
@@ -24,9 +22,10 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         {
             var csharpTest = new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAspNetCoreMvc,
                 TestState =
                 {
-                    Sources = { source, ASPNetCoreApis.CSharp }
+                    Sources = { source, "public class MyValidateAntiForgeryAttribute : System.Attribute {}" }
                 },
             };
 
@@ -350,12 +349,12 @@ class TestClass5 : Controller
             GetCSharpResultAt(48, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod5", "HttpPut"));
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false")]
-        public async Task EditorConfigConfiguration_OnlyLookAtDerivedClassesOfController_DefaultValue_Diagnostic(string editorConfigText)
+        [Fact]
+        public async Task EditorConfigConfiguration_OnlyLookAtDerivedClassesOfController_DefaultValue_Diagnostic()
         {
             var csharpTest = new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAspNetCoreMvc,
                 TestState =
                 {
                     Sources =
@@ -363,6 +362,8 @@ class TestClass5 : Controller
                         @"
 using System;
 using Microsoft.AspNetCore.Mvc;
+
+public class MyValidateAntiForgeryAttribute : Attribute {}
 
 [MyValidateAntiForgeryAttribute]
 class MakeSureValidateAntiForgeryAttributeIsUsedSomeWhereClass : ControllerBase
@@ -378,26 +379,12 @@ class TestClass : ControllerBase
     }
 }",
                     },
-                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false") }
                 },
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                        var sideProject = solution.AddProject("DependencyProject", "DependencyProject", LanguageNames.CSharp)
-                            .AddDocument("Dependency.cs", ASPNetCoreApis.CSharp).Project
-                            .AddMetadataReferences(solution.GetProject(projectId).MetadataReferences)
-                            .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-                        return sideProject.Solution.GetProject(projectId)
-                            .AddProjectReference(new ProjectReference(sideProject.Id))
-                            .Solution;
-                    }
-                }
             };
 
             csharpTest.ExpectedDiagnostics.Add(
-                GetCSharpResultAt(13, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete")
+                GetCSharpResultAt(15, 35, UseAutoValidateAntiforgeryToken.UseAutoValidateAntiforgeryTokenRule, "CustomizedActionMethod", "HttpDelete")
             );
 
             await csharpTest.RunAsync();
@@ -743,7 +730,7 @@ class FilterClass : IAsyncAuthorizationFilter
 {
     public MyAntiforgery myAntiforgery;
 
-    public Task OnAuthorizationAsync (AuthorizationFilterContext context)
+    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
         HttpContext httpContext = null;
         return myAntiforgery.ValidateRequestAsync(httpContext);
@@ -752,16 +739,17 @@ class FilterClass : IAsyncAuthorizationFilter
 
 class MyAntiforgery : IAntiforgery
 {
-    public Task ValidateRequestAsync (HttpContext httpContext)
-    {
-        return null;
-    }
+    public AntiforgeryTokenSet GetAndStoreTokens(HttpContext httpContext) => null;
+    public AntiforgeryTokenSet GetTokens(HttpContext httpContext) => null;
+    public Task<bool> IsRequestValidAsync(HttpContext httpContext) => null;
+    public void SetCookieTokenAndHeader(HttpContext httpContext) {}
+    public Task ValidateRequestAsync(HttpContext httpContext) => null;
 }
 
 class TestClass : ControllerBase
 {
     [HttpDelete]
-    public AcceptedAtActionResult CustomizedActionMethod (string actionName)
+    public AcceptedAtActionResult CustomizedActionMethod(string actionName)
     {
         return null;
     }
@@ -863,10 +851,11 @@ class FilterClass : IAsyncAuthorizationFilter
 
 class MyAntiforgery : IAntiforgery
 {
-    public Task ValidateRequestAsync (HttpContext httpContext)
-    {
-        return null;
-    }
+    public AntiforgeryTokenSet GetAndStoreTokens(HttpContext httpContext) => null;
+    public AntiforgeryTokenSet GetTokens(HttpContext httpContext) => null;
+    public Task<bool> IsRequestValidAsync(HttpContext httpContext) => null;
+    public void SetCookieTokenAndHeader(HttpContext httpContext) {}
+    public Task ValidateRequestAsync(HttpContext httpContext) => null;
 }
 
 class TestClass : ControllerBase
@@ -1427,6 +1416,7 @@ class BlahClass
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAspNetCoreMvc,
                 TestState =
                 {
                     Sources =
@@ -1434,6 +1424,8 @@ class BlahClass
                         @"
 using System;
 using Microsoft.AspNetCore.Mvc;
+
+public class MyValidateAntiForgeryAttribute : Attribute {}
 
 [MyValidateAntiForgeryAttribute]
 class MakeSureValidateAntiForgeryAttributeIsUsedSomeWhereClass : ControllerBase
@@ -1451,20 +1443,6 @@ class TestClass : ControllerBase
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText) }
                 },
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                        var sideProject = solution.AddProject("DependencyProject", "DependencyProject", LanguageNames.CSharp)
-                            .AddDocument("Dependency.cs", ASPNetCoreApis.CSharp).Project
-                            .AddMetadataReferences(solution.GetProject(projectId).MetadataReferences)
-                            .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-                        return sideProject.Solution.GetProject(projectId)
-                            .AddProjectReference(new ProjectReference(sideProject.Id))
-                            .Solution;
-                    }
-                }
             }.RunAsync();
         }
     }

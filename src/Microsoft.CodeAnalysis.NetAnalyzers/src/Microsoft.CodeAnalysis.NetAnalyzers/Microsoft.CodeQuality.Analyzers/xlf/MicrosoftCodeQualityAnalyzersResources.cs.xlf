@@ -54,32 +54,32 @@
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
         <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call might result in an infinite recursion.</target>
+        <target state="translated">Nepřiřazujte vlastnost v její metodě setter. Toto volání může způsobit nekonečnou rekurzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageSure">
         <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
-        <target state="new">Do not assign the property within its setter. This call will result in an infinite recursion.</target>
+        <target state="translated">Nepřiřazujte vlastnost v její metodě setter. Toto volání způsobí nekonečnou rekurzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionTitle">
         <source>Avoid infinite recursion</source>
-        <target state="new">Avoid infinite recursion</target>
+        <target state="translated">Zabránit nekonečné rekurzi</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</target>
+        <target state="translated">Předávání typů podle odkazu (jako out nebo ref) vyžaduje zkušenost s ukazateli, porozumění rozdílu mezi hodnotovými a odkazovými typy a obeznámenost s metodami s více návratovými hodnotami. Navíc není široce rozšířeno chápání rozdílu mezi parametry out a ref.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersMessage">
         <source>Avoid 'out' parameters as they are not designed for general audience.</source>
-        <target state="new">Avoid 'out' parameters as they are not designed for general audience.</target>
+        <target state="translated">Nenastavujte parametry out, protože nejsou určené pro širokou cílovou skupinu.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersTitle">
         <source>Avoid out parameters</source>
-        <target state="new">Avoid out parameters</target>
+        <target state="translated">Vyhněte se výstupním parametrům</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
@@ -110,6 +110,21 @@
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">Nepředávejte asynchronní výrazy lambda jako typy delegátů vracející hodnotu Void.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceDescription">
+        <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
+        <target state="new">Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceMessage">
+        <source>Consider a design that does not require that '{0}' be a reference parameter.</source>
+        <target state="new">Consider a design that does not require that '{0}' be a reference parameter.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceTitle">
+        <source>Do not pass types by reference</source>
+        <target state="new">Do not pass types by reference</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
@@ -144,17 +159,17 @@
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
         <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
-        <target state="new">The field reference '{0}' is duplicated in this bitwise initialization.</target>
+        <target state="translated">Odkaz na pole {0} je v této bitové inicializaci duplicitní.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
         <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
-        <target state="new">The enum member '{0}' has the same constant value '{1}' as member '{2}'.</target>
+        <target state="translated">Člen výčtu {0} má stejnou konstantní hodnotu {1} jako člen {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
         <source>Enums values should not be duplicated</source>
-        <target state="new">Enums values should not be duplicated</target>
+        <target state="translated">Hodnoty výčtů by neměly být duplicitní</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -718,18 +733,18 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceTitle">
-        <source>Collections should implement generic interface</source>
-        <target state="translated">Kolekce mají implementovat obecné rozhraní.</target>
+        <source>Generic interface should also be implemented</source>
+        <target state="translated">Mělo by se také implementovat obecné rozhraní</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceDescription">
-        <source>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</source>
-        <target state="translated">Kvůli rozšíření použitelnosti kolekce implementujte některé z obecných rozhraní kolekce. Tato kolekce se pak dá použít k naplnění obecných typů kolekcí.</target>
+        <source>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</source>
+        <target state="translated">Jestli chcete rozšířit použitelnost typu, implementujte jedno z obecných rozhraní. To platí především pro kolekce, protože se pak dají použít k naplnění obecných typů kolekce.</target>
         <note />
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMessage">
-        <source>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</source>
-        <target state="translated">Kolekce {0} přímo nebo nepřímo dědí {1} bez implementace {2}. Veřejně viditelné kolekce by kvůli větší využitelnosti měly implementovat obecnou verzi.</target>
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">Typ {0} přímo nebo nepřímo dědí {1} bez implementace {2}. Veřejně viditelné typy by kvůli větší využitelnosti měly implementovat obecnou verzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Title">
@@ -1749,7 +1764,7 @@
       </trans-unit>
       <trans-unit id="VariableNamesShouldNotMatchFieldNamesDescription">
         <source>An instance method declares a parameter or a local variable whose name matches an instance field of the declaring type, leading to errors.</source>
-        <target state="translated">Instanční metoda deklaruje parametr nebo lokální proměnnou, jejíž název se shoduje s polem instance deklarujícího typu, což způsobí chyby.</target>
+        <target state="translated">Metoda instance deklaruje parametr nebo lokální proměnnou, jejíž název se shoduje s polem instance deklarujícího typu, což způsobí chyby.</target>
         <note />
       </trans-unit>
       <trans-unit id="VariableNamesShouldNotMatchFieldNamesMessageLocal">
@@ -1948,13 +1963,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticDescription">
-        <source>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
-        <target state="translated">Členy, které nemají přístup k datům instance nebo volají instanční metody, je možné označit jako statické (Shared ve Visual Basicu). Po označení metod jako statických bude kompilátor generovat nevirtuální lokality volání pro tyto členy. Tím získáte měřitelný nárůst výkonu u kódu citlivého na výkon.</target>
+        <source>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</source>
+        <target state="translated">Členy, které nemají přístup k datům instance nebo volají metody instance, je možné označit jako statické. Po označení metod jako statických bude kompilátor pro tyto členy generovat nevirtuální lokality volání. Tím u kódu citlivého na výkon získáte měřitelný nárůst výkonu.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticMessage">
-        <source>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</source>
-        <target state="translated">Člen {0} nemá přístup k datům instance a je možné ho označit jako statický (Shared ve Visual Basicu).</target>
+        <source>Member '{0}' does not access instance data and can be marked as static</source>
+        <target state="translated">Člen {0} nemá přístup k datům instance a je možné ho označit jako statický.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersTitle">

@@ -141,13 +141,13 @@ using System;
 
 public abstract class Base
 {
-    public abstract void BaseMethod(object okay, object obj);
+    public abstract void BaseMethod(object okay, object @object);
     public abstract int this[Guid guid] { get; }
 }
 
 public class Derived : Base
 {
-    public override void BaseMethod(object okay, object obj)
+    public override void BaseMethod(object okay, object @object)
     {
     }
 
@@ -156,7 +156,7 @@ public class Derived : Base
         get { return 0; }
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 57, identifierName: "obj"),
+    GetCA1720CSharpResultAt(line: 6, column: 57, identifierName: "object"),
     GetCA1720CSharpResultAt(line: 7, column: 35, identifierName: "guid"));
         }
 
@@ -168,7 +168,7 @@ using System;
 
 public class Base
 {
-    public virtual void BaseMethod(object okay, object obj) 
+    public virtual void BaseMethod(object okay, object @object) 
     { 
     }
 
@@ -180,7 +180,7 @@ public class Base
 
 public class Derived : Base
 {
-    public override void BaseMethod(object okay, object obj) 
+    public override void BaseMethod(object okay, object @object) 
     { 
     }
 
@@ -189,7 +189,7 @@ public class Derived : Base
         get { return 1; }
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 56, identifierName: "obj"),
+    GetCA1720CSharpResultAt(line: 6, column: 56, identifierName: "object"),
     GetCA1720CSharpResultAt(line: 10, column: 34, identifierName: "guid"));
         }
 
@@ -199,7 +199,7 @@ public class Derived : Base
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Base
 {
-    public virtual void BaseMethod(object okay, object obj)
+    public virtual void BaseMethod(object okay, object @object)
     {
     }
 }
@@ -210,11 +210,11 @@ public class Derived : Base
 
 public class SomeClass : Derived
 {
-    public override void BaseMethod(object okay, object obj)
+    public override void BaseMethod(object okay, object @object)
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 4, column: 56, identifierName: "obj"));
+    GetCA1720CSharpResultAt(line: 4, column: 56, identifierName: "object"));
         }
 
         [Fact]
@@ -225,16 +225,16 @@ using System;
 
 public interface IDerived
 {
-    void DerivedMethod(object okay, object obj);
+    void DerivedMethod(object okay, object @object);
 }
 
 public class Derived : IDerived
 {
-    public void DerivedMethod(object okay, object obj) 
+    public void DerivedMethod(object okay, object @object) 
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "obj"));
+    GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "object"));
         }
 
         [Fact]
@@ -245,16 +245,16 @@ using System;
 
 public interface IDerived
 {
-    void DerivedMethod(object okay, object obj);
+    void DerivedMethod(object okay, object @object);
 }
 
 public class Derived : IDerived
 {
-    void IDerived.DerivedMethod(object okay, object obj) 
+    void IDerived.DerivedMethod(object okay, object @object) 
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "obj"));
+    GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "object"));
         }
 
         [Fact]
@@ -265,17 +265,17 @@ using System;
 
 public interface IDerived<in T1, in T2>
 {
-    void DerivedMethod(int okay, T1 obj, T2 @int);
+    void DerivedMethod(int okay, T1 @object, T2 @int);
 }
 
 public class Derived : IDerived<int, string>
 {
-    public void DerivedMethod(int okay, int obj, string @int)
+    public void DerivedMethod(int okay, int @object, string @int)
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 37, identifierName: "obj"),
-    GetCA1720CSharpResultAt(line: 6, column: 45, identifierName: "int"));
+    GetCA1720CSharpResultAt(line: 6, column: 37, identifierName: "object"),
+    GetCA1720CSharpResultAt(line: 6, column: 49, identifierName: "int"));
         }
 
         [Fact]
@@ -286,17 +286,17 @@ using System;
 
 public interface IDerived<in T1, in T2>
 {
-    void DerivedMethod(int okay, T1 obj, T2 @int);
+    void DerivedMethod(int okay, T1 @object, T2 @int);
 }
 
 public class Derived : IDerived<int, string>
 {
-    void IDerived<int, string>.DerivedMethod(int okay, int obj, string @int)
+    void IDerived<int, string>.DerivedMethod(int okay, int @object, string @int)
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 37, identifierName: "obj"),
-    GetCA1720CSharpResultAt(line: 6, column: 45, identifierName: "int"));
+    GetCA1720CSharpResultAt(line: 6, column: 37, identifierName: "object"),
+    GetCA1720CSharpResultAt(line: 6, column: 49, identifierName: "int"));
         }
 
         [Fact]
@@ -307,7 +307,7 @@ using System;
 
 public interface IDerived
 {
-    void DerivedMethod(object okay, object obj);
+    void DerivedMethod(object okay, object @object);
 }
 
 public interface IMyInterface : IDerived
@@ -316,11 +316,11 @@ public interface IMyInterface : IDerived
 
 public class Derived : IMyInterface
 {
-    public void DerivedMethod(object okay, object obj) 
+    public void DerivedMethod(object okay, object @object) 
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "obj"));
+    GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "object"));
         }
 
         [Fact]
@@ -331,7 +331,7 @@ using System;
 
 public interface IDerived
 {
-    void DerivedMethod(object okay, object obj);
+    void DerivedMethod(object okay, object @object);
 }
 
 public interface IMyInterface : IDerived
@@ -340,11 +340,11 @@ public interface IMyInterface : IDerived
 
 public class Derived : IMyInterface
 {
-    void IDerived.DerivedMethod(object okay, object obj) 
+    void IDerived.DerivedMethod(object okay, object @object) 
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "obj"));
+    GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "object"));
         }
 
         [Fact]
@@ -355,7 +355,7 @@ using System;
 
 public interface IDerived<in T1, in T2>
 {
-    void DerivedMethod(int okay, T1 obj, T2 @int);
+    void DerivedMethod(int okay, T1 @object, T2 @int);
 }
 
 public interface IMyInterface<in T1, in T2> : IDerived<T1, T2>
@@ -364,12 +364,12 @@ public interface IMyInterface<in T1, in T2> : IDerived<T1, T2>
 
 public class Derived : IMyInterface<int, string>
 {
-    public void DerivedMethod(int okay, int obj, string @int)
+    public void DerivedMethod(int okay, int @object, string @int)
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 37, identifierName: "obj"),
-    GetCA1720CSharpResultAt(line: 6, column: 45, identifierName: "int"));
+    GetCA1720CSharpResultAt(line: 6, column: 37, identifierName: "object"),
+    GetCA1720CSharpResultAt(line: 6, column: 49, identifierName: "int"));
         }
 
         [Fact]
@@ -380,7 +380,7 @@ using System;
 
 public interface IDerived<in T1, in T2>
 {
-    void DerivedMethod(int okay, T1 obj, T2 @int);
+    void DerivedMethod(int okay, T1 @object, T2 @int);
 }
 
 public interface IMyInterface<in T1, in T2> : IDerived<T1, T2>
@@ -389,12 +389,12 @@ public interface IMyInterface<in T1, in T2> : IDerived<T1, T2>
 
 public class Derived : IMyInterface<int, string>
 {
-    void IDerived<int, string>.DerivedMethod(int okay, int obj, string @int)
+    void IDerived<int, string>.DerivedMethod(int okay, int @object, string @int)
     {
     }
 }",
-    GetCA1720CSharpResultAt(line: 6, column: 37, identifierName: "obj"),
-    GetCA1720CSharpResultAt(line: 6, column: 45, identifierName: "int"));
+    GetCA1720CSharpResultAt(line: 6, column: 37, identifierName: "object"),
+    GetCA1720CSharpResultAt(line: 6, column: 49, identifierName: "int"));
         }
 
         [Fact]
@@ -447,6 +447,16 @@ public sealed class SomeEqualityComparer : IEqualityComparer<string>, IEqualityC
     }
 }
 ");
+        }
+
+        [Fact, WorkItem(1823, "https://github.com/dotnet/roslyn-analyzers/issues/1823")]
+        public async Task CA1720_ObjIdentifier_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public void MyMethod(object obj) {}
+}");
         }
 
         #region Helpers

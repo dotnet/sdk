@@ -506,13 +506,13 @@
     <value>Do not declare static members on generic types</value>
   </data>
   <data name="CollectionsShouldImplementGenericInterfaceTitle" xml:space="preserve">
-    <value>Collections should implement generic interface</value>
+    <value>Generic interface should also be implemented</value>
   </data>
   <data name="CollectionsShouldImplementGenericInterfaceDescription" xml:space="preserve">
-    <value>To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.</value>
+    <value>To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.</value>
   </data>
   <data name="CollectionsShouldImplementGenericInterfaceMessage" xml:space="preserve">
-    <value>Collection '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible collections should implement the generic version to broaden usability.</value>
+    <value>Type '{0}' directly or indirectly inherits '{1}' without implementing '{2}'. Publicly-visible types should implement the generic version to broaden usability.</value>
   </data>
   <data name="EnumStorageShouldBeInt32Title" xml:space="preserve">
     <value>Enum Storage should be Int32</value>
@@ -1239,10 +1239,10 @@
     <value>Mark members as static</value>
   </data>
   <data name="MarkMembersAsStaticDescription" xml:space="preserve">
-    <value>Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</value>
+    <value>Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.</value>
   </data>
   <data name="MarkMembersAsStaticMessage" xml:space="preserve">
-    <value>Member {0} does not access instance data and can be marked as static (Shared in VisualBasic)</value>
+    <value>Member '{0}' does not access instance data and can be marked as static</value>
   </data>
   <data name="ReviewVisibleEventHandlersTitle" xml:space="preserve">
     <value>Review visible event handlers</value>
@@ -1369,5 +1369,14 @@
   </data>
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
+  </data>
+  <data name="DoNotPassTypesByReferenceMessage" xml:space="preserve">
+    <value>Consider a design that does not require that '{0}' be a reference parameter.</value>
+  </data>
+  <data name="DoNotPassTypesByReferenceTitle" xml:space="preserve">
+    <value>Do not pass types by reference</value>
+  </data>
+  <data name="DoNotPassTypesByReferenceDescription" xml:space="preserve">
+    <value>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</value>
   </data>
 </root>
