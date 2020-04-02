@@ -502,6 +502,17 @@ Examples:
 |`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' and all types from the 'System' namespace |
 |`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' and all types from the 'System' namespace |
 
+### Analyzed symbol kinds
+Option Name: `analyzed_symbol_kinds`
+
+Configurable Rules: [CA1716](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1716)
+
+Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](https://roslynsourceindex.azurewebsites.net/#Microsoft.CodeAnalysis/Symbols/SymbolKind.cs,30fd9c0834bef6ff) as a comma separated list.
+
+Default Value: Namespace, NamedType, Method, Property, Event, Parameter
+
+Example: `dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace, Property`
+
 ### Use naming heuristic
 Option Name: `use_naming_heuristic`
 
