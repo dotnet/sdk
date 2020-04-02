@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             return Task.Run(() =>
             {
                 if (!TryGetCharset(codingConventions, out var encoding)
-                    || sourceText.Encoding.Equals(encoding)
+                    || sourceText.Encoding?.Equals(encoding) == true
                     || IsEncodingEquivalent(sourceText, encoding))
                 {
                     return sourceText;
@@ -43,6 +44,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         private static bool IsEncodingEquivalent(SourceText sourceText, Encoding encoding)
         {
+            if (sourceText.Encoding is null)
+            {
+                throw new System.Exception($"source text did not have an identifiable encoding");
+            }
+
             var text = sourceText.ToString();
             var originalBytes = GetEncodedBytes(text, sourceText.Encoding);
             var encodedBytes = GetEncodedBytes(text, encoding);
@@ -63,7 +69,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             }
         }
 
-        private static bool TryGetCharset(ICodingConventionsSnapshot codingConventions, out Encoding encoding)
+        private static bool TryGetCharset(ICodingConventionsSnapshot codingConventions, [NotNullWhen(true)] out Encoding? encoding)
         {
             if (codingConventions.TryGetConventionValue("charset", out string charsetOption))
             {

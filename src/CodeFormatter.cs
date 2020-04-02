@@ -83,6 +83,9 @@ namespace Microsoft.CodeAnalysis.Tools
                     foreach (var changedDocumentId in projectChanges.GetChangedDocuments())
                     {
                         var changedDocument = solution.GetDocument(changedDocumentId);
+                        if (changedDocument?.FilePath is null)
+                            continue;
+
                         logger.LogInformation(Resources.Formatted_code_file_0, changedDocument.FilePath);
                         filesFormatted++;
                     }
@@ -98,7 +101,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 if (exitCode == 0 && !string.IsNullOrWhiteSpace(reportPath))
                 {
-                    var reportFilePath = GetReportFilePath(reportPath);
+                    var reportFilePath = GetReportFilePath(reportPath!); // IsNullOrEmpty is not annotated on .NET Core 2.1
                     var reportFolderPath = Path.GetDirectoryName(reportFilePath);
 
                     if (!Directory.Exists(reportFolderPath))
@@ -141,7 +144,7 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        private static async Task<Workspace> OpenWorkspaceAsync(
+        private static async Task<Workspace?> OpenWorkspaceAsync(
             string workspacePath,
             WorkspaceType workspaceType,
             Matcher fileMatcher,
@@ -159,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return await OpenMSBuildWorkspaceAsync(workspacePath, workspaceType, logWorkspaceWarnings, logger, cancellationToken);
         }
 
-        private static async Task<Workspace> OpenMSBuildWorkspaceAsync(
+        private static async Task<Workspace?> OpenMSBuildWorkspaceAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
             bool logWorkspaceWarnings,
@@ -256,10 +259,13 @@ namespace Microsoft.CodeAnalysis.Tools
             var optionsApplier = new EditorConfigOptionsApplier();
 
             var fileCount = 0;
-            var getDocumentsAndOptions = new List<Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)>>(solution.Projects.Sum(project => project.DocumentIds.Count));
+            var getDocumentsAndOptions = new List<Task<(Document?, OptionSet?, ICodingConventionsSnapshot?, bool)>>(solution.Projects.Sum(project => project.DocumentIds.Count));
 
             foreach (var project in solution.Projects)
             {
+                if (project.FilePath is null)
+                    continue;
+
                 // If a project is used as a workspace, then ignore other referenced projects.
                 if (!string.IsNullOrEmpty(projectPath) && !project.FilePath.Equals(projectPath, StringComparison.OrdinalIgnoreCase))
                 {
@@ -289,7 +295,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var formattableFiles = ImmutableArray.CreateBuilder<(DocumentId, OptionSet, ICodingConventionsSnapshot)>(documentsAndOptions.Length);
             foreach (var (document, options, codingConventions, hasEditorConfig) in documentsAndOptions)
             {
-                if (document is null)
+                if (document?.FilePath is null)
                 {
                     continue;
                 }
@@ -313,7 +319,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return (fileCount, formattableFiles.ToImmutableArray());
         }
 
-        private static async Task<(Document, OptionSet, ICodingConventionsSnapshot, bool)> GetDocumentAndOptions(
+        private static async Task<(Document?, OptionSet?, ICodingConventionsSnapshot?, bool)> GetDocumentAndOptions(
             Project project,
             DocumentId documentId,
             Matcher fileMatcher,
@@ -323,7 +329,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             var document = project.Solution.GetDocument(documentId);
 
-            if (await ShouldIgnoreDocument(document, fileMatcher, cancellationToken))
+            if (document is null || await ShouldIgnoreDocument(document, fileMatcher, cancellationToken))
             {
                 return (null, null, null, false);
             }

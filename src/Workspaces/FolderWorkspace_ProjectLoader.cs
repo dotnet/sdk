@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             public abstract string FileExtension { get; }
             public virtual string ProjectName => $"{Language}{FileExtension}proj";
 
-            public virtual async Task<ProjectInfo> LoadProjectInfoAsync(string folderPath, Matcher fileMatcher, CancellationToken cancellationToken)
+            public virtual async Task<ProjectInfo?> LoadProjectInfoAsync(string folderPath, Matcher fileMatcher, CancellationToken cancellationToken)
             {
                 var projectId = ProjectId.CreateNewId(debugName: folderPath);
 

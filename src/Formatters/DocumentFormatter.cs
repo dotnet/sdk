@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -49,18 +50,21 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies formatting and returns the changed <see cref="SourceText"/> for each <see cref="Document"/>.
         /// </summary>
-        private ImmutableArray<(Document, Task<(SourceText originalText, SourceText formattedText)>)> FormatFiles(
+        private ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> FormatFiles(
             Solution solution,
             ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<(SourceText originalText, SourceText formattedText)>)>(formattableDocuments.Length);
+            var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<(SourceText originalText, SourceText? formattedText)>)>(formattableDocuments.Length);
 
             foreach (var (documentId, options, codingConventions) in formattableDocuments)
             {
                 var document = solution.GetDocument(documentId);
+                if (document is null)
+                    continue;
+
                 var formatTask = Task.Run(async () => await GetFormattedSourceTextAsync(document, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false), cancellationToken);
 
                 formattedDocuments.Add((document, formatTask));
@@ -72,7 +76,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Get formatted <see cref="SourceText"/> for a <see cref="Document"/>.
         /// </summary>
-        private async Task<(SourceText originalText, SourceText formattedText)> GetFormattedSourceTextAsync(
+        private async Task<(SourceText originalText, SourceText? formattedText)> GetFormattedSourceTextAsync(
             Document document,
             OptionSet options,
             ICodingConventionsSnapshot codingConventions,
@@ -83,7 +87,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
             var formattedSourceText = await FormatFileAsync(document, originalSourceText, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
 
-            return !formattedSourceText.ContentEquals(originalSourceText) || !formattedSourceText.Encoding.Equals(originalSourceText.Encoding)
+            return !formattedSourceText.ContentEquals(originalSourceText) || !formattedSourceText.Encoding?.Equals(originalSourceText.Encoding) == true
                 ? (originalSourceText, formattedSourceText)
                 : (originalSourceText, null);
         }
@@ -93,7 +97,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         private async Task<Solution> ApplyFileChangesAsync(
            Solution solution,
-            ImmutableArray<(Document, Task<(SourceText originalText, SourceText formattedText)>)> formattedDocuments,
+            ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> formattedDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             List<FormattedFile> formattedFiles,
@@ -106,6 +110,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return formattedSolution;
+                }
+
+                if (document?.FilePath is null)
+                {
+                    continue;
                 }
 
                 var (originalText, formattedText) = await formatTask.ConfigureAwait(false);
@@ -128,6 +137,10 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             var fileChanges = new List<FileChange>();
             var workspaceFolder = Path.GetDirectoryName(workspacePath);
             var changes = formattedText.GetChangeRanges(originalText);
+            if (workspaceFolder is null)
+            {
+                throw new Exception($"Unable to fine directory name for '{workspacePath}'");
+            }
 
             foreach (var change in changes)
             {

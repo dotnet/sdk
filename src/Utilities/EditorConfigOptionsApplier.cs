@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Options;
@@ -11,7 +12,7 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
     internal class EditorConfigOptionsApplier
     {
-        private readonly ImmutableArray<(IOption, OptionStorageLocation, MethodInfo)> _formattingOptionsWithStorage;
+        private readonly ImmutableArray<(IOption?, OptionStorageLocation?, MethodInfo?)> _formattingOptionsWithStorage;
 
         public EditorConfigOptionsApplier()
         {
@@ -30,7 +31,10 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
                 if (TryGetConventionValue(optionWithStorage, codingConventions, out var value))
                 {
                     var option = optionWithStorage.Item1;
-                    var optionKey = new OptionKey(option, option.IsPerLanguage ? languageName : null);
+                    if (option is null)
+                        continue;
+
+                    var optionKey = new OptionKey(option, option?.IsPerLanguage == true ? languageName : null);
                     optionSet = optionSet.WithChangedOption(optionKey, value);
                 }
             }
@@ -38,22 +42,22 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
             return optionSet;
         }
 
-        internal ImmutableArray<(IOption, OptionStorageLocation, MethodInfo)> GetOptionsWithStorageFromTypes(params Type[] formattingOptionTypes)
+        internal ImmutableArray<(IOption?, OptionStorageLocation?, MethodInfo?)> GetOptionsWithStorageFromTypes(params Type[] formattingOptionTypes)
         {
             var optionType = typeof(IOption);
             return formattingOptionTypes
                 .SelectMany(t => t.GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.GetProperty))
                 .Where(p => optionType.IsAssignableFrom(p.PropertyType))
-                .Select(p => (IOption)p.GetValue(null))
+                .Select(p => (IOption?)p.GetValue(null))
                 .Select(GetOptionWithStorage)
                 .Where(ows => ows.Item2 != null)
                 .ToImmutableArray();
         }
 
-        internal (IOption, OptionStorageLocation, MethodInfo) GetOptionWithStorage(IOption option)
+        internal (IOption?, OptionStorageLocation?, MethodInfo?) GetOptionWithStorage(IOption? option)
         {
-            var editorConfigStorage = !option.StorageLocations.IsDefaultOrEmpty
-                ? option.StorageLocations.FirstOrDefault(IsEditorConfigStorage)
+            var editorConfigStorage = !(option?.StorageLocations.IsDefaultOrEmpty == true)
+                ? option?.StorageLocations.FirstOrDefault(IsEditorConfigStorage)
                 : null;
             var tryGetOptionMethod = editorConfigStorage?.GetType().GetMethod("TryGetOption");
             return (option, editorConfigStorage, tryGetOptionMethod);
@@ -61,24 +65,28 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
 
         internal static bool IsEditorConfigStorage(OptionStorageLocation storageLocation)
         {
-            return storageLocation.GetType().FullName.StartsWith("Microsoft.CodeAnalysis.Options.EditorConfigStorageLocation");
+            return storageLocation.GetType().FullName?.StartsWith("Microsoft.CodeAnalysis.Options.EditorConfigStorageLocation") == true;
         }
 
-        internal static bool TryGetConventionValue((IOption, OptionStorageLocation, MethodInfo) optionWithStorage, ICodingConventionsSnapshot codingConventions, out object value)
+        internal static bool TryGetConventionValue((IOption?, OptionStorageLocation?, MethodInfo?) optionWithStorage, ICodingConventionsSnapshot codingConventions, [NotNullWhen(true)] out object? value)
         {
             var (option, editorConfigStorage, tryGetOptionMethod) = optionWithStorage;
 
             value = null;
+            if (option is null || editorConfigStorage is null || tryGetOptionMethod is null)
+            {
+                return false;
+            }
 
             // EditorConfigStorageLocation no longer accepts a IReadOnlyDictionary<string, object>. All values should
             // be string so we can convert it into a Dictionary<string, string>
             var adjustedConventions = codingConventions.AllRawConventions.ToDictionary(kvp => kvp.Key, kvp => (string)kvp.Value);
-            var args = new object[] { adjustedConventions, option.Type, value };
+            var args = new object[] { adjustedConventions, option.Type, value! };
 
-            var isOptionPresent = (bool)tryGetOptionMethod.Invoke(editorConfigStorage, args);
+            var isOptionPresent = tryGetOptionMethod.Invoke(editorConfigStorage, args) as bool?;
             value = args[2];
 
-            return isOptionPresent;
+            return isOptionPresent == true;
         }
     }
 }

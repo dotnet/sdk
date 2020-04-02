@@ -8,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public string FileName { get; }
 
-        public string FilePath { get; }
+        public string? FilePath { get; }
 
         public IEnumerable<FileChange> FileChanges { get; }
 
