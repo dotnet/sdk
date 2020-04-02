@@ -397,6 +397,21 @@
         <target state="translated">Non creare attività senza passare un elemento TaskScheduler</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
         <source>Do Not Disable Certificate Validation</source>
         <target state="translated">Non disabilitare la convalida del certificato</target>
