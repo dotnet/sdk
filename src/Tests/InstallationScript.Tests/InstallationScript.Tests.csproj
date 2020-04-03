@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
+    <!-- Do not warn the install script in the package -->
+    <NoWarn>$(NoWarn);NU5111</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
