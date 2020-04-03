@@ -11,7 +11,11 @@
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
-  <Target Name="PrecompileScript" BeforeTargets="Build" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
+  </ItemGroup>
+
+  <Target Name="PrecompileScriptBuild" BeforeTargets="Build" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
     <MSBuild
       BuildInParallel="False"
       Projects="../ArgumentsReflector/ArgumentsReflector.csproj"
@@ -19,7 +23,7 @@
       Targets="Publish" />
   </Target>
 
-  <Target Name="PrecompileScript" BeforeTargets="Publish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
+  <Target Name="PrecompileScriptPublish" BeforeTargets="Publish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
     <MSBuild
       BuildInParallel="False"
       Projects="../ArgumentsReflector/ArgumentsReflector.csproj"
