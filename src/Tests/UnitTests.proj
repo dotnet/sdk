@@ -46,6 +46,8 @@
       <TestExecutionDirectoryFiles Include="$(ArtifactsTmpDir)Directory.Build.targets"/>
 
       <FilesInHelixRoot Include="$(RepoRoot)\artifacts\tmp\$(Configuration)\NuGet.config"/>
+      <FilesInHelixRoot Include="$(RepoRoot)\testAsset.props"/>
+      <FilesInHelixRoot Include="$(RepoRoot)\eng\Versions.props"/>
       <FilesInHelixRoot Condition="'$(OS)' == 'Windows_NT'" Include="$(RepoRoot)\build\RunTestsOnHelix.cmd"/>
       <FilesInHelixRoot Condition="'$(OS)' != 'Windows_NT'" Include="$(RepoRoot)\build\RunTestsOnHelix.sh"/>
     </ItemGroup>
