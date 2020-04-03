@@ -171,7 +171,11 @@ namespace Microsoft.NET.TestFramework
                 testContext.NuGetExePath = Path.Combine(testContext.TestAssetsDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
                 testContext.NuGetCachePath = Path.Combine(testContext.TestAssetsDirectory, ".nuget", "packages");
 
-                testContext.TestPackages = Path.Combine(testContext.TestAssetsDirectory, "testpackages");
+                var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
+                if (Directory.Exists(testPackages))
+                {
+                    testContext.TestPackages = testPackages;
+                }
             }
             else
             {
