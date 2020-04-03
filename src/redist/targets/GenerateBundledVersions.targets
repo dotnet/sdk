@@ -72,7 +72,15 @@
           " />
 
       <NetCore31RuntimePackRids Include="@(NetCore30RuntimePackRids)"/>
-      <NetCoreRuntimePackRids Include="@(NetCore31RuntimePackRids)"/>
+
+      <NetCore5RuntimePackRids Include="
+          @(NetCore31RuntimePackRids);
+          ios-arm64;
+          ios-arm;
+          ios-x64;
+          " />
+
+      <NetCoreRuntimePackRids Include="@(NetCore5RuntimePackRids)"/>
 
       <AspNetCore30RuntimePackRids Include="
         win-x64;
