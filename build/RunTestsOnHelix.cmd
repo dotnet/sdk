@@ -16,6 +16,6 @@ if "%TestFullMSBuild%"=="true" (
 REM Use powershell to run GetRandomFileName
 FOR /F "tokens=*" %%g IN ('PowerShell -ExecutionPolicy ByPass [System.IO.Path]::GetRandomFileName^(^)') do (SET RandomDirectoryName=%%g)
 set TestExecutionDirectory=%TEMP%\dotnetSdkTests\%RandomDirectoryName%
-set DOTNET_CLI_HOME=%TestExecutionDirectory%
+set DOTNET_CLI_HOME=%TestExecutionDirectory%\.dotnet
 mkdir %TestExecutionDirectory%
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory%
