@@ -26,7 +26,11 @@
     <!-- Note: These items are showing up in solution explorer even though Visible is set to false -->
     <None Include="$(MSBuildThisFileDirectory)..\Assets\**\*.*" CopyToPublishDirectory="PreserveNewest" 
           LinkBase="Assets" Visible="false" />
-    
+    <None Include="$(MSBuildThisFileDirectory)..\..\testAsset.props" CopyToPublishDirectory="PreserveNewest" 
+          LinkBase="Assets" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\..\eng\**\Versions.props" CopyToPublishDirectory="PreserveNewest" 
+          LinkBase="Assets" Visible="false" />
+
   </ItemGroup>
 
   <Target Name="TestAsTool" DependsOnTargets="Pack;_InnerGetTestsToRun">
