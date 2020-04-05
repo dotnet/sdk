@@ -230,7 +230,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static IEnumerable<int> GetIndexesOfParameterType(IMethodSymbol targetMethod, INamedTypeSymbol formatProviderType)
         {
             return targetMethod.Parameters
-                .Select((Parameter, Index) => new { Parameter, Index })
+                .Select((Parameter, Index) => (Parameter, Index))
                 .Where(x => x.Parameter.Type.Equals(formatProviderType))
                 .Select(x => x.Index);
         }
