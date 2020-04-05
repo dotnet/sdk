@@ -137,17 +137,15 @@ jobs:
           BuildConfig: $(_BuildConfig)
           BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
-      - script: eng/testsCannotRunOnHelix.sh
+      - script: eng/runTestsCannotRunOnHelix.sh
                   --configuration $(_BuildConfig)
                   $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)
-                  -p:Test=false
-        displayName: Build
+                  $(_Test)
+        displayName: Run Tests Cannot Run On Helix
         env:
           BuildConfig: $(_BuildConfig)
-          BlobFeedUrl: $(PB_PublishBlobFeedUrl)
-          PublishType: $(_PublishType)
       - script: eng/common/build.sh
               --configuration $(_BuildConfig)
               --prepareMachine
