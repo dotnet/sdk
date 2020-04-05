@@ -74,7 +74,12 @@
           Condition="'@(SDKCustomXUnitProject)' != ''"
           BeforeTargets="CoreTest">
 
-    <SDKCustomCreateXUnitWorkItems XUnitProjects="@(SDKCustomXUnitProject)" IsPosixShell="$(IsPosixShell)" XUnitArguments="$(SDKCustomXUnitArguments)" XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
+    <SDKCustomCreateXUnitWorkItems
+        XUnitProjects="@(SDKCustomXUnitProject)"
+        TestProjectExclusionListPath="$(reporoot)/sdk/src/Tests/testsProjectCannotRunOnHelixList.txt"
+        IsPosixShell="$(IsPosixShell)"
+        XUnitArguments="$(SDKCustomXUnitArgument)"
+        XUnitWorkItemTimeout="$(XUnitWorkItemTimeout)">
       <Output TaskParameter="XUnitWorkItems" ItemName="HelixWorkItem"/>
     </SDKCustomCreateXUnitWorkItems>
   </Target>

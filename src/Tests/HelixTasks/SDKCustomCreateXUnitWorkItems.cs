@@ -26,6 +26,12 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         public ITaskItem[] XUnitProjects { get; set; }
 
         /// <summary>
+        /// The path of a list of test projects partial name that cannot be run in Helix. 
+        /// </summary>
+        [Required]
+        public string TestProjectExclusionListPath { get; set; }
+
+        /// <summary>
         /// The path to the dotnet executable on the Helix agent. Defaults to "dotnet"
         /// </summary>
         public string PathToDotnet { get; set; } = "dotnet";
@@ -72,7 +78,14 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// <returns></returns>
         private async Task ExecuteAsync()
         {
-            XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
+            var testExclusion = File.ReadAllLines(TestProjectExclusionListPath)
+                .Select(l => l.Trim())
+                .Where(l => !string.IsNullOrWhiteSpace(l));
+
+            var xUnitProjectsCanRunInHelix
+                = XUnitProjects.Where(p => !testExclusion.Any(p.ItemSpec.Contains));
+
+            XUnitWorkItems = (await Task.WhenAll(xUnitProjectsCanRunInHelix.Select(PrepareWorkItem)))
                 .SelectMany(i => i)
                 .Where(wi => wi != null)
                 .ToArray();
