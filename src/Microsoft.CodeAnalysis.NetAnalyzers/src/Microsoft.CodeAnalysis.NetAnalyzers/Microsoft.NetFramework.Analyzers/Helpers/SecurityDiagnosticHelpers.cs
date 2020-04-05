@@ -186,7 +186,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             return false;
         }
 
-        private static bool IsSpecifiedPropertyDerived([NotNullWhen(returnValue: true)] IPropertySymbol? symbol, [NotNullWhen(returnValue: true)]  INamedTypeSymbol? namedType, string propertyName)
+        private static bool IsSpecifiedPropertyDerived([NotNullWhen(returnValue: true)] IPropertySymbol? symbol, [NotNullWhen(returnValue: true)] INamedTypeSymbol? namedType, string propertyName)
         {
             if (symbol != null && namedType != null)
             {
