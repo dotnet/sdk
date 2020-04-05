@@ -17,11 +17,6 @@
         <target state="new">Accepts a file path, which if provided, will produce a json report in the given directory.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Add_final_newline">
-        <source>Add final newline.</source>
-        <target state="new">Add final newline.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_option">
         <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the --workspace option.</source>
         <target state="translated">Un fichier projet et un fichier solution MSBuild ont été trouvés dans '{0}'. Spécifiez celui à utiliser avec l'option --workspace.</target>
@@ -65,6 +60,11 @@
       <trans-unit id="Fix_file_encoding">
         <source>Fix file encoding.</source>
         <target state="new">Fix file encoding.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Fix_final_newline">
+        <source>Fix final newline.</source>
+        <target state="new">Fix final newline.</target>
         <note />
       </trans-unit>
       <trans-unit id="Fix_whitespace_formatting">

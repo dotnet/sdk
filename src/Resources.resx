@@ -192,8 +192,8 @@
   <data name="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings" xml:space="preserve">
     <value>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</value>
   </data>
-  <data name="Add_final_newline" xml:space="preserve">
-    <value>Add final newline.</value>
+  <data name="Fix_final_newline" xml:space="preserve">
+    <value>Fix final newline.</value>
   </data>
   <data name="Fix_end_of_line_marker" xml:space="preserve">
     <value>Fix end of line marker.</value>
