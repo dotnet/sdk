@@ -67,6 +67,13 @@ jobs:
           PublishType: $(_PublishType)
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      - powershell: eng\runTestsCannotRunOnHelix.ps1
+                    -configuration $(_BuildConfig)
+                    -ci
+                    $(_OfficialBuildIdArgs)
+        displayName: Run Tests Cannot Run On Helix
+        env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       - powershell: eng\common\build.ps1
               -configuration $(_BuildConfig)
               -prepareMachine
@@ -96,6 +103,14 @@ jobs:
           TestFullMSBuild: 'true'
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      - powershell: eng\runTestsCannotRunOnHelix.ps1
+              -configuration $(_BuildConfig)
+              -ci
+              $(_OfficialBuildIdArgs)
+        displayName: Run Tests Cannot Run On Helix
+        env:
+            TestFullMSBuild: 'true'
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
       - powershell: eng\common\build.ps1
               -configuration $(_BuildConfig)
               -prepareMachine
