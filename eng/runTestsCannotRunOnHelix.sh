@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 current_file_dir=`dirname $0`
 repo_root=${current_file_dir}/..
-echo "$@"
 
 # get all text in list file
 # join lines by |
