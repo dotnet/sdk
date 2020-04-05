@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
     /// <summary>
     /// MSBuild custom task to create HelixWorkItems given xUnit project publish information
     /// </summary>
-    public class SDKCustomCreateXUnitWorkItems : Build.Utilities.Task
+    public class SDKCustomCreateXUnitWorkItemsWithTestExclusion : Build.Utilities.Task
     {
         /// <summary>
         /// An array of XUnit project workitems containing the following metadata:
