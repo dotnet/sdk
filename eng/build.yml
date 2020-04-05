@@ -139,10 +139,8 @@ jobs:
           PublishType: $(_PublishType)
       - script: eng/runTestsCannotRunOnHelix.sh
                   --configuration $(_BuildConfig)
-                  $(_PublishArgs)
-                  $(_SignArgs)
+                  --ci
                   $(_OfficialBuildIdArgs)
-                  $(_Test)
         displayName: Run Tests Cannot Run On Helix
         env:
           BuildConfig: $(_BuildConfig)
