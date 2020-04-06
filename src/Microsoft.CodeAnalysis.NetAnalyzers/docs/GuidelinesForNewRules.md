@@ -7,9 +7,13 @@
 
 3. Follow the below steps to choose the appropriate **rule ID** for the new rule:
 
-   1. Choose the **applicable 'category'** for the new rule. See [DiagnosticCategoryAndIdRanges.txt](.//src//Utilities//Compiler//DiagnosticCategoryAndIdRanges.txt) for current diagnostic categories, and the CA IDs reserved for each category.
-   2. Refer to the current [official documentation](https://docs.microsoft.com/visualstudio/code-quality/code-analysis-for-managed-code-warnings) for all CA rules by rule category. For example, while adding a new rule in the `Performance` category, you should navigate to the [Performance Rules section](https://docs.microsoft.com/visualstudio/code-quality/performance-warnings). Say you find that `CA1824` is the last documented rule ID in this category, and there are couple of doc issues on that page for very recently added rules `CA1825` and `CA1826` for which we documentation still needs to be added, then you can choose `CA1827` as the ID for your rule.
-   3. Double check that you have chosen an unused CA ID by searching the repo, for example use following query for `CA1827`: https://github.com/dotnet/roslyn-analyzers/search?q=CA1827.
+   1. Choose the **applicable 'category'** for the new rule. See [DiagnosticCategoryAndIdRanges.txt](.//src//Utilities//Compiler//DiagnosticCategoryAndIdRanges.txt) for current diagnostic categories, and the CA IDs currently in use for each category.
+   2. Choose the **next available CA ID** for the chosen 'category' from [DiagnosticCategoryAndIdRanges.txt](.//src//Utilities//Compiler//DiagnosticCategoryAndIdRanges.txt).
+      For example, while adding a new rule in the `Performance` category, if `CA1800-CA1829` represents the current CA ID range in `DiagnosticCategoryAndIdRanges.txt`, then:
+      1. Choose `CA1830` as the rule ID for your rule.
+      2. Update the range for `Performance` in [DiagnosticCategoryAndIdRanges.txt](.//src//Utilities//Compiler//DiagnosticCategoryAndIdRanges.txt) to `CA1800-CA1830`
+
+   You can refer to the [official documentation](https://docs.microsoft.com/visualstudio/code-quality/code-analysis-for-managed-code-warnings) for all released CA rules by rule category.
 
 4. Follow the below guidelines to choose the appropriate **analyzer package** for the new rule:
 
