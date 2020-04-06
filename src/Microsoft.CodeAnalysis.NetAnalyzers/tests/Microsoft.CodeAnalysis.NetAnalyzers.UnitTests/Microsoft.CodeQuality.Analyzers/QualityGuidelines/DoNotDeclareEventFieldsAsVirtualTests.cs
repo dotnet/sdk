@@ -29,7 +29,7 @@ public class C
 using System;
 public class C
 {
-    public event EventHandler ThresholdReached
+    public virtual event EventHandler ThresholdReached
     {
         add
         {

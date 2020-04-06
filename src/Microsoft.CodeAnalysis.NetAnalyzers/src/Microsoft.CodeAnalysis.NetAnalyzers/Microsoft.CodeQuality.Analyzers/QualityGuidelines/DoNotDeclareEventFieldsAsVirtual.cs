@@ -38,12 +38,20 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 var eventSymbol = (IEventSymbol)context.Symbol;
 
-                if (eventSymbol.IsVirtual &&
-                    eventSymbol.AddMethod.IsImplicitlyDeclared &&
-                    eventSymbol.RemoveMethod.IsImplicitlyDeclared)
+                if (!eventSymbol.IsVirtual ||
+                    !eventSymbol.AddMethod.IsImplicitlyDeclared ||
+                    !eventSymbol.RemoveMethod.IsImplicitlyDeclared)
                 {
-                    context.ReportDiagnostic(eventSymbol.CreateDiagnostic(Rule));
+                    return;
                 }
+
+                // FxCop compat: only analyze externally visible symbols by default.
+                if (!eventSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+                {
+                    return;
+                }
+
+                context.ReportDiagnostic(eventSymbol.CreateDiagnostic(Rule, eventSymbol.Name));
             }, SymbolKind.Event);
         }
     }
