@@ -74,7 +74,7 @@
       <TestDotnetVersion>$(Version)</TestDotnetVersion>
       <SdkResolverDir>$(TestDotnetRoot)\sdk\$(TestDotnetVersion)\Sdks</SdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)\artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
-      <MicrosoftNETBuildExtensions>$(RepoRoot)\artifacts\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
+      <MicrosoftNETBuildExtensions>$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
     </PropertyGroup>
 
     <TarGzFileCreateFromDirectory
