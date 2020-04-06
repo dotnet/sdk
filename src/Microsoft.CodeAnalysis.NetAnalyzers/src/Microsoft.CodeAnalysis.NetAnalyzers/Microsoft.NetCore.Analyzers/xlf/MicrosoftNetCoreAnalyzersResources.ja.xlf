@@ -397,6 +397,21 @@
         <target state="translated">TaskScheduler を渡さずにタスクを作成しない</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
         <source>Do Not Disable Certificate Validation</source>
         <target state="translated">証明書の検証を無効にしません</target>
@@ -1345,6 +1360,26 @@
       <trans-unit id="PInvokesShouldNotBeVisibleTitle">
         <source>P/Invokes should not be visible</source>
         <target state="translated">P/Invokes は参照可能にすることはできません</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
+        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
+        <target state="new">Remove the ToString call in order to use a strongly-typed StringBuilder overload.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
+        <source>Remove the ToString call</source>
+        <target state="new">Remove the ToString call</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
+        <target state="new">Prefer strongly-typed Append and Insert method overloads on StringBuilder.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
