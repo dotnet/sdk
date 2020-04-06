@@ -341,9 +341,10 @@ End Namespace");
         [Fact]
         public async Task Comparer_ReferenceTypesAreOK()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -356,11 +357,13 @@ namespace TestNamespace
             return ReferenceEqualityComparer.Instance.Equals(string.Empty, test);
         }
     }
-}");
+}",
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -370,15 +373,17 @@ Namespace TestNamespace
             Return ReferenceEqualityComparer.Instance.Equals(string.Empty, test)
         End Function
     End Class
-End Namespace");
+End Namespace",
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_LeftArgumentFailsForValueType()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -392,11 +397,13 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpComparerResultAt(11, 62, "System.IntPtr"));
+                ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 62, "System.IntPtr") },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -407,15 +414,17 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-                GetVisualBasicComparerResultAt(8, 62, "System.IntPtr"));
+                ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "System.IntPtr") },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_RightArgumentFailsForValueType()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -429,11 +438,13 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpComparerResultAt(11, 68, "int"));
+                ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 68, "int") },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -444,15 +455,17 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-                GetVisualBasicComparerResultAt(8, 68, "Integer"));
+                ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 68, "Integer") },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_NoErrorForUnconstrainedGeneric()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -465,11 +478,13 @@ namespace TestNamespace
             return ReferenceEqualityComparer.Instance.Equals(test, other);
         }
     }
-}");
+}",
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -479,15 +494,17 @@ Namespace TestNamespace
             Return ReferenceEqualityComparer.Instance.Equals(test, other)
         End Function
     End Class
-End Namespace");
+End Namespace",
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_NoErrorForInterfaceConstrainedGeneric()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -501,11 +518,13 @@ namespace TestNamespace
             return ReferenceEqualityComparer.Instance.Equals(test, other);
         }
     }
-}");
+}",
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -515,15 +534,17 @@ Namespace TestNamespace
             Return ReferenceEqualityComparer.Instance.Equals(test, other)
         End Function
     End Class
-End Namespace");
+End Namespace",
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_ErrorForValueTypeConstrainedGeneric()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -538,11 +559,13 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpComparerResultAt(12, 62, "T"));
+                ExpectedDiagnostics = { GetCSharpComparerResultAt(12, 62, "T") },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -553,15 +576,17 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-                GetVisualBasicComparerResultAt(8, 62, "T"));
+                ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "T") },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_TwoValueTypesProducesTwoErrors()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -579,12 +604,17 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpComparerResultAt(14, 17, "TLeft"),
-                GetCSharpComparerResultAt(15, 17, "TRight"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpComparerResultAt(14, 17, "TLeft"),
+                    GetCSharpComparerResultAt(15, 17, "TRight"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -595,16 +625,21 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-                GetVisualBasicComparerResultAt(8, 62, "TLeft"),
-                GetVisualBasicComparerResultAt(8, 68, "TRight"));
+                ExpectedDiagnostics =
+                {
+                    GetVisualBasicComparerResultAt(8, 62, "TLeft"),
+                    GetVisualBasicComparerResultAt(8, 68, "TRight"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_LeftArgumentFailsForValueTypeWhenRightIsNull()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -618,11 +653,13 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpComparerResultAt(11, 62, "System.IntPtr"));
+                ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 62, "System.IntPtr") },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -633,15 +670,17 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-                GetVisualBasicComparerResultAt(8, 62, "System.IntPtr"));
+                ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "System.IntPtr") },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_RightArgumentFailsForValueTypeWhenLeftIsNull()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -655,11 +694,13 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpComparerResultAt(11, 68, "int"));
+                ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 68, "int") },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -670,15 +711,17 @@ Namespace TestNamespace
         End Function
     End Class
 End Namespace",
-                GetVisualBasicComparerResultAt(8, 71, "Integer"));
+                ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 71, "Integer") },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task Comparer_DoNotWarnForUserDefinedConversions()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections.Generic;
 
@@ -699,11 +742,13 @@ namespace TestNamespace
             return ReferenceEqualityComparer.Instance.Equals(null, (CacheKey)4);
         }
     }
-}");
+}",
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections.Generic
 
@@ -718,15 +763,17 @@ Namespace TestNamespace
             Return ReferenceEqualityComparer.Instance.Equals(Nothing, CType(4, CacheKey))
         End Function
     End Class
-End Namespace");
+End Namespace",
+            }.RunAsync();
         }
 
         [Fact]
         public async Task ComparerDoesNotTrackThroughInterface()
         {
-            await VerifyCS.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -743,11 +790,13 @@ namespace TestNamespace
             return generic.Equals(4, 5) || nonGeneric.Equals(4, 5);
         }
     }
-}");
+}",
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(
-                ReferenceAssemblies.NetCore.NetCoreApp50,
-                @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                TestCode = @"
 Imports System
 Imports System.Collections
 Imports System.Collections.Generic
@@ -761,7 +810,8 @@ Namespace TestNamespace
             Return generic.Equals(4, 5) Or nonGeneric.Equals(4, 5)
         End Function
     End Class
-End Namespace");
+End Namespace",
+            }.RunAsync();
         }
 
         private DiagnosticResult GetCSharpMethodResultAt(int line, int column, string typeName)
