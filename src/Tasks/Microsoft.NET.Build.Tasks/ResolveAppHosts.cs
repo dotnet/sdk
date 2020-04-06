@@ -268,13 +268,13 @@ namespace Microsoft.NET.Build.Tasks
                 string hostRelativePathInPackage = Path.Combine("runtimes", bestAppHostRuntimeIdentifier, "native",
                     hostNameWithoutExtension + (isExecutable ? ExecutableExtension.ForRuntimeIdentifier(bestAppHostRuntimeIdentifier) : ".dll"));
 
-
                 TaskItem appHostItem = new TaskItem(itemName);
                 string appHostPackPath = null;
                 if (!string.IsNullOrEmpty(TargetingPackRoot))
                 {
                     appHostPackPath = Path.Combine(TargetingPackRoot, hostPackName, appHostPackVersion);
                 }
+
                 if (appHostPackPath != null && Directory.Exists(appHostPackPath))
                 {
                     //  Use AppHost from packs folder

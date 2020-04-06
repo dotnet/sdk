@@ -26,6 +26,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CheckForEolTargetFrameworks" AfterTargets="_CheckForUnsupportedNETCoreVersion"
           Condition="'@(_EolNetCoreTargetFrameworkVersions->AnyHaveMetadataValue('Identity', '$(_TargetFrameworkVersionWithoutV)'))' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(CheckEolTargetFramework)' == 'true'">
     <NETSdkWarning ResourceName="TargetFrameworkIsEol"
-                   FormatArguments="$(TargetFramework.ToLowerInvariant());https://aka.ms/dotnet-core-support" />
+                   FormatArguments="$(TargetFramework);https://aka.ms/dotnet-core-support" />
   </Target>
 </Project>

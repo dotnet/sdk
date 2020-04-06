@@ -86,9 +86,9 @@ Copyright (c) .NET Foundation. All rights reserved.
           errors that are only consequences of the root cause identified here.
   -->
   <Target Name="_CheckForUnsupportedTargetFramework"
-          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;RunResolvePackageDependencies;GetFrameworkPaths;GetReferenceAssemblyPaths;Restore"
-          Condition="'$(_UnsupportedTargetFrameworkError)' == 'true'"
-          >
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;RunResolvePackageDependencies;GetFrameworkPaths;GetReferenceAssemblyPaths;Restore;CollectPackageReferences"
+          Condition="'$(_UnsupportedTargetFrameworkError)' == 'true'">
+
     <NETSdkError Condition="!$(TargetFramework.Contains(';'))"
                  ResourceName="CannotInferTargetFrameworkIdentifierAndVersion"
                  FormatArguments="$([MSBuild]::Escape('$(TargetFramework)'))" />
@@ -234,12 +234,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
-    Append $(TargetFramework) directory to output and intermediate paths to prevent bin clashes between
-    targets.
-   -->
+    Append 'TargetFramework' directory to output and intermediate paths
+    to prevent bin clashes between targets.
+  -->
   <PropertyGroup Condition="'$(AppendTargetFrameworkToOutputPath)' == 'true' and '$(TargetFramework)' != '' and '$(_UnsupportedTargetFrameworkError)' != 'true'">
-    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetFramework.ToLowerInvariant())\</IntermediateOutputPath>
-    <OutputPath>$(OutputPath)$(TargetFramework.ToLowerInvariant())\</OutputPath>
+    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetFramework)\</IntermediateOutputPath>
+    <OutputPath>$(OutputPath)$(TargetFramework)\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
