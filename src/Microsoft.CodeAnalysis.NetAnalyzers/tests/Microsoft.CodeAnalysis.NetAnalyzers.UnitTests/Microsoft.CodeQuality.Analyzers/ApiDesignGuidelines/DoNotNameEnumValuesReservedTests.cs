@@ -40,22 +40,41 @@ End Enum",
         }
 
         [Fact]
+        public async Task CA1700_NameContainsReservedWithoutCorrectCase_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum Enum1
+{
+    [|reserved|],
+    [|RESERVED|],
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum Enum1
+    [|reserved|]
+End Enum
+
+Public Enum Enum2
+    [|RESERVED|]
+End Enum");
+        }
+
+        [Fact]
         public async Task CA1700_NameContainsReservedWithoutCorrectCase_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public enum Enum1
 {
-    reserved,
-    RESERVED,
     Somethingreserved,
     ReserveDSuffix,
+    ReSeRvEd,
 }");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Enum Enum1
-    reserved
     Somethingreserved
     ReserveDSuffix
+    ReSeRvEd
 End Enum");
         }
 
@@ -75,6 +94,21 @@ Friend Enum Enum1
     Reserved
     SomethingReserved
     ReservedSuffix
+End Enum");
+        }
+
+        [Fact]
+        public async Task CA1700_NameContainsPreserved_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum Enum1
+{
+    Preserved,
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum Enum1
+    Preserved
 End Enum");
         }
 

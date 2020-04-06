@@ -13,6 +13,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA1700";
 
+        private static readonly ImmutableArray<string> reservedWords = ImmutableArray.Create("reserved");
+
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotNameEnumValuesReservedTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageRule = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotNameEnumValuesReservedMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotNameEnumValuesReservedDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -38,18 +40,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 var field = (IFieldSymbol)context.Symbol;
 
+                if (field.ContainingType == null ||
+                    field.ContainingType.TypeKind != TypeKind.Enum ||
+                    !WordParser.ContainsWord(field.Name, WordParserOptions.SplitCompoundWords, reservedWords))
+                {
+                    return;
+                }
+
                 // FxCop compat: only analyze externally visible symbols by default.
                 if (!field.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
                 {
                     return;
                 }
 
-
-                if (field.ContainingType?.TypeKind == TypeKind.Enum &&
-                    field.Name.Contains("Reserved"))
-                {
-                    context.ReportDiagnostic(field.CreateDiagnostic(Rule, field.ContainingType.Name, field.Name));
-                }
+                context.ReportDiagnostic(field.CreateDiagnostic(Rule, field.ContainingType.Name, field.Name));
             }, SymbolKind.Field);
         }
     }
