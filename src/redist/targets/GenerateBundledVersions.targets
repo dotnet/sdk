@@ -78,6 +78,8 @@
           ios-arm64;
           ios-arm;
           ios-x64;
+          tvos-arm64;
+          tvos-x64;
           " />
 
       <NetCoreRuntimePackRids Include="@(NetCore5RuntimePackRids)"/>
