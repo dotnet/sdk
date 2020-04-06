@@ -84,6 +84,7 @@ jobs:
               /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
               /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
         displayName: Run Tests in Helix
+        condition: succeededOrFailed()
         env:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: ''
@@ -121,6 +122,7 @@ jobs:
               /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
               /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
         displayName: Run Tests in Helix
+        condition: succeededOrFailed()
         env:
             TestFullMSBuild: 'true'
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -169,6 +171,7 @@ jobs:
               /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
               /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
         displayName: Run Tests in Helix
+        condition: succeededOrFailed()
         env:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: ''
