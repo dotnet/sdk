@@ -19,7 +19,7 @@ public class C
 {
     public virtual event EventHandler ThresholdReached;
 }",
-                VerifyCS.Diagnostic().WithLocation(5, 39));
+                VerifyCS.Diagnostic().WithLocation(5, 39).WithArguments("ThresholdReached"));
         }
 
         [Fact]
@@ -41,18 +41,46 @@ public class C
 }");
         }
 
-        [Fact]
-        public async Task EventFieldVirtualAllAccessibilities_Diagnostic()
+        [Theory]
+        // General analyzer option
+        [InlineData("public", "dotnet_code_quality.api_surface = public")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private, internal, public")]
+        [InlineData("public", "dotnet_code_quality.api_surface = all")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = public")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = private, internal, public")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = all")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = internal")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = private, internal")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = all")]
+        // Specific analyzer option
+        [InlineData("internal", "dotnet_code_quality.CA1070.api_surface = all")]
+        [InlineData("internal", "dotnet_code_quality.Design.api_surface = all")]
+        // General + Specific analyzer option
+        [InlineData("internal", @"dotnet_code_quality.api_surface = private
+                                  dotnet_code_quality.CA1070.api_surface = all")]
+        // Case-insensitive analyzer option
+        [InlineData("internal", "DOTNET_code_quality.CA1070.API_SURFACE = ALL")]
+        // Invalid analyzer option ignored
+        [InlineData("internal", @"dotnet_code_quality.api_surface = all
+                                  dotnet_code_quality.CA1070.api_surface_2 = private")]
+        public async Task CSharp_ApiSurfaceOption(string accessibility, string editorConfigText)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
 using System;
-public class C
-{
-    public virtual event EventHandler [|Event1|];
-    protected virtual event EventHandler [|Event2|];
-    internal virtual event EventHandler [|Event3|];
-    protected internal virtual event EventHandler [|Event4|];
-}");
+public class OuterClass
+{{
+    {accessibility} virtual event EventHandler [|ThresholdReached|];
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            }.RunAsync();
         }
     }
 }
