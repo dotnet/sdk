@@ -16,5 +16,10 @@ realpath() {
 
 for project_path in $all_projects_path_cannot_run_in_helix
 do
-    ${repo_root}/eng/common/build.sh --test "$@" --projects `realpath $project_path`
+    ${repo_root}/eng/common/build.sh --test "$@" --projects `realpath $project_path` || error=true
 done
+
+if [ $error ]
+then
+    exit -1
+fi

@@ -12,9 +12,20 @@ foreach($line in ([System.IO.File]::ReadLines($testsProjectCannotRunOnHelixListP
 {
     foreach ($testProject in $allTests)
     {
-        if ($testProject.FullName.Contains($line.Trim())) { 
+        if ($testProject.FullName.Contains($line.Trim())) {
             $passInArgs = @("-test") + $args + @("-projects", $testProject.FullName)
-            Invoke-Expression "& $buildshScriptPath $passInArgs"
+            $anyError = false
+            try {
+                Invoke-Expression "& $buildshScriptPath $passInArgs"
+            }
+            catch {
+                anyError = true
+            }
+
+            if ($anyError)
+            {
+                return -1
+            }
         }
     }
 }
