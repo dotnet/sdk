@@ -550,6 +550,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1093: 專案工具 (DotnetCliTool) 僅支援以 .NET Core 2.2 或更低版本作為目標。</target>
         <note>{StrBegin="NETSDK1093: "}</note>
       </trans-unit>
+      <trans-unit id="PropertyValueShouldBeLowercase">
+        <source>NETSDK1033: The value of '{0}' is expected to be in lower-case but the actual casing is '{1}'. This value might be used as a part of a path which could lead into unexpected file not found errors (i.e. in case-sensitive file-systems). So, please use lower-case for '{0}' value.</source>
+        <target state="new">NETSDK1033: The value of '{0}' is expected to be in lower-case but the actual casing is '{1}'. This value might be used as a part of a path which could lead into unexpected file not found errors (i.e. in case-sensitive file-systems). So, please use lower-case for '{0}' value.</target>
+        <note>{StrBegin="NETSDK1033: "}</note>
+      </trans-unit>
       <trans-unit id="PublishReadyToRunRequiresVersion30">
         <source>NETSDK1122: ReadyToRun compilation will be skipped because it is only supported for .NET Core 3.0 or higher.</source>
         <target state="translated">NETSDK1122: 將跳過 ReadyToRun 編譯，原因是只有 .NET Core 3.0 或更高版本支援此作業。</target>

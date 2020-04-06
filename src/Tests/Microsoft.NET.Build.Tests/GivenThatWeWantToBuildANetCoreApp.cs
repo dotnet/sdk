@@ -551,6 +551,59 @@ public static class Program
         }
 
         [Fact]
+        public void It_warns_about_the_casing_of_the_target_framework()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "WarnAboutCasing-TargetFramework",
+                TargetFrameworks = "ignored",
+                IsExe = true
+            };
+
+            string[] extraArgs = new[] { "/p:TargetFramework=NETCOREAPP1.1" };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            var result = buildCommand
+                .Execute(extraArgs);
+
+            result
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("NETSDK1033");
+        }
+
+        [Fact]
+        public void It_warns_about_the_casing_of_the_runtime_identifier()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "WarnAboutCasing-RuntimeIdentifier",
+                TargetFrameworks = "netcoreapp3.1",
+                RuntimeIdentifier = "ignored",
+                IsExe = true
+            };
+
+            string[] extraArgs = new[] { "/p:RuntimeIdentifier=WIN7-X64" };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            var result = buildCommand
+                .Execute(extraArgs);
+
+            result
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("NETSDK1033");
+        }
+
+        [Fact]
         public void BuildWithTransitiveReferenceToNetCoreAppPackage()
         {
             var testProject = new TestProject()

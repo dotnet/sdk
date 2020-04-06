@@ -78,6 +78,19 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
+    Check for improper casing of the 'TargetFramework' value.
+    For reasons such as case-sensitive file system, we prefer lower-case 'TargetFramework' value.
+  -->
+  <Target Name="_CheckForTargetFrameworkCasing"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;RunResolvePackageDependencies;GetFrameworkPaths;GetReferenceAssemblyPaths;Restore;CollectPackageReferences"
+          Condition="'$(AppendTargetFrameworkToOutputPath)' == 'true' and '$(TargetFramework)' != '' and '$(_UnsupportedTargetFrameworkError)' != 'true'">
+
+    <NETSdkWarning Condition="!$(TargetFramework.Equals('$(TargetFramework.ToLowerInvariant())'))"
+                 ResourceName="PropertyValueShouldBeLowercase"
+                 FormatArguments="TargetFramework;$([MSBuild]::Escape('$(TargetFramework)'))" />
+  </Target>
+
+  <!--
     NOTE: We must not validate the TFM before restore target runs as it prevents adding additional TFM
           support from being provided by a nuget package such as MSBuild.Sdk.Extras.
 

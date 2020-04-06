@@ -185,6 +185,19 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <!--
+    Check for improper casing of the 'RuntimeIdentifier' value.
+    For reasons such as case-sensitive file system, we prefer lower-case 'RuntimeIdentifier' value.
+  -->
+  <Target Name="_CheckForRuntimeIdentifierCasing"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;RunResolvePackageDependencies;GetFrameworkPaths;GetReferenceAssemblyPaths;Restore;CollectPackageReferences"
+          Condition="'$(AppendRuntimeIdentifierToOutputPath)' == 'true' and '$(RuntimeIdentifier)' != '' and '$(_UsingDefaultRuntimeIdentifier)' != 'true'">
+
+    <NETSdkWarning Condition="!$(RuntimeIdentifier.Equals('$(RuntimeIdentifier.ToLowerInvariant())'))"
+                 ResourceName="PropertyValueShouldBeLowercase"
+                 FormatArguments="RuntimeIdentifier;$([MSBuild]::Escape('$(RuntimeIdentifier)'))" />
+  </Target>
+
   <Target Name="_CheckForNETCoreSdkIsPreview"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
           Condition=" '$(_NETCoreSdkIsPreview)' == 'true' AND '$(SuppressNETCoreSdkPreviewMessage)' != 'true' ">
