@@ -123,7 +123,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              DiagnosticCategory.Performance,
                                                                              RuleLevel.IdeSuggestion,
                                                                              description: s_localizableDescription,
-                                                                             isPortedFxCopRule: false,
+                                                                             isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ObjectCreationRule, StringCreationRule, HResultOrErrorCodeRule, TryParseRule, PureMethodRule);
@@ -138,7 +138,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 INamedTypeSymbol? expectedExceptionType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualStudioTestToolsUnitTestingExpectedExceptionAttribute);
                 INamedTypeSymbol? nunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkAssert);
                 INamedTypeSymbol? xunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.XunitAssert);
-                INamedTypeSymbol? enumerableType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
+                INamedTypeSymbol? linqEnumerableType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
 
                 compilationContext.RegisterOperationBlockStartAction(osContext =>
                 {
@@ -187,7 +187,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 {
                                     rule = PureMethodRule;
                                 }
-                                else if (targetMethod.ContainingType.Equals(enumerableType))
+                                else if (targetMethod.ContainingType.Equals(linqEnumerableType))
                                 {
                                     rule = LinqMethodRule;
                                 }
