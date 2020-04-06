@@ -18,12 +18,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C<T1, T2, T3> {}",
-                VerifyCS.Diagnostic().WithSpan(2, 14, 2, 15).WithArguments("C<T1, T2, T3>"));
+                VerifyCS.Diagnostic().WithSpan(2, 14, 2, 15).WithArguments("C"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C(Of T1, T2, T3)
 End Class",
-                VerifyVB.Diagnostic().WithSpan(2, 14, 2, 15).WithArguments("C(Of T1, T2, T3)"));
+                VerifyVB.Diagnostic().WithSpan(2, 14, 2, 15).WithArguments("C"));
         }
 
         [Fact]
