@@ -68,6 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static readonly LocalizableString s_localizableMessageHResultOrErrorCode = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageHResultOrErrorCode), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessagePureMethod = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessagePureMethod), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageTryParse = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageTryParse), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageLinqMethod = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageLinqMethod), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static DiagnosticDescriptor ObjectCreationRule = DiagnosticDescriptorHelper.Create(RuleId,
@@ -116,6 +117,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
+        internal static DiagnosticDescriptor LinqMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageLinqMethod,
+                                                                             DiagnosticCategory.Performance,
+                                                                             RuleLevel.IdeSuggestion,
+                                                                             description: s_localizableDescription,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ObjectCreationRule, StringCreationRule, HResultOrErrorCodeRule, TryParseRule, PureMethodRule);
 
         public override void Initialize(AnalysisContext analysisContext)
@@ -128,6 +138,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 INamedTypeSymbol? expectedExceptionType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualStudioTestToolsUnitTestingExpectedExceptionAttribute);
                 INamedTypeSymbol? nunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkAssert);
                 INamedTypeSymbol? xunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.XunitAssert);
+                INamedTypeSymbol? linqEnumerableType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
 
                 compilationContext.RegisterOperationBlockStartAction(osContext =>
                 {
@@ -175,6 +186,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 else if (IsPureMethod(targetMethod, opContext.Compilation))
                                 {
                                     rule = PureMethodRule;
+                                }
+                                else if (targetMethod.ContainingType.Equals(linqEnumerableType))
+                                {
+                                    rule = LinqMethodRule;
                                 }
 
                                 targetMethodName = targetMethod.Name;
