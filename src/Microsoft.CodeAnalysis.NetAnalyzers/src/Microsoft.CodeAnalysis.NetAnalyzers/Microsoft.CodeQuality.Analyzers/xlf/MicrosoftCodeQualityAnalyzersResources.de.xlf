@@ -2002,11 +2002,6 @@
         <target state="translated">Es wurde eine öffentliche oder geschützte Methode zum Ereignishandling ermittelt. Methoden zum Ereignishandling dürfen nur verfügbar gemacht werden, wenn es absolut erforderlich ist.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Ziehen Sie in Betracht, "{0}" nicht extern sichtbar zu machen, oder stellen Sie sicher, dass es sich um gutartigen Code handelt.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making {0} not externally visible.</source>
         <target state="translated">Ziehen Sie in Betracht, "{0}" nicht extern sichtbar zu machen.</target>

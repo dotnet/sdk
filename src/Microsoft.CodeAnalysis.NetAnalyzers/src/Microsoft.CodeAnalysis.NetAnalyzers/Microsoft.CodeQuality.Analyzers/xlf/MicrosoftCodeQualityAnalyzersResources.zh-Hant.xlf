@@ -2002,11 +2002,6 @@
         <target state="translated">已偵測到公用或受保護的事件處理方法。除非絕對必要，否則不應公開事件處理方法。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">請考慮不要讓 {0} 成為外部可見，或是確認其為良性程式碼。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making {0} not externally visible.</source>
         <target state="translated">請考慮讓 {0} 並非外部可見。</target>

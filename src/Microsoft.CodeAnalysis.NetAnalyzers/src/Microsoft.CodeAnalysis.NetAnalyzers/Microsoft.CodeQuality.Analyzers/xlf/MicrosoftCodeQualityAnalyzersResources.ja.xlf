@@ -2002,11 +2002,6 @@
         <target state="translated">パブリックまたは保護されたイベント処理メソッドが検出されました。イベント処理メソッドは、どうしても必要な場合を除いて公開しないでください。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">{0} の外部からの参照を不可能に設定することを検討するか、害のないコードであることを確認してください。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making {0} not externally visible.</source>
         <target state="translated">{0} の外部からの参照を不可能に設定することを検討してください。</target>

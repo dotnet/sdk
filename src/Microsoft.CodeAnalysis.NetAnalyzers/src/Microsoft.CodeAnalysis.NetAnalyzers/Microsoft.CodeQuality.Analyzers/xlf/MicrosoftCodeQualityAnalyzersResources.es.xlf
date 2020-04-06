@@ -2002,11 +2002,6 @@
         <target state="translated">Se detectó un método de control de eventos público o protegido. No se deberían exponer los métodos de control de eventos a menos que sea absolutamente necesario.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Considere hacer que {0} no sea externamente visible o asegúrese de que es código benigno.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making {0} not externally visible.</source>
         <target state="translated">Considere hacer que {0} no sea externamente visible.</target>

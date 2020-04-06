@@ -2002,11 +2002,6 @@
         <target state="translated">Genel veya korumalı bir olay işleme yöntemi algılandı. Olay işleme yöntemleri kesinlikle gerekli olmadıkça kullanıma sunulmamalıdır.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">{0} öğesini dışarıdan görünmez yapmayı deneyin veya zararsız kod olduğundan emin olun.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making {0} not externally visible.</source>
         <target state="translated">{0} öğesini dışarıdan görünmez yapmayı deneyin.</target>

@@ -2002,11 +2002,6 @@
         <target state="translated">Wykryto publiczną lub chronioną metodą obsługi zdarzeń. Nie należy ujawniać metod obsługi zdarzeń, o ile nie jest to absolutnie konieczne.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Rozważ przekształcenie elementu {0} w zewnętrznie niewidoczny lub upewnij się, że zawiera niezłośliwy kod.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making {0} not externally visible.</source>
         <target state="translated">Rozważ przekształcenie elementu {0} w zewnętrznie niewidoczny.</target>

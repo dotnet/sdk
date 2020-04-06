@@ -17,23 +17,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         internal const string RuleId = "CA2109";
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ReviewVisibleEventHandlersTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessageSecurity = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ReviewVisibleEventHandlersMessageSecurity), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageDefault = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ReviewVisibleEventHandlersMessageDefault), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ReviewVisibleEventHandlersDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static DiagnosticDescriptor SecurityRule = DiagnosticDescriptorHelper.Create(
-            RuleId,
-            s_localizableTitle,
-            s_localizableMessageSecurity,
-            DiagnosticCategory.Security,
-            RuleLevel.Disabled,
-            description: s_localizableDescription,
-            isPortedFxCopRule: true,
-            isDataflowRule: false,
-            isEnabledByDefaultInFxCopAnalyzers: false);
-
-        internal static DiagnosticDescriptor DefaultRule = DiagnosticDescriptorHelper.Create(
+        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessageDefault,
@@ -44,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             isDataflowRule: false,
             isEnabledByDefaultInFxCopAnalyzers: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(SecurityRule, DefaultRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
@@ -54,31 +41,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             analysisContext.RegisterCompilationStartAction(context =>
             {
                 var eventArgsType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
-                var securityPermissionAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSecurityPermissionsSecurityPermissionAttribute);
 
                 context.RegisterSymbolAction(context =>
                 {
                     var method = (IMethodSymbol)context.Symbol;
-
-                    // FxCop compat: only analyze externally visible symbols by default.
-                    if (!method.MatchesConfiguredVisibility(context.Options, DefaultRule, context.CancellationToken))
-                    {
-                        return;
-                    }
 
                     if (method.IsOverride || method.IsImplementationOfAnyInterfaceMember())
                     {
                         return;
                     }
 
-                    if (method.HasEventHandlerSignature(eventArgsType))
+                    if (!method.HasEventHandlerSignature(eventArgsType))
                     {
-                        var rule = method.HasAttribute(securityPermissionAttributeType)
-                            ? SecurityRule
-                            : DefaultRule;
-
-                        context.ReportDiagnostic(method.CreateDiagnostic(rule, method.Name));
+                        return;
                     }
+
+                    // FxCop compat: only analyze externally visible symbols by default.
+                    if (!method.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+                    {
+                        return;
+                    }
+
+                    context.ReportDiagnostic(method.CreateDiagnostic(Rule, method.Name));
                 }, SymbolKind.Method);
             });
         }
