@@ -58,8 +58,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
-        <source>Consider a design where '{0}' has no more than 2 type parameters.</source>
-        <target state="new">Consider a design where '{0}' has no more than 2 type parameters.</target>
+        <source>Consider a design where '{0}' has no more than {1} type parameters.</source>
+        <target state="new">Consider a design where '{0}' has no more than {1} type parameters.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
