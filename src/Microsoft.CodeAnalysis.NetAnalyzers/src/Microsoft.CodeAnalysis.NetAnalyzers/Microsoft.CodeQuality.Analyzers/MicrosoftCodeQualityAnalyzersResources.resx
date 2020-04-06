@@ -1370,6 +1370,15 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="DoNotNameEnumValuesReservedDescription" xml:space="preserve">
+    <value>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</value>
+  </data>
+  <data name="DoNotNameEnumValuesReservedMessage" xml:space="preserve">
+    <value>If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</value>
+  </data>
+  <data name="DoNotNameEnumValuesReservedTitle" xml:space="preserve">
+    <value>Do not name enum values 'Reserved'</value>
+  </data>
   <data name="DoNotPassTypesByReferenceMessage" xml:space="preserve">
     <value>Consider a design that does not require that '{0}' be a reference parameter.</value>
   </data>
