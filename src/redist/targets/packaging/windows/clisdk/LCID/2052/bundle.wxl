@@ -61,7 +61,7 @@
 资源
     • .NET 文档: https://aka.ms/dotnet-docs
     • SDK 文档: https://aka.ms/dotnet-sdk-docs
-    • 发行说明: https://aka.ms/netcore3releasenotes
+    • 发行说明: https://aka.ms/dotnet5-release-notes
     • 教程: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">

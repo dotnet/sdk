@@ -61,7 +61,7 @@ Tento produkt shromažďuje data o využití.
 Zdroje informací
     • Dokumentace k .NET : https://aka.ms/dotnet-docs
     • Dokumentace k sadě SDK: https://aka.ms/dotnet-sdk-docs
-    • Zpráva k vydání verze: https://aka.ms/netcore3releasenotes
+    • Zpráva k vydání verze: https://aka.ms/dotnet5-release-notes
     • Kurzy: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">Sada .NET SDK</String>
   <String Id="WelcomeDescription">

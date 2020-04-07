@@ -61,7 +61,7 @@
 リソース
     • .NET ドキュメント https://aka.ms/dotnet-docs
     • SDK ドキュメント https://aka.ms/dotnet-sdk-docs
-    • リリース ノート https://aka.ms/netcore3releasenotes
+    • リリース ノート https://aka.ms/dotnet5-release-notes
     • チュートリアル https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
