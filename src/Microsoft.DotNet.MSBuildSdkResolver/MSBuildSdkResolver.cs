@@ -313,7 +313,15 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             string environmentOverride = _getEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR");
             if (environmentOverride != null)
             {
-                return environmentOverride;
+                try
+                {
+                    Path.GetDirectoryName(environmentOverride);
+                    return environmentOverride;
+                }
+                catch
+                {
+                    // Path is not valid
+                }
             }
 
             var environmentProvider = new EnvironmentProvider(_getEnvironmentVariable);
