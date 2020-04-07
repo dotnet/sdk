@@ -37,52 +37,97 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             analysisContext.RegisterCompilationStartAction(context =>
             {
-                var genericListType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericList1);
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericList1, out var genericListType))
+                {
+                    return;
+                }
 
                 context.RegisterSymbolAction(context =>
                 {
-                    var symbol = context.Symbol;
-                    var methodSymbol = symbol as IMethodSymbol;
+                    var field = (IFieldSymbol)context.Symbol;
 
                     // FxCop compat: only analyze externally visible symbols by default.
-                    if (!symbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+                    if (!field.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
                     {
                         return;
                     }
 
-                    if (methodSymbol?.AssociatedSymbol != null)
+                    if (field.Type != null && field.Type.OriginalDefinition.Equals(genericListType))
+                    {
+                        context.ReportDiagnostic(field.CreateDiagnostic(Rule,
+                            field.Type.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                            field.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                    }
+                }, SymbolKind.Field);
+
+                context.RegisterSymbolAction(context =>
+                {
+                    var property = (IPropertySymbol)context.Symbol;
+
+                    if (property.IsOverride ||
+                        property.IsImplementationOfAnyInterfaceMember())
                     {
                         return;
                     }
 
-                    if (symbol.IsOverride ||
-                        symbol.IsImplementationOfAnyInterfaceMember())
+                    // FxCop compat: only analyze externally visible symbols by default.
+                    if (!property.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+                    {
+                        return;
+                    }
+
+                    if (property.Type != null && property.Type.OriginalDefinition.Equals(genericListType))
+                    {
+                        context.ReportDiagnostic(property.CreateDiagnostic(Rule,
+                            property.Type.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                            property.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                    }
+                }, SymbolKind.Property);
+
+                context.RegisterSymbolAction(context =>
+                {
+                    var methodSymbol = (IMethodSymbol)context.Symbol;
+
+                    // Bail-out for accessor
+                    if (methodSymbol.AssociatedSymbol != null)
+                    {
+                        return;
+                    }
+
+                    if (methodSymbol.IsOverride ||
+                        methodSymbol.IsImplementationOfAnyInterfaceMember())
+                    {
+                        return;
+                    }
+
+                    // FxCop compat: only analyze externally visible symbols by default.
+                    if (!methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
                     {
                         return;
                     }
 
                     // Handle symbol return type
-                    var returnType = symbol.GetMemberType();
-                    if (returnType != null && returnType.OriginalDefinition.Equals(genericListType))
+                    if (methodSymbol.ReturnType != null && methodSymbol.ReturnType.OriginalDefinition.Equals(genericListType))
                     {
-                        context.ReportDiagnostic(symbol.CreateDiagnostic(Rule,
-                            returnType.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
-                            symbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                        context.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule,
+                            methodSymbol.ReturnType.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                            methodSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
                     }
 
                     // Handle symbol parameters
-                    var parameters = symbol.GetParameters();
-                    for (int i = 0; i < parameters.Length; i++)
+                    for (int i = 0; i < methodSymbol.Parameters.Length; i++)
                     {
-                        if (parameters[i].Type.OriginalDefinition.Equals(genericListType) &&
-                            (i != 0 || methodSymbol == null || !methodSymbol.IsExtensionMethod))
+                        var parameter = methodSymbol.Parameters[i];
+
+                        if (parameter.Type != null && parameter.Type.OriginalDefinition.Equals(genericListType) &&
+                            (i != 0 || !methodSymbol.IsExtensionMethod))
                         {
-                            context.ReportDiagnostic(parameters[i].CreateDiagnostic(Rule,
-                                parameters[i].ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
-                                symbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                            context.ReportDiagnostic(parameter.CreateDiagnostic(Rule,
+                                parameter.Type.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
+                                methodSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
                         }
                     }
-                }, SymbolKind.Field, SymbolKind.Property, SymbolKind.Method);
+                }, SymbolKind.Method);
             });
         }
     }
