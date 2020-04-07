@@ -22,7 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Design,
-            RuleLevel.IdeSuggestion,
+            RuleLevel.Disabled,
             description: s_localizableDescription,
             isPortedFxCopRule: true,
             isDataflowRule: false,
@@ -35,26 +35,37 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(context =>
+            analysisContext.RegisterCompilationStartAction(context =>
             {
-                var method = (IMethodSymbol)context.Symbol;
+                var iequatableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIEquatable1);
 
-                // Method is not operator equality or not on a class
-                if (method.MethodKind != MethodKind.UserDefinedOperator ||
-                    method.Name != "op_Equality" ||
-                    method.ContainingType.TypeKind != TypeKind.Class)
+                context.RegisterSymbolAction(context =>
                 {
-                    return;
-                }
+                    var method = (IMethodSymbol)context.Symbol;
 
-                // FxCop compat: only analyze externally visible symbols by default.
-                if (!method.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
-                {
-                    return;
-                }
+                    // Method is not operator equality or not on a class
+                    if (method.MethodKind != MethodKind.UserDefinedOperator ||
+                        method.Name != "op_Equality" ||
+                        method.ContainingType.TypeKind != TypeKind.Class)
+                    {
+                        return;
+                    }
 
-                context.ReportDiagnostic(method.CreateDiagnostic(Rule, method.ContainingType.Name));
-            }, SymbolKind.Method);
+                    // There's a CONSIDER rule for overriding op_Equality for anything that implements IEquatable.
+                    if (method.ContainingType.Inherits(iequatableType))
+                    {
+                        return;
+                    }
+
+                    // FxCop compat: only analyze externally visible symbols by default.
+                    if (!method.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+                    {
+                        return;
+                    }
+
+                    context.ReportDiagnostic(method.CreateDiagnostic(Rule, method.ContainingType.Name));
+                }, SymbolKind.Method);
+            });
         }
     }
 }

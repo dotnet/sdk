@@ -192,5 +192,36 @@ End Class"
                 },
             }.RunAsync();
         }
+
+        [Fact]
+        public async Task OperatorEqual_IEquatable_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+public class C : IEquatable<C>
+{
+    public bool Equals(C other) => true;
+    public static bool operator ==(C left, C right) => true;
+    public static bool operator !=(C left, C right) => true;
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Public Class C
+    Implements IEquatable(Of C)
+
+    Public Function Equals(ByVal other As C) As Boolean Implements IEquatable(Of C).Equals
+        Return True
+    End Function
+
+    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+
+    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+End Class");
+        }
     }
 }

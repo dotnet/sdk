@@ -158,8 +158,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
-        <source>Do not overload operator '==' on reference types</source>
-        <target state="new">Do not overload operator '==' on reference types</target>
+        <source>Do not overload equality operator on reference types</source>
+        <target state="new">Do not overload equality operator on reference types</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
