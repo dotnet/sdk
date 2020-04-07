@@ -1391,6 +1391,15 @@
   <data name="DoNotNameEnumValuesReservedTitle" xml:space="preserve">
     <value>Do not name enum values 'Reserved'</value>
   </data>
+  <data name="DoNotExposeGenericListsDescription" xml:space="preserve">
+    <value>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</value>
+  </data>
+  <data name="DoNotExposeGenericListsMessage" xml:space="preserve">
+    <value>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</value>
+  </data>
+  <data name="DoNotExposeGenericListsTitle" xml:space="preserve">
+    <value>Do not expose generic lists</value>
+  </data>
   <data name="DoNotDeclareEventFieldsAsVirtualDescription" xml:space="preserve">
     <value>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</value>
   </data>
