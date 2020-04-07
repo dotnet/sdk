@@ -103,6 +103,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
 $ProgressPreference="SilentlyContinue"
+# Enable TLS1.2
+[Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
 
 if ($NoCdn) {
     $AzureFeed = $UncachedFeed
