@@ -1,6 +1,7 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+CA1002 | Design | Disabled | DoNotExposeGenericLists, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1002)
 CA1005 | Design | Disabled | AvoidExcessiveParametersOnGenericTypes, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1005)
 CA1021 | Design | Disabled | AvoidOutParameters, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1021)
 CA1045 | Design | Disabled | DoNotPassTypesByReference, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1045)
