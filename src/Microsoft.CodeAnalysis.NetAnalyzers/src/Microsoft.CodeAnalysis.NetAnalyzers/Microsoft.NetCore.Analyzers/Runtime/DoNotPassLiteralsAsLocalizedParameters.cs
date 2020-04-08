@@ -108,7 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     // Local functions
                     bool ShouldAnalyze(ISymbol? symbol)
-                        => symbol != null && !symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options, Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
+                        => symbol != null && !symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.OwningSymbol, operationBlockStartContext.Options, Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
 
                     void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbolOpt, IOperation operation, Action<Diagnostic> reportDiagnostic)
                     {

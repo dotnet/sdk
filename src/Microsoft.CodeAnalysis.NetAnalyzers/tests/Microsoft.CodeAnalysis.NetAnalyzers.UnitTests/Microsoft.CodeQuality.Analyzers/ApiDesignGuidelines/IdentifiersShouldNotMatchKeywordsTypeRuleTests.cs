@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Text;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotMatchKeywordsAnalyzer,
@@ -223,6 +225,95 @@ End Class",
                     ExpectedDiagnostics = { GetBasicResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Class", "Class"), },
                 },
             }.RunAsync();
+        }
+
+        [Theory]
+        // Identical
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "dotnet_code_quality.analyzed_symbol_kinds = NamedType", true)]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", true)]
+        // Different, intersection has 'NamedType'
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = NamedType", true)]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", true)]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "", true)] // Default has 'NamedType'
+        // Different, intersection does not have 'NamedType'
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = Property", false)]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", "dotnet_code_quality.analyzed_symbol_kinds = Property", false)]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method", "", false)] // Default has 'NamedType'
+        public async Task TestConflictingAnalyzerOptionsForPartials(string editorConfigText1, string editorConfigText2, bool expectDiagnostic)
+        {
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"public partial class @class {}",
+                        @"public partial class @class {}",
+                    }
+                },
+                SolutionTransforms = { ApplyTransform }
+            };
+
+            if (expectDiagnostic)
+            {
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"z:\folder1\Test0.cs", 1, 22, 1, 28).WithSpan(@"z:\folder2\Test1.cs", 1, 22, 1, 28).WithArguments("class", "class"));
+            }
+
+            await csTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Partial Class [Class]
+End Class",
+                        @"
+Public Partial Class [Class]
+End Class"
+                    },
+                },
+                SolutionTransforms = { ApplyTransform }
+            };
+
+            if (expectDiagnostic)
+            {
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"z:\folder1\Test0.vb", 2, 22, 2, 29).WithSpan(@"z:\folder2\Test1.vb", 2, 22, 2, 29).WithArguments("Class", "Class"));
+            }
+
+            await vbTest.RunAsync();
+            return;
+
+            Solution ApplyTransform(Solution solution, ProjectId projectId)
+            {
+                var project = solution.GetProject(projectId)!;
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                solution = solution.WithProjectFilePath(projectId, projectFilePath);
+
+                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
+                var document1EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + editorConfigText1;
+                var document2EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + editorConfigText2;
+
+                var document1Folder = $@"z:\folder1";
+                solution = solution.WithDocumentFilePath(project.DocumentIds[0], $@"{document1Folder}\Test0.{documentExtension}");
+                solution = solution.GetProject(projectId)!
+                    .AddAnalyzerConfigDocument(
+                        ".editorconfig",
+                        SourceText.From(document1EditorConfig),
+                        filePath: $@"{document1Folder}\.editorconfig")
+                    .Project.Solution;
+
+                var document2Folder = $@"z:\folder2";
+                solution = solution.WithDocumentFilePath(project.DocumentIds[1], $@"{document2Folder}\Test1.{documentExtension}");
+                return solution.GetProject(projectId)!
+                    .AddAnalyzerConfigDocument(
+                        ".editorconfig",
+                        SourceText.From(document2EditorConfig),
+                        filePath: $@"{document2Folder}\.editorconfig")
+                    .Project.Solution;
+            }
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)
