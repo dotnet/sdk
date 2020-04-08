@@ -57,6 +57,7 @@ Configurable Rules:
 [CA1043](https://docs.microsoft.com/visualstudio/code-quality/ca1043-use-integral-or-string-argument-for-indexers),
 [CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044-properties-should-not-be-write-only), 
 [CA1045](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1045),
+[CA1047](https://docs.microsoft.com/visualstudio/code-quality/ca1047),
 [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051-do-not-declare-visible-instance-fields),
 [CA1052](https://docs.microsoft.com/visualstudio/code-quality/ca1052-static-holder-types-should-be-sealed),
 [CA1054](https://docs.microsoft.com/visualstudio/code-quality/ca1054-uri-parameters-should-not-be-strings), 
