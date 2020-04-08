@@ -72,7 +72,21 @@
           " />
 
       <NetCore31RuntimePackRids Include="@(NetCore30RuntimePackRids)"/>
-      <NetCoreRuntimePackRids Include="@(NetCore31RuntimePackRids)"/>
+
+      <NetCore5RuntimePackRids Include="
+          @(NetCore31RuntimePackRids);
+          ios-arm64;
+          ios-arm;
+          ios-x64;
+          tvos-arm64;
+          tvos-x64;
+          android-arm64;
+          android-arm;
+          android-x64;
+          android-x86;
+          " />
+
+      <NetCoreRuntimePackRids Include="@(NetCore5RuntimePackRids)"/>
 
       <AspNetCore30RuntimePackRids Include="
         win-x64;
