@@ -1367,6 +1367,15 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesDescription" xml:space="preserve">
+    <value>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</value>
+  </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesMessage" xml:space="preserve">
+    <value>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</value>
+  </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesTitle" xml:space="preserve">
+    <value>Do not declare protected member in sealed type</value>
+  </data>
   <data name="AvoidExcessiveParametersOnGenericTypesDescription" xml:space="preserve">
     <value>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</value>
   </data>
@@ -1387,6 +1396,15 @@
   </data>
   <data name="DoNotNameEnumValuesReservedTitle" xml:space="preserve">
     <value>Do not name enum values 'Reserved'</value>
+  </data>
+  <data name="DoNotExposeGenericListsDescription" xml:space="preserve">
+    <value>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</value>
+  </data>
+  <data name="DoNotExposeGenericListsMessage" xml:space="preserve">
+    <value>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</value>
+  </data>
+  <data name="DoNotExposeGenericListsTitle" xml:space="preserve">
+    <value>Do not expose generic lists</value>
   </data>
   <data name="DoNotPassTypesByReferenceMessage" xml:space="preserve">
     <value>Consider a design that does not require that '{0}' be a reference parameter.</value>
