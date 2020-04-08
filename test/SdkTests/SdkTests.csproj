@@ -120,16 +120,20 @@
       <RuntimeTargetDirectory>$(DotnetToTestPath)shared\Microsoft.NETCore.App\$(RuntimeVersionToInstall)</RuntimeTargetDirectory>
     </PropertyGroup>
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-      <InstallRuntimeCommand>powershell -NoLogo -NoProfile -ExecutionPolicy ByPass</InstallRuntimeCommand>
-      <InstallRuntimeCommand>$(InstallRuntimeCommand) "$(_DotNetRoot)dotnet-install.ps1"</InstallRuntimeCommand>
+      <!-- Set TLS1.2 explicitly before running this. If TLS1.2 isnt' enbabled by default this command may fail in some
+           scenarios.  Waiting on a fix to dotnet-install.ps1 to fix this in the right place. -->
+      <InstallRuntimeCommand>powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -Command "&amp; {</InstallRuntimeCommand>
+      <InstallRuntimeCommand>$(InstallRuntimeCommand) [Net.ServicePointManager]::SecurityProtocol = 'Tls12, Tls13';</InstallRuntimeCommand>
+      <InstallRuntimeCommand>$(InstallRuntimeCommand) &amp; '$(DotNetRoot)dotnet-install.ps1'</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) -Version $(RuntimeVersionToInstall)</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) -InstallDir $(DotnetToTestPath)</InstallRuntimeCommand>
-      <InstallRuntimeCommand>$(InstallRuntimeCommand) -Runtime "dotnet"</InstallRuntimeCommand>
-      <InstallRuntimeCommand Condition="'$(Architecture)' != ''">$(InstallRuntimeCommand) -Architecture "$(Architecture)"</InstallRuntimeCommand>
+      <InstallRuntimeCommand>$(InstallRuntimeCommand) -Runtime 'dotnet'</InstallRuntimeCommand>
+      <InstallRuntimeCommand Condition="'$(Architecture)' != ''">$(InstallRuntimeCommand) -Architecture '$(Architecture)'</InstallRuntimeCommand>
+      <InstallRuntimeCommand>$(InstallRuntimeCommand) }"</InstallRuntimeCommand>
     </PropertyGroup>
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
       <InstallRuntimeCommand>/bin/bash</InstallRuntimeCommand>
-      <InstallRuntimeCommand>$(InstallRuntimeCommand) "$(_DotNetRoot)dotnet-install.sh"</InstallRuntimeCommand>
+      <InstallRuntimeCommand>$(InstallRuntimeCommand) "$(DotNetRoot)dotnet-install.sh"</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) --version $(RuntimeVersionToInstall)</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) --install-dir "$(DotnetToTestPath)"</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) --runtime "dotnet"</InstallRuntimeCommand>

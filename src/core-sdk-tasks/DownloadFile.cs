@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli.Build
                     {
                         var httpResponse = await httpClient.GetAsync(source);
 
-                        Log.LogMessage(MessageImportance.High, $"{source} -> {httpResponse.StatusCode}");
+                        Log.LogMessage(MessageImportance.Normal, $"{source} -> {httpResponse.StatusCode}");
 
                         // The Azure Storage REST API returns '400 - Bad Request' in some cases
                         // where the resource is not found on the storage.
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Cli.Build
                             await httpResponse.Content.CopyToAsync(outStream);
                         }
 
-                        Log.LogMessage(MessageImportance.High, $"returning true {source} -> {httpResponse.StatusCode}");
+                        Log.LogMessage(MessageImportance.Normal, $"returning true {source} -> {httpResponse.StatusCode}");
                         return true;
                     }
                     catch (Exception e)
