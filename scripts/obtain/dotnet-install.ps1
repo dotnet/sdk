@@ -119,7 +119,9 @@ $VersionRegEx="/\d+\.\d+[^/]+/"
 $OverrideNonVersionedFiles = !$SkipNonVersionedFiles
 
 # Default Tls protocol for .NET Framework 4.5 does not allow for Tls1.2.
-[System.Net.ServicePointManager]::SecurityProtocol += [System.Net.SecurityProtocolType]::Tls12;
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
+# Enable 1.3 for systems that have 1.2 disabled
+[System.Net.ServicePointManager]::SecurityProtocol += [System.Net.SecurityProtocolType]::Tls13;
 
 function Say($str) {
     Write-Host "dotnet-install: $str"
