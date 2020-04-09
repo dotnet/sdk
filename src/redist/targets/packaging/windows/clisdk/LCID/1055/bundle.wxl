@@ -61,7 +61,7 @@ Bu ürün, kullanım verilerini toplar
 Kaynaklar
     • .NET Belgeleri https://aka.ms/dotnet-docs
     • SDK Belgeleri https://aka.ms/dotnet-sdk-docs
-    • Sürüm Notları https://aka.ms/netcore3releasenotes
+    • Sürüm Notları https://aka.ms/dotnet5-release-notes
     • Öğreticiler https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK'sı</String>
   <String Id="WelcomeDescription">
