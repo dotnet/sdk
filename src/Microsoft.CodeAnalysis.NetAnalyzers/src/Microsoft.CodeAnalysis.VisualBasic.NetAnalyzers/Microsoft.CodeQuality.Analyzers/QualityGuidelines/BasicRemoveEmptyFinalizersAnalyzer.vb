@@ -16,18 +16,18 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
             Dim destructorStatement = DirectCast(methodBody, MethodStatementSyntax)
             Dim destructorBlock = DirectCast(destructorStatement.Parent, MethodBlockSyntax)
 
-            If (destructorBlock.Statements.Count = 0) Then
+            If destructorBlock.Statements.Count = 0 Then
                 Return True
-            ElseIf (destructorBlock.Statements.Count = 1) Then
-                If (destructorBlock.Statements(0).Kind() = CodeAnalysis.VisualBasic.SyntaxKind.ThrowStatement) Then
+            ElseIf destructorBlock.Statements.Count = 1 Then
+                If destructorBlock.Statements(0).Kind() = CodeAnalysis.VisualBasic.SyntaxKind.ThrowStatement Then
                     Return True
                 End If
 
-                If (destructorBlock.Statements(0).Kind() = CodeAnalysis.VisualBasic.SyntaxKind.ExpressionStatement) Then
+                If destructorBlock.Statements(0).Kind() = CodeAnalysis.VisualBasic.SyntaxKind.ExpressionStatement Then
                     Dim destructorExpression = DirectCast(destructorBlock.Statements(0), ExpressionStatementSyntax)
-                    If (destructorExpression.Expression.Kind() = CodeAnalysis.VisualBasic.SyntaxKind.InvocationExpression) Then
+                    If destructorExpression.Expression.Kind() = CodeAnalysis.VisualBasic.SyntaxKind.InvocationExpression Then
                         Dim invocationSymbol = DirectCast(analysisContext.SemanticModel.GetSymbolInfo(destructorExpression.Expression).Symbol, IMethodSymbol)
-                        If (invocationSymbol Is Nothing) Then
+                        If invocationSymbol Is Nothing Then
                             ' Presumably, if the user has typed something but hasn't completed it yet, they're not going to have an empty body,
                             ' so we return False here
                             Return False
