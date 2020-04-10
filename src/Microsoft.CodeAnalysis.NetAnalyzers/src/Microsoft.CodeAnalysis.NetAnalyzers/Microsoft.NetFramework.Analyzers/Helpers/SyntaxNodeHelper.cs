@@ -171,8 +171,8 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             }
             Optional<object> value = model.GetConstantValue(node);
             return value.HasValue &&
-                   value.Value is int &&
-                   (int)value.Value == 0;
+                   value.Value is int intValue &&
+                   intValue == 0;
         }
 
         public static bool NodeHasConstantValueBoolFalse(SyntaxNode? node, SemanticModel? model)
@@ -183,8 +183,8 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             }
             Optional<object> value = model.GetConstantValue(node);
             return value.HasValue &&
-                   value.Value is bool &&
-                   (bool)value.Value == false;
+                   value.Value is bool boolValue &&
+                   boolValue == false;
         }
     }
 }
