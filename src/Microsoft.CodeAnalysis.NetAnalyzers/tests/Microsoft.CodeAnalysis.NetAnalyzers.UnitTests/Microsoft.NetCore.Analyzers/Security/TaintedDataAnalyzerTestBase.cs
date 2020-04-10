@@ -30,10 +30,8 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
-            var test = new CSharpSecurityCodeFixVerifier<TCSharpAnalyzer, EmptyCodeFixProvider>.Test
-            {
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis
-            };
+            var test = new CSharpSecurityCodeFixVerifier<TCSharpAnalyzer, EmptyCodeFixProvider>.Test();
+            test.ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis;
             test.TestState.AdditionalReferences.Add(AdditionalMetadataReferences.TestReferenceAssembly);
 
             test.TestState.Sources.Add(source);
@@ -51,10 +49,8 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, (string additionalFile, string fileContent) file, params DiagnosticResult[] expected)
         {
-            var test = new CSharpSecurityCodeFixVerifier<TCSharpAnalyzer, EmptyCodeFixProvider>.Test
-            {
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis
-            };
+            var test = new CSharpSecurityCodeFixVerifier<TCSharpAnalyzer, EmptyCodeFixProvider>.Test();
+            test.ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis;
             test.TestState.AdditionalReferences.Add(AdditionalMetadataReferences.TestReferenceAssembly);
 
             test.TestState.Sources.Add(source);
@@ -81,10 +77,8 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         protected async Task VerifyVisualBasicWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
-            var test = new VisualBasicSecurityCodeFixVerifier<TVisualBasicAnalyzer, EmptyCodeFixProvider>.Test
-            {
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis
-            };
+            var test = new VisualBasicSecurityCodeFixVerifier<TVisualBasicAnalyzer, EmptyCodeFixProvider>.Test();
+            test.ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis;
             test.TestState.AdditionalReferences.Add(AdditionalMetadataReferences.TestReferenceAssembly);
 
             test.TestState.Sources.Add(source);
