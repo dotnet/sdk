@@ -12,11 +12,6 @@ namespace Microsoft.NetCore.Analyzers.Security
 {
     public abstract class UseXmlReaderBase : DiagnosticAnalyzer
     {
-        private static readonly LocalizableString s_Message = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.UseXmlReaderMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-
         private static readonly LocalizableString s_Description = new LocalizableResourceString(
             nameof(MicrosoftNetCoreAnalyzersResources.UseXmlReaderDescription),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
@@ -38,7 +33,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         protected static LocalizableString Description => s_Description;
 
-        protected static LocalizableString Message => s_Message;
+        protected static LocalizableString Message { get; } = new LocalizableResourceString(
+            nameof(MicrosoftNetCoreAnalyzersResources.UseXmlReaderMessage),
+            MicrosoftNetCoreAnalyzersResources.ResourceManager,
+            typeof(MicrosoftNetCoreAnalyzersResources));
 
         public override void Initialize(AnalysisContext context)
         {
