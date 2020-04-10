@@ -227,7 +227,7 @@ End Class",
             }.RunAsync();
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
         // Identical
         [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "dotnet_code_quality.analyzed_symbol_kinds = NamedType", true)]
         [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", true)]

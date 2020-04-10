@@ -267,7 +267,7 @@ End Class"
             }.RunAsync();
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
         [CombinatorialData]
         public async Task TestConflictingAnalyzerOptionsForPartials(bool hasConflict)
         {
