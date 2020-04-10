@@ -136,7 +136,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("NETSDK1128: ");;
+                .HaveStdOutContaining("NETSDK1128: ");
         }
 
         [PlatformSpecificFact(Platform.Linux, Platform.Darwin, Platform.FreeBSD)]
