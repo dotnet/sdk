@@ -8,7 +8,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
 {
     public abstract class SyntaxNodeHelper
     {
-        [Flags]
+        [System.Flags]
         protected enum CallKinds
         {
             None = 0,
