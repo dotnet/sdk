@@ -260,7 +260,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
                 current = parent;
             }
 
-            return String.Empty;
+            return string.Empty;
         }
 
         /// <summary>
