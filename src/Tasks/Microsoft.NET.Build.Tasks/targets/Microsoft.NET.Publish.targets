@@ -701,6 +701,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     See comment on GetCopyToOutputDirectoryItems, from which this logic was taken.
     ============================================================
     -->
+
+  <!--
+    Workaround for https://github.com/microsoft/msbuild/issues/4923
+    and https://github.com/dotnet/project-system/issues/4665
+  -->
+  <PropertyGroup>
+    <MSBuildCopyContentTransitively>true</MSBuildCopyContentTransitively>
+  </PropertyGroup>
+
   <Target Name="GetCopyToPublishDirectoryItems"
           Returns="@(AllPublishItemsFullPathWithTargetPath)"
           KeepDuplicateOutputs=" '$(MSBuildDisableGetCopyToPublishDirectoryItemsOptimization)' == '' "
