@@ -61,7 +61,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/mono/linker -->
-    <ILLinkTasksPackageVersion>5.0.0-preview.3.20209.2</ILLinkTasksPackageVersion>
+    <ILLinkTasksPackageVersion>5.0.0-preview.3.20210.1</ILLinkTasksPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
