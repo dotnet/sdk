@@ -18,6 +18,12 @@ fi
 # Build configuration. Common values include 'Debug' and 'Release', but the repository may use other names.
 configuration=${configuration:-'Debug'}
 
+# Specifies a custom feed to download the runtime/SDK from, if desired
+dotnetruntimesourcefeed=${dotnetruntimesourcefeed:-''}
+
+# Specifies a key to the custom feed to download the runtime/SDK from, if desired
+dotnetruntimesourcefeedkey=${dotnetruntimesourcefeedkey:-''}
+
 # Set to true to output binary log from msbuild. Note that emitting binary log slows down the build.
 # Binary log must be enabled on CI.
 binary_log=${binary_log:-$ci}
@@ -140,7 +146,7 @@ function InitializeDotNetCli {
 
     if [[ ! -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
       if [[ "$install" == true ]]; then
-        InstallDotNetSdk "$dotnet_root" "$dotnet_sdk_version"
+        InstallDotNetSdk "$dotnet_root" "$dotnet_sdk_version" "$dotnetruntimesourcefeed" "$dotnetruntimesourcefeedkey"
       else
         Write-PipelineTelemetryError -category 'InitializeToolset' "Unable to find dotnet with SDK version '$dotnet_sdk_version'"
         ExitWithExitCode 1
@@ -171,11 +177,19 @@ function InitializeDotNetCli {
 function InstallDotNetSdk {
   local root=$1
   local version=$2
-  local architecture=""
-  if [[ $# == 3 ]]; then
-    architecture=$3
+  local runtimeSourceFeed=""
+  if [[ -n "${3:-}" ]]; then
+    runtimeSourceFeed=$3
   fi
-  InstallDotNet "$root" "$version" $architecture
+  local runtimeSourceFeedKey=""
+  if [[ -n "${4:-}" ]]; then
+    runtimeSourceFeedKey=$4
+  fi
+  local architecture=""
+  if [[ -n "${5:-}" ]]; then
+    architecture=$5
+  fi
+  InstallDotNet "$root" "$version" "$runtimeSourceFeed" "$runtimeSourceFeedKey" $architecture
 }
 
 function InstallDotNet {
@@ -185,20 +199,29 @@ function InstallDotNet {
   GetDotNetInstallScript "$root"
   local install_script=$_GetDotNetInstallScript
 
-  local archArg=''
+  local feedArg=''
   if [[ -n "${3:-}" ]]; then
-    archArg="--architecture $3"
+    feedArg="--azure-feed $3"
+  fi
+  local feedKeyArg=''
+  if [[ -n "${4:-}" ]]; then
+    decodedKey=`echo $4 | base64 --decode`
+    feedKeyArg="--feed-credential $decodedKey"
+  fi
+  local archArg=''
+  if [[ -n "${5:-}" ]]; then
+    archArg="--architecture $5"
   fi
   local runtimeArg=''
-  if [[ -n "${4:-}" ]]; then
-    runtimeArg="--runtime $4"
+  if [[ -n "${6:-}" ]]; then
+    runtimeArg="--runtime $6"
   fi
 
   local skipNonVersionedFilesArg=""
-  if [[ "$#" -ge "5" ]]; then
+  if [[ "$#" -ge "7" ]]; then
     skipNonVersionedFilesArg="--skip-non-versioned-files"
   fi
-  bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
+  bash "$install_script" --version $version --install-dir "$root" $feedArg $feedKeyArg $archArg $runtimeArg $skipNonVersionedFilesArg || {
     local exit_code=$?
     Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from public location (exit code '$exit_code')."
 

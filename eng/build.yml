@@ -37,6 +37,19 @@ jobs:
       - _PublishArgs: ''
       - _SignArgs: ''
       - _TestArgs: $(_Test)
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - group: DotNet-MSRC-Storage
+        - ${{ if startsWith(parameters.agentOs, 'Windows') }}:
+          - name: _InternalRuntimeDownloadArgs
+            value: -DotNetRuntimeSourceFeed https://dotnetclimsrc.blob.core.windows.net/dotnet
+                   -DotNetRuntimeSourceFeedKey $(dotnetclimsrc-read-sas-token-base64)
+        - ${{ if not(startsWith(parameters.agentOs, 'Windows')) }}:
+          - name: _InternalRuntimeDownloadArgs
+            value: --dotnetruntimesourcefeed https://dotnetclimsrc.blob.core.windows.net/dotnet
+                   --dotnetruntimesourcefeedkey $(dotnetclimsrc-read-sas-token-base64)
+      - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        - name: _InternalRuntimeDownloadArgs
+          value: ''
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - group: DotNet-Symbol-Server-PATs
         - group: DotNet-HelixApi-Access
@@ -64,6 +77,7 @@ jobs:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng\CIBuild.cmd
                   -configuration $(_BuildConfig)
+                  $(_InternalRuntimeDownloadArgs)
                   $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)
@@ -85,6 +99,7 @@ jobs:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
+                  $(_InternalRuntimeDownloadArgs)
                   $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)
@@ -106,6 +121,7 @@ jobs:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
+                  $(_InternalRuntimeDownloadArgs)
                   $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)
@@ -129,6 +145,7 @@ jobs:
                   -configuration $(_BuildConfig)
                   -ci -msbuildEngine dotnet
                   -performanceTest
+                  $(_InternalRuntimeDownloadArgs)
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
@@ -146,6 +163,7 @@ jobs:
                   -configuration $(_BuildConfig)
                   -ci
                   -performanceTest
+                  $(_InternalRuntimeDownloadArgs)
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
@@ -163,6 +181,7 @@ jobs:
       - script: ./build.sh
                   --configuration $(_BuildConfig)
                   --ci --performancetest
+                  $(_InternalRuntimeDownloadArgs)
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
@@ -178,7 +197,7 @@ jobs:
               arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
             env:
               Token: $(dn-bot-dnceng-artifact-feeds-rw)
-        - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci -msbuildEngine dotnet
+        - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci -msbuildEngine dotnet $(_InternalRuntimeDownloadArgs)
           displayName: Pre-Build
         - script: (robocopy $(Build.SourcesDirectory) $(Build.SourcesDirectory)\helix-package /NP /E /XD $(Build.SourcesDirectory)\helix-package $(Build.SourcesDirectory)\.dotnet $(Build.SourcesDirectory)\artifacts\bin\Tests $(Build.SourcesDirectory)\artifacts\obj\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions $(Build.SourcesDirectory)\artifacts\bin\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions) ^& IF %ERRORLEVEL% LEQ 1 exit 0
           displayName: Selection of sources
@@ -192,7 +211,7 @@ jobs:
 
             WorkItemTimeout: 2:00
             WorkItemDirectory: '$(Build.SourcesDirectory)\build'
-            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling false Windows.10.Amd64.ClientRS1.Perf $(Build.BuildNumber) '
+            WorkItemCommand: '%HELIX_CORRELATION_PAYLOAD%\build\RunPerfTestsOnHelix.cmd $(_BuildConfig) $(_PerfIterations) $(Build.SourceVersion) $(Build.SourceBranchName) rolling false Windows.10.Amd64.ClientRS1.Perf $(Build.BuildNumber)'
             CorrelationPayloadDirectory: '$(Build.SourcesDirectory)\helix-package'
             HelixConfiguration: 'CoreMSBuild'
             continueOnError: true
@@ -213,7 +232,7 @@ jobs:
               arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
             env:
               Token: $(dn-bot-dnceng-artifact-feeds-rw)
-        - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci
+        - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci $(_InternalRuntimeDownloadArgs)
           displayName: Pre-Build
         - script: (robocopy $(Build.SourcesDirectory) $(Build.SourcesDirectory)\helix-package /NP /E /XD $(Build.SourcesDirectory)\helix-package $(Build.SourcesDirectory)\.dotnet $(Build.SourcesDirectory)\artifacts\bin\Tests $(Build.SourcesDirectory)\artifacts\obj\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions $(Build.SourcesDirectory)\artifacts\bin\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions) ^& IF %ERRORLEVEL% LEQ 1 exit 0
           displayName: Selection of sources
@@ -273,6 +292,7 @@ jobs:
               Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng/common/cibuild.sh 
                   --configuration $(_BuildConfig)
+                  $(_InternalRuntimeDownloadArgs)
                   $(_PublishArgs)
                   $(_SignArgs)
                   $(_OfficialBuildIdArgs)

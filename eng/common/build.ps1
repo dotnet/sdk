@@ -5,6 +5,8 @@ Param(
   [string] $projects,
   [string][Alias('v')]$verbosity = "minimal",
   [string] $msbuildEngine = $null,
+  [string] $DotNetRuntimeSourceFeed = $null,
+  [string] $DotNetRuntimeSourceFeedKey = $null,
   [bool] $warnAsError = $true,
   [bool] $nodeReuse = $true,
   [switch][Alias('r')]$restore,
