@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Build.Logging;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tools.Formatters;
@@ -33,7 +34,8 @@ namespace Microsoft.CodeAnalysis.Tools
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
             FormatOptions options,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool createBinaryLog = false)
         {
             var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, fileMatcher, reportPath) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
@@ -45,7 +47,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var workspaceStopwatch = Stopwatch.StartNew();
 
             using (var workspace = await OpenWorkspaceAsync(
-                workspaceFilePath, workspaceType, fileMatcher, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false))
+                workspaceFilePath, workspaceType, fileMatcher, logWorkspaceWarnings, logger, cancellationToken, createBinaryLog).ConfigureAwait(false))
             {
                 if (workspace is null)
                 {
@@ -150,7 +152,8 @@ namespace Microsoft.CodeAnalysis.Tools
             Matcher fileMatcher,
             bool logWorkspaceWarnings,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool createBinaryLog = false)
         {
             if (workspaceType == WorkspaceType.Folder)
             {
@@ -159,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 return folderWorkspace;
             }
 
-            return await OpenMSBuildWorkspaceAsync(workspacePath, workspaceType, logWorkspaceWarnings, logger, cancellationToken);
+            return await OpenMSBuildWorkspaceAsync(workspacePath, workspaceType, logWorkspaceWarnings, logger, cancellationToken, createBinaryLog);
         }
 
         private static async Task<Workspace?> OpenMSBuildWorkspaceAsync(
@@ -167,7 +170,8 @@ namespace Microsoft.CodeAnalysis.Tools
             WorkspaceType workspaceType,
             bool logWorkspaceWarnings,
             ILogger logger,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool createBinaryLog = false)
         {
             var properties = new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -182,15 +186,25 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var workspace = MSBuildWorkspace.Create(properties);
 
+            Build.Framework.ILogger binlog = null;
+            if (createBinaryLog)
+            {
+                binlog = new BinaryLogger()
+                {
+                    Parameters = Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog"),
+                    Verbosity = Build.Framework.LoggerVerbosity.Diagnostic,
+                };
+            }
+
             if (workspaceType == WorkspaceType.Solution)
             {
-                await workspace.OpenSolutionAsync(solutionOrProjectPath, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
             else
             {
                 try
                 {
-                    await workspace.OpenProjectAsync(solutionOrProjectPath, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
                 }
                 catch (InvalidOperationException)
                 {

@@ -154,7 +154,8 @@ namespace Microsoft.CodeAnalysis.Tools
                 var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                     formatOptions,
                     logger,
-                    cancellationTokenSource.Token).ConfigureAwait(false);
+                    cancellationTokenSource.Token,
+                    createBinaryLog: logLevel == LogLevel.Trace ? true : false).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
             }
