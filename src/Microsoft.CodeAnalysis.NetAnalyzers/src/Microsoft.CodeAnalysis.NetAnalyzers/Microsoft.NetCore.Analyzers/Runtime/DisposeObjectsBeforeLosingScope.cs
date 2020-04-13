@@ -90,7 +90,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    var disposeAnalysisKind = operationBlockContext.Options.GetDisposeAnalysisKindOption(NotDisposedOnExceptionPathsRule, DisposeAnalysisKind.NonExceptionPaths, operationBlockContext.CancellationToken);
+                    var disposeAnalysisKind = operationBlockContext.Options.GetDisposeAnalysisKindOption(NotDisposedOnExceptionPathsRule, containingMethod,
+                        operationBlockContext.Compilation, DisposeAnalysisKind.NonExceptionPaths, operationBlockContext.CancellationToken);
                     var trackExceptionPaths = disposeAnalysisKind.AreExceptionPathsEnabled();
 
                     // For non-exception paths analysis, we can skip interprocedural analysis for certain invocations.

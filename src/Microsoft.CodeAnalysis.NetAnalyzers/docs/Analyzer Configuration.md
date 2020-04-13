@@ -19,8 +19,13 @@ For example, end users can configure the analyzed API surface for analyzers usin
       2. `dotnet_code_quality.Naming.api_surface = public`
       3. `dotnet_code_quality.Dataflow.api_surface = public`
 
-## Enabling .editorconfig based configuration for a project
-1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory. In future, we plan to support hierarchical directory based configuration with an .editorconfig file at the solution directory, repo root directory or even individual document directories.
+## Enabling .editorconfig based configuration
+
+### VS2019 16.3 and later
+End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
+
+### Prior to VS2019 16.3
+1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory.
 2. Shared .editorconfig file: If you would like to share a common .editorconfig file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
 ```
   <PropertyGroup>
@@ -30,7 +35,7 @@ For example, end users can configure the analyzed API surface for analyzers usin
     <AdditionalFiles Include="<%PathToSharedEditorConfig%>\.editorconfig" />
   </ItemGroup>
 ```
-Note that this is a temporary workaround that is needed until the dotnet compilers and project system start understanding and respecting .editorconfig files.
+Note that this additional file based approach is also supported on VS2019 16.3 and later releases for backwards compatibility.
 
 ## Supported .editorconfig options
 This section documents the list of supported .editorconfig key-value options for CA rules.

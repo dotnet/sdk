@@ -88,24 +88,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                        interfaceToGenericInterfaceMapBuilder.Add(new KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>(iEnumerableType, genericIEnumerableType));
                    }
 
-                   var userMap = context.Options.GetAdditionalRequiredGenericInterfaces(Rule, context.Compilation, context.CancellationToken);
-
-                   if (interfaceToGenericInterfaceMapBuilder.Count > 0 || !userMap.IsEmpty)
-                   {
-                       context.RegisterSymbolAction(c => AnalyzeSymbol(c, interfaceToGenericInterfaceMapBuilder.ToImmutable(), userMap), SymbolKind.NamedType);
-                   }
+                   context.RegisterSymbolAction(c => AnalyzeSymbol(c, interfaceToGenericInterfaceMapBuilder.ToImmutable()), SymbolKind.NamedType);
                });
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableArray<KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>> interfacePairs,
-            SymbolNamesWithValueOption<INamedTypeSymbol> userMap)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableArray<KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>> interfacePairs)
         {
             Debug.Assert(interfacePairs.All(kvp => kvp.Key.TypeKind == TypeKind.Interface && kvp.Value.TypeKind == TypeKind.Interface));
 
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
             // FxCop compat: only fire on externally visible types by default.
-            if (!namedTypeSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+            if (!namedTypeSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
             {
                 return;
             }
@@ -117,6 +111,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // First we need to try to match all types from the user definition...
+            var userMap = context.Options.GetAdditionalRequiredGenericInterfaces(Rule, context.Symbol, context.Compilation, context.CancellationToken);
             if (!userMap.IsEmpty)
             {
                 foreach (var @interface in allInterfaces)

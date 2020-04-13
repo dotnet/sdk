@@ -348,7 +348,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 // Check if this the underlying method is user configured string formatting method.
-                var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(Rule, context.Compilation, context.CancellationToken);
+                var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, context.CancellationToken);
                 if (additionalStringFormatMethodsOption.Contains(method.OriginalDefinition) &&
                     TryGetFormatInfo(method, out info))
                 {

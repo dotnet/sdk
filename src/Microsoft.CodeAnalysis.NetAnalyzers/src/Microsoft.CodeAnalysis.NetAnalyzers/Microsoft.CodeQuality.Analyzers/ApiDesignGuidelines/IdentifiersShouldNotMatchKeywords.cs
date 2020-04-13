@@ -87,44 +87,29 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             analysisContext.RegisterCompilationStartAction(compilationStartAnalysisContext =>
             {
-                var analyzedSymbolKinds = compilationStartAnalysisContext.Options.GetAnalyzedSymbolKindsOption(MemberParameterRule,
-                    s_defaultAnalyzedSymbolKinds, compilationStartAnalysisContext.CancellationToken);
+                var namespaceRuleAnalyzer = new NamespaceRuleAnalyzer();
+                compilationStartAnalysisContext.RegisterSymbolAction(
+                    symbolAnalysisContext => namespaceRuleAnalyzer.Analyze(symbolAnalysisContext),
+                    SymbolKind.NamedType);
 
-                if (analyzedSymbolKinds.Contains(SymbolKind.Namespace))
-                {
-                    var namespaceRuleAnalyzer = new NamespaceRuleAnalyzer();
-
-                    compilationStartAnalysisContext.RegisterSymbolAction(
-                        symbolAnalysisContext => namespaceRuleAnalyzer.Analyze(symbolAnalysisContext),
-                        SymbolKind.NamedType);
-                }
-
-                if (analyzedSymbolKinds.Contains(SymbolKind.NamedType))
-                {
-                    compilationStartAnalysisContext.RegisterSymbolAction(AnalyzeTypeRule, SymbolKind.NamedType);
-                }
-
-                if (analyzedSymbolKinds.Contains(SymbolKind.Event))
-                {
-                    compilationStartAnalysisContext.RegisterSymbolAction(AnalyzeMemberRule, SymbolKind.Event);
-                }
-
-                if (analyzedSymbolKinds.Contains(SymbolKind.Method))
-                {
-                    compilationStartAnalysisContext.RegisterSymbolAction(AnalyzeMemberRule, SymbolKind.Method);
-                }
-
-                if (analyzedSymbolKinds.Contains(SymbolKind.Property))
-                {
-                    compilationStartAnalysisContext.RegisterSymbolAction(AnalyzeMemberRule, SymbolKind.Property);
-                }
-
-                if (analyzedSymbolKinds.Contains(SymbolKind.Parameter))
-                {
-                    compilationStartAnalysisContext.RegisterSymbolAction(AnalyzeMemberParameterRule, SymbolKind.Method);
-                }
+                compilationStartAnalysisContext.RegisterSymbolAction(AnalyzeTypeRule, SymbolKind.NamedType);
+                compilationStartAnalysisContext.RegisterSymbolAction(AnalyzeMemberRule, SymbolKind.Event, SymbolKind.Method, SymbolKind.Property);
+                compilationStartAnalysisContext.RegisterSymbolAction(AnalyzeMemberParameterRule, SymbolKind.Method);
             });
         }
+
+        private static bool ShouldAnalyze(SymbolAnalysisContext context, DiagnosticDescriptor rule)
+        {
+            if (!context.Symbol.MatchesConfiguredVisibility(context.Options, rule, context.Compilation, context.CancellationToken))
+            {
+                return false;
+            }
+
+            return GetSymbolKindsToAnalyze(context, rule).Contains(context.Symbol.Kind);
+        }
+
+        private static ImmutableHashSet<SymbolKind> GetSymbolKindsToAnalyze(SymbolAnalysisContext context, DiagnosticDescriptor rule)
+            => context.Options.GetAnalyzedSymbolKindsOption(rule, context.Symbol, context.Compilation, s_defaultAnalyzedSymbolKinds, context.CancellationToken);
 
         private sealed class NamespaceRuleAnalyzer
         {
@@ -135,8 +120,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 INamedTypeSymbol type = (INamedTypeSymbol)context.Symbol;
 
+                if (!GetSymbolKindsToAnalyze(context, NamespaceRule).Contains(SymbolKind.Namespace))
+                {
+                    return;
+                }
+
                 // Don't complain about a namespace unless it contains at least one public type.
-                if (!type.MatchesConfiguredVisibility(context.Options, NamespaceRule, context.CancellationToken))
+                if (!type.MatchesConfiguredVisibility(context.Options, NamespaceRule, context.Compilation, context.CancellationToken))
                 {
                     return;
                 }
@@ -178,7 +168,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeTypeRule(SymbolAnalysisContext context)
         {
             INamedTypeSymbol type = (INamedTypeSymbol)context.Symbol;
-            if (!type.MatchesConfiguredVisibility(context.Options, TypeRule, context.CancellationToken))
+            if (!ShouldAnalyze(context, TypeRule))
             {
                 return;
             }
@@ -196,7 +186,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeMemberRule(SymbolAnalysisContext context)
         {
             ISymbol symbol = context.Symbol;
-            if (!symbol.MatchesConfiguredVisibility(context.Options, MemberRule, context.CancellationToken))
+            if (!ShouldAnalyze(context, MemberRule))
             {
                 return;
             }
@@ -220,7 +210,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeMemberParameterRule(SymbolAnalysisContext context)
         {
             var method = (IMethodSymbol)context.Symbol;
-            if (!method.MatchesConfiguredVisibility(context.Options, MemberParameterRule, context.CancellationToken))
+            if (!GetSymbolKindsToAnalyze(context, MemberParameterRule).Contains(SymbolKind.Parameter) ||
+                !method.MatchesConfiguredVisibility(context.Options, MemberParameterRule, context.Compilation, context.CancellationToken))
             {
                 return;
             }
