@@ -35,12 +35,6 @@
 # Specifies which msbuild engine to use for build: 'vs', 'dotnet' or unspecified (determined based on presence of tools.vs in global.json).
 [string]$msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
 
-# Specifies a custom feed to download the runtime/SDK from, if desired
-[string]$DotNetRuntimeSourceFeed = if (Test-Path variable:DotNetRuntimeSourceFeed) { $DotNetRuntimeSourceFeed } else { $null }
-
-# Specifies the key to a custom feed to download the runtime/SDK from, if desired
-[string]$DotNetRuntimeSourceFeedKey = if (Test-Path variable:DotNetRuntimeSourceFeedKey) { $DotNetRuntimeSourceFeedKey } else { $null }
-
 # True to attempt using .NET Core already that meets requirements specified in global.json
 # installed on the machine instead of downloading one.
 [bool]$useInstalledDotNetCli = if (Test-Path variable:useInstalledDotNetCli) { $useInstalledDotNetCli } else { $true }
@@ -142,7 +136,7 @@ function InitializeDotNetCli([bool]$install) {
 
     if (-not (Test-Path(Join-Path $dotnetRoot "sdk\$dotnetSdkVersion"))) {
       if ($install) {
-        InstallDotNetSdk $dotnetRoot $dotnetSdkVersion $DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeedKey
+        InstallDotNetSdk $dotnetRoot $dotnetSdkVersion
       } else {
         Write-PipelineTelemetryError -Category "InitializeToolset" -Message "Unable to find dotnet with SDK version '$dotnetSdkVersion'"
         ExitWithExitCode 1
@@ -186,17 +180,17 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
   return $installScript
 }
 
-function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $runtimeSourceFeed="", [string] $runtimeSourceFeedKey="", [string] $architecture = "") {
-  InstallDotNet $dotnetRoot $version $runtimeSourceFeed $runtimeSourceFeedKey $architecture
+function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $architecture = "") {
+  InstallDotNet $dotnetRoot $version $architecture
 }
 
 function InstallDotNet([string] $dotnetRoot, 
-  [string] $version,
-  [string] $runtimeSourceFeed = "", 
-  [string] $runtimeSourceFeedKey = "",
+  [string] $version, 
   [string] $architecture = "", 
   [string] $runtime = "", 
-  [bool] $skipNonVersionedFiles = $false) {
+  [bool] $skipNonVersionedFiles = $false, 
+  [string] $runtimeSourceFeed = "", 
+  [string] $runtimeSourceFeedKey = "") {
 
   $installScript = GetDotNetInstallScript $dotnetRoot
   $installParameters = @{
@@ -207,12 +201,6 @@ function InstallDotNet([string] $dotnetRoot,
   if ($architecture) { $installParameters.Architecture = $architecture }
   if ($runtime) { $installParameters.Runtime = $runtime }
   if ($skipNonVersionedFiles) { $installParameters.SkipNonVersionedFiles = $skipNonVersionedFiles }
-  if ($runtimeSourceFeed) { $installParameters.AzureFeed = $runtimeSourceFeed }
-  if ($runtimeSourceFeedKey) {
-    $decodedBytes = [System.Convert]::FromBase64String($runtimeSourceFeedKey)
-    $decodedString = [System.Text.Encoding]::UTF8.GetString($decodedBytes)
-    $installParameters.FeedCredential = $decodedString
-  }
 
   try {
     & $installScript @installParameters

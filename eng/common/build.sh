@@ -72,8 +72,6 @@ projects=''
 configuration='Debug'
 prepare_machine=false
 verbosity='minimal'
-dotnetruntimesourcefeed=''
-dotnetruntimesourcefeedkey=''
 
 properties=''
 
@@ -90,14 +88,6 @@ while [[ $# > 0 ]]; do
       ;;
     -verbosity|-v)
       verbosity=$2
-      shift
-      ;;
-    -dotnetruntimesourcefeed)
-      dotnetruntimesourcefeed=$2
-      shift
-      ;;
-    -dotnetruntimesourcefeedkey)
-      dotnetruntimesourcefeedkey=$2
       shift
       ;;
     -binarylog|-bl)
