@@ -186,7 +186,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var workspace = MSBuildWorkspace.Create(properties);
 
-            Build.Framework.ILogger binlog = null;
+            Build.Framework.ILogger? binlog = null;
             if (createBinaryLog)
             {
                 binlog = new BinaryLogger()
