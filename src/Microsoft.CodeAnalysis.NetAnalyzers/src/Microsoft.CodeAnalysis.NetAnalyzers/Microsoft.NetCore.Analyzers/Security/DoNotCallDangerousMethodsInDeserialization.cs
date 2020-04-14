@@ -33,7 +33,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         private ImmutableArray<(string, string[])> DangerousCallable = ImmutableArray.Create<(string, string[])>
             (
-                (WellKnownTypeNames.SystemIOFileFullName, new[] { "WriteAllBytes", "WriteAllLines", "WriteAllText", "Copy", "Move", "AppendAllLines", "AppendAllText", "AppendText", "Delete" }),
+                (WellKnownTypeNames.SystemIOFile, new[] { "WriteAllBytes", "WriteAllLines", "WriteAllText", "Copy", "Move", "AppendAllLines", "AppendAllText", "AppendText", "Delete" }),
                 (WellKnownTypeNames.SystemIODirectory, new[] { "Delete" }),
                 (WellKnownTypeNames.SystemIOFileInfo, new[] { "Delete" }),
                 (WellKnownTypeNames.SystemIODirectoryInfo, new[] { "Delete" }),
