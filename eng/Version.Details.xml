@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NETCore.Compilers" Version="3.7.0-1.20208.15">
+    <Dependency Name="Microsoft.NETCore.Compilers" Version="3.7.0-1.20210.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>ff85424a6bb1e22f86aa1697a792d6c141eae275</Sha>
+      <Sha>fbae122a63ebbf1c7176e36fb6d3b26d681be8ab</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

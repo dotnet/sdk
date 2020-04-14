@@ -9,7 +9,7 @@
   <PropertyGroup>
     <MicrosoftBuildVersion>15.3.409</MicrosoftBuildVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNETCoreCompilersPackageVersion>3.7.0-1.20208.15</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftNETCoreCompilersPackageVersion>3.7.0-1.20210.7</MicrosoftNETCoreCompilersPackageVersion>
     <MicrosoftExtensionsVersion>3.1.1</MicrosoftExtensionsVersion>
   </PropertyGroup>
   <!--
@@ -25,7 +25,7 @@
     <MicrosoftExtensionsFileSystemGlobbingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsLoggingVersion>
     <MicrosoftVisualStudioCodingConventionsVersion>1.1.20180503.2</MicrosoftVisualStudioCodingConventionsVersion>
-    <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0-beta2.20169.3</MicrosoftCodeAnalysisAnalyzersVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftCodeAnalysisVersion>$(MicrosoftNETCoreCompilersPackageVersion)</MicrosoftCodeAnalysisVersion>
     <SystemTextJsonVersion>4.7.0</SystemTextJsonVersion>
   </PropertyGroup>
