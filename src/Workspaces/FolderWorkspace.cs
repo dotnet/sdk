@@ -69,10 +69,8 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
         {
             try
             {
-                using (var writer = new StreamWriter(fullPath, append: false, encoding))
-                {
-                    newText.Write(writer);
-                }
+                using var writer = new StreamWriter(fullPath, append: false, encoding);
+                newText.Write(writer);
             }
             catch (IOException exception)
             {

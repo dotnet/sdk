@@ -60,13 +60,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         private static byte[] GetEncodedBytes(string text, Encoding encoding)
         {
             // Start with a large initial capacity, double the character count with additional space for the BOM
-            using (var stream = new MemoryStream(text.Length * 2 + 3))
-            using (var streamWriter = new StreamWriter(stream, encoding))
-            {
-                streamWriter.Write(text);
-                streamWriter.Flush();
-                return stream.ToArray();
-            }
+            using var stream = new MemoryStream(text.Length * 2 + 3);
+            using var streamWriter = new StreamWriter(stream, encoding);
+            streamWriter.Write(text);
+            streamWriter.Flush();
+            return stream.ToArray();
         }
 
         private static bool TryGetCharset(ICodingConventionsSnapshot codingConventions, [NotNullWhen(true)] out Encoding? encoding)
