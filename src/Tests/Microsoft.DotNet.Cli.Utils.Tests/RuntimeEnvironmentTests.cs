@@ -21,7 +21,12 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             Assert.Equal(Platform.Windows, RuntimeEnvironment.OperatingSystemPlatform);
             Assert.Equal("Windows", RuntimeEnvironment.OperatingSystem);
 
-            VerifyOperatingSystemVersionEqualsEnvironmentOSVersion();
+            Version osVersion = Version.Parse(RuntimeEnvironment.OperatingSystemVersion);
+            Version expectedOSVersion = Environment.OSVersion.Version;
+
+            Assert.Equal(expectedOSVersion.Major, osVersion.Major);
+            Assert.Equal(expectedOSVersion.Minor, osVersion.Minor);
+            Assert.Equal(expectedOSVersion.Build, osVersion.Build);
         }
 
         [MacOsOnlyFact]
@@ -30,17 +35,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             Assert.Equal(Platform.Darwin, RuntimeEnvironment.OperatingSystemPlatform);
             Assert.Equal("Mac OS X", RuntimeEnvironment.OperatingSystem);
 
-            VerifyOperatingSystemVersionEqualsEnvironmentOSVersion();
-        }
-
-        private void VerifyOperatingSystemVersionEqualsEnvironmentOSVersion()
-        {
             Version osVersion = Version.Parse(RuntimeEnvironment.OperatingSystemVersion);
-            Version expectedOSVersion = Environment.OSVersion.Version;
 
-            Assert.Equal(expectedOSVersion.Major, osVersion.Major);
-            Assert.Equal(expectedOSVersion.Minor, osVersion.Minor);
-            Assert.Equal(expectedOSVersion.Build, osVersion.Build);
+            Assert.Equal(10, osVersion.Major);
+            Assert.Equal(Environment.OSVersion.Version.Major - 4, osVersion.Minor);
         }
 
         [LinuxOnlyFact]
