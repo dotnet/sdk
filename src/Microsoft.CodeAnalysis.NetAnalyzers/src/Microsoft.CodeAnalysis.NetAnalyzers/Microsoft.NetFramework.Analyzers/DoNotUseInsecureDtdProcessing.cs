@@ -178,7 +178,7 @@ namespace Microsoft.NetFramework.Analyzers
             public OperationAnalyzer(CompilationSecurityTypes xmlTypes, Version targetFrameworkVersion)
             {
                 _xmlTypes = xmlTypes;
-                _isFrameworkSecure = targetFrameworkVersion == null ? false : targetFrameworkVersion >= s_minSecureFxVersion;
+                _isFrameworkSecure = targetFrameworkVersion != null && targetFrameworkVersion >= s_minSecureFxVersion;
             }
 
             public void AnalyzeOperationBlock(OperationBlockAnalysisContext context)

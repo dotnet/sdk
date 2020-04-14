@@ -83,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 context.ReportDiagnostic(property.CreateDiagnostic(AddGetterRule, property.Name));
             }
             // Otherwise if there is a setter, check for its relative accessibility
-            else if (!(property.IsReadOnly) && (property.GetMethod.DeclaredAccessibility < property.SetMethod.DeclaredAccessibility))
+            else if (!property.IsReadOnly && (property.GetMethod.DeclaredAccessibility < property.SetMethod.DeclaredAccessibility))
             {
                 context.ReportDiagnostic(property.CreateDiagnostic(MakeMoreAccessibleRule, property.Name));
             }

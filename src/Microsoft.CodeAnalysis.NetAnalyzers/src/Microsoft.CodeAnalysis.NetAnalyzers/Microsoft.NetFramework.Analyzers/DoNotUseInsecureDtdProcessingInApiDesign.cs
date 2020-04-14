@@ -95,7 +95,7 @@ namespace Microsoft.NetFramework.Analyzers
             {
                 _xmlTypes = xmlTypes;
                 _syntaxNodeHelper = helper;
-                _isFrameworkSecure = targetFrameworkVersion == null ? false : targetFrameworkVersion >= SymbolAndNodeAnalyzer.s_minSecureFxVersion;
+                _isFrameworkSecure = targetFrameworkVersion != null && targetFrameworkVersion >= SymbolAndNodeAnalyzer.s_minSecureFxVersion;
             }
 
             public void AnalyzeNode(SyntaxNodeAnalysisContext context)
