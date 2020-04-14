@@ -155,7 +155,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     formatOptions,
                     logger,
                     cancellationTokenSource.Token,
-                    createBinaryLog: logLevel == LogLevel.Trace ? true : false).ConfigureAwait(false);
+                    createBinaryLog: logLevel == LogLevel.Trace).ConfigureAwait(false);
 
                 return GetExitCode(formatResult, check);
             }
