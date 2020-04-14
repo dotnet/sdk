@@ -81,20 +81,14 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         public static Encoding GetCharset(string charsetOption)
         {
-            switch (charsetOption)
+            return charsetOption switch
             {
-                case "latin1":
-                    return Latin1;
-                case "utf-8-bom":
-                    return Encoding.UTF8; // UTF-8 with BOM Marker
-                case "utf-16be":
-                    return Encoding.BigEndianUnicode; // Big Endian with BOM Marker
-                case "utf-16le":
-                    return Encoding.Unicode; // Little Endian with BOM Marker
-                case "utf-8":
-                default:
-                    return Utf8;
-            }
+                "latin1" => Latin1,
+                "utf-8-bom" => Encoding.UTF8,// UTF-8 with BOM Marker
+                "utf-16be" => Encoding.BigEndianUnicode,// Big Endian with BOM Marker
+                "utf-16le" => Encoding.Unicode,// Little Endian with BOM Marker
+                _ => Utf8,
+            };
         }
     }
 }

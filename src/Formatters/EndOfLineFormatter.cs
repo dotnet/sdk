@@ -72,17 +72,13 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         private static string GetEndOfLine(string endOfLineOption)
         {
-            switch (endOfLineOption)
+            return endOfLineOption switch
             {
-                case "lf":
-                    return "\n";
-                case "cr":
-                    return "\r";
-                case "crlf":
-                    return "\r\n";
-                default:
-                    return Environment.NewLine;
-            }
+                "lf" => "\n",
+                "cr" => "\r",
+                "crlf" => "\r\n",
+                _ => Environment.NewLine,
+            };
         }
     }
 }
