@@ -18,14 +18,18 @@ namespace Microsoft.DotNet.Cli.Utils
 
     internal static class RuntimeEnvironment
     {
-        private static readonly string OverrideEnvironmentVariableName = "DOTNET_RUNTIME_ID";
-
         private static readonly Lazy<Platform> _platform = new Lazy<Platform>(DetermineOSPlatform);
         private static readonly Lazy<DistroInfo> _distroInfo = new Lazy<DistroInfo>(LoadDistroInfo);
 
         public static Platform OperatingSystemPlatform { get; } = GetOSPlatform();
         public static string OperatingSystemVersion { get; } = GetOSVersion();
         public static string OperatingSystem { get; } = GetOSName();
+
+        // toolset-tasks.csproj needs to build for full .NET Framework, and needs to get the current
+        // RuntimeIdentifier of the machine. Because of this, it needs to implement
+        // it's own GetRuntimeIdentifier(). All other places should use RuntimeInformation.RuntimeIdentifier.
+#if TOOLSET_TASKS
+        private static readonly string OverrideEnvironmentVariableName = "DOTNET_RUNTIME_ID";
 
         public static string GetRuntimeIdentifier()
         {
@@ -105,6 +109,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     return "unknown";
             }
         }
+#endif // TOOLSET_TASKS
 
         private class DistroInfo
         {
