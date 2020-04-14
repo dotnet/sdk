@@ -96,15 +96,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     logger.LogWarning(Resources.Cannot_specify_both_folder_and_workspace_options);
                     return 1;
                 }
-
-                if (!string.IsNullOrEmpty(folder))
-                {
-                    folder = Path.GetFullPath(folder, Environment.CurrentDirectory);
-                    workspacePath = folder;
-                    workspaceDirectory = workspacePath;
-                    workspaceType = WorkspaceType.Folder;
-                }
-                else
+                else if (!string.IsNullOrEmpty(workspace))
                 {
                     var (isSolution, workspaceFilePath) = MSBuildWorkspaceFinder.FindWorkspace(currentDirectory, workspace);
 
@@ -120,6 +112,14 @@ namespace Microsoft.CodeAnalysis.Tools
                     if (directoryName is null)
                         throw new Exception($"Unable to find folder at '{workspacePath}'");
                     workspaceDirectory = directoryName;
+                }
+                else
+                {
+                    // If folder isn't populated, then use the current directory
+                    folder = Path.GetFullPath(folder ?? ".", Environment.CurrentDirectory);
+                    workspacePath = folder;
+                    workspaceDirectory = workspacePath;
+                    workspaceType = WorkspaceType.Folder;
                 }
 
                 Environment.CurrentDirectory = workspaceDirectory;
