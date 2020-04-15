@@ -8,6 +8,7 @@ CA1045 | Design | Disabled | DoNotPassTypesByReference, [Documentation](https://
 CA1047 | Design | Info | DoNotDeclareProtectedMembersInSealedTypes, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1047)
 CA1069 | Design | Info | EnumShouldNotHaveDuplicatedValues, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1069)
 CA1700 | Naming | Disabled | DoNotNameEnumValuesReserved, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1700)
+CA1713 | Naming | Disabled | EventsShouldNotHaveBeforeOrAfterPrefix, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1713)
 CA1830 | Performance | Info | PreferTypedStringBuilderAppendOverloads, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1830)
 CA1831 | Performance | Warning | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1831)
 CA1832 | Performance | Info | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1832)
