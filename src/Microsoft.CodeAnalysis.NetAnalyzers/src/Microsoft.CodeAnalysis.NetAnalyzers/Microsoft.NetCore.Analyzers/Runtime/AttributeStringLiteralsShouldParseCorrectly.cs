@@ -205,7 +205,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var valueValidator = GetValueValidator(namedArgument.Key);
                 if (valueValidator != null && !valueValidator.IsIgnoredName(namedArgument.Key))
                 {
-                    var value = (string)(namedArgument.Value.Value);
+                    var value = (string)namedArgument.Value.Value;
                     string classDisplayString = attributeData.AttributeClass.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat);
                     if (value.Length == 0)
                     {

@@ -19,8 +19,13 @@ For example, end users can configure the analyzed API surface for analyzers usin
       2. `dotnet_code_quality.Naming.api_surface = public`
       3. `dotnet_code_quality.Dataflow.api_surface = public`
 
-## Enabling .editorconfig based configuration for a project
-1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory. In future, we plan to support hierarchical directory based configuration with an .editorconfig file at the solution directory, repo root directory or even individual document directories.
+## Enabling .editorconfig based configuration
+
+### VS2019 16.3 and later
+End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
+
+### Prior to VS2019 16.3
+1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory.
 2. Shared .editorconfig file: If you would like to share a common .editorconfig file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
 ```
   <PropertyGroup>
@@ -30,7 +35,7 @@ For example, end users can configure the analyzed API surface for analyzers usin
     <AdditionalFiles Include="<%PathToSharedEditorConfig%>\.editorconfig" />
   </ItemGroup>
 ```
-Note that this is a temporary workaround that is needed until the dotnet compilers and project system start understanding and respecting .editorconfig files.
+Note that this additional file based approach is also supported on VS2019 16.3 and later releases for backwards compatibility.
 
 ## Supported .editorconfig options
 This section documents the list of supported .editorconfig key-value options for CA rules.
@@ -38,7 +43,53 @@ This section documents the list of supported .editorconfig key-value options for
 ### Analyzed API surface
 Option Name: `api_surface`
 
-Configurable Rules: [CA1000](https://docs.microsoft.com/visualstudio/code-quality/ca1000-do-not-declare-static-members-on-generic-types), [CA1003](https://docs.microsoft.com/visualstudio/code-quality/ca1003-use-generic-event-handler-instances), [CA1008](https://docs.microsoft.com/visualstudio/code-quality/ca1008-enums-should-have-zero-value), [CA1010](https://docs.microsoft.com/visualstudio/code-quality/ca1010-collections-should-implement-generic-interface), [CA1012](https://docs.microsoft.com/visualstudio/code-quality/ca1012-abstract-types-should-not-have-constructors), [CA1021](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1021),[CA1024](https://docs.microsoft.com/visualstudio/code-quality/ca1024-use-properties-where-appropriate), [CA1027](https://docs.microsoft.com/visualstudio/code-quality/ca1027-mark-enums-with-flagsattribute), [CA1028](https://docs.microsoft.com/visualstudio/code-quality/ca1028-enum-storage-should-be-int32), [CA1030](https://docs.microsoft.com/visualstudio/code-quality/ca1030-use-events-where-appropriate), [CA1036](https://docs.microsoft.com/visualstudio/code-quality/ca1036-override-methods-on-comparable-types), [CA1040](https://docs.microsoft.com/visualstudio/code-quality/ca1040-avoid-empty-interfaces), [CA1041](https://docs.microsoft.com/visualstudio/code-quality/ca1041-provide-obsoleteattribute-message), [CA1043](https://docs.microsoft.com/visualstudio/code-quality/ca1043-use-integral-or-string-argument-for-indexers), [CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044-properties-should-not-be-write-only), [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051-do-not-declare-visible-instance-fields), [CA1052](https://docs.microsoft.com/visualstudio/code-quality/ca1052-static-holder-types-should-be-sealed), [CA1054](https://docs.microsoft.com/visualstudio/code-quality/ca1054-uri-parameters-should-not-be-strings), [CA1055](https://docs.microsoft.com/visualstudio/code-quality/ca1055-uri-return-values-should-not-be-strings), [CA1056](https://docs.microsoft.com/visualstudio/code-quality/ca1056-uri-properties-should-not-be-strings), [CA1058](https://docs.microsoft.com/visualstudio/code-quality/ca1058-types-should-not-extend-certain-base-types), [CA1063](https://docs.microsoft.com/visualstudio/code-quality/ca1063-implement-idisposable-correctly), [CA1708](https://docs.microsoft.com/visualstudio/code-quality/ca1708-identifiers-should-differ-by-more-than-case), [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710-identifiers-should-have-correct-suffix), [CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711-identifiers-should-not-have-incorrect-suffix), [CA1714](https://docs.microsoft.com/visualstudio/code-quality/ca1714-flags-enums-should-have-plural-names), [CA1715](https://docs.microsoft.com/visualstudio/code-quality/ca1715-identifiers-should-have-correct-prefix), [CA1716](https://docs.microsoft.com/visualstudio/code-quality/ca1716-identifiers-should-not-match-keywords), [CA1717](https://docs.microsoft.com/visualstudio/code-quality/ca1717-only-flagsattribute-enums-should-have-plural-names), [CA1720](https://docs.microsoft.com/visualstudio/code-quality/ca1720-identifiers-should-not-contain-type-names), [CA1721](https://docs.microsoft.com/visualstudio/code-quality/ca1721-property-names-should-not-match-get-methods), [CA1725](https://docs.microsoft.com/visualstudio/code-quality/ca1725-parameter-names-should-match-base-declaration), [CA1801](https://docs.microsoft.com/visualstudio/code-quality/ca1801-review-unused-parameters), [CA1802](https://docs.microsoft.com/visualstudio/code-quality/ca1802-use-literals-where-appropriate), [CA1815](https://docs.microsoft.com/visualstudio/code-quality/ca1815-override-equals-and-operator-equals-on-value-types), [CA1819](https://docs.microsoft.com/visualstudio/code-quality/ca1819-properties-should-not-return-arrays), [CA2217](https://docs.microsoft.com/visualstudio/code-quality/ca2217-do-not-mark-enums-with-flagsattribute), [CA2225](https://docs.microsoft.com/visualstudio/code-quality/ca2225-operator-overloads-have-named-alternates), [CA2226](https://docs.microsoft.com/visualstudio/code-quality/ca2226-operators-should-have-symmetrical-overloads), [CA2231](https://docs.microsoft.com/visualstudio/code-quality/ca2231-overload-operator-equals-on-overriding-valuetype-equals), [CA2234](https://docs.microsoft.com/visualstudio/code-quality/ca2234-pass-system-uri-objects-instead-of-strings)
+Configurable Rules: 
+[CA1000](https://docs.microsoft.com/visualstudio/code-quality/ca1000-do-not-declare-static-members-on-generic-types),
+[CA1002](https://docs.microsoft.com/visualstudio/code-quality/ca1002),
+[CA1003](https://docs.microsoft.com/visualstudio/code-quality/ca1003-use-generic-event-handler-instances),
+[CA1005](https://docs.microsoft.com/visualstudio/code-quality/ca1005),
+[CA1008](https://docs.microsoft.com/visualstudio/code-quality/ca1008-enums-should-have-zero-value),
+[CA1010](https://docs.microsoft.com/visualstudio/code-quality/ca1010-collections-should-implement-generic-interface),
+[CA1012](https://docs.microsoft.com/visualstudio/code-quality/ca1012-abstract-types-should-not-have-constructors),
+[CA1021](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1021),
+[CA1024](https://docs.microsoft.com/visualstudio/code-quality/ca1024-use-properties-where-appropriate),
+[CA1027](https://docs.microsoft.com/visualstudio/code-quality/ca1027-mark-enums-with-flagsattribute),
+[CA1028](https://docs.microsoft.com/visualstudio/code-quality/ca1028-enum-storage-should-be-int32),
+[CA1030](https://docs.microsoft.com/visualstudio/code-quality/ca1030-use-events-where-appropriate),
+[CA1036](https://docs.microsoft.com/visualstudio/code-quality/ca1036-override-methods-on-comparable-types), 
+[CA1040](https://docs.microsoft.com/visualstudio/code-quality/ca1040-avoid-empty-interfaces),
+[CA1041](https://docs.microsoft.com/visualstudio/code-quality/ca1041-provide-obsoleteattribute-message), 
+[CA1043](https://docs.microsoft.com/visualstudio/code-quality/ca1043-use-integral-or-string-argument-for-indexers),
+[CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044-properties-should-not-be-write-only), 
+[CA1045](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1045),
+[CA1047](https://docs.microsoft.com/visualstudio/code-quality/ca1047),
+[CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051-do-not-declare-visible-instance-fields),
+[CA1052](https://docs.microsoft.com/visualstudio/code-quality/ca1052-static-holder-types-should-be-sealed),
+[CA1054](https://docs.microsoft.com/visualstudio/code-quality/ca1054-uri-parameters-should-not-be-strings), 
+[CA1055](https://docs.microsoft.com/visualstudio/code-quality/ca1055-uri-return-values-should-not-be-strings),
+[CA1056](https://docs.microsoft.com/visualstudio/code-quality/ca1056-uri-properties-should-not-be-strings),
+[CA1058](https://docs.microsoft.com/visualstudio/code-quality/ca1058-types-should-not-extend-certain-base-types),
+[CA1063](https://docs.microsoft.com/visualstudio/code-quality/ca1063-implement-idisposable-correctly),
+[CA1700](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1700),
+[CA1708](https://docs.microsoft.com/visualstudio/code-quality/ca1708-identifiers-should-differ-by-more-than-case),
+[CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710-identifiers-should-have-correct-suffix),
+[CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711-identifiers-should-not-have-incorrect-suffix),
+[CA1714](https://docs.microsoft.com/visualstudio/code-quality/ca1714-flags-enums-should-have-plural-names),
+[CA1715](https://docs.microsoft.com/visualstudio/code-quality/ca1715-identifiers-should-have-correct-prefix),
+[CA1716](https://docs.microsoft.com/visualstudio/code-quality/ca1716-identifiers-should-not-match-keywords),
+[CA1717](https://docs.microsoft.com/visualstudio/code-quality/ca1717-only-flagsattribute-enums-should-have-plural-names),
+[CA1720](https://docs.microsoft.com/visualstudio/code-quality/ca1720-identifiers-should-not-contain-type-names),
+[CA1721](https://docs.microsoft.com/visualstudio/code-quality/ca1721-property-names-should-not-match-get-methods),
+[CA1725](https://docs.microsoft.com/visualstudio/code-quality/ca1725-parameter-names-should-match-base-declaration),
+[CA1801](https://docs.microsoft.com/visualstudio/code-quality/ca1801-review-unused-parameters),
+[CA1802](https://docs.microsoft.com/visualstudio/code-quality/ca1802-use-literals-where-appropriate),
+[CA1815](https://docs.microsoft.com/visualstudio/code-quality/ca1815-override-equals-and-operator-equals-on-value-types),
+[CA1819](https://docs.microsoft.com/visualstudio/code-quality/ca1819-properties-should-not-return-arrays),
+[CA2217](https://docs.microsoft.com/visualstudio/code-quality/ca2217-do-not-mark-enums-with-flagsattribute),
+[CA2225](https://docs.microsoft.com/visualstudio/code-quality/ca2225-operator-overloads-have-named-alternates),
+[CA2226](https://docs.microsoft.com/visualstudio/code-quality/ca2226-operators-should-have-symmetrical-overloads),
+[CA2231](https://docs.microsoft.com/visualstudio/code-quality/ca2231-overload-operator-equals-on-overriding-valuetype-equals),
+[CA2234](https://docs.microsoft.com/visualstudio/code-quality/ca2234-pass-system-uri-objects-instead-of-strings)
 
 Option Values:
 
@@ -171,7 +222,47 @@ Examples:
 ### Excluded symbol names
 Option Name: `excluded_symbol_names`
 
-Configurable Rules: [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), [CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304), CA1508, [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2301](https://docs.microsoft.com/visualstudio/code-quality/ca2301-do-not-call-binaryformatter-deserialize-without-first-setting-binaryformatter-binder), [CA2302](https://docs.microsoft.com/visualstudio/code-quality/ca2302-ensure-binaryformatter-binder-is-set-before-calling-binaryformatter-deserialize), [CA2311](https://docs.microsoft.com/visualstudio/code-quality/ca2311-do-not-deserialize-without-first-setting-netdatacontractserializer-binder), [CA2312](https://docs.microsoft.com/visualstudio/code-quality/ca2312-ensure-netdatacontractserializer-binder-is-set-before-deserializing), [CA2321](https://docs.microsoft.com/visualstudio/code-quality/ca2321), [CA2322](https://docs.microsoft.com/visualstudio/code-quality/ca2322), CA2327, CA2328, CA2329, CA2330, [CA3001](https://docs.microsoft.com/visualstudio/code-quality/ca3001-review-code-for-sql-injection-vulnerabilities), [CA3002](https://docs.microsoft.com/visualstudio/code-quality/ca3002-review-code-for-xss-vulnerabilities), [CA3003](https://docs.microsoft.com/visualstudio/code-quality/ca3003-review-code-for-file-path-injection-vulnerabilities), [CA3004](https://docs.microsoft.com/visualstudio/code-quality/ca3004-review-code-for-information-disclosure-vulnerabilities), [CA3005](https://docs.microsoft.com/visualstudio/code-quality/ca3005-review-code-for-ldap-injection-vulnerabilities), [CA3006](https://docs.microsoft.com/visualstudio/code-quality/ca3006-review-code-for-process-command-injection-vulnerabilities), [CA3007](https://docs.microsoft.com/visualstudio/code-quality/ca3007-review-code-for-open-redirect-vulnerabilities), [CA3008](https://docs.microsoft.com/visualstudio/code-quality/ca3008-review-code-for-xpath-injection-vulnerabilities), [CA3009](https://docs.microsoft.com/visualstudio/code-quality/ca3009-review-code-for-xml-injection-vulnerabilities), [CA3010](https://docs.microsoft.com/visualstudio/code-quality/ca3010-review-code-for-xaml-injection-vulnerabilities), [CA3011](https://docs.microsoft.com/visualstudio/code-quality/ca3011-review-code-for-dll-injection-vulnerabilities), [CA3012](https://docs.microsoft.com/visualstudio/code-quality/ca3012-review-code-for-regex-injection-vulnerabilities), CA5361, CA5376, CA5377, CA5378, CA5380, CA5381, CA5382, CA5383, CA5384, CA5387, CA5388, CA5389, CA5390
+Configurable Rules:
+[CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters),
+[CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods),
+[CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304), CA1508,
+[CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope),
+[CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities),
+[CA2301](https://docs.microsoft.com/visualstudio/code-quality/ca2301-do-not-call-binaryformatter-deserialize-without-first-setting-binaryformatter-binder),
+[CA2302](https://docs.microsoft.com/visualstudio/code-quality/ca2302-ensure-binaryformatter-binder-is-set-before-calling-binaryformatter-deserialize),
+[CA2311](https://docs.microsoft.com/visualstudio/code-quality/ca2311-do-not-deserialize-without-first-setting-netdatacontractserializer-binder),
+[CA2312](https://docs.microsoft.com/visualstudio/code-quality/ca2312-ensure-netdatacontractserializer-binder-is-set-before-deserializing),
+[CA2321](https://docs.microsoft.com/visualstudio/code-quality/ca2321),
+[CA2322](https://docs.microsoft.com/visualstudio/code-quality/ca2322),
+CA2327,
+CA2328,
+CA2329,
+CA2330,
+[CA3001](https://docs.microsoft.com/visualstudio/code-quality/ca3001-review-code-for-sql-injection-vulnerabilities),
+[CA3002](https://docs.microsoft.com/visualstudio/code-quality/ca3002-review-code-for-xss-vulnerabilities),
+[CA3003](https://docs.microsoft.com/visualstudio/code-quality/ca3003-review-code-for-file-path-injection-vulnerabilities),
+[CA3004](https://docs.microsoft.com/visualstudio/code-quality/ca3004-review-code-for-information-disclosure-vulnerabilities),
+[CA3005](https://docs.microsoft.com/visualstudio/code-quality/ca3005-review-code-for-ldap-injection-vulnerabilities),
+[CA3006](https://docs.microsoft.com/visualstudio/code-quality/ca3006-review-code-for-process-command-injection-vulnerabilities),
+[CA3007](https://docs.microsoft.com/visualstudio/code-quality/ca3007-review-code-for-open-redirect-vulnerabilities),
+[CA3008](https://docs.microsoft.com/visualstudio/code-quality/ca3008-review-code-for-xpath-injection-vulnerabilities),
+[CA3009](https://docs.microsoft.com/visualstudio/code-quality/ca3009-review-code-for-xml-injection-vulnerabilities),
+[CA3010](https://docs.microsoft.com/visualstudio/code-quality/ca3010-review-code-for-xaml-injection-vulnerabilities),
+[CA3011](https://docs.microsoft.com/visualstudio/code-quality/ca3011-review-code-for-dll-injection-vulnerabilities),
+[CA3012](https://docs.microsoft.com/visualstudio/code-quality/ca3012-review-code-for-regex-injection-vulnerabilities),
+CA5361,
+CA5376,
+CA5377,
+CA5378,
+CA5380,
+CA5381,
+CA5382,
+CA5383,
+CA5384,
+CA5387,
+CA5388,
+CA5389,
+CA5390
 
 Option Values: Names of symbols (separated by '|') that are excluded for analysis.
 Allowed symbol name formats:
@@ -261,7 +352,13 @@ Examples:
 
 ### Dataflow analysis
 
-Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods), [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters), [CA1508](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca1508-avoid-dead-conditional-code), [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope), [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities), [CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
+Configurable Rules:
+[CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods),
+[CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters),
+[CA1508](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca1508-avoid-dead-conditional-code),
+[CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope),
+[CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100-review-sql-queries-for-security-vulnerabilities),
+[CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
 
 #### Interprocedural analysis Kind
 Option Name: `interprocedural_analysis_kind`
@@ -501,3 +598,14 @@ Examples:
 |`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' and all types from the 'System' namespace |
 |`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' and all types from the 'System' namespace |
 |`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' and all types from the 'System' namespace |
+
+### Analyzed symbol kinds
+Option Name: `analyzed_symbol_kinds`
+
+Configurable Rules: [CA1716](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1716)
+
+Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](https://roslynsourceindex.azurewebsites.net/#Microsoft.CodeAnalysis/Symbols/SymbolKind.cs,30fd9c0834bef6ff) as a comma separated list.
+
+Default Value: Namespace, NamedType, Method, Property, Event, Parameter
+
+Example: `dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace, Property`

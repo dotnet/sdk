@@ -999,6 +999,21 @@
   <data name="SetViewStateUserKeyMessage" xml:space="preserve">
     <value>The class {0} derived from System.Web.UI.Page does not set the ViewStateUserKey property in the OnInit method or Page_Init method</value>
   </data>
+  <data name="UseAsSpanInsteadOfArrayRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfStringRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerMessage" xml:space="preserve">
+    <value>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerTitle" xml:space="preserve">
+    <value>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</value>
+  </data>
+  <data name="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</value>
+  </data>
   <data name="UseContainerLevelAccessPolicy" xml:space="preserve">
     <value>Use Container Level Access Policy</value>
   </data>
@@ -1082,6 +1097,15 @@
   </data>
   <data name="DoNotCreateTasksWithoutPassingATaskSchedulerMessage" xml:space="preserve">
     <value>Do not create tasks without passing a TaskScheduler</value>
+  </data>
+  <data name="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription" xml:space="preserve">
+    <value>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</value>
+  </data>
+  <data name="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage" xml:space="preserve">
+    <value>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</value>
+  </data>
+  <data name="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle" xml:space="preserve">
+    <value>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</value>
   </data>
   <data name="UseValueTasksCorrectlyTitle" xml:space="preserve">
     <value>Use ValueTasks correctly</value>
@@ -1250,5 +1274,17 @@
   </data>
   <data name="DoNotUseStackallocInLoopsMessage" xml:space="preserve">
     <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsTitle" xml:space="preserve">
+    <value>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsDescription" xml:space="preserve">
+    <value>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsMessage" xml:space="preserve">
+    <value>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</value>
+  </data>
+  <data name="PreferTypedStringBuilderAppendOverloadsRemoveToString" xml:space="preserve">
+    <value>Remove the ToString call</value>
   </data>
 </root>

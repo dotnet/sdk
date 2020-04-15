@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return;
                         }
 
-                        if (targetMethod.IsConfiguredToSkipAnalysis(oaContext.Options, Rule, oaContext.Compilation, oaContext.CancellationToken))
+                        if (targetMethod.IsConfiguredToSkipAnalysis(oaContext.ContainingSymbol, oaContext.Options, Rule, oaContext.Compilation, oaContext.CancellationToken))
                         {
                             return;
                         }

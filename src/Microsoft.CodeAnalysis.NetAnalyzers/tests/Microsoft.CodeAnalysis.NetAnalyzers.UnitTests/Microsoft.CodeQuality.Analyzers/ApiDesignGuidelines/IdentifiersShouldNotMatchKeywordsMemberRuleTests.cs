@@ -635,6 +635,225 @@ End Class",
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C(Of T).for()", "for"));
         }
 
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
+        public async Task UserOptionDoesNotIncludeMethod_NoDiagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class C
+{
+    public virtual void @internal() {}
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class C
+    Public Overridable Sub internal()
+    End Sub
+End Class",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Method")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method")]
+        public async Task UserOptionIncludesMethod_Diagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class C
+{
+    public virtual void @internal() {}
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"), },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class C
+    Public Overridable Sub internal()
+    End Sub
+End Class",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"), },
+                },
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Method")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method")]
+        public async Task UserOptionDoesNotIncludeProperty_NoDiagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class C
+{
+    public virtual int @for { get; set; }
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class C
+    Public Overridable Property [Sub] As Integer
+End Class",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Property")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
+        public async Task UserOptionIncludesProperty_Diagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class C
+{
+    public virtual int @for { get; set; }
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCSharpResultAt(4, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"), },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class C
+    Public Overridable Property [Sub] As Integer
+End Class",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetBasicResultAt(3, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"), },
+                },
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
+        public async Task UserOptionDoesNotIncludeEvent_NoDiagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class C
+{
+    public delegate void Callback(object sender, System.EventArgs e);
+    public virtual event Callback @float;
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Event")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Event")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Event")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Event")]
+        public async Task UserOptionIncludesEvent_Diagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class C
+{
+    public delegate void Callback(object sender, System.EventArgs e);
+    public virtual event Callback @float;
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCSharpResultAt(5, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.float", "float"), },
+                },
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)

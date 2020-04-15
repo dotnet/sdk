@@ -41,7 +41,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             analysisContext.RegisterCompilationStartAction(context =>
             {
-                if (!context.Options.GetOutputKindsOption(Rule, context.CancellationToken).Contains(context.Compilation.Options.OutputKind))
+                if (!(context.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree) ||
+                    !context.Options.GetOutputKindsOption(Rule, tree, context.Compilation, context.CancellationToken).Contains(context.Compilation.Options.OutputKind))
                 {
                     // Configured to skip analysis for the compilation's output kind
                     return;
@@ -61,6 +62,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             operationBlockStartContext.Options.GetBoolOptionValue(
                                 optionName: EditorConfigOptionNames.ExcludeAsyncVoidMethods,
                                 rule: Rule,
+                                method,
+                                context.Compilation,
                                 defaultValue: false,
                                 cancellationToken: operationBlockStartContext.CancellationToken))
                         {
