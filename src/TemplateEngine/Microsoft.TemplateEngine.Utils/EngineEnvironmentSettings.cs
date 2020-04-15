@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             public string NewLine { get; }
 
-            private const int DefaultBufferWidth = 80;
+            private const int DefaultBufferWidth = 160;
 
             // Console.BufferWidth can throw if there's no console, such as when output is redirected, so
             // first check if it is redirected, and fall back to a default value if needed.
