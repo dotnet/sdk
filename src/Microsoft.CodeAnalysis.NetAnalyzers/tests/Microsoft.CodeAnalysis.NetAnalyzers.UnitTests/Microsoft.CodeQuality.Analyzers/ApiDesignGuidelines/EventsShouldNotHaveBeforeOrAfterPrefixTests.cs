@@ -21,17 +21,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 using System;
 public class Class1
 {
-    public event EventHandler AfterClose;
-}",
-            GetCSharpResultAt(5, 31));
+    public event EventHandler [|AfterClose|];
+}");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Class Class1
-    Public Event AfterClose As EventHandler
+    Public Event [|AfterClose|] As EventHandler
 End Class
-",
-            GetBasicResultAt(4, 18));
+");
         }
 
         [Fact]
@@ -41,17 +39,15 @@ End Class
 using System;
 public class Class1
 {
-    public event EventHandler BeforeClose;
-}",
-            GetCSharpResultAt(5, 31));
+    public event EventHandler [|BeforeClose|];
+}");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Class Class1
-    Public Event BeforeClose As EventHandler
+    Public Event [|BeforeClose|] As EventHandler
 End Class
-",
-            GetBasicResultAt(4, 18));
+");
         }
 
         [Fact]
