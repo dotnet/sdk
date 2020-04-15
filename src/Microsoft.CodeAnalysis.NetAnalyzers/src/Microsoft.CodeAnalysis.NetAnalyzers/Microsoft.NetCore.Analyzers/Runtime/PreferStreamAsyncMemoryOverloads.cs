@@ -80,8 +80,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private void AnalyzeCompilationStart(CompilationStartAnalysisContext context)
         {
-            if (context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemory1) == null ||
-            !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream, out INamedTypeSymbol? stream))
+            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemory1, out _) ||
+                !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream, out INamedTypeSymbol? streamType))
             {
                 return;
             }
@@ -105,18 +105,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                if (IsStreamMethod(method, stream) && HasUndesiredArguments(method))
+                if (IsDefinedBy(method, streamType) && // Verify if the current method's type is or inherits from Stream
+                HasUndesiredArguments(method))
                 {
                     context.ReportDiagnostic(invocation.CreateDiagnostic(rule));
                 }
             }, OperationKind.Invocation);
         }
 
-
-        private static bool IsStreamMethod(IMethodSymbol method, INamedTypeSymbol stream)
+        private static bool IsDefinedBy(IMethodSymbol method, INamedTypeSymbol baseType)
         {
-            return method.ContainingType.Equals(stream) ||
-                (method.OverriddenMethod != null && IsStreamMethod(method.OverriddenMethod, stream));
+            while (method.OverriddenMethod != null)
+            {
+                method = method.OverriddenMethod;
+            }
+
+            return method.ContainingType.Equals(baseType);
         }
 
         private static bool HasUndesiredArguments(IMethodSymbol method)
@@ -128,6 +132,5 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 method.Parameters[1].Type.SpecialType == SpecialType.System_Int32 &&
                 method.Parameters[2].Type.SpecialType == SpecialType.System_Int32;
         }
-
     }
 }
