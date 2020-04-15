@@ -3,15 +3,18 @@
 Starting with version `2.6.3`, all the analyzer NuGet packages produced in this repo, including the FxCop Analyzers NuGet package, support _.editorconfig based analyzer configuration_. End users can configure the behavior of specific CA rule(s) OR all configurable CA rules by specifying supported key-value pair options in an `.editorconfig` file. You can read more about `.editorconfig` format [here](https://editorconfig.org/).
 
 ## .editorconfig format
+
 Analyzer configuration options from an .editorconfig file are parsed into _general_ and _specific_ configuration options. General configuration enables configuring the behavior of all CA rules for which the provided option is valid. Specific configuration enables configuring each CA rule ID or CA rules belonging to each rule category, such as 'Naming', 'Design', 'Performance', etc. or CA rules with a specific custom tag, such as 'Dataflow'. Our options are _case-insensitive_. Below are the supported formats:
+
    1. General configuration option:
       1. `dotnet_code_quality.OptionName = OptionValue`
    2. Specific configuration option:
       1. `dotnet_code_quality.RuleId.OptionName = OptionValue`
       2. `dotnet_code_quality.RuleCategory.OptionName = OptionValue`
-      2. `dotnet_code_quality.RuleCustomTag.OptionName = OptionValue`
+      3. `dotnet_code_quality.RuleCustomTag.OptionName = OptionValue`
 
 For example, end users can configure the analyzed API surface for analyzers using the below `api_surface` option specification:
+
    1. General configuration option:
       1. `dotnet_code_quality.api_surface = public`
    2. Specific configuration option:
@@ -22,12 +25,15 @@ For example, end users can configure the analyzed API surface for analyzers usin
 ## Enabling .editorconfig based configuration
 
 ### VS2019 16.3 and later
+
 End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
 
 ### Prior to VS2019 16.3
+
 1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory.
 2. Shared .editorconfig file: If you would like to share a common .editorconfig file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
-```
+
+```xml
   <PropertyGroup>
     <SkipDefaultEditorConfigAsAdditionalFile>true</SkipDefaultEditorConfigAsAdditionalFile>
   </PropertyGroup>
@@ -35,15 +41,18 @@ End users can enable .editorconfig based configuration for individual documents,
     <AdditionalFiles Include="<%PathToSharedEditorConfig%>\.editorconfig" />
   </ItemGroup>
 ```
+
 Note that this additional file based approach is also supported on VS2019 16.3 and later releases for backwards compatibility.
 
 ## Supported .editorconfig options
+
 This section documents the list of supported .editorconfig key-value options for CA rules.
 
 ### Analyzed API surface
+
 Option Name: `api_surface`
 
-Configurable Rules: 
+Configurable Rules:
 [CA1000](https://docs.microsoft.com/visualstudio/code-quality/ca1000-do-not-declare-static-members-on-generic-types),
 [CA1002](https://docs.microsoft.com/visualstudio/code-quality/ca1002),
 [CA1003](https://docs.microsoft.com/visualstudio/code-quality/ca1003-use-generic-event-handler-instances),
@@ -56,16 +65,16 @@ Configurable Rules:
 [CA1027](https://docs.microsoft.com/visualstudio/code-quality/ca1027-mark-enums-with-flagsattribute),
 [CA1028](https://docs.microsoft.com/visualstudio/code-quality/ca1028-enum-storage-should-be-int32),
 [CA1030](https://docs.microsoft.com/visualstudio/code-quality/ca1030-use-events-where-appropriate),
-[CA1036](https://docs.microsoft.com/visualstudio/code-quality/ca1036-override-methods-on-comparable-types), 
+[CA1036](https://docs.microsoft.com/visualstudio/code-quality/ca1036-override-methods-on-comparable-types),
 [CA1040](https://docs.microsoft.com/visualstudio/code-quality/ca1040-avoid-empty-interfaces),
-[CA1041](https://docs.microsoft.com/visualstudio/code-quality/ca1041-provide-obsoleteattribute-message), 
+[CA1041](https://docs.microsoft.com/visualstudio/code-quality/ca1041-provide-obsoleteattribute-message),
 [CA1043](https://docs.microsoft.com/visualstudio/code-quality/ca1043-use-integral-or-string-argument-for-indexers),
-[CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044-properties-should-not-be-write-only), 
+[CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044-properties-should-not-be-write-only),
 [CA1045](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1045),
 [CA1047](https://docs.microsoft.com/visualstudio/code-quality/ca1047),
 [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051-do-not-declare-visible-instance-fields),
 [CA1052](https://docs.microsoft.com/visualstudio/code-quality/ca1052-static-holder-types-should-be-sealed),
-[CA1054](https://docs.microsoft.com/visualstudio/code-quality/ca1054-uri-parameters-should-not-be-strings), 
+[CA1054](https://docs.microsoft.com/visualstudio/code-quality/ca1054-uri-parameters-should-not-be-strings),
 [CA1055](https://docs.microsoft.com/visualstudio/code-quality/ca1055-uri-return-values-should-not-be-strings),
 [CA1056](https://docs.microsoft.com/visualstudio/code-quality/ca1056-uri-properties-should-not-be-strings),
 [CA1058](https://docs.microsoft.com/visualstudio/code-quality/ca1058-types-should-not-extend-certain-base-types),
@@ -107,6 +116,7 @@ Example: `dotnet_code_quality.api_surface = all`
 Users can also provide a comma separated list of above option values. For example, `dotnet_code_quality.api_surface = private, internal` configures analysis of the entire non-public API surface.
 
 ### Analyzed output kinds
+
 Option Name: `output_kind`
 
 Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca2007-do-not-directly-await-a-task)
@@ -118,6 +128,7 @@ Default Value: All output kinds
 Example: `dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary`
 
 ### Required modifiers for analyzed APIs
+
 Option Name: `required_modifiers`
 
 Configurable Rules: [CA1802](https://docs.microsoft.com/visualstudio/code-quality/ca1802-use-literals-where-appropriate)
@@ -138,11 +149,13 @@ Option Values: Comma separated listed of one or more modifier values from the be
 | `async` | Must be declared as 'async'. |
 
 Default Value: Depends on each configurable rule:
+
    1. CA1802: default value is 'static'. Set the value to 'none' to allow flagging instance fields.
 
 Example: `dotnet_code_quality.CA1802.required_modifiers = none`.
 
 ### Async void methods
+
 Option Name: `exclude_async_void_methods`
 
 Configurable Rules: [CA2007](../src/Microsoft.CodeQuality.Analyzers/Microsoft.CodeQuality.Analyzers.md#ca2007-do-not-directly-await-a-task)
@@ -154,6 +167,7 @@ Default Value: `false`
 Example: `dotnet_code_quality.CA2007.exclude_async_void_methods = true`
 
 ### Single letter type parameters
+
 Option Name: `exclude_single_letter_type_parameters`
 
 Configurable Rules: [CA1715](https://docs.microsoft.com/visualstudio/code-quality/ca1715-identifiers-should-have-correct-prefix)
@@ -165,6 +179,7 @@ Default Value: `false`
 Example: `dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true`
 
 ### Exclude extension method 'this' parameter
+
 Option Name: `exclude_extension_method_this_parameter`
 
 Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods)
@@ -176,14 +191,16 @@ Default Value: `false`
 Example: `dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = true`
 
 ### Null check validation methods
+
 Option Name: `null_check_validation_methods`
 
 Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods)
 
-Option Values: Names of null check validation methods (separated by '|') that validate arguments passed to the method are non-null for CA1062 (https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods).
+Option Values: Names of null check validation methods (separated by '|') that validate arguments passed to the method are non-null for [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062-validate-arguments-of-public-methods).
 Allowed method name formats:
+
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
      with an optional "M:" prefix.
 
 Default Value: None
@@ -196,16 +213,18 @@ Examples:
 |`dotnet_code_quality.null_check_validation_methods = Validate1\|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
 |`dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
 |`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)\|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
- 
+
 ### Additional string formatting methods
+
 Option Name: `additional_string_formatting_methods`
 
 Configurable Rules: [CA2241](https://docs.microsoft.com/visualstudio/code-quality/ca2241-provide-correct-arguments-to-formatting-methods)
 
 Option Values: Names of additional string formatting methods (separated by '|') for CA2241.
 Allowed method name formats:
+
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
      with an optional "M:" prefix.
 
 Default Value: None
@@ -218,8 +237,9 @@ Examples:
 |`dotnet_code_quality.additional_string_formatting_methods = MyFormat1\|MyFormat2` | Matches all methods named either 'MyFormat1' or 'MyFormat2' in the compilation
 |`dotnet_code_quality.additional_string_formatting_methods = NS.MyType.MyFormat(ParamType)` | Matches specific method 'MyFormat' with given fully qualified signature
 |`dotnet_code_quality.additional_string_formatting_methods = NS1.MyType1.MyFormat1(ParamType)\|NS2.MyType2.MyFormat2(ParamType)` | Matches specific methods 'MyFormat1' and 'MyFormat2' with respective fully qualified signature
- 
+
 ### Excluded symbol names
+
 Option Name: `excluded_symbol_names`
 
 Configurable Rules:
@@ -266,8 +286,9 @@ CA5390
 
 Option Values: Names of symbols (separated by '|') that are excluded for analysis.
 Allowed symbol name formats:
+
   1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format.
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format).
      Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
   3. `.ctor` for constructors and `.cctor` for static constructors
 
@@ -285,14 +306,16 @@ Examples:
 Additionally, all the dataflow analysis based rules can be configured with a single entry `dotnet_code_quality.dataflow.excluded_symbol_names = ...`
 
 ### Excluded type names with derived types
+
 Option Name: `excluded_type_names_with_derived_types`
 
 Configurable Rules: [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303-do-not-pass-literals-as-localized-parameters)
 
 Option Values: Names of types (separated by '|'), such that the type and all its derived types are excluded for analysis.
 Allowed symbol name formats:
+
   1. Type name only (includes all types with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix.
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix.
 
 Default Value: None
 
@@ -306,6 +329,7 @@ Examples:
 |`dotnet_code_quality.excluded_type_names_with_derived_types = T:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
 
 ### Unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
+
 Option Name: `unsafe_DllImportSearchPath_bits`
 
 Configurable Rules: CA5393
@@ -317,6 +341,7 @@ Default Value: '770', which is AssemblyDirectory | UseDllDirectoryForDependencie
 Example: `dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770`
 
 ### Exclude ASP.NET Core MVC ControllerBase when considering CSRF
+
 Option Name: `exclude_aspnet_core_mvc_controllerbase`
 
 Configurable Rules: CA5391
@@ -326,16 +351,18 @@ Option Values: Boolean values
 Default Value: `true`
 
 Example: `dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = false`
- 
+
 ### Disallowed symbol names
+
 Option Name: `disallowed_symbol_names`
 
 Configurable Rules: [CA1031](https://docs.microsoft.com/visualstudio/code-quality/ca1031-do-not-catch-general-exception-types)
 
 Option Values: Names of symbols (separated by '|') that are disallowed in the context of the analysis.
 Allowed symbol name formats:
+
   1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format.
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format).
      Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
   3. `.ctor` for constructors and `.cctor` for static constructors
 
@@ -361,6 +388,7 @@ Configurable Rules:
 [CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213-disposable-fields-should-be-disposed), Taint analysis rules
 
 #### Interprocedural analysis Kind
+
 Option Name: `interprocedural_analysis_kind`
 
 Option Values:
@@ -376,6 +404,7 @@ Default Value: Specific to each configurable rule.
 Example: `dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive`
 
 #### Maximum method call chain length to analyze for interprocedural dataflow analysis
+
 Option Name: `max_interprocedural_method_call_chain`
 
 Option Values: Unsigned integer
@@ -385,6 +414,7 @@ Default Value: 3
 Example: `dotnet_code_quality.max_interprocedural_method_call_chain = 5`
 
 #### Maximum lambda or local function call chain length to analyze for interprocedural dataflow analysis
+
 Option Name: `max_interprocedural_lambda_or_local_function_call_chain`
 
 Option Values: Unsigned integer
@@ -394,6 +424,7 @@ Default Value: 10
 Example: `dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 5`
 
 #### Dispose analysis kind for IDisposable rules
+
 Option Name: `dispose_analysis_kind`
 
 Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
@@ -412,6 +443,7 @@ Default Value: `NonExceptionPaths`.
 Example: `dotnet_code_quality.dispose_analysis_kind = AllPaths`
 
 #### Configure dispose ownership transfer for arguments passed to constructor invocation
+
 Option Name: `dispose_ownership_transfer_at_constructor`
 
 Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
@@ -423,6 +455,7 @@ Default Value: `false`
 Example: `dotnet_code_quality.dispose_ownership_transfer_at_constructor = true`
 
 For example, consider the below code:
+
 ```csharp
 using System;
 
@@ -446,6 +479,7 @@ class Test
 ```
 
 #### Configure dispose ownership transfer for disposable objects passed as arguments to method calls
+
 Option Name: `dispose_ownership_transfer_at_method_call`
 
 Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope)
@@ -457,6 +491,7 @@ Default Value: `false`
 Example: `dotnet_code_quality.dispose_ownership_transfer_at_method_call = false`
 
 For example, consider the below code:
+
 ```csharp
 using System;
 
@@ -473,6 +508,7 @@ class Test
 ```
 
 #### Configure execution of Copy analysis (tracks value and reference copies)
+
 Option Name: `copy_analysis`
 
 Option Values: `true` or `false`
@@ -482,6 +518,7 @@ Default Value: Specific to each configurable rule ('true' by default for most ru
 Example: `dotnet_code_quality.copy_analysis = true`
 
 #### Configure sufficient IterationCount when using weak KDF algorithm
+
 Option Name: `sufficient_IterationCount_for_weak_KDF_algorithm`
 
 Option Values: integral values
@@ -491,6 +528,7 @@ Default Value: Specific to each configurable rule ('100000' by default for most 
 Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
 
 ### Do not prefix enum values with type name
+
 Option Name: `enum_values_prefix_trigger`
 
 Configurable Rules: [CA1712](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1712)
@@ -508,6 +546,7 @@ Default Value: `Heuristic`.
 Example: `dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue`
 
 ### Exclude indirect base types
+
 Option Name: `exclude_indirect_base_types`
 
 Configurable Rules: [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710-identifiers-should-have-correct-suffix)
@@ -519,6 +558,7 @@ Default Value: `true`
 Example: `dotnet_code_quality.CA1710.exclude_indirect_base_types = true`
 
 For example, consider the code below:
+
 ```csharp
 // An issue is always raised on this type because the suffix should be 'Exception'.
 public class MyBaseClass : Exception, IEnumerable
@@ -535,13 +575,16 @@ public class MyClass : MyBaseClass
 ```
 
 ### Additional required suffixes
+
 Option Name: `additional_required_suffixes`
 
 Configurable Rules: [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710-identifiers-should-have-correct-suffix)
 
-Option Values: List (separated by '|') of type names with their required suffix (separated by '->').<br/>Allowed type name formats:
+Option Values: List (separated by '|') of type names with their required suffix (separated by '->').
+Allowed type name formats:
+
   1. Type name only (includes all types with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix.
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix.
 
 Default Value: None
 
@@ -554,14 +597,16 @@ Examples:
 |`dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}` | Allows to override built-in suffixes, in this case, all types implementing 'IDataReader' are no longer expected to end in 'Collection' |
 
 ### Additional required generic interfaces
+
 Option Name: `additional_required_generic_interfaces`
 
 Configurable Rules: [CA1010](https://docs.microsoft.com/visualstudio/code-quality/ca1010)
 
 Option Values: List (separated by '|') of interface names with their required generic fully qualified interface (separated by '->').
 Allowed interface formats:
+
   1. Interface name only (includes all interfaces with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix.
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix.
 
 Default Value: None
 
@@ -573,15 +618,17 @@ Examples:
 |`dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`\``2` | All types implementing 'System.Collections.Generic.IDictionary' are expected to also implement 'System.Collections.Generic.IDictionary`2'. |
 
 ### Inheritance excluded type or namespace names
+
 Option Name: `additional_inheritance_excluded_symbol_names`
 
 Configurable Rules: [CA1501](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1501)
 
 Option Values: Names of types or namespaces (separated by '|'), such that the type or type's namespace doesn't count in the inheritance hierarchy tree.
 Allowed symbol name formats:
+
   1. Type or namespace name (includes all types with the name, regardless of the containing type or namespace and all types whose namespace contains the name)
   2. Type or namespace name ending with a wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace and all types whose namespace contains the name)
-  3. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format with an optional "T:" prefix for types or "N:" prefix for namespaces.
+  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix for types or "N:" prefix for namespaces.
   4. Fully qualified type or namespace name with an optional "T:" prefix for type or "N:" prefix for namespace and ending with the wildcard symbol (includes all types whose fully qualified name starts with the given suffix)
 
 Default Value: `N:System.*` (note that this value is always automatically added to the value provided)
@@ -600,6 +647,7 @@ Examples:
 |`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' and all types from the 'System' namespace |
 
 ### Analyzed symbol kinds
+
 Option Name: `analyzed_symbol_kinds`
 
 Configurable Rules: [CA1716](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1716)
