@@ -75,52 +75,54 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            context.RegisterOperationAction(OnCompilationStart, OperationKind.Invocation);
+            context.RegisterCompilationStartAction(AnalyzeCompilationStart);
         }
 
-        private static void OnCompilationStart(OperationAnalysisContext context)
+        private void AnalyzeCompilationStart(CompilationStartAnalysisContext context)
         {
-            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream, out INamedTypeSymbol? stream) ||
-                stream == null)
+            if (context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemory1) == null ||
+            !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream, out INamedTypeSymbol? stream))
             {
                 return;
             }
 
-            // Verify that the required Memory types were shipped in the current .NET version, otherwise we should not suggest the overload
-            if (context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions) == null ||
-                context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemory1) == null ||
-                context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlyMemory1) == null)
+            context.RegisterOperationAction(context =>
             {
-                return;
-            }
+                IInvocationOperation invocation = (IInvocationOperation)context.Operation;
+                IMethodSymbol method = invocation.TargetMethod;
 
-            if (context.Operation is IInvocationOperation invocation &&
-                invocation.TargetMethod is IMethodSymbol method &&
-                IsStreamMethod(method, stream) &&
-                HasUndesiredArguments(method))
-            {
+                DiagnosticDescriptor rule;
                 if (string.Equals(method.Name, "ReadAsync", StringComparison.Ordinal))
                 {
-                    context.ReportDiagnostic(invocation.Syntax.CreateDiagnostic(PreferStreamReadAsyncMemoryOverloadsRule));
+                    rule = PreferStreamReadAsyncMemoryOverloadsRule;
                 }
                 else if (string.Equals(method.Name, "WriteAsync", StringComparison.Ordinal))
                 {
-                    context.ReportDiagnostic(invocation.Syntax.CreateDiagnostic(PreferStreamWriteAsyncMemoryOverloadsRule));
+                    rule = PreferStreamWriteAsyncMemoryOverloadsRule;
                 }
-            }
+                else
+                {
+                    return;
+                }
+
+                if (IsStreamMethod(method, stream) && HasUndesiredArguments(method))
+                {
+                    context.ReportDiagnostic(invocation.CreateDiagnostic(rule));
+                }
+            }, OperationKind.Invocation);
         }
 
-        private static bool IsStreamMethod(IMethodSymbol method, INamedTypeSymbol streamSymbol)
+
+        private static bool IsStreamMethod(IMethodSymbol method, INamedTypeSymbol stream)
         {
-            return method.ContainingType.Equals(streamSymbol) ||
-                (method.OverriddenMethod != null && method.OverriddenMethod.ContainingType.Equals(streamSymbol));
+            return method.ContainingType.Equals(stream) ||
+                (method.OverriddenMethod != null && IsStreamMethod(method.OverriddenMethod, stream));
         }
 
         private static bool HasUndesiredArguments(IMethodSymbol method)
         {
             // Both undesired ReadAsync/WriteAsync overloads have the same 3 args and an optional 4th (CancellationToken)
             return method.Parameters.Length >= 3 &&
-                method.Parameters[0].Type.TypeKind == TypeKind.Array &&
                 method.Parameters[0].Type is IArrayTypeSymbol arrayTypeSymbol &&
                 arrayTypeSymbol.ElementType.SpecialType == SpecialType.System_Byte &&
                 method.Parameters[1].Type.SpecialType == SpecialType.System_Int32 &&

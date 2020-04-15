@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task NoDiagnosticAnalyzer_Read()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -34,7 +34,7 @@ class C
         [Fact]
         public async Task NoDiagnosticAnalyzer_ReadAsyncWithAsMemory()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -52,6 +52,27 @@ class C
             ");
         }
 
+        [Fact]
+        public async Task NoDiagnosticAnalyzer_UnsupportedVersion()
+        {
+            await AnalyzeUnsupportedAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    async void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            byte[] result = new byte[fs.Length];
+            await fs.ReadAsync(result, 0, (int)fs.Length);
+        }
+    }
+}
+            ");
+        }
+
         #endregion
 
         #region Diagnostic - Analyzer
@@ -59,7 +80,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_Basic()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -80,7 +101,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_Inline()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -100,7 +121,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_CancellationToken()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -121,7 +142,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_ConfigureAwait()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -142,7 +163,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_CancellationTokenAndConfigureAwait()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;

@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferStreamAsyncMemoryOverloads,
-    Microsoft.NetCore.Analyzers.Runtime.PreferStreamAsyncMemoryOverloadsFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
@@ -13,12 +13,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     {
         #region Helpers
 
-        protected static async Task VerifyAnalyzerAsync50(string source, params DiagnosticResult[] expected)
+        protected static async Task AnalyzeAsync(string source, params DiagnosticResult[] expected)
+        {
+            await AnalyzeForVersionAsync(source, ReferenceAssemblies.NetCore.NetCoreApp50, expected);
+        }
+
+        protected static async Task AnalyzeUnsupportedAsync(string source, params DiagnosticResult[] expected)
+        {
+            await AnalyzeForVersionAsync(source, ReferenceAssemblies.NetCore.NetCoreApp20, expected);
+        }
+
+        private static async Task AnalyzeForVersionAsync(string source, ReferenceAssemblies version, params DiagnosticResult[] expected)
         {
             var test = new VerifyCS.Test
             {
                 TestCode = source,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                ReferenceAssemblies = version,
             };
 
             test.ExpectedDiagnostics.AddRange(expected);

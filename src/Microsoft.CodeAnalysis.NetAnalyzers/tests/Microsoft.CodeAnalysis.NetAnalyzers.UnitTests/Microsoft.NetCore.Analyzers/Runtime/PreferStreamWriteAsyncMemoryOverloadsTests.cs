@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task NoDiagnosticAnalyzer_Write()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -34,7 +34,7 @@ class C
         [Fact]
         public async Task NoDiagnosticAnalyzer_WriteAsyncWithAsMemory()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -52,6 +52,27 @@ class C
             ");
         }
 
+        [Fact]
+        public async Task NoDiagnosticAnalyzer_UnsupportedVersion()
+        {
+            await AnalyzeUnsupportedAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    async void M()
+    {
+        byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
+        using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
+        {
+            await fs.WriteAsync(buffer, 0, buffer.Length);
+        }
+    }
+}
+            ");
+        }
+
         #endregion
 
         #region Diagnostic - Analyzer
@@ -59,7 +80,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_Basic()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -80,7 +101,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_AsStream()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -101,7 +122,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_CancellationToken()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -122,7 +143,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_ConfigureAwait()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -143,7 +164,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_CancellationTokenAndConfigureAwait()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -164,7 +185,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_InlineBuffer()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -184,7 +205,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_InlineBufferWithCancellationToken()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -204,7 +225,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_InlineBufferWithConfigureAwait()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -224,7 +245,7 @@ class C
         [Fact]
         public async Task DiagnosticAnalyzer_InlineBufferWithCancellationTokenAndConfigureAwait()
         {
-            await VerifyAnalyzerAsync50(@"
+            await AnalyzeAsync(@"
 using System;
 using System.IO;
 using System.Threading;
