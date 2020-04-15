@@ -31,7 +31,7 @@
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-preview.4.20213.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>5.0.0-preview.4.20213.12</MicrosoftDotNetPlatformAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.4.20213.12</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>5.0.0-preview.4.20202.18</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>5.0.0-preview.4.20213.12</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETHostModelVersion>5.0.0-preview.4.20213.12</MicrosoftNETHostModelVersion>
     <PlatformAbstractionsVersion>$(MicrosoftDotNetPlatformAbstractionsPackageVersion)</PlatformAbstractionsVersion>

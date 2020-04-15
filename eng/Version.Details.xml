@@ -21,9 +21,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>6e83eafe49ce3c55e9f68ae669f24957e5b482f8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="5.0.0-preview.4.20213.12">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="5.0.0-preview.4.20202.18">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6e83eafe49ce3c55e9f68ae669f24957e5b482f8</Sha>
+      <Sha>0375524a91a47ca4db3ee1be548f74bab7e26e76</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.DotNetHostResolver" Version="5.0.0-preview.4.20213.12">
       <Uri>https://github.com/dotnet/runtime</Uri>
