@@ -32,7 +32,7 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnosticAnalyzer_WriteAsyncWithAsMemory()
+        public async Task NoDiagnosticAnalyzer_WriteAsync_AsMemory()
         {
             await AnalyzeAsync(@"
 using System;
@@ -40,7 +40,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
@@ -48,6 +48,61 @@ class C
             await fs.WriteAsync(buffer.AsMemory(), new CancellationToken()).ConfigureAwait(false);
         }
     }
+}
+            ");
+        }
+
+        [Fact]
+        public async Task NoDiagnosticAnalyzer_NoAwait_SaveAsTask()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public void M()
+    {
+        byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
+        using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
+        {
+            Task t = fs.WriteAsync(buffer, 0, buffer.Length);
+        }
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public async Task NoDiagnosticAnalyzer_NoAwait_ReturnMethod()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public Task M(FileStream fs, byte[] buffer)
+    {
+        return fs.WriteAsync(buffer, 0, buffer.Length);
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public async Task NoDiagnosticAnalyzer_NoAwait_ExpressionBodyMethod()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public Task M(FileStream fs, byte[] buffer) => fs.WriteAsync(buffer, 0, buffer.Length);
 }
             ");
         }
@@ -61,7 +116,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
@@ -86,7 +141,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
@@ -107,7 +162,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
         using (Stream s = new FileStream(""path.txt"", FileMode.Create))
@@ -128,7 +183,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
@@ -149,7 +204,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
@@ -162,7 +217,7 @@ class C
         }
 
         [Fact]
-        public async Task DiagnosticAnalyzer_CancellationTokenAndConfigureAwait()
+        public async Task DiagnosticAnalyzer_ContinueWith_ConfigureAwait()
         {
             await AnalyzeAsync(@"
 using System;
@@ -170,7 +225,49 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
+    {
+        byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
+        using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
+        {
+            await fs.WriteAsync(buffer, 0, buffer.Length).ContinueWith(c => {}).ConfigureAwait(false);
+        }
+    }
+}
+            ", GetCSharpResult(12, 19));
+        }
+
+        [Fact]
+        public async Task DiagnosticAnalyzer_ContinueWith_ContinueWith_ConfigureAwait()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
+        using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
+        {
+            await fs.WriteAsync(buffer, 0, buffer.Length).ContinueWith(c => {}).ContinueWith(c => {}).ConfigureAwait(false);
+        }
+    }
+}
+            ", GetCSharpResult(12, 19));
+        }
+
+        [Fact]
+        public async Task DiagnosticAnalyzer_CancellationToken_ConfigureAwait()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
     {
         byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
@@ -191,7 +288,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
         {
@@ -203,7 +300,7 @@ class C
         }
 
         [Fact]
-        public async Task DiagnosticAnalyzer_InlineBufferWithCancellationToken()
+        public async Task DiagnosticAnalyzer_InlineBuffer_CancellationToken()
         {
             await AnalyzeAsync(@"
 using System;
@@ -211,7 +308,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
         {
@@ -223,7 +320,7 @@ class C
         }
 
         [Fact]
-        public async Task DiagnosticAnalyzer_InlineBufferWithConfigureAwait()
+        public async Task DiagnosticAnalyzer_InlineBuffer_ConfigureAwait()
         {
             await AnalyzeAsync(@"
 using System;
@@ -231,7 +328,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
         {
@@ -243,7 +340,7 @@ class C
         }
 
         [Fact]
-        public async Task DiagnosticAnalyzer_InlineBufferWithCancellationTokenAndConfigureAwait()
+        public async Task DiagnosticAnalyzer_InlineBuffer_CancellationToken_ConfigureAwait()
         {
             await AnalyzeAsync(@"
 using System;
@@ -251,7 +348,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
         {

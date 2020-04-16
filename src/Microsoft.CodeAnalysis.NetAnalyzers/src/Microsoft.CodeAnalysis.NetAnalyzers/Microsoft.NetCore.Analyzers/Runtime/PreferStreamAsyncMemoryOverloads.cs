@@ -90,8 +90,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 IInvocationOperation invocation = (IInvocationOperation)context.Operation;
                 IMethodSymbol method = invocation.TargetMethod;
-
                 DiagnosticDescriptor rule;
+
                 if (string.Equals(method.Name, "ReadAsync", StringComparison.Ordinal))
                 {
                     rule = PreferStreamReadAsyncMemoryOverloadsRule;
@@ -105,12 +105,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                if (IsDefinedBy(method, streamType) && // Verify if the current method's type is or inherits from Stream
-                HasUndesiredArguments(method))
+                if (IsPredecessorAwaiting(invocation) && // Verify if the top invocation in this statement is an await
+                    IsDefinedBy(method, streamType) && // Verify if the current method's type is or inherits from Stream
+                    HasUndesiredArguments(method))
                 {
                     context.ReportDiagnostic(invocation.CreateDiagnostic(rule));
                 }
             }, OperationKind.Invocation);
+        }
+
+        private static bool IsPredecessorAwaiting(IInvocationOperation invocation)
+        {
+            IOperation current = invocation;
+            while (current.Kind == OperationKind.Invocation)
+            {
+                current = current.Parent;
+            }
+
+            return current.Kind == OperationKind.Await;
         }
 
         private static bool IsDefinedBy(IMethodSymbol method, INamedTypeSymbol baseType)
@@ -125,7 +137,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool HasUndesiredArguments(IMethodSymbol method)
         {
-            // Both undesired ReadAsync/WriteAsync overloads have the same 3 args and an optional 4th (CancellationToken)
+            // The undesired ReadAsync/WriteAsync overloads have the same 3 args and an optional 4th (CancellationToken)
             return method.Parameters.Length >= 3 &&
                 method.Parameters[0].Type is IArrayTypeSymbol arrayTypeSymbol &&
                 arrayTypeSymbol.ElementType.SpecialType == SpecialType.System_Byte &&

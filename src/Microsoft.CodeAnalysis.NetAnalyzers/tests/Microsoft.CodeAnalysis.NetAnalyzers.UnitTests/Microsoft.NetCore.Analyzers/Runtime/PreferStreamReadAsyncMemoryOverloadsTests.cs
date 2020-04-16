@@ -19,12 +19,12 @@ using System.IO;
 using System.Threading;
 class C
 {
-    void M()
+    public void M()
     {
         using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
         {
-            byte[] result = new byte[fs.Length];
-            fs.Read(result, 0, (int)fs.Length);
+            byte[] buffer = new byte[fs.Length];
+            fs.Read(buffer, 0, (int)fs.Length);
         }
     }
 }
@@ -32,7 +32,7 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnosticAnalyzer_ReadAsyncWithAsMemory()
+        public async Task NoDiagnosticAnalyzer_ReadAsync_AsMemory()
         {
             await AnalyzeAsync(@"
 using System;
@@ -40,14 +40,69 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
         {
-            byte[] result = new byte[fs.Length];
-            await fs.ReadAsync(result.AsMemory(), new CancellationToken());
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer.AsMemory(), new CancellationToken());
         }
     }
+}
+            ");
+        }
+
+        [Fact]
+        public async Task NoDiagnosticAnalyzer_NoAwait_SaveAsTask()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            byte[] buffer = new byte[fs.Length];
+            Task t = fs.ReadAsync(buffer, 0, (int)fs.Length);
+        }
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public async Task NoDiagnosticAnalyzer_NoAwait_ReturnMethod()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public Task M(FileStream fs, byte[] buffer)
+    {
+        return fs.ReadAsync(buffer, 0, (int)fs.Length);
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public async Task NoDiagnosticAnalyzer_NoAwait_ExpressionBodyMethod()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public Task M(FileStream fs, byte[] buffer) => fs.ReadAsync(buffer, 0, (int)fs.Length);
 }
             ");
         }
@@ -61,12 +116,12 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
         {
-            byte[] result = new byte[fs.Length];
-            await fs.ReadAsync(result, 0, (int)fs.Length);
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length);
         }
     }
 }
@@ -86,12 +141,12 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
         {
-            byte[] result = new byte[fs.Length];
-            await fs.ReadAsync(result, 0, (int)fs.Length);
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length);
         }
     }
 }
@@ -107,7 +162,7 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
         {
@@ -127,12 +182,12 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
         {
-            byte[] result = new byte[fs.Length];
-            await fs.ReadAsync(result, 0, (int)fs.Length, new CancellationToken());
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length, new CancellationToken());
         }
     }
 }
@@ -148,12 +203,12 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
         {
-            byte[] result = new byte[fs.Length];
-            await fs.ReadAsync(result, 0, (int)fs.Length).ConfigureAwait(false);
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length).ConfigureAwait(false);
         }
     }
 }
@@ -161,7 +216,7 @@ class C
         }
 
         [Fact]
-        public async Task DiagnosticAnalyzer_CancellationTokenAndConfigureAwait()
+        public async Task DiagnosticAnalyzer_ContinueWith_ConfigureAwait()
         {
             await AnalyzeAsync(@"
 using System;
@@ -169,12 +224,54 @@ using System.IO;
 using System.Threading;
 class C
 {
-    async void M()
+    public async void M()
     {
         using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
         {
-            byte[] result = new byte[fs.Length];
-            await fs.ReadAsync(result, 0, (int)fs.Length, new CancellationToken()).ConfigureAwait(false);
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length).ContinueWith(c => {}).ConfigureAwait(false);
+        }
+    }
+}
+            ", GetCSharpResult(12, 19));
+        }
+
+        [Fact]
+        public async Task DiagnosticAnalyzer_ContinueWith_ContinueWith_ConfigureAwait()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length).ContinueWith(c => {}).ContinueWith(c => {}).ConfigureAwait(false);
+        }
+    }
+}
+            ", GetCSharpResult(12, 19));
+        }
+
+        [Fact]
+        public async Task DiagnosticAnalyzer_CancellationToken_ConfigureAwait()
+        {
+            await AnalyzeAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length, new CancellationToken()).ConfigureAwait(false);
         }
     }
 }
