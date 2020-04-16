@@ -2,18 +2,15 @@
   <Target Name="GetCurrentRuntimeInformation"
           DependsOnTargets="GetCoreSdkGitCommitInfo"
           BeforeTargets="Build">
-    <GetCurrentRuntimeInformation>
-      <Output TaskParameter="Rid" PropertyName="HostRid" />
-      <Output TaskParameter="OSName" PropertyName="HostOSName" />
-    </GetCurrentRuntimeInformation>
 
     <PropertyGroup>
-      <IsLinux Condition = " '$(HostOSName)' != 'win' AND '$(HostOSName)' != 'osx' ">True</IsLinux>
-      <OSName Condition=" '$(OSName)' == '' AND '$(IsLinux)' != 'True' ">$(HostOSName)</OSName>
-      <OSName Condition=" '$(OSName)' == '' AND '$(IsLinux)' == 'True' ">linux</OSName>
+      <OSName Condition=" '$(OSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS')) ">win</OSName>
+      <OSName Condition=" '$(OSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX')) ">osx</OSName>
+      <OSName Condition=" '$(OSName)' == '' ">linux</OSName>
 
       <Architecture Condition=" '$(Architecture)' == '' ">x64</Architecture>
       <Rid Condition=" '$(Rid)' == '' ">$(OSName)-$(Architecture)</Rid>
     </PropertyGroup>
+
   </Target>
 </Project>

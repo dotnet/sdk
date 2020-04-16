@@ -25,92 +25,6 @@ namespace Microsoft.DotNet.Cli.Utils
         public static string OperatingSystemVersion { get; } = GetOSVersion();
         public static string OperatingSystem { get; } = GetOSName();
 
-        // toolset-tasks.csproj needs to build for full .NET Framework, and needs to get the current
-        // RuntimeIdentifier of the machine. Because of this, it needs to implement
-        // it's own GetRuntimeIdentifier(). All other places should use RuntimeInformation.RuntimeIdentifier.
-#if TOOLSET_TASKS
-        private static readonly string OverrideEnvironmentVariableName = "DOTNET_RUNTIME_ID";
-
-        public static string GetRuntimeIdentifier()
-        {
-            return
-                Environment.GetEnvironmentVariable(OverrideEnvironmentVariableName) ??
-                (GetRIDOS() + GetRIDVersion() + GetRIDArch());
-        }
-
-        private static string GetRIDArch()
-        {
-            return $"-{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}";
-        }
-
-        private static string GetRIDVersion()
-        {
-            // Windows RIDs do not separate OS name and version by "." due to legacy
-            // Others do, that's why we have the "." prefix on them below
-            switch (OperatingSystemPlatform)
-            {
-                case Platform.Windows:
-                    return GetWindowsProductVersion();
-                case Platform.Linux:
-                    if (string.IsNullOrEmpty(OperatingSystemVersion))
-                    {
-                        return string.Empty;
-                    }
-
-                    return $".{OperatingSystemVersion}";
-                case Platform.Darwin:
-                    return $".{OperatingSystemVersion}";
-                case Platform.FreeBSD:
-                    return $".{OperatingSystemVersion}";
-                default:
-                    return string.Empty; // Unknown Platform? Unknown Version!
-            }
-        }
-
-        private static string GetWindowsProductVersion()
-        {
-            var ver = Version.Parse(OperatingSystemVersion);
-            if (ver.Major == 6)
-            {
-                if (ver.Minor == 1)
-                {
-                    return "7";
-                }
-                else if (ver.Minor == 2)
-                {
-                    return "8";
-                }
-                else if (ver.Minor == 3)
-                {
-                    return "81";
-                }
-            }
-            else if (ver.Major >= 10)
-            {
-                // Return the major version for use in RID computation without applying any cap.
-                return ver.Major.ToString();
-            }
-            return string.Empty; // Unknown version
-        }
-
-        private static string GetRIDOS()
-        {
-            switch (OperatingSystemPlatform)
-            {
-                case Platform.Windows:
-                    return "win";
-                case Platform.Linux:
-                    return OperatingSystem.ToLowerInvariant();
-                case Platform.Darwin:
-                    return "osx";
-                case Platform.FreeBSD:
-                    return "freebsd";
-                default:
-                    return "unknown";
-            }
-        }
-#endif // TOOLSET_TASKS
-
         private class DistroInfo
         {
             public string Id;
@@ -372,6 +286,5 @@ namespace Microsoft.DotNet.Cli.Utils
                 }
             }
         }
-
     }
 }
