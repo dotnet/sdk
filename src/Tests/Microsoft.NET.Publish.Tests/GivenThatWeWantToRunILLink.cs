@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.DependencyModel;
@@ -376,9 +377,9 @@ namespace Microsoft.NET.Publish.Tests
 
         static string unusedFrameworkAssembly = "System.IO";
 
-        private TestPackageReference GetPackageReference(TestProject project)
+        private TestPackageReference GetPackageReference(TestProject project, string callingMethod)
         {
-            var asset = _testAssetsManager.CreateTestProject(project, project.Name);
+            var asset = _testAssetsManager.CreateTestProject(project, callingMethod);
             var pack = new PackCommand(Log, Path.Combine(asset.TestRoot, project.Name));
             pack.Execute().Should().Pass();
 
@@ -452,7 +453,12 @@ namespace Microsoft.NET.Publish.Tests
                                                  new XElement("action"))));
         }
 
-        private TestProject CreateTestProjectForILLinkTesting(string targetFramework, string mainProjectName, string referenceProjectName, bool usePackageReference = true)
+        private TestProject CreateTestProjectForILLinkTesting(
+            string targetFramework,
+            string mainProjectName,
+            string referenceProjectName,
+            bool usePackageReference = true,
+            [CallerMemberName] string callingMethod = "")
         {
             var referenceProject = new TestProject()
             {
@@ -482,7 +488,7 @@ public class ClassLib
 
             if (usePackageReference)
             {
-                var packageReference = GetPackageReference(referenceProject);
+                var packageReference = GetPackageReference(referenceProject, callingMethod);
                 testProject.PackageReferences.Add(packageReference);
                 testProject.AdditionalProperties.Add(
                     "RestoreAdditionalProjectSources",
