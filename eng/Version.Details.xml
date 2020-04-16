@@ -57,9 +57,9 @@
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
       <Sha>b3ac44798c16fff5b95dbcfe62dea84aa9a1bd72</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="5.6.0-preview.3.6558">
+    <Dependency Name="NuGet.Build.Tasks" Version="5.7.0-preview.1.6568">
       <Uri>https://github.com/NuGet/NuGet.Client</Uri>
-      <Sha>863fc6bb184cccfe12caa03bea91b0ddc48843da</Sha>
+      <Sha>818ca73c9d788fa7afe05567d16b0e84dd88edca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="16.6.0-preview-20200406-12">
       <Uri>https://github.com/microsoft/vstest</Uri>
