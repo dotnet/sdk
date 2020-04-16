@@ -9,7 +9,7 @@
   <PropertyGroup>
     <MicrosoftBuildVersion>15.3.409</MicrosoftBuildVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNETCoreCompilersPackageVersion>3.7.0-1.20210.7</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftNETCoreCompilersPackageVersion>3.7.0-1.20216.3</MicrosoftNETCoreCompilersPackageVersion>
     <MicrosoftExtensionsVersion>3.1.1</MicrosoftExtensionsVersion>
   </PropertyGroup>
   <!--
