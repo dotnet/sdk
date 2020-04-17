@@ -999,6 +999,21 @@
   <data name="SetViewStateUserKeyMessage" xml:space="preserve">
     <value>The class {0} derived from System.Web.UI.Page does not set the ViewStateUserKey property in the OnInit method or Page_Init method</value>
   </data>
+  <data name="UseAsSpanInsteadOfArrayRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfStringRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerMessage" xml:space="preserve">
+    <value>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerTitle" xml:space="preserve">
+    <value>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</value>
+  </data>
+  <data name="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</value>
+  </data>
   <data name="UseContainerLevelAccessPolicy" xml:space="preserve">
     <value>Use Container Level Access Policy</value>
   </data>

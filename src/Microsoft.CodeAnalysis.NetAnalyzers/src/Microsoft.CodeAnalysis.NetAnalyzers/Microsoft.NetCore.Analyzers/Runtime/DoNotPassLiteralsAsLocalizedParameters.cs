@@ -57,6 +57,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 INamedTypeSymbol? systemConsoleSymbol = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConsole);
                 ImmutableHashSet<INamedTypeSymbol> typesToIgnore = GetTypesToIgnore(compilationContext.Compilation);
 
+                var useNamingHeuristic = compilationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule, defaultValue: false, compilationContext.CancellationToken);
+
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
                     if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
@@ -86,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         if (ShouldAnalyze(targetMethod))
                         {
-                            AnalyzeArgument(argument.Parameter, containingPropertySymbolOpt: null, operation: argument, reportDiagnostic: operationContext.ReportDiagnostic);
+                            AnalyzeArgument(argument.Parameter, containingPropertySymbolOpt: null, operation: argument, reportDiagnostic: operationContext.ReportDiagnostic, useNamingHeuristic);
                         }
                     }, OperationKind.Argument);
 
@@ -100,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             ShouldAnalyze(propertyReference.Property))
                         {
                             IParameterSymbol valueSetterParam = propertyReference.Property.SetMethod.Parameters[0];
-                            AnalyzeArgument(valueSetterParam, propertyReference.Property, assignment, operationContext.ReportDiagnostic);
+                            AnalyzeArgument(valueSetterParam, propertyReference.Property, assignment, operationContext.ReportDiagnostic, useNamingHeuristic);
                         }
                     }, OperationKind.PropertyReference);
 
@@ -108,11 +110,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     // Local functions
                     bool ShouldAnalyze(ISymbol? symbol)
-                        => symbol != null && !symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options, Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
+                        => symbol != null && !symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.OwningSymbol, operationBlockStartContext.Options, Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
 
-                    void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbolOpt, IOperation operation, Action<Diagnostic> reportDiagnostic)
+                    void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbolOpt, IOperation operation, Action<Diagnostic> reportDiagnostic, bool useNamingHeuristic)
                     {
-                        if (ShouldBeLocalized(parameter.OriginalDefinition, containingPropertySymbolOpt?.OriginalDefinition, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore) &&
+                        if (ShouldBeLocalized(parameter.OriginalDefinition, containingPropertySymbolOpt?.OriginalDefinition, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore, useNamingHeuristic) &&
                             lazyValueContentResult.Value != null)
                         {
                             ValueContentAbstractValue stringContentValue = lazyValueContentResult.Value[operation.Kind, operation.Syntax];
@@ -217,7 +219,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             INamedTypeSymbol? localizableStateAttributeSymbol,
             INamedTypeSymbol? conditionalAttributeSymbol,
             INamedTypeSymbol? systemConsoleSymbol,
-            ImmutableHashSet<INamedTypeSymbol> typesToIgnore)
+            ImmutableHashSet<INamedTypeSymbol> typesToIgnore,
+            bool useNamingHeuristic)
         {
             Debug.Assert(parameterSymbol.ContainingSymbol.Kind == SymbolKind.Method);
 
@@ -259,14 +262,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IParameterSymbol overridenParameter = method.OverriddenMethod.Parameters[parameterIndex];
                 if (Equals(overridenParameter.Type, parameterSymbol.Type))
                 {
-                    return ShouldBeLocalized(overridenParameter, containingPropertySymbolOpt, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore);
+                    return ShouldBeLocalized(overridenParameter, containingPropertySymbolOpt, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore, useNamingHeuristic);
                 }
             }
 
-            if (IsLocalizableByNameHeuristic(parameterSymbol) ||
-                containingPropertySymbolOpt != null && IsLocalizableByNameHeuristic(containingPropertySymbolOpt))
+            if (useNamingHeuristic)
             {
-                return true;
+                if (IsLocalizableByNameHeuristic(parameterSymbol) ||
+                    containingPropertySymbolOpt != null && IsLocalizableByNameHeuristic(containingPropertySymbolOpt))
+                {
+                    return true;
+                }
             }
 
             if (method.ContainingType.Equals(systemConsoleSymbol) &&

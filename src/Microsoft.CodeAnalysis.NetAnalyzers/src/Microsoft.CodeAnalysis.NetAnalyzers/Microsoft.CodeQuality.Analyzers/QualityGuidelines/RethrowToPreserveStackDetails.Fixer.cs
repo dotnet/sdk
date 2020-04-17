@@ -25,7 +25,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers'
             return WellKnownFixAllProviders.BatchFixer;
         }
-        public async sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var diagnostics = context.Diagnostics;

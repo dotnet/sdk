@@ -91,8 +91,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             if (symbol != null &&
                 symbol.TypeKind == TypeKind.Enum)
             {
-                var reportCA1027 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule1027, symbolContext.CancellationToken);
-                var reportCA2217 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule2217, symbolContext.CancellationToken);
+                var reportCA1027 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule1027, symbolContext.Compilation, symbolContext.CancellationToken);
+                var reportCA2217 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule2217, symbolContext.Compilation, symbolContext.CancellationToken);
                 if (!reportCA1027 && !reportCA2217)
                 {
                     return;

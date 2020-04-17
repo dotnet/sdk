@@ -8,6 +8,9 @@
     <Compile Include="..\Core\Microsoft.CodeQuality.Analyzers\ApiDesignGuidelines\EnumsShouldHavePluralNames.cs" Link="Microsoft.CodeQuality.Analyzers\ApiDesignGuidelines\EnumsShouldHavePluralNames.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisForShippedApisVersion)" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Test.Utilities\Test.Utilities.csproj" />
     <ProjectReference Include="..\Core\Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
     <ProjectReference Include="..\CSharp\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" />
