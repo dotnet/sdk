@@ -382,6 +382,26 @@
         <target state="translated">Nezachytávejte v obecných obslužných rutinách výjimky poškozující stav procesu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
+        <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
+        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
+        <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
+        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
+        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
+        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
         <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
         <target state="translated">Nevytvářejte úlohy, pokud nepoužíváte jedno z přetížení, která využívají Plánovač úloh. Výchozí chování je nastavení plánu u TaskScheduler.Current, což by vedlo ke vzájemnému zablokování. Buď použijte TaskScheduler.Default pro nastavení plánu u fondu vláken, nebo explicitně předejte TaskScheduler.Current, aby bylo zcela jasné, co máte v úmyslu.</target>
