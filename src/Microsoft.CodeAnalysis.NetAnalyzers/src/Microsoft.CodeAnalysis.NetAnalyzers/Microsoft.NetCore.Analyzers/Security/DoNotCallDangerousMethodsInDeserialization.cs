@@ -180,8 +180,12 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                 calledMethods.TryAdd(calledSymbol, true);
 
+                                // calledSymbol.ContainingSymbol.Kind == SymbolKind.Method => local function
+                                // For the purposes of this rule, we'll treat invocations inside the local function as part of
+                                // the containing method's set of invocations.
                                 if (!calledSymbol.IsInSource() ||
                                     calledSymbol.ContainingType.TypeKind == TypeKind.Interface ||
+                                    calledSymbol.ContainingSymbol.Kind == SymbolKind.Method ||
                                     calledSymbol.IsAbstract ||
                                     possibleDelegateSymbol.TypeKind == TypeKind.Delegate)
                                 {
