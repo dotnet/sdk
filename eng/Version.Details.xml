@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="5.0.0-preview.4.20203.1">
+    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="5.0.0-preview.4.20215.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>021e16574b2809e3d113fb541838ab49715721b3</Sha>
+      <Sha>1b50638acb1defc7d7ccaba5b2a0f4b0c50c0b3d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="5.0.0-preview.4.20216.18">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -13,9 +13,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>abd77c506969f9cb379d374cd57df5c7d5758e12</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.PlatformAbstractions" Version="5.0.0-preview.4.20216.18">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>abd77c506969f9cb379d374cd57df5c7d5758e12</Sha>
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="5.0.0-beta.20201.2">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>bce0a98620c1c5a110b2bba9912f3d5929069c6b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.HostModel" Version="5.0.0-preview.4.20216.18">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -33,29 +33,29 @@
       <Uri>https://github.com/dotnet/CliCommandLineParser</Uri>
       <Sha>0e89c2116ad28e404ba56c14d1c3f938caa25a01</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="16.7.0-preview-20213-01">
+    <Dependency Name="Microsoft.Build" Version="16.7.0-preview-20215-01">
       <Uri>https://github.com/microsoft/msbuild</Uri>
-      <Sha>bdb90dbba8ba201bcd09f52a75e2ffd2d0861330</Sha>
+      <Sha>aa655667e82dae0ee9269ae4c3fca922c71fcae6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="16.7.0-preview-20213-01">
+    <Dependency Name="Microsoft.Build.Localization" Version="16.7.0-preview-20215-01">
       <Uri>https://github.com/microsoft/msbuild</Uri>
-      <Sha>bdb90dbba8ba201bcd09f52a75e2ffd2d0861330</Sha>
+      <Sha>aa655667e82dae0ee9269ae4c3fca922c71fcae6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="11.0.0-beta.20210.5">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="11.0.0-beta.20214.4">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>1f5c045b5cf31e9c99b42fb275032e6c84cb8f3d</Sha>
+      <Sha>dc7eb53919a3b1c29386c9ba78ed750f809f3af5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-2.20153.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>6f2112b58316c97c4f1b97e0f282aef4346947fc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="5.0.0-preview.4.20214.3">
+    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="5.0.0-preview.4.20216.6">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>6bd9b2f79f15ab65a33197af669e24e87d4689d3</Sha>
+      <Sha>8e1e81ae78e876eecad1b816093f0519682e205d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.4.20213.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.4.20216.8">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>16f3ad645bf99d16a5489349fb85eca834827e19</Sha>
+      <Sha>e7560428210b354b873ca9d9fa10fd2c44cebdbe</Sha>
     </Dependency>
     <Dependency Name="NuGet.Build.Tasks" Version="5.6.0-preview.2.6532">
       <Uri>https://github.com/NuGet/NuGet.Client</Uri>
@@ -65,9 +65,9 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>732a3a37e8d3e1a2522546fca644c7d69be457cf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Web" Version="5.0.100-preview.4.20212.1">
+    <Dependency Name="Microsoft.NET.Sdk.Web" Version="5.0.100-preview.4.20215.1">
       <Uri>https://github.com/aspnet/websdk</Uri>
-      <Sha>2119c8cf993bb015d1f0c4dcfd70bc0d36309152</Sha>
+      <Sha>8d1c706c88468beb87c0e57a45f7b629302346d8</Sha>
     </Dependency>
     <Dependency Name="ILLink.Tasks" Version="5.0.0-preview.3.20214.2">
       <Uri>https://github.com/mono/linker</Uri>
@@ -89,13 +89,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>abd77c506969f9cb379d374cd57df5c7d5758e12</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-preview.4.20213.4">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-preview.4.20215.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>9f38803b54041203c0e9f0755a0d375bab3ce58f</Sha>
+      <Sha>f3fb1e2cf4357001fc4efb1be74347c4bccbcd28</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.4.20213.6" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.4.20215.1" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>524976a425319e288380ff0685545cc71623e23d</Sha>
+      <Sha>63691919798150982a5b67f8cd367edffd88610a</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
