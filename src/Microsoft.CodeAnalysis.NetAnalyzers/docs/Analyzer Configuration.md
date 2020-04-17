@@ -659,3 +659,14 @@ Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](ht
 Default Value: Namespace, NamedType, Method, Property, Event, Parameter
 
 Example: `dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace, Property`
+
+### Use naming heuristic
+Option Name: `use_naming_heuristic`
+
+Configurable Rules: [CA1303](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1303)
+
+Option Values: Boolean values
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1303.use_naming_heuristic = true`
