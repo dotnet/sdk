@@ -49,7 +49,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     methodSymbol.ReturnsVoid ||
                     methodSymbol.ReturnType.Kind == SymbolKind.ArrayType ||
                     methodSymbol.Parameters.Length > 0 ||
-                    !methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken) ||
+                    !methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken) ||
                     methodSymbol.IsAccessorMethod() ||
                     !IsPropertyLikeName(methodSymbol.Name))
                 {

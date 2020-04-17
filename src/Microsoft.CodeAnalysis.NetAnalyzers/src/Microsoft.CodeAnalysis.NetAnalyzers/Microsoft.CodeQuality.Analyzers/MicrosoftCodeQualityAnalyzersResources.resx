@@ -1370,6 +1370,45 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesDescription" xml:space="preserve">
+    <value>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</value>
+  </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesMessage" xml:space="preserve">
+    <value>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</value>
+  </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesTitle" xml:space="preserve">
+    <value>Do not declare protected member in sealed type</value>
+  </data>
+  <data name="AvoidExcessiveParametersOnGenericTypesDescription" xml:space="preserve">
+    <value>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</value>
+  </data>
+  <data name="AvoidExcessiveParametersOnGenericTypesMessage" xml:space="preserve">
+    <value>Consider a design where '{0}' has no more than {1} type parameters.</value>
+  </data>
+  <data name="AvoidExcessiveParametersOnGenericTypesTitle" xml:space="preserve">
+    <value>Avoid excessive parameters on generic types</value>
+  </data>
+  <data name="DoNotIgnoreMethodResultsMessageLinqMethod" xml:space="preserve">
+    <value>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</value>
+  </data>
+  <data name="DoNotNameEnumValuesReservedDescription" xml:space="preserve">
+    <value>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</value>
+  </data>
+  <data name="DoNotNameEnumValuesReservedMessage" xml:space="preserve">
+    <value>If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</value>
+  </data>
+  <data name="DoNotNameEnumValuesReservedTitle" xml:space="preserve">
+    <value>Do not name enum values 'Reserved'</value>
+  </data>
+  <data name="DoNotExposeGenericListsDescription" xml:space="preserve">
+    <value>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</value>
+  </data>
+  <data name="DoNotExposeGenericListsMessage" xml:space="preserve">
+    <value>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</value>
+  </data>
+  <data name="DoNotExposeGenericListsTitle" xml:space="preserve">
+    <value>Do not expose generic lists</value>
+  </data>
   <data name="DoNotPassTypesByReferenceMessage" xml:space="preserve">
     <value>Consider a design that does not require that '{0}' be a reference parameter.</value>
   </data>
@@ -1378,5 +1417,14 @@
   </data>
   <data name="DoNotPassTypesByReferenceDescription" xml:space="preserve">
     <value>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</value>
+  </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixDescription" xml:space="preserve">
+    <value>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</value>
+  </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixMessage" xml:space="preserve">
+    <value>Events should not have 'Before' or 'After' prefix</value>
+  </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixTitle" xml:space="preserve">
+    <value>Events should not have 'Before' or 'After' prefix</value>
   </data>
 </root>
