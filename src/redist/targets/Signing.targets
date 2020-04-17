@@ -98,6 +98,7 @@
                             $(SdkOutputDirectory)**/fsc.exe;
                             $(SdkOutputDirectory)**/fsi.exe;
                             $(SdkOutputDirectory)**/FSharp.*.dll;
+                            $(SdkOutputDirectory)**/Interactive.DependencyManager.dll;
                             $(SdkOutputDirectory)**/dotnet.dll;
                             $(SdkOutputDirectory)**/dotnet.resources.dll;
                             $(SdkOutputDirectory)**/System.*.dll;
