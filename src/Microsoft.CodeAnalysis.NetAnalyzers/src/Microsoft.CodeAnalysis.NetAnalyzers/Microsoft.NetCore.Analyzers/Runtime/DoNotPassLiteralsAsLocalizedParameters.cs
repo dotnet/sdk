@@ -57,8 +57,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 INamedTypeSymbol? systemConsoleSymbol = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConsole);
                 ImmutableHashSet<INamedTypeSymbol> typesToIgnore = GetTypesToIgnore(compilationContext.Compilation);
 
-                var useNamingHeuristic = compilationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule, defaultValue: false, compilationContext.CancellationToken);
-
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
                     if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
@@ -88,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         if (ShouldAnalyze(targetMethod))
                         {
-                            AnalyzeArgument(argument.Parameter, containingPropertySymbolOpt: null, operation: argument, reportDiagnostic: operationContext.ReportDiagnostic, useNamingHeuristic);
+                            AnalyzeArgument(argument.Parameter, containingPropertySymbolOpt: null, operation: argument, reportDiagnostic: operationContext.ReportDiagnostic, GetUseNamingHeuristicOption(operationContext));
                         }
                     }, OperationKind.Argument);
 
@@ -102,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             ShouldAnalyze(propertyReference.Property))
                         {
                             IParameterSymbol valueSetterParam = propertyReference.Property.SetMethod.Parameters[0];
-                            AnalyzeArgument(valueSetterParam, propertyReference.Property, assignment, operationContext.ReportDiagnostic, useNamingHeuristic);
+                            AnalyzeArgument(valueSetterParam, propertyReference.Property, assignment, operationContext.ReportDiagnostic, GetUseNamingHeuristicOption(operationContext));
                         }
                     }, OperationKind.PropertyReference);
 
@@ -111,6 +109,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     // Local functions
                     bool ShouldAnalyze(ISymbol? symbol)
                         => symbol != null && !symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.OwningSymbol, operationBlockStartContext.Options, Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
+
+                    static bool GetUseNamingHeuristicOption(OperationAnalysisContext operationContext)
+                        => operationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule,
+                            operationContext.Operation.Syntax.SyntaxTree, operationContext.Compilation, defaultValue: false, operationContext.CancellationToken);
 
                     void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbolOpt, IOperation operation, Action<Diagnostic> reportDiagnostic, bool useNamingHeuristic)
                     {
