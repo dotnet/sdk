@@ -382,6 +382,26 @@
         <target state="translated">請勿在一般處理常式中擷取損毀狀態例外狀況。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
+        <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
+        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
+        <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
+        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
+        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
+        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
         <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
         <target state="translated">建立工作時，請務必使用採用 TaskScheduler 的其中一個多載。預設會在 TaskScheduler.Current 上排程，但如此會造成死結。您可以使用 TaskScheduler.Default 在執行緒集區上進行排程，或明確傳遞 TaskScheduler.Current 以讓目的更加明確。</target>
