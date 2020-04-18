@@ -150,7 +150,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 INamedTypeSymbol? xunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.XunitAssert);
                 INamedTypeSymbol? linqEnumerableType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
 
-                var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, compilationContext.Compilation, compilationContext.CancellationToken);
+                if (!(compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
+                {
+                    return;
+                }
+
+                var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, tree, compilationContext.Compilation, compilationContext.CancellationToken);
 
                 compilationContext.RegisterOperationBlockStartAction(osContext =>
                 {
