@@ -222,6 +222,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             if (!method.MatchesConfiguredVisibility(
                 startOperationBlockContext.Options,
                 Rule,
+                startOperationBlockContext.Compilation,
                 startOperationBlockContext.CancellationToken,
                 defaultRequiredVisibility: SymbolVisibilityGroup.All))
             {

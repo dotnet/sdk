@@ -125,6 +125,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
             analysisContext.RegisterCompilationAction(compilationContext =>
             {
+                if (!(compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
+                {
+                    return;
+                }
+
                 // Try read the additional file containing the code metrics configuration.
                 if (!TryGetRuleIdToThresholdMap(
                         compilationContext.Options.AdditionalFiles,
@@ -149,7 +154,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 //   - all types/namespaces provided by the user
                 // so that the calculation isn't unfair.
                 // For example inheriting from WPF/WinForms UserControl makes your class over the default threshold, yet there isn't anything you can do about it.
-                var inheritanceExcludedTypes = compilationContext.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule, compilationContext.Compilation,
+                var inheritanceExcludedTypes = compilationContext.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule, tree, compilationContext.Compilation,
                     defaultForcedValue: "N:System.*", compilationContext.CancellationToken);
 
                 var metricsAnalysisContext = new CodeMetricsAnalysisContext(compilationContext.Compilation, compilationContext.CancellationToken,

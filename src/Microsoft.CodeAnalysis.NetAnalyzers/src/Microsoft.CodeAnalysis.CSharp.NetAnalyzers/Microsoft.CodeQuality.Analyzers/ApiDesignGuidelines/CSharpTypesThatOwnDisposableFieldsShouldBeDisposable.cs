@@ -34,9 +34,9 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
                         return true;
                     }
                 }
-                else if (node is FieldDeclarationSyntax)
+                else if (node is FieldDeclarationSyntax fieldDeclarationSyntax)
                 {
-                    VariableDeclarationSyntax fieldDecl = ((FieldDeclarationSyntax)node).Declaration;
+                    VariableDeclarationSyntax fieldDecl = fieldDeclarationSyntax.Declaration;
                     foreach (VariableDeclaratorSyntax fieldInit in fieldDecl.Variables)
                     {
                         if (fieldInit.Initializer?.Value is ObjectCreationExpressionSyntax &&
