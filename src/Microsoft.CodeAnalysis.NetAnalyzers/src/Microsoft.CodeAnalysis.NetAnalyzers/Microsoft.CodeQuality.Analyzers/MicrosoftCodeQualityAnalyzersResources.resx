@@ -1370,6 +1370,15 @@
   <data name="EnumShouldNotHaveDuplicatedValuesTitle" xml:space="preserve">
     <value>Enums values should not be duplicated</value>
   </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesDescription" xml:space="preserve">
+    <value>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</value>
+  </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesMessage" xml:space="preserve">
+    <value>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</value>
+  </data>
+  <data name="DoNotDeclareProtectedMembersInSealedTypesTitle" xml:space="preserve">
+    <value>Do not declare protected member in sealed type</value>
+  </data>
   <data name="AvoidExcessiveParametersOnGenericTypesDescription" xml:space="preserve">
     <value>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</value>
   </data>
@@ -1417,5 +1426,14 @@
   </data>
   <data name="DoNotPassTypesByReferenceDescription" xml:space="preserve">
     <value>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</value>
+  </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixDescription" xml:space="preserve">
+    <value>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</value>
+  </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixMessage" xml:space="preserve">
+    <value>Events should not have 'Before' or 'After' prefix</value>
+  </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixTitle" xml:space="preserve">
+    <value>Events should not have 'Before' or 'After' prefix</value>
   </data>
 </root>

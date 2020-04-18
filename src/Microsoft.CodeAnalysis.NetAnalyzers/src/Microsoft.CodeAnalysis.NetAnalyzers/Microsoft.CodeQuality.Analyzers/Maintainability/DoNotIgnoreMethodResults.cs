@@ -164,7 +164,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 break;
 
                             case OperationKind.Invocation:
-                                IInvocationOperation invocationExpression = ((IInvocationOperation)expression);
+                                IInvocationOperation invocationExpression = (IInvocationOperation)expression;
                                 IMethodSymbol targetMethod = invocationExpression.TargetMethod;
                                 if (targetMethod.ReturnsVoid)
                                 {

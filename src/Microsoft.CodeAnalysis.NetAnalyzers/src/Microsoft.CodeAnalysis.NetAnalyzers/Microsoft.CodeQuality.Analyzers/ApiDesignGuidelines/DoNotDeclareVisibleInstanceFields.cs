@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 if (!field.IsStatic &&
                     !field.IsConst &&
                     field.DeclaredAccessibility != Accessibility.Private &&
-                    field.MatchesConfiguredVisibility(symbolAnalysisContext.Options, Rule, symbolAnalysisContext.CancellationToken))
+                    field.MatchesConfiguredVisibility(symbolAnalysisContext.Options, Rule, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
                 {
                     symbolAnalysisContext.ReportDiagnostic(field.CreateDiagnostic(Rule));
                 }

@@ -40,14 +40,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return catchKeyword.CreateDiagnostic(Rule, containingMethod.Name);
         }
 
-        protected override bool IsConfiguredDisallowedExceptionType(INamedTypeSymbol namedTypeSymbol, Compilation compilation, AnalyzerOptions analyzerOptions, CancellationToken cancellationToken)
+        protected override bool IsConfiguredDisallowedExceptionType(INamedTypeSymbol namedTypeSymbol, IMethodSymbol containingMethod, Compilation compilation, AnalyzerOptions analyzerOptions, CancellationToken cancellationToken)
         {
-            if (base.IsConfiguredDisallowedExceptionType(namedTypeSymbol, compilation, analyzerOptions, cancellationToken))
+            if (base.IsConfiguredDisallowedExceptionType(namedTypeSymbol, containingMethod, compilation, analyzerOptions, cancellationToken))
             {
                 return true;
             }
 
-            var symbolNamesOption = analyzerOptions.GetDisallowedSymbolNamesWithValueOption(Rule, compilation, cancellationToken);
+            var symbolNamesOption = analyzerOptions.GetDisallowedSymbolNamesWithValueOption(Rule, containingMethod, compilation, cancellationToken);
             return symbolNamesOption.Contains(namedTypeSymbol);
         }
     }
