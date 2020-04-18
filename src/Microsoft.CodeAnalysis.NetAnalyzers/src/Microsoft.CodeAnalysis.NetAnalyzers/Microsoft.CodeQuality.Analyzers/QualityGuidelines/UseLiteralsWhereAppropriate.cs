@@ -62,8 +62,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     lastField.IsConst ||
                     !lastField.IsReadOnly ||
                     !fieldInitializerValue.ConstantValue.HasValue ||
-                    !lastField.MatchesConfiguredVisibility(saContext.Options, DefaultRule, saContext.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private) ||
-                    !lastField.MatchesConfiguredModifiers(saContext.Options, DefaultRule, saContext.CancellationToken, defaultRequiredModifiers: SymbolModifiers.Static))
+                    !lastField.MatchesConfiguredVisibility(saContext.Options, DefaultRule, saContext.Compilation, saContext.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private) ||
+                    !lastField.MatchesConfiguredModifiers(saContext.Options, DefaultRule, saContext.Compilation, saContext.CancellationToken, defaultRequiredModifiers: SymbolModifiers.Static))
                 {
                     return;
                 }

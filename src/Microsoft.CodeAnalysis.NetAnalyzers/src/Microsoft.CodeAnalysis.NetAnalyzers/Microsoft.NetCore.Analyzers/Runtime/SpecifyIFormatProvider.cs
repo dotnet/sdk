@@ -135,13 +135,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     #region "Exceptions"
                     const string ToStringMethodName = "ToString";
                     if (targetMethod.IsGenericMethod || targetMethod.ContainingType.IsErrorType() ||
-                        ((activatorType != null && activatorType.Equals(targetMethod.ContainingType)) ||
+                        (activatorType != null && activatorType.Equals(targetMethod.ContainingType)) ||
                          (resourceManagerType != null && resourceManagerType.Equals(targetMethod.ContainingType)) ||
-                         (targetMethod.Name == ToStringMethodName &&
-                            (stringType != null && stringType.Equals(targetMethod.ContainingType)) ||
+                         targetMethod.Name == ToStringMethodName &&
+                            stringType != null && stringType.Equals(targetMethod.ContainingType) ||
                             (charType != null && charType.Equals(targetMethod.ContainingType)) ||
                             (boolType != null && boolType.Equals(targetMethod.ContainingType)) ||
-                            (guidType != null && guidType.Equals(targetMethod.ContainingType)))))
+                            (guidType != null && guidType.Equals(targetMethod.ContainingType)))
                     {
                         return;
                     }
@@ -240,7 +240,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static IEnumerable<int> GetIndexesOfParameterType(IMethodSymbol targetMethod, INamedTypeSymbol formatProviderType)
         {
             return targetMethod.Parameters
-                .Select((Parameter, Index) => new { Parameter, Index })
+                .Select((Parameter, Index) => (Parameter, Index))
                 .Where(x => x.Parameter.Type.Equals(formatProviderType))
                 .Select(x => x.Index);
         }
