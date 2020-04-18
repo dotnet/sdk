@@ -112,6 +112,21 @@
         <target state="translated">Ne pas intercepter les types d'exception générale</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesDescription">
+        <source>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</source>
+        <target state="new">Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
+        <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</source>
+        <target state="new">'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
+        <source>Do not declare protected member in sealed type</source>
+        <target state="new">Do not declare protected member in sealed type</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
         <target state="new">'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
@@ -135,6 +150,21 @@
       <trans-unit id="DoNotNameEnumValuesReservedTitle">
         <source>Do not name enum values 'Reserved'</source>
         <target state="new">Do not name enum values 'Reserved'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsDescription">
+        <source>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</source>
+        <target state="new">System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsMessage">
+        <source>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</source>
+        <target state="new">Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsTitle">
+        <source>Do not expose generic lists</source>
+        <target state="new">Do not expose generic lists</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -210,6 +240,21 @@
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
         <source>Enums values should not be duplicated</source>
         <target state="translated">Les valeurs enum ne doivent pas être dupliquées</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixDescription">
+        <source>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</source>
+        <target state="new">Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixMessage">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixTitle">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="new">Events should not have 'Before' or 'After' prefix</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">

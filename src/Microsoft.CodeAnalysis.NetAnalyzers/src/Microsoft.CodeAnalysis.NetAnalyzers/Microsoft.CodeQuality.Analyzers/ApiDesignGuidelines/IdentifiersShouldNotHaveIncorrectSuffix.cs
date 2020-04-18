@@ -142,7 +142,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                             // will always have identical configured visibility.
-                            if (!namedTypeSymbol.MatchesConfiguredVisibility(symbolAnalysisContext.Options, TypeNoAlternateRule, symbolAnalysisContext.CancellationToken))
+                            if (!namedTypeSymbol.MatchesConfiguredVisibility(symbolAnalysisContext.Options, TypeNoAlternateRule, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
                             {
                                 return;
                             }
@@ -205,7 +205,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                     // will always have identical configured visibility.
-                    if (!memberSymbol.MatchesConfiguredVisibility(context.Options, TypeNoAlternateRule, context.CancellationToken))
+                    if (!memberSymbol.MatchesConfiguredVisibility(context.Options, TypeNoAlternateRule, context.Compilation, context.CancellationToken))
                     {
                         return;
                     }

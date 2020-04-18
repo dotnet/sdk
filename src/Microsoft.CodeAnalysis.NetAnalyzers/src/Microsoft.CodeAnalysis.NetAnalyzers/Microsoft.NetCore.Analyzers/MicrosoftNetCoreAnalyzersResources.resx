@@ -999,6 +999,21 @@
   <data name="SetViewStateUserKeyMessage" xml:space="preserve">
     <value>The class {0} derived from System.Web.UI.Page does not set the ViewStateUserKey property in the OnInit method or Page_Init method</value>
   </data>
+  <data name="UseAsSpanInsteadOfArrayRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfStringRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerMessage" xml:space="preserve">
+    <value>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerTitle" xml:space="preserve">
+    <value>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</value>
+  </data>
+  <data name="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription" xml:space="preserve">
+    <value>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</value>
+  </data>
   <data name="UseContainerLevelAccessPolicy" xml:space="preserve">
     <value>Use Container Level Access Policy</value>
   </data>
@@ -1109,6 +1124,18 @@
   </data>
   <data name="UseValueTasksCorrectlyMessage_AccessingIncompleteResult" xml:space="preserve">
     <value>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</value>
+  </data>
+  <data name="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle" xml:space="preserve">
+    <value>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</value>
+  </data>
+  <data name="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription" xml:space="preserve">
+    <value>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</value>
+  </data>
+  <data name="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage" xml:space="preserve">
+    <value>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</value>
+  </data>
+  <data name="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix" xml:space="preserve">
+    <value>Replace TaskContinuationOptions with TaskCreationOptions.</value>
   </data>
   <data name="JsonNetInsecureSerializerMessage" xml:space="preserve">
     <value>When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.</value>

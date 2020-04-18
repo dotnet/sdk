@@ -115,8 +115,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            var reportCA1714 = symbol.MatchesConfiguredVisibility(context.Options, Rule_CA1714, context.CancellationToken);
-            var reportCA1717 = symbol.MatchesConfiguredVisibility(context.Options, Rule_CA1717, context.CancellationToken);
+            var reportCA1714 = symbol.MatchesConfiguredVisibility(context.Options, Rule_CA1714, context.Compilation, context.CancellationToken);
+            var reportCA1717 = symbol.MatchesConfiguredVisibility(context.Options, Rule_CA1717, context.Compilation, context.CancellationToken);
             if (!reportCA1714 && !reportCA1717)
             {
                 return;
