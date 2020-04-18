@@ -120,7 +120,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // FxCop compat: only analyze externally visible symbols by default
                 // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                 // will always have identical configured visibility.
-                if (!symbol.MatchesConfiguredVisibility(symbolAnalysisContext.Options, AssemblyRule, symbolAnalysisContext.CancellationToken))
+                if (!symbol.MatchesConfiguredVisibility(symbolAnalysisContext.Options, AssemblyRule, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
                 {
                     return;
                 }
@@ -230,7 +230,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
-            var matchesConfiguration = symbol.MatchesConfiguredVisibility(context.Options, AssemblyRule, context.CancellationToken);
+            var matchesConfiguration = symbol.MatchesConfiguredVisibility(context.Options, AssemblyRule, context.Compilation, context.CancellationToken);
 
             return (!(matchesConfiguration && !symbol.IsOverride)) ||
                 symbol.IsAccessorMethod() || symbol.IsImplementationOfAnyInterfaceMember();

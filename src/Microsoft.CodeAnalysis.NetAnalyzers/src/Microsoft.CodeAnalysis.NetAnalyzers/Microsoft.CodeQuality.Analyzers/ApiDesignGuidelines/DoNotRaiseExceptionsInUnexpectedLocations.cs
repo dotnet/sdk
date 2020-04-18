@@ -340,7 +340,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             if (!method.IsStatic || !method.IsPublic())
                 return false;
-            return (method.Name == WellKnownMemberNames.ImplicitConversionName);
+            return method.Name == WellKnownMemberNames.ImplicitConversionName;
         }
     }
 }

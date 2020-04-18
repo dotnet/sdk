@@ -54,12 +54,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         private string GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind disposeAnalysisKind)
         {
             var text = $@"dotnet_code_quality.interprocedural_analysis_kind = None
-                          dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind.ToString()}";
+                          dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
             return text;
         }
 
         private string GetEditorConfigContent(DisposeAnalysisKind disposeAnalysisKind)
-            => $@"dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind.ToString()}";
+            => $@"dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
 
         [Fact]
         public async Task LocalWithDisposableInitializer_DisposeCall_NoDiagnostic()

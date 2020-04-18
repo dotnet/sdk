@@ -1427,4 +1427,13 @@
   <data name="DoNotPassTypesByReferenceDescription" xml:space="preserve">
     <value>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</value>
   </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixDescription" xml:space="preserve">
+    <value>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</value>
+  </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixMessage" xml:space="preserve">
+    <value>Events should not have 'Before' or 'After' prefix</value>
+  </data>
+  <data name="EventsShouldNotHaveBeforeOrAfterPrefixTitle" xml:space="preserve">
+    <value>Events should not have 'Before' or 'After' prefix</value>
+  </data>
 </root>

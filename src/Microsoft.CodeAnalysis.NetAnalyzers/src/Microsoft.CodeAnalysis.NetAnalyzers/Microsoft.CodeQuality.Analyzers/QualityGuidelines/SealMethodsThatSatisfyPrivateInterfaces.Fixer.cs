@@ -105,7 +105,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 _newModifiers = newModifiers;
             }
 
-            protected async override Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
+            protected override async Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
             {
                 var editor = SymbolEditor.Create(this.Solution);
                 await editor.EditAllDeclarationsAsync(this.Symbol, (e, d) =>
@@ -132,7 +132,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 _newAccessibility = newAccessibilty;
             }
 
-            protected async override Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
+            protected override async Task<Solution> GetChangedSolutionAsync(CancellationToken cancellationToken)
             {
                 var editor = SymbolEditor.Create(this.Solution);
                 await editor.EditAllDeclarationsAsync(this.Symbol, (e, d) => e.SetAccessibility(d, _newAccessibility), cancellationToken).ConfigureAwait(false);

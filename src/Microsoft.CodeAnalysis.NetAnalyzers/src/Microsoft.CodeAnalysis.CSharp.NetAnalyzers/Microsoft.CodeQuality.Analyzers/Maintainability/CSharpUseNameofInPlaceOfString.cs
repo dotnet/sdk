@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
     {
         protected override bool IsApplicableToLanguageVersion(ParseOptions options)
         {
-            return (((CSharpParseOptions)options).LanguageVersion >= LanguageVersion.CSharp6);
+            return ((CSharpParseOptions)options).LanguageVersion >= LanguageVersion.CSharp6;
         }
     }
 }
