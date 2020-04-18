@@ -415,6 +415,88 @@ End Class",
                 GetBasicResultAt(4, 37, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberParameterRule, "C.D.F(Integer)", "iNtEgEr", "Integer"));
         }
 
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method, Property")]
+        public async Task UserOptionDoesNotIncludeParameter_NoDiagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class C
+{
+    public virtual void F(int @int) {}
+}",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class C
+    Public Overridable Sub F([int] As Integer)
+    End Sub
+End Class",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Parameter")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Parameter, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Parameter")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Parameter, Property")]
+        public async Task UserOptionIncludesParameter_Diagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class C
+{
+    public virtual void F(int @int) {}
+}",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCSharpResultAt(4, 31, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberParameterRule, "C.F(int)", "int", "int"), },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class C
+    Public Overridable Sub F([int] As Integer)
+    End Sub
+End Class",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetBasicResultAt(3, 30, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberParameterRule, "C.F(Integer)", "int", "int"), },
+                },
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)

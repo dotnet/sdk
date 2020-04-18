@@ -74,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             var symbol = (INamedTypeSymbol)context.Symbol;
             if (!symbol.IsStatic &&
-                symbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken) &&
+                symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken) &&
                 symbol.IsStaticHolderType() &&
                 !symbol.IsAbstract)
             {

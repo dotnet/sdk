@@ -142,10 +142,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     if (cfg != null)
                                     {
                                         var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
-                                                                                operationBlockStartContext.Options,
+                                                                                operationAnalysisContext.Options,
                                                                                 SupportedDiagnostics,
+                                                                                operationAnalysisContext.Operation.Syntax.SyntaxTree,
+                                                                                operationAnalysisContext.Compilation,
                                                                                 defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
-                                                                                cancellationToken: operationBlockStartContext.CancellationToken,
+                                                                                cancellationToken: operationAnalysisContext.CancellationToken,
                                                                                 defaultMaxInterproceduralMethodCallChain: 1);
                                         var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(
                                                                         cfg,

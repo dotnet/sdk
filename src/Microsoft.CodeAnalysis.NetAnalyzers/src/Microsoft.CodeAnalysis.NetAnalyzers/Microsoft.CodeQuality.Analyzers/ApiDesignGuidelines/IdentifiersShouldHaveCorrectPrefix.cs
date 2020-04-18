@@ -49,17 +49,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 (context) =>
             {
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!context.Symbol.MatchesConfiguredVisibility(context.Options, InterfaceRule, context.CancellationToken))
+                if (!context.Symbol.MatchesConfiguredVisibility(context.Options, InterfaceRule, context.Compilation, context.CancellationToken))
                 {
-                    Debug.Assert(!context.Symbol.MatchesConfiguredVisibility(context.Options, TypeParameterRule, context.CancellationToken));
+                    Debug.Assert(!context.Symbol.MatchesConfiguredVisibility(context.Options, TypeParameterRule, context.Compilation, context.CancellationToken));
                     return;
                 }
 
-                Debug.Assert(context.Symbol.MatchesConfiguredVisibility(context.Options, TypeParameterRule, context.CancellationToken));
+                Debug.Assert(context.Symbol.MatchesConfiguredVisibility(context.Options, TypeParameterRule, context.Compilation, context.CancellationToken));
 
                 bool allowSingleLetterTypeParameters = context.Options.GetBoolOptionValue(
                     optionName: EditorConfigOptionNames.ExcludeSingleLetterTypeParameters,
                     rule: TypeParameterRule,
+                    context.Symbol,
+                    context.Compilation,
                     defaultValue: false,
                     cancellationToken: context.CancellationToken);
 
