@@ -59,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 var methodSymbol = (IMethodSymbol)analysisContext.Symbol;
 
-                if (!methodSymbol.MatchesConfiguredVisibility(analysisContext.Options, Rule, analysisContext.CancellationToken))
+                if (!methodSymbol.MatchesConfiguredVisibility(analysisContext.Options, Rule, analysisContext.Compilation, analysisContext.CancellationToken))
                 {
                     return;
                 }

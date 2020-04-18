@@ -78,7 +78,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 if (!allReferencesFixed)
                 {
                     // We could not fix all references, so add a warning annotation that users need to manually fix these.
-                    document = await AddWarningAnnotation(solution.GetDocument(document.Id), symbol, cancellationToken).ConfigureAwait(false);
+                    document = await AddWarningAnnotation(solution.GetDocument(document.Id)!, symbol, cancellationToken).ConfigureAwait(false);
                     solution = document.Project.Solution;
                 }
             }
@@ -113,7 +113,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 // Skip references in projects with different language.
                 // https://github.com/dotnet/roslyn-analyzers/issues/1986 tracks handling them.
-                if (!document.Project.Language.Equals(symbol.Language, StringComparison.Ordinal))
+                if (document == null ||
+                    !document.Project.Language.Equals(symbol.Language, StringComparison.Ordinal))
                 {
                     allReferencesFixed = false;
                     continue;
