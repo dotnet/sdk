@@ -583,7 +583,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 methodName = null;
 
-                operation = operation.WalkDownParenthesis();
+                operation = operation.WalkDownParentheses();
 
                 operation = operation.WalkDownConversion();
 
