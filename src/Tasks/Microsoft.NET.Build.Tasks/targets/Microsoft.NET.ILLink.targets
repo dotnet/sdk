@@ -36,6 +36,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkInformation ResourceName="ILLink_Info" />
 
+    <!-- When linking symbols, replace PDBs in the output. -->
+    <ItemGroup Condition=" '$(_TrimmerLinkSymbols)' == 'true' ">
+      <!-- The linker implicitly picks up PDBs next to input assemblies. -->
+      <!-- Ensure that we only publish linked PDBs that come from ResolvedFileToPublish. -->
+      <__PDBsToLink Include="@(ResolvedFileToPublish)" Exclude="@(_ManagedAssembliesToLink->'%(RelativeDir)%(Filename).pdb')" />
+      <_PDBsToLink Include="@(ResolvedFileToPublish)" Exclude="@(__PDBsToLink)" />
+
+      <_LinkedResolvedFileToPublishCandidates Include="@(_PDBsToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
+      <ResolvedFileToPublish Remove="@(_PDBsToLink)" />
+    </ItemGroup>
+
     <ItemGroup>
       <_LinkedResolvedFileToPublish Include="@(_LinkedResolvedFileToPublishCandidates)" Condition="Exists('%(Identity)')" />
       <ResolvedFileToPublish Remove="@(_ManagedAssembliesToLink)" />
@@ -124,6 +135,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <_TrimmerDefaultAction Condition=" '$(_TrimmerDefaultAction)' == '' ">copyused</_TrimmerDefaultAction>
+      <_TrimmerLinkSymbols Condition=" '$(_TrimmerLinkSymbols)' == '' ">true</_TrimmerLinkSymbols>
     </PropertyGroup>
     <ItemGroup>
       <TrimmerRootAssembly Include="@(_ManagedAssembliesToLink)" Condition=" '%(_ManagedAssembliesToLink.IsTrimmable)' != 'true' " />
