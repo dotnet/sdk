@@ -2078,8 +2078,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">請考慮讓 {0} 並非外部可見。</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">請考慮讓 {0} 並非外部可見。</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
