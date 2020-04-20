@@ -41,6 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_LinkedResolvedFileToPublish Include="@(_LinkedResolvedFileToPublishCandidate)" Condition="Exists('%(Identity)')" />
       <ResolvedFileToPublish Remove="@(ManagedAssemblyToLink)" />
+      <ResolvedFileToPublish Remove="@(_PDBToLink)" />
       <ResolvedFileToPublish Include="@(_LinkedResolvedFileToPublish)" />
     </ItemGroup>
 
@@ -87,6 +88,11 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Action>%(ManagedAssemblyToLink.TrimMode)</Action>
       </ManagedAssemblyToLink>
     </ItemGroup>
+
+    <!-- Temporary: translate to the old linker options. -->
+    <PropertyGroup>
+      <_TrimmerLinkSymbols Condition="! '$(TrimSymbols)'">true</_TrimmerLinkSymbols>
+    </PropertyGroup>
 
     <Delete Files="@(_LinkedResolvedFileToPublishCandidate)" />
     <ILLink AssemblyPaths="@(ManagedAssemblyToLink)"
@@ -141,6 +147,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <TrimMode Condition=" '$(TrimMode)' == '' ">copyused</TrimMode>
+      <TrimSymbols Condition=" '$(TrimSymbols)' == '' ">true</TrimSymbols>
     </PropertyGroup>
 
     <ItemGroup>
@@ -178,10 +185,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ComputeManagedAssemblies>
 
     <ItemGroup>
-      <_LinkedResolvedFileToPublishCandidate Include="@(ManagedAssemblyToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
+      <!-- The linker implicitly picks up PDBs next to input assemblies. We will filter these out of the publish set. -->
+      <__PDBToLink Include="@(ResolvedFileToPublish)" Exclude="@(_ManagedAssembliesToLink->'%(RelativeDir)%(Filename).pdb')" />
+      <_PDBToLink Include="@(ResolvedFileToPublish)" Exclude="@(__PDBToLink)" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_LinkedResolvedFileToPublishCandidate Include="@(ManagedAssemblyToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
+      <_LinkedResolvedFileToPublishCandidate Include="@(_PDBToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
+    <ItemGroup>
   </Target>
-
 
 </Project>
