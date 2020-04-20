@@ -116,6 +116,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   
   <!-- Default item includes (globs and implicit references) -->
   <Import Project="Microsoft.NET.Sdk.DefaultItems.props" />
+
+  <!-- Import workload props -->
+  <Import Project="AutoImport.props" Sdk="Microsoft.NET.SDK.WorkloadAutoImportPropsLocator" />
   
   <!-- List of supported .NET Core and .NET Standard TFMs -->
   <Import Project="Microsoft.NET.SupportedTargetFrameworks.props" />
