@@ -1251,7 +1251,7 @@
     <value>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</value>
   </data>
   <data name="ReviewVisibleEventHandlersMessageDefault" xml:space="preserve">
-    <value>Consider making {0} not externally visible.</value>
+    <value>Consider making '{0}' not externally visible</value>
   </data>
   <data name="SealMethodsThatSatisfyPrivateInterfacesTitle" xml:space="preserve">
     <value>Seal methods that satisfy private interfaces</value>
