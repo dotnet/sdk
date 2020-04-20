@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+    <None Update="SdkResolvers\Microsoft.NET.Sdk.WorkloadResolver\Microsoft.NET.Sdk.WorkloadResolver.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <Target Name="WriteFullFrameworkResolverManifest" AfterTargets="AfterBuild" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <ItemGroup>
+      <ManifestLines Include="&lt;SdkResolver>" />
+      <ManifestLines Include="&lt;Path>$(TargetPath)&lt;/Path>" />
+      <ManifestLines Include="&lt;/SdkResolver>" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(OutputPath)\SdkResolvers\$(AssemblyName)\$(AssemblyName).xml"
+                  Lines="@(ManifestLines)"
+                  Overwrite="true"
+                  WriteOnlyWhenDifferent="true" />
+  </Target>
+
+</Project>

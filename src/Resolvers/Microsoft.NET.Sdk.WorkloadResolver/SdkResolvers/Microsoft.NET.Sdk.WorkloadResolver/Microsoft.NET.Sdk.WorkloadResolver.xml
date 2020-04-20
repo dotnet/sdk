@@ -1,0 +1,3 @@
+<SdkResolver>
+<Path>..\..\Microsoft.NET.Sdk.WorkloadResolver.dll</Path>
+</SdkResolver>

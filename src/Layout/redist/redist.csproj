@@ -48,6 +48,7 @@
                       ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj"
                       ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadResolver\Microsoft.NET.Sdk.WorkloadResolver.csproj" />
   </ItemGroup>
 
   <ItemGroup>
