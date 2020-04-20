@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
@@ -23,7 +25,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers'
             return WellKnownFixAllProviders.BatchFixer;
         }
-        public async sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var diagnostics = context.Diagnostics;
@@ -42,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 diagnostics);
         }
 
-        private async Task<Document> MakeThrowAsync(Document document, SyntaxNode nodeToReplace, CancellationToken cancellationToken)
+        private static async Task<Document> MakeThrowAsync(Document document, SyntaxNode nodeToReplace, CancellationToken cancellationToken)
         {
             var formattednewLocal = SyntaxGenerator.GetGenerator(document).ThrowStatement()
                 .WithLeadingTrivia(nodeToReplace.GetLeadingTrivia())

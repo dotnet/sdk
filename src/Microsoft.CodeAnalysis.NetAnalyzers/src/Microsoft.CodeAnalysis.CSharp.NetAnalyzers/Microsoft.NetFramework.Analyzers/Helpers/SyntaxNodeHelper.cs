@@ -48,7 +48,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
 
             if (kind == SyntaxKind.VariableDeclarator)
             {
-                return ((VariableDeclaratorSyntax)node);
+                return (VariableDeclaratorSyntax)node;
             }
 
             return null;

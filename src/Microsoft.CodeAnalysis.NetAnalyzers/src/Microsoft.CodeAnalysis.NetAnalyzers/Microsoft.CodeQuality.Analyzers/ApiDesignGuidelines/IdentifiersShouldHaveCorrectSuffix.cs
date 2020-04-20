@@ -101,34 +101,29 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
             }
 
-            var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(DefaultRule,
-                context.Compilation, context.CancellationToken);
-
-            if (baseTypeSuffixMapBuilder.Count <= 0 && interfaceTypeSuffixMapBuilder.Count <= 0 && userTypeSuffixMap.IsEmpty)
-            {
-                return;
-            }
-
             var baseTypeSuffixMap = baseTypeSuffixMapBuilder.ToImmutable();
             var interfaceTypeSuffixMap = interfaceTypeSuffixMapBuilder.ToImmutable();
-
-            var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
-                defaultValue: true, cancellationToken: context.CancellationToken);
 
             context.RegisterSymbolAction((saContext) =>
             {
                 var namedTypeSymbol = (INamedTypeSymbol)saContext.Symbol;
-                if (!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, DefaultRule, saContext.CancellationToken))
+                if (!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, DefaultRule, saContext.Compilation, saContext.CancellationToken))
                 {
-                    Debug.Assert(!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
+                    Debug.Assert(!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.Compilation, saContext.CancellationToken));
                     return;
                 }
 
-                Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.CancellationToken));
+                Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.Compilation, saContext.CancellationToken));
+
+                var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
+                   namedTypeSymbol, context.Compilation, defaultValue: true, cancellationToken: context.CancellationToken);
 
                 var baseTypes = excludeIndirectBaseTypes
-                    ? (new[] { namedTypeSymbol.BaseType })
+                    ? namedTypeSymbol.BaseType != null ? ImmutableArray.Create(namedTypeSymbol.BaseType) : ImmutableArray<INamedTypeSymbol>.Empty
                     : namedTypeSymbol.GetBaseTypes();
+
+                var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(DefaultRule, saContext.Symbol,
+                    context.Compilation, context.CancellationToken);
 
                 if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typeSuffixInfo))
                 {
@@ -176,7 +171,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
 
         private static bool TryGetTypeSuffix(IEnumerable<INamedTypeSymbol> typeSymbols, ImmutableDictionary<INamedTypeSymbol, SuffixInfo> hardcodedMap,
-            SymbolNamesOption userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
+            SymbolNamesWithValueOption<string> userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
         {
             foreach (var type in typeSymbols)
             {
@@ -199,7 +194,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
     }
 
-    class SuffixInfo
+    internal class SuffixInfo
     {
         public string Suffix { get; private set; }
         public bool CanSuffixBeCollection { get; private set; }

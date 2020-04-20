@@ -44,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             analysisContext.RegisterCompilationStartAction(startContext =>
             {
-                var instantiatedTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
+                ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
                 var internalTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
 
                 var compilation = startContext.Compilation;
@@ -132,7 +132,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             {
                                 switch (attribute.ConstructorArguments[0].Value)
                                 {
-                                    case string designerTypeName when (designerTypeName != null):
+                                    case string designerTypeName when designerTypeName != null:
                                         {
                                             var nameParts = designerTypeName.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                                             if (nameParts.Length >= 2 &&
@@ -145,7 +145,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                             break;
                                         }
 
-                                    case INamedTypeSymbol namedType when (namedType != null):
+                                    case INamedTypeSymbol namedType when namedType != null:
                                         instantiatedTypes.TryAdd(namedType, null);
                                         break;
                                 }

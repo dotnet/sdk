@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableHttpClientCRLCheck,
@@ -22,10 +21,8 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         {
             var csharpTest = new VerifyCS.Test
             {
-                TestState =
-                {
-                    Sources = { source, SystemNetHttpApis.CSharp },
-                },
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinHttpHandler,
+                TestCode = source,
             };
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
@@ -81,24 +78,6 @@ class TestClass
         var httpClientHandler = new HttpClientHandler();
         httpClientHandler.CheckCertificateRevocationList = false;
         var httpClient = new HttpClient(httpClientHandler);
-    }
-}",
-                GetCSharpResultAt(10, 26, DefinitelyRule));
-        }
-
-        [Fact]
-        public async Task Test_CurlHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnostic()
-        {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.Net.Http;
-
-class TestClass
-{
-    void TestMethod()
-    {
-        var curlHandler = new CurlHandler();
-        curlHandler.CheckCertificateRevocationList = false;
-        var httpClient = new HttpClient(curlHandler);
     }
 }",
                 GetCSharpResultAt(10, 26, DefinitelyRule));

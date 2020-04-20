@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.MarkMembersAsStaticAnalyzer,
@@ -521,25 +521,34 @@ End Class
         }
 
         [Theory]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestInitialize", MSTestAttributes.CSharp, MSTestAttributes.VisualBasic)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod", MSTestAttributes.CSharp, MSTestAttributes.VisualBasic)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.DataTestMethod", MSTestAttributes.CSharp, MSTestAttributes.VisualBasic)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestCleanup", MSTestAttributes.CSharp, MSTestAttributes.VisualBasic)]
-        [InlineData("Xunit.Fact", XunitApis.CSharp, XunitApis.VisualBasic)]
-        [InlineData("Xunit.Theory", XunitApis.CSharp, XunitApis.VisualBasic)]
-        [InlineData("CustomxUnit.WpfFact", XunitApis.CSharp, XunitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.OneTimeSetUp", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.OneTimeTearDown", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.SetUp", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.TearDown", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.Test", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.TestCase(\"asdf\")", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.TestCaseSource(\"asdf\")", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.Theory", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        public async Task NoDiagnostic_TestAttributes(string testAttributeData, string csharpTestApiDefinitions, string vbTestApiDefinitions)
+        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestInitialize", true, false, false)]
+        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod", true, false, false)]
+        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.DataTestMethod", true, false, false)]
+        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestCleanup", true, false, false)]
+        [InlineData("Xunit.Fact", false, false, true)]
+        [InlineData("Xunit.Theory", false, false, true)]
+        [InlineData("CustomxUnit.WpfFact", false, false, true)]
+        [InlineData("NUnit.Framework.OneTimeSetUp", false, true, false)]
+        [InlineData("NUnit.Framework.OneTimeTearDown", false, true, false)]
+        [InlineData("NUnit.Framework.SetUp", false, true, false)]
+        [InlineData("NUnit.Framework.TearDown", false, true, false)]
+        [InlineData("NUnit.Framework.Test", false, true, false)]
+        [InlineData("NUnit.Framework.TestCase(\"asdf\")", false, true, false)]
+        [InlineData("NUnit.Framework.TestCaseSource(\"asdf\")", false, true, false)]
+        [InlineData("NUnit.Framework.Theory", false, true, false)]
+        public async Task NoDiagnostic_TestAttributes(string testAttributeData, bool isMSTest, bool isNUnit, bool isxunit)
         {
+            var referenceAssemblies = (isMSTest, isNUnit, isxunit) switch
+            {
+                (true, false, false) => AdditionalMetadataReferences.DefaultWithMSTest,
+                (false, true, false) => AdditionalMetadataReferences.DefaultWithNUnit,
+                (false, false, true) => AdditionalMetadataReferences.DefaultWithXUnit,
+                _ => throw new InvalidOperationException("Invalid combination of test framework")
+            };
+
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = referenceAssemblies,
                 TestState =
                 {
                     Sources =
@@ -553,13 +562,24 @@ public class Test
     public void Method1() {{}}
 }}
 ",
-                        csharpTestApiDefinitions
+                        !isxunit ? "" : @"
+namespace CustomxUnit
+{
+    using System;
+    using Xunit;
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class WpfFactAttribute : FactAttribute
+    {
+    }
+}",
                     },
                 },
             }.RunAsync();
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = referenceAssemblies,
                 TestState =
                 {
                     Sources =
@@ -573,7 +593,17 @@ Public Class Test
     End Sub
 End Class
 ",
-                        vbTestApiDefinitions
+                        !isxunit ? "" : @"
+Imports System
+
+Namespace CustomxUnit
+
+    <AttributeUsage(AttributeTargets.Method, AllowMultiple:=False)>
+    Public Class WpfFactAttribute
+        Inherits Xunit.FactAttribute
+    End Class
+End Namespace
+",
                     },
                 },
             }.RunAsync();
@@ -584,6 +614,7 @@ End Class
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit,
                 TestState =
                 {
                     Sources =
@@ -603,7 +634,6 @@ public class Program
     {
     }
 }",
-                        XunitApis.CSharp,
                     },
                     ExpectedDiagnostics =
                     {
@@ -618,6 +648,7 @@ public class Program
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit,
                 TestState =
                 {
                     Sources =
@@ -637,7 +668,6 @@ public class Program
     {
     }
 }",
-                        XunitApis.CSharp,
                     }
                 }
             }.RunAsync();

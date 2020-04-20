@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Text;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -262,6 +265,86 @@ End Class"
                     AdditionalFiles = { (".editorconfig", editorConfigText) }
                 }
             }.RunAsync();
+        }
+
+        [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
+        [CombinatorialData]
+        public async Task TestConflictingAnalyzerOptionsForPartials(bool hasConflict)
+        {
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"public partial interface I { }",
+                        @"public partial interface I { }",
+                    }
+                },
+                SolutionTransforms = { ApplyTransform }
+            };
+
+            if (!hasConflict)
+            {
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"z:\folder1\Test0.cs", 1, 26, 1, 27).WithSpan(@"z:\folder2\Test1.cs", 1, 26, 1, 27));
+            }
+
+            await csTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Partial Interface I
+End Interface",
+                        @"
+Public Partial Interface I
+End Interface"
+                    },
+                },
+                SolutionTransforms = { ApplyTransform }
+            };
+
+            if (!hasConflict)
+            {
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"z:\folder1\Test0.vb", 2, 26, 2, 27).WithSpan(@"z:\folder2\Test1.vb", 2, 26, 2, 27));
+            }
+
+            await vbTest.RunAsync();
+            return;
+
+            Solution ApplyTransform(Solution solution, ProjectId projectId)
+            {
+                var project = solution.GetProject(projectId)!;
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                solution = solution.WithProjectFilePath(projectId, projectFilePath);
+
+                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
+                var document1EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + "dotnet_code_quality.api_surface = public";
+                var document2OptionValue = hasConflict ? "internal" : "public";
+                var document2EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + $"dotnet_code_quality.api_surface = {document2OptionValue}";
+
+                var document1Folder = $@"z:\folder1";
+                solution = solution.WithDocumentFilePath(project.DocumentIds[0], $@"{document1Folder}\Test0.{documentExtension}");
+                solution = solution.GetProject(projectId)!
+                    .AddAnalyzerConfigDocument(
+                        ".editorconfig",
+                        SourceText.From(document1EditorConfig),
+                        filePath: $@"{document1Folder}\.editorconfig")
+                    .Project.Solution;
+
+                var document2Folder = $@"z:\folder2";
+                solution = solution.WithDocumentFilePath(project.DocumentIds[1], $@"{document2Folder}\Test1.{documentExtension}");
+                return solution.GetProject(projectId)!
+                    .AddAnalyzerConfigDocument(
+                        ".editorconfig",
+                        SourceText.From(document2EditorConfig),
+                        filePath: $@"{document2Folder}\.editorconfig")
+                    .Project.Solution;
+            }
         }
 
         private static DiagnosticResult CreateCSharpResult(int line, int col)

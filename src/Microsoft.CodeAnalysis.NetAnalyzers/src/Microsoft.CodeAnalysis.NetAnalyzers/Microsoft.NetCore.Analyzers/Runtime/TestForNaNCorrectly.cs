@@ -27,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessage,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -76,14 +76,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             object value = expr.ConstantValue.Value;
-            if (value is float)
+            if (value is float single)
             {
-                return float.IsNaN((float)value);
+                return float.IsNaN(single);
             }
 
-            if (value is double)
+            if (value is double @double)
             {
-                return double.IsNaN((double)value);
+                return double.IsNaN(@double);
             }
 
             return false;

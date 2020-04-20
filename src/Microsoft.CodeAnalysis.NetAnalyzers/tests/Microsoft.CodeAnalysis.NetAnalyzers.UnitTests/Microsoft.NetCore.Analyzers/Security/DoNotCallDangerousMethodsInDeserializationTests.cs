@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All Rights Reserved. Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -2495,6 +2495,59 @@ public class TestClass : IDisposable
     private void TestMethod()
     {
         member.TestAbstractMethod();
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TestLocalFunctionDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Runtime.Serialization;
+
+[Serializable()]
+public class TestClass
+{
+    private string member;
+
+    [OnDeserializing()]
+    internal void OnDeserializingMethod(StreamingContext context)
+    {
+        byte[] bytes = new byte[] {0x20, 0x20, 0x20};
+        ALocalFunction();
+
+        void ALocalFunction()
+        {
+            File.WriteAllBytes(""C:\\"", bytes);
+        }
+    }
+}",
+            GetCSharpResultAt(12, 19, "TestClass", "OnDeserializingMethod", "WriteAllBytes"));
+        }
+
+        [Fact]
+        public async Task TestLocalFunctionNoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
+
+[Serializable()]
+public class TestClass
+{
+    private string member;
+
+    [OnDeserializing()]
+    internal void OnDeserializingMethod(StreamingContext context)
+    {
+        ALocalFunction();
+
+        void ALocalFunction()
+        {
+            object o = new Object();
+        }
     }
 }");
         }

@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
         /// <summary>
         /// Configuration file to configure custom threshold values for supported code metrics.
         /// For example, the below entry changes the maximum allowed inheritance depth from the default value of 5 to 10:
-        /// 
+        ///
         ///     # FORMAT:
         ///     # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
         ///
@@ -125,6 +125,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
             analysisContext.RegisterCompilationAction(compilationContext =>
             {
+                if (!(compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
+                {
+                    return;
+                }
+
                 // Try read the additional file containing the code metrics configuration.
                 if (!TryGetRuleIdToThresholdMap(
                         compilationContext.Options.AdditionalFiles,
@@ -144,7 +149,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 }
 
                 // Compute code metrics.
-                var computeTask = CodeAnalysisMetricData.ComputeAsync(compilationContext.Compilation, compilationContext.CancellationToken);
+                // For the calculation of the inheritance tree, we are allowing specific exclusions:
+                //   - all types from System namespaces
+                //   - all types/namespaces provided by the user
+                // so that the calculation isn't unfair.
+                // For example inheriting from WPF/WinForms UserControl makes your class over the default threshold, yet there isn't anything you can do about it.
+                var inheritanceExcludedTypes = compilationContext.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule, tree, compilationContext.Compilation,
+                    defaultForcedValue: "N:System.*", compilationContext.CancellationToken);
+
+                var metricsAnalysisContext = new CodeMetricsAnalysisContext(compilationContext.Compilation, compilationContext.CancellationToken,
+                    namedType => inheritanceExcludedTypes.Contains(namedType));
+                var computeTask = CodeAnalysisMetricData.ComputeAsync(metricsAnalysisContext);
                 computeTask.Wait(compilationContext.CancellationToken);
 
                 // Analyze code metrics tree and report diagnostics.
@@ -164,7 +179,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                             var arg1 = symbol.Name;
                             var arg2 = codeAnalysisMetricData.DepthOfInheritance;
                             var arg3 = inheritanceThreshold + 1;
-                            var arg4 = string.Join(", ", ((INamedTypeSymbol)symbol).GetBaseTypes().Select(t => t.Name));
+                            var arg4 = string.Join(", ", ((INamedTypeSymbol)symbol).GetBaseTypes(t => !inheritanceExcludedTypes.Contains(t)).Select(t => t.Name));
                             var diagnostic = symbol.CreateDiagnostic(CA1501Rule, arg1, arg2, arg3, arg4);
                             compilationContext.ReportDiagnostic(diagnostic);
                         }

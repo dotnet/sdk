@@ -38,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             s_localizableTitleOverridesObjectEquals,
             s_localizableMessageOverridesObjectEquals,
             DiagnosticCategory.Design,
-            RuleLevel.BuildWarning,
+            RuleLevel.BuildWarningCandidate,
             description: s_localizableDescriptionOverridesObjectEquals,
             isPortedFxCopRule: false,
             isDataflowRule: false);

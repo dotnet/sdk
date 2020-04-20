@@ -80,6 +80,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                             InterproceduralAnalysisConfiguration interproceduralAnalysisConfiguration = InterproceduralAnalysisConfiguration.Create(
                                                                     options,
                                                                     SupportedDiagnostics,
+                                                                    owningSymbol,
+                                                                    operationBlockStartContext.Compilation,
                                                                     defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
                                                                     cancellationToken: cancellationToken);
                             Lazy<ControlFlowGraph?> controlFlowGraphFactory = new Lazy<ControlFlowGraph?>(
@@ -155,7 +157,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 },
                                 OperationKind.Invocation);
 
-                            if (taintedDataConfig.HasTaintArraySource(SinkKind))
+                            if (TaintedDataConfig.HasTaintArraySource(SinkKind))
                             {
                                 operationBlockStartContext.RegisterOperationAction(
                                     operationAnalysisContext =>

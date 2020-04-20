@@ -6629,7 +6629,7 @@ End Class
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality." + AvoidDeadConditionalCode.RuleId + ".excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -6692,6 +6692,64 @@ End Module"
             }
 
             await vbTest.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(3063, "https://github.com/dotnet/roslyn-analyzers/issues/3063")]
+        [WorkItem(2985, "https://github.com/dotnet/roslyn-analyzers/issues/2985")]
+        public async Task UsingBlock_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using System.IO;
+
+public class Class1
+{
+    public static void M1(string values)
+    {
+        if (values == null) { }
+
+        using (var sw = new StringWriter()) { }
+    }
+
+    public static void M2(byte[] data)
+	{
+		using (var ms = new MemoryStream(data))
+		{
+			Console.WriteLine(ms);
+		}
+	}
+}
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        public async Task UsingStatement_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.IO;
+
+public class Class1
+{
+    public void M1(string path)
+    {
+        if (!File.Exists(path))
+            return;
+
+        using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+        DoSomething(fileStream);
+    }
+
+    private static void DoSomething(Stream stream) { }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
         }
     }
 }

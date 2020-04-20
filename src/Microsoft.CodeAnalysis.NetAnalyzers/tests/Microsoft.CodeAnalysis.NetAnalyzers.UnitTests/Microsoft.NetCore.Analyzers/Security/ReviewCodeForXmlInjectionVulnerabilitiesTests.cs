@@ -1,21 +1,21 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
-using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.ReviewCodeForXmlInjectionVulnerabilities,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
     public class ReviewCodeForXmlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForXmlInjectionVulnerabilities, ReviewCodeForXmlInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForXmlInjectionVulnerabilities.Rule;
-
-        protected override IEnumerable<string> AdditionalCSharpSources => new string[] { AntiXssApis.CSharp };
 
         [Fact]
         public async Task DocSample1_CSharp_Violation_Diagnostic()
@@ -272,7 +272,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task XmlNotation_InnerXml_Sanitized_NoDiagnostic()
+        public async Task XmlNotation_InnerXml_AntiXssXmlEncode_NoDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -288,6 +288,27 @@ public partial class WebForm : System.Web.UI.Page
         XmlDocument d = new XmlDocument();
         XmlNotation n = (XmlNotation) d.CreateNode(XmlNodeType.Notation, String.Empty, String.Empty);
         n.InnerXml = AntiXss.XmlEncode(input);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task XmlNotation_InnerXml_AntiXssEncoderXmlEncode_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Web;
+using System.Xml;
+using System.Web.Security.AntiXss;
+
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string input = Request.Form[""in""];
+        XmlDocument d = new XmlDocument();
+        XmlNotation n = (XmlNotation) d.CreateNode(XmlNodeType.Notation, String.Empty, String.Empty);
+        n.InnerXml = AntiXssEncoder.XmlEncode(input);
     }
 }");
         }

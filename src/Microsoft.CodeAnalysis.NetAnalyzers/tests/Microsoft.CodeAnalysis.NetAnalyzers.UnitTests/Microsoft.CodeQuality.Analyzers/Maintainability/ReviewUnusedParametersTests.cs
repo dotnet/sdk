@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Text;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -815,15 +819,24 @@ public class C
 
         [Theory]
         [WorkItem(1375, "https://github.com/dotnet/roslyn-analyzers/issues/1375")]
-        [InlineData("public", "dotnet_code_quality.api_surface = private")]
-        [InlineData("private", "dotnet_code_quality.api_surface = internal, public")]
-        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = internal, private")]
-        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = Friend, Private")]
-        [InlineData("public", "dotnet_code_quality.Usage.api_surface = internal, private")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private", false)]
+        [InlineData("private", "dotnet_code_quality.api_surface = internal, public", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = internal, private", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = Friend, Private", false)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = internal, private", false)]
         [InlineData("public", @"dotnet_code_quality.api_surface = all
-                                dotnet_code_quality.CA1801.api_surface = private")]
-        public async Task EditorConfigConfiguration_ApiSurfaceOption(string accessibility, string editorConfigText)
+                                dotnet_code_quality.CA1801.api_surface = private", false)]
+        [InlineData("public", "dotnet_code_quality.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.api_surface = internal, public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = all", true)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = public, private", true)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = public", true)]
+        public async Task EditorConfigConfiguration_ApiSurfaceOption_AsAdditionalDocument(string accessibility, string editorConfigText, bool expectDiagnostic)
         {
+            var paramName = expectDiagnostic ? "[|unused|]" : "unused";
+
             await new VerifyCS.Test
             {
                 TestState =
@@ -833,7 +846,7 @@ public class C
                         $@"
 public class C
 {{
-    {accessibility} void M(int unused)
+    {accessibility} void M(int {paramName})
     {{
     }}
 }}"
@@ -850,13 +863,187 @@ public class C
                     {
                         $@"
 Public Class C
-    {accessibility} Sub M(unused As Integer)
+    {accessibility} Sub M({paramName} As Integer)
     End Sub
 End Class"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText) }
                 }
             }.RunAsync();
+        }
+
+        [Theory]
+        [WorkItem(1375, "https://github.com/dotnet/roslyn-analyzers/issues/1375")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private", false)]
+        [InlineData("private", "dotnet_code_quality.api_surface = internal, public", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = internal, private", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = Friend, Private", false)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = internal, private", false)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = private", false)]
+        [InlineData("public", "dotnet_code_quality.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.api_surface = internal, public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = all", true)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = public, private", true)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = public", true)]
+        public async Task EditorConfigConfiguration_ApiSurfaceOption_AsAnalyzerConfigDocument(string accessibility, string editorConfigText, bool expectDiagnostic)
+        {
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+public class C
+{{
+    {accessibility} void M(int unused)
+    {{
+    }}
+}}"
+                    }
+                },
+                SolutionTransforms = { WithAnalyzerConfigDocument }
+            };
+
+            if (expectDiagnostic)
+            {
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"z:\Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
+            }
+
+            await csTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Public Class C
+    {accessibility} Sub M(unused As Integer)
+    End Sub
+End Class"
+                    },
+                },
+                SolutionTransforms = { WithAnalyzerConfigDocument }
+            };
+
+            if (expectDiagnostic)
+            {
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"z:\Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
+            }
+
+            await vbTest.RunAsync();
+            return;
+
+            Solution WithAnalyzerConfigDocument(Solution solution, ProjectId projectId)
+            {
+                var project = solution.GetProject(projectId)!;
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                solution = solution.WithProjectFilePath(projectId, projectFilePath);
+
+                var documentId = project.DocumentIds.Single();
+                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
+                solution = solution.WithDocumentFilePath(documentId, $@"z:\Test0.{documentExtension}");
+
+                return solution.GetProject(projectId)!
+                    .AddAnalyzerConfigDocument(
+                        ".editorconfig",
+                        SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
+                        filePath: @"z:\.editorconfig")
+                    .Project.Solution;
+            }
+        }
+
+        [Theory]
+        [WorkItem(1375, "https://github.com/dotnet/roslyn-analyzers/issues/1375")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private", false)]
+        [InlineData("private", "dotnet_code_quality.api_surface = internal, public", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = internal, private", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = Friend, Private", false)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = internal, private", false)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = private", false)]
+        [InlineData("public", "dotnet_code_quality.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.api_surface = internal, public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = all", true)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = public, private", true)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = public", true)]
+        public async Task EditorConfigConfiguration_ApiSurfaceOption_AsAnalyzerConfigDocumentAndAdditionalDocument(string accessibility, string editorConfigText, bool expectDiagnostic)
+        {
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+public class C
+{{
+    {accessibility} void M(int unused)
+    {{
+    }}
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+                SolutionTransforms = { WithAnalyzerConfigDocument }
+            };
+
+            if (expectDiagnostic)
+            {
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"z:\Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
+            }
+
+            await csTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Public Class C
+    {accessibility} Sub M(unused As Integer)
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+                SolutionTransforms = { WithAnalyzerConfigDocument }
+            };
+
+            if (expectDiagnostic)
+            {
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"z:\Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
+            }
+
+            await vbTest.RunAsync();
+            return;
+
+            Solution WithAnalyzerConfigDocument(Solution solution, ProjectId projectId)
+            {
+                var project = solution.GetProject(projectId)!;
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                solution = solution.WithProjectFilePath(projectId, projectFilePath);
+
+                var documentId = project.DocumentIds.Single();
+                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
+                solution = solution.WithDocumentFilePath(documentId, $@"z:\Test0.{documentExtension}");
+
+                return solution.GetProject(projectId)!
+                    .AddAnalyzerConfigDocument(
+                        ".editorconfig",
+                        SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
+                        filePath: @"z:\.editorconfig")
+                    .Project.Solution;
+            }
         }
 
         [Fact, WorkItem(3106, "https://github.com/dotnet/roslyn-analyzers/issues/3106")]
@@ -917,6 +1104,66 @@ Public Class C
     Private Sub OnSomething(ByVal sender As Object, ByVal e As SomeNamespace.MyCustomEventArgs)
     End Sub
 End Class");
+        }
+
+        [Fact, WorkItem(3039, "https://github.com/dotnet/roslyn-analyzers/issues/3039")]
+        public async Task SerializationConstructorParameters_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
+
+public class C
+{
+    protected C(SerializationInfo info, StreamingContext context)
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.Serialization
+
+Public Class C
+    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3039, "https://github.com/dotnet/roslyn-analyzers/issues/3039")]
+        public async Task GetObjectDataParameters_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
+
+public class C
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.Serialization
+
+Public Class C
+    Public Sub GetObjectData(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+    End Sub
+End Class");
+        }
+
+        [Fact]
+        [WorkItem(2846, "https://github.com/dotnet/roslyn-analyzers/issues/2846")]
+        public async Task CA1801_MethodThrowArrowExpression_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class Class1
+{
+    public int Method1(int value) => throw new NotImplementedException();
+}
+");
         }
 
         #endregion

@@ -1386,7 +1386,7 @@ namespace Blah
         [InlineData(@"dotnet_code_quality.CA2301.excluded_symbol_names = DeserializeBookRecord
                       dotnet_code_quality.CA2302.excluded_symbol_names = DeserializeBookRecord")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = DeserializeBookRecord")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {

@@ -1,14 +1,17 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.VisualBasic;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpRemoveEmptyFinalizersAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicRemoveEmptyFinalizersAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
@@ -183,10 +186,12 @@ public class Class1
             GetCA1821CSharpResultAt(11, 3));
         }
 
-        [Fact]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAndDirective()
+        [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
+        public async Task CA1821_DebugFailAndDebugDirective_NoDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                TestCode = @"
 public class Class1
 {
 #if DEBUG
@@ -200,7 +205,99 @@ public class Class1
     }
 #endif
 }
-");
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((CSharpParseOptions)project.ParseOptions).WithPreprocessorSymbols("DEBUG");
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Public Class Class1
+#If DEBUG Then
+	Protected Overrides Sub Finalize()
+		System.Diagnostics.Debug.Fail(""Finalizer called!"")
+    End Sub
+#End If
+End Class
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((VisualBasicParseOptions)project.ParseOptions).WithPreprocessorSymbols(new KeyValuePair<string, object>("DEBUG", true));
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
+        public async Task CA1821_DebugFailAndReleaseDirective_NoDiagnostic_FalsePositive()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Class1
+{
+#if RELEASE
+	// There should be a diagnostic because in release the finalizer will be empty.
+	~Class1()
+	{
+		System.Diagnostics.Debug.Fail(""Finalizer called!"");
+    }
+#endif
+}
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((CSharpParseOptions)project.ParseOptions).WithPreprocessorSymbols("RELEASE");
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Public Class Class1
+#If RELEASE Then
+    ' There should be a diagnostic because in release the finalizer will be empty.
+	Protected Overrides Sub Finalize()
+		System.Diagnostics.Debug.Fail(""Finalizer called!"")
+    End Sub
+#End If
+End Class
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((VisualBasicParseOptions)project.ParseOptions).WithPreprocessorSymbols(new KeyValuePair<string, object>("RELEASE", true));
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
         }
 
         [Fact]

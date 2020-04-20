@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis;
 using Analyzer.Utilities;
-using System.Linq;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
-    public abstract class AbstractRemoveEmptyFinalizersAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class RemoveEmptyFinalizersAnalyzer : DiagnosticAnalyzer
     {
         public const string RuleId = "CA1821";
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.RemoveEmptyFinalizers), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -20,7 +21,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                                                                          s_localizableTitle,
                                                                          s_localizableMessage,
                                                                          DiagnosticCategory.Performance,
-                                                                         RuleLevel.BuildWarning,
+                                                                         RuleLevel.BuildWarningCandidate,
                                                                          description: s_localizableDescription,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false);
@@ -32,31 +33,47 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCodeBlockAction(codeBlockContext =>
+            analysisContext.RegisterCompilationStartAction(context =>
             {
-                if (codeBlockContext.OwningSymbol.Kind != SymbolKind.Method)
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute, out var conditionalAttributeType))
                 {
                     return;
                 }
 
-                var methodSymbol = (IMethodSymbol)codeBlockContext.OwningSymbol;
-                if (!methodSymbol.IsDestructor())
+                context.RegisterOperationBlockAction(context =>
                 {
-                    return;
-                }
+                    if (context.OperationBlocks.Length != 1 ||
+                        !(context.OperationBlocks[0] is IBlockOperation blockOperation) ||
+                        !(context.OwningSymbol is IMethodSymbol methodSymbol) ||
+                        !methodSymbol.IsDestructor())
+                    {
+                        return;
+                    }
 
-                var methodBody = methodSymbol.DeclaringSyntaxReferences.First().GetSyntax();
+                    var isMethodSurroundedWithDirective = blockOperation.Syntax.Parent.ContainsDirectives;
 
-                if (IsEmptyFinalizer(methodBody, codeBlockContext))
-                {
-                    codeBlockContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
-                }
+                    if (!blockOperation.HasAnyExplicitDescendant(op => CanDescendIntoOperation(op, conditionalAttributeType, isMethodSurroundedWithDirective)))
+                    {
+                        context.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule));
+                    }
+                });
             });
         }
 
-        protected static bool InvocationIsConditional(IMethodSymbol methodSymbol, INamedTypeSymbol? conditionalAttributeSymbol) =>
-            methodSymbol.HasAttribute(conditionalAttributeSymbol);
+        private static bool CanDescendIntoOperation(IOperation operation, INamedTypeSymbol conditionalAttributeType, bool isMethodSurroundedWithDirective)
+        {
+            if (operation.Kind == OperationKind.Throw)
+            {
+                return false;
+            }
 
-        protected abstract bool IsEmptyFinalizer(SyntaxNode methodBody, CodeBlockAnalysisContext analysisContext);
+            if (operation.Kind == OperationKind.Invocation)
+            {
+                return isMethodSurroundedWithDirective
+                    || !((IInvocationOperation)operation).TargetMethod.HasAttribute(conditionalAttributeType);
+            }
+
+            return true;
+        }
     }
 }

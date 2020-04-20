@@ -16,12 +16,12 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         End Sub
 
         Public Overrides Function GetClassDeclarationTypeSymbol(node As SyntaxNode, semanticModel As SemanticModel) As ITypeSymbol
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim kind As SyntaxKind = node.Kind()
-            If (kind = SyntaxKind.ClassBlock) Then
+            If kind = SyntaxKind.ClassBlock Then
                 Return semanticModel.GetDeclaredSymbol(CType(node, ClassBlockSyntax))
             End If
 
@@ -29,110 +29,110 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         End Function
 
         Public Overrides Function GetAssignmentLeftNode(node As SyntaxNode) As SyntaxNode
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim kind As SyntaxKind = node.Kind()
-            If (kind = SyntaxKind.SimpleAssignmentStatement) Then
-                Return (CType(node, AssignmentStatementSyntax)).Left
+            If kind = SyntaxKind.SimpleAssignmentStatement Then
+                Return CType(node, AssignmentStatementSyntax).Left
             End If
 
-            If (kind = SyntaxKind.VariableDeclarator) Then
-                Return (CType(node, VariableDeclaratorSyntax)).Names.First()
+            If kind = SyntaxKind.VariableDeclarator Then
+                Return CType(node, VariableDeclaratorSyntax).Names.First()
             End If
 
-            If (kind = SyntaxKind.NamedFieldInitializer) Then
-                Return (CType(node, NamedFieldInitializerSyntax)).Name
+            If kind = SyntaxKind.NamedFieldInitializer Then
+                Return CType(node, NamedFieldInitializerSyntax).Name
             End If
 
             Return Nothing
         End Function
 
         Public Overrides Function GetAssignmentRightNode(node As SyntaxNode) As SyntaxNode
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim kind As SyntaxKind = node.Kind()
-            If (kind = SyntaxKind.SimpleAssignmentStatement) Then
-                Return (CType(node, AssignmentStatementSyntax)).Right
+            If kind = SyntaxKind.SimpleAssignmentStatement Then
+                Return CType(node, AssignmentStatementSyntax).Right
             End If
 
-            If (kind = SyntaxKind.VariableDeclarator) Then
+            If kind = SyntaxKind.VariableDeclarator Then
                 Dim decl As VariableDeclaratorSyntax = CType(node, VariableDeclaratorSyntax)
 
-                If (decl.Initializer IsNot Nothing) Then
+                If decl.Initializer IsNot Nothing Then
                     Return decl.Initializer.Value
                 End If
 
-                If (decl.AsClause IsNot Nothing) Then
+                If decl.AsClause IsNot Nothing Then
                     Return decl.AsClause
                 End If
             End If
 
-            If (kind = SyntaxKind.NamedFieldInitializer) Then
-                Return (CType(node, NamedFieldInitializerSyntax)).Expression
+            If kind = SyntaxKind.NamedFieldInitializer Then
+                Return CType(node, NamedFieldInitializerSyntax).Expression
             End If
 
             Return Nothing
         End Function
 
         Public Overrides Function GetMemberAccessExpressionNode(node As SyntaxNode) As SyntaxNode
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim kind As SyntaxKind = node.Kind()
-            If (kind = SyntaxKind.SimpleMemberAccessExpression) Then
-                Return (CType(node, MemberAccessExpressionSyntax)).Expression
+            If kind = SyntaxKind.SimpleMemberAccessExpression Then
+                Return CType(node, MemberAccessExpressionSyntax).Expression
             End If
 
             Return Nothing
         End Function
 
         Public Overrides Function GetMemberAccessNameNode(node As SyntaxNode) As SyntaxNode
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim kind As SyntaxKind = node.Kind()
-            If (kind = SyntaxKind.SimpleMemberAccessExpression) Then
-                Return (CType(node, MemberAccessExpressionSyntax)).Name
+            If kind = SyntaxKind.SimpleMemberAccessExpression Then
+                Return CType(node, MemberAccessExpressionSyntax).Name
             End If
 
             Return Nothing
         End Function
 
         Public Overrides Function GetInvocationExpressionNode(node As SyntaxNode) As SyntaxNode
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim kind As SyntaxKind = node.Kind()
-            If (kind = SyntaxKind.InvocationExpression) Then
-                Return (CType(node, InvocationExpressionSyntax)).Expression
+            If kind = SyntaxKind.InvocationExpression Then
+                Return CType(node, InvocationExpressionSyntax).Expression
             End If
 
             Return Nothing
         End Function
 
         Public Overrides Function GetCallTargetNode(node As SyntaxNode) As SyntaxNode
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim kind As SyntaxKind = node.Kind()
-            If (kind = SyntaxKind.InvocationExpression) Then
+            If kind = SyntaxKind.InvocationExpression Then
                 Dim callExpr As ExpressionSyntax = CType(node, InvocationExpressionSyntax).Expression
                 Dim nameNode As SyntaxNode = GetMemberAccessNameNode(callExpr)
-                If (nameNode IsNot Nothing) Then
+                If nameNode IsNot Nothing Then
                     Return nameNode
                 Else
                     Return callExpr
                 End If
-            ElseIf (kind = SyntaxKind.ObjectCreationExpression) Then
-                Return (CType(node, ObjectCreationExpressionSyntax)).Type
+            ElseIf kind = SyntaxKind.ObjectCreationExpression Then
+                Return CType(node, ObjectCreationExpressionSyntax).Type
             End If
 
             Return Nothing
@@ -145,9 +145,9 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
             End If
 
             Dim paramList As ParameterListSyntax = methodDecl.BlockStatement.ParameterList
-            If (paramIndex < paramList.Parameters.Count) Then
+            If paramIndex < paramList.Parameters.Count Then
                 Dim equalsValueNode As EqualsValueSyntax = paramList.Parameters(paramIndex).Default
-                If (equalsValueNode IsNot Nothing) Then
+                If equalsValueNode IsNot Nothing Then
                     Return equalsValueNode.Value
                 End If
             End If
@@ -156,25 +156,25 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         End Function
 
         Protected Overrides Function GetCallArgumentExpressionNodes(node As SyntaxNode, callKind As CallKinds) As IEnumerable(Of SyntaxNode)
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim argList As ArgumentListSyntax = Nothing
             Dim kind As SyntaxKind = node.Kind()
 
-            If (kind = SyntaxKind.InvocationExpression AndAlso ((callKind And CallKinds.Invocation) <> 0)) Then
+            If kind = SyntaxKind.InvocationExpression AndAlso ((callKind And CallKinds.Invocation) <> 0) Then
                 argList = CType(node, InvocationExpressionSyntax).ArgumentList
-            ElseIf ((kind = SyntaxKind.ObjectCreationExpression) AndAlso ((callKind And CallKinds.ObjectCreation) <> 0)) Then
+            ElseIf (kind = SyntaxKind.ObjectCreationExpression) AndAlso ((callKind And CallKinds.ObjectCreation) <> 0) Then
                 argList = CType(node, ObjectCreationExpressionSyntax).ArgumentList
-            ElseIf ((kind = SyntaxKind.AsNewClause) AndAlso ((callKind And CallKinds.ObjectCreation) <> 0)) Then
-                Dim asNewClause As AsNewClauseSyntax = (CType(node, AsNewClauseSyntax))
-                If (asNewClause.NewExpression IsNot Nothing AndAlso asNewClause.NewExpression.Kind = SyntaxKind.ObjectCreationExpression) Then
-                    argList = (CType(asNewClause.NewExpression, ObjectCreationExpressionSyntax)).ArgumentList
+            ElseIf (kind = SyntaxKind.AsNewClause) AndAlso ((callKind And CallKinds.ObjectCreation) <> 0) Then
+                Dim asNewClause As AsNewClauseSyntax = CType(node, AsNewClauseSyntax)
+                If asNewClause.NewExpression IsNot Nothing AndAlso asNewClause.NewExpression.Kind = SyntaxKind.ObjectCreationExpression Then
+                    argList = CType(asNewClause.NewExpression, ObjectCreationExpressionSyntax).ArgumentList
                 End If
             End If
 
-            If (argList IsNot Nothing) Then
+            If argList IsNot Nothing Then
                 Return From arg In argList.Arguments
                        Select arg.GetExpression()
             End If
@@ -185,22 +185,22 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         Public Overrides Function GetObjectInitializerExpressionNodes(node As SyntaxNode) As IEnumerable(Of SyntaxNode)
             Dim empty As IEnumerable(Of SyntaxNode) = Enumerable.Empty(Of SyntaxNode)
 
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return empty
             End If
 
             Dim objectCreationNode As ObjectCreationExpressionSyntax = node.DescendantNodesAndSelf().OfType(Of ObjectCreationExpressionSyntax)().FirstOrDefault()
 
-            If (objectCreationNode Is Nothing) Then
+            If objectCreationNode Is Nothing Then
                 Return empty
             End If
 
-            If (objectCreationNode.Initializer Is Nothing) Then
+            If objectCreationNode.Initializer Is Nothing Then
                 Return empty
             End If
 
             Dim kind As SyntaxKind = objectCreationNode.Initializer.Kind()
-            If (kind <> SyntaxKind.ObjectMemberInitializer) Then
+            If kind <> SyntaxKind.ObjectMemberInitializer Then
                 Return empty
             End If
 
@@ -212,7 +212,7 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         End Function
 
         Public Overrides Function IsMethodInvocationNode(node As SyntaxNode) As Boolean
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return False
             End If
 
@@ -221,19 +221,19 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         End Function
 
         Public Overrides Function GetCalleeMethodSymbol(node As SyntaxNode, semanticModel As SemanticModel) As IMethodSymbol
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim kind As SyntaxKind = node.Kind()
             Dim symbol As ISymbol = GetReferencedSymbol(node, semanticModel)
 
-            If (symbol Is Nothing And kind = SyntaxKind.AsNewClause) Then
+            If symbol Is Nothing And kind = SyntaxKind.AsNewClause Then
                 symbol = GetReferencedSymbol(node.ChildNodes().First(), semanticModel)
             End If
 
-            If (symbol IsNot Nothing) Then
-                If (symbol.Kind = SymbolKind.Method) Then
+            If symbol IsNot Nothing Then
+                If symbol.Kind = SymbolKind.Method Then
                     Return CType(symbol, IMethodSymbol)
                 End If
             End If
@@ -241,19 +241,19 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
             Return Nothing
         End Function
         Public Overrides Function GetCallerMethodSymbol(node As SyntaxNode, semanticModel As SemanticModel) As IMethodSymbol
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim declaration As MethodBlockSyntax = node.AncestorsAndSelf().OfType(Of MethodBlockSyntax)().FirstOrDefault()
 
-            If (declaration IsNot Nothing) Then
-                Return CType(semanticModel.GetDeclaredSymbol(declaration), IMethodSymbol)
+            If declaration IsNot Nothing Then
+                Return semanticModel.GetDeclaredSymbol(declaration)
             End If
 
             Dim constructor As SubNewStatementSyntax = node.AncestorsAndSelf().OfType(Of SubNewStatementSyntax)().FirstOrDefault()
 
-            If (constructor IsNot Nothing) Then
+            If constructor IsNot Nothing Then
                 Return semanticModel.GetDeclaredSymbol(constructor)
             End If
 
@@ -261,13 +261,13 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         End Function
 
         Public Overrides Function GetEnclosingTypeSymbol(node As SyntaxNode, semanticModel As SemanticModel) As ITypeSymbol
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return Nothing
             End If
 
             Dim declaration As ClassBlockSyntax = node.AncestorsAndSelf().OfType(Of ClassBlockSyntax)().FirstOrDefault()
 
-            If (declaration Is Nothing) Then
+            If declaration Is Nothing Then
                 Return Nothing
             End If
 
@@ -277,7 +277,7 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         Public Overrides Function GetDescendantAssignmentExpressionNodes(node As SyntaxNode) As IEnumerable(Of SyntaxNode)
             Dim empty As IEnumerable(Of SyntaxNode) = Enumerable.Empty(Of SyntaxNode)()
 
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return empty
             End If
 
@@ -287,7 +287,7 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         Public Overrides Function GetDescendantMemberAccessExpressionNodes(node As SyntaxNode) As IEnumerable(Of SyntaxNode)
             Dim empty As IEnumerable(Of SyntaxNode) = Enumerable.Empty(Of SyntaxNode)()
 
-            If (node Is Nothing) Then
+            If node Is Nothing Then
                 Return empty
             End If
 

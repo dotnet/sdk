@@ -28,18 +28,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
-        <source>Do Not Use Unsafe Cipher Modes</source>
-        <target state="translated">Ne pas utiliser de modes de chiffrement non sécurisés</target>
+        <source>Review cipher mode usage with cryptography experts</source>
+        <target state="translated">Passer en revue l'utilisation du mode de chiffrement avec des experts en chiffrement</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeDescription">
-        <source>These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).</source>
-        <target state="translated">Ces modes sont vulnérables aux attaques. Utilisez uniquement des modes approuvés (CBC, CTS).</target>
+        <source>These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">Ces modes de chiffrement peuvent être vulnérables aux attaques. Utilisez les modes recommandés (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherModeMessage">
-        <source>It uses an unsafe Cipher Mode {0}</source>
-        <target state="translated">Utilise un mode de chiffrement non sécurisé {0}</target>
+        <source>Review the usage of cipher mode '{0}' with cryptography experts. Consider using recommended modes (CBC, CTS).</source>
+        <target state="translated">Passez en revue l'utilisation du mode de chiffrement '{0}' avec des experts en chiffrement. Utilisez les modes recommandés (CBC, CTS).</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyDescription">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">La méthode '{0}' n'est pas sécurisée durant la désérialisation de données non fiables sans SerializationBinder pour restreindre le type des objets dans le graphe d'objets désérialisés.</target>
+        <target state="translated">La méthode '{0}' n'est pas sécurisée durant la désérialisation de données non fiables sans SerializationBinder pour restreindre le type des objets dans le graphe d'objets désérialisé.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetTitle">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">La méthode '{0}' n'est pas sécurisée durant la désérialisation de données non fiables sans SerializationBinder pour restreindre le type des objets dans le graphe d'objets désérialisés.</target>
+        <target state="translated">La méthode '{0}' n'est pas sécurisée durant la désérialisation de données non fiables sans SerializationBinder pour restreindre le type des objets dans le graphe d'objets désérialisé.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeWithoutBinderSetTitle">
@@ -274,12 +274,12 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="translated">Utilisez le modèle Dispose recommandé pour vérifier que l'objet créé par '{0}' est supprimé sur tous les chemins. Si possible, enveloppez la création dans une instruction 'using' ou une déclaration 'using'. Sinon, utilisez un modèle try-finally avec une variable locale dédiée déclarée avant la région try et un appel inconditionnel de Dispose sur une valeur non null dans la région 'finally', par exemple 'x?.Dispose()'. Si l'objet est explicitement supprimé dans la région try ou si la propriété de suppression est transférée vers un autre objet ou une autre méthode, affectez la valeur 'null' à la variable locale juste après cette opération pour éviter une double suppression dans 'finally'.</target>
+        <target state="translated">Utilisez le modèle de suppression recommandé pour vérifier que l'objet créé par '{0}' est supprimé sur tous les chemins. Si possible, incluez la création dans un wrapper au sein d'une instruction 'using' ou d'une déclaration 'using'. Sinon, utilisez un modèle try-finally avec une variable locale dédiée déclarée avant la région try et un appel inconditionnel de Dispose sur une valeur non null dans la région 'finally', par exemple 'x?.Dispose()'. Si l'objet est explicitement supprimé dans la région try ou si la propriété de suppression est transférée vers un autre objet ou une autre méthode, affectez la valeur 'null' à la variable locale juste après cette opération pour éviter une double suppression dans 'finally'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage">
         <source>Use recommended dispose pattern to ensure that object created by '{0}' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.</source>
-        <target state="translated">Utilisez le modèle Dispose recommandé pour vérifier que l'objet créé par '{0}' est supprimé sur tous les chemins d'exception. Si possible, enveloppez la création dans une instruction 'using' ou une déclaration 'using'. Sinon, utilisez un modèle try-finally avec une variable locale dédiée déclarée avant la région try et un appel inconditionnel de Dispose sur une valeur non null dans la région 'finally', par exemple 'x?.Dispose()'. Si l'objet est explicitement supprimé dans la région try ou si la propriété de suppression est transférée vers un autre objet ou une autre méthode, affectez la valeur 'null' à la variable locale juste après cette opération pour éviter une double suppression dans 'finally'.</target>
+        <target state="translated">Utilisez le modèle de suppression recommandé pour vérifier que l'objet créé par '{0}' est supprimé sur tous les chemins d'exception. Si possible, incluez la création dans un wrapper au sein d'une instruction 'using' ou d'une déclaration 'using'. Sinon, utilisez un modèle try-finally avec une variable locale dédiée déclarée avant la région try et un appel inconditionnel de Dispose sur une valeur non null dans la région 'finally', par exemple 'x?.Dispose()'. Si l'objet est explicitement supprimé dans la région try ou si la propriété de suppression est transférée vers un autre objet ou une autre méthode, affectez la valeur 'null' à la variable locale juste après cette opération pour éviter une double suppression dans 'finally'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
@@ -382,6 +382,26 @@
         <target state="translated">N'interceptez pas les exceptions état altéré dans les gestionnaires généraux.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
+        <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
+        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
+        <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
+        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
+        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
+        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
         <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
         <target state="translated">Ne créez pas de tâches sauf si vous utilisez l'une des surcharges qui acceptent TaskScheduler. La valeur par défaut consiste à planifier TaskScheduler.Current, ce qui entraîne des interblocages. Utilisez TaskScheduler.Default pour planifier le pool de threads, ou passez explicitement TaskScheduler.Current pour clarifier vos intentions.</target>
@@ -395,6 +415,21 @@
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
         <source>Do not create tasks without passing a TaskScheduler</source>
         <target state="translated">Ne pas créer de tâches sans passer TaskScheduler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -737,6 +772,26 @@
         <target state="translated">Appel à la fonction de dérivation de clés obsolète {0}.{1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">Ne passez aucun argument avec le type valeur '{0}' à la méthode 'Equals' sur 'ReferenceEqualityComparer'. En raison du boxing de la valeur, cet appel à 'Equals' retourne toujours 'false'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">Dans la mesure où les arguments typés ayant un type valeur font l'objet d'un boxing spécifique pour chaque appel à cette méthode, le résultat est toujours false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">Ne passez aucun argument avec le type valeur '{0}' à 'ReferenceEquals'. En raison du boxing de la valeur, cet appel à 'ReferenceEquals' retourne toujours 'false'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">Ne pas utiliser ReferenceEquals avec des types valeur</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">N'utilisez pas d'algorithme de chiffrement SHA1 non sécurisé.</target>
@@ -745,6 +800,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">Ce type implémente SHA1, une fonction de hachage par chiffrement non sécurisée. Les collisions de hachage peuvent être calculées pour les algorithmes SHA-1 et SHA-0. Remplacez cette utilisation par un algorithme de hachage de la famille SHA-2 (SHA512, SHA384, SHA256).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="new">Do not use stackalloc in loops.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1219,7 +1289,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">La méthode '{0}' n'est pas sécurisée durant la désérialisation de données non fiables sans SerializationBinder pour restreindre le type des objets dans le graphe d'objets désérialisés.</target>
+        <target state="translated">La méthode '{0}' n'est pas sécurisée durant la désérialisation de données non fiables sans SerializationBinder pour restreindre le type des objets dans le graphe d'objets désérialisé.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetTitle">
@@ -1229,7 +1299,7 @@
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.</source>
-        <target state="translated">La méthode '{0}' n'est pas sécurisée durant la désérialisation de données non fiables sans SerializationBinder pour restreindre le type des objets dans le graphe d'objets désérialisés.</target>
+        <target state="translated">La méthode '{0}' n'est pas sécurisée durant la désérialisation de données non fiables sans SerializationBinder pour restreindre le type des objets dans le graphe d'objets désérialisé.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeWithoutBinderSetTitle">
@@ -1312,6 +1382,26 @@
         <target state="translated">Les P/Invoke ne doivent pas être visibles</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
+        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
+        <target state="new">Remove the ToString call in order to use a strongly-typed StringBuilder overload.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
+        <source>Remove the ToString call</source>
+        <target state="new">Remove the ToString call</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
+        <target state="new">Prefer strongly-typed Append and Insert method overloads on StringBuilder.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
         <source>The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.</source>
         <target state="translated">L'argument de mise en forme passé à System.String.Format ne contient aucun élément de mise en forme pour chaque argument d'objet correspondant, ou vice versa.</target>
@@ -1369,7 +1459,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesMessage">
         <source>Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de DLL potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection de DLL a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForDllInjectionVulnerabilitiesTitle">
@@ -1379,7 +1469,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesMessage">
         <source>Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de chemin de fichier potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection de chemin de fichier a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForFilePathInjectionVulnerabilitiesTitle">
@@ -1399,7 +1489,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesMessage">
         <source>Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de LDAP potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection LDAP a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForLdapInjectionVulnerabilitiesTitle">
@@ -1409,7 +1499,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesMessage">
         <source>Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité potentielle liée à une redirection ouverte a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une redirection ouverte a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForOpenRedirectVulnerabilitiesTitle">
@@ -1419,7 +1509,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage">
         <source>Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de commande de processus potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection de commande de processus a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForProcessCommandInjectionVulnerabilitiesTitle">
@@ -1429,7 +1519,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesMessage">
         <source>Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de regex potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection regex a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForRegexInjectionVulnerabilitiesTitle">
@@ -1439,7 +1529,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesMessage">
         <source>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de SQL potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection de code SQL a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForSqlInjectionVulnerabilitiesTitle">
@@ -1449,7 +1539,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesMessage">
         <source>Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de XAML potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection XAML a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXamlInjectionVulnerabilitiesTitle">
@@ -1459,7 +1549,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesMessage">
         <source>Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de XML potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection XML a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXmlInjectionVulnerabilitiesTitle">
@@ -1469,7 +1559,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesMessage">
         <source>Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité d'injection de XPath potentielle a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une injection XPath a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXPathInjectionVulnerabilitiesTitle">
@@ -1479,7 +1569,7 @@
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesMessage">
         <source>Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</source>
-        <target state="translated">Une vulnérabilité potentielle liée à une faille XSS (scripts intersites) a été détectée. '{0}' dans la méthode '{1}' peut être souillé par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
+        <target state="translated">Une vulnérabilité potentielle liée à une faille XSS (scripts intersites) a été détectée. '{0}' dans la méthode '{1}' peut être altéré par des données contrôlées par l'utilisateur en provenance de '{2}' dans la méthode '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewCodeForXssVulnerabilitiesTitle">
@@ -1657,6 +1747,31 @@
         <target state="translated">Utiliser Array.Empty</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
+        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
+        <target state="new">Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
+        <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
+        <target state="new">Use AsSpan or AsMemory instead of Range-based indexers when appropriate</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
+        <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="new">The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">Utilisez des jetons antifalsification dans les contrôleurs ASP.NET Core MVC</target>
@@ -1790,6 +1905,36 @@
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
         <target state="translated">Si possible, utilisez la fonctionnalité RBAC (contrôle d'accès en fonction du rôle) d'Azure à la place d'une SAP (signature d'accès partagé). Si vous devez quand même utiliser une SAP, spécifiez SharedAccessProtocol.HttpsOnly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="translated">Les ValueTasks retournés par les appels de membres sont censés être directement attendus. Les tentatives de consommation d'un ValueTask à plusieurs reprises ou d'accès direct à son résultat avant la fin de l'opération peuvent entraîner une exception ou une altération des données. Quand un ValueTask est ainsi ignoré, cela indique probablement un bogue fonctionnel et un risque de dégradation du niveau de performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="translated">Les résultats des instances de ValueTask ne doivent pas être directement accessibles avant la fin de l'exécution de l'instance. Contrairement à Tasks, l'appel de Result ou de GetAwaiter().GetResult() sur un ValueTask n'est pas forcément bloqué avant la fin de l'exécution de l'opération. Si vous ne pouvez tout simplement pas attendre la fin de l'exécution de l'instance, vérifiez d'abord sa propriété IsCompleted (ou déclarez qu'elle retourne une valeur true, si vous en avez la certitude).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="translated">Les instances de ValueTask doivent être consommées une seule fois, par exemple via un await. Si la même instance de ValueTask est consommée à plusieurs reprises, cela peut entraîner des exceptions et une altération des données.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="translated">Les instances de ValueTask retournées par des appels de méthode doivent être directement attendues, retournées ou passées en tant qu'argument à un autre appel de méthode. Les autres utilisations, par exemple le stockage d'une instance dans une variable locale ou un champ, indiquent probablement un bogue, car les instances de ValueTask doivent être consommées impérativement une seule fois.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="translated">Les instances de ValueTask retournées par les appels de méthode doivent toujours être utilisées, et généralement attendues. Sinon, vous courez le risque d'avoir un bogue fonctionnel. Et même si ce n'était pas le cas, vous risquez d'être confronté à une dégradation du niveau de performance si la méthode cible regroupe les objets à utiliser avec ValueTasks.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="translated">Utilisez correctement ValueTasks</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

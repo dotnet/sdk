@@ -35,7 +35,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                                                          s_localizableMessageAndTitleCA2101,
                                                                          s_localizableMessageAndTitleCA2101,
                                                                          DiagnosticCategory.Globalization,
-                                                                         RuleLevel.BuildWarning,
+                                                                         RuleLevel.BuildWarningCandidate,
                                                                          description: s_localizableDescriptionCA2101,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false);
@@ -172,7 +172,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     }
                     else if (argument.Type.SpecialType == SpecialType.System_Int16)
                     {
-                        return (UnmanagedType)((short)argument.Value);
+                        return (UnmanagedType)(short)argument.Value;
                     }
                 }
 
