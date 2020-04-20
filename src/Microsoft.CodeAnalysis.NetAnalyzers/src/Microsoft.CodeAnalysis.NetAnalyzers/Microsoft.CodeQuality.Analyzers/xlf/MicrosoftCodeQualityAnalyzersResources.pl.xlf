@@ -162,6 +162,21 @@
         <target state="new">Do not expose generic lists</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
+        <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="new">Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
+        <source>Event '{0}' should not be declared virtual.</source>
+        <target state="new">Event '{0}' should not be declared virtual.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
+        <source>Do not declare event fields as virtual</source>
+        <target state="new">Do not declare event fields as virtual</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">Nie przekazuj asynchronicznych wyrażeń lambda jako typów delegatów zwracających typ void</target>
