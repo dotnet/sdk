@@ -143,9 +143,8 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_error_on_nonboolean_optimization_flag(string property)
         {
             var projectName = "HelloWorld";
-            var referenceProjectName = "ClassLibForILLink";
 
-            var testProject = CreateTestProjectForILLinkTesting("net5.0", projectName, referenceProjectName);
+            var testProject = CreateTestProjectForILLinkTesting("net5.0", projectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -456,10 +455,32 @@ namespace Microsoft.NET.Publish.Tests
         private TestProject CreateTestProjectForILLinkTesting(
             string targetFramework,
             string mainProjectName,
-            string referenceProjectName,
+            string referenceProjectName = null,
             bool usePackageReference = true,
             [CallerMemberName] string callingMethod = "")
         {
+            var testProject = new TestProject()
+            {
+                Name = mainProjectName,
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+            };
+
+            testProject.SourceFiles[$"{mainProjectName}.cs"] = @"
+using System;
+public class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine(""Hello world"");
+    }
+}
+";
+
+            if (referenceProjectName == null) {
+                return testProject;
+            }
+
             var referenceProject = new TestProject()
             {
                 Name = referenceProjectName,
@@ -479,12 +500,6 @@ public class ClassLib
     }
 }
 ";
-            var testProject = new TestProject()
-            {
-                Name = mainProjectName,
-                TargetFrameworks = targetFramework,
-                IsSdkProject = true,
-            };
 
             if (usePackageReference)
             {
@@ -499,16 +514,6 @@ public class ClassLib
                 testProject.ReferencedProjects.Add(referenceProject);
             }
 
-            testProject.SourceFiles[$"{mainProjectName}.cs"] = @"
-using System;
-public class Program
-{
-    public static void Main()
-    {
-        Console.WriteLine(""Hello world"");
-    }
-}
-";
 
             testProject.SourceFiles[$"{referenceProjectName}.xml"] = $@"
 <linker>
