@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -21,7 +20,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     ///       This rule recommends fixing the signature to use a valid non-generic event handler.
     ///       We do not report CA1009, but instead report CA1003 and recommend using a generic event handler.
     /// </remarks>
-    public abstract class UseGenericEventHandlerInstancesAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class UseGenericEventHandlerInstancesAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1003";
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UseGenericEventHandlerInstancesTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -66,10 +66,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             isEnabledByDefaultInFxCopAnalyzers: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleForDelegates, RuleForEvents, RuleForEvents2);
-        protected abstract bool IsAssignableTo(
-            [NotNullWhen(returnValue: true)] ITypeSymbol? fromSymbol,
-            [NotNullWhen(returnValue: true)] ITypeSymbol? toSymbol,
-            Compilation compilation);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
