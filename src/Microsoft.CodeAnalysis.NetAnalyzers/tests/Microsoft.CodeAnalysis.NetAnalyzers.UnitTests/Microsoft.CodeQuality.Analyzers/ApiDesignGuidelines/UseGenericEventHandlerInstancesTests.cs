@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseGenericEventHandlerInstancesAnalyzer,
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseGenericEventHandlerInstancesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseGenericEventHandlerInstancesAnalyzer,
-    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseGenericEventHandlerInstancesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
