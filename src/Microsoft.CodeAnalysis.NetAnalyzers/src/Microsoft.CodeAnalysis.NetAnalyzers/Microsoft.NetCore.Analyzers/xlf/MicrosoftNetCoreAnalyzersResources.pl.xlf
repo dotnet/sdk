@@ -419,17 +419,17 @@
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <target state="translated">Dodanie finalizatora do typu pochodzącego od typu MemoryManager&lt;T&gt; może umożliwić zwalnianie pamięci, gdy jest ona nadal używana przez typ Span&lt;T&gt;.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <target state="translated">Dodanie finalizatora do typu pochodzącego od typu MemoryManager&lt;T&gt; może umożliwić zwalnianie pamięci, gdy jest ona nadal używana przez typ Span&lt;T&gt;.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
         <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
-        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
+        <target state="translated">Nie definiuj finalizatorów dla typów pochodzących od typu MemoryManager&lt;T&gt;</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -805,17 +805,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
         <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
-        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <target state="translated">Miejsce na stosie przydzielone przy użyciu słowa kluczowego stackalloc jest zwalniane jedynie na końcu wywołania bieżącej metody. Użycie go w pętli może spowodować nieograniczone powiększanie stosu i, ostatecznie, warunki przepełnienia stosu.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsMessage">
         <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
-        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <target state="translated">Potencjalne przepełnienie stosu. Przenieś słowo kluczowe stackalloc z pętli.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
         <source>Do not use stackalloc in loops.</source>
-        <target state="new">Do not use stackalloc in loops.</target>
+        <target state="translated">Nie używaj słowa kluczowego stackalloc w pętlach.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1385,22 +1385,22 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
-        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
+        <target state="translated">Metody StringBuilder.Append i StringBuilder.Insert zapewniają przeciążenia dla wielu typów oprócz typu System.String. Jeśli to możliwe, preferuj silnie typizowane przeciążenia zamiast używania metody ToString() i przeciążenia opartego na ciągu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
-        <target state="new">Remove the ToString call in order to use a strongly-typed StringBuilder overload.</target>
+        <target state="translated">Usuń wywołanie metody ToString, aby użyć silnie typizowanego przeciążenia elementu StringBuilder.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
         <source>Remove the ToString call</source>
-        <target state="new">Remove the ToString call</target>
+        <target state="translated">Usuń wywołanie metody ToString</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
         <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
-        <target state="new">Prefer strongly-typed Append and Insert method overloads on StringBuilder.</target>
+        <target state="translated">Preferuj silnie typizowane metody Append i Insert w elemencie StringBuilder.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1750,27 +1750,27 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
-        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</target>
+        <target state="translated">Użycie indeksatora opartego na zakresie w przypadku wartości tablicy powoduje utworzenie kopii żądanej części tablicy. Ta kopia jest często niechciana, gdy jest niejawnie używana jako wartość Span lub Memory. Użyj metody AsSpan, aby uniknąć kopiowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
-        <target state="new">Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</target>
+        <target state="translated">Użyj metody „{0}” zamiast indeksatora opartego na „{1}” w przypadku wartości „{2}”, aby uniknąć tworzenia niepotrzebnych kopii danych.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
         <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
-        <target state="new">Use AsSpan or AsMemory instead of Range-based indexers when appropriate</target>
+        <target state="translated">Użyj metody AsSpan lub AsMemory zamiast indeksatorów opartych na zakresie, gdy ma to zastosowanie</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
         <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
-        <target state="new">The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <target state="translated">Użycie indeksatora opartego na zakresie w przypadku wartości ciągu powoduje utworzenie kopii żądanej części ciągu. Ta kopia jest zwykle niepotrzebna, gdy jest niejawnie używana jako wartość ReadOnlySpan lub ReadOnlyMemory. Użyj metody AsSpan, aby uniknąć zbędnego kopiowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
-        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <target state="translated">Użycie indeksatora opartego na zakresie w przypadku wartości tablicy powoduje utworzenie kopii żądanej części tablicy. Ta kopia jest zwykle niepotrzebna, gdy jest niejawnie używana jako wartość ReadOnlySpan lub ReadOnlyMemory. Użyj metody AsSpan, aby uniknąć zbędnego kopiowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">

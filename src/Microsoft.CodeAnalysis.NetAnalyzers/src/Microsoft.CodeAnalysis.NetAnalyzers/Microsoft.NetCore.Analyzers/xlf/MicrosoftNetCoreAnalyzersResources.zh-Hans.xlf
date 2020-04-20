@@ -419,17 +419,17 @@
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <target state="translated">将终结器添加到派生自 MemoryManager&lt;T&gt; 的类型可能使内存在仍被 Span&lt;T&gt; 使用时得到释放。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <target state="translated">将终结器添加到派生自 MemoryManager&lt;T&gt; 的类型可能使内存在仍被 Span&lt;T&gt; 使用时得到释放。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
         <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
-        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
+        <target state="translated">请勿为派生自 MemoryManager&lt;T&gt; 的类型定义终结器</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -804,17 +804,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
         <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
-        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <target state="translated">Stackalloc 分配的堆栈空间仅在当前方法的调用结束时释放。 在循环中使用它可能会导致无限堆栈增长和最终堆栈溢出条件。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsMessage">
         <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
-        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <target state="translated">潜在的堆栈溢出。将 stackalloc 移出循环。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
         <source>Do not use stackalloc in loops.</source>
-        <target state="new">Do not use stackalloc in loops.</target>
+        <target state="translated">不要在循环中使用 stackalloc。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1384,22 +1384,22 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
-        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
+        <target state="translated">StringBuilder.Append 和 StringBuilder.Insert 为 System.String 之外的多种类型提供重载。在可能情况下，尽量使用强类型重载而非使用 ToString() 和基于字符串的重载。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
-        <target state="new">Remove the ToString call in order to use a strongly-typed StringBuilder overload.</target>
+        <target state="translated">删除 ToString 调用以使用强类型 StringBuilder 重载。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
         <source>Remove the ToString call</source>
-        <target state="new">Remove the ToString call</target>
+        <target state="translated">删除 ToString 调用</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
         <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
-        <target state="new">Prefer strongly-typed Append and Insert method overloads on StringBuilder.</target>
+        <target state="translated">最好使用 StringBuilder 的强类型 Append 和 Insert 方法重载。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1749,27 +1749,27 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
-        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</target>
+        <target state="translated">数组值的基于范围的索引器生成数组所请求部分的副本。此副本在隐式用作 Span 或 Memory 值时常常是不需要的。使用 AsSpan 方法可避免此副本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
-        <target state="new">Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</target>
+        <target state="translated">请使用 "{0}" 代替 "{2}" 上的基于 "{1}" 的索引器，以避免创建不必要的数据副本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
         <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
-        <target state="new">Use AsSpan or AsMemory instead of Range-based indexers when appropriate</target>
+        <target state="translated">适当时，使用 AsSpan 或 AsMemory，而不是基于范围的索引器</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
         <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
-        <target state="new">The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <target state="translated">字符串值基于范围的索引器生成字符串的请求部分的副本。此副本在隐式用作 ReadOnlySpan 或 ReadOnlyMemory 值时常常是不需要的。使用 AsSpan 方法可避免使用不必要的副本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
-        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <target state="translated">数组值的基于范围的索引器生成数组所请求部分的副本。此副本在隐式用作 ReadOnlySpan 或 ReadOnlyMemory 值时常常是不需要的。使用 AsSpan 方法可避免使用不必要的副本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
