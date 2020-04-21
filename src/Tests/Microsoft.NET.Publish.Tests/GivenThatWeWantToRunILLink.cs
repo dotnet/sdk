@@ -146,7 +146,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "HelloWorld";
 
             var testProject = CreateTestProjectForILLinkTesting("net5.0", projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: property);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute("/p:PublishTrimmed=true", $"/p:SelfContained=true", "/p:PublishTrimmed=true", $"/p:{property}=NonBool")
@@ -377,9 +377,9 @@ namespace Microsoft.NET.Publish.Tests
 
         static string unusedFrameworkAssembly = "System.IO";
 
-        private TestPackageReference GetPackageReference(TestProject project, string callingMethod)
+        private TestPackageReference GetPackageReference(TestProject project, string callingMethod, string identifier)
         {
-            var asset = _testAssetsManager.CreateTestProject(project, callingMethod);
+            var asset = _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier);
             var pack = new PackCommand(Log, Path.Combine(asset.TestRoot, project.Name));
             pack.Execute().Should().Pass();
 
@@ -458,7 +458,8 @@ namespace Microsoft.NET.Publish.Tests
             string mainProjectName,
             string referenceProjectName = null,
             bool usePackageReference = true,
-            [CallerMemberName] string callingMethod = "")
+            [CallerMemberName] string callingMethod = "",
+            string referenceProjectIdentifier = "")
         {
             var testProject = new TestProject()
             {
@@ -504,7 +505,7 @@ public class ClassLib
 
             if (usePackageReference)
             {
-                var packageReference = GetPackageReference(referenceProject, callingMethod);
+                var packageReference = GetPackageReference(referenceProject, callingMethod, referenceProjectIdentifier);
                 testProject.PackageReferences.Add(packageReference);
                 testProject.AdditionalProperties.Add(
                     "RestoreAdditionalProjectSources",
