@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.DotNet.TestFramework;
@@ -127,7 +128,7 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
-            var buildArgs = selfContained ? "" :$"-r {RuntimeEnvironment.GetRuntimeIdentifier()}";
+            var buildArgs = selfContained ? "" :$"-r {RuntimeInformation.RuntimeIdentifier}";
             var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             new BuildCommand()
                  .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet

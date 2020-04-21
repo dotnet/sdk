@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.TestFramework;
@@ -20,7 +21,7 @@ namespace EndToEnd
                 PackageName = packageName,
                 MinorVersion = minorVersion,
                 //  Set RuntimeIdentifier to opt in to roll-forward behavior
-                RuntimeIdentifier = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier()
+                RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier
             };
 
             var testInstance = testProjectCreator.Create();
