@@ -103,11 +103,6 @@ namespace Microsoft.DotNet.Cli
 
                         newArgList.Add(string.Join(":", argValues));
                     }
-                    // RunConfiguration args, treat -- and remaining args as literals.
-                    else if (arg == "--")
-                    {
-                        newArgList.Add(arg);
-                    }
                     else
                     {
                         activeArgument = arg.ToLower();

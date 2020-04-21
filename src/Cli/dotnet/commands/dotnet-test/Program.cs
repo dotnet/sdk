@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tools.Test
         {
         }
 
-        public static TestCommand FromArgs(string[] args, string msbuildPath = null)
+        public static TestCommand FromArgs(string[] args, string[] settings, string msbuildPath = null)
         {
             var parser = Parser.Instance;
 
@@ -49,15 +49,11 @@ namespace Microsoft.DotNet.Tools.Test
 
             msbuildArgs.AddRange(parsedTest.Arguments);
 
-            var runSettingsOptions =
-                result.UnparsedTokens
-                    .Select(GetSemiColonEscapedString);
-
-            if (runSettingsOptions.Any())
+            if (settings.Any())
             {
-                var runSettingsArg = string.Join(";", runSettingsOptions);
-
-                msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
+                // skip '--' and escape every \ to be \\ and every " to be \" to survive the next hop
+                var escaped = string.Join(" ", settings.Skip(1)).Replace("\\", "\\\\").Replace("\"", "\\\"");
+                msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{escaped}\"");
             }
 
             var verbosityArg = parsedTest.ForwardedOptionValues("verbosity").SingleOrDefault();
@@ -103,6 +99,11 @@ namespace Microsoft.DotNet.Tools.Test
         {
             DebugHelper.HandleDebugSwitch(ref args);
 
+            // literal parameters are after -- (including --)
+            var settings = args.SkipWhile(a => a != "--").ToArray();
+            // all parameters before --
+            args = args.TakeWhile(a => a != "--").ToArray();
+
             // Fix for https://github.com/Microsoft/vstest/issues/1453
             // Try to run dll/exe directly using the VSTestForwardingApp
             if (ContainsBuiltTestSources(args))
@@ -112,6 +113,11 @@ namespace Microsoft.DotNet.Tools.Test
                 {
                     Reporter.Output.WriteLine(string.Format(LocalizableStrings.IgnoredArgumentsMessage, string.Join(" ", ignoredArgs)).Yellow());
                 }
+
+                // we don't need to escape one more time, there is no extra hop via msbuild
+                convertedArgs.AddRange(settings);
+
+
                 return new VSTestForwardingApp(convertedArgs).Execute();
             }
 
@@ -122,7 +128,7 @@ namespace Microsoft.DotNet.Tools.Test
             try
             {
                 Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
-                return FromArgs(args).Execute();
+                return FromArgs(args, settings).Execute();
             }
             finally
             {
@@ -133,13 +139,7 @@ namespace Microsoft.DotNet.Tools.Test
         private static bool ContainsBuiltTestSources(string[] args)
         {
             foreach (var arg in args)
-            {
-                // Stop parsing after the RunConfiguration delimiter
-                if (arg == "--")
-                {
-                    break;
-                }
-
+            {               
                 if (!arg.StartsWith("-") &&
                     (arg.EndsWith("dll", StringComparison.OrdinalIgnoreCase) || arg.EndsWith("exe", StringComparison.OrdinalIgnoreCase)))
                 {
