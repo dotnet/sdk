@@ -54,17 +54,17 @@
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
         <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
-        <target state="new">The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</target>
+        <target state="translated">Im więcej parametrów typu zawiera typ ogólny, tym trudniej jest dowiedzieć się zapamiętać, co reprezentuje każdy parametr typu.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
         <source>Consider a design where '{0}' has no more than {1} type parameters.</source>
-        <target state="new">Consider a design where '{0}' has no more than {1} type parameters.</target>
+        <target state="translated">Rozważ użycie projektu, w którym element „{0}” ma nie więcej niż następująca liczba parametrów typu: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
         <source>Avoid excessive parameters on generic types</source>
-        <target state="new">Avoid excessive parameters on generic types</target>
+        <target state="translated">Unikaj nadmiernego użycia parametrów w typach ogólnych</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
@@ -114,52 +114,52 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesDescription">
         <source>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</source>
-        <target state="new">Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</target>
+        <target state="translated">Typy deklarują chronione składowe, więc dziedziczące typy mogą uzyskać dostęp do składowej lub ją przesłonić. Zgodnie z definicją nie można dziedziczyć z zapieczętowanego typu, co oznacza, że nie można wywoływać chronionych metod w zapieczętowanych typach.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
         <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</source>
-        <target state="new">'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</target>
+        <target state="translated">„{0}” to nowa chroniona składowa w klasie „NonInheritable” „{1}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
         <source>Do not declare protected member in sealed type</source>
-        <target state="new">Do not declare protected member in sealed type</target>
+        <target state="translated">Nie deklaruj chronionej składowej w zapieczętowanym typie</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
-        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <target state="translated">Element „{0}” wywołuje element „{1}”, ale nie używa wartości zwracanej przez metodę. Metody linq mają efekty uboczne. Użyj wyniku w instrukcji warunkowej, przypisz wynik do zmiennej lub przekaż go jako argument do innej metody.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
-        <target state="new">This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</target>
+        <target state="translated">W tej regule przyjęto założenie, że element członkowski wyliczenia, który ma nazwę zawierającą wyraz „reserved”, nie jest obecnie używany, ale jest symbolem zastępczym, którego nazwa może zostać zmieniona lub usunięta w przyszłej wersji. Zmiana nazwy lub usunięcie elementu członkowskiego jest zmianą powodującą niezgodność.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedMessage">
         <source>If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</source>
-        <target state="new">If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</target>
+        <target state="translated">Jeśli element „{0}.{1}” nie jest używany w bieżącej implementacji, usuń go. W przeciwnym razie nadaj mu zrozumiałą nazwę.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedTitle">
         <source>Do not name enum values 'Reserved'</source>
-        <target state="new">Do not name enum values 'Reserved'</target>
+        <target state="translated">Nie nadawaj wartościom wyliczeniowym nazwy Reserved</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsDescription">
         <source>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</source>
-        <target state="new">System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</target>
+        <target state="translated">System.Collections.Generic.List&lt;T&gt; to ogólna kolekcja zaprojektowana pod kątem wydajności, a nie dziedziczenia. Element List&lt;T&gt; nie zawiera wirtualnych składowych, które ułatwiają zmianę zachowania dziedziczonej klasy.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsMessage">
         <source>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</source>
-        <target state="new">Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</target>
+        <target state="translated">Zmień element „{0}” w „{1}”, aby użyć elementu „Collection&lt;T&gt;”, „ReadOnlyCollection&lt;T&gt;” lub „KeyedCollection&lt;K,V&gt;”</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsTitle">
         <source>Do not expose generic lists</source>
-        <target state="new">Do not expose generic lists</target>
+        <target state="translated">Nie ujawniaj list ogólnych</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
@@ -194,17 +194,17 @@
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</target>
+        <target state="translated">Przekazywanie typów przez odwołanie (zastosowanie parametrów „out” lub „ref”) wymaga doświadczenia w pracy ze wskaźnikami, rozumienia różnic między typami wartości i typami odwołań oraz umiejętności stosowania metod z wieloma wartościami zwracanymi. Ponadto różnice między parametrami „out” i „ref” nie są powszechnie zrozumiałe.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceMessage">
         <source>Consider a design that does not require that '{0}' be a reference parameter.</source>
-        <target state="new">Consider a design that does not require that '{0}' be a reference parameter.</target>
+        <target state="translated">Rozważ użycie projektu, który nie wymaga, aby element „{0}” był parametrem w formie odwołania.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceTitle">
         <source>Do not pass types by reference</source>
-        <target state="new">Do not pass types by reference</target>
+        <target state="translated">Nie przekazuj typów przez referencję</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">

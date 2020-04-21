@@ -54,17 +54,17 @@
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
         <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
-        <target state="new">The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</target>
+        <target state="translated">제네릭 형식에 포함된 형식 매개 변수가 많을수록 각 형식 매개 변수가 나타내는 항목을 파악하고 기억하기가 더 어려워집니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
         <source>Consider a design where '{0}' has no more than {1} type parameters.</source>
-        <target state="new">Consider a design where '{0}' has no more than {1} type parameters.</target>
+        <target state="translated">'{0}'의 형식 매개 변수가 {1}개를 넘지 않도록 디자인하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
         <source>Avoid excessive parameters on generic types</source>
-        <target state="new">Avoid excessive parameters on generic types</target>
+        <target state="translated">제네릭 형식에 매개 변수를 너무 많이 사용하지 마십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
@@ -114,52 +114,52 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesDescription">
         <source>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</source>
-        <target state="new">Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</target>
+        <target state="translated">형식은 상속하는 형식이 멤버에 액세스하거나 멤버를 재정의할 수 있도록 protected 멤버를 선언합니다. 정의에 따라 sealed 형식에서는 상속할 수 없습니다. 즉, sealed 형식에 대한 protected 메서드는 호출할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
         <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</source>
-        <target state="new">'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</target>
+        <target state="translated">'{0}'은(는) 'NonInheritable' 클래스 '{1}'의 새 protected 멤버입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
         <source>Do not declare protected member in sealed type</source>
-        <target state="new">Do not declare protected member in sealed type</target>
+        <target state="translated">protected 멤버를 sealed 형식으로 선언하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
-        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <target state="translated">'{0}'이(가) '{1}'을(를) 호출하지만 메서드에서 반환된 값을 사용하지 않습니다. LINQ 메서드는 부작용이 없는 것으로 알려져 있습니다. 결과를 조건문에 사용하거나, 변수에 할당하거나, 다른 메서드에 인수로 전달하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
-        <target state="new">This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</target>
+        <target state="translated">이 규칙에서 이름에 "reserved"가 포함된 열거형 멤버는 현재 사용되고 있지 않으며 이후 버전에서 이름을 바꾸거나 제거할 자리 표시자라고 가정합니다. 멤버 제거 또는 이름 바꾸기는 호환성이 손상되는 변경 내용입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedMessage">
         <source>If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</source>
-        <target state="new">If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</target>
+        <target state="translated">현재 구현에서 '{0}.{1}'을(를) 사용하지 않는 경우 제거하세요. 사용하는 경우에는 의미 있는 이름을 지정하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedTitle">
         <source>Do not name enum values 'Reserved'</source>
-        <target state="new">Do not name enum values 'Reserved'</target>
+        <target state="translated">열거형 값의 이름을 'Reserved'로 지정하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsDescription">
         <source>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</source>
-        <target state="new">System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</target>
+        <target state="translated">System.Collections.Generic.List&lt;T&gt;는 상속이 아닌 성능을 위해 설계된 제네릭 컬렉션입니다. List&lt;T&gt;는 상속된 클래스의 동작을 더 쉽게 변경할 수 있도록 만들어 주는 가상 멤버를 포함하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsMessage">
         <source>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</source>
-        <target state="new">Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</target>
+        <target state="translated">'{1}'의 '{0}'이(가) 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' 또는 'KeyedCollection&lt;K,V&gt;'를 사용하도록 변경합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsTitle">
         <source>Do not expose generic lists</source>
-        <target state="new">Do not expose generic lists</target>
+        <target state="translated">제네릭 목록을 노출하지 마십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
@@ -194,17 +194,17 @@
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</target>
+        <target state="translated">out 또는 ref를 사용하여 참조로 형식을 전달하려면 포인터 사용 경험이 있고, 값 형식과 참조 형식의 차이점을 알고 있으며, 반환 값이 여러 개인 메서드를 처리해야 합니다. 또한 out 매개 변수와 ref 매개 변수의 차이점은 널리 알려져 있지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceMessage">
         <source>Consider a design that does not require that '{0}' be a reference parameter.</source>
-        <target state="new">Consider a design that does not require that '{0}' be a reference parameter.</target>
+        <target state="translated">'{0}'이(가) 참조 매개 변수일 필요가 없도록 디자인하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceTitle">
         <source>Do not pass types by reference</source>
-        <target state="new">Do not pass types by reference</target>
+        <target state="translated">참조로 형식을 전달하지 마십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
