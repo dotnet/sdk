@@ -419,17 +419,17 @@
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <target state="translated">MemoryManager&lt;T&gt;에서 파생된 형식에 종료자를 추가하면 Span&lt;T&gt;에서 여전히 메모리를 사용하는 동안 메모리 해제가 허용될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <target state="translated">MemoryManager&lt;T&gt;에서 파생된 형식에 종료자를 추가하면 Span&lt;T&gt;에서 여전히 메모리를 사용하는 동안 메모리 해제가 허용될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
         <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
-        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
+        <target state="translated">MemoryManager&lt;T&gt;에서 파생된 형식에 대한 종료자 정의 금지</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -804,17 +804,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
         <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
-        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <target state="translated">stackalloc에서 할당된 스택 공간은 현재 메서드의 호출이 끝날 때만 릴리스됩니다. 루프에서 stackalloc를 사용하면 바인딩되지 않은 스택 증가 및 최종 스택 오버플로 조건이 발생할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsMessage">
         <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
-        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <target state="translated">잠재적 스택 오버플로입니다. stackalloc를 루프 밖으로 이동합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
         <source>Do not use stackalloc in loops.</source>
-        <target state="new">Do not use stackalloc in loops.</target>
+        <target state="translated">루프에서 stackalloc를 사용하면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1384,22 +1384,37 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
-        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
+        <target state="translated">StringBuilder.Append 및 StringBuilder.Insert는 System.String 외의 여러 형식에 대한 오버로드를 제공합니다. 가능한 경우 ToString() 및 문자열 기반 오버로드를 사용하는 대신 강력한 형식의 오버로드를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
-        <target state="new">Remove the ToString call in order to use a strongly-typed StringBuilder overload.</target>
+        <target state="translated">강력한 형식의 StringBuilder 오버로드를 사용하려면 ToString 호출을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
         <source>Remove the ToString call</source>
-        <target state="new">Remove the ToString call</target>
+        <target state="translated">ToString 호출 제거</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
         <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
-        <target state="new">Prefer strongly-typed Append and Insert method overloads on StringBuilder.</target>
+        <target state="translated">StringBuilder 대신 강력한 형식의 Append 및 Insert 메서드 오버로드를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
+        <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
+        <target state="new">'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
+        <target state="new">Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
+        <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
+        <target state="new">Consider using 'StringBuilder.Append(char)' when applicable.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1749,27 +1764,27 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
-        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</target>
+        <target state="translated">배열 값에 대한 범위 기반 인덱서는 배열의 요청된 부분의 복사본을 생성합니다. 이 복사본은 암시적으로 범위 또는 메모리 값으로 사용될 경우 대개 필요하지 않습니다. 복사본이 생성되지 않도록 하려면 AsSpan 메서드를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
-        <target state="new">Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</target>
+        <target state="translated">불필요한 데이터 복사본이 만들어지지 않도록 하려면 '{2}'에서 '{1}' 기반 인덱서 대신 '{0}'을(를) 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
         <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
-        <target state="new">Use AsSpan or AsMemory instead of Range-based indexers when appropriate</target>
+        <target state="translated">적절한 경우 범위 기반 인덱서 대신 AsSpan 또는 AsMemory를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
         <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
-        <target state="new">The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <target state="translated">문자열 값에 대한 범위 기반 인덱서는 문자열의 요청된 부분의 복사본을 생성합니다. 이 복사본은 암시적으로 ReadOnlySpan 또는 ReadOnlyMemory 값으로 사용될 경우 대개 필요하지 않습니다. 불필요한 복사본이 생성되지 않도록 하려면 AsSpan 메서드를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
-        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <target state="translated">배열 값에 대한 범위 기반 인덱서는 배열의 요청된 부분의 복사본을 생성합니다. 이 복사본은 암시적으로 ReadOnlySpan 또는 ReadOnlyMemory 값으로 사용될 경우 대개 필요하지 않습니다. 불필요한 복사본이 생성되지 않도록 하려면 AsSpan 메서드를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
