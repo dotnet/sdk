@@ -1392,14 +1392,14 @@
         <target state="translated">P/Invokes görünür olmamalıdır</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
+        <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamReadAsyncMemoryOverloadsDescription">
         <source>All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</source>
         <target state="new">All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PreferStreamReadAsyncMemoryOverloadsMessage">
-        <source>Change the 'ReadAsync' method call to the overload that receives a 'Memory&lt;Byte&gt;'.</source>
-        <target state="new">Change the 'ReadAsync' method call to the overload that receives a 'Memory&lt;Byte&gt;'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamReadAsyncMemoryOverloadsTitle">
@@ -1410,11 +1410,6 @@
       <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsDescription">
         <source>All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</source>
         <target state="new">All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsMessage">
-        <source>Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</source>
-        <target state="new">Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsTitle">

@@ -696,10 +696,14 @@ End Class
         #region Helpers
 
         protected static DiagnosticResult GetCSResult(int startLine, int startColumn, int endLine, int endColumn)
-            => GetCSResultForRule(startLine, startColumn, endLine, endColumn, PreferStreamAsyncMemoryOverloads.PreferStreamWriteAsyncMemoryOverloadsRule);
+            => GetCSResultForRule(startLine, startColumn, endLine, endColumn,
+                PreferStreamAsyncMemoryOverloads.PreferStreamWriteAsyncMemoryOverloadsRule,
+                "WriteAsync", "System.IO.Stream.WriteAsync(System.ReadOnlyMemory<byte>, System.Threading.CancellationToken)");
 
         protected static DiagnosticResult GetVBResult(int startLine, int startColumn, int endLine, int endColumn)
-            => GetVBResultForRule(startLine, startColumn, endLine, endColumn, PreferStreamAsyncMemoryOverloads.PreferStreamWriteAsyncMemoryOverloadsRule);
+            => GetVBResultForRule(startLine, startColumn, endLine, endColumn,
+                PreferStreamAsyncMemoryOverloads.PreferStreamWriteAsyncMemoryOverloadsRule,
+                "WriteAsync", "System.IO.Stream.WriteAsync(System.ReadOnlyMemory(Of Byte), System.Threading.CancellationToken)");
 
         #endregion
     }

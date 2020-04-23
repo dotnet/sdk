@@ -1293,8 +1293,8 @@
   <data name="PreferStreamReadAsyncMemoryOverloadsDescription" xml:space="preserve">
     <value>All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</value>
   </data>
-  <data name="PreferStreamReadAsyncMemoryOverloadsMessage" xml:space="preserve">
-    <value>Change the 'ReadAsync' method call to the overload that receives a 'Memory&lt;Byte&gt;'.</value>
+  <data name="PreferStreamAsyncMemoryOverloadsMessage" xml:space="preserve">
+    <value>Change the '{0}' method call to the overload that receives a '{1}'.</value>
   </data>
   <data name="PreferStreamWriteAsyncMemoryOverloadsTitle" xml:space="preserve">
     <value>Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</value>

@@ -26,13 +26,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         protected static Task AnalyzeVBUnsupportedAsync(string source, params DiagnosticResult[] expected) =>
             AnalyzeVBForVersionAsync(source, ReferenceAssemblies.NetCore.NetCoreApp20, expected);
 
-        protected static DiagnosticResult GetCSResultForRule(int startLine, int startColumn, int endLine, int endColumn, DiagnosticDescriptor rule)
+        protected static DiagnosticResult GetCSResultForRule(int startLine, int startColumn, int endLine, int endColumn, DiagnosticDescriptor rule, string methodName, string methodPreferredName)
             => VerifyCS.Diagnostic(rule)
-                .WithSpan(startLine, startColumn, endLine, endColumn);
+                .WithSpan(startLine, startColumn, endLine, endColumn)
+                .WithArguments(methodName, methodPreferredName);
 
-        protected static DiagnosticResult GetVBResultForRule(int startLine, int startColumn, int endLine, int endColumn, DiagnosticDescriptor rule)
+        protected static DiagnosticResult GetVBResultForRule(int startLine, int startColumn, int endLine, int endColumn, DiagnosticDescriptor rule, string methodName, string methodPreferredName)
             => VerifyVB.Diagnostic(rule)
-                .WithSpan(startLine, startColumn, endLine, endColumn);
+                .WithSpan(startLine, startColumn, endLine, endColumn)
+                .WithArguments(methodName, methodPreferredName);
 
         private static Task AnalyzeCSForVersionAsync(string source, ReferenceAssemblies version, params DiagnosticResult[] expected)
         {
