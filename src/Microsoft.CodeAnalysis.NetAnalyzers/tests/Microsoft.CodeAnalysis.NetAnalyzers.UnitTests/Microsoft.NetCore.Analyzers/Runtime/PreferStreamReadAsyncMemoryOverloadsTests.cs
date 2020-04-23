@@ -8,15 +8,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class PreferStreamReadAsyncMemoryOverloadsTest : PreferStreamAsyncMemoryOverloadsTestBase
     {
-        #region No diagnostic - Analyzer
+        #region C# - No diagnostic - Analyzer
 
         [Fact]
-        public async Task NoDiagnosticAnalyzer_Read()
+        public Task CS_Analyzer_NoDiagnostic_Read()
         {
-            await AnalyzeAsync(@"
-using System;
+            return AnalyzeCSAsync(@"
 using System.IO;
-using System.Threading;
 class C
 {
     public void M()
@@ -32,9 +30,31 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnosticAnalyzer_ReadAsync_AsMemory()
+        public Task CS_Analyzer_NoDiagnostic_ReadAsync_ByteMemory()
         {
-            await AnalyzeAsync(@"
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream fs = new FileStream(""path.txt"", FileMode.Create))
+        {
+            byte[] buffer = new byte[fs.Length];
+            Memory<byte> memory = new Memory<byte>(buffer);
+            await fs.ReadAsync(memory, new CancellationToken()).ConfigureAwait(false);
+        }
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public Task CS_Analyzer_NoDiagnostic_ReadAsync_AsMemory()
+        {
+            return AnalyzeCSAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -53,9 +73,9 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnosticAnalyzer_NoAwait_SaveAsTask()
+        public Task CS_Analyzer_NoDiagnostic_NoAwait_SaveAsTask()
         {
-            await AnalyzeAsync(@"
+            return AnalyzeCSAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -75,9 +95,9 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnosticAnalyzer_NoAwait_ReturnMethod()
+        public Task CS_Analyzer_NoDiagnostic_NoAwait_ReturnMethod()
         {
-            await AnalyzeAsync(@"
+            return AnalyzeCSAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -93,9 +113,9 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnosticAnalyzer_NoAwait_ExpressionBodyMethod()
+        public Task CS_Analyzer_NoDiagnostic_NoAwait_ExpressionBodyMethod()
         {
-            await AnalyzeAsync(@"
+            return AnalyzeCSAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -108,117 +128,9 @@ class C
         }
 
         [Fact]
-        public async Task NoDiagnosticAnalyzer_UnsupportedVersion()
+        public Task CS_Analyzer_NoDiagnostic_ContinueWith_ConfigureAwait()
         {
-            await AnalyzeUnsupportedAsync(@"
-using System;
-using System.IO;
-using System.Threading;
-class C
-{
-    public async void M()
-    {
-        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
-        {
-            byte[] buffer = new byte[fs.Length];
-            await fs.ReadAsync(buffer, 0, (int)fs.Length);
-        }
-    }
-}
-            ");
-        }
-
-        #endregion
-
-        #region Diagnostic - Analyzer
-
-        [Fact]
-        public async Task DiagnosticAnalyzer_Basic()
-        {
-            await AnalyzeAsync(@"
-using System;
-using System.IO;
-using System.Threading;
-class C
-{
-    public async void M()
-    {
-        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
-        {
-            byte[] buffer = new byte[fs.Length];
-            await fs.ReadAsync(buffer, 0, (int)fs.Length);
-        }
-    }
-}
-            ", GetCSharpResult(12, 19));
-        }
-
-        [Fact]
-        public async Task DiagnosticAnalyzer_Inline()
-        {
-            await AnalyzeAsync(@"
-using System;
-using System.IO;
-using System.Threading;
-class C
-{
-    public async void M()
-    {
-        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
-        {
-            await fs.ReadAsync(new byte[fs.Length], 0, (int)fs.Length);
-        }
-    }
-}
-            ", GetCSharpResult(11, 19));
-        }
-
-        [Fact]
-        public async Task DiagnosticAnalyzer_CancellationToken()
-        {
-            await AnalyzeAsync(@"
-using System;
-using System.IO;
-using System.Threading;
-class C
-{
-    public async void M()
-    {
-        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
-        {
-            byte[] buffer = new byte[fs.Length];
-            await fs.ReadAsync(buffer, 0, (int)fs.Length, new CancellationToken());
-        }
-    }
-}
-            ", GetCSharpResult(12, 19));
-        }
-
-        [Fact]
-        public async Task DiagnosticAnalyzer_ConfigureAwait()
-        {
-            await AnalyzeAsync(@"
-using System;
-using System.IO;
-using System.Threading;
-class C
-{
-    public async void M()
-    {
-        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
-        {
-            byte[] buffer = new byte[fs.Length];
-            await fs.ReadAsync(buffer, 0, (int)fs.Length).ConfigureAwait(false);
-        }
-    }
-}
-            ", GetCSharpResult(12, 19));
-        }
-
-        [Fact]
-        public async Task DiagnosticAnalyzer_ContinueWith_ConfigureAwait()
-        {
-            await AnalyzeAsync(@"
+            return AnalyzeCSAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -233,13 +145,13 @@ class C
         }
     }
 }
-            ", GetCSharpResult(12, 19));
+            ");
         }
 
         [Fact]
-        public async Task DiagnosticAnalyzer_ContinueWith_ContinueWith_ConfigureAwait()
+        public Task CS_Analyzer_NoDiagnostic_ContinueWith_ContinueWith_ConfigureAwait()
         {
-            await AnalyzeAsync(@"
+            return AnalyzeCSAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -254,13 +166,273 @@ class C
         }
     }
 }
-            ", GetCSharpResult(12, 19));
+            ");
         }
 
         [Fact]
-        public async Task DiagnosticAnalyzer_CancellationToken_ConfigureAwait()
+        public Task CS_Analyzer_NoDiagnostic_UnsupportedVersion()
         {
-            await AnalyzeAsync(@"
+            return AnalyzeCSUnsupportedAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length);
+        }
+    }
+}
+            ");
+        }
+
+        #endregion
+
+        #region VB - No diagnostic - Analyzer
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_Read()
+        {
+            return AnalyzeVBAsync(@"
+Imports System.IO
+Class C
+    Public Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) { }
+            fs.Read(buffer, 0, fs.Length)
+        End Using
+    End Sub
+End Class
+            ");
+        }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_ReadAsync_ByteMemory()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = New FileStream("", path.txt, "", FileMode.Create)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) {}
+            Dim memory As Memory(Of Byte) = New Memory(Of Byte)(buffer)
+            Await fs.ReadAsync(memory, New CancellationToken()).ConfigureAwait(False)
+        End Using
+    End Sub
+End Class
+            ");
+        }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_ReadAsync_AsMemory()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) { }
+            Await fs.ReadAsync(buffer.AsMemory(), New CancellationToken())
+        End Using
+    End Sub
+End Class
+            ");
+        }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_NoAwait_SaveAsTask()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Imports System.Threading.Tasks
+Class C
+    Public Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) { }
+            Dim t As Task = fs.ReadAsync(buffer, 0, CInt(fs.Length))
+        End Using
+    End Sub
+End Class
+            ");
+        }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_NoAwait_ReturnMethod()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Imports System.Threading.Tasks
+Friend Class C
+    Public Function M(ByVal fs As FileStream, ByVal buffer As Byte()) As Task
+        Return fs.ReadAsync(buffer, 0, fs.Length)
+    End Function
+End Class
+            ");
+        }
+
+        // The method VB_Analyzer_NoDiagnostic_NoAwait_ExpressionBodyMethod()
+        // is skipped because VB does not support expression bodies for methods
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_ContinueWith_ConfigureAwait()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) {}
+            Await fs.ReadAsync(buffer, 0, fs.Length).ContinueWith(Sub(c)
+                                                                        End Sub).ConfigureAwait(False)
+        End Using
+    End Sub
+End Class
+            ");
+        }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_ContinueWith_ContinueWith_ConfigureAwait()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) {}
+            Await fs.ReadAsync(buffer, 0, fs.Length).ContinueWith(Sub(c)
+                                                                        End Sub).ContinueWith(Sub(c)
+                                                                                              End Sub).ConfigureAwait(False)
+        End Using
+    End Sub
+End Class
+            ");
+        }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_UnsupportedVersion()
+        {
+            return AnalyzeVBUnsupportedAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) { }
+            Await fs.ReadAsync(buffer, 0, fs.Length)
+        End Using
+    End Sub
+End Class
+            ");
+        }
+
+        #endregion
+
+        #region C# - Diagnostic - Analyzer
+
+        [Fact]
+        public Task CS_Analyzer_Diagnostic_ByteArray()
+        {
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length);
+        }
+    }
+}
+            ", GetCSResult(12, 19, 12, 58));
+        }
+
+        [Fact]
+        public Task CS_Analyzer_Diagnostic_Inline()
+        {
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            await fs.ReadAsync(new byte[fs.Length], 0, (int)fs.Length);
+        }
+    }
+}
+            ", GetCSResult(11, 19, 11, 71));
+        }
+
+        [Fact]
+        public Task CS_Analyzer_Diagnostic_CancellationToken()
+        {
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length, new CancellationToken());
+        }
+    }
+}
+            ", GetCSResult(12, 19, 12, 83));
+        }
+
+        [Fact]
+        public Task CS_Analyzer_Diagnostic_ConfigureAwait()
+        {
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream fs = File.Open(""file.txt"", FileMode.Open))
+        {
+            byte[] buffer = new byte[fs.Length];
+            await fs.ReadAsync(buffer, 0, (int)fs.Length).ConfigureAwait(false);
+        }
+    }
+}
+            ", GetCSResult(12, 19, 12, 58));
+        }
+
+        [Fact]
+        public Task CS_Analyzer_Diagnostic_CancellationToken_ConfigureAwait()
+        {
+            return AnalyzeCSAsync(@"
 using System;
 using System.IO;
 using System.Threading;
@@ -275,15 +447,111 @@ class C
         }
     }
 }
-            ", GetCSharpResult(12, 19));
+            ", GetCSResult(12, 19, 12, 83));
+        }
+
+        #endregion
+
+        #region VB - Diagnostic - Analyzer
+
+        [Fact]
+        public Task VB_Analyzer_Diagnostic_ByteArray()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) {}
+            Await fs.ReadAsync(buffer, 0, fs.Length)
+        End Using
+    End Sub
+End Class
+            ", GetVBResult(9, 19, 9, 53));
+        }
+
+        [Fact]
+        public Task VB_Analyzer_Diagnostic_Inline()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Await fs.ReadAsync(New Byte(fs.Length - 1) {}, 0, fs.Length)
+        End Using
+    End Sub
+End Class
+            ", GetVBResult(8, 19, 8, 73));
+        }
+
+        [Fact]
+        public Task VB_Analyzer_Diagnostic_CancellationToken()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) {}
+            Await fs.ReadAsync(buffer, 0, fs.Length, New CancellationToken())
+        End Using
+    End Sub
+End Class
+            ", GetVBResult(9, 19, 9, 78));
+        }
+
+        [Fact]
+        public Task VB_Analyzer_Diagnostic_ConfigureAwait()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) {}
+            Await fs.ReadAsync(buffer, 0, fs.Length).ConfigureAwait(False)
+        End Using
+    End Sub
+End Class
+            ", GetVBResult(9, 19, 9, 53));
+        }
+
+        [Fact]
+        public Task VB_Analyzer_Diagnostic_CancellationToken_ConfigureAwait()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using fs As FileStream = File.Open("", file.txt, "", FileMode.Open)
+            Dim buffer As Byte() = New Byte(fs.Length - 1) {}
+            Await fs.ReadAsync(buffer, 0, CInt(fs.Length), New CancellationToken()).ConfigureAwait(False)
+        End Using
+    End Sub
+End Class
+            ", GetVBResult(9, 19, 9, 84));
         }
 
         #endregion
 
         #region Helpers
 
-        protected static DiagnosticResult GetCSharpResult(int line, int column)
-            => GetCSharpResultBase(line, column, PreferStreamAsyncMemoryOverloads.PreferStreamReadAsyncMemoryOverloadsRule);
+        protected static DiagnosticResult GetCSResult(int startLine, int startColumn, int endLine, int endColumn)
+            => GetCSResultForRule(startLine, startColumn, endLine, endColumn, PreferStreamAsyncMemoryOverloads.PreferStreamReadAsyncMemoryOverloadsRule);
+
+        protected static DiagnosticResult GetVBResult(int startLine, int startColumn, int endLine, int endColumn)
+            => GetVBResultForRule(startLine, startColumn, endLine, endColumn, PreferStreamAsyncMemoryOverloads.PreferStreamReadAsyncMemoryOverloadsRule);
 
         #endregion
     }

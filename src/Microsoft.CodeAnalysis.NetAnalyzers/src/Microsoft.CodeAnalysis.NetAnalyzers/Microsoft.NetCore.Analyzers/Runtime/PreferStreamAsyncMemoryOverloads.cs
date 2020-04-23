@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -12,8 +13,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
     /// CA1834: Prefer Memory/ReadOnlyMemory overloads for Stream ReadAsync/WriteAsync methods.
+    ///
+    /// Undesired methods (available since .NET Framework 4.5):
+    ///
+    /// - Stream.WriteAsync(Byte[], Int32, Int32)
+    /// - Stream.WriteAsync(Byte[], Int32, Int32, CancellationToken)
+    /// - Stream.ReadAsync(Byte[], Int32, Int32)
+    /// - Stream.ReadAsync(Byte[], Int32, Int32, CancellationToken)
+    ///
+    /// Preferred methods (available since .NET Standard 2.1 and .NET Core 2.1):
+    ///
+    /// - Stream.WriteAsync(ReadOnlyMemory{Byte}, CancellationToken)
+    /// - Stream.ReadAsync(Memory{Byte}, CancellationToken)
+    ///
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PreferStreamAsyncMemoryOverloads : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1834";
@@ -80,8 +94,108 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private void AnalyzeCompilationStart(CompilationStartAnalysisContext context)
         {
-            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemory1, out _) ||
-                !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream, out INamedTypeSymbol? streamType))
+            // Find the essential type for this analysis
+            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOStream, out INamedTypeSymbol? streamType))
+            {
+                return;
+            }
+
+            // Retrieve the 3+ ReadAsync and WriteSync methods available in Stream
+            // If we find fewer than 3, the Memory based overloads are not supported in this .NET version
+            IEnumerable<IMethodSymbol> readAsyncMethodGroup = streamType.GetMembers("ReadAsync").OfType<IMethodSymbol>();
+            if (readAsyncMethodGroup.Count() < 3)
+            {
+                return;
+            }
+
+            IEnumerable<IMethodSymbol> writeAsyncMethodGroup = streamType.GetMembers("WriteAsync").OfType<IMethodSymbol>();
+            if (writeAsyncMethodGroup.Count() < 3)
+            {
+                return;
+            }
+
+            // Find the additional types for this analysis
+            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingCancellationToken, out INamedTypeSymbol? cancellationTokenType))
+            {
+                return;
+            }
+
+            INamedTypeSymbol byteType = context.Compilation.GetSpecialType(SpecialType.System_Byte);
+            if (byteType == null)
+            {
+                return;
+            }
+
+            INamedTypeSymbol int32Type = context.Compilation.GetSpecialType(SpecialType.System_Int32);
+            if (int32Type == null)
+            {
+                return;
+            }
+
+            // Retrieve the ConfigureAwait methods that could also be detected:
+            // - The undesired WriteAsync methods return a Task
+            // - The preferred WriteAsync method returns a ValueTask
+            // - The undesired ReadAsync methods return a Task<int>
+            // - The preferred ReadAsync method returns a ValueTask<int>
+            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask, out INamedTypeSymbol? taskType))
+            {
+                return;
+            }
+
+            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTask, out INamedTypeSymbol? genericTaskType))
+            {
+                return;
+            }
+
+            IMethodSymbol? configureAwaitMethod = taskType.GetMembers("ConfigureAwait").OfType<IMethodSymbol>().FirstOrDefault();
+            if (configureAwaitMethod == null)
+            {
+                return;
+            }
+
+            IMethodSymbol? genericConfigureAwaitMethod = genericTaskType.GetMembers("ConfigureAwait").OfType<IMethodSymbol>().FirstOrDefault();
+            if (genericConfigureAwaitMethod == null)
+            {
+                return;
+            }
+
+            // Create the arrays with the exact parameter order of the undesired methods
+            var undesiredParameters = new[]
+            {
+                ParameterInfo.GetParameterInfo(byteType, isArray: true, arrayRank: 1), // byte[] buffer
+                ParameterInfo.GetParameterInfo(int32Type),                             // int offset
+                ParameterInfo.GetParameterInfo(int32Type),                             // int count
+            };
+
+            var undesiredParametersWithCancellationToken = new[]
+            {
+                ParameterInfo.GetParameterInfo(byteType, isArray: true, arrayRank: 1),
+                ParameterInfo.GetParameterInfo(int32Type),
+                ParameterInfo.GetParameterInfo(int32Type),
+                ParameterInfo.GetParameterInfo(cancellationTokenType)
+            };
+
+            // Retrieve the undesired methods
+            IMethodSymbol? undesiredReadAsyncMethod = readAsyncMethodGroup.GetFirstOrDefaultMemberWithParameterInfos(undesiredParameters);
+            if (undesiredReadAsyncMethod == null)
+            {
+                return;
+            }
+
+            IMethodSymbol? undesiredWriteAsyncMethod = writeAsyncMethodGroup.GetFirstOrDefaultMemberWithParameterInfos(undesiredParameters);
+            if (undesiredWriteAsyncMethod == null)
+            {
+                return;
+            }
+
+            IMethodSymbol? undesiredReadAsyncMethodWithCancellationToken = readAsyncMethodGroup.GetFirstOrDefaultMemberWithParameterInfos(undesiredParametersWithCancellationToken);
+            if (undesiredReadAsyncMethodWithCancellationToken == null)
+            {
+                return;
+            }
+
+            IMethodSymbol? undesiredWriteAsyncMethodWithCancellationToken = writeAsyncMethodGroup.GetFirstOrDefaultMemberWithParameterInfos(undesiredParametersWithCancellationToken);
+            if (undesiredWriteAsyncMethodWithCancellationToken == null)
             {
                 return;
             }
@@ -89,60 +203,53 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.RegisterOperationAction(context =>
             {
                 IInvocationOperation invocation = (IInvocationOperation)context.Operation;
-                IMethodSymbol method = invocation.TargetMethod;
-                DiagnosticDescriptor rule;
 
-                if (string.Equals(method.Name, "ReadAsync", StringComparison.Ordinal))
+                // Only accept these two of cases:
+                // - await {WriteAsync()|ReadAsync()}
+                // - await {WriteAsync()|ReadAsync()}.ConfigureAwait()
+                if ((invocation.Parent != null && invocation.Parent.Kind == OperationKind.Await) ||
+                        (invocation.Parent!.Parent != null && invocation.Parent!.Parent.Kind == OperationKind.Await &&
+                         invocation.Parent!.Parent is IAwaitOperation awaitOperation &&
+                         awaitOperation.Operation is IInvocationOperation parentInvocation &&
+                            (parentInvocation.TargetMethod.OriginalDefinition.Equals(configureAwaitMethod) ||
+                            (parentInvocation.TargetMethod.OriginalDefinition.Equals(genericConfigureAwaitMethod)))))
                 {
-                    rule = PreferStreamReadAsyncMemoryOverloadsRule;
-                }
-                else if (string.Equals(method.Name, "WriteAsync", StringComparison.Ordinal))
-                {
-                    rule = PreferStreamWriteAsyncMemoryOverloadsRule;
-                }
-                else
-                {
-                    return;
-                }
+                    // Verify if the current method's type is or inherits from Stream
+                    if (!IsDefinedBy(invocation.TargetMethod, streamType, out IMethodSymbol method))
+                    {
+                        return;
+                    }
 
-                if (IsPredecessorAwaiting(invocation) && // Verify if the top invocation in this statement is an await
-                    IsDefinedBy(method, streamType) && // Verify if the current method's type is or inherits from Stream
-                    HasUndesiredArguments(method))
-                {
+                    DiagnosticDescriptor rule;
+
+                    // Verify if the method is an undesired Async overload
+                    if (method.Equals(undesiredReadAsyncMethod) || method.Equals(undesiredReadAsyncMethodWithCancellationToken))
+                    {
+                        rule = PreferStreamReadAsyncMemoryOverloadsRule;
+                    }
+                    else if (method.Equals(undesiredWriteAsyncMethod) || method.Equals(undesiredWriteAsyncMethodWithCancellationToken))
+                    {
+                        rule = PreferStreamWriteAsyncMemoryOverloadsRule;
+                    }
+                    else
+                    {
+                        return;
+                    }
+
                     context.ReportDiagnostic(invocation.CreateDiagnostic(rule));
                 }
             }, OperationKind.Invocation);
         }
 
-        private static bool IsPredecessorAwaiting(IInvocationOperation invocation)
+        private static bool IsDefinedBy(IMethodSymbol method, INamedTypeSymbol baseType, out IMethodSymbol actualMethod)
         {
-            IOperation current = invocation;
-            while (current.Kind == OperationKind.Invocation)
+            actualMethod = method;
+            while (actualMethod.OverriddenMethod != null)
             {
-                current = current.Parent;
+                actualMethod = actualMethod.OverriddenMethod;
             }
 
-            return current.Kind == OperationKind.Await;
-        }
-
-        private static bool IsDefinedBy(IMethodSymbol method, INamedTypeSymbol baseType)
-        {
-            while (method.OverriddenMethod != null)
-            {
-                method = method.OverriddenMethod;
-            }
-
-            return method.ContainingType.Equals(baseType);
-        }
-
-        private static bool HasUndesiredArguments(IMethodSymbol method)
-        {
-            // The undesired ReadAsync/WriteAsync overloads have the same 3 args and an optional 4th (CancellationToken)
-            return method.Parameters.Length >= 3 &&
-                method.Parameters[0].Type is IArrayTypeSymbol arrayTypeSymbol &&
-                arrayTypeSymbol.ElementType.SpecialType == SpecialType.System_Byte &&
-                method.Parameters[1].Type.SpecialType == SpecialType.System_Int32 &&
-                method.Parameters[2].Type.SpecialType == SpecialType.System_Int32;
+            return actualMethod.ContainingType.Equals(baseType);
         }
     }
 }
