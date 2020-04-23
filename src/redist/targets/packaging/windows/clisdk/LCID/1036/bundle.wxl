@@ -61,7 +61,7 @@ Ce produit collecte des données d'utilisation
 Ressources
     • Documentation .NET sur https://aka.ms/dotnet-docs
     • Documentation du kit SDK sur https://aka.ms/dotnet-sdk-docs
-    • Notes de publication sur https://aka.ms/netcore3releasenotes
+    • Notes de publication sur https://aka.ms/dotnet5-release-notes
     • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">SDK .NET</String>
   <String Id="WelcomeDescription">
