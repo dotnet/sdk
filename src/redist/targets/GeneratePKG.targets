@@ -1,7 +1,7 @@
 <Project>
-  <Target Name="SetupPKGProps" DependsOnTargets="SetSdkVersionInfo;GetCurrentRuntimeInformation;SetupFileExtensions">
+  <Target Name="SetupPKGProps" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions">
     <PropertyGroup>
-      <PkgIntermediateDirectory>$(IntermediateOutputPath)pkgs/$(SdkVersion)</PkgIntermediateDirectory>
+      <PkgIntermediateDirectory>$(IntermediateOutputPath)pkgs/$(Version)</PkgIntermediateDirectory>
 
       <!-- Properties for pkg build -->
       <SharedHostComponentId>com.microsoft.dotnet.sharedhost.$(SharedHostVersion).component.osx.x64</SharedHostComponentId>
@@ -10,8 +10,8 @@
       <NetCoreAppTargetingPackComponentId>com.microsoft.dotnet.pack.targeting.$(MicrosoftNETCoreAppRefPackageVersion).component.osx.x64</NetCoreAppTargetingPackComponentId>
       <NetCoreAppHostPackComponentId>com.microsoft.dotnet.pack.apphost.$(MicrosoftNETCoreAppHostPackageVersion).component.osx.x64</NetCoreAppHostPackComponentId>
       <NetStandardTargetingPackComponentId>com.microsoft.standard.pack.targeting.$(NETStandardLibraryRefPackageVersion).component.osx.x64</NetStandardTargetingPackComponentId>
-      <SdkComponentId>com.microsoft.dotnet.dev.$(SdkVersion).component.osx.x64</SdkComponentId>
-      <SdkProductArchiveId>com.microsoft.dotnet.dev.$(SdkVersion).osx.x64</SdkProductArchiveId>
+      <SdkComponentId>com.microsoft.dotnet.dev.$(Version).component.osx.x64</SdkComponentId>
+      <SdkProductArchiveId>com.microsoft.dotnet.dev.$(Version).osx.x64</SdkProductArchiveId>
 
       <PkgInstallDirectory>/usr/local/share/dotnet</PkgInstallDirectory>
 
@@ -62,7 +62,7 @@
           <ReplacementString>$(SdkComponentId)</ReplacementString>
         </DistributionTemplateReplacement>
         <DistributionTemplateReplacement Include="{CLISdkNugetVersion}">
-          <ReplacementString>$(SdkVersion)</ReplacementString>
+          <ReplacementString>$(Version)</ReplacementString>
         </DistributionTemplateReplacement>
         <DistributionTemplateReplacement Include="{CLISdkBrandName}">
           <ReplacementString>$(SdkBrandName)</ReplacementString>
@@ -87,11 +87,11 @@
         </DistributionTemplateReplacement>
 
         <PostInstallScriptReplacement Include="%SDK_VERSION%">
-          <ReplacementString>$(SdkVersion)</ReplacementString>
+          <ReplacementString>$(Version)</ReplacementString>
         </PostInstallScriptReplacement>
 
         <ResourcesReplacement Include="{DOTNETSDKVERSION}">
-          <ReplacementString>$(SdkVersion)</ReplacementString>
+          <ReplacementString>$(Version)</ReplacementString>
         </ResourcesReplacement>
         <ResourcesReplacement Include="{DOTNETRUNTIMEVERSION}">
           <ReplacementString>$(MicrosoftNETCoreAppRuntimePackageVersion)</ReplacementString>
@@ -162,7 +162,7 @@
       <Exec Command="pkgbuild \
                      --root '$(SdkInternalLayoutPath)' \
                      --identifier '$(SdkComponentId)' \
-                     --version '$(SdkVersion)' \
+                     --version '$(Version)' \
                      --install-location '$(PkgInstallDirectory)' \
                      --scripts '$(SdkPkgDestinationScriptsDirectory)' \
                      '$(SdkPKGInstallerFile)'" />
@@ -201,7 +201,7 @@
         ReplacementStrings="@(DistributionTemplateReplacement -> '%(ReplacementString)')" />
 
       <Exec Command="productbuild \
-                     --version '$(SdkVersion)' \
+                     --version '$(Version)' \
                      --identifier '$(SdkProductArchiveId)' \
                      --package-path '$(PkgIntermediateDirectory)' \
                      --resources '$(SdkProductArchiveResourcesDirectory)' \

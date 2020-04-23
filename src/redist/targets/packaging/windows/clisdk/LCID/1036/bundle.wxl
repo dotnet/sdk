@@ -50,31 +50,31 @@
   <String Id="FirstTimeWelcomeMessage">L'installation a réussi.
 
 Les éléments suivants ont été installés sur : '[DOTNETHOME]'
-    • SDK .NET Core [DOTNETSDKVERSION]
-    • Runtime .NET Core [DOTNETRUNTIMEVERSION]
+    • SDK .NET [DOTNETSDKVERSION]
+    • Runtime .NET [DOTNETRUNTIMEVERSION]
     • Runtime ASP.NET Core [ASPNETCOREVERSION]
-    • Runtime .NET Core Windows Desktop [WINFORMSANDWPFVERSION]
+    • Runtime .NET Windows Desktop [WINFORMSANDWPFVERSION]
 
 Ce produit collecte des données d'utilisation
     • Pour plus d'informations ou pour vous y opposer, consultez https://aka.ms/dotnet-cli-telemetry
 
 Ressources
-    • Documentation .NET Core sur https://aka.ms/dotnet-docs
+    • Documentation .NET sur https://aka.ms/dotnet-docs
     • Documentation du kit SDK sur https://aka.ms/dotnet-sdk-docs
-    • Notes de publication sur https://aka.ms/netcore3releasenotes
+    • Notes de publication sur https://aka.ms/dotnet5-release-notes
     • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">Kit SDK .NET Core</String>
+  <String Id="WelcomeHeaderMessage">SDK .NET</String>
   <String Id="WelcomeDescription">
-    .NET Core est open source, multiplatforme et pris en charge par Microsoft. Vous pouvez l'utiliser pour créer votre prochaine application avec C#, F# ou VB. Nous espérons qu'il vous plaira !</String>
-  <String Id="LearnMoreTitle">En savoir plus sur .NET Core</String>
+    .NET est open source, multiplatforme et pris en charge par Microsoft. Vous pouvez l'utiliser pour créer votre prochaine application avec C#, F# ou VB. Nous espérons qu'il vous plaira !</String>
+  <String Id="LearnMoreTitle">En savoir plus sur .NET</String>
   <String Id="ResourcesHeader">Ressources</String>
-  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentation Core&lt;/A&gt;</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentation .NET&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentation du kit SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Déclaration de confidentialité&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;CLUF de la bibliothèque .NET&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Note d'installation</String>
   <String Id="InstallationNote">Une commande va être exécutée pendant le processus d'installation, ce qui va améliorer la vitesse de restauration du projet et permettre l'accès hors connexion. L'opération va prendre environ une minute.
   </String>
-  <String Id="VisualStudioWarning">Si vous envisagez d'utiliser .NET Core 3.1 avec Visual Studio, Visual Studio 2019 16.4 ou une version plus récente est nécessaire. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;En savoir plus&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si vous envisagez d'utiliser .NET 5.0 avec Visual Studio, Visual Studio 2019 16.6 ou une version plus récente est nécessaire. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;En savoir plus&lt;/A&gt;.
   </String>
 </WixLocalization>

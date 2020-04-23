@@ -7,7 +7,7 @@
     <conclusion file="conclusion.html" mime-type="text/html" />
     <volume-check>
         <allowed-os-versions>
-            <os-version min="10.12" />
+            <os-version min="10.13" />
         </allowed-os-versions>
     </volume-check>
     <choices-outline>
@@ -19,7 +19,7 @@
         <line choice="{SharedHostComponentId}.pkg" />
         <line choice="{CLISdkComponentId}.pkg"/>
     </choices-outline>
-    <choice id="{NetCoreAppTargetingPackComponentId}.pkg" visible="true" title="{NetCoreAppTargetingPackBrandName} (x64)" description="The .NET Core Targeting Pack">
+    <choice id="{NetCoreAppTargetingPackComponentId}.pkg" visible="true" title="{NetCoreAppTargetingPackBrandName} (x64)" description="The .NET Targeting Pack">
         <pkg-ref id="{NetCoreAppTargetingPackComponentId}.pkg" />
     </choice>
     <choice id="{NetStandardTargetingPackComponentId}.pkg" visible="true" title="{NetStandardTargetingPackBrandName} (x64)" description="The .NET Standard 2.1 Targeting Pack">
@@ -28,16 +28,16 @@
     <choice id="{NetCoreAppHostPackComponentId}.pkg" visible="true" title="{NetCoreAppHostPackBrandName} (x64)" description="The .NET App Host Pack">
         <pkg-ref id="{NetCoreAppHostPackComponentId}.pkg" />
     </choice>
-    <choice id="{SharedFxComponentId}.pkg" visible="true" title="{SharedFxBrandName} (x64)" description="The .NET Core Shared Framework">
+    <choice id="{SharedFxComponentId}.pkg" visible="true" title="{SharedFxBrandName} (x64)" description="The .NET Shared Framework">
         <pkg-ref id="{SharedFxComponentId}.pkg" />
     </choice>
-    <choice id="{HostFxrComponentId}.pkg" visible="true" title="{HostFxrBrandName} (x64)" description="The .NET Core Host FX Resolver">
+    <choice id="{HostFxrComponentId}.pkg" visible="true" title="{HostFxrBrandName} (x64)" description="The .NET Host FX Resolver">
         <pkg-ref id="{HostFxrComponentId}.pkg" />
     </choice>
-    <choice id="{SharedHostComponentId}.pkg" visible="true" title="{SharedHostBrandName} (x64)" description="The .NET Core Shared Host.">
+    <choice id="{SharedHostComponentId}.pkg" visible="true" title="{SharedHostBrandName} (x64)" description="The .NET Shared Host.">
         <pkg-ref id="{SharedHostComponentId}.pkg" />
     </choice>
-    <choice id="{CLISdkComponentId}.pkg" visible="true" title="{CLISdkBrandName} (x64)" description="The .NET Core SDK">
+    <choice id="{CLISdkComponentId}.pkg" visible="true" title="{CLISdkBrandName} (x64)" description="The .NET SDK">
         <pkg-ref id="{CLISdkComponentId}.pkg"/>
     </choice>
     <pkg-ref id="{NetCoreAppTargetingPackComponentId}.pkg">{NetCoreAppTargetingPackComponentId}.pkg</pkg-ref>

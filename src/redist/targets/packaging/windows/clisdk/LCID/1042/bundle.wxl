@@ -42,39 +42,39 @@
   <String Id="FailureRestartButton">다시 시작(&amp;R)</String>
   <String Id="FailureCloseButton">닫기(&amp;C)</String>
   <String Id="FilesInUseHeader">사용 중인 파일</String>
-  <String Id="FilesInUseLabel">다음의 응용 프로그램이 업데이트해야 할 파일을 사용 중입니다.</String>
-  <String Id="FilesInUseCloseRadioButton">응용 프로그램을 닫고 다시 시작합니다(&amp;A).</String>
+  <String Id="FilesInUseLabel">다음의 애플리케이션이 업데이트해야 할 파일을 사용 중입니다.</String>
+  <String Id="FilesInUseCloseRadioButton">애플리케이션을 닫고 다시 시작합니다(&amp;A).</String>
   <String Id="FilesInUseDontCloseRadioButton">애플리케이션을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다.</String>
   <String Id="FilesInUseOkButton">확인(&amp;O)</String>
   <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
   <String Id="FirstTimeWelcomeMessage">설치가 완료되었습니다.
 
 다음이 '[DOTNETHOME]'에 설치되었습니다.
-    • .NET Core SDK [DOTNETSDKVERSION]
-    • .NET Core 런타임 [DOTNETRUNTIMEVERSION]
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET 런타임 [DOTNETRUNTIMEVERSION]
     • ASP.NET Core 런타임 [ASPNETCOREVERSION]
-    • .NET Core Windows 데스크톱 런타임 [WINFORMSANDWPFVERSION]
+    • .NET Windows 데스크톱 런타임 [WINFORMSANDWPFVERSION]
 
-이 제품은 사용량 데이터를 수집합니다.
+이 제품은 사용량 현황 데이터를 수집합니다.
     • 추가 정보 및 옵트아웃 https://aka.ms/dotnet-cli-telemetry
 
 리소스
-    • .NET Core 설명서 https://aka.ms/dotnet-docs
+    • .NET 설명서 https://aka.ms/dotnet-docs
     • SDK 설명서 https://aka.ms/dotnet-sdk-docs
-    • 릴리스 정보 https://aka.ms/netcore3releasenotes
+    • 릴리스 정보 https://aka.ms/dotnet5-release-notes
     • 자습서 https://aka.ms/dotnet-tutorials</String>
-  <String Id="WelcomeHeaderMessage">.NET Core SDK</String>
+  <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    Microsoft가 지원하는 플랫폼 간 오픈 소스인 .NET Core를 사용하여 C#, F# 또는 VB로 다음 앱을 빌드할 수 있습니다. .NET Core를 유용하게 사용하시길 바랍니다.</String>
-  <String Id="LearnMoreTitle">.NET Core에 대한 자세한 정보</String>
+    Microsoft가 지원하는 플랫폼 간 오픈 소스인 .NET을 사용하여 C#, F# 또는 VB로 다음 앱을 빌드할 수 있습니다. .NET Core를 유용하게 사용하시길 바랍니다.</String>
+  <String Id="LearnMoreTitle">.NET에 대한 자세한 정보</String>
   <String Id="ResourcesHeader">리소스</String>
-  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Core 설명서&lt;/A&gt;</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET 설명서&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK 설명서&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;개인정보처리방침&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;.NET Library EULA&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">설치 정보</String>
   <String Id="InstallationNote">프로젝트 복원 속도를 향상하고 오프라인 액세스를 사용할 수 있도록 하는 설치 프로세스 중 명령이 실행됩니다. 완료하는 데 최대 1분이 걸립니다.
   </String>
-  <String Id="VisualStudioWarning">Visual Studio와 함께 .NET Core 3.1을 사용하려면 Visual Studio 2019 16.4 이상이 필요합니다. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;자세한 정보&lt;/A&gt;
+  <String Id="VisualStudioWarning">Visual Studio와 함께 .NET 5.0을 사용하려면 Visual Studio 2019 16.6 이상이 필요합니다. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;자세한 정보&lt;/A&gt;.
   </String>
 </WixLocalization>

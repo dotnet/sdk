@@ -176,11 +176,11 @@
       DependsOnTargets="SetSignProps">
 
     <ItemGroup>
+      <TemplatesMsiFilesToSign Include="$(Templates50MSIInstallerFile)" />
       <TemplatesMsiFilesToSign Include="$(Templates31MSIInstallerFile)" />
       <TemplatesMsiFilesToSign Include="$(Templates30MSIInstallerFile)" />
-      <TemplatesMsiFilesToSign Include="$(Templates22MSIInstallerFile)" />
       <TemplatesMsiFilesToSign Include="$(Templates21MSIInstallerFile)" />
-      
+
       <TemplatesMsiFileSignInfo Include="@(TemplatesMsiFilesToSign->'%(Filename)%(Extension)')">
         <CertificateName>$(InternalCertificateId)</CertificateName>
       </TemplatesMsiFileSignInfo>

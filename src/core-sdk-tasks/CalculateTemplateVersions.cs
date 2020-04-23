@@ -13,13 +13,7 @@ namespace Microsoft.DotNet.Cli.Build
         public string AspNetCorePackageVersionTemplate { get; set; }
 
         [Required]
-        public string GitCommitCount { get; set; }
-
-        [Required]
         public string VersionSuffix { get; set; }
-
-        [Output]
-        public string BundledTemplateMSIVersion { get; set; }
 
         [Output]
         public string BundledTemplateInstallPath { get; set; }
@@ -27,23 +21,28 @@ namespace Microsoft.DotNet.Cli.Build
         [Output]
         public string BundledTemplateMajorMinorVersion { get; set; }
 
+        [Output]
+        public string BundledTemplateMajorMinorPatchVersion { get; set; }
+
         private const int _patchVersionResetOffset = 1;
 
         public override bool Execute()
         {
-            var result = Calculate(AspNetCorePackageVersionTemplate, GitCommitCount, VersionSuffix);
-            BundledTemplateMSIVersion = result.BundledTemplateMsiVersion;
+            var result = Calculate(AspNetCorePackageVersionTemplate, VersionSuffix);
             BundledTemplateInstallPath = result.BundledTemplateInstallPath;
             BundledTemplateMajorMinorVersion = result.BundledTemplateMajorMinorVersion;
+            BundledTemplateMajorMinorPatchVersion = result.BundledTemplateMajorMinorPatchVersion;
 
             return true;
         }
 
         public static
-            (string BundledTemplateMsiVersion,
-            string BundledTemplateInstallPath,
-            string BundledTemplateMajorMinorVersion) Calculate(string aspNetCorePackageVersionTemplate,
-                string gitCommitCount, string versionSuffix)
+            (string BundledTemplateInstallPath,
+            string BundledTemplateMajorMinorVersion,
+			string BundledTemplateMajorMinorPatchVersion) 
+            Calculate(
+                string aspNetCorePackageVersionTemplate,
+                string versionSuffix)
         {
             var aspNetCoreTemplate = NuGetVersion.Parse(aspNetCorePackageVersionTemplate);
 
@@ -54,9 +53,9 @@ namespace Microsoft.DotNet.Cli.Build
                 : $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}";
 
             return (
-                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}.{gitCommitCount}",
                 bundledTemplateInstallPath,
-                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}");
+                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}", 
+                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}");
         }
 
         private static NuGetVersion GetBaseMajorMinorPatch(NuGetVersion aspNetCoreTemplate)

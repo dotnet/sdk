@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.DotNet.TestFramework;
@@ -36,8 +37,7 @@ namespace EndToEnd.Tests
             var runCommand = new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
-                .Should().Pass()
-                .And.HaveStdOutContaining("Hello World!");
+                .Should().Pass().And.HaveStdOutContaining("Hello World!");
 
             var binDirectory = new DirectoryInfo(projectDirectory).Sub("bin");
             binDirectory.Should().HaveFilesMatching("*.dll", SearchOption.AllDirectories);
@@ -79,8 +79,7 @@ namespace EndToEnd.Tests
             var runCommand = new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
-                .Should().Pass()
-                .And.HaveStdOutContaining("Hello World!");
+                .Should().Pass().And.HaveStdOutContaining("Hello World!");
         }
 
         [Theory]
@@ -96,15 +95,15 @@ namespace EndToEnd.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("wpf")]
-        [InlineData("winforms")]
+        [InlineData("wpf", Skip = "https://github.com/dotnet/wpf/issues/2363")]
+        [InlineData("winforms", Skip = "https://github.com/dotnet/wpf/issues/2363")]
         public void ItCanBuildDesktopTemplates(string templateName)
         {
             TestTemplateBuild(templateName);
         }
 
         [WindowsOnlyTheory]
-        [InlineData("wpf")]
+        [InlineData("wpf", Skip = "https://github.com/dotnet/wpf/issues/2363")]
         public void ItCanBuildDesktopTemplatesSelfContained(string templateName)
         {
             TestTemplateBuild(templateName);
@@ -129,7 +128,7 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
-            var buildArgs = selfContained ? "" :$"-r {RuntimeEnvironment.GetRuntimeIdentifier()}";
+            var buildArgs = selfContained ? "" :$"-r {RuntimeInformation.RuntimeIdentifier}";
             var dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             new BuildCommand()
                  .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet

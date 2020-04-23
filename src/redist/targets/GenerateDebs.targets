@@ -7,8 +7,7 @@
   </ItemGroup>
   
   <Target Name="SetupDebProps"
-        DependsOnTargets="SetSdkVersionInfo;
-                          GetCurrentRuntimeInformation;
+        DependsOnTargets="GetCurrentRuntimeInformation;
                           SetupFileExtensions;
                           CalculateLinuxNativeInstallerDependencyVersions;
                           SetSdkBrandingInfo">
@@ -172,7 +171,7 @@
         <ReplacementString>$(AspNetCoreRefVersionWithTilde)</ReplacementString>
       </DebianConfigTokenValues>
       <DebianPostInstTokenValues Include="%SDK_VERSION%">
-        <ReplacementString>$(SdkVersion)</ReplacementString>
+        <ReplacementString>$(Version)</ReplacementString>
       </DebianPostInstTokenValues>
     </ItemGroup>
 
@@ -264,7 +263,7 @@
 
       <!-- Create layout: Man Pages -->
       <Copy
-        DestinationFiles="@(SdkDebManPageFiles->'$(LayoutDocsDir)/%(RecursiveDir)%(Filename)-$(SdkVersion)%(Extension)')"
+        DestinationFiles="@(SdkDebManPageFiles->'$(LayoutDocsDir)/%(RecursiveDir)%(Filename)-$(Version)%(Extension)')"
         SourceFiles="@(SdkDebManPageFiles)"
         OverwriteReadOnlyFiles="True"
         SkipUnchangedFiles="False"
@@ -291,12 +290,15 @@
                      InputDirectory="$(LayoutDirectory)"
                      OutputDirectory="$(DotNetDebToolOutputDirectory)"
                      PackageName="$(SdkDebianPackageName)"
-                     PackageVersion="$(SdkVersion)"
+                     PackageVersion="$(Version)"
                      WorkingDirectory="$(DotnetDebToolDir)" />
 
-      <!-- Copy SDK package to output -->
+      <!-- Copy SDK package to output
+          dbgsym packages is Debian Debug Symbol Packages https://wiki.ubuntu.com/Debug%20Symbol%20Packages,
+          we don't use them.
+      -->
       <ItemGroup>
-        <GeneratedDebFiles Include="$(DotNetDebToolOutputDirectory)/*.deb" />
+        <GeneratedDebFiles Include="$(DotNetDebToolOutputDirectory)/*.deb" Exclude="$(DotNetDebToolOutputDirectory)/*dbgsym*.deb" />
       </ItemGroup>
 
       <Error Text="@(GeneratedDebFiles->Count()) .deb files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />

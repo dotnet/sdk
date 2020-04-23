@@ -5,18 +5,19 @@
     
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
-      <_crossDir Condition="'$(Architecture)' == 'arm64'">/x64_arm64</_crossDir>
+      <_crossDir Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' != 'arm64'">/x64_arm64</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">/x86_arm</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">/x64_arm</_crossDir>
       <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools$(_crossDir)/crossgen$(ExeExtension)</CrossgenPath>
-      <LibCLRJitRid Condition="!$(Architecture.StartsWith('arm'))">$(SharedFrameworkRid)</LibCLRJitRid>
-      <LibCLRJitRid Condition="'$(Architecture)' == 'arm64'">x64_arm64</LibCLRJitRid>
+      <LibCLRJitRid Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' == 'x64'">x64_arm64</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86_arm</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">x64_arm</LibCLRJitRid>
+      <LibCLRJitRid Condition="'$(LibCLRJitRid)' == ''">$(SharedFrameworkRid)</LibCLRJitRid>
       <LibCLRJitPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/$(LibCLRJitRid)/native/$(DynamicLibPrefix)clrjit$(DynamicLibExtension)</LibCLRJitPath>
       <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
       <DIASymReaderCrossgenFilter>*</DIASymReaderCrossgenFilter>
       <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86</DIASymReaderCrossgenFilter>
+      <DIASymReaderCrossgenFilter Condition="'$(Architecture)' == 'arm64' And '$(OSName)' == 'win'">amd64</DIASymReaderCrossgenFilter>
     </PropertyGroup>
 
     <!-- Download the runtime package with the crossgen executable in it -->
@@ -48,6 +49,11 @@
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\netcoreapp*\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\netcoreapp*\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\netcoreapp*\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\netcoreapp*\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\ILLink.Tasks\tools\netcoreapp*\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\netcoreapp*\**\*" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(SdkOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
@@ -87,6 +93,14 @@
 
       <!-- FSharp.Build.dll causes the FSharp folder to be included. Remove it, as we don't want other FSharp dlls being included in the crossgen. -->
       <RemainingFolders Remove="$(PublishDir)FSharp\**\*" />
+
+      <!-- RemainingFolders should be ordered so that dependencies are first looked up in the leaf folders. 
+        Currently it is not ordered and crossgen is picking the wrong dlls when resolving dependencies: https://github.com/dotnet/core-sdk/pull/6774
+        As a partial solution, we remove the root folder from the list and put it back to the end.
+        Remove the following 2 lines when resolving this issue: https://github.com/dotnet/core-sdk/issues/6877 -->
+      <RemainingFolders Remove="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
+      <RemainingFolders Include="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
+
     </ItemGroup>
 
     <!-- Crossgen does not support generating symbols on Mac  -->
@@ -134,7 +148,7 @@
 
     <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
     <Move SourceFiles="@(PdbsToMove)"
-          DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(SdkVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
   <Target Name="ChmodLayout"

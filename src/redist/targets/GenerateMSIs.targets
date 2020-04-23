@@ -39,9 +39,9 @@
     <PropertyGroup>
       <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
       <SdkDependencyKeyName>Dotnet_CLI</SdkDependencyKeyName>
+      <Templates50MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-50templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates50MSIInstallerFile>
       <Templates31MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-31templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates31MSIInstallerFile>
       <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-30templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
-      <Templates22MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-22templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates22MSIInstallerFile>
       <Templates21MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-21templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
       <SdkPlaceholderMSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
       <SdkPlaceholderDependencyKeyName>NetCore_SdkPlaceholder</SdkPlaceholderDependencyKeyName>
@@ -54,25 +54,53 @@
       <SdkLayoutOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdk)</SdkLayoutOutputDirectory>
       <MSBuildExtensionsOutputDirectory>$(LayoutDirectory)MSBuildExtensions</MSBuildExtensionsOutputDirectory>-->
     </PropertyGroup>
+
+    <Exec Command="git rev-list --count HEAD"
+          ConsoleToMSBuild="true"
+          Condition=" '$(GitCommitCount)' == '' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
+    </Exec>
+
+    <Error Condition=" '$(OfficialBuild)' == 'true' And '$(_PatchNumber)' == '' "
+           Text="_PatchNumber should not be empty in an official build. Check if there were changes in Arcade." />
+
+    <PropertyGroup>
+      <GitCommitCount>$(GitCommitCount.PadLeft(6,'0'))</GitCommitCount>
+
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
+      <CombinedBuildNumberAndRevision>$(_PatchNumber)</CombinedBuildNumberAndRevision>
+      <!-- Fallback to commit count when patch number is not set. This happens only during CI. -->
+      <CombinedBuildNumberAndRevision Condition=" '$(CombinedBuildNumberAndRevision)' == '' ">$(GitCommitCount)</CombinedBuildNumberAndRevision>
+      
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->    
+      <SDKBundleVersion>$(FileVersion)</SDKBundleVersion>
+      <!-- Fallback to commit count when patch number is not set. This happens only during CI. -->
+      <SDKBundleVersion Condition=" '$(SDKBundleVersion)' == '' ">$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
+    </PropertyGroup>
   </Target>
 
   <Target Name="MsiTargetsSetupInputOutputs"
-          DependsOnTargets="GenerateLayout;SetupWixProperties;GetCoreSdkGitCommitInfo">
+          DependsOnTargets="GenerateLayout;SetupWixProperties">
     <!-- Consumed By Publish -->
     <ItemGroup>
-      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates31MSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates22MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
+      <GeneratedInstallers Include="$(SdkMSIInstallerFile);$(Templates50MSIInstallerFile);$(Templates31MSIInstallerFile);$(Templates30MSIInstallerFile);$(Templates21MSIInstallerFile);$(CombinedFrameworkSdkHostMSIInstallerFile);$(SdkPlaceholderMSIInstallerFile)" />
     </ItemGroup>
 
-    <GenerateMsiVersion CommitCount="$(GitCommitCount)"
+    <GenerateMsiVersion VersionRevision="$(CombinedBuildNumberAndRevision)"
                         VersionMajor="$(VersionMajor)"
                         VersionMinor="$(VersionMinor)"
-                        VersionPatch="$(VersionPatch)">
+                        VersionPatch="$(VersionFeature)">
       <Output TaskParameter="MsiVersion" PropertyName="MsiVersion" />
     </GenerateMsiVersion>
 
     <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="SdkInstallerUpgradeCode" />
+    </GenerateGuidFromName>
+
+    <GenerateGuidFromName Name="$(Templates50MSIInstallerFile)">
+      <Output TaskParameter="OutputGuid"
+          PropertyName="Templates50InstallerUpgradeCode" />
     </GenerateGuidFromName>
 
     <GenerateGuidFromName Name="$(Templates31MSIInstallerFile)">
@@ -83,11 +111,6 @@
     <GenerateGuidFromName Name="$(Templates30MSIInstallerFile)">
       <Output TaskParameter="OutputGuid"
           PropertyName="Templates30InstallerUpgradeCode" />
-    </GenerateGuidFromName>
-
-    <GenerateGuidFromName Name="$(Templates22MSIInstallerFile)">
-      <Output TaskParameter="OutputGuid"
-          PropertyName="Templates22InstallerUpgradeCode" />
     </GenerateGuidFromName>
 
     <GenerateGuidFromName Name="$(Templates21MSIInstallerFile)">
@@ -144,7 +167,7 @@
                       '$(ToolsetBrandName)' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
-                      '$(NugetVersion)' ^
+                      '$(Version)' ^
                       '$(SdkInstallerUpgradeCode)' ^
                       '$(SdkDependencyKeyName)' ^
                       '$(Architecture)' ^
@@ -164,7 +187,7 @@
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
-                      '$(NugetVersion)' ^
+                      '$(Version)' ^
                       '$(SdkPlaceholderInstallerUpgradeCode)' ^
                       '$(SdkPlaceholderDependencyKeyName)' ^
                       '$(Architecture)' ^
@@ -198,6 +221,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <TemplatesMsiComponent Include="NetCore50TemplatesMsi">
+        <LayoutPath>$(Templates50LayoutPath.TrimEnd('\'))</LayoutPath>
+        <MSIInstallerFile>$(Templates50MSIInstallerFile)</MSIInstallerFile>
+        <BrandName>$(BundledTemplates50BrandName)</BrandName>
+        <MsiVersion>$(BundledTemplates50MsiVersion)</MsiVersion>
+        <UpgradeCode>$(Templates50InstallerUpgradeCode)</UpgradeCode>
+        <DependencyKeyName>NetCore_Templates_5.0</DependencyKeyName>
+      </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore31TemplatesMsi">
         <LayoutPath>$(Templates31LayoutPath.TrimEnd('\'))</LayoutPath>
         <MSIInstallerFile>$(Templates31MSIInstallerFile)</MSIInstallerFile>
@@ -213,14 +244,6 @@
         <MsiVersion>$(BundledTemplates30MsiVersion)</MsiVersion>
         <UpgradeCode>$(Templates30InstallerUpgradeCode)</UpgradeCode>
         <DependencyKeyName>NetCore_Templates_3.0</DependencyKeyName>
-      </TemplatesMsiComponent>
-      <TemplatesMsiComponent Include="NetCore22TemplatesMsi">
-        <LayoutPath>$(Templates22LayoutPath.TrimEnd('\'))</LayoutPath>
-        <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
-        <BrandName>$(BundledTemplates22BrandName)</BrandName>
-        <MsiVersion>$(BundledTemplates22MsiVersion)</MsiVersion>
-        <UpgradeCode>$(Templates22InstallerUpgradeCode)</UpgradeCode>
-        <DependencyKeyName>NetCore_Templates_2.2</DependencyKeyName>
       </TemplatesMsiComponent>
       <TemplatesMsiComponent Include="NetCore21TemplatesMsi">
         <LayoutPath>$(Templates21LayoutPath.TrimEnd('\'))</LayoutPath>
@@ -258,13 +281,13 @@
                       '$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
                       '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
-                      '$(Templates31MSIInstallerFile)' ^
+                      '$(Templates50MSIInstallerFile)' ^
                       '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(SdkBrandName)' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
-                      '$(NugetVersion)' ^
+                      '$(Version)' ^
                       '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
                       '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
                       '$(SdkDependencyKeyName)' ^
@@ -335,6 +358,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <TemplatesNupkgComponent Include="NetCore50TemplatesNupkg">
+        <MSIInstallerFile>$(Templates50MSIInstallerFile)</MSIInstallerFile>
+        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates50MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
+        <MajorMinorVersion>$(BundledTemplates50MajorMinorVersion)</MajorMinorVersion>
+      </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore31TemplatesNupkg">
         <MSIInstallerFile>$(Templates31MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates31MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
@@ -344,11 +372,6 @@
         <MSIInstallerFile>$(Templates30MSIInstallerFile)</MSIInstallerFile>
         <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates30MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
         <MajorMinorVersion>$(BundledTemplates30MajorMinorVersion)</MajorMinorVersion>
-      </TemplatesNupkgComponent>
-      <TemplatesNupkgComponent Include="NetCore22TemplatesNupkg">
-        <MSIInstallerFile>$(Templates22MSIInstallerFile)</MSIInstallerFile>
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.$(BundledTemplates22MajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
-        <MajorMinorVersion>$(BundledTemplates22MajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
       <TemplatesNupkgComponent Include="NetCore21TemplatesNupkg">
         <MSIInstallerFile>$(Templates21MSIInstallerFile)</MSIInstallerFile>
