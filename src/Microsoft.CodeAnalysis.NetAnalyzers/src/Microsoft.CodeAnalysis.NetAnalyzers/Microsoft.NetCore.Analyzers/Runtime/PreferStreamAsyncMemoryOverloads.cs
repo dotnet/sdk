@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
-    /// CA1834: Prefer Memory/ReadOnlyMemory overloads for Stream ReadAsync/WriteAsync methods.
+    /// CA1835: Prefer Memory/ReadOnlyMemory overloads for Stream ReadAsync/WriteAsync methods.
     ///
     /// Undesired methods (available since .NET Framework 4.5):
     ///
@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PreferStreamAsyncMemoryOverloads : DiagnosticAnalyzer
     {
-        internal const string RuleId = "CA1834";
+        internal const string RuleId = "CA1835";
 
         private static readonly LocalizableString s_localizableTitleRead = new LocalizableResourceString(
             nameof(MicrosoftNetCoreAnalyzersResources.PreferStreamReadAsyncMemoryOverloadsTitle),
