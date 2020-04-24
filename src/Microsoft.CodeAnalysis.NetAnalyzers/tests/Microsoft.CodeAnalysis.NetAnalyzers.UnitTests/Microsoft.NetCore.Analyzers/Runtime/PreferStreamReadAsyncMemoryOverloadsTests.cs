@@ -95,7 +95,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_NoAwait_ReturnMethod()
+        public Task CS_Analyzer_NoDiagnostic_FileStream_NoAwait_ReturnMethod()
         {
             return AnalyzeCSAsync(@"
 using System;
@@ -107,6 +107,24 @@ class C
     public Task M(FileStream fs, byte[] buffer)
     {
         return fs.ReadAsync(buffer, 0, (int)fs.Length);
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_ReturnMethod()
+        {
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public Task M(Stream s, byte[] buffer)
+    {
+        return s.ReadAsync(buffer, 0, 1);
     }
 }
             ");
@@ -267,7 +285,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_NoAwait_ReturnMethod()
+        public Task VB_Analyzer_NoDiagnostic_FileStream_NoAwait_ReturnMethod()
         {
             return AnalyzeVBAsync(@"
 Imports System
@@ -277,6 +295,22 @@ Imports System.Threading.Tasks
 Friend Class C
     Public Function M(ByVal fs As FileStream, ByVal buffer As Byte()) As Task
         Return fs.ReadAsync(buffer, 0, fs.Length)
+    End Function
+End Class
+            ");
+        }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_ReturnMethod()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Imports System.Threading.Tasks
+Friend Class C
+    Public Function M(ByVal s As Stream, ByVal buffer As Byte()) As Task
+        Return s.ReadAsync(buffer, 0, 1)
     End Function
 End Class
             ");

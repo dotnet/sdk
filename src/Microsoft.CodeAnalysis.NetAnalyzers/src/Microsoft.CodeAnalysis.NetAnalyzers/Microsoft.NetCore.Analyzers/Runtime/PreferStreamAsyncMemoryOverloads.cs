@@ -242,14 +242,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 IInvocationOperation invocation = (IInvocationOperation)context.Operation;
 
+                IOperation parentOperation = invocation.Parent;
+                if (parentOperation == null)
+                {
+                    return;
+                }
                 // Only accept these two cases:
                 // - await {WriteAsync()|ReadAsync()}
                 // - await {WriteAsync()|ReadAsync()}.ConfigureAwait()
-                if ((invocation.Parent != null && invocation.Parent.Kind == OperationKind.Await) ||
-                        (invocation.Parent!.Parent != null && invocation.Parent!.Parent.Kind == OperationKind.Await &&
-                         invocation.Parent!.Parent is IAwaitOperation awaitOperation &&
-                         awaitOperation.Operation is IInvocationOperation parentInvocation &&
-                            (parentInvocation.TargetMethod.OriginalDefinition.Equals(configureAwaitMethod) || parentInvocation.TargetMethod.OriginalDefinition.Equals(genericConfigureAwaitMethod))))
+                if (parentOperation.Kind == OperationKind.Await ||
+                        (parentOperation.Parent != null && parentOperation.Parent.Kind == OperationKind.Await &&
+                         parentOperation.Parent is IAwaitOperation awaitOperation && awaitOperation.Operation is IInvocationOperation grandparentInvocation &&
+                            (grandparentInvocation.TargetMethod.OriginalDefinition.Equals(configureAwaitMethod) ||
+                             grandparentInvocation.TargetMethod.OriginalDefinition.Equals(genericConfigureAwaitMethod))))
                 {
                     // Verify if the current method's type is or inherits from Stream
                     if (!IsDefinedBy(invocation.TargetMethod, streamType, out IMethodSymbol method))
