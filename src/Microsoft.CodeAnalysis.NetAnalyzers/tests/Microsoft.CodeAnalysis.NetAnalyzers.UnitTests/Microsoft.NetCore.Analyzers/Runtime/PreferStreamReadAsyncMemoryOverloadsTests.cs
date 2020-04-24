@@ -122,9 +122,9 @@ using System.Threading;
 using System.Threading.Tasks;
 class C
 {
-    public Task M(Stream s, byte[] buffer)
+    public void M(Stream s, byte[] buffer)
     {
-        return s.ReadAsync(buffer, 0, 1);
+        s.ReadAsync(buffer, 0, 1);
     }
 }
             ");
@@ -308,10 +308,10 @@ Imports System
 Imports System.IO
 Imports System.Threading
 Imports System.Threading.Tasks
-Friend Class C
-    Public Function M(ByVal s As Stream, ByVal buffer As Byte()) As Task
-        Return s.ReadAsync(buffer, 0, 1)
-    End Function
+Class C
+    Public Sub M(ByVal s As Stream, ByVal buffer As Byte())
+        s.ReadAsync(buffer, 0, 1)
+    End Sub
 End Class
             ");
         }
