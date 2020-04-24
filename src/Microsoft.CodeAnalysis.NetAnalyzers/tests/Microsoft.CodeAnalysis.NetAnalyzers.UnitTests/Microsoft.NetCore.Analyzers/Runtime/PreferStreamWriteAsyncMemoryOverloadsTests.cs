@@ -97,7 +97,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_NoAwait_ReturnMethod()
+        public Task CS_Analyzer_NoDiagnostic_FileStream_NoAwait_ReturnMethod()
         {
             return AnalyzeCSAsync(@"
 using System;
@@ -109,6 +109,46 @@ class C
     public Task M(FileStream fs, byte[] buffer)
     {
         return fs.WriteAsync(buffer, 0, buffer.Length);
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod()
+        {
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public void M(Stream s, byte[] buffer)
+    {
+        s.WriteAsync(buffer, 0, 1);
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod_InvokeGetBufferMethod()
+        {
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public byte[] GetBuffer()
+    {
+        return new byte[] { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
+    }
+    public void M(Stream s)
+    {
+        s.WriteAsync(GetBuffer(), 0, 1);
     }
 }
             ");
@@ -252,7 +292,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_NoAwait_ReturnMethod()
+        public Task VB_Analyzer_NoDiagnostic_FileStream_NoAwait_ReturnMethod()
         {
             return AnalyzeVBAsync(@"
 Imports System
@@ -268,7 +308,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_NoAwait_ExpressionBodyMethod()
+        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod()
         {
             return AnalyzeVBAsync(@"
 Imports System
@@ -276,12 +316,34 @@ Imports System.IO
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
-    Public Function M(ByVal fs As FileStream, ByVal buffer As Byte()) As Task
-        Return fs.WriteAsync(buffer, 0, buffer.Length)
-    End Function
+    Public Sub M(ByVal s As Stream, ByVal buffer As Byte())
+        s.WriteAsync(buffer, 0, 1)
+    End Sub
 End Class
             ");
         }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod_InvokeGetBufferMethod()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Imports System.Threading.Tasks
+Class C
+    Public Function GetBuffer() As Byte()
+        Return New Byte() {&HBA, &H5E, &HBA, &H11, &HF0, &H07, &HBA, &H11}
+    End Function
+    Public Sub M(ByVal s As Stream)
+        s.WriteAsync(GetBuffer(), 0, 1)
+    End Sub
+End Class
+            ");
+        }
+
+        // The method VB_Analyzer_NoDiagnostic_NoAwait_ExpressionBodyMethod()
+        // is skipped because VB does not support expression bodies for methods
 
         [Fact]
         public Task VB_Analyzer_NoDiagnostic_ContinueWith_ConfigureAwait()

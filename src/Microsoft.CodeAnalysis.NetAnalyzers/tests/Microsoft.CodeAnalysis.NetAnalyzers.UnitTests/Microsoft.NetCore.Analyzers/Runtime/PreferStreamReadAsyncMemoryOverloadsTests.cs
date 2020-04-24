@@ -113,7 +113,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_ReturnMethod()
+        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod()
         {
             return AnalyzeCSAsync(@"
 using System;
@@ -125,6 +125,28 @@ class C
     public void M(Stream s, byte[] buffer)
     {
         s.ReadAsync(buffer, 0, 1);
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public Task CS_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod_InvokeGetBufferMethod()
+        {
+            return AnalyzeCSAsync(@"
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public byte[] GetBuffer()
+    {
+        return new byte[] { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };
+    }
+    public void M(Stream s)
+    {
+        s.ReadAsync(GetBuffer(), 0, 1);
     }
 }
             ");
@@ -301,7 +323,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_ReturnMethod()
+        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod()
         {
             return AnalyzeVBAsync(@"
 Imports System
@@ -311,6 +333,25 @@ Imports System.Threading.Tasks
 Class C
     Public Sub M(ByVal s As Stream, ByVal buffer As Byte())
         s.ReadAsync(buffer, 0, 1)
+    End Sub
+End Class
+            ");
+        }
+
+        [Fact]
+        public Task VB_Analyzer_NoDiagnostic_Stream_NoAwait_VoidMethod_InvokeGetBufferMethod()
+        {
+            return AnalyzeVBAsync(@"
+Imports System
+Imports System.IO
+Imports System.Threading
+Imports System.Threading.Tasks
+Class C
+    Public Function GetBuffer() As Byte()
+        Return New Byte() {&HBA, &H5E, &HBA, &H11, &HF0, &H07, &HBA, &H11}
+    End Function
+    Public Sub M(ByVal s As Stream)
+        s.ReadAsync(GetBuffer(), 0, 1)
     End Sub
 End Class
             ");
