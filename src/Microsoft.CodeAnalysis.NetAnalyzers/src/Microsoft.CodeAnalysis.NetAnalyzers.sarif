@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "3.0.0",
+        "version": "3.3.0",
         "language": "en-US"
       },
       "rules": {
@@ -349,7 +349,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "3.0.0",
+        "version": "3.3.0",
         "language": "en-US"
       },
       "rules": {
@@ -363,6 +363,46 @@
             "category": "Design",
             "isEnabledByDefault": true,
             "typeName": "DoNotDeclareStaticMembersOnGenericTypesAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1002": {
+          "id": "CA1002",
+          "shortDescription": "Do not expose generic lists",
+          "fullDescription": "System.Collections.Generic.List<T> is a generic collection that's designed for performance and not inheritance. List<T> does not contain virtual members that make it easier to change the behavior of an inherited class.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1002",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotExposeGenericLists",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1005": {
+          "id": "CA1005",
+          "shortDescription": "Avoid excessive parameters on generic types",
+          "fullDescription": "The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1005",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": false,
+            "typeName": "AvoidExcessiveParametersOnGenericTypes",
             "languages": [
               "C#",
               "Visual Basic"
@@ -774,6 +814,45 @@
             ]
           }
         },
+        "CA1045": {
+          "id": "CA1045",
+          "shortDescription": "Do not pass types by reference",
+          "fullDescription": "Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1045",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotPassTypesByReference",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1047": {
+          "id": "CA1047",
+          "shortDescription": "Do not declare protected member in sealed type",
+          "fullDescription": "Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1047",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotDeclareProtectedMembersInSealedTypes",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
         "CA1050": {
           "id": "CA1050",
           "shortDescription": "Declare types in namespaces",
@@ -1091,6 +1170,24 @@
             ]
           }
         },
+        "CA1070": {
+          "id": "CA1070",
+          "shortDescription": "Do not declare event fields as virtual",
+          "fullDescription": "Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1070",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotDeclareEventFieldsAsVirtual",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
         "CA1303": {
           "id": "CA1303",
           "shortDescription": "Do not pass literals as localized parameters",
@@ -1331,6 +1428,26 @@
             ]
           }
         },
+        "CA1700": {
+          "id": "CA1700",
+          "shortDescription": "Do not name enum values 'Reserved'",
+          "fullDescription": "This rule assumes that an enumeration member that has a name that contains \"reserved\" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1700",
+          "properties": {
+            "category": "Naming",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotNameEnumValuesReserved",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
         "CA1707": {
           "id": "CA1707",
           "shortDescription": "Identifiers should not contain underscores",
@@ -1421,6 +1538,26 @@
             "category": "Naming",
             "isEnabledByDefault": true,
             "typeName": "DoNotPrefixEnumValuesWithTypeNameAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1713": {
+          "id": "CA1713",
+          "shortDescription": "Events should not have 'Before' or 'After' prefix",
+          "fullDescription": "Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1713",
+          "properties": {
+            "category": "Naming",
+            "isEnabledByDefault": false,
+            "typeName": "EventsShouldNotHaveBeforeOrAfterPrefix",
             "languages": [
               "C#",
               "Visual Basic"
@@ -1867,6 +2004,82 @@
             ]
           }
         },
+        "CA1830": {
+          "id": "CA1830",
+          "shortDescription": "Prefer strongly-typed Append and Insert method overloads on StringBuilder.",
+          "fullDescription": "StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1830",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferTypedStringBuilderAppendOverloads",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1831": {
+          "id": "CA1831",
+          "shortDescription": "Use AsSpan or AsMemory instead of Range-based indexers when appropriate",
+          "fullDescription": "The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1831",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseAsSpanInsteadOfRangeIndexerAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1832": {
+          "id": "CA1832",
+          "shortDescription": "Use AsSpan or AsMemory instead of Range-based indexers when appropriate",
+          "fullDescription": "The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1832",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseAsSpanInsteadOfRangeIndexerAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1833": {
+          "id": "CA1833",
+          "shortDescription": "Use AsSpan or AsMemory instead of Range-based indexers when appropriate",
+          "fullDescription": "The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1833",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseAsSpanInsteadOfRangeIndexerAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -2034,6 +2247,25 @@
             "typeName": "DoNotUseStackallocInLoopsAnalyzer",
             "languages": [
               "C#"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2015": {
+          "id": "CA2015",
+          "shortDescription": "Do not define finalizers for types derived from MemoryManager<T>",
+          "fullDescription": "Adding a finalizer to a type derived from MemoryManager<T> may permit memory to be freed while it is still in use by a Span<T>.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2015",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotDefineFinalizersForTypesDerivedFromMemoryManager",
+            "languages": [
+              "C#",
+              "Visual Basic"
             ],
             "tags": [
               "Telemetry"
@@ -2550,6 +2782,25 @@
             "typeName": "AssigningSymbolAndItsMemberInSameStatement",
             "languages": [
               "C#"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2247": {
+          "id": "CA2247",
+          "shortDescription": "Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.",
+          "fullDescription": "TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2247",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotCreateTaskCompletionSourceWithWrongArguments",
+            "languages": [
+              "C#",
+              "Visual Basic"
             ],
             "tags": [
               "Telemetry"
@@ -4083,7 +4334,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "3.0.0",
+        "version": "3.3.0",
         "language": "en-US"
       },
       "rules": {
