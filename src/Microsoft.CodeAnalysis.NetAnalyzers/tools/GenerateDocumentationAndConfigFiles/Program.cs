@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using Analyzer.Utilities;
@@ -19,7 +20,7 @@ namespace GenerateDocumentationAndConfigFiles
     {
         public static int Main(string[] args)
         {
-            const int expectedArguments = 15;
+            const int expectedArguments = 16;
 
             if (args.Length != expectedArguments)
             {
@@ -44,6 +45,11 @@ namespace GenerateDocumentationAndConfigFiles
             if (!bool.TryParse(args[14], out var containsPortedFxCopRules))
             {
                 containsPortedFxCopRules = false;
+            }
+
+            if (!bool.TryParse(args[15], out var generateAnalyzerRulesMissingDocumentationFile))
+            {
+                generateAnalyzerRulesMissingDocumentationFile = false;
             }
 
             var allRulesById = new SortedList<string, DiagnosticDescriptor>();
@@ -148,6 +154,11 @@ namespace GenerateDocumentationAndConfigFiles
             createAnalyzerDocumentationFile();
 
             createAnalyzerSarifFile();
+
+            if (generateAnalyzerRulesMissingDocumentationFile)
+            {
+                createAnalyzerRulesMissingDocumentationFile();
+            }
 
             return 0;
 
@@ -430,6 +441,64 @@ Rule ID | Title | Category | Enabled | Severity | CodeFix | Description |
                         default:
                             Debug.Assert(false);
                             goto case DiagnosticSeverity.Warning;
+                    }
+                }
+            }
+
+            void createAnalyzerRulesMissingDocumentationFile()
+            {
+                if (string.IsNullOrEmpty(analyzerDocumentationFileDir) || allRulesById.Count == 0)
+                {
+                    Debug.Assert(!containsPortedFxCopRules);
+                    return;
+                }
+
+                var directory = Directory.CreateDirectory(analyzerDocumentationFileDir);
+                var fileWithPath = Path.Combine(directory.FullName, "RulesMissingDocumentation.md");
+
+                var builder = new StringBuilder();
+                builder.Append(@"## Rules without documentation
+
+Rule ID | Missing Help Link | Title |
+--------|-------------------|-------|
+");
+
+                foreach (var ruleById in allRulesById)
+                {
+                    string ruleId = ruleById.Key;
+                    DiagnosticDescriptor descriptor = ruleById.Value;
+
+                    var helpLinkUri = descriptor.HelpLinkUri;
+                    if (!string.IsNullOrWhiteSpace(helpLinkUri) &&
+                        checkHelpLink(helpLinkUri))
+                    {
+                        // Rule with valid documentation link
+                        continue;
+                    }
+
+                    builder.AppendLine($"{ruleId} | {helpLinkUri} | {descriptor.Title} |");
+                }
+
+                File.WriteAllText(fileWithPath, builder.ToString());
+                return;
+
+                static bool checkHelpLink(string helpLink)
+                {
+                    try
+                    {
+                        if (!Uri.TryCreate(helpLink, UriKind.Absolute, out var uri))
+                        {
+                            return false;
+                        }
+
+                        var request = (HttpWebRequest)WebRequest.Create(uri);
+                        request.Method = "HEAD";
+                        using var response = request.GetResponse() as HttpWebResponse;
+                        return response?.StatusCode == HttpStatusCode.OK;
+                    }
+                    catch (WebException)
+                    {
+                        return false;
                     }
                 }
             }
