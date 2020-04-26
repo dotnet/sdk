@@ -1047,9 +1047,19 @@
         <target state="translated">Используйте встроенную инициализацию статических полей типов значений</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">Выполняется вызов конструктора по умолчанию (без параметров) для типа исключения, который является ArgumentException или производным от него, либо в параметризованный конструктор для типа исключения, который является ArgumentException или производным от него, передается неправильный строковый аргумент.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="new">Swap the arguments order</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1064,7 +1074,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">Вызывайте конструктор {0}, который содержит сообщение и (или) параметр paramName.</target>
+        <target state="needs-review-translation">Вызывайте конструктор {0}, который содержит сообщение и (или) параметр paramName.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">

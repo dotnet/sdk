@@ -21,3 +21,8 @@ CA2013 | Reliability | Warning | DoNotUseReferenceEqualsWithValueTypesAnalyzer, 
 CA2014 | Reliability | Warning | DoNotUseStackallocInLoopsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2014)
 CA2015 | Reliability | Warning | DoNotDefineFinalizersForTypesDerivedFromMemoryManager, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2015)
 CA2247 | Usage | Warning | DoNotCreateTaskCompletionSourceWithWrongArguments, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2247)
+
+### Changed Rules
+Rule ID | New Category | New Severity | Old Category | Old Severity | Notes
+--------|--------------|--------------|--------------|--------------|-------
+CA2208 | Usage | Info | Usage | Hidden | InstantiateArgumentExceptionsCorrectlyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2208)

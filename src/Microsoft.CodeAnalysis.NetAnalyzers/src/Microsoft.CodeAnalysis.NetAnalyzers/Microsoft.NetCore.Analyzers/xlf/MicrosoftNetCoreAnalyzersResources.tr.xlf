@@ -1047,9 +1047,19 @@
         <target state="translated">Değer türünde statik alanları satır içi olarak başlatın</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">ArgumentException olan veya bundan türetilen bir özel durum türünün varsayılan (parametresiz) oluşturucusuna bir çağrı yapıldı veya ArgumentException olan veya bundan türetilen bir özel durum türünün parametreli oluşturucusuna yanlış bir dize bağımsız değişkeni geçirildi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="new">Swap the arguments order</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1064,7 +1074,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">Bir iletiyi ve/veya paramName parametresini içeren {0} oluşturucusunu çağırın.</target>
+        <target state="needs-review-translation">Bir iletiyi ve/veya paramName parametresini içeren {0} oluşturucusunu çağırın.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">

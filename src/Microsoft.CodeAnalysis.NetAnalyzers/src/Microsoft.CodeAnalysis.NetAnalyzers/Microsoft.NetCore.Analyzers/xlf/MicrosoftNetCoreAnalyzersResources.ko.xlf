@@ -1047,9 +1047,19 @@
         <target state="translated">값 형식 정적 필드 인라인을 초기화하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">예외 형식의 매개 변수가 없는 기본 생성자에 발생하는 호출은 ArgumentException이거나 ArgumentException에서 파생됩니다. 즉, 올바르지 않은 문자열 인수는 ArgumentException이거나 ArgumentException에서 파생된 예외 형식의 매개 변수가 있는 생성자로 전달됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="new">Swap the arguments order</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1064,7 +1074,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">메시지 및/또는 paramName 매개 변수를 포함하는 {0} 생성자를 호출하세요.</target>
+        <target state="needs-review-translation">메시지 및/또는 paramName 매개 변수를 포함하는 {0} 생성자를 호출하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
