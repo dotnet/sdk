@@ -5,11 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.MSBuild;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tools.Test
@@ -51,8 +49,10 @@ namespace Microsoft.DotNet.Tools.Test
             if (settings.Any())
             {
                 // skip '--' and escape every \ to be \\ and every " to be \" to survive the next hop
-                var escaped = string.Join(" ", settings.Skip(1)).Replace("\\", "\\\\").Replace("\"", "\\\"");
-                msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{escaped}\"");
+                var escaped = settings.Skip(1).Select(s => s.Replace("\\", "\\\\").Replace("\"", "\\\"")).ToArray();
+
+                var runSettingsArg = string.Join(";", escaped);
+                msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
             }
 
             var verbosityArg = parsedTest.ForwardedOptionValues("verbosity").SingleOrDefault();
