@@ -1437,7 +1437,7 @@ End Class
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
         internal async Task DocsMicrosoft_Sample(DisposeAnalysisKind disposeAnalysisKind)
         {
-            // See https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope
+            // See https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2000
 
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
