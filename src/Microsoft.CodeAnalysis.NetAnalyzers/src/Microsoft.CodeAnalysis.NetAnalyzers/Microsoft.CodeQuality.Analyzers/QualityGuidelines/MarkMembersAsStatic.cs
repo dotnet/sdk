@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -204,9 +203,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             // If this looks like an event handler don't flag such cases.
             // However, we do want to consider EventRaise accessor as a candidate
             // so we can flag the associated event if none of it's accessors need instance reference.
-            if (methodSymbol.Parameters.Length == 2 &&
-                methodSymbol.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
-                IsEventArgs(methodSymbol.Parameters[1].Type, wellKnownTypeProvider) &&
+            if (methodSymbol.HasEventHandlerSignature(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs)) &&
                 methodSymbol.MethodKind != MethodKind.EventRaise)
             {
                 return false;
@@ -218,21 +215,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             return true;
-        }
-
-        private static bool IsEventArgs(ITypeSymbol type, WellKnownTypeProvider wellKnownTypeProvider)
-        {
-            if (type.DerivesFrom(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs)))
-            {
-                return true;
-            }
-
-            if (type.IsValueType)
-            {
-                return type.Name.EndsWith("EventArgs", StringComparison.Ordinal);
-            }
-
-            return false;
         }
 
         private static bool IsExplicitlyVisibleFromCom(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
