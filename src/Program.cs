@@ -21,6 +21,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
         internal const int UnhandledExceptionExitCode = 1;
         internal const int CheckFailedExitCode = 2;
+        internal const int UnableToLocateMSBuildExitCode = 3;
 
         private static async Task<int> Main(string[] args)
         {
@@ -124,20 +125,29 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 Environment.CurrentDirectory = workspaceDirectory;
 
-                // Since we are running as a dotnet tool we should be able to find an instance of
-                // MSBuild in a .NET Core SDK.
-                var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances().First();
-
-                // Since we do not inherit msbuild.deps.json when referencing the SDK copy
-                // of MSBuild and because the SDK no longer ships with version matched assemblies, we
-                // register an assembly loader that will load assemblies from the msbuild path with
-                // equal or higher version numbers than requested.
-                LooseVersionAssemblyLoader.Register(msBuildInstance.MSBuildPath);
-                Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
-
-                if (logLevel == LogLevel.Trace)
+                try
                 {
-                    logger.LogInformation(Resources.Using_msbuildexe_located_in_0, msBuildInstance.MSBuildPath);
+                    // Since we are running as a dotnet tool we should be able to find an instance of
+                    // MSBuild in a .NET Core SDK.
+                    var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances().First();
+
+                    // Since we do not inherit msbuild.deps.json when referencing the SDK copy
+                    // of MSBuild and because the SDK no longer ships with version matched assemblies, we
+                    // register an assembly loader that will load assemblies from the msbuild path with
+                    // equal or higher version numbers than requested.
+                    LooseVersionAssemblyLoader.Register(msBuildInstance.MSBuildPath);
+                    Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
+
+                    if (logLevel == LogLevel.Trace)
+                    {
+                        logger.LogInformation(Resources.Using_msbuildexe_located_in_0, msBuildInstance.MSBuildPath);
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // Unable to find MSBuild instance.
+                    logger.LogError(Resources.Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer);
+                    return UnableToLocateMSBuildExitCode;
                 }
 
                 var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);

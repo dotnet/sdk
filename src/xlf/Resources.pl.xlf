@@ -162,6 +162,11 @@
         <target state="new">Formatted code file '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
+        <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
+        <target state="new">Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Using_msbuildexe_located_in_0">
         <source>Using MSBuild.exe located in '{0}'</source>
         <target state="new">Using MSBuild.exe located in '{0}'</target>
