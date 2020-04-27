@@ -706,7 +706,7 @@ download() {
     fi
 
     local failed=false
-    if machine_has "curl"; then
+    if machine_has "curl" && [ $use_wget = false ]; then
         downloadcurl "$remote_path" "$out_path" || failed=true
     elif machine_has "wget"; then
         downloadwget "$remote_path" "$out_path" || failed=true
@@ -728,13 +728,40 @@ downloadcurl() {
     # Append feed_credential as late as possible before calling curl to avoid logging feed_credential
     remote_path="${remote_path}${feed_credential}"
 
-    local curl_options="--retry 20 --retry-delay 2 --connect-timeout 15 -sSL -f --create-dirs"
-    local failed=false
-    if [ -z "$out_path" ]; then
-        curl $curl_options "$remote_path" || failed=true
-    else
-        curl $curl_options -o "$out_path" "$remote_path" || failed=true
+    local failed=true
+
+    local curl_command="curl --connect-timeout $connect_timeout -L -f "
+
+    if [ "$verbose" = false ]; then
+        curl_command+=" -sS "
     fi
+
+    if [ "$verbose" = true -a "$download_debug" = true ]; then
+        curl_command+=" -v "
+    fi
+
+    local n=0
+    until [ $n -ge $download_retries ]
+    do
+        if [ -z "$out_path" ]; then
+            $curl_command $remote_path
+        else
+            $curl_command --create-dirs -o "$out_path" $remote_path
+        fi
+
+        res=$?
+
+        if [ $res -eq 0 ]; then
+            failed=false
+            break
+        elif [ $res -eq 22 ]; then  # 404 return code
+            break
+        fi
+
+        n=$[$n+1]
+        sleep $retry_timeout
+    done
+
     if [ "$failed" = true ]; then
         say_verbose "Curl download failed"
         return 1
@@ -749,13 +776,40 @@ downloadwget() {
 
     # Append feed_credential as late as possible before calling wget to avoid logging feed_credential
     remote_path="${remote_path}${feed_credential}"
-    local wget_options="--tries 20 --waitretry 2 --connect-timeout 15"
     local failed=false
-    if [ -z "$out_path" ]; then
-        wget -q $wget_options -O - "$remote_path" || failed=true
-    else
-        wget $wget_options -O "$out_path" "$remote_path" || failed=true
+
+    local wget_command="wget --connect-timeout $connect_timeout "
+
+    if [ "$verbose" = false ]; then
+        wget_command+=" -q "
     fi
+
+    if [ "$verbose" = true -a "$download_debug" = true ]; then
+        wget_command+=" -v "
+    fi
+
+    local n=0
+    until [ $n -ge $download_retries ]
+    do
+        if [ -z "$out_path" ]; then
+            $wget_command  -O - $remote_path
+        else
+            $wget_command  -O "$out_path" $remote_path
+        fi
+
+        res=$?
+
+        if [ $res -eq 0 ]; then
+            failed=false
+            break
+        elif [ $res -eq 8 ]; then  # 404 return code
+            break
+        fi
+
+        n=$[$n+1]
+        sleep $retry_timeout
+    done
+
     if [ "$failed" = true ]; then
         say_verbose "Wget download failed"
         return 1
@@ -904,11 +958,34 @@ runtime=""
 runtime_id=""
 override_non_versioned_files=true
 non_dynamic_parameters=""
+download_retries=20
+retry_timeout=3
+connect_timeout=60
+download_debug=false
+use_wget=false
 
 while [ $# -ne 0 ]
 do
     name="$1"
     case "$name" in
+        --download-retries|-[Dd]ownloadRetries)
+            shift
+            download_retries=$1
+            ;;
+        --retry-timeout|-[Rr]etryTimeout)
+            shift
+            retry_timeout=$1
+            ;;
+        --connect-timeout|-[Cc]onnectTimeout)
+            shift
+            connect_timeout=$1
+            ;;
+        --download-debug|-[Dd]ownloadDebug)
+            download_debug=true
+            ;;
+        --use-wget|-[Uu]seWget)
+            use_wget=true
+            ;;
         -c|--channel|-[Cc]hannel)
             shift
             channel="$1"
@@ -1025,6 +1102,14 @@ do
             echo "  --dry-run,-DryRun                  Do not perform installation. Display download link."
             echo "  --no-path, -NoPath                 Do not set PATH for the current process."
             echo "  --verbose,-Verbose                 Display diagnostics information."
+            echo "  --download-debug,-DownloadDebug    Display SDK downloading detailed information (should be used together with --verbose)."
+            echo "  --download-retries <N>             Number of retries of the SDK downloading (default 20)."
+            echo "      -DownloadRetries"
+            echo "  --retry-timeout <seconds>          Wait time between retries (default 3)."
+            echo "      -RetryTimeout"
+            echo "  --connect-timeout <seconds>        Maximum time allowed for connection (default 60)."
+            echo "      -ConnectTimeout"
+            echo "  --use-wget,UseWget                 Use wget only for SDK downloading."
             echo "  --azure-feed,-AzureFeed            Azure feed location. Defaults to $azure_feed, This parameter typically is not changed by the user."
             echo "  --uncached-feed,-UncachedFeed      Uncached feed location. This parameter typically is not changed by the user."
             echo "  --feed-credential,-FeedCredential  Azure feed shared access token. This parameter typically is not specified."
