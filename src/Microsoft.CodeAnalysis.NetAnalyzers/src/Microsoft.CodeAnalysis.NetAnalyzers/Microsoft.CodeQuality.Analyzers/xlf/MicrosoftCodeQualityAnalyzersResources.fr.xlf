@@ -54,17 +54,17 @@
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
         <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
-        <target state="new">The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</target>
+        <target state="translated">Plus un type générique contient de paramètres de type, plus il est difficile de savoir et de mémoriser ce que représente chaque paramètre de type.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
         <source>Consider a design where '{0}' has no more than {1} type parameters.</source>
-        <target state="new">Consider a design where '{0}' has no more than {1} type parameters.</target>
+        <target state="translated">Utilisez une conception où '{0}' n'a pas plus de {1} paramètres de type.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
         <source>Avoid excessive parameters on generic types</source>
-        <target state="new">Avoid excessive parameters on generic types</target>
+        <target state="translated">Éviter les paramètres excessifs sur les types génériques</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
@@ -114,22 +114,22 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesDescription">
         <source>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</source>
-        <target state="new">Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</target>
+        <target state="translated">Les types déclarent des membres protégés pour que les types qui héritent puissent accéder au membre ou l'écraser. Par définition, vous ne pouvez pas hériter d'un type sealed, ce qui signifie que les méthodes protégées des types sealed ne peuvent pas être appelées.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
         <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</source>
-        <target state="new">'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</target>
+        <target state="translated">'{0}' est un nouveau membre protégé dans la classe 'NonInheritable' '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
         <source>Do not declare protected member in sealed type</source>
-        <target state="new">Do not declare protected member in sealed type</target>
+        <target state="translated">Ne pas déclarer un membre protégé dans un type sealed</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
-        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <target state="translated">'{0}' appelle '{1}' mais n'utilise pas la valeur retournée par la méthode. Les méthodes Linq sont connues pour ne pas avoir d'effets secondaires. Utilisez le résultat dans une instruction conditionnelle, assignez-le à une variable ou passez-le en tant qu'argument à une autre méthode.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
@@ -139,32 +139,47 @@
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
-        <target state="new">This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</target>
+        <target state="translated">Cette règle part du principe qu'un membre d'énumération dont le nom contient "reserved" n'est pas utilisé mais qu'il représente un espace réservé à renommer ou à supprimer dans une version future. Le renommage ou la suppression d'un membre est un changement cassant.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedMessage">
         <source>If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</source>
-        <target state="new">If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</target>
+        <target state="translated">Si vous n'utilisez pas '{0}.{1}' dans l'implémentation actuelle, supprimez-le. Sinon, donnez-lui un nom significatif.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedTitle">
         <source>Do not name enum values 'Reserved'</source>
-        <target state="new">Do not name enum values 'Reserved'</target>
+        <target state="translated">Ne nommez pas les valeurs enum 'Reserved'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsDescription">
         <source>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</source>
-        <target state="new">System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</target>
+        <target state="translated">System.Collections.Generic.List&lt;T&gt; est une collection générique conçue pour les performances et non pour l'héritage. List&lt;T&gt; ne contient pas de membres virtuels qui facilitent le changement de comportement d'une classe héritée.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsMessage">
         <source>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</source>
-        <target state="new">Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</target>
+        <target state="translated">Changer '{0}' en '{1}' pour utiliser 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' ou 'KeyedCollection&lt;K,V&gt;'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotExposeGenericListsTitle">
         <source>Do not expose generic lists</source>
-        <target state="new">Do not expose generic lists</target>
+        <target state="translated">Ne pas exposer de listes génériques</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
+        <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="new">Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
+        <source>Event '{0}' should not be declared virtual.</source>
+        <target state="new">Event '{0}' should not be declared virtual.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
+        <source>Do not declare event fields as virtual</source>
+        <target state="new">Do not declare event fields as virtual</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -184,17 +199,17 @@
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
-        <target state="new">Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</target>
+        <target state="translated">Le passage de types par référence (via out ou ref) nécessite une bonne connaissance des pointeurs, une bonne compréhension des différences entre les types valeur et les types référence ainsi qu'une certaine expérience de la gestion des méthodes ayant plusieurs valeurs de retour. En effet, la différence entre les paramètres out et ref n'est pas comprise par tout le monde.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceMessage">
         <source>Consider a design that does not require that '{0}' be a reference parameter.</source>
-        <target state="new">Consider a design that does not require that '{0}' be a reference parameter.</target>
+        <target state="translated">Utilisez une conception qui n'impose pas '{0}' en tant que paramètre de référence.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceTitle">
         <source>Do not pass types by reference</source>
-        <target state="new">Do not pass types by reference</target>
+        <target state="translated">Ne pas passer de types par référence</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
@@ -683,13 +698,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
-        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="translated">Le type {0} doit implémenter IEquatable&lt;T&gt;, car il remplace Equals</target>
+        <source>Implement IEquatable when overriding Object.Equals</source>
+        <target state="new">Implement IEquatable when overriding Object.Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
-        <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="translated">Implémenter IEquatable au moment de remplacer Object.Equals</target>
+        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
+        <target state="new">Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">
