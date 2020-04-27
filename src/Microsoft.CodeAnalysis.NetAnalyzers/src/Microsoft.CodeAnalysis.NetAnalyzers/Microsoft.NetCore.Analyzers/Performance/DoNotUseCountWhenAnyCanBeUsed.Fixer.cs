@@ -108,11 +108,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 this._expression = expression;
                 this._arguments = arguments;
                 this._shouldNegateKey = shouldNegateKey;
+
+                var title = !isAsync ?
+                    MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle :
+                    MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle;
+                this.Title = title;
+                this.EquivalenceKey = title;
             }
 
-            public override string Title { get; } = MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle;
+            public override string Title { get; }
 
-            public override string EquivalenceKey { get; } = MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle;
+            public override string EquivalenceKey { get; }
 
             protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
             {

@@ -693,13 +693,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
-        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="translated">型 {0} は Equals をオーバーライドするため、IEquatable&lt;T&gt; を実装する必要があります</target>
+        <source>Implement IEquatable when overriding Object.Equals</source>
+        <target state="new">Implement IEquatable when overriding Object.Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
-        <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="translated">Object.Equals をオーバーライドする際に IEquatable を実装します</target>
+        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
+        <target state="new">Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">

@@ -1047,9 +1047,19 @@
         <target state="translated">初始化實值型別靜態欄位內嵌</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">已呼叫例外狀況類型為 ArgumentException 或由其衍生的預設 (無參數) 建構函式; 或將不正確的字串引數傳遞到例外狀況類型為 ArgumentException 或由其衍生的參數化建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="new">Swap the arguments order</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1064,7 +1074,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">請呼叫包含 message 及 (或) paramName 參數的 {0} 建構函式。</target>
+        <target state="needs-review-translation">請呼叫包含 message 及 (或) paramName 參數的 {0} 建構函式。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">

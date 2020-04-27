@@ -693,13 +693,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
-        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="translated">{0} 형식은 Equals를 재정의하므로 IEquatable&lt;T&gt;를 구현해야 합니다.</target>
+        <source>Implement IEquatable when overriding Object.Equals</source>
+        <target state="new">Implement IEquatable when overriding Object.Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
-        <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="translated">Object.Equals를 재정의할 때 IEquatable을 구현하세요.</target>
+        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
+        <target state="new">Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">

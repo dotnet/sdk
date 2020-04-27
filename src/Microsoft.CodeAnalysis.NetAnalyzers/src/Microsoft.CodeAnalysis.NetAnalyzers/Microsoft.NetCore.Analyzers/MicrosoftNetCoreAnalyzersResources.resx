@@ -1287,6 +1287,12 @@
   <data name="DoNotUseStackallocInLoopsMessage" xml:space="preserve">
     <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
   </data>
+  <data name="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle" xml:space="preserve">
+    <value>Change to call the two argument constructor, pass null for the message.</value>
+  </data>
+  <data name="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle" xml:space="preserve">
+    <value>Swap the arguments order</value>
+  </data>
   <data name="PreferTypedStringBuilderAppendOverloadsTitle" xml:space="preserve">
     <value>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</value>
   </data>

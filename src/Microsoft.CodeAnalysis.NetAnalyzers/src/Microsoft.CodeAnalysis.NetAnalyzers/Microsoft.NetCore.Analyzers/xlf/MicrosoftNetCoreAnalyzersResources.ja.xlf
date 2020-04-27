@@ -1047,9 +1047,19 @@
         <target state="translated">値型の静的フィールドをインラインで初期化します</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">ArgumentException またはそれから派生した例外の種類の既定の (パラメーターのない) コンストラクターに対して呼び出しが行われます。または、正しくない文字列引数が、ArgumentException またはそれから派生した例外の種類のパラメーター化されたコンストラクターに渡されます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="new">Swap the arguments order</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1064,7 +1074,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">メッセージおよび paramName パラメーターまたはそのいずれかを含む {0} コンストラクターを呼び出します。</target>
+        <target state="needs-review-translation">メッセージおよび paramName パラメーターまたはそのいずれかを含む {0} コンストラクターを呼び出します。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">

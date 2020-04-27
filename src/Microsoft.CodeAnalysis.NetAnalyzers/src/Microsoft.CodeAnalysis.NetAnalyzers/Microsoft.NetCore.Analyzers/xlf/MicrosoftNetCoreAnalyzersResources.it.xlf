@@ -1047,9 +1047,19 @@
         <target state="translated">Inizializzare inline i campi statici di tipo valore</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">Viene effettuata una chiamata al costruttore predefinito (senza parametri) di un tipo di eccezione che corrisponde a o deriva da ArgumentException oppure viene passato un argomento stringa non corretto a un costruttore con parametri di un tipo di eccezione che corrisponde a o deriva da ArgumentException.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="new">Swap the arguments order</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1064,7 +1074,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">Chiamare il costruttore {0} che contiene un messaggio e/o il parametro paramName.</target>
+        <target state="needs-review-translation">Chiamare il costruttore {0} che contiene un messaggio e/o il parametro paramName.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
