@@ -150,13 +150,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 INamedTypeSymbol? xunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.XunitAssert);
                 INamedTypeSymbol? linqEnumerableType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
 
-                if (!(compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
-                {
-                    return;
-                }
-
-                var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, tree, compilationContext.Compilation, compilationContext.CancellationToken);
-
                 compilationContext.RegisterOperationBlockStartAction(osContext =>
                 {
                     if (!(osContext.OwningSymbol is IMethodSymbol method))
@@ -167,6 +160,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     osContext.RegisterOperationAction(opContext =>
                     {
                         IOperation expression = ((IExpressionStatementOperation)opContext.Operation).Operation;
+
+                        var userDefinedMethods = compilationContext.Options.GetAdditionalUseResultsMethodsOption(UserDefinedMethodRule, expression.Syntax.SyntaxTree, compilationContext.Compilation, compilationContext.CancellationToken);
+
                         DiagnosticDescriptor? rule = null;
                         string? targetMethodName = null;
                         switch (expression.Kind)
