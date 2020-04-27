@@ -2,14 +2,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.NetCore.CSharp.Analyzers.Runtime;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpInitializeStaticFieldsInlineAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpInitializeStaticFieldsInlineFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicInitializeStaticFieldsInlineAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicInitializeStaticFieldsInlineFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -323,7 +322,10 @@ class C
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_StaticLocalFunc_Diagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                TestCode = @"
 using System.Collections.Generic;
 using System.Linq;
 
@@ -339,8 +341,12 @@ class C
         }
     }
 }",
-                GetCA1810CSharpDefaultResultAt(9, 12, "C"),
-                DiagnosticResult.CompilerError("CS8652").WithSpan(11, 9, 11, 15));
+                ExpectedDiagnostics =
+                {
+                    GetCA1810CSharpDefaultResultAt(9, 12, "C")
+                },
+            }
+            .RunAsync();
         }
 
         #endregion
@@ -462,22 +468,22 @@ End Structure",
         #region Helpers
 
         private static DiagnosticResult GetCA1810CSharpDefaultResultAt(int line, int column, string typeName) =>
-            VerifyCS.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA1810Rule)
+            VerifyCS.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA1810BasicDefaultResultAt(int line, int column, string typeName) =>
-            VerifyVB.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA1810Rule)
+            VerifyVB.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA2207CSharpDefaultResultAt(int line, int column, string typeName) =>
-            VerifyCS.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA2207Rule)
+            VerifyCS.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA2207BasicDefaultResultAt(int line, int column, string typeName) =>
-            VerifyVB.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA2207Rule)
+            VerifyVB.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
                 .WithArguments(typeName);
 
