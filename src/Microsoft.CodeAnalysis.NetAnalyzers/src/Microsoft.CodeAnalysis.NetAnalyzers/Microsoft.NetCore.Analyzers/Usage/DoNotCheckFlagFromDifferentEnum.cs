@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Usage,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeSuggestion,
             description: s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
