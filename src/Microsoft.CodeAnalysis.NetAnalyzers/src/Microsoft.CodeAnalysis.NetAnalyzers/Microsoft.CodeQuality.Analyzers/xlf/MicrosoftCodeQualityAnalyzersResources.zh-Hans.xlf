@@ -132,6 +132,11 @@
         <target state="translated">“{0}”会调用“{1}”，但不使用方法返回的值。据了解，Linq 方法没有负面影响。请使用条件语句中的结果，并将结果赋给变量或将其作为自变量传递给另一个方法。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">此规则假设当前未使用名称中包含 "reserved" 的枚举成员，且该成员是要在未来版本中重命名或删除的占位符。重命名或删除成员是一个中断性变更。</target>
