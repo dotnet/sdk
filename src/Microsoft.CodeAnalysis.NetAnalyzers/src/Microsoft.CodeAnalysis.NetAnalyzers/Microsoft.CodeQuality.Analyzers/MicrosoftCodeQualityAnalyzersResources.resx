@@ -424,10 +424,10 @@
   <data name="PassSystemUriObjectsInsteadOfStringsMessage" xml:space="preserve">
     <value>Modify '{0}' to call '{1}' instead of '{2}'.</value>
   </data>
-  <data name="ImplementIEquatableWhenOverridingObjectEqualsTitle" xml:space="preserve">
+  <data name="ImplementIEquatableWhenOverridingObjectEqualsMessage" xml:space="preserve">
     <value>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</value>
   </data>
-  <data name="ImplementIEquatableWhenOverridingObjectEqualsMessage" xml:space="preserve">
+  <data name="ImplementIEquatableWhenOverridingObjectEqualsTitle" xml:space="preserve">
     <value>Implement IEquatable when overriding Object.Equals</value>
   </data>
   <data name="CancellationTokenParametersMustComeLastTitle" xml:space="preserve">

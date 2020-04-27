@@ -1864,6 +1864,32 @@ public interface I
 }");
         }
 
+        [Fact]
+        public async Task EventArgsNotInheritingFromSystemEventArgs_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+// Reproduce UWP specific EventArgs
+namespace Windows.UI.Xaml
+{
+    public class RoutedEventArgs {}
+}
+public class C
+{
+    public delegate void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e);
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+' Reproduce UWP specific EventArgs
+Namespace Windows.UI.Xaml
+    Public Class RoutedEventArgs
+    End Class
+End Namespace
+
+Public Class C
+    Public Delegate Sub Page_Loaded(ByVal sender As Object, ByVal e As Windows.UI.Xaml.RoutedEventArgs)
+End Class");
+        }
+
         private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
             VerifyVB.Diagnostic(isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
                 .WithLocation(line, column)
