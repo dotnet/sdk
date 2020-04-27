@@ -382,6 +382,21 @@
         <target state="translated">No aplique catch a excepciones de estado dañado en controladores generales.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCheckFlagFromDifferentEnumDescription">
+        <source>Calling the 'HasFlag' method on enum of some type to check the flag of another enum type will always return 'false'.</source>
+        <target state="new">Calling the 'HasFlag' method on enum of some type to check the flag of another enum type will always return 'false'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCheckFlagFromDifferentEnumMessage">
+        <source>Change enum type either on left-hand side or right-hand side of the 'HasFlag' method call</source>
+        <target state="new">Change enum type either on left-hand side or right-hand side of the 'HasFlag' method call</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCheckFlagFromDifferentEnumTitle">
+        <source>Flag enum type should be the same has containing enum type</source>
+        <target state="new">Flag enum type should be the same has containing enum type</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
         <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
