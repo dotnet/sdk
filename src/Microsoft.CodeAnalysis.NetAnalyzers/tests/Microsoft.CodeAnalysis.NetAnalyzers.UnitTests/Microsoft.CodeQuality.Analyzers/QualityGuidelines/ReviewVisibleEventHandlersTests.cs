@@ -25,8 +25,8 @@ public class Program
     public void Handler1(object sender, EventArgs args) {}
     protected void Handler2(object sender, EventArgs args) {}
 }",
-                GetCSharpResultAt(6, 17, "Handler1"),
-                GetCSharpResultAt(7, 20, "Handler2"));
+                VerifyCS.Diagnostic().WithLocation(6, 17).WithArguments("Handler1"),
+                VerifyCS.Diagnostic().WithLocation(7, 20).WithArguments("Handler2"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -38,8 +38,8 @@ Public Class Program
     Protected Sub Handler2(ByVal sender As Object, ByVal args As EventArgs)
     End Sub
 End Class",
-                GetBasicResultAt(5, 16, "Handler1"),
-                GetBasicResultAt(8, 19, "Handler2"));
+                VerifyVB.Diagnostic().WithLocation(5, 16).WithArguments("Handler1"),
+                VerifyVB.Diagnostic().WithLocation(8, 19).WithArguments("Handler2"));
         }
 
         [Fact]
@@ -92,14 +92,148 @@ Public Class Program
 End Class");
         }
 
-        private static DiagnosticResult GetCSharpResultAt(int line, int column, string methodName)
-            => VerifyCS.Diagnostic(ReviewVisibleEventHandlersAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithArguments(methodName);
+        [Fact]
+        public async Task CA2109_PrivateInternalEventHandler_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-        private static DiagnosticResult GetBasicResultAt(int line, int column, string methodName)
-            => VerifyVB.Diagnostic(ReviewVisibleEventHandlersAnalyzer.Rule)
-                .WithLocation(line, column)
-                .WithArguments(methodName);
+public class Program
+{
+    private void Handler1(object sender, EventArgs args) {}
+    internal void Handler2(object sender, EventArgs args) {}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class Program
+    Private Sub Handler1(ByVal sender As Object, ByVal args As EventArgs)
+    End Sub
+
+    Friend Sub Handler2(ByVal sender As Object, ByVal args As EventArgs)
+    End Sub
+End Class");
+        }
+
+        [Fact]
+        public async Task CA2109_PublicProtectedNotEventHandler_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class Program
+{
+    public void Handler1(object sender) {}
+    public void Handler2(object sender, object o) {}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class Program
+    Public Sub Handler1(ByVal sender As Object)
+    End Sub
+
+    Public Sub Handler2(ByVal sender As Object, ByVal o As Object)
+    End Sub
+End Class");
+        }
+
+        [Fact]
+        public async Task CA2109_PublicOverrideVirtualEventHandler_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class A
+{
+    public virtual void [|Handler1|](object sender, EventArgs args) {}
+}
+
+public class B : A
+{
+    public override void Handler1(object sender, EventArgs args) {}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class A
+    Public Overridable Sub [|Handler1|](ByVal sender As Object, ByVal args As EventArgs)
+    End Sub
+End Class
+
+Public Class B
+    Inherits A
+
+    Public Overrides Sub Handler1(ByVal sender As Object, ByVal args As EventArgs)
+    End Sub
+End Class
+");
+        }
+
+        [Fact]
+        public async Task CA2109_PublicOverrideAbstractEventHandler_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public abstract class A
+{
+    public abstract void [|Handler1|](object sender, EventArgs args);
+}
+
+public class B : A
+{
+    public override void Handler1(object sender, EventArgs args) {}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public MustInherit Class A
+    Public MustOverride Sub [|Handler1|](ByVal sender As Object, ByVal args As EventArgs)
+End Class
+
+Public Class B
+    Inherits A
+
+    Public Overrides Sub Handler1(ByVal sender As Object, ByVal args As EventArgs)
+    End Sub
+End Class
+");
+        }
+
+        [Fact]
+        public async Task CA2109_PublicInterfaceImplementationEventHandler_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public interface IA
+{
+    void [|Handler1|](object sender, EventArgs args);
+}
+
+public class B : IA
+{
+    public void Handler1(object sender, EventArgs args) {}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Interface IA
+    Sub [|Handler1|](ByVal sender As Object, ByVal args As EventArgs)
+End Interface
+
+Public Class B
+    Implements IA
+
+    Public Sub Handler1(ByVal sender As Object, ByVal args As EventArgs) Implements IA.Handler1
+    End Sub
+End Class");
+        }
     }
 }

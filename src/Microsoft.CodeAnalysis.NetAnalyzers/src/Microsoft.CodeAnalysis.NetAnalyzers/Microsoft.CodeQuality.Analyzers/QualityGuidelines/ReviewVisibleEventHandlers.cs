@@ -45,7 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 {
                     var method = (IMethodSymbol)context.Symbol;
 
-                    if (method.IsOverride || method.IsImplementationOfAnyInterfaceMember())
+                    if (!method.IsExternallyVisible())
                     {
                         return;
                     }
@@ -55,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         return;
                     }
 
-                    if (!method.IsExternallyVisible())
+                    if (method.IsOverride || method.IsImplementationOfAnyInterfaceMember())
                     {
                         return;
                     }
