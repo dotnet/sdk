@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return Task.CompletedTask;
         }
 
-        private async Task<Document> UseCollectionDirectly(Document document, TextSpan span, CancellationToken cancellationToken)
+        private static async Task<Document> UseCollectionDirectly(Document document, TextSpan span, CancellationToken cancellationToken)
         {
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var invocationNode = root.FindNode(span, getInnermostNodeForTie: true);
