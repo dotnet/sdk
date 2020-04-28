@@ -139,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ParameterInfo.GetParameterInfo(cancellationTokenType)
             };
 
-            // Create the arrays with the exact parameter order of the undesired methods
+            // Create the arrays with the exact parameter order of the desired methods
             var preferredReadAsyncParameters = new[]
             {
                 ParameterInfo.GetParameterInfo(readOnlyMemoryType),  // ReadOnlyMemory<byte> buffer
