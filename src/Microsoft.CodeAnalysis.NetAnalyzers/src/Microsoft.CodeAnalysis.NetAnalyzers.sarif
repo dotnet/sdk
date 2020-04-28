@@ -28,25 +28,6 @@
             ]
           }
         },
-        "CA1003": {
-          "id": "CA1003",
-          "shortDescription": "Use generic event handler instances",
-          "fullDescription": "A type contains an event that declares an EventHandler delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1003",
-          "properties": {
-            "category": "Design",
-            "isEnabledByDefault": false,
-            "typeName": "CSharpUseGenericEventHandlerInstancesAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA1019": {
           "id": "CA1019",
           "shortDescription": "Define accessors for attribute arguments",
@@ -383,6 +364,26 @@
             "category": "Design",
             "isEnabledByDefault": false,
             "typeName": "DoNotExposeGenericLists",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1003": {
+          "id": "CA1003",
+          "shortDescription": "Use generic event handler instances",
+          "fullDescription": "A type contains an event that declares an EventHandler delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1003",
+          "properties": {
+            "category": "Design",
+            "isEnabledByDefault": false,
+            "typeName": "UseGenericEventHandlerInstancesAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -2395,7 +2396,7 @@
           "id": "CA2208",
           "shortDescription": "Instantiate argument exceptions correctly",
           "fullDescription": "A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.",
-          "defaultLevel": "hidden",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2208",
           "properties": {
             "category": "Usage",
@@ -4367,25 +4368,6 @@
             "category": "Design",
             "isEnabledByDefault": true,
             "typeName": "BasicTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
-        "CA1003": {
-          "id": "CA1003",
-          "shortDescription": "Use generic event handler instances",
-          "fullDescription": "A type contains an event that declares an EventHandler delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1003",
-          "properties": {
-            "category": "Design",
-            "isEnabledByDefault": false,
-            "typeName": "BasicUseGenericEventHandlerInstancesAnalyzer",
             "languages": [
               "Visual Basic"
             ],
