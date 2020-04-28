@@ -1413,6 +1413,11 @@
         <target state="new">All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsMessage">
+        <source>Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</source>
+        <target state="new">Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsTitle">
         <source>Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</source>
         <target state="new">Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</target>
