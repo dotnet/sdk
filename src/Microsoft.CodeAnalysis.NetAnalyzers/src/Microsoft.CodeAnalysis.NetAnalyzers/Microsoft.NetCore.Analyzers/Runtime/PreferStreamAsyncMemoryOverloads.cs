@@ -252,7 +252,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    context.ReportDiagnostic(awaitOperation.CreateDiagnostic(rule, ruleMessageMethod, ruleMessagePreferredMethod));
+                    context.ReportDiagnostic(awaitOperation.Operation.CreateDiagnostic(rule, ruleMessageMethod, ruleMessagePreferredMethod));
                 }
             },
             OperationKind.Await);
@@ -267,18 +267,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             actualMethod = null;
 
-            if (!awaitOperation.Children.Any())
-            {
-                return false;
-            }
-
-            if (!(awaitOperation.Children.FirstOrDefault() is IInvocationOperation invocation))
+            // The await should have a known operation child, check its kind
+            if (!(awaitOperation.Operation is IInvocationOperation invocation))
             {
                 return false;
             }
 
             IMethodSymbol method = invocation.TargetMethod;
 
+            // Check if the child operation of the await is ConfigureAwait
+            // in which case we should analyze the grandchild operation
             if (method.OriginalDefinition.Equals(configureAwaitMethod) ||
                 method.OriginalDefinition.Equals(genericConfigureAwaitMethod))
             {

@@ -424,7 +424,7 @@ class C
         }
     }
 }
-            ", GetCSResult(12, 13, 12, 58));
+            ", GetCSResult(12, 19, 12, 58));
         }
 
         [Fact]
@@ -445,7 +445,7 @@ class C
         }
     }
 }
-            ", GetCSResult(12, 13, 12, 57));
+            ", GetCSResult(12, 19, 12, 57));
         }
 
         [Fact]
@@ -466,7 +466,7 @@ class C
         }
     }
 }
-            ", GetCSResult(12, 13, 12, 83));
+            ", GetCSResult(12, 19, 12, 83));
         }
 
         [Fact]
@@ -486,7 +486,7 @@ class C
         }
     }
 }
-            ", GetCSResult(11, 13, 11, 100));
+            ", GetCSResult(11, 19, 11, 100));
         }
 
         [Fact]
@@ -506,7 +506,7 @@ class C
         }
     }
 }
-            ", GetCSResult(11, 13, 11, 125));
+            ", GetCSResult(11, 19, 11, 125));
         }
 
         [Fact]
@@ -527,7 +527,7 @@ class C
         }
     }
 }
-            ", GetCSResult(12, 13, 12, 80));
+            ", GetCSResult(12, 19, 12, 80));
         }
 
         [Fact]
@@ -548,7 +548,7 @@ class C
         }
     }
 }
-            ", GetCSResult(12, 13, 12, 105));
+            ", GetCSResult(12, 19, 12, 105));
         }
 
         [Fact]
@@ -568,7 +568,7 @@ class C
         }
     }
 }
-            ", GetCSResult(11, 13, 11, 122));
+            ", GetCSResult(11, 19, 11, 122));
         }
 
         [Fact]
@@ -588,7 +588,7 @@ class C
         }
     }
 }
-            ", GetCSResult(11, 13, 11, 147));
+            ", GetCSResult(11, 19, 11, 147));
         }
 
         #endregion
@@ -610,7 +610,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(9, 13, 9, 58));
+            ", GetVBResult(9, 19, 9, 58));
         }
 
         [Fact]
@@ -628,7 +628,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(9, 13, 9, 57));
+            ", GetVBResult(9, 19, 9, 57));
         }
 
         [Fact]
@@ -646,7 +646,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(9, 13, 9, 83));
+            ", GetVBResult(9, 19, 9, 83));
         }
 
         [Fact]
@@ -663,7 +663,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(8, 13, 8, 99));
+            ", GetVBResult(8, 19, 8, 99));
         }
 
         [Fact]
@@ -680,7 +680,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(8, 13, 8, 124));
+            ", GetVBResult(8, 19, 8, 124));
         }
 
         [Fact]
@@ -698,7 +698,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(9, 13, 9, 80));
+            ", GetVBResult(9, 19, 9, 80));
         }
 
         [Fact]
@@ -716,7 +716,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(9, 13, 9, 105));
+            ", GetVBResult(9, 19, 9, 105));
         }
 
         [Fact]
@@ -733,7 +733,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(8, 13, 8, 121));
+            ", GetVBResult(8, 19, 8, 121));
         }
 
         [Fact]
@@ -750,7 +750,7 @@ Class C
         End Using
     End Sub
 End Class
-            ", GetVBResult(8, 13, 8, 146));
+            ", GetVBResult(8, 19, 8, 146));
         }
 
         #endregion
