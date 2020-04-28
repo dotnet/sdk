@@ -988,8 +988,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- _DepsPath is the location where the deps.json file is originally created
            PublishDepsFilePath is the location where the deps.json resides when published 
            PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedde within the single-file bundle -->      
-      <_DepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</_DepsFilePath >
-      <_DepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</_DepsFilePath >
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
       <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' And '$(PublishSingleFile)' != 'true'">$(PublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>      
     </PropertyGroup>
     <ItemGroup>
@@ -1005,7 +1005,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GenerateDepsFile ProjectPath="$(MSBuildProjectFullPath)"
                       AssetsFilePath="$(ProjectAssetsFile)"
-                      DepsFilePath="$(_DepsFilePath)"
+                      DepsFilePath="$(IntermediateDepsFilePath)"
                       TargetFramework="$(TargetFrameworkMoniker)"
                       AssemblyName="$(AssemblyName)"
                       AssemblyExtension="$(TargetExt)"
@@ -1031,7 +1031,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"/>
 
     <ItemGroup>
-      <ResolvedFileToPublish Include="$(_DepsFilePath)">
+      <ResolvedFileToPublish Include="$(IntermediateDepsFilePath)">
         <RelativePath>$(ProjectDepsFileName)</RelativePath>
       </ResolvedFileToPublish>
     </ItemGroup>
