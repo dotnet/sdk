@@ -985,7 +985,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true'">
 
     <PropertyGroup>
-      <!-- _DepsPath is the location where the deps.json file is originally created
+      <!-- IntermediateDepsFilePath is the location where the deps.json file is originally created
            PublishDepsFilePath is the location where the deps.json resides when published 
            PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedde within the single-file bundle -->      
       <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >

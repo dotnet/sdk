@@ -28,11 +28,6 @@ namespace Microsoft.NET.Publish.Tests
         {
             var testProject = SetupProject(singleFile: false);
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
-            var restoreCommand = new RestoreCommand(Log, testAsset.Path, testProject.Name);
-            restoreCommand
-                .Execute()
-                .Should()
-                .Pass();
 
             var projectPath = Path.Combine(testAsset.Path, testProject.Name);
             var targetFramework = testProject.TargetFrameworks;
@@ -42,7 +37,7 @@ namespace Microsoft.NET.Publish.Tests
             var publishDepsFilePath = GetPropertyValue(projectPath, targetFramework, "PublishDepsFilePath");
             var expectedDepsFilePath = $"{publishDir}{projectDepsFileName}";
 
-            publishDepsFilePath.Equals(expectedDepsFilePath).Should().BeTrue();
+            publishDepsFilePath.Should().Be(expectedDepsFilePath);
         }
 
         [Fact]
