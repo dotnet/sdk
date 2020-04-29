@@ -115,6 +115,12 @@ Copyright (c) .NET Foundation. All rights reserved.
         <_Parameter2>%(AssemblyMetadata.Value)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetPlatformIdentifier)' != '' and '$(MinimumOSPlatform)' != ''">
+      <AssemblyAttribute Include="System.Runtime.Versioning.MinimumOSPlatformAttribute">
+        <_Parameter1>$(TargetPlatformIdentifier.ToLower())$(MinimumOSPlatform)</_Parameter1>
+      </AssemblyAttribute>
+    </ItemGroup>
   </Target>
 
   <!-- 
