@@ -12,21 +12,6 @@
         <target state="translated">新增可序列化屬性</target>
         <note />
       </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">PreserveSigAttribute 表示方法會傳回 HRESULT，而非擲回例外狀況。因此，請務必使用該方法所傳回的 HRESULT，才可偵測到錯誤。一般來說，上述作業可透過呼叫 Marshal.ThrowExceptionForHR 完成。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">使用 '{0}' 方法傳回的 hresult，並呼叫 Marshal.ThrowExceptionForHR。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">一律使用標記有 PreserveSigAttribute 的方法所傳回的值</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">與加密專家一同審查 Cipher 模式使用方式</target>
