@@ -1393,6 +1393,36 @@
         <target state="translated">Elementy P/Invoke nie powinny być widoczne</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
+        <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamReadAsyncMemoryOverloadsDescription">
+        <source>All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</source>
+        <target state="new">All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamReadAsyncMemoryOverloadsTitle">
+        <source>Prefer 'Memory&lt;Byte&gt;' overload for 'ReadAsync'.</source>
+        <target state="new">Prefer 'Memory&lt;Byte&gt;' overload for 'ReadAsync'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsDescription">
+        <source>All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</source>
+        <target state="new">All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsMessage">
+        <source>Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</source>
+        <target state="new">Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsTitle">
+        <source>Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</source>
+        <target state="new">Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
         <target state="translated">Metody StringBuilder.Append i StringBuilder.Insert zapewniają przeciążenia dla wielu typów oprócz typu System.String. Jeśli to możliwe, preferuj silnie typizowane przeciążenia zamiast używania metody ToString() i przeciążenia opartego na ciągu.</target>
