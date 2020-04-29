@@ -12,21 +12,6 @@
         <target state="translated">Добавить атрибут Serializable</target>
         <note />
       </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">PreserveSigAttribute указывает, что метод возвратит HRESULT, а не выдаст исключение. Поэтому важно использовать результат HRESULT, возвращенный этим методом, чтобы можно было обнаружить ошибки. В общем случае для этого служит вызов Marshal.ThrowExceptionForHR.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">Используйте HRESULT, возвращенный методом "{0}", и вызовите Marshal.ThrowExceptionForHR.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">Всегда используйте значение, которое возвращают методы, помеченные атрибутом PreserveSigAttribute</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">Проверьте используемый режим шифрования с экспертами по криптографии</target>

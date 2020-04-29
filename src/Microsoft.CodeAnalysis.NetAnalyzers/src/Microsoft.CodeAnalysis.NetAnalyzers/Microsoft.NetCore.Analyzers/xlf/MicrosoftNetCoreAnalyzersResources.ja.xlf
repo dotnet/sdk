@@ -12,21 +12,6 @@
         <target state="translated">Serializable 属性を追加する</target>
         <note />
       </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">PreserveSigAttribute は、メソッドが例外をスローするのではなく HRESULT を返すことを示します。そのため、エラーを検出できるように、メソッドによって返された HRESULT を使用することが重要です。一般に、これは Marshal.ThrowExceptionForHR を呼び出すことによって行われます。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">メソッド '{0}' によって返される hresult を使用し、Marshal.ThrowExceptionForHR を呼び出します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">PreserveSigAttribute に設定されたメソッドから返される値を常に使用します。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">暗号の専門家と暗号モードの使用を再検討する</target>
