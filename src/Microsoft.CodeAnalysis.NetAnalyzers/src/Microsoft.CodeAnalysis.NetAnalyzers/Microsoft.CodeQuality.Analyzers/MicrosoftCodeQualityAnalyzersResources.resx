@@ -1439,4 +1439,13 @@
   <data name="DoNotIgnoreMethodResultsMessageUserDefinedMethod" xml:space="preserve">
     <value>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</value>
   </data>
+  <data name="PreferIsEmptyOverCountDescription" xml:space="preserve">
+    <value>Prefer IsEmpty over Count when checking if your instance is empty.</value>
+  </data>
+  <data name="PreferIsEmptyOverCountMessage" xml:space="preserve">
+    <value>Prefer IsEmpty over Count when checking if your instance is empty.</value>
+  </data>
+  <data name="PreferIsEmptyOverCountTitle" xml:space="preserve">
+    <value>Prefer IsEmpty over Count</value>
+  </data>
 </root>

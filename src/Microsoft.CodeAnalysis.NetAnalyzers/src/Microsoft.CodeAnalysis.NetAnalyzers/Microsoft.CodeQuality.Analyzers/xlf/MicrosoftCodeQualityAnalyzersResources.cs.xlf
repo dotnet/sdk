@@ -277,6 +277,21 @@
         <target state="translated">Odeberte finalizační metodu z typu {0}, přepište Dispose(bool disposing) a vložte finalizační logiku do cesty kódu, kde je disposing hodnoty false. V opačném případě by to mohlo vést k duplicitním voláním Dispose, protože základní typ {1} také poskytuje finalizační metodu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountDescription">
+        <source>Prefer IsEmpty over Count when checking if your instance is empty.</source>
+        <target state="new">Prefer IsEmpty over Count when checking if your instance is empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountMessage">
+        <source>Prefer IsEmpty over Count when checking if your instance is empty.</source>
+        <target state="new">Prefer IsEmpty over Count when checking if your instance is empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountTitle">
+        <source>Prefer IsEmpty over Count</source>
+        <target state="new">Prefer IsEmpty over Count</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Když je to možné, rozšiřte objekty CancellationToken.</target>

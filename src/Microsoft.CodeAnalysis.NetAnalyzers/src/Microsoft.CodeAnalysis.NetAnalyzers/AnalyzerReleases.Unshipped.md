@@ -16,6 +16,7 @@ CA1832 | Performance | Info | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documenta
 CA1833 | Performance | Info | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1833)
 CA1834 | Performance | Info | PreferConstCharOverConstUnitStringAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1834)
 CA1835 | Performance | Info | PreferStreamAsyncMemoryOverloads, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1835)
+CA1836 | Performance | Info | PreferIsEmptyOverCountAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1836)
 CA2011 | Reliability | Info | AvoidInfiniteRecursion, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2011)
 CA2012 | Reliability | Hidden | UseValueTasksCorrectlyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2012)
 CA2013 | Reliability | Warning | DoNotUseReferenceEqualsWithValueTypesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2013)
