@@ -30,7 +30,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var diagnostic = context.Diagnostics.FirstOrDefault();
-            if (diagnostic.AdditionalLocations.Count != 1)
+            if (diagnostic?.AdditionalLocations.Count != 1)
             {
                 return;
             }
