@@ -2082,25 +2082,6 @@
             ]
           }
         },
-        "CA1835": {
-          "id": "CA1835",
-          "shortDescription": "Prefer 'ReadOnlyMemory<Byte>' overload for 'WriteAsync'.",
-          "fullDescription": "All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory<Byte>' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory<Byte>', which is more efficient.",
-          "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1835",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": true,
-            "typeName": "PreferStreamAsyncMemoryOverloads",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry"
-            ]
-          }
-        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
