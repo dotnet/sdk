@@ -12,6 +12,11 @@
         <target state="translated">In "{0}" wurde kein Projekt gefunden.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CouldNotFindFile">
+        <source>Could not find flie `{0}`.</source>
+        <target state="new">Could not find flie `{0}`.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EnvironmentPathOSXBashManualInstructions">
         <source>Tools directory '{0}' is not currently on the PATH environment variable.
 If you are using bash, you can add it to your profile by running the following command:
@@ -70,9 +75,29 @@ export PATH="$PATH:{0}"
 </target>
         <note />
       </trans-unit>
+      <trans-unit id="FileAddedToTheProject">
+        <source>File `{0}` added to the project.</source>
+        <target state="new">File `{0}` added to the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileReferenceCouldNotBeFound">
+        <source>File reference `{0}` could not be found.</source>
+        <target state="new">File reference `{0}` could not be found.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileRemoved">
+        <source>File `{0}` removed.</source>
+        <target state="new">File `{0}` removed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreThanOneProjectInDirectory">
         <source>Found more than one project in `{0}`. Specify which one to use.</source>
         <target state="translated">In "{0}" wurden mehrere Projekte gefunden. Geben Sie an, welches davon verwendet werden soll.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectAlreadyHasAfile">
+        <source>Project already has a file `{0}`.</source>
+        <target state="new">Project already has a file `{0}`.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectAlreadyHasAreference">

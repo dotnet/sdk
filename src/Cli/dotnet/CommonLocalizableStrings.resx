@@ -671,4 +671,19 @@ setx PATH "%PATH%;{0}"
   <data name="CommandInteractiveOptionDescription" xml:space="preserve">
     <value>Allows the command to stop and wait for user input or action (for example to complete authentication).</value>
   </data>
+  <data name="CouldNotFindFile" xml:space="preserve">
+    <value>Could not find flie `{0}`.</value>
+  </data>
+  <data name="FileAddedToTheProject" xml:space="preserve">
+    <value>File `{0}` added to the project.</value>
+  </data>
+  <data name="ProjectAlreadyHasAfile" xml:space="preserve">
+    <value>Project already has a file `{0}`.</value>
+  </data>
+  <data name="FileRemoved" xml:space="preserve">
+    <value>File `{0}` removed.</value>
+  </data>
+  <data name="FileReferenceCouldNotBeFound" xml:space="preserve">
+    <value>File reference `{0}` could not be found.</value>
+  </data>
 </root>

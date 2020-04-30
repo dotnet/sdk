@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Tools
     internal class MsbuildProject
     {
         const string ProjectItemElementType = "ProjectReference";
+        const string CompileElementType = "Compile";
 
         public ProjectRootElement ProjectRootElement { get; private set; }
         public string ProjectDirectory { get; private set; }
@@ -150,6 +151,45 @@ namespace Microsoft.DotNet.Tools
             return totalNumberOfRemovedReferences;
         }
 
+        public int AddFileReferences(string framework, IEnumerable<string> refs)
+        {
+            int numberOfAddedFiles = 0;
+
+            ProjectItemGroupElement itemGroup = ProjectRootElement.FindUniformOrCreateItemGroupWithCondition(
+                CompileElementType,
+                framework);
+            foreach (var @ref in refs.Select((r) => PathUtility.GetPathWithBackSlashes(r)))
+            {
+                if (ProjectRootElement.HasExistingItemWithCondition(framework, @ref))
+                {
+                    Reporter.Output.WriteLine(string.Format(
+                        CommonLocalizableStrings.ProjectAlreadyHasAreference,
+                        @ref));
+                    continue;
+                }
+
+                numberOfAddedFiles++;
+                itemGroup.AppendChild(ProjectRootElement.CreateItemElement(CompileElementType, @ref));
+
+                Reporter.Output.WriteLine(string.Format(CommonLocalizableStrings.FileAddedToTheProject, @ref));
+            }
+
+            return numberOfAddedFiles;
+        }
+
+        public int RemoveFileReferences(string framework, IEnumerable<string> refs)
+        {
+            int totalNumberOfRemovedFiles = 0;
+
+            foreach (var @ref in refs)
+            {
+                totalNumberOfRemovedFiles += RemoveFileReferenceAlternatives(framework, @ref);
+            }
+
+            return totalNumberOfRemovedFiles;
+        }
+
+
         public IEnumerable<ProjectItemElement> GetProjectToProjectReferences()
         {
             return ProjectRootElement.GetAllItemsWithElementType(ProjectItemElementType);
@@ -268,6 +308,35 @@ namespace Microsoft.DotNet.Tools
             }
 
             return numberOfRemovedRefs;
+        }
+
+        private int RemoveFileReferenceAlternatives(string framework, string file)
+        {
+            int numberOfRemovedFiles = 0;
+            foreach (var r in GetIncludeAlternativesForRemoval(file))
+            {
+                foreach (var existingItem in ProjectRootElement.FindExistingItemsWithCondition(framework, r))
+                {
+                    ProjectElementContainer itemGroup = existingItem.Parent;
+                    itemGroup.RemoveChild(existingItem);
+                    if (itemGroup.Children.Count == 0)
+                    {
+                        itemGroup.Parent.RemoveChild(itemGroup);
+                    }
+
+                    numberOfRemovedFiles++;
+                    Reporter.Output.WriteLine(string.Format(CommonLocalizableStrings.FileRemoved, r));
+                }
+            }
+
+            if (numberOfRemovedFiles == 0)
+            {
+                Reporter.Output.WriteLine(string.Format(
+                    CommonLocalizableStrings.FileReferenceCouldNotBeFound,
+                    file));
+            }
+
+            return numberOfRemovedFiles;
         }
 
         // Easiest way to explain rationale for this function is on the example. Let's consider following directory structure:

@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Cli
                             description: CommonLocalizableStrings.ProjectArgumentDescription),
                 AddPackageParser.AddPackage(),
                 AddProjectToProjectReferenceParser.AddProjectReference(),
+                AddFileParser.AddFile(),
                 CommonOptions.HelpOption());
     }
 }

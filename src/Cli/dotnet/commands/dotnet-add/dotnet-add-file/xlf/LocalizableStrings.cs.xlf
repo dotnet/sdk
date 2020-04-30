@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="cs" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="AppDescription">
+        <source>Command to add file</source>
+        <target state="new">Command to add file</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppFullName">
+        <source>Add a file to the project.</source>
+        <target state="new">Add a file to the project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdFrameworkDescription">
+        <source>Add the reference only when targeting a specific framework.</source>
+        <target state="new">Add the reference only when targeting a specific framework.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FilePathArgumentDescription">
+        <source>The files to add.</source>
+        <target state="new">The files to add.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FilePathArgumentName">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

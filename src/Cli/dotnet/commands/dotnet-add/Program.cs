@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Add.FileReference;
 using Microsoft.DotNet.Tools.Add.PackageReference;
 using Microsoft.DotNet.Tools.Add.ProjectToProjectReference;
 
@@ -31,6 +32,12 @@ namespace Microsoft.DotNet.Tools.Add
                 ["package"] =
                 add => new AddPackageReferenceCommand(
                     add["package"],
+                    add.Value<string>(),
+                    ParseResult),
+
+                ["file"] =
+                add => new AddFileReferenceCommand(
+                    add["file"],
                     add.Value<string>(),
                     ParseResult)
             };
