@@ -11,6 +11,8 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
+using System;
+using System.IO;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -23,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         private readonly string[] ConsoleLoggerOutputNormal = new[] { "--logger", "console;verbosity=normal" };
 
         [Fact]
-        public void MSTestSingleTFM()
+        public void GivenAProjectAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("1");
 
@@ -35,7 +37,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             "TestRunParameters.Parameter(name=\"myParam\",",
                                             "value=\"value\")",
                                             "TestRunParameters.Parameter(name=\"myParam2\",",
-                                            "value=\"myValue with space\")"
+                                            "value=\"value", 
+                                            "with", 
+                                            "space\")"
                                         }));
 
             // Verify
@@ -44,80 +48,49 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
                 result.StdOut.Should().Contain("Total tests: 1");
                 result.StdOut.Should().Contain("Passed: 1");
-                result.StdOut.Should().Contain("Failed: 0");
                 result.StdOut.Should().Contain("\u221a VSTestTestRunParameters");
             }
 
             result.ExitCode.Should().Be(0);
         }
 
-        // dotnet test + dll
-        //[Fact]
-        //public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
-        //{
-        //    var testAppName = "VSTestCore";
-        //    var testRoot = _testAssetsManager.CopyTestAsset(testAppName)
-        //        .WithSource()
-        //        .WithVersionVariables()
-        //        .Path;
+        [Fact]
+        public void GivenADllAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
+        {
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("2");
 
-        //    var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
+            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
-        //    new BuildCommand(Log, testRoot)
-        //        .Execute()
-        //        .Should().Pass();
+            new BuildCommand(Log, testProjectDirectory)
+                .Execute()
+                .Should().Pass();
 
-        //    var outputDll = Path.Combine(testRoot, "bin", configuration, "netcoreapp3.0", $"{testAppName}.dll");
+            var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, "netcoreapp3.0", "VSTestTestRunParameters.dll");
 
-        //    // Call vstest
-        //    var result = new DotnetVSTestCommand(Log)
-        //        .Execute(outputDll, "--logger:console;verbosity=normal");
-        //    if (!TestContext.IsLocalized())
-        //    {
-        //        result.StdOut
-        //            .Should().Contain("Total tests: 2")
-        //            .And.Contain("Passed: 1")
-        //            .And.Contain("Failed: 1")
-        //            .And.Contain("\u221a VSTestPassTest")
-        //            .And.Contain("X VSTestFailTest");
-        //    }
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                                        .Execute(ConsoleLoggerOutputNormal.Concat(new[] {
+                                            outputDll,
+                                            "--",
+                                            "TestRunParameters.Parameter(name=\"myParam\",",
+                                            "value=\"value\")",
+                                            "TestRunParameters.Parameter(name=\"myParam2\",",
+                                            "value=\"value",
+                                            "with",
+                                            "space\")"
+                                        }));
 
-        //    result.ExitCode.Should().Be(1);
-        //}
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
+                result.StdOut.Should().Contain("Total tests: 1");
+                result.StdOut.Should().Contain("Passed: 1");
+                result.StdOut.Should().Contain("\u221a VSTestTestRunParameters");
+            }
 
-        // vstest
-        //[Fact]
-        //public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
-        //{
-        //    var testAppName = "VSTestCore";
-        //    var testRoot = _testAssetsManager.CopyTestAsset(testAppName)
-        //        .WithSource()
-        //        .WithVersionVariables()
-        //        .Path;
-
-        //    var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
-
-        //    new BuildCommand(Log, testRoot)
-        //        .Execute()
-        //        .Should().Pass();
-
-        //    var outputDll = Path.Combine(testRoot, "bin", configuration, "netcoreapp3.0", $"{testAppName}.dll");
-
-        //    // Call vstest
-        //    var result = new DotnetVSTestCommand(Log)
-        //        .Execute(outputDll, "--logger:console;verbosity=normal");
-        //    if (!TestContext.IsLocalized())
-        //    {
-        //        result.StdOut
-        //            .Should().Contain("Total tests: 2")
-        //            .And.Contain("Passed: 1")
-        //            .And.Contain("Failed: 1")
-        //            .And.Contain("\u221a VSTestPassTest")
-        //            .And.Contain("X VSTestFailTest");
-        //    }
-
-        //    result.ExitCode.Should().Be(1);
-        //}
+            result.ExitCode.Should().Be(0);
+        }
 
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
         {

@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Tools.Test
         {
             DebugHelper.HandleDebugSwitch(ref args);
 
-            // literal parameters are after -- (including --)
+            // settings parameters are after -- (including --), these should not be considered by the parser
             var settings = args.SkipWhile(a => a != "--").ToArray();
             // all parameters before --
             args = args.TakeWhile(a => a != "--").ToArray();
@@ -102,9 +102,9 @@ namespace Microsoft.DotNet.Tools.Test
                     Reporter.Output.WriteLine(string.Format(LocalizableStrings.IgnoredArgumentsMessage, string.Join(" ", ignoredArgs)).Yellow());
                 }
 
-                // we don't need to escape one more time, there is no extra hop via msbuild
+                // merge the args settings, we don't need to escape
+                // one more time, there is no extra hop via msbuild
                 convertedArgs.AddRange(settings);
-
 
                 return new VSTestForwardingApp(convertedArgs).Execute();
             }

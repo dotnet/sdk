@@ -11,6 +11,7 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Cli.VSTest.Tests
 {
@@ -51,6 +52,65 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             }
 
             result.ExitCode.Should().Be(1);
+        }
+
+        [Fact]
+        public void GivenADllAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
+        {
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("1");
+
+            var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
+
+            new BuildCommand(Log, testProjectDirectory)
+                .Execute()
+                .Should().Pass();
+
+            var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, "netcoreapp3.0", "VSTestTestRunParameters.dll");
+
+            // Call test
+            CommandResult result = new DotnetVSTestCommand(Log)
+                                        .Execute(new[] {
+                                            outputDll,
+                                            "--logger:console;verbosity=normal",
+                                            "--",
+                                            "TestRunParameters.Parameter(name=\"myParam\",",
+                                            "value=\"value\")",
+                                            "TestRunParameters.Parameter(name=\"myParam2\",",
+                                            "value=\"value",
+                                            "with",
+                                            "space\")"
+                                        });
+
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
+                result.StdOut.Should().Contain("Total tests: 1");
+                result.StdOut.Should().Contain("Passed: 1");
+                result.StdOut.Should().Contain("\u221a VSTestTestRunParameters");
+            }
+
+            result.ExitCode.Should().Be(0);
+        }
+
+        private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
+        {
+            // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
+            string testAppName = "VSTestTestRunParameters";
+
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
+                            .WithSource()
+                            .WithVersionVariables();
+
+            var testProjectDirectory = testInstance.Path;
+
+            // Restore project VSTestCore
+            new RestoreCommand(Log, testProjectDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            return testProjectDirectory;
         }
     }
 }
