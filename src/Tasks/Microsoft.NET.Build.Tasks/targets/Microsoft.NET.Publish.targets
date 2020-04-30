@@ -945,11 +945,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PublishedSingleFilePath>$(PublishDir)$(PublishedSingleFileName)</PublishedSingleFilePath>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ResolvedFileToPublish Remove="@(_FilesToBundle)"/>
-      <!-- ResolvedFileToPublish shouldn't include PublishedSingleFilePath, since the single-file bundle is written directly to the publish directory -->
-    </ItemGroup>
-
   </Target>
 
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
@@ -963,8 +958,17 @@ Copyright (c) .NET Foundation. All rights reserved.
                     AppHostName="$(PublishedSingleFileName)"
                     IncludeSymbols="$(IncludeSymbolsInSingleFile)"
                     OutputDir="$(PublishDir)"
-                    ShowDiagnosticOutput="false"/>
+                    TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
+                    RuntimeIdentifier="$(RuntimeIdentifier)"
+                    ShowDiagnosticOutput="false">
+      <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundle"/>
+    </GenerateBundle>
 
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(_FilesToBundle)"/>
+      <ResolvedFileToPublish Include="@(_FilesExcludedFromBundle)"/>
+      <!-- ResolvedFileToPublish shouldn't include PublishedSingleFilePath, since the single-file bundle is written directly to the publish directory -->
+    </ItemGroup>
   </Target>
 
   <!--
