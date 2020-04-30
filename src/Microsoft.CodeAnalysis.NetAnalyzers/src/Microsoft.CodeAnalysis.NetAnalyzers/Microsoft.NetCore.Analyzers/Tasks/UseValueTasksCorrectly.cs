@@ -162,6 +162,14 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 }
                                 goto default;
 
+                            case OperationKind.ExpressionStatement:
+                            case OperationKind.Discard:
+                            case OperationKind.DiscardPattern:
+                            case OperationKind.SimpleAssignment when operation.Parent is ISimpleAssignmentOperation sao && sao.Target is IDiscardOperation:
+                                // Warn! This is a statement or discard. The result should have been used.
+                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
+                                return;
+
                             // At this point, we're "in the weeds", but there are still some rare-but-used valid patterns to check for.
 
                             case OperationKind.Coalesce:
@@ -176,13 +184,6 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                             default:
                                 // Handle atypical / difficult cases that require more analysis.
                                 HandleAtypicalValueTaskUsage(operationContext, debugType, operation, invocation);
-                                return;
-
-                            case OperationKind.ExpressionStatement:
-                            case OperationKind.Discard:
-                            case OperationKind.DiscardPattern:
-                                // Warn! This is a statement or discard. The result should have been used.
-                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
                                 return;
                         }
                     }
