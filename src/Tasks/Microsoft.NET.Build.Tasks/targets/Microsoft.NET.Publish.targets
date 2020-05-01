@@ -987,10 +987,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <!-- IntermediateDepsFilePath is the location where the deps.json file is originally created
            PublishDepsFilePath is the location where the deps.json resides when published 
-           PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedde within the single-file bundle -->      
+           PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedded within the single-file bundle -->      
       <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >
-      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
-      <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' And '$(PublishSingleFile)' != 'true'">$(PublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>      
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' And '$(PublishSingleFile)' != 'true'">$(PublishDir)$(ProjectDepsFileName)</IntermediateDepsFilePath>
+      <IntermediateDepsFilePath Condition=" '$(IntermediateDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
+      <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' And '$(PublishSingleFile)' != 'true'">$(IntermediateDepsFilePath)</PublishDepsFilePath>      
     </PropertyGroup>
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' == 'Reference'" />
