@@ -19,12 +19,14 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string OutputDir { get; set; }
         [Required]
+        public string TargetFrameworkVersion { get; set; }
+        [Required]
         public bool ShowDiagnosticOutput { get; set; }
 
         protected override void ExecuteCore()
         {
             BundleOptions options = BundleOptions.BundleAllContent | (IncludeSymbols ? BundleOptions.BundleSymbolFiles : BundleOptions.None);
-            var bundler = new Bundler(AppHostName, OutputDir, options, diagnosticOutput: ShowDiagnosticOutput);
+            var bundler = new Bundler(AppHostName, OutputDir, options, targetFrameworkVersion: new Version(TargetFrameworkVersion), diagnosticOutput: ShowDiagnosticOutput);
             var fileSpec = new List<FileSpec>(FilesToBundle.Length);
 
             foreach (var item in FilesToBundle)

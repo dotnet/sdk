@@ -963,6 +963,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                     AppHostName="$(PublishedSingleFileName)"
                     IncludeSymbols="$(IncludeSymbolsInSingleFile)"
                     OutputDir="$(PublishDir)"
+                    TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                     ShowDiagnosticOutput="false"/>
 
   </Target>
