@@ -1031,7 +1031,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
                       RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"/>
 
-    <ItemGroup>
+    <ItemGroup Condition=" '$(IntermediateDepsFilePath)' != '$(PublishDepsFilePath)' ">
       <ResolvedFileToPublish Include="$(IntermediateDepsFilePath)">
         <RelativePath>$(ProjectDepsFileName)</RelativePath>
       </ResolvedFileToPublish>
