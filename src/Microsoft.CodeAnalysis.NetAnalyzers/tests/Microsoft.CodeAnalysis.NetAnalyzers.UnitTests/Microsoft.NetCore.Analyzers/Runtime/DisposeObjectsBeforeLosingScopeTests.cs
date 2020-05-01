@@ -12133,7 +12133,7 @@ End Class"
             }.RunAsync();
         }
 
-        [Fact(Skip = "The throw statement prevents the analysis")]
+        [Fact(Skip = "The throw statement prevents the analysis"), WorkItem(3356, "https://github.com/dotnet/roslyn-analyzers/issues/3356")]
         public async Task Dispose_UnconditionalThrowStatement_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
