@@ -488,16 +488,22 @@ namespace Microsoft.NET.Build.Tasks
                     runtimePack.Value.Where(asset => asset.AssetType == AssetType.Native)
                     .Select(asset => CreateRuntimeFile(asset.DestinationSubPath, asset.SourcePath)));
 
+                var assetInfo = runtimePack.Value.First();
+
                 return new RuntimeLibrary(
                     type: "runtimepack",
                     name: runtimePack.Key,
-                    version: runtimePack.Value.First().PackageVersion,
+                    version: assetInfo.PackageVersion,
                     hash: string.Empty,
                     runtimeAssemblyGroups: new[] { runtimeAssemblyGroup },
                     nativeLibraryGroups: new[] { nativeLibraryGroup },
                     resourceAssemblies: Enumerable.Empty<ResourceAssembly>(),
                     dependencies: Enumerable.Empty<Dependency>(),
-                    serviceable: false);
+                    serviceable: false,
+                    path: null,
+                    hashPath: null,
+                    runtimeStoreManifestName: null,
+                    frameworkName: assetInfo.FrameworkName);
             });
         }
 

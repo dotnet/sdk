@@ -20,6 +20,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public string PackageRuntimeIdentifier { get; set; }
 
+        public string FrameworkName { get; set; }
+
         public static RuntimePackAssetInfo FromItem(ITaskItem item)
         {
             var assetInfo = new RuntimePackAssetInfo();
@@ -47,6 +49,7 @@ namespace Microsoft.NET.Build.Tasks
             assetInfo.PackageName = item.GetMetadata(MetadataKeys.NuGetPackageId);
             assetInfo.PackageVersion = item.GetMetadata(MetadataKeys.NuGetPackageVersion);
             assetInfo.PackageRuntimeIdentifier = item.GetMetadata(MetadataKeys.RuntimeIdentifier);
+            assetInfo.FrameworkName = item.GetMetadata(MetadataKeys.FrameworkName);
 
             return assetInfo;
         }

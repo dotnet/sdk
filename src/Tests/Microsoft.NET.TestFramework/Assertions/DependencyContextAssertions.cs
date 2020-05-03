@@ -98,5 +98,18 @@ namespace Microsoft.NET.TestFramework.Assertions
 
             return new AndConstraint<DependencyContextAssertions>(this);
         }
+
+        public AndConstraint<DependencyContextAssertions> OnlyHaveRuntimePacksWithFrameworkNameProperties()
+        {
+            var runtimePacks = _dependencyContext.RuntimeLibraries
+                .Where(l => string.Equals(l.Type, "runtimepack", StringComparison.OrdinalIgnoreCase));
+
+            foreach (var runtimePack in runtimePacks)
+            {
+                runtimePack.FrameworkName.Should().NotBeNullOrEmpty($"Every RuntimeLibrary with Type='runtimepack' should have a FrameworkName, but {runtimePack.Name} does not.");
+            }
+
+            return new AndConstraint<DependencyContextAssertions>(this);
+        }
     }
 }

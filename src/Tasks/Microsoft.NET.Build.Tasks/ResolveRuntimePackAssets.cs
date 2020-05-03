@@ -46,7 +46,8 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var runtimePack in ResolvedRuntimePacks)
             {
-                if (!frameworkReferenceNames.Contains(runtimePack.GetMetadata(MetadataKeys.FrameworkName)))
+                var runtimePackFrameworkName = runtimePack.GetMetadata(MetadataKeys.FrameworkName);
+                if (!frameworkReferenceNames.Contains(runtimePackFrameworkName))
                 {
                     //  This is a runtime pack for a shared framework that ultimately wasn't referenced, so don't include its assets
                     continue;
@@ -78,7 +79,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (File.Exists(runtimeListPath))
                 {
-                    AddRuntimePackAssetsFromManifest(runtimePackAssets, runtimePackRoot, runtimeListPath, runtimePack);
+                    AddRuntimePackAssetsFromManifest(runtimePackAssets, runtimePackRoot, runtimeListPath, runtimePack, runtimePackFrameworkName);
                 }
                 else
                 {
@@ -90,7 +91,7 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, string runtimePackRoot,
-            string runtimeListPath, ITaskItem runtimePack)
+            string runtimeListPath, ITaskItem runtimePack, string runtimePackFrameworkName)
         {
             var assetSubPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -130,7 +131,7 @@ namespace Microsoft.NET.Build.Tasks
                     throw new BuildErrorException($"Unrecognized file type '{typeAttributeValue}' in {runtimeListPath}");
                 }
 
-                var assetItem = CreateAssetItem(assetPath, assetType, runtimePack, culture);
+                var assetItem = CreateAssetItem(assetPath, assetType, runtimePack, culture, runtimePackFrameworkName);
 
                 // Ensure the asset item's destination sub-path is unique
                 var assetSubPath = assetItem.GetMetadata(MetadataKeys.DestinationSubPath);
@@ -148,7 +149,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static TaskItem CreateAssetItem(string assetPath, string assetType, ITaskItem runtimePack, string culture)
+        private static TaskItem CreateAssetItem(string assetPath, string assetType, ITaskItem runtimePack, string culture, string runtimePackFrameworkName)
         {
             string runtimeIdentifier = runtimePack.GetMetadata(MetadataKeys.RuntimeIdentifier);
 
@@ -171,6 +172,7 @@ namespace Microsoft.NET.Build.Tasks
             assetItem.SetMetadata(MetadataKeys.NuGetPackageVersion, runtimePack.GetMetadata(MetadataKeys.NuGetPackageVersion));
             assetItem.SetMetadata(MetadataKeys.RuntimeIdentifier, runtimeIdentifier);
             assetItem.SetMetadata(MetadataKeys.IsTrimmable, runtimePack.GetMetadata(MetadataKeys.IsTrimmable));
+            assetItem.SetMetadata(MetadataKeys.FrameworkName, runtimePackFrameworkName);
 
             return assetItem;
         }

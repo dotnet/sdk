@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using FluentAssertions;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -196,6 +197,13 @@ namespace Microsoft.NET.Publish.Tests
                 "zh-Hans/PresentationCore.resources.dll",
                 "zh-Hant/PresentationCore.resources.dll",
             });
+
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(output.FullName, $"{testProject.Name}.deps.json")))
+            {
+                var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
+                dependencyContext.Should()
+                    .OnlyHaveRuntimePacksWithFrameworkNameProperties();
+            }
         }
 
         [WindowsOnlyFact]
