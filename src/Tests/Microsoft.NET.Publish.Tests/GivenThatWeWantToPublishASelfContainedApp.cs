@@ -201,7 +201,10 @@ namespace Microsoft.NET.Publish.Tests
             using (var depsJsonFileStream = File.OpenRead(Path.Combine(output.FullName, $"{testProject.Name}.deps.json")))
             {
                 var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
-                dependencyContext.Should()
+                dependencyContext
+                    .Should()
+                    .HaveRuntimePacks()
+                    .And
                     .OnlyHaveRuntimePacksWithFrameworkNameProperties();
             }
         }

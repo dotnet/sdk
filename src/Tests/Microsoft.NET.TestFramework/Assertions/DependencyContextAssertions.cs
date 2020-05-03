@@ -39,6 +39,16 @@ namespace Microsoft.NET.TestFramework.Assertions
             return new AndConstraint<DependencyContextAssertions>(this);
         }
 
+        public AndConstraint<DependencyContextAssertions> HaveRuntimePacks()
+        {
+            var runtimePacks = _dependencyContext.RuntimeLibraries
+                .Where(l => string.Equals(l.Type, "runtimepack", StringComparison.OrdinalIgnoreCase));
+
+            runtimePacks.Should().NotBeEmpty();
+
+            return new AndConstraint<DependencyContextAssertions>(this);
+        }
+
         public AndConstraint<DependencyContextAssertions> OnlyHaveRuntimeAssemblies(string runtimeIdentifier, params string[] runtimeAssemblyNames)
         {
             var assemblyNames = _dependencyContext.GetRuntimeAssemblyNames(runtimeIdentifier);
