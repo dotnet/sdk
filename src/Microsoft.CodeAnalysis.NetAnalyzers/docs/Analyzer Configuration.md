@@ -24,11 +24,11 @@ For example, end users can configure the analyzed API surface for analyzers usin
 
 ## Enabling .editorconfig based configuration
 
-### VS2019 16.3 and later
+### VS2019 16.3 and later + Analyzer package version 3.3.x and later
 
 End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
 
-### Prior to VS2019 16.3
+### Prior to VS2019 16.3 or using an analyzer package version prior to 3.3.x
 
 1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory.
 2. Shared .editorconfig file: If you would like to share a common .editorconfig file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
