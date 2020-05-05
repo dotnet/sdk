@@ -12,7 +12,6 @@ CA1833 | https://docs.microsoft.com/visualstudio/code-quality/ca1833 | Use AsSpa
 CA1834 | https://docs.microsoft.com/visualstudio/code-quality/ca1834 | Consider using 'StringBuilder.Append(char)' when applicable. |
 CA2008 | https://docs.microsoft.com/visualstudio/code-quality/ca2008 | Do not create tasks without passing a TaskScheduler |
 CA2009 | https://docs.microsoft.com/visualstudio/code-quality/ca2009 | Do not call ToImmutableCollection on an ImmutableCollection value |
-CA2010 | https://docs.microsoft.com/visualstudio/code-quality/ca2010 | Always consume the value returned by methods marked with PreserveSigAttribute |
 CA2011 | https://docs.microsoft.com/visualstudio/code-quality/ca2011 | Avoid infinite recursion |
 CA2012 | https://docs.microsoft.com/visualstudio/code-quality/ca2012 | Use ValueTasks correctly |
 CA2013 | https://docs.microsoft.com/visualstudio/code-quality/ca2013 | Do not use ReferenceEquals with value types |

@@ -132,6 +132,11 @@
         <target state="translated">'{0}' chama '{1}', mas não usa o valor que o método retorna. Os métodos LINQ são conhecidos por não terem efeitos colaterais. Use o resultado em uma instrução condicional, atribua o resultado a uma variável ou passe-o como argumento para outro método.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">Esta regra considera que um membro de enumeração com um nome contendo "reservado" não está sendo usado no momento, mas é um espaço reservado a ser renomeado ou removido em uma versão futura. A renomeação ou a remoção de um membro é uma alteração da falha.</target>

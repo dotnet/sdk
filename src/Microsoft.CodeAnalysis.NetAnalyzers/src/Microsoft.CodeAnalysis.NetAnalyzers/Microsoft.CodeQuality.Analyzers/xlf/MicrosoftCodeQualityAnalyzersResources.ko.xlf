@@ -132,6 +132,11 @@
         <target state="translated">'{0}'이(가) '{1}'을(를) 호출하지만 메서드에서 반환된 값을 사용하지 않습니다. LINQ 메서드는 부작용이 없는 것으로 알려져 있습니다. 결과를 조건문에 사용하거나, 변수에 할당하거나, 다른 메서드에 인수로 전달하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">이 규칙에서 이름에 "reserved"가 포함된 열거형 멤버는 현재 사용되고 있지 않으며 이후 버전에서 이름을 바꾸거나 제거할 자리 표시자라고 가정합니다. 멤버 제거 또는 이름 바꾸기는 호환성이 손상되는 변경 내용입니다.</target>

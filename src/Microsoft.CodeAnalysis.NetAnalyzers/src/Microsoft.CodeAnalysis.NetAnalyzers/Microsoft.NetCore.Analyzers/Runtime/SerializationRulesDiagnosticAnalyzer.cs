@@ -139,8 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    var systemObjectSymbol = context.Compilation.GetSpecialType(SpecialType.System_Object);
-                    var isNetStandardAssembly = systemObjectSymbol.ContainingAssembly.Name != "mscorlib";
+                    var isNetStandardAssembly = !context.Compilation.TargetsDotNetFramework();
 
                     var symbolAnalyzer = new SymbolAnalyzer(iserializableTypeSymbol, serializationInfoTypeSymbol, streamingContextTypeSymbol, serializableAttributeTypeSymbol, nonSerializedAttributeTypeSymbol, isNetStandardAssembly);
                     context.RegisterSymbolAction(symbolAnalyzer.AnalyzeSymbol, SymbolKind.NamedType);

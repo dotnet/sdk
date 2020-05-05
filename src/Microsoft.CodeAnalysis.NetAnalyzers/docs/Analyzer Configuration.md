@@ -24,11 +24,11 @@ For example, end users can configure the analyzed API surface for analyzers usin
 
 ## Enabling .editorconfig based configuration
 
-### VS2019 16.3 and later
+### VS2019 16.3 and later + Analyzer package version 3.3.x and later
 
 End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
 
-### Prior to VS2019 16.3
+### Prior to VS2019 16.3 or using an analyzer package version prior to 3.3.x
 
 1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory.
 2. Shared .editorconfig file: If you would like to share a common .editorconfig file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
@@ -670,3 +670,25 @@ Option Values: Boolean values
 Default Value: `false`
 
 Example: `dotnet_code_quality.CA1303.use_naming_heuristic = true`
+
+### Additional use results methods
+Option Name: `additional_use_results_methods`
+
+Configurable Rules: [CA1806](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1806)
+
+Option Values: Names of additional methods (separated by '|') for CA1806.
+Allowed method name formats:
+  1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
+  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format
+     with an optional "M:" prefix.
+
+Default Value: None
+
+Examples:
+
+| Option Value | Summary |
+| --- | --- |
+|`dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod` | Matches all methods named 'MyMethod' in the compilation
+|`dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod1\|MyMethod2` | Matches all methods named either 'MyMethod1' or 'MyMethod2' in the compilation
+|`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS.MyType.MyMethod(ParamType)` | Matches specific method 'MyMethod' with given fully qualified signature
+|`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS1.MyType1.MyMethod1(ParamType)\|M:NS2.MyType2.MyMethod2(ParamType)` | Matches specific methods 'MyMethod1' and 'MyMethod2' with respective fully qualified signature
