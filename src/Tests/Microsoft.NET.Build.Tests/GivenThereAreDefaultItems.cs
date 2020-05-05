@@ -559,7 +559,7 @@ namespace Microsoft.NET.Build.Tests
                 .Execute()
                 .Should()
                 .Pass()
-                .HaveStdOutContaining("warning CS2002")
+                .And.HaveStdOutContaining("warning CS2002")
                 .And.HaveStdOutContaining("DuplicateCompileItems.cs")
                 //  Class1.cs wasn't included multiple times, so it shouldn't be mentioned
                 .And.NotHaveStdOutMatching("Class1.cs")
