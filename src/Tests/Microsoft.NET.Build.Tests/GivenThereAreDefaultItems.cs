@@ -558,6 +558,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand
                 .Execute()
                 .Should()
+                .Pass()
                 .HaveStdOutContaining("warning CS2002")
                 .And.HaveStdOutContaining("DuplicateCompileItems.cs")
                 //  Class1.cs wasn't included multiple times, so it shouldn't be mentioned
