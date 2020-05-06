@@ -1078,9 +1078,9 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         _ = Helpers.ReturnsValueTaskOfInt().AsTask();
                     }
                 }"),
-                GetCSharpResultAt(9, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule),
-                GetCSharpResultAt(10, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule),
-                GetCSharpResultAt(11, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule)
+                GetCSharpResultAt(9, 29, UseValueTasksCorrectlyAnalyzer.UnconsumedRule),
+                GetCSharpResultAt(10, 29, UseValueTasksCorrectlyAnalyzer.UnconsumedRule),
+                GetCSharpResultAt(11, 29, UseValueTasksCorrectlyAnalyzer.UnconsumedRule)
             );
         }
 

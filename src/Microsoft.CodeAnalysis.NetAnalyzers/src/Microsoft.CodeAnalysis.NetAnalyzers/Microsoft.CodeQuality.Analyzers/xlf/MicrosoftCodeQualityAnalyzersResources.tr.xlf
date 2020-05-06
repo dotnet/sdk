@@ -132,6 +132,11 @@
         <target state="translated">'{0}' '{1}' çağırıyor ancak metodun döndürdüğü değeri kullanmıyor. Linq metotlarının yan etkileri yoktur. Bir koşullu ifadedeki sonucu kullanın, sonucu bir değişkene atayın veya bir bağımsız değişken olarak başka bir metoda geçirin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">Bu kural, "ayrılmış" içeren bir ada sahip bir numaralandırma üyesinin şu anda kullanılmadığını ancak ileride yeniden adlandırılabilecek veya kaldırılabilecek bir yer tutucu olduğunu varsayar. Bir üyeyi yeniden adlandırmak veya kaldırmak hataya neden olan bir değişikliktir.</target>

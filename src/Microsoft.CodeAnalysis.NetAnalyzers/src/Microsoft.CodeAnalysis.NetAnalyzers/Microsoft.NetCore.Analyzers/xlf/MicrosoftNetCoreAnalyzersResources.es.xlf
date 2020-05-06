@@ -12,21 +12,6 @@
         <target state="translated">Agregar el atributo Serializable</target>
         <note />
       </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">PreserveSigAttribute indica que un método devolverá HRESULT, en lugar de generar una excepción. Por lo tanto, es importante utilizar el valor HRESULT devuelto por el método, de manera que se puedan detectar los errores. Por lo general, para ello se llama a Marshal.ThrowExceptionForHR.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">Utilice el valor hresult devuelto por el método "{0}" y llame a Marshal.ThrowExceptionForHR.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">Consuma siempre el valor devuelto por métodos marcados con PreserveSigAttribute.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">Revisar el uso del modo de cifrado con expertos en criptografía</target>
@@ -1405,6 +1390,36 @@
       <trans-unit id="PInvokesShouldNotBeVisibleTitle">
         <source>P/Invokes should not be visible</source>
         <target state="translated">Los elementos P/Invoke no deben estar visibles</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
+        <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamReadAsyncMemoryOverloadsDescription">
+        <source>All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</source>
+        <target state="new">All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamReadAsyncMemoryOverloadsTitle">
+        <source>Prefer 'Memory&lt;Byte&gt;' overload for 'ReadAsync'.</source>
+        <target state="new">Prefer 'Memory&lt;Byte&gt;' overload for 'ReadAsync'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsDescription">
+        <source>All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</source>
+        <target state="new">All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsMessage">
+        <source>Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</source>
+        <target state="new">Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsTitle">
+        <source>Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</source>
+        <target state="new">Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
