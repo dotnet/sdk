@@ -3,15 +3,15 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Usage.DoNotCheckFlagFromDifferentEnum,
+    Microsoft.NetCore.Analyzers.Usage.ProvideCorrectArgumentToEnumHasFlag,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Usage.DoNotCheckFlagFromDifferentEnum,
+    Microsoft.NetCore.Analyzers.Usage.ProvideCorrectArgumentToEnumHasFlag,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
-    public class DoNotCheckFlagFromDifferentEnumTests
+    public class ProvideCorrectArgumentToEnumHasFlagTests
     {
         [Fact]
         public async Task CA2248_EnumTypesAreDifferent_Diagnostic()
@@ -116,6 +116,44 @@ Public Class C
 
     Public Sub Method(ByVal m As MyEnum)
         m.HasFlag(MyEnum.A)
+    End Sub
+End Class
+");
+        }
+
+        [Fact]
+        public async Task CA2248_EnumTypesAreDifferentAndNotFlags_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public enum MyEnum { A, B, }
+
+    public enum OtherEnum { A, }
+
+    public void Method(MyEnum m)
+    {
+        [|m.HasFlag(OtherEnum.A)|];
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    Public Enum MyEnum
+        A
+        B
+    End Enum
+
+    Public Enum OtherEnum
+        A
+    End Enum
+
+    Public Sub Method(ByVal m As MyEnum)
+        [|m.HasFlag(OtherEnum.A)|]
     End Sub
 End Class
 ");
