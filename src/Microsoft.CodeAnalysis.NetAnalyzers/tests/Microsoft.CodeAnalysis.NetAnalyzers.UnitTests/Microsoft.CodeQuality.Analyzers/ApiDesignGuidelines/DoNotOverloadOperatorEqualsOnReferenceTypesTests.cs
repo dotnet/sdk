@@ -193,25 +193,40 @@ End Class"
             }.RunAsync();
         }
 
-        [Fact]
-        public async Task OperatorEqual_InternalReferenceType_NoDiagnostic()
+        [Theory]
+        [InlineData("internal")]
+        [InlineData("private")]
+
+        public async Task CSharp_OperatorEqual_InternalReferenceType_NoDiagnostic(string accessibility)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-internal class C
-{
-    public static bool operator ==(C left, C right) => true;
-    public static bool operator !=(C left, C right) => true;
-}");
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class OuterClass
+{{
+    {accessibility} class C
+    {{
+        public static bool operator ==(C left, C right) => true;
+        public static bool operator !=(C left, C right) => true;
+    }}
+}}");
+        }
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Friend Class C
-    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+        [Theory]
+        [InlineData("Friend")]
+        [InlineData("Private")]
 
-    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
-        Return True
-    End Operator
+        public async Task VisualBasic_OperatorEqual_InternalReferenceType_NoDiagnostic(string accessibility)
+        {
+            await VerifyVB.VerifyAnalyzerAsync($@"
+Public Class OuterClass
+    {accessibility} Class C
+        Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+            Return True
+        End Operator
+
+        Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+            Return True
+        End Operator
+    End Class
 End Class");
         }
 
