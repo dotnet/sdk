@@ -527,7 +527,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("EnableDefaultCompileItems");
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_gives_the_correct_error_if_duplicate_compile_items_are_included_and_default_items_are_disabled()
         {
             var testProject = new TestProject()
@@ -558,12 +558,12 @@ namespace Microsoft.NET.Build.Tests
             buildCommand
                 .Execute()
                 .Should()
-                .Fail()
+                .Pass()
+                .And.HaveStdOutContaining("warning CS2002")
                 .And.HaveStdOutContaining("DuplicateCompileItems.cs")
                 //  Class1.cs wasn't included multiple times, so it shouldn't be mentioned
                 .And.NotHaveStdOutMatching("Class1.cs")
                 //  Default items weren't enabled, so the error message should come from the C# compiler and shouldn't include the information about default compile items
-                .And.HaveStdOutContaining("MSB3105")
                 .And.NotHaveStdOutMatching("EnableDefaultCompileItems");
         }
 
