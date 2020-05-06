@@ -186,15 +186,6 @@
   <data name="UseManagedEquivalentsOfWin32ApiMessage" xml:space="preserve">
     <value>Use managed equivalents of win32 api</value>
   </data>
-  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle" xml:space="preserve">
-    <value>Always consume the value returned by methods marked with PreserveSigAttribute</value>
-  </data>
-  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription" xml:space="preserve">
-    <value>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</value>
-  </data>
-  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage" xml:space="preserve">
-    <value>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</value>
-  </data>
   <data name="MarkBooleanPInvokeArgumentsWithMarshalAsTitle" xml:space="preserve">
     <value>Mark boolean PInvoke arguments with MarshalAs</value>
   </data>
@@ -1286,6 +1277,24 @@
   </data>
   <data name="DoNotUseStackallocInLoopsMessage" xml:space="preserve">
     <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
+  </data>
+  <data name="PreferStreamReadAsyncMemoryOverloadsTitle" xml:space="preserve">
+    <value>Prefer 'Memory&lt;Byte&gt;' overload for 'ReadAsync'.</value>
+  </data>
+  <data name="PreferStreamReadAsyncMemoryOverloadsDescription" xml:space="preserve">
+    <value>All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</value>
+  </data>
+  <data name="PreferStreamAsyncMemoryOverloadsMessage" xml:space="preserve">
+    <value>Change the '{0}' method call to the overload that receives a '{1}'.</value>
+  </data>
+  <data name="PreferStreamWriteAsyncMemoryOverloadsTitle" xml:space="preserve">
+    <value>Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</value>
+  </data>
+  <data name="PreferStreamWriteAsyncMemoryOverloadsDescription" xml:space="preserve">
+    <value>All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</value>
+  </data>
+  <data name="PreferStreamWriteAsyncMemoryOverloadsMessage" xml:space="preserve">
+    <value>Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</value>
   </data>
   <data name="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle" xml:space="preserve">
     <value>Change to call the two argument constructor, pass null for the message.</value>

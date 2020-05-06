@@ -788,6 +788,91 @@ End Class
                 GetBasicLinqMethodResultAt(12, 9, "Method1", "OfType"));
         }
 
+        [Theory, WorkItem(3479, "https://github.com/dotnet/roslyn-analyzers/issues/3479")]
+        // No configuration - validate no diagnostics in default configuration
+        [InlineData("")]
+        // Match by method name
+        [InlineData("dotnet_code_quality.additional_use_results_methods = GetSomeValue")]
+        // Setting only for Rule ID
+        [InlineData("dotnet_code_quality.CA1806.additional_use_results_methods = GetSomeValue")]
+        // Match by documentation ID without "M:" prefix
+        [InlineData("dotnet_code_quality.additional_use_results_methods = SomeClass.GetSomeValue()|SomeClass.GetSomeValue(System.Int32)")]
+        // Match by documentation ID with "M:" prefix
+        [InlineData("dotnet_code_quality.additional_use_results_methods = M:SomeClass.GetSomeValue()|M:SomeClass.GetSomeValue(System.Int32)")]
+        public async Task CA1806_UserDefinedMethods_Diagnostic(string editorConfigText)
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class SomeClass
+{
+    public int GetSomeValue() => 42;
+    public int GetSomeValue(int value) => value;
+}
+
+public class Class1
+{
+    public void Method1(SomeClass sc)
+    {
+        sc.GetSomeValue();
+        sc.GetSomeValue(10);
+    }
+}",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            };
+
+            if (editorConfigText.Length > 0)
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpUserDefinedMethodResultAt(12, 9, "Method1", "GetSomeValue"));
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpUserDefinedMethodResultAt(13, 9, "Method1", "GetSomeValue"));
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbtest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class SomeClass
+    Public Function GetSomeValue() As Integer
+        Return 42
+    End Function
+
+    Public Function GetSomeValue(ByVal val As Integer) As Integer
+        Return val
+    End Function
+End Class
+
+Public Class Class1
+    Public Sub Method1(ByVal sc As SomeClass)
+        sc.GetSomeValue()
+        sc.GetSomeValue(12)
+    End Sub
+End Class
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            };
+
+            if (editorConfigText.Length > 0)
+            {
+                vbtest.ExpectedDiagnostics.Add(GetBasicUserDefinedMethodResultAt(14, 9, "Method1", "GetSomeValue"));
+                vbtest.ExpectedDiagnostics.Add(GetBasicUserDefinedMethodResultAt(15, 9, "Method1", "GetSomeValue"));
+            }
+
+            await vbtest.RunAsync();
+        }
+
         #endregion
 
         #region Helpers
@@ -844,6 +929,16 @@ End Class
 
         private static DiagnosticResult GetBasicLinqMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
             => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.LinqMethodRule)
+                .WithLocation(line, column)
+                .WithArguments(containingMethodName, invokedMethodName);
+
+        private static DiagnosticResult GetCSharpUserDefinedMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+           => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.UserDefinedMethodRule)
+               .WithLocation(line, column)
+               .WithArguments(containingMethodName, invokedMethodName);
+
+        private static DiagnosticResult GetBasicUserDefinedMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+            => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.UserDefinedMethodRule)
                 .WithLocation(line, column)
                 .WithArguments(containingMethodName, invokedMethodName);
 
