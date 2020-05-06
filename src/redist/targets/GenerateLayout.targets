@@ -34,10 +34,10 @@
       <DotnetToolsetBlobRootUrl Condition="'$(DotnetToolsetBlobRootUrl)' == ''">https://dotnetfeed.blob.core.windows.net/dotnet-core/</DotnetToolsetBlobRootUrl>
 
       <CoreSetupRid Condition="'$(CoreSetupRid)' == ''">$(HostRid)</CoreSetupRid>
-      <CoreSetupRid Condition=" ('$(HostOSName)' == 'win' or '$(HostOSName)' == 'osx' or '$(HostOSName)' == 'freebsd') and '$(DotNetBuildFromSource)' != 'true' ">$(HostMonikerRid)</CoreSetupRid>
+      <CoreSetupRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd') and '$(DotNetBuildFromSource)' != 'true' ">$(OSName)-$(Architecture)</CoreSetupRid>
 
       <!-- only the runtime OSX .pkgs have a `-internal` suffix -->
-      <InstallerStartSuffix Condition="'$(HostOSName)' == 'osx'">-internal</InstallerStartSuffix>
+      <InstallerStartSuffix Condition="$([MSBuild]::IsOSPlatform('OSX'))">-internal</InstallerStartSuffix>
 
       <!-- Downloaded Installers + Archives -->
 
@@ -77,7 +77,7 @@
       <AspNetCoreSharedFxArchiveRid>$(AspNetCoreSharedFxInstallerRid)</AspNetCoreSharedFxArchiveRid>
       <AspNetCoreSharedFxInstallerRid Condition="'$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm'">x64</AspNetCoreSharedFxInstallerRid>
 
-      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND '$(HostOSName)' != 'osx' ">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
+      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND !$([MSBuild]::IsOSPlatform('OSX')) ">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
       <!-- Note: we use the "-internal" archives and installers that contain only the aspnetcore shared framework, and shouldn't overlap with Microsoft.NETCore.App. -->
       <DownloadedAspNetCoreSharedFxWixLibFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxWixLibFileName>
       <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
@@ -98,7 +98,7 @@
       <CombinedSharedHostAndFrameworkArchive>$(CoreSetupDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(HostOSName)' == 'win' And !$(Architecture.StartsWith('arm'))">
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And !$(Architecture.StartsWith('arm'))">
       <AlternateAppHostRid>win-$(AlternateArchitecture)</AlternateAppHostRid>
       <ArmAppHostRid>win-arm</ArmAppHostRid>
       <Arm64AppHostRid>win-arm64</Arm64AppHostRid>

@@ -20,7 +20,6 @@
   </Target>
 
   <UsingTask TaskName="CalculateTemplateVersions" AssemblyFile="$(CoreSdkTaskDll)" />
-  <UsingTask TaskName="GetCurrentRuntimeInformation" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="DownloadFile" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />

@@ -1,23 +1,20 @@
 <Project>
   <Target Name="GetCurrentRuntimeInformation">
-    <GetCurrentRuntimeInformation>
-      <Output TaskParameter="Rid" PropertyName="HostRid" />
-      <Output TaskParameter="OSName" PropertyName="HostOSName" />
-      <Output TaskParameter="OSPlatform" PropertyName="HostOSPlatform" />
-    </GetCurrentRuntimeInformation>
-  
     <PropertyGroup>
-      <IsLinux Condition = " '$(HostOSName)' != 'win' AND '$(HostOSName)' != 'osx' AND '$(HostOSName)' != 'freebsd' ">True</IsLinux>
-      <OSName Condition=" '$(OSName)' == '' AND '$(IsLinux)' != 'True' ">$(HostOSName)</OSName>
-      <OSPlatform Condition=" '$(OSPlatform)' == '' AND '$(IsLinux)' != 'True' ">$(HostOSPlatform)</OSPlatform>
+      <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</HostRid>
+      <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</HostRid>
+
+      <IsLinux Condition = " $([MSBuild]::IsOSPlatform('LINUX')) ">True</IsLinux>
+      <OSName Condition=" '$(OSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS')) ">win</OSName>
+      <OSName Condition=" '$(OSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX')) ">osx</OSName>
+      <OSName Condition=" '$(OSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD')) ">freebsd</OSName>
       <OSName Condition=" '$(OSName)' == '' AND '$(IsLinux)' == 'True' ">linux</OSName>
-      <OSPlatform Condition=" '$(OSPlatform)' == '' AND '$(IsLinux)' == 'True' ">linux</OSPlatform>
 
       <Rid Condition=" '$(Rid)' == '' ">$(OSName)-$(Architecture)</Rid>
     </PropertyGroup>
     
     <PropertyGroup>
-      <IsDebianBaseDistro Condition=" '$(HostOSName)' == 'ubuntu' OR '$(HostOSName)' == 'debian' ">true</IsDebianBaseDistro>
+      <IsDebianBaseDistro Condition=" $(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian')) ">true</IsDebianBaseDistro>
       <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('rhel')) AND '$(HostRid)' != 'rhel.6-x64' ">true</IsRPMBasedDistro>
       <PublishNativeInstallers Condition=" '$(IslinuxPortable)' != 'true' AND '$(HostRid)' != 'rhel.6-x64' AND '$(HostRid)' != 'linux-musl-x64'">true</PublishNativeInstallers>
       <PublishArchives Condition=" '$(IslinuxPortable)' == 'true' OR ('$(IsDebianBaseDistro)' != 'true' AND '$(IsRPMBasedDistro)' != 'true') ">true</PublishArchives>
@@ -29,13 +26,6 @@
                                    '$(Rid)' == 'linux-musl-x64' ">$(Rid)</ProductMonikerRid>
       <ProductMonikerRid Condition=" '$(ProductMonikerRid)' == '' ">$(OSName)-$(Architecture)</ProductMonikerRid>
 
-      <HostMonikerRid Condition=" '$(HostRid)' == 'ubuntu.16.04-x64' OR
-                                '$(HostRid)' == 'rhel.6-x64' OR
-                                '$(HostRid)' == 'linux-musl-x64' ">$(HostRid)</HostMonikerRid>
-      <HostMonikerRid Condition=" '$(HostMonikerRid)' == '' ">$(HostOSName)-$(Architecture)</HostMonikerRid>
-      <HostMonikerRidForFileName>$(HostMonikerRid)</HostMonikerRidForFileName>
-      <HostMonikerRidForFileName Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(Architecture)</HostMonikerRidForFileName>
-
       <ArtifactNameSdk>dotnet-sdk-internal</ArtifactNameSdk>
       <ArtifactNameCombinedHostHostFxrFrameworkSdk>dotnet-sdk</ArtifactNameCombinedHostHostFxrFrameworkSdk>
 
@@ -45,8 +35,7 @@
       <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion], 
                Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradablilty of the SDK bundle installer. -->
       <ProductBandCombinedHostHostFxrFrameworkSdkName>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</ProductBandCombinedHostHostFxrFrameworkSdkName>
-      <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdkWithoutHostMonikerRid>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdkWithoutHostMonikerRid>
-      <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdkWithoutHostMonikerRid)$(HostMonikerRidForFileName)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(Architecture)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
     </PropertyGroup>
   </Target>
 </Project>
