@@ -43,7 +43,7 @@ End Class",
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct C
 {
-    public static bool operator== (C left, C right) => true;
+    public static bool operator ==(C left, C right) => true;
     public static bool operator !=(C left, C right) => true;
 }");
 
@@ -191,6 +191,28 @@ End Class"
                     AdditionalFiles = { (".editorconfig", editorConfigText), },
                 },
             }.RunAsync();
+        }
+
+        [Fact]
+        public async Task OperatorEqual_InternalReferenceType_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+internal class C
+{
+    public static bool operator ==(C left, C right) => true;
+    public static bool operator !=(C left, C right) => true;
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Friend Class C
+    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+
+    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+End Class");
         }
 
         [Fact]
