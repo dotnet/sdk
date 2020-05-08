@@ -94,6 +94,7 @@ Configurable Rules:
 [CA1802](https://docs.microsoft.com/visualstudio/code-quality/ca1802),
 [CA1815](https://docs.microsoft.com/visualstudio/code-quality/ca1815),
 [CA1819](https://docs.microsoft.com/visualstudio/code-quality/ca1819),
+[CA2208](https://docs.microsoft.com/visualstudio/code-quality/ca2208),
 [CA2217](https://docs.microsoft.com/visualstudio/code-quality/ca2217),
 [CA2225](https://docs.microsoft.com/visualstudio/code-quality/ca2225),
 [CA2226](https://docs.microsoft.com/visualstudio/code-quality/ca2226),
