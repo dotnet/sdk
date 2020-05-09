@@ -30,6 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Various files that should generally always be ignored -->
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.user</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/*.binlog</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.*proj</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.sln</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.vssscc</DefaultItemExcludes>
