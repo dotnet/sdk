@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Restore.Test
         [InlineData(false)]
         public void ItRestoresLibToSpecificDirectory(bool useStaticGraphEvaluation)
         {
-            var rootPath = _testAssetsManager.CreateTestDirectory().Path;
+            var rootPath = _testAssetsManager.CreateTestDirectory(identifier: useStaticGraphEvaluation.ToString()).Path;
 
             string dir = "pkgs";
             string fullPath = Path.GetFullPath(Path.Combine(rootPath, dir));
