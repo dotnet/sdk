@@ -1377,34 +1377,34 @@
         <target state="translated">不應看得見 P/Invoke</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
+        <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
+        <target state="new">'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
         <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PreferStreamReadAsyncMemoryOverloadsDescription">
-        <source>All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</source>
-        <target state="new">All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</target>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
+        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</source>
+        <target state="new">Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PreferStreamReadAsyncMemoryOverloadsTitle">
-        <source>Prefer 'Memory&lt;Byte&gt;' overload for 'ReadAsync'.</source>
-        <target state="new">Prefer 'Memory&lt;Byte&gt;' overload for 'ReadAsync'.</target>
+      <trans-unit id="PreferStringContainsOverIndexOfDescription">
+        <source>Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</source>
+        <target state="new">Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</target>
         <note />
       </trans-unit>
-      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsDescription">
-        <source>All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</source>
-        <target state="new">All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</target>
+      <trans-unit id="PreferStringContainsOverIndexOfMessage">
+        <source>Use 'String.Contains' instead of 'String.IndexOf' to improve readability</source>
+        <target state="new">Use 'String.Contains' instead of 'String.IndexOf' to improve readability</target>
         <note />
       </trans-unit>
-      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsMessage">
-        <source>Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</source>
-        <target state="new">Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PreferStreamWriteAsyncMemoryOverloadsTitle">
-        <source>Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</source>
-        <target state="new">Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</target>
+      <trans-unit id="PreferStringContainsOverIndexOfTitle">
+        <source>Consider using 'String.Contains' instead of 'String.IndexOf'</source>
+        <target state="new">Consider using 'String.Contains' instead of 'String.IndexOf'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">

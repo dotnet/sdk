@@ -307,6 +307,11 @@
         <target state="translated">Nekombinujte blokující a asynchronní metody.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
+        <source>Remove redundant element initializer</source>
+        <target state="new">Remove redundant element initializer</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
         <source>Types that own disposable fields should be disposable</source>
         <target state="translated">Typy, které vlastní jednoúčelová pole, mají být jednoúčelové.</target>
@@ -2178,8 +2183,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
-        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
-        <target state="translated">Prvek s indexem [{0}] už je inicializovaný. Předchozí inicializace tohoto prvku mohou být přepsány.</target>
+        <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
+        <target state="needs-review-translation">Prvek s indexem [{0}] už je inicializovaný. Předchozí inicializace tohoto prvku mohou být přepsány.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">
