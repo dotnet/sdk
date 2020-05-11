@@ -358,7 +358,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Call the trim function to remove any spaces around the beginning and end of the string so we can more accurately detect
             // XML strings
             string trimmedLiteral = literal.Trim();
-            return trimmedLiteral.Length > 2 && trimmedLiteral[0] == '<' && trimmedLiteral[trimmedLiteral.Length - 1] == '>';
+            return trimmedLiteral.Length > 2 && trimmedLiteral[0] == '<' && trimmedLiteral[^1] == '>';
         }
 
         /// <summary>
