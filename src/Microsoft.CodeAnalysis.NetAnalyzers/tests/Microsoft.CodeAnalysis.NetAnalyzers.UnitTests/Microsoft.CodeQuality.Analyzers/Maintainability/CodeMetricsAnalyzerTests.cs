@@ -148,6 +148,42 @@ End Class",
             }.RunAsync();
         }
 
+        [Fact]
+        public async Task CA1501_AlwaysExcludesErrorTypes()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { "public class MyUC : System.{|#0:NonExistentType|} {}", },
+                    ExpectedDiagnostics =
+                    {
+                        // /0/Test0.cs(1,28): error CS0234: The type or namespace name 'NonExistentType' does not exist in the namespace 'System' (are you missing an assembly reference?)
+                        DiagnosticResult.CompilerError("CS0234").WithLocation(0).WithArguments("NonExistentType", "System"),
+                    },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class MyUC
+    Inherits {|#0:System.NonExistentType|}
+End Class",
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        // /0/Test0.vb(3) : error BC30002: Type 'System.NonExistentType' is not defined.
+                        DiagnosticResult.CompilerError("BC30002").WithLocation(0).WithArguments("System.NonExistentType"),
+                    },
+                },
+            }.RunAsync();
+        }
+
         [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass*")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:MyCompany.MyProduct.MyFunction.SomeClass*")]
