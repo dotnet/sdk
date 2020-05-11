@@ -2087,14 +2087,9 @@
         <target state="translated">检测到公共或受保护的事件处理方法。除非绝对必要，否则不应公开事件处理方法。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">请考虑将 {0} 设为对外部不可见或确保它是良性代码。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">请考虑将 {0} 设为对外部不可见。</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">请考虑将 {0} 设为对外部不可见。</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">

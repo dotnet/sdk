@@ -2087,14 +2087,9 @@
         <target state="translated">Обнаружен общий или защищенный метод обработки событий. Такие методы следует предоставлять только в крайнем случае.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Рекомендуется сделать {0} невидимым снаружи или убедиться, что код не опасен.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">Рекомендуется сделать {0} невидимым снаружи.</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">Рекомендуется сделать {0} невидимым снаружи.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
