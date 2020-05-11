@@ -2087,14 +2087,9 @@
         <target state="translated">Une méthode publique ou protégée de gestion des événements a été détectée. Les méthodes de gestion des événements ne doivent pas être exposées sauf en cas d'absolue nécessité.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Rendez {0} non visible de manière externe, ou vérifiez qu'il s'agit d'un code bénin.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">Rendez {0} non visible de manière externe.</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">Rendez {0} non visible de manière externe.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">

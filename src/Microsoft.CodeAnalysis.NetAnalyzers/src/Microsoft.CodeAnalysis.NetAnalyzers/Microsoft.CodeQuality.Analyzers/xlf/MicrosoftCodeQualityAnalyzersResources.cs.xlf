@@ -2087,14 +2087,9 @@
         <target state="translated">Zjistila se veřejná nebo chráněná metoda zpracování událostí. Metody zpracování událostí by neměly být vystaveny, pokud to není nezbytně nutné.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Nastavte metodu {0} tak, aby nebyla externě viditelná, nebo se ujistěte, že se jedná o neškodný kód.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">Nastavte metodu {0} tak, aby nebyla externě viditelná.</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">Nastavte metodu {0} tak, aby nebyla externě viditelná.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">

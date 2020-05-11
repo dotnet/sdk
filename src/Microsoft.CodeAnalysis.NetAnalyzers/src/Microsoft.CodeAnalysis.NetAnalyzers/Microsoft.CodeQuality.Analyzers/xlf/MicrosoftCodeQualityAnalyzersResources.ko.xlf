@@ -2087,14 +2087,9 @@
         <target state="translated">public 또는 protected 이벤트 처리 메서드가 검색되었습니다. 이벤트 처리 메서드는 필요한 경우에만 표시해야 합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">{0}이(가) 외부에 표시되지 않도록 하거나 심각하지 않은 코드인지 확인하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">{0}이(가) 외부에 표시되지 않도록 하세요.</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">{0}이(가) 외부에 표시되지 않도록 하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
