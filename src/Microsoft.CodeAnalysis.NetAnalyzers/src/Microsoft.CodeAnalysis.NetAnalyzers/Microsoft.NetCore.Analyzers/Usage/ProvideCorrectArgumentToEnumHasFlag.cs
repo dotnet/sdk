@@ -39,9 +39,9 @@ namespace Microsoft.NetCore.Analyzers.Usage
             {
                 var invocation = (IInvocationOperation)context.Operation;
 
-                if (invocation.TargetMethod.Name == "HasFlag" &&
-                    invocation.TargetMethod.ContainingType.SpecialType == SpecialType.System_Enum &&
+                if (invocation.TargetMethod.ContainingType.SpecialType == SpecialType.System_Enum &&
                     invocation.Arguments.Length == 1 &&
+                    invocation.TargetMethod.Name == "HasFlag" &&
                     invocation.Arguments[0].Value is IConversionOperation conversion &&
                     !invocation.Instance.Type.Equals(conversion.Operand.Type))
                 {

@@ -1448,8 +1448,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessage">
-        <source>The argument type, '{0}', is not the same as the enum type '{1}'</source>
-        <target state="new">The argument type, '{0}', is not the same as the enum type '{1}'</target>
+        <source>he argument type, '{0}', must be the same as the enum type '{1}'</source>
+        <target state="new">he argument type, '{0}', must be the same as the enum type '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
