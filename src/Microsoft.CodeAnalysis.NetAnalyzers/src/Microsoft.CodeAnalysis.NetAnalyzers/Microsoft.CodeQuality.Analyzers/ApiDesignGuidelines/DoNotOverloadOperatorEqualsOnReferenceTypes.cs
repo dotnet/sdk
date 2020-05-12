@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -38,6 +39,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.RegisterCompilationStartAction(context =>
             {
                 var iequatableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIEquatable1);
+                var icomparableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIComparable);
+                var icomparableGenericType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIComparable1);
 
                 context.RegisterSymbolAction(context =>
                 {
@@ -45,7 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // Method is not operator equality or not on a class
                     if (method.MethodKind != MethodKind.UserDefinedOperator ||
-                        method.Name != "op_Equality" ||
+                        method.Name != WellKnownMemberNames.EqualityOperatorName ||
                         method.ContainingType.TypeKind != TypeKind.Class)
                     {
                         return;
@@ -53,6 +56,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // There's a CONSIDER rule for overriding op_Equality for anything that implements IEquatable.
                     if (method.ContainingType.Inherits(iequatableType))
+                    {
+                        return;
+                    }
+
+                    // FxCop compat: bail-out if the type overrides Object.Equals or is IComparable/IComparable<T>
+                    if (method.ContainingType.OverridesEquals() ||
+                        method.ContainingType.Inherits(icomparableType) ||
+                        method.ContainingType.Inherits(icomparableGenericType))
                     {
                         return;
                     }

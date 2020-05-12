@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -259,6 +260,105 @@ Public Class C
         Return True
     End Operator
 End Class");
+        }
+
+        [Fact]
+        public async Task OperatorEqual_OverrideObjectEquals_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public override bool Equals(object obj) => true;
+
+    public static bool operator ==(C left, C right) => true;
+    public static bool operator !=(C left, C right) => true;
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Overrides Function Equals(ByVal obj As Object) As Boolean
+        Return True
+    End Function
+
+    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+
+    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+End Class
+");
+        }
+
+        [Fact]
+        public async Task OperatorEqual_ImplementIComparable_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C : IComparable
+{
+    public int CompareTo(object obj) => 0;
+
+    public static bool operator ==(C left, C right) => true;
+    public static bool operator !=(C left, C right) => true;
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    Implements IComparable
+
+    Public Function CompareTo(ByVal obj As Object) As Integer Implements IComparable.CompareTo
+        Return 0
+    End Function
+
+    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+
+    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+End Class
+");
+        }
+
+        [Fact]
+        public async Task OperatorEqual_ImplementIComparableT_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C : IComparable<C>
+{
+    public int CompareTo(C other) => 0;
+
+    public static bool operator ==(C left, C right) => true;
+    public static bool operator !=(C left, C right) => true;
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    Implements IComparable(Of C)
+
+    Public Function CompareTo(ByVal other As C) As Integer Implements IComparable(Of C).CompareTo
+        Return 0
+    End Function
+
+    Public Shared Operator =(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+
+    Public Shared Operator <>(ByVal left As C, ByVal right As C) As Boolean
+        Return True
+    End Operator
+End Class
+");
         }
     }
 }
