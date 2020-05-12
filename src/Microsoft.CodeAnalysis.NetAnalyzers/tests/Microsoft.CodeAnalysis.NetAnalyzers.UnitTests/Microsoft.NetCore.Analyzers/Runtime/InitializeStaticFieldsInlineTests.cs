@@ -298,55 +298,37 @@ End Class");
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_LocalFunc_Diagnostic()
+        public async Task CA1810_MixedFieldInitialization_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections.Generic;
-using System.Linq;
-
+using System;
 class C
 {
-    private static int s;
+    private static string s1;
+    private static string s2;
 
     static C()
     {
-        void LocalFunc()
-        {
-            s = 1;
-        }
+        Console.CancelKeyPress += (o, e) => s1 = string.Empty;
+        s2 = string.Empty;
     }
-}",
-                GetCA1810CSharpDefaultResultAt(9, 12, "C"));
-        }
+}");
 
-        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_StaticLocalFunc_Diagnostic()
-        {
-            await new VerifyCS.Test
-            {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-                TestCode = @"
-using System.Collections.Generic;
-using System.Linq;
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-class C
-{
-    private static int s;
+Class C
+    Private Shared s1 As String
+    Private Shared s2 As String
 
-    static C()
-    {
-        static void StaticLocalFunc()
-        {
-            s = 2;
-        }
-    }
-}",
-                ExpectedDiagnostics =
-                {
-                    GetCA1810CSharpDefaultResultAt(9, 12, "C")
-                },
-            }
-            .RunAsync();
+    Shared Sub New()
+        AddHandler Console.CancelKeyPress,
+            Sub(o, e)
+                s1 = string.Empty
+            End Sub
+        s2 = string.Empty
+    End Sub
+End Class");
         }
 
         #endregion
@@ -461,6 +443,60 @@ Public Structure Struct1
 	End Sub
 End Structure",
     GetCA2207BasicDefaultResultAt(4, 13, "Struct1"));
+        }
+
+
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_LocalFunc_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        void LocalFunc()
+        {
+            s = 1;
+        }
+    }
+}",
+                GetCA1810CSharpDefaultResultAt(9, 12, "C"));
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_StaticLocalFunc_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                TestCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        static void StaticLocalFunc()
+        {
+            s = 2;
+        }
+    }
+}",
+                ExpectedDiagnostics =
+                {
+                    GetCA1810CSharpDefaultResultAt(9, 12, "C")
+                },
+            }
+            .RunAsync();
         }
 
         #endregion

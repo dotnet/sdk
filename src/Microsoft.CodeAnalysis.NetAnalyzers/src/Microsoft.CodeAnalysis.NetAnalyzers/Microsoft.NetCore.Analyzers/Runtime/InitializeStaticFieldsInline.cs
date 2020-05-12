@@ -61,9 +61,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 var initializesStaticField = false;
+                var isStaticCtorMandatory = false;
                 context.RegisterOperationAction(context =>
                 {
-                    if (initializesStaticField)
+                    if (isStaticCtorMandatory || initializesStaticField)
                     {
                         return;
                     }
@@ -71,16 +72,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var assignment = (IAssignmentOperation)context.Operation;
 
                     if (assignment.Target is IFieldReferenceOperation fieldReference &&
-                        fieldReference.Member.IsStatic &&
-                        assignment.GetAncestor<IAnonymousFunctionOperation>(OperationKind.AnonymousFunction) is null)
+                        fieldReference.Member.IsStatic)
                     {
-                        initializesStaticField = true;
+                        if (assignment.GetAncestor<IAnonymousFunctionOperation>(OperationKind.AnonymousFunction) != null)
+                        {
+                            isStaticCtorMandatory = true;
+                        }
+                        else
+                        {
+                            initializesStaticField = true;
+                        }
                     }
                 }, OperationKind.SimpleAssignment);
 
                 context.RegisterOperationBlockEndAction(context =>
                 {
-                    if (initializesStaticField)
+                    if (!isStaticCtorMandatory && initializesStaticField)
                     {
                         context.ReportDiagnostic(
                             method.CreateDiagnostic(
