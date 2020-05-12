@@ -186,15 +186,6 @@
   <data name="UseManagedEquivalentsOfWin32ApiMessage" xml:space="preserve">
     <value>Use managed equivalents of win32 api</value>
   </data>
-  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle" xml:space="preserve">
-    <value>Always consume the value returned by methods marked with PreserveSigAttribute</value>
-  </data>
-  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription" xml:space="preserve">
-    <value>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</value>
-  </data>
-  <data name="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage" xml:space="preserve">
-    <value>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</value>
-  </data>
   <data name="MarkBooleanPInvokeArgumentsWithMarshalAsTitle" xml:space="preserve">
     <value>Mark boolean PInvoke arguments with MarshalAs</value>
   </data>
@@ -1287,6 +1278,15 @@
   <data name="DoNotUseStackallocInLoopsMessage" xml:space="preserve">
     <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
   </data>
+  <data name="PreferStreamAsyncMemoryOverloadsTitle" xml:space="preserve">
+    <value>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</value>
+  </data>
+  <data name="PreferStreamAsyncMemoryOverloadsDescription" xml:space="preserve">
+    <value>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</value>
+  </data>
+  <data name="PreferStreamAsyncMemoryOverloadsMessage" xml:space="preserve">
+    <value>Change the '{0}' method call to the overload that receives a '{1}'.</value>
+  </data>
   <data name="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle" xml:space="preserve">
     <value>Change to call the two argument constructor, pass null for the message.</value>
   </data>
@@ -1304,6 +1304,15 @@
   </data>
   <data name="PreferTypedStringBuilderAppendOverloadsRemoveToString" xml:space="preserve">
     <value>Remove the ToString call</value>
+  </data>
+  <data name="PreferStringContainsOverIndexOfDescription" xml:space="preserve">
+    <value>Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</value>
+  </data>
+  <data name="PreferStringContainsOverIndexOfMessage" xml:space="preserve">
+    <value>Use 'String.Contains' instead of 'String.IndexOf' to improve readability</value>
+  </data>
+  <data name="PreferStringContainsOverIndexOfTitle" xml:space="preserve">
+    <value>Consider using 'String.Contains' instead of 'String.IndexOf'</value>
   </data>
   <data name="PreferConstCharOverConstUnitStringInStringBuilderDescription" xml:space="preserve">
     <value>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</value>

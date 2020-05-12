@@ -1437,7 +1437,7 @@ End Class
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
         internal async Task DocsMicrosoft_Sample(DisposeAnalysisKind disposeAnalysisKind)
         {
-            // See https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope
+            // See https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2000
 
             var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
@@ -12131,6 +12131,92 @@ End Class"
                     AdditionalFiles = { (".editorconfig", editorConfigText) },
                 }
             }.RunAsync();
+        }
+
+        [Fact(Skip = "The throw statement prevents the analysis"), WorkItem(3356, "https://github.com/dotnet/roslyn-analyzers/issues/3356")]
+        public async Task Dispose_UnconditionalThrowStatement_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+        throw new Exception();
+    }
+}
+",
+                GetCSharpResultAt(15, 17, "new A()"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class Test
+    Sub M1()
+        Dim a As New A()
+        'Throw New Exception()
+    End Sub
+End Class",
+                GetBasicResultAt(12, 18, "New A()"));
+        }
+
+        [Fact]
+        public async Task Dispose_ConditionalThrowStatement_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+        if (a == null)
+            throw new Exception();
+    }
+}
+",
+                GetCSharpResultAt(15, 17, "new A()"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class Test
+    Sub M1()
+        Dim a As New A()
+
+        If a Is Nothing Then Throw New Exception()
+    End Sub
+End Class",
+                GetBasicResultAt(12, 18, "New A()"));
         }
     }
 }

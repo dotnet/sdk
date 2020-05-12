@@ -307,6 +307,11 @@
         <target state="translated">Ne pas mélanger bloquant et asynchrone</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
+        <source>Remove redundant element initializer</source>
+        <target state="new">Remove redundant element initializer</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
         <source>Types that own disposable fields should be disposable</source>
         <target state="translated">Les types qui ont des champs supprimables doivent être supprimables</target>
@@ -2082,14 +2087,9 @@
         <target state="translated">Une méthode publique ou protégée de gestion des événements a été détectée. Les méthodes de gestion des événements ne doivent pas être exposées sauf en cas d'absolue nécessité.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Rendez {0} non visible de manière externe, ou vérifiez qu'il s'agit d'un code bénin.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">Rendez {0} non visible de manière externe.</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">Rendez {0} non visible de manière externe.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2178,8 +2178,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
-        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
-        <target state="translated">L'élément à l'index [{0}] a déjà été initialisé. Les précédentes initialisations de cet élément peuvent être remplacées.</target>
+        <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
+        <target state="needs-review-translation">L'élément à l'index [{0}] a déjà été initialisé. Les précédentes initialisations de cet élément peuvent être remplacées.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

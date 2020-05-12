@@ -307,6 +307,11 @@
         <target state="translated">차단과 비동기를 조합하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
+        <source>Remove redundant element initializer</source>
+        <target state="new">Remove redundant element initializer</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
         <source>Types that own disposable fields should be disposable</source>
         <target state="translated">삭제 가능한 필드가 있는 형식은 삭제해야 합니다.</target>
@@ -2082,14 +2087,9 @@
         <target state="translated">public 또는 protected 이벤트 처리 메서드가 검색되었습니다. 이벤트 처리 메서드는 필요한 경우에만 표시해야 합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">{0}이(가) 외부에 표시되지 않도록 하거나 심각하지 않은 코드인지 확인하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">{0}이(가) 외부에 표시되지 않도록 하세요.</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">{0}이(가) 외부에 표시되지 않도록 하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2178,8 +2178,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
-        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
-        <target state="translated">인덱스 [{0}]의 요소가 이미 초기화되었습니다. 이 요소의 이전 초기화는 덮어쓰일 수 있습니다.</target>
+        <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
+        <target state="needs-review-translation">인덱스 [{0}]의 요소가 이미 초기화되었습니다. 이 요소의 이전 초기화는 덮어쓰일 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

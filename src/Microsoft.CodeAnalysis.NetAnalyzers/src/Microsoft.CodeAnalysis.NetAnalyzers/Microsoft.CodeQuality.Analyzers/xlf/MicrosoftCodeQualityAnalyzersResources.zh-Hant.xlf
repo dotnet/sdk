@@ -307,6 +307,11 @@
         <target state="translated">請勿混合 Blocking 與 Async</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
+        <source>Remove redundant element initializer</source>
+        <target state="new">Remove redundant element initializer</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
         <source>Types that own disposable fields should be disposable</source>
         <target state="translated">擁有可處置欄位的類型，本身應為可處置</target>
@@ -2082,14 +2087,9 @@
         <target state="translated">已偵測到公用或受保護的事件處理方法。除非絕對必要，否則不應公開事件處理方法。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">請考慮不要讓 {0} 成為外部可見，或是確認其為良性程式碼。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">請考慮讓 {0} 並非外部可見。</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">請考慮讓 {0} 並非外部可見。</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2178,8 +2178,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
-        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
-        <target state="translated">已將位於索引 [{0}] 的元素初始化。可能會覆寫此元素先前的初始化。</target>
+        <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
+        <target state="needs-review-translation">已將位於索引 [{0}] 的元素初始化。可能會覆寫此元素先前的初始化。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">
