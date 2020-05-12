@@ -68,14 +68,20 @@ namespace Microsoft.DotNet.Restore.Test
                 .Should()
                 .Pass();
 
-            string[] args = new[] { "--packages", dir };
+            string[] args = new[] {"-v", "diag", "--packages", dir};
             args = HandleStaticGraphEvaluation(useStaticGraphEvaluation, args);
-            new DotnetRestoreCommand(Log)
-                .WithWorkingDirectory(rootPath)
-                .Execute(args)
+            Cli.Utils.CommandResult commandResult = new DotnetRestoreCommand(Log)
+                            .WithWorkingDirectory(rootPath)
+                            .Execute(args);
+            commandResult
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr();
+
+            if (!Directory.Exists(fullPath))
+            {
+                Log.WriteLine(commandResult.StdOut);
+            }
 
             Directory.Exists(fullPath).Should().BeTrue();
             Directory.EnumerateFiles(fullPath, "*.dll", SearchOption.AllDirectories).Count().Should().BeGreaterThan(0);
