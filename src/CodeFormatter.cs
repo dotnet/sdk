@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools
             CancellationToken cancellationToken,
             bool createBinaryLog = false)
         {
-            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, fileMatcher, reportPath) = options;
+            var (workspaceFilePath, workspaceType, logLevel, saveFormattedFiles, _, fileMatcher, reportPath, includeGeneratedFiles) = options;
             var logWorkspaceWarnings = logLevel == LogLevel.Trace;
 
             logger.LogInformation(string.Format(Resources.Formatting_code_files_in_workspace_0, workspaceFilePath));
@@ -62,7 +62,7 @@ namespace Microsoft.CodeAnalysis.Tools
             logger.LogTrace(Resources.Determining_formattable_files);
 
             var (fileCount, formatableFiles) = await DetermineFormattableFiles(
-                solution, projectPath, fileMatcher, logger, cancellationToken).ConfigureAwait(false);
+                solution, projectPath, fileMatcher, includeGeneratedFiles, logger, cancellationToken).ConfigureAwait(false);
 
             var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
             logger.LogTrace(Resources.Complete_in_0_ms, determineFilesMS);
@@ -264,6 +264,7 @@ namespace Microsoft.CodeAnalysis.Tools
             Solution solution,
             string projectPath,
             Matcher fileMatcher,
+            bool includeGeneratedFiles,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -296,7 +297,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 // Get project documents and options with .editorconfig settings applied.
                 var getProjectDocuments = project.DocumentIds.Select(documentId => GetDocumentAndOptions(
-                    project, documentId, fileMatcher, codingConventionsManager, optionsApplier, cancellationToken));
+                    project, documentId, fileMatcher, includeGeneratedFiles, codingConventionsManager, optionsApplier, cancellationToken));
                 getDocumentsAndOptions.AddRange(getProjectDocuments);
             }
 
@@ -335,13 +336,14 @@ namespace Microsoft.CodeAnalysis.Tools
             Project project,
             DocumentId documentId,
             Matcher fileMatcher,
+            bool includeGeneratedFiles,
             ICodingConventionsManager codingConventionsManager,
             EditorConfigOptionsApplier optionsApplier,
             CancellationToken cancellationToken)
         {
             var document = project.Solution.GetDocument(documentId);
 
-            if (document is null || await ShouldIgnoreDocument(document, fileMatcher, cancellationToken))
+            if (document is null || await ShouldIgnoreDocument(document, fileMatcher, includeGeneratedFiles, cancellationToken))
             {
                 return (null, null, null, false);
             }
@@ -364,6 +366,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static async Task<bool> ShouldIgnoreDocument(
             Document document,
             Matcher fileMatcher,
+            bool includeGeneratedFiles,
             CancellationToken cancellationToken)
         {
             if (!fileMatcher.Match(document.FilePath).HasMatches)
@@ -375,7 +378,7 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 return true;
             }
-            else if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(document, cancellationToken).ConfigureAwait(false))
+            else if (!includeGeneratedFiles && await GeneratedCodeUtilities.IsGeneratedCodeAsync(document, cancellationToken).ConfigureAwait(false))
             {
                 // Ignore generated code files.
                 return true;

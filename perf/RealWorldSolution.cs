@@ -39,7 +39,8 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 AllFileMatcher,
-                reportPath: string.Empty);
+                reportPath: string.Empty,
+                includeGeneratedFiles: false);
             _ = CodeFormatter.FormatWorkspaceAsync(options, EmptyLogger, default).GetAwaiter().GetResult();
         }
 
@@ -54,7 +55,8 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 AllFileMatcher,
-                reportPath: string.Empty);
+                reportPath: string.Empty,
+                includeGeneratedFiles: false);
             _ = CodeFormatter.FormatWorkspaceAsync(options, EmptyLogger, default).GetAwaiter().GetResult();
         }
 

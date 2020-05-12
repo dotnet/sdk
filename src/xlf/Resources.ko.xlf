@@ -102,6 +102,11 @@
         <target state="translated">'{0}' 작업 영역에서 코드 파일의 서식을 지정합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Include_generated_code_files_in_formatting_operations">
+        <source>Include generated code files in formatting operations.</source>
+        <target state="new">Include generated code files in formatting operations.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
         <target state="translated">작업 영역을 로드하는 중입니다.</target>
