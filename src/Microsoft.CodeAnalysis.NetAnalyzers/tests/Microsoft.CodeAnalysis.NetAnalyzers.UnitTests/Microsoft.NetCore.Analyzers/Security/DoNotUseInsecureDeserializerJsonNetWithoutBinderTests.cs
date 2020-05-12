@@ -674,32 +674,38 @@ class Blah
         [Fact]
         public async Task TypeNameHandlingNoneBinderNonNull_JsonSerializer_Populate_NoDiagnostic()
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+#if NETCOREAPP
+            var serializationNamespace = "";
+#else
+            var serializationNamespace = "using System.Runtime.Serialization;";
+#endif
+
+            await VerifyCSharpWithJsonNetAsync($@"
 using System;
-using System.Runtime.Serialization;
+{serializationNamespace}
 using Newtonsoft.Json;
 
 class Blah
-{
+{{
     private Func<SerializationBinder> SbGetter;
 
     object Method(JsonReader jr)
-    {
+    {{
         SerializationBinder sb = SbGetter();
         if (sb != null)
-        {
+        {{
             JsonSerializer serializer = new JsonSerializer();
             serializer.Binder = sb;
             object o = new object();
             serializer.Populate(jr, o);
             return o;
-        }
+        }}
         else
-        {
+        {{
             return null;
-        }
-    }
-}");
+        }}
+    }}
+}}");
         }
 
         [Theory]

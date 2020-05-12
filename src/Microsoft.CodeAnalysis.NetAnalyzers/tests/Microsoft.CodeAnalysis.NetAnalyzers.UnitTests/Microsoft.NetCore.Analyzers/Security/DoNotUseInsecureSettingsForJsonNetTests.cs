@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -856,25 +857,31 @@ public class MyISerializationBinder : Newtonsoft.Json.Serialization.ISerializati
         [Fact]
         public async Task Secure_FieldInitialization_BinderSet_NoDiagnostic()
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+#if NETCOREAPP
+            var serializationBinderType = "Newtonsoft.Json.SerializationBinder";
+#else
+            var serializationBinderType = "System.Runtime.Serialization.SerializationBinder";
+#endif
+
+            await VerifyCSharpWithJsonNetAsync($@"
 using System;
 using Newtonsoft.Json;
 
 class Blah
-{
+{{
     public static readonly JsonSerializerSettings Settings = 
         new JsonSerializerSettings()
-        {
+        {{
             TypeNameHandling = TypeNameHandling.Objects,
             Binder = new MyBinder(),
-        };
-}
+        }};
+}}
 
-public class MyBinder : System.Runtime.Serialization.SerializationBinder
-{
+public class MyBinder : {serializationBinderType}
+{{
     public override Type BindToType(string assemblyName, string typeName) => throw new NotImplementedException();
     public override void BindToName(Type serializedType, out string assemblyName, out string typeName) => throw new NotImplementedException();
-}");
+}}");
         }
 
         [Fact]
