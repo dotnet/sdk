@@ -77,8 +77,21 @@ namespace Microsoft.DotNet.Restore.Test
                 .Pass()
                 .And.NotHaveStdErr();
 
+            var dllCount = 0;
+
+            if (Directory.Exists(fullPath))
+            {
+                dllCount = Directory.EnumerateFiles(fullPath, "*.dll", SearchOption.AllDirectories).Count();
+            }
+
+            if (dllCount == 0)
+            {
+                Log.WriteLine("Assets file contents:");
+                Log.WriteLine(File.ReadAllText(Path.Combine(rootPath, "obj", "project.assets.json")));
+            }
+
             Directory.Exists(fullPath).Should().BeTrue();
-            Directory.EnumerateFiles(fullPath, "*.dll", SearchOption.AllDirectories).Count().Should().BeGreaterThan(0);
+            dllCount.Should().BeGreaterThan(0);
         }
 
         [Theory]
