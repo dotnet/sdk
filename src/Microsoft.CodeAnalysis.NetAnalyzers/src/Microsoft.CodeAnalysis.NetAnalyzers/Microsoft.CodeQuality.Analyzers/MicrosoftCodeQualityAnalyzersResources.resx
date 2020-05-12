@@ -1418,6 +1418,15 @@
   <data name="DoNotDeclareEventFieldsAsVirtualTitle" xml:space="preserve">
     <value>Do not declare event fields as virtual</value>
   </data>
+  <data name="DoNotOverloadOperatorEqualsOnReferenceTypesDescription" xml:space="preserve">
+    <value>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</value>
+  </data>
+  <data name="DoNotOverloadOperatorEqualsOnReferenceTypesMessage" xml:space="preserve">
+    <value>'{0}' should not overload the equality operator.</value>
+  </data>
+  <data name="DoNotOverloadOperatorEqualsOnReferenceTypesTitle" xml:space="preserve">
+    <value>Do not overload equality operator on reference types</value>
+  </data>
   <data name="DoNotPassTypesByReferenceMessage" xml:space="preserve">
     <value>Consider a design that does not require that '{0}' be a reference parameter.</value>
   </data>
