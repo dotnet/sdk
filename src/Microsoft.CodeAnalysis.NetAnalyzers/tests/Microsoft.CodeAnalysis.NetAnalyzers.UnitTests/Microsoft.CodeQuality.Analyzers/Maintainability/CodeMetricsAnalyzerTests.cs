@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -192,7 +193,7 @@ public class C2 : SomeClass2 {}"
                 },
             };
 
-            if (editorConfigText.Contains("T:SomeClass"))
+            if (editorConfigText.Contains("T:SomeClass", StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -266,7 +267,7 @@ End Class"
                 },
             };
 
-            if (editorConfigText.Contains("T:SomeClass"))
+            if (editorConfigText.Contains("T:SomeClass", StringComparison.Ordinal))
             {
                 vbnetTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -338,7 +339,7 @@ public class C1 : SomeClass {}
                 },
             };
 
-            if (!editorConfigText.Contains("N:MyCompany*"))
+            if (!editorConfigText.Contains("N:MyCompany*", StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 1, 1, "SomeClass"));
             }
@@ -389,7 +390,7 @@ End Class"
                 },
             };
 
-            if (!editorConfigText.Contains("N:MyCompany*"))
+            if (!editorConfigText.Contains("N:MyCompany*", StringComparison.Ordinal))
             {
                 vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 1, 1, "SomeClass"));
             }
