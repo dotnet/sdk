@@ -45,6 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 FormattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 3);
@@ -57,6 +58,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 FormattedSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 3);
@@ -69,9 +71,27 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
                 expectedFileCount: 5);
+        }
+
+        [Fact]
+        public async Task GeneratedFilesFormattedInUnformattedProject()
+        {
+            var log = await TestFormatWorkspaceAsync(
+                UnformattedProjectFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: true,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 4,
+                expectedFileCount: 5);
+
+            var logLines = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+            Assert.Contains(logLines, line => line.Contains("unformatted_project.AssemblyInfo.cs(1,1): Fix file encoding."));
+            Assert.Contains(logLines, line => line.Contains("NETCoreApp,Version=v3.0.AssemblyAttributes.cs(1,1): Fix file encoding."));
         }
 
         [Fact]
@@ -81,6 +101,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
                 expectedFileCount: 5);
@@ -94,6 +115,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 Path.GetDirectoryName(UnformattedProjectFilePath),
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
                 expectedFileCount: 3);
@@ -107,6 +129,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 Path.GetDirectoryName(UnformattedSolutionFilePath),
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 0);
@@ -119,6 +142,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 FSharpProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 1,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 0);
@@ -139,6 +163,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedProjectFilePath,
                 include,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
                 expectedFileCount: 5);
@@ -153,6 +178,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedProjectFilePath,
                 include,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
                 expectedFileCount: 5);
@@ -167,6 +193,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedProjectFilePath,
                 include,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 5);
@@ -181,6 +208,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedSolutionFilePath,
                 include,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
                 expectedFileCount: 5);
@@ -199,6 +227,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
                 expectedFileCount: 5);
@@ -249,6 +278,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 FormattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 3);
@@ -268,6 +298,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedSolutionFilePath,
                 include,
                 exclude: EmptyFilesList,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
                 expectedFileCount: 5);
@@ -288,6 +319,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedSolutionFilePath,
                 include: include,
                 exclude: include,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 5);
@@ -308,6 +340,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedSolutionFilePath,
                 include: include,
                 exclude: exclude,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 5);
@@ -328,6 +361,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 UnformattedSolutionFilePath,
                 include: include,
                 exclude: exclude,
+                includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 5);
@@ -338,7 +372,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.False(match.Success, log);
         }
 
-        public async Task<string> TestFormatWorkspaceAsync(string workspaceFilePath, IEnumerable<string> include, IEnumerable<string> exclude, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
+        public async Task<string> TestFormatWorkspaceAsync(string workspaceFilePath, IEnumerable<string> include, IEnumerable<string> exclude, bool includeGenerated, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
         {
             var workspacePath = Path.GetFullPath(workspaceFilePath);
 
@@ -363,14 +397,17 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,
-                reportPath: string.Empty);
+                reportPath: string.Empty,
+                includeGenerated);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
+
+            var log = logger.GetLog();
 
             Assert.Equal(expectedExitCode, formatResult.ExitCode);
             Assert.Equal(expectedFilesFormatted, formatResult.FilesFormatted);
             Assert.Equal(expectedFileCount, formatResult.FileCount);
 
-            return logger.GetLog();
+            return log;
         }
     }
 }

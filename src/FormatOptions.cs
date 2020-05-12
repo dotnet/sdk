@@ -14,6 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public bool ChangesAreErrors { get; }
         public Matcher FileMatcher { get; }
         public string? ReportPath { get; }
+        public bool IncludeGeneratedFiles { get; }
 
         public FormatOptions(
             string workspaceFilePath,
@@ -22,7 +23,8 @@ namespace Microsoft.CodeAnalysis.Tools
             bool saveFormattedFiles,
             bool changesAreErrors,
             Matcher fileMatcher,
-            string? reportPath)
+            string? reportPath,
+            bool includeGeneratedFiles)
         {
             WorkspaceFilePath = workspaceFilePath;
             WorkspaceType = workspaceType;
@@ -31,6 +33,7 @@ namespace Microsoft.CodeAnalysis.Tools
             ChangesAreErrors = changesAreErrors;
             FileMatcher = fileMatcher;
             ReportPath = reportPath;
+            IncludeGeneratedFiles = includeGeneratedFiles;
         }
 
         public void Deconstruct(
@@ -40,7 +43,8 @@ namespace Microsoft.CodeAnalysis.Tools
             out bool saveFormattedFiles,
             out bool changesAreErrors,
             out Matcher fileMatcher,
-            out string? reportPath)
+            out string? reportPath,
+            out bool includeGeneratedFiles)
         {
             workspaceFilePath = WorkspaceFilePath;
             workspaceType = WorkspaceType;
@@ -49,6 +53,7 @@ namespace Microsoft.CodeAnalysis.Tools
             changesAreErrors = ChangesAreErrors;
             fileMatcher = FileMatcher;
             reportPath = ReportPath;
+            includeGeneratedFiles = IncludeGeneratedFiles;
         }
     }
 }

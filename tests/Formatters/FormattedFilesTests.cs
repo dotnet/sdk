@@ -58,7 +58,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,
-                reportPath: string.Empty);
+                reportPath: string.Empty,
+                includeGeneratedFiles: false);
 
             var pathsToFormat = await GetOnlyFileToFormatAsync(solution, EditorConfig);
 

@@ -102,6 +102,11 @@
         <target state="translated">正在將工作區 '{0}' 中的程式碼檔案格式化。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Inlcude_generated_code_files_in_formatting_operations">
+        <source>Inlcude generated code files in formatting operations.</source>
+        <target state="new">Inlcude generated code files in formatting operations.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
         <target state="translated">正在載入工作區。</target>

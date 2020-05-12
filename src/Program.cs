@@ -55,6 +55,11 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     Argument = new Argument<string?>() { Arity = ArgumentArity.ExactlyOne }
                 },
+                new Option(new[] { "--include-generated" }, Resources.Inlcude_generated_code_files_in_formatting_operations)
+                {
+                    Argument = new Argument<bool>(),
+                    IsHidden = true
+                },
             };
 
             rootCommand.Description = "dotnet-format";
@@ -64,7 +69,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return await rootCommand.InvokeAsync(args);
         }
 
-        public static async Task<int> Run(string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, IConsole console = null!)
+        public static async Task<int> Run(string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
         {
             // Setup logging.
             var serviceCollection = new ServiceCollection();
@@ -159,7 +164,8 @@ namespace Microsoft.CodeAnalysis.Tools
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
                     fileMatcher,
-                    reportPath: report);
+                    reportPath: report,
+                    includeGenerated);
 
                 var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                     formatOptions,
