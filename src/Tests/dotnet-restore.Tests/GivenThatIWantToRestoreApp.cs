@@ -68,7 +68,9 @@ namespace Microsoft.DotNet.Restore.Test
                 .Should()
                 .Pass();
 
-            string[] args = new[] {"-v", "diag", "--packages", dir};
+
+            var logpath = Path.Combine(TestContext.GetRepoRoot(), "artifacts", "log", $"ItRestoresLibToSpecificDirectory-{useStaticGraphEvaluation}.binlog");
+            string[] args = new[] {"-v", "diag", $"-bl:{logpath}", "--packages", dir};
             args = HandleStaticGraphEvaluation(useStaticGraphEvaluation, args);
             Cli.Utils.CommandResult commandResult = new DotnetRestoreCommand(Log)
                             .WithWorkingDirectory(rootPath)
