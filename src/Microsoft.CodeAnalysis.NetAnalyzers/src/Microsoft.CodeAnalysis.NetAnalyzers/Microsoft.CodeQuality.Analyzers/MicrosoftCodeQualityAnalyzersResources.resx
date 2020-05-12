@@ -1250,11 +1250,8 @@
   <data name="ReviewVisibleEventHandlersDescription" xml:space="preserve">
     <value>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</value>
   </data>
-  <data name="ReviewVisibleEventHandlersMessageSecurity" xml:space="preserve">
-    <value>Consider making {0} not externally visible or ensure that it is benign code.</value>
-  </data>
   <data name="ReviewVisibleEventHandlersMessageDefault" xml:space="preserve">
-    <value>Consider making {0} not externally visible.</value>
+    <value>Consider making '{0}' not externally visible</value>
   </data>
   <data name="SealMethodsThatSatisfyPrivateInterfacesTitle" xml:space="preserve">
     <value>Seal methods that satisfy private interfaces</value>
@@ -1308,10 +1305,13 @@
     <value>Indexed elements in objects initializers must initialize unique elements. A duplicate index might overwrite a previous element initialization.</value>
   </data>
   <data name="AvoidDuplicateElementInitializationMessage" xml:space="preserve">
-    <value>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</value>
+    <value>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</value>
   </data>
   <data name="AvoidDuplicateElementInitializationTitle" xml:space="preserve">
     <value>Do not duplicate indexed element initializations</value>
+  </data>
+  <data name="RemoveRedundantElementInitializationCodeFixTitle" xml:space="preserve">
+    <value>Remove redundant element initializer</value>
   </data>
   <data name="ValidateArgumentsOfPublicMethodsDescription" xml:space="preserve">
     <value>An externally visible method dereferences one of its reference arguments without verifying whether that argument is null (Nothing in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against null. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument. If the method is designed to be called only by known assemblies, you should make the method internal.</value>

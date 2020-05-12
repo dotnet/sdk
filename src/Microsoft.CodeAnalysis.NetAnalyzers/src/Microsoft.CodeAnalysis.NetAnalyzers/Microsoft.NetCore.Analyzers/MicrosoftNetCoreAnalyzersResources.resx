@@ -1278,23 +1278,14 @@
   <data name="DoNotUseStackallocInLoopsMessage" xml:space="preserve">
     <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
   </data>
-  <data name="PreferStreamReadAsyncMemoryOverloadsTitle" xml:space="preserve">
-    <value>Prefer 'Memory&lt;Byte&gt;' overload for 'ReadAsync'.</value>
+  <data name="PreferStreamAsyncMemoryOverloadsTitle" xml:space="preserve">
+    <value>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</value>
   </data>
-  <data name="PreferStreamReadAsyncMemoryOverloadsDescription" xml:space="preserve">
-    <value>All 'Stream' based classes provide a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'Memory&lt;Byte&gt;', which is more efficient.</value>
+  <data name="PreferStreamAsyncMemoryOverloadsDescription" xml:space="preserve">
+    <value>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</value>
   </data>
   <data name="PreferStreamAsyncMemoryOverloadsMessage" xml:space="preserve">
     <value>Change the '{0}' method call to the overload that receives a '{1}'.</value>
-  </data>
-  <data name="PreferStreamWriteAsyncMemoryOverloadsTitle" xml:space="preserve">
-    <value>Prefer 'ReadOnlyMemory&lt;Byte&gt;' overload for 'WriteAsync'.</value>
-  </data>
-  <data name="PreferStreamWriteAsyncMemoryOverloadsDescription" xml:space="preserve">
-    <value>All 'Stream' based classes provide a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as first argument. When possible, prefer the overload that takes a 'ReadOnlyMemory&lt;Byte&gt;', which is more efficient.</value>
-  </data>
-  <data name="PreferStreamWriteAsyncMemoryOverloadsMessage" xml:space="preserve">
-    <value>Change the 'WriteAsync' method call to the overload that receives a 'ReadOnlyMemory&lt;Byte&gt;'.</value>
   </data>
   <data name="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle" xml:space="preserve">
     <value>Change to call the two argument constructor, pass null for the message.</value>
@@ -1313,6 +1304,15 @@
   </data>
   <data name="PreferTypedStringBuilderAppendOverloadsRemoveToString" xml:space="preserve">
     <value>Remove the ToString call</value>
+  </data>
+  <data name="PreferStringContainsOverIndexOfDescription" xml:space="preserve">
+    <value>Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</value>
+  </data>
+  <data name="PreferStringContainsOverIndexOfMessage" xml:space="preserve">
+    <value>Use 'String.Contains' instead of 'String.IndexOf' to improve readability</value>
+  </data>
+  <data name="PreferStringContainsOverIndexOfTitle" xml:space="preserve">
+    <value>Consider using 'String.Contains' instead of 'String.IndexOf'</value>
   </data>
   <data name="PreferConstCharOverConstUnitStringInStringBuilderDescription" xml:space="preserve">
     <value>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</value>

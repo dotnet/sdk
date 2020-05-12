@@ -322,6 +322,11 @@
         <target state="translated">Не смешивайте блокирующую и асинхронную операции</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
+        <source>Remove redundant element initializer</source>
+        <target state="new">Remove redundant element initializer</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
         <source>Types that own disposable fields should be disposable</source>
         <target state="translated">Типы, владеющие высвобождаемыми полями, должны быть высвобождаемыми</target>
@@ -2097,14 +2102,9 @@
         <target state="translated">Обнаружен общий или защищенный метод обработки событий. Такие методы следует предоставлять только в крайнем случае.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Рекомендуется сделать {0} невидимым снаружи или убедиться, что код не опасен.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">Рекомендуется сделать {0} невидимым снаружи.</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="needs-review-translation">Рекомендуется сделать {0} невидимым снаружи.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2193,8 +2193,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
-        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
-        <target state="translated">Элемент с индексом [{0}] уже был инициализирован. Предыдущие инициализации этого элемента могут быть перезаписаны.</target>
+        <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
+        <target state="needs-review-translation">Элемент с индексом [{0}] уже был инициализирован. Предыдущие инициализации этого элемента могут быть перезаписаны.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">
