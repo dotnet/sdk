@@ -64,11 +64,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var isStaticCtorMandatory = false;
                 context.RegisterOperationAction(context =>
                 {
-                    if (isStaticCtorMandatory || initializesStaticField)
-                    {
-                        return;
-                    }
-
                     var assignment = (IAssignmentOperation)context.Operation;
 
                     if (assignment.Target is IFieldReferenceOperation fieldReference &&
