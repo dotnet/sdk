@@ -102,9 +102,9 @@
         <target state="translated">Форматирование кода файлов в рабочей области "{0}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="Inlcude_generated_code_files_in_formatting_operations">
-        <source>Inlcude generated code files in formatting operations.</source>
-        <target state="new">Inlcude generated code files in formatting operations.</target>
+      <trans-unit id="Include_generated_code_files_in_formatting_operations">
+        <source>Include generated code files in formatting operations.</source>
+        <target state="new">Include generated code files in formatting operations.</target>
         <note />
       </trans-unit>
       <trans-unit id="Loading_workspace">

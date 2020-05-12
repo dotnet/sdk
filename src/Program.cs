@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     Argument = new Argument<string?>() { Arity = ArgumentArity.ExactlyOne }
                 },
-                new Option(new[] { "--include-generated" }, Resources.Inlcude_generated_code_files_in_formatting_operations)
+                new Option(new[] { "--include-generated" }, Resources.Include_generated_code_files_in_formatting_operations)
                 {
                     Argument = new Argument<bool>(),
                     IsHidden = true

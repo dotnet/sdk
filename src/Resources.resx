@@ -225,7 +225,7 @@
   <data name="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer" xml:space="preserve">
     <value>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</value>
   </data>
-  <data name="Inlcude_generated_code_files_in_formatting_operations" xml:space="preserve">
-    <value>Inlcude generated code files in formatting operations.</value>
+  <data name="Include_generated_code_files_in_formatting_operations" xml:space="preserve">
+    <value>Include generated code files in formatting operations.</value>
   </data>
 </root>
