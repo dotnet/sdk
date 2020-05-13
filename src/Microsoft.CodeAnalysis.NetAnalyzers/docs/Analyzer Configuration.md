@@ -24,11 +24,11 @@ For example, end users can configure the analyzed API surface for analyzers usin
 
 ## Enabling .editorconfig based configuration
 
-### VS2019 16.3 and later
+### VS2019 16.3 and later + Analyzer package version 3.3.x and later
 
 End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
 
-### Prior to VS2019 16.3
+### Prior to VS2019 16.3 or using an analyzer package version prior to 3.3.x
 
 1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory.
 2. Shared .editorconfig file: If you would like to share a common .editorconfig file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
@@ -65,16 +65,16 @@ Configurable Rules:
 [CA1027](https://docs.microsoft.com/visualstudio/code-quality/ca1027),
 [CA1028](https://docs.microsoft.com/visualstudio/code-quality/ca1028),
 [CA1030](https://docs.microsoft.com/visualstudio/code-quality/ca1030),
-[CA1036](https://docs.microsoft.com/visualstudio/code-quality/ca1036), 
+[CA1036](https://docs.microsoft.com/visualstudio/code-quality/ca1036),
 [CA1040](https://docs.microsoft.com/visualstudio/code-quality/ca1040),
-[CA1041](https://docs.microsoft.com/visualstudio/code-quality/ca1041), 
+[CA1041](https://docs.microsoft.com/visualstudio/code-quality/ca1041),
 [CA1043](https://docs.microsoft.com/visualstudio/code-quality/ca1043),
-[CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044), 
+[CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044),
 [CA1045](https://docs.microsoft.com/visualstudio/code-quality/ca1045),
 [CA1047](https://docs.microsoft.com/visualstudio/code-quality/ca1047),
 [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051),
 [CA1052](https://docs.microsoft.com/visualstudio/code-quality/ca1052),
-[CA1054](https://docs.microsoft.com/visualstudio/code-quality/ca1054), 
+[CA1054](https://docs.microsoft.com/visualstudio/code-quality/ca1054),
 [CA1055](https://docs.microsoft.com/visualstudio/code-quality/ca1055),
 [CA1056](https://docs.microsoft.com/visualstudio/code-quality/ca1056),
 [CA1058](https://docs.microsoft.com/visualstudio/code-quality/ca1058),
@@ -94,6 +94,7 @@ Configurable Rules:
 [CA1802](https://docs.microsoft.com/visualstudio/code-quality/ca1802),
 [CA1815](https://docs.microsoft.com/visualstudio/code-quality/ca1815),
 [CA1819](https://docs.microsoft.com/visualstudio/code-quality/ca1819),
+[CA2208](https://docs.microsoft.com/visualstudio/code-quality/ca2208),
 [CA2217](https://docs.microsoft.com/visualstudio/code-quality/ca2217),
 [CA2225](https://docs.microsoft.com/visualstudio/code-quality/ca2225),
 [CA2226](https://docs.microsoft.com/visualstudio/code-quality/ca2226),

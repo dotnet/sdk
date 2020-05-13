@@ -1710,5 +1710,15 @@ End Module"
 
             await vbTest.RunAsync();
         }
+
+        [Fact, WorkItem(3613, "https://github.com/dotnet/roslyn-analyzers/issues/3613")]
+        public async Task GlobalAssemblyAttributes_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage(""Category"", ""Id"")]");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+<assembly: System.Diagnostics.CodeAnalysis.SuppressMessage(""Category"", ""Id"")>");
+        }
     }
 }
