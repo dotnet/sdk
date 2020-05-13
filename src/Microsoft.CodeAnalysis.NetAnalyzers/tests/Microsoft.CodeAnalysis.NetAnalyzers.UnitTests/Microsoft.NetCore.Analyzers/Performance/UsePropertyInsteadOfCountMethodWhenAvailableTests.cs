@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUsePropertyInsteadOfCountMethodWhenAvailableAnalyzer,
+    Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.VisualBasic.Analyzers.Performance.BasicUsePropertyInsteadOfCountMethodWhenAvailableAnalyzer,
+    Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Performance.BasicUsePropertyInsteadOfCountMethodWhenAvailableFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
@@ -30,8 +30,8 @@ using System.Linq;
 public static class C
 {{
     public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
-    public static int M() => {{|{UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId}:GetData().Count()|}};
-    public static int N() => {{|{UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId}:GetData().Count()|}};
+    public static int M() => {{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}};
+    public static int N() => {{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}};
 }}
 ",
                     },
@@ -68,10 +68,10 @@ Public Module C
         Return Nothing
     End Function
     Public Function F() As Integer
-        Return {{|{UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId}:GetData().Count()|}}
+        Return {{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}
     End Function
     Public Function G() As Integer
-        Return {{|{UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId}:GetData().Count()|}}
+        Return {{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}
     End Function
 End Module
 ",
@@ -115,7 +115,7 @@ public static class C
     public static int M() => GetData().Count();
 }}
 ",
-                VerifyCS.Diagnostic(UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId)
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(6, 30)
                     .WithArguments(propertyName),
                 $@"using System;
@@ -143,7 +143,7 @@ public static class C
     public static int? M() => GetData()?.Count();
 }}
 ",
-                VerifyCS.Diagnostic(UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId)
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(6, 41)
                     .WithArguments(propertyName),
                 $@"using System;
@@ -171,7 +171,7 @@ Public Module M
     End Function
 End Module
 ",
-                VerifyCS.Diagnostic(UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId)
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(8, 16)
                     .WithArguments(propertyName),
                 $@"Imports System
@@ -202,7 +202,7 @@ Public Module M
     End Function
 End Module
 ",
-                VerifyCS.Diagnostic(UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId)
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(8, 26)
                     .WithArguments(propertyName),
                 $@"Imports System
@@ -287,7 +287,7 @@ public static class C
     public static int M() => GetData().Count();
 }}
 ",
-                VerifyCS.Diagnostic(UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId)
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(18, 30)
                     .WithArguments("Count"),
                 $@"using System;
@@ -333,7 +333,7 @@ public static class C
     public static int M() => GetData().Count();
 }}
 ",
-                VerifyCS.Diagnostic(UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId)
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(17, 30)
                     .WithArguments("Count"),
                 $@"using System;
@@ -356,9 +356,9 @@ public static class C
 }}
 ");
 
-        [Fact]
-        public static Task CSharp_ICollectionOfTImplementerWithExplicitCount_NoDiagnostic()
-            => VerifyCS.VerifyAnalyzerAsync(
+        [Fact(Skip = "TODO: As part of relaxing property detection, should EII be considered? This would requere changes in the Fixer in order to properly reference the property in the interface.")]
+        public static Task CSharp_ICollectionOfTImplementerWithExplicitCount_Fixed()
+            => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public class T : global::System.Collections.Generic.ICollection<string>
@@ -378,11 +378,34 @@ public static class C
     public static T GetData() => default;
     public static int M() => GetData().Count();
 }}
+",
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
+                    .WithLocation(18, 30)
+                    .WithArguments("Count"),
+                $@"using System;
+using System.Linq;
+public class T : global::System.Collections.Generic.ICollection<string>
+{{
+    int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
+    bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
+    void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
+    void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
+    bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
+    void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
+    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+    bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
+}}
+public static class C
+{{
+    public static T GetData() => default;
+    public static int M() => GetData().Count;
+}}
 ");
 
         [Fact]
-        public static Task CSharp_InterfaceShadowingICollectionOfT_NoDiagnostic()
-            => VerifyCS.VerifyAnalyzerAsync(
+        public static Task CSharp_InterfaceShadowingICollectionOfT_Fixed()
+            => VerifyCS.VerifyCodeFixAsync(
                 @"using System;
 using System.Linq;
 public interface I : global::System.Collections.Generic.ICollection<string>
@@ -394,11 +417,26 @@ public static class C
     public static I GetData() => default;
     public static int M() => GetData().Count();
 }
+",
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
+                    .WithLocation(10, 30)
+                    .WithArguments("Count"),
+@"using System;
+using System.Linq;
+public interface I : global::System.Collections.Generic.ICollection<string>
+{
+    new int Count { get; }
+}
+public static class C
+{
+    public static I GetData() => default;
+    public static int M() => GetData().Count;
+}
 ");
 
         [Fact]
-        public static Task CSharp_InterfaceShadowingICollection_NoDiagnostic()
-            => VerifyCS.VerifyAnalyzerAsync(
+        public static Task CSharp_InterfaceShadowingICollection_Fixed()
+            => VerifyCS.VerifyCodeFixAsync(
                 @"using System;
 using System.Linq;
 public interface I :
@@ -412,11 +450,28 @@ public static class C
     public static I GetData() => default;
     public static int M() => GetData().Count();
 }
+",
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
+                    .WithLocation(12, 30)
+                    .WithArguments("Count"),
+@"using System;
+using System.Linq;
+public interface I :
+    global::System.Collections.Generic.IEnumerable<string>,
+    global::System.Collections.ICollection
+{
+    new int Count { get; }
+}
+public static class C
+{
+    public static I GetData() => default;
+    public static int M() => GetData().Count;
+}
 ");
 
         [Fact]
-        public static Task CSharp_ClassShadowingICollectionOfT_NoDiagnostic()
-            => VerifyCS.VerifyAnalyzerAsync(
+        public static Task CSharp_ClassShadowingICollectionOfT_Fixed()
+            => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public class T : global::System.Collections.Generic.ICollection<string>
@@ -437,11 +492,35 @@ public static class C
     public static T GetData() => default;
     public static int M() => GetData().Count();
 }}
+",
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
+                    .WithLocation(19, 30)
+                    .WithArguments("Count"),
+                $@"using System;
+using System.Linq;
+public class T : global::System.Collections.Generic.ICollection<string>
+{{
+    public int Count => throw new NotImplementedException();
+    int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
+    bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
+    void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
+    void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
+    bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
+    void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
+    bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
+    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+}}
+public static class C
+{{
+    public static T GetData() => default;
+    public static int M() => GetData().Count;
+}}
 ");
 
         [Fact]
-        public static Task CSharp_ClassShadowingICollection_NoDiagnostic()
-            => VerifyCS.VerifyAnalyzerAsync(
+        public static Task CSharp_ClassShadowingICollection_Fixed()
+            => VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public class T :
@@ -461,6 +540,29 @@ public static class C
     public static T GetData() => default;
     public static int M() => GetData().Count();
 }}
+",
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
+                    .WithLocation(18, 30)
+                    .WithArguments("Count"),
+                $@"using System;
+using System.Linq;
+public class T :
+    global::System.Collections.Generic.IEnumerable<string>,
+    global::System.Collections.ICollection
+{{
+    public int Count => throw new NotImplementedException();
+    int global::System.Collections.ICollection.Count => throw new NotImplementedException();
+    bool global::System.Collections.ICollection.IsSynchronized => throw new NotImplementedException();
+    object global::System.Collections.ICollection.SyncRoot => throw new NotImplementedException();
+    void global::System.Collections.ICollection.CopyTo(global::System.Array array, int arrayIndex) => throw new NotImplementedException();
+    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
+}}
+public static class C
+{{
+    public static T GetData() => default;
+    public static int M() => GetData().Count;
+}}
 ");
 
         [Fact, WorkItem(2974, "https://github.com/dotnet/roslyn-analyzers/issues/2974")]
@@ -475,7 +577,7 @@ public class SomeClass
     public IReadOnlyCollection<int> GetData() => null;
     public int M() => GetData().Count();
 }",
-                VerifyCS.Diagnostic(UsePropertyInsteadOfCountMethodWhenAvailableAnalyzer.RuleId)
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
                     .WithLocation(8, 23)
                     .WithArguments(nameof(IReadOnlyCollection<int>.Count)));
         }

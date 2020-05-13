@@ -277,21 +277,6 @@
         <target state="translated">Entfernen Sie den Finalizer vom Typ "{0}", setzen Sie "Dispose(bool disposing)" außer Kraft, und platzieren Sie die Finalisierungslogik im Codepfad, wenn "disposing" FALSE lautet. Andernfalls kann es zu doppelten Dispose-Aufrufen kommen, weil der Basistyp "{1}" ebenfalls einen Finalizer bereitstellt.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PreferIsEmptyOverCountDescription">
-        <source>Prefer IsEmpty over Count when checking if your instance is empty.</source>
-        <target state="new">Prefer IsEmpty over Count when checking if your instance is empty.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PreferIsEmptyOverCountMessage">
-        <source>Prefer IsEmpty over Count when checking if your instance is empty.</source>
-        <target state="new">Prefer IsEmpty over Count when checking if your instance is empty.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PreferIsEmptyOverCountTitle">
-        <source>Prefer IsEmpty over Count</source>
-        <target state="new">Prefer IsEmpty over Count</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Nach Möglichkeit CancellationTokens verteilen</target>

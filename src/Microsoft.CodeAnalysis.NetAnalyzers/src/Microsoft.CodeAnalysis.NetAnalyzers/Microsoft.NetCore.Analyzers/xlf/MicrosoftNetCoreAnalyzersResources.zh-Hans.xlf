@@ -1392,6 +1392,21 @@
         <target state="translated">P/Invokes 应该是不可见的</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountDescription">
+        <source>Prefer IsEmpty over Count when checking if your instance is empty.</source>
+        <target state="new">Prefer IsEmpty over Count when checking if your instance is empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountMessage">
+        <source>Prefer IsEmpty over Count when checking if your instance is empty.</source>
+        <target state="new">Prefer IsEmpty over Count when checking if your instance is empty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountTitle">
+        <source>Prefer IsEmpty over Count</source>
+        <target state="new">Prefer IsEmpty over Count</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
         <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>

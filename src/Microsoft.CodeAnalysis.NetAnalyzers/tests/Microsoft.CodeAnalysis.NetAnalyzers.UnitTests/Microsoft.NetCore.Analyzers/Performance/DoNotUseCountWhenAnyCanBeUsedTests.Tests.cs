@@ -223,14 +223,14 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                       "System.Linq",
                       "Enumerable",
                       false),
-                  new CSharpVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827),
                   output)
         {
         }
 
         [Fact]
         public Task TestConstIdentifiers()
-            => Test.Utilities.CSharpCodeFixVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
+            => Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"using System;
 using System.Linq;
 class C
@@ -328,14 +328,14 @@ class C
                       "System.Linq",
                       "Enumerable",
                       false),
-                  new CSharpVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827),
                   output)
         {
         }
 
         [Fact]
         public Task TestConstIdentifiers()
-            => Test.Utilities.CSharpCodeFixVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
+            => Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"using System;
 using System.Linq;
 class C
@@ -433,14 +433,14 @@ class C
                       "System.Linq",
                       "Enumerable",
                       false),
-                  new BasicVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827),
                   output)
         {
         }
 
         [Fact]
         public Task TestConstIdentifiers()
-            => Test.Utilities.VisualBasicCodeFixVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
+            => Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"Imports System
 Imports System.Linq
 Module C
@@ -542,14 +542,14 @@ End Module
                       "System.Linq",
                       "Enumerable",
                       false),
-                  new BasicVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827),
                   output)
         {
         }
 
         [Fact]
         public Task TestConstIdentifiers()
-            => Test.Utilities.VisualBasicCodeFixVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
+            => Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"Imports System
 Imports System.Linq
 Module C
@@ -651,7 +651,7 @@ End Module
                       "System.Linq",
                       "Queryable",
                       false),
-                  new CSharpVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827),
                   output)
         {
         }
@@ -668,7 +668,7 @@ End Module
                       "System.Linq",
                       "Queryable",
                       false),
-                  new CSharpVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827),
                   output)
         {
         }
@@ -685,7 +685,7 @@ End Module
                       "System.Linq",
                       "Queryable",
                       false),
-                  new BasicVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827),
                   output)
         {
         }
@@ -702,7 +702,7 @@ End Module
                       "System.Linq",
                       "Queryable",
                       false),
-                  new BasicVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.SyncRuleId),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1827),
                   output)
         {
         }
@@ -719,14 +719,14 @@ End Module
                       "System.Data.Entity",
                       "QueryableExtensions",
                       true),
-                  new CSharpVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1828),
                   output)
         {
         }
 
         [Fact]
         public Task TestConstIdentifiers()
-            => Test.Utilities.CSharpCodeFixVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
+            => Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"using System;
 using System.Linq;
 namespace System.Data.Entity
@@ -840,14 +840,14 @@ namespace System.Data.Entity
                       "System.Data.Entity",
                       "QueryableExtensions",
                       true),
-                  new CSharpVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1828),
                   output)
         {
         }
 
         [Fact]
         public Task TestConstIdentifiers()
-            => Test.Utilities.CSharpCodeFixVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
+            => Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"using System;
 using System.Linq;
 namespace System.Data.Entity
@@ -961,14 +961,14 @@ namespace System.Data.Entity
                       "System.Data.Entity",
                       "QueryableExtensions",
                       true),
-                  new BasicVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1828),
                   output)
         {
         }
 
         [Fact]
         public Task TestConstIdentifiers()
-            => Test.Utilities.VisualBasicCodeFixVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
+            => Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"Imports System
 Imports System.Linq
 Namespace System.Data.Entity
@@ -1096,14 +1096,14 @@ End Namespace
                       "System.Data.Entity",
                       "QueryableExtensions",
                       true),
-                  new BasicVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1828),
                   output)
         {
         }
 
         [Fact]
         public Task TestConstIdentifiers()
-            => Test.Utilities.VisualBasicCodeFixVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
+            => Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>.VerifyCodeFixAsync(
                     $@"Imports System
 Imports System.Linq
 Namespace System.Data.Entity
@@ -1231,7 +1231,7 @@ End Namespace
                       "Microsoft.EntityFrameworkCore",
                       "EntityFrameworkQueryableExtensions",
                       true),
-                  new CSharpVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1828),
                   output)
         {
         }
@@ -1248,7 +1248,7 @@ End Namespace
                       "Microsoft.EntityFrameworkCore",
                       "EntityFrameworkQueryableExtensions",
                       true),
-                  new BasicVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1828),
                   output)
         {
         }
@@ -1265,7 +1265,7 @@ End Namespace
                       "Microsoft.EntityFrameworkCore",
                       "EntityFrameworkQueryableExtensions",
                       true),
-                  new BasicVerifier<DoNotUseCountWhenAnyCanBeUsedAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(DoNotUseCountWhenAnyCanBeUsedAnalyzer.AsyncRuleId),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>(UseCountProperlyAnalyzer.CA1828),
                   output)
         {
         }

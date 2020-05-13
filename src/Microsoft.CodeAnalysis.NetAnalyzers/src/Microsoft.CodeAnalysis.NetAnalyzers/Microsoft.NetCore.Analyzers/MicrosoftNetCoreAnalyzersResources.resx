@@ -1332,4 +1332,13 @@
   <data name="PreferConstCharOverConstUnitStringInStringBuilderTitle" xml:space="preserve">
     <value>Consider using 'StringBuilder.Append(char)' when applicable.</value>
   </data>
+  <data name="PreferIsEmptyOverCountDescription" xml:space="preserve">
+    <value>Prefer IsEmpty over Count when checking if your instance is empty.</value>
+  </data>
+  <data name="PreferIsEmptyOverCountMessage" xml:space="preserve">
+    <value>Prefer IsEmpty over Count when checking if your instance is empty.</value>
+  </data>
+  <data name="PreferIsEmptyOverCountTitle" xml:space="preserve">
+    <value>Prefer IsEmpty over Count</value>
+  </data>
 </root>

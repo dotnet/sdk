@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
-namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
+namespace Microsoft.NetCore.Analyzers.Performance
 {
     /// <summary>
     /// CA1836: Prefer IsEmpty over Count when available.
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public abstract class PreferIsEmptyOverCountFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PreferIsEmptyOverCountAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseCountProperlyAnalyzer.CA1836);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -28,12 +28,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             ImmutableDictionary<string, string> properties = context.Diagnostics[0].Properties;
 
             // Indicates weather the Count property is on the Right or Left side.
-            bool useRightSideExpression = properties.ContainsKey(PreferIsEmptyOverCountAnalyzer.UseRightSideExpressionKey);
+            bool useRightSideExpression = properties.ContainsKey(UseCountProperlyAnalyzer.UseRightSideExpressionKey);
             // Indicates if the replacing IsEmpty node should be negated. (!IsEmpty). 
-            bool shouldNegate = properties.ContainsKey(PreferIsEmptyOverCountAnalyzer.ShouldNegateKey);
+            bool shouldNegate = properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);
 
             context.RegisterCodeFix(CodeAction.Create(
-                title: MicrosoftCodeQualityAnalyzersResources.PreferIsEmptyOverCountTitle,
+                title: MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountTitle,
                 createChangedDocument: async cancellationToken =>
                 {
                     DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
@@ -44,8 +44,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     SyntaxNode? objectExpression = GetExpressionFromMemberAccessor(countAccessor);
                     // The IsEmpty property meant to replace the binary expression.
                     SyntaxNode isEmptyNode = objectExpression is null ?
-                        generator.IdentifierName(PreferIsEmptyOverCountAnalyzer.IsEmpty) :
-                        generator.MemberAccessExpression(objectExpression, PreferIsEmptyOverCountAnalyzer.IsEmpty);
+                        generator.IdentifierName(UseCountProperlyAnalyzer.IsEmpty) :
+                        generator.MemberAccessExpression(objectExpression, UseCountProperlyAnalyzer.IsEmpty);
 
                     if (shouldNegate)
                     {
@@ -55,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     editor.ReplaceNode(binaryExpression, isEmptyNode);
                     return editor.GetChangedDocument();
                 },
-                equivalenceKey: MicrosoftCodeQualityAnalyzersResources.PreferIsEmptyOverCountMessage),
+                equivalenceKey: MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountMessage),
             context.Diagnostics);
         }
 

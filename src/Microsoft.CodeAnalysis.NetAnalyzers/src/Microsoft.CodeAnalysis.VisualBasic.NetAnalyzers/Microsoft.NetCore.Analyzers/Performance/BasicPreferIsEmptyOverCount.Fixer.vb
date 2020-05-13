@@ -5,9 +5,9 @@ Imports Analyzer.Utilities
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-Imports Microsoft.CodeQuality.Analyzers.QualityGuidelines
+Imports Microsoft.NetCore.Analyzers.Performance
 
-Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
+Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
     ''' <summary>
     ''' CA1836: Prefer IsEmpty over Count when available.
     ''' </summary>

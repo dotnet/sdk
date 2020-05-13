@@ -6,13 +6,14 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.PreferIsEmptyOverCountAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpPreferIsEmptyOverCountFixer>;
-using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.QualityGuidelines.PreferIsEmptyOverCountAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicPreferIsEmptyOverCountFixer>;
+    Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferIsEmptyOverCountFixer>;
 
-namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
+    Microsoft.NetCore.VisualBasic.Analyzers.Performance.BasicPreferIsEmptyOverCountFixer>;
+
+namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     public class PreferIsEmptyOverCountTests
     {
@@ -21,7 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 
         private const string csSnippet = @"
 using System;
-using System.Collections.Concurrent;
+using System.Linq;
 
 public class Test
 {{
@@ -96,7 +97,7 @@ public class Test
 ";
             await VerifyCS.VerifyCodeFixAsync(
                 csInput,
-                VerifyCS.Diagnostic(PreferIsEmptyOverCountAnalyzer.Rule).WithSpan(13, 34, 13, 50),
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(13, 34, 13, 50),
                 csFix);
         }
 
@@ -150,7 +151,7 @@ End Class
 ";
             await VerifyVB.VerifyCodeFixAsync(
                 vbInput,
-                VerifyVB.Diagnostic(PreferIsEmptyOverCountAnalyzer.Rule).WithSpan(14, 40, 14, 55),
+                VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(14, 40, 14, 55),
                 vbFix);
         }
 
@@ -169,7 +170,7 @@ End Class
 
             return VerifyCS.VerifyCodeFixAsync(
                  input,
-                 VerifyCS.Diagnostic(PreferIsEmptyOverCountAnalyzer.Rule).WithSpan(10, 34, 10, 34 + condition.Length),
+                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(10, 34, 10, 34 + condition.Length),
                  fix);
         }
 
@@ -180,6 +181,7 @@ End Class
         [InlineData("(Me.Count) > 0", "Not IsEmpty")]
         [InlineData("Me.Count > (0)", "Not IsEmpty")]
         [InlineData("(Me.Count) > (0)", "Not IsEmpty")]
+        // TODO: Reduce suggested fix to avoid special casing here.
         [InlineData("((Me).Count) > (0)", "Not (Me).IsEmpty")]
         public Task BasicTestFixOnParentheses(string condition, string replacement)
         {
@@ -188,7 +190,7 @@ End Class
 
             return VerifyVB.VerifyCodeFixAsync(
                  input,
-                 VerifyVB.Diagnostic(PreferIsEmptyOverCountAnalyzer.Rule).WithSpan(11, 20, 11, 20 + condition.Length),
+                 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(11, 20, 11, 20 + condition.Length),
                  fix);
         }
 
@@ -273,7 +275,7 @@ End Class
 
             return VerifyCS.VerifyCodeFixAsync(
                 csInput,
-                VerifyCS.Diagnostic(PreferIsEmptyOverCountAnalyzer.Rule).WithSpan(10, 34, 10, 34 + inputCondition.Length),
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(10, 34, 10, 34 + inputCondition.Length),
                 csFix);
         }
 
@@ -284,7 +286,7 @@ End Class
 
             return VerifyVB.VerifyCodeFixAsync(
                 vbInput,
-                VerifyVB.Diagnostic(PreferIsEmptyOverCountAnalyzer.Rule).WithSpan(11, 20, 11, 20 + inputCondition.Length),
+                VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(11, 20, 11, 20 + inputCondition.Length),
                 vbFix);
         }
 

@@ -5,9 +5,9 @@ using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeQuality.Analyzers.QualityGuidelines;
+using Microsoft.NetCore.Analyzers.Performance;
 
-namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
+namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 {
     /// <summary>
     /// CA1836: Prefer IsEmpty over Count when available.
