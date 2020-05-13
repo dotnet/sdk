@@ -369,22 +369,22 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
-        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <target state="translated">TaskCompletionSource には、基になるタスクを制御する TaskCreationOptions を使用するコンストラクターと、そのタスクに格納されているオブジェクトの状態を使用するコンストラクターがあります。TaskCreationOptions の代わりに TaskContinuationOptions を誤って渡すと、呼び出しでオプションが状態として処理されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
         <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
-        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <target state="translated">TaskContinuationOptions を TaskCreationOptions に置き換えます。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <target state="translated">引数には、TaskCreationOptions 列挙型ではなく、TaskContinuationsOptions 列挙型が含まれています。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <target state="translated">TaskCompletionSource コンストラクターに渡された引数は、TaskContinuationOptions 列挙型ではなく、TaskCreationOptions 列挙型にする必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -1034,7 +1034,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
         <source>Change to call the two argument constructor, pass null for the message.</source>
-        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <target state="translated">2 つの引数を持つコンストラクターを呼び出すように変更し、メッセージ用に null を渡します。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
@@ -1044,7 +1044,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
         <source>Swap the arguments order</source>
-        <target state="new">Swap the arguments order</target>
+        <target state="translated">引数の順序の入れ替え</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1059,7 +1059,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="needs-review-translation">メッセージおよび paramName パラメーターまたはそのいずれかを含む {0} コンストラクターを呼び出します。</target>
+        <target state="translated">メッセージおよび paramName パラメーターまたはそのいずれかを含む {0} コンストラクターを呼び出します。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1359,7 +1359,7 @@
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
         <source>PInvoke declarations should be portable</source>
-        <target state="translated">PInvoke 宣言はポータブルでなければなりません</target>
+        <target state="translated">PInvoke 宣言は移植可能なでなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
@@ -1384,7 +1384,7 @@
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
+        <target state="translated">'{0}' メソッド呼び出しを '{1}' を受け取るオーバーロードに変更します。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
@@ -1429,17 +1429,17 @@
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
         <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
-        <target state="new">'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</target>
+        <target state="translated">文字列が単一文字の場合、'StringBuilder.Append(char)' のほうが 'StringBuilder.Append(string)' よりも効率的です。定数を指定して 'Append' を呼び出す場合は、単一文字を含む定数文字列ではなく、定数 char を使用することをお勧めします。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
         <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
-        <target state="new">Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</target>
+        <target state="translated">入力が定数単位文字列である場合は、'StringBuilder.Append(string)' ではなく、'StringBuilder.Append(char)' をお使いください。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
         <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
-        <target state="new">Consider using 'StringBuilder.Append(char)' when applicable.</target>
+        <target state="translated">該当する場合は、'StringBuilder.Append(char)' を使用することをご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">

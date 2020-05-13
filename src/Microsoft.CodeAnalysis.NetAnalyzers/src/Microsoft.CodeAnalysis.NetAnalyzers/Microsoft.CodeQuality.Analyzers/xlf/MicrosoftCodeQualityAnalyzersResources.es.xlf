@@ -134,7 +134,7 @@
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
-        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <target state="translated">"{0}" llama a "{1}", pero no usa el valor que el método devuelve. Este método se define como opción del usuario. Use el resultado en una instrucción condicional, asigne el resultado a una variable o páselo como argumento a otro método.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -169,17 +169,17 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="new">Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</target>
+        <target state="translated">No debe declarar eventos virtuales en una clase base e invalidarlos en una clase derivada. El compilador de C# no los controla correctamente y no se puede predecir si un suscriptor del evento derivado se estará suscribiendo en realidad al evento de clase base.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual.</source>
-        <target state="new">Event '{0}' should not be declared virtual.</target>
+        <target state="translated">No debe declararse como virtual el evento "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
         <source>Do not declare event fields as virtual</source>
-        <target state="new">Do not declare event fields as virtual</target>
+        <target state="translated">No declarar los campos de eventos como virtuales</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
@@ -274,17 +274,17 @@
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixDescription">
         <source>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</source>
-        <target state="new">Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</target>
+        <target state="translated">Los nombres de evento deben describir la acción que genera el evento. Para nombrar los eventos relacionados que se generan en una secuencia específica, use los tiempos verbales presente o pasado para indicar la posición relativa en la secuencia de acciones. Por ejemplo, al asignar un nombre a un par de eventos que se generan al cerrar un recurso, pueden denominarse "Closing" y "Closed" en lugar de "BeforeClose" y "AfterClose".</target>
         <note />
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixMessage">
         <source>Events should not have 'Before' or 'After' prefix</source>
-        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <target state="translated">Los eventos no deben tener el prefijo "Antes" ni "Después"</target>
         <note />
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixTitle">
         <source>Events should not have 'Before' or 'After' prefix</source>
-        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <target state="translated">Los eventos no deben tener el prefijo "Antes" ni "Después"</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -719,12 +719,12 @@
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
         <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="new">Implement IEquatable when overriding Object.Equals</target>
+        <target state="translated">Implementar IEquatable al invalidar Object.Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
         <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="new">Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</target>
+        <target state="translated">El tipo {0} debe implementar IEquatable&lt;T&gt; porque reemplaza a Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">
@@ -1779,7 +1779,7 @@
       </trans-unit>
       <trans-unit id="AvoidUsingCrefTagsWithAPrefixDescription">
         <source>Use of cref tags with prefixes should be avoided, since it prevents the compiler from verifying references and the IDE from updating references during refactorings. It is permissible to suppress this error at a single documentation site if the cref must use a prefix because the type being mentioned is not findable by the compiler. For example, if a cref is mentioning a special attribute in the full framework but you're in a file that compiles against the portable framework, or if you want to reference a type at higher layer of Roslyn, you should suppress the error. You should not suppress the error just because you want to take a shortcut and avoid using the full syntax.</source>
-        <target state="translated">Se debe evitar el uso de etiquetas cref con prefijos, dado que impide al compilador verificar las referencias y al IDE actualizar las referencias durante las refactorizaciones. Se permite suprimir este error en un solo sitio de documentación si cref debe usar un prefijo porque el compilador no puede encontrar el tipo mencionado. Por ejemplo, si el atributo cref menciona un atributo especial en el marco completo pero el usuario se encuentra en un archivo que compila en relación con el marco portátil, o si se desea hacer referencia a un tipo en el nivel superior de Roslyn, se debe suprimir el error. No se debe suprimir el error solo por tomar un camino más corto y evitar el uso de la sintaxis completa.</target>
+        <target state="translated">Se debe evitar el uso de etiquetas cref con prefijos, dado que impide al compilador verificar las referencias y al IDE actualizar las referencias durante las refactorizaciones. Se permite suprimir este error en un solo sitio de documentación si cref debe usar un prefijo porque el compilador no puede encontrar el tipo mencionado. Por ejemplo, si el atributo cref menciona un atributo especial en el marco completo pero el usuario se encuentra en un archivo que compila en relación con el marco portable, o si se desea hacer referencia a un tipo en el nivel superior de Roslyn, se debe suprimir el error. No se debe suprimir el error solo por tomar un camino más corto y evitar el uso de la sintaxis completa.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUsingCrefTagsWithAPrefixMessage">
@@ -2104,7 +2104,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="needs-review-translation">Considere hacer que {0} no sea externamente visible.</target>
+        <target state="new">Consider making '{0}' not externally visible</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2194,7 +2194,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
         <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
-        <target state="needs-review-translation">El elemento del índice [{0}] ya se ha inicializado. Es posible que las inicializaciones anteriores de este elemento se sobrescriban.</target>
+        <target state="new">Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

@@ -134,7 +134,7 @@
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
-        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <target state="translated">"{0}" ruft "{1}" auf, verwendet jedoch nicht den von der Methode zurückgegebenen Wert. Diese Methode ist als Benutzeroption definiert. Verwenden Sie das Ergebnis in einer Bedingungsanweisung, weisen Sie das Ergebnis einer Variablen zu, oder übergeben Sie es als Argument an eine andere Methode.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -169,17 +169,17 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="new">Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</target>
+        <target state="translated">Deklarieren Sie keine virtuellen Ereignisse in einer Basisklasse, und überschreiben Sie sie nicht in einer abgeleiteten Klasse. Der C#-Compiler verarbeitet sie nicht ordnungsgemäß, und es ist nicht vorhersehbar, ob ein Abonnent des abgeleiteten Ereignisses tatsächlich das Ereignis der Basisklasse abonniert.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual.</source>
-        <target state="new">Event '{0}' should not be declared virtual.</target>
+        <target state="translated">Das Ereignis "{0}" darf nicht als virtuell deklariert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
         <source>Do not declare event fields as virtual</source>
-        <target state="new">Do not declare event fields as virtual</target>
+        <target state="translated">Ereignisfelder nicht als virtuell deklarieren</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
@@ -274,17 +274,17 @@
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixDescription">
         <source>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</source>
-        <target state="new">Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</target>
+        <target state="translated">Ereignisnamen sollten die Aktion beschreiben, durch die das Ereignis ausgelöst wird. Um zusammenhängende Ereignisse zu benennen, die in einer bestimmten Sequenz ausgelöst werden, verwenden Sie das Präsens oder das Imperfekt, um die relative Position in der Sequenz von Aktionen anzugeben. Wenn Sie z. B. ein Ereignispaar benennen, das beim Schließen einer Ressource ausgelöst wird, könnten Sie es "Closing" und "Closed" nennen anstelle von "BeforeClose" und "AfterClose".</target>
         <note />
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixMessage">
         <source>Events should not have 'Before' or 'After' prefix</source>
-        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <target state="translated">Ereignisse dürfen kein Präfix "Before" oder "After" aufweisen.</target>
         <note />
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixTitle">
         <source>Events should not have 'Before' or 'After' prefix</source>
-        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <target state="translated">Ereignisse dürfen kein Präfix "Before" oder "After" aufweisen.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -324,7 +324,7 @@
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
         <source>Remove redundant element initializer</source>
-        <target state="new">Remove redundant element initializer</target>
+        <target state="translated">Redundanten Elementinitialisierer entfernen</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
@@ -719,12 +719,12 @@
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
         <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="new">Implement IEquatable when overriding Object.Equals</target>
+        <target state="translated">"IEquatable" beim Außerkraftsetzen von "Object.Equals" implementieren</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
         <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="new">Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</target>
+        <target state="translated">Typ {0} muss IEquatable&lt;T&gt; implementieren, weil er Equals überschreibt</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">
@@ -2104,7 +2104,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="needs-review-translation">Ziehen Sie in Betracht, "{0}" nicht extern sichtbar zu machen.</target>
+        <target state="new">Consider making '{0}' not externally visible</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2194,7 +2194,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
         <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
-        <target state="needs-review-translation">Das Element bei Index [{0}] wurde bereits initialisiert. Vorherige Initialisierungen dieses Elements werden möglicherweise überschrieben.</target>
+        <target state="translated">Redundante Elementinitialisierung bei Index "{0}". Der Objektinitialisierer weist einen anderen Elementinitialisierer mit demselben Index auf, der diesen Wert überschreibt.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

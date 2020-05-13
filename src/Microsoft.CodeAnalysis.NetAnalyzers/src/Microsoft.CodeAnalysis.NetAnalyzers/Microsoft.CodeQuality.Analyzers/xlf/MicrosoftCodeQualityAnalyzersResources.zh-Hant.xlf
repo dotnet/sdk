@@ -134,7 +134,7 @@
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
-        <target state="new">'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</target>
+        <target state="translated">'{0}' 呼叫了 '{1}'，但並未使用方法所傳回的值。此方法定義為使用者選項。請使用條件陳述式中的結果，再將結果指派給變數，或是將其以引數方式傳遞到另一個方法。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -169,17 +169,17 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="new">Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</target>
+        <target state="translated">請勿在基底類別中宣告虛擬事件，然後在衍生類別中加以覆寫。C# 編譯器無法正確地處理這些事件，而且無法預期衍生事件的訂閱者是否會實際訂閱基底類別事件。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual.</source>
-        <target state="new">Event '{0}' should not be declared virtual.</target>
+        <target state="translated">事件 '{0}' 不應宣告為虛擬。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
         <source>Do not declare event fields as virtual</source>
-        <target state="new">Do not declare event fields as virtual</target>
+        <target state="translated">請勿將事件欄位宣告為虛擬</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
@@ -274,17 +274,17 @@
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixDescription">
         <source>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</source>
-        <target state="new">Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</target>
+        <target state="translated">事件名稱應該描述引發該事件的動作。若要命名特定順序內引發的相關事件，請使用現在式或過去式來表示一系列動作中的相對位置。例如，要命名一組在關閉資源時所引發的事件，可以將其命名為 'Closing' 以及 'Closed'，而請勿使用 'BeforeClose' 和 'AfterClose'。</target>
         <note />
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixMessage">
         <source>Events should not have 'Before' or 'After' prefix</source>
-        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <target state="translated">事件開頭不應出現 'Before' 或 'After'</target>
         <note />
       </trans-unit>
       <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixTitle">
         <source>Events should not have 'Before' or 'After' prefix</source>
-        <target state="new">Events should not have 'Before' or 'After' prefix</target>
+        <target state="translated">事件開頭不應出現 'Before' 或 'After'</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -719,12 +719,12 @@
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
         <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="new">Implement IEquatable when overriding Object.Equals</target>
+        <target state="translated">覆寫 Object.Equals 時實作 IEquatable</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
         <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="new">Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</target>
+        <target state="translated">類型 {0} 應先實作 IEquatable&lt;T&gt;，因為它會覆寫 Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">
@@ -2104,7 +2104,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="needs-review-translation">請考慮讓 {0} 並非外部可見。</target>
+        <target state="new">Consider making '{0}' not externally visible</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2194,7 +2194,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
         <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
-        <target state="needs-review-translation">已將位於索引 [{0}] 的元素初始化。可能會覆寫此元素先前的初始化。</target>
+        <target state="new">Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">
