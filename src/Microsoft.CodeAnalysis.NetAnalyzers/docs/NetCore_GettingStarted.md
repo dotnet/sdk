@@ -40,7 +40,7 @@
 1. Navigate to the root of the Roslyn-analyzers repo and run these commands: 
 	- `cd roslyn-analyzers` 
 	- `set RUNTIMEPACKAGEVERSION=3.0.0` 
-	- `build.cmd -ci /p:AssemblyVersion=%RUNTIMEPACKAGEVERSION% /p:OfficialBuild=true`
+	- `build.cmd -ci /p:AssemblyVersion=%RUNTIMEPACKAGEVERSION% /p:AutoGenerateAssemblyVersion=false /p:OfficialBuild=true`
 	- `cd artifacts\bin\Microsoft.NetCore.CSharp.Analyzers\Debug\netstandard2.0` 
 2. Copy the two DLLs and replace the NuGet cache entries used by `dotnet/runtime`. They might be in `"runtime/.packages/..."` or `"%USERPROFILE%/.nuget/packages/... "`. You can check the exact path by building something in runtime with /bl and checking the binlog file. Example: 
 	- `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.NetCore.Analyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs` 
