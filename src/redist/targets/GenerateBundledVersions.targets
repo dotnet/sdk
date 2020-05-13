@@ -78,12 +78,14 @@
           ios-arm64;
           ios-arm;
           ios-x64;
+          ios-x86;
           tvos-arm64;
           tvos-x64;
           android-arm64;
           android-arm;
           android-x64;
           android-x86;
+          browser-wasm;
           " />
 
       <NetCoreRuntimePackRids Include="@(NetCore5RuntimePackRids)"/>
