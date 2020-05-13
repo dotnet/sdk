@@ -369,22 +369,22 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
-        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <target state="translated">TaskCompletionSource 有建構函式會採用控制基礎工作的 TaskCreationOptions，也有會採用儲存在工作內物件狀態的建構函式。不小心傳遞了 TaskContinuationOptions 而非 TaskCreationOptions 時，會導致呼叫將選項視為狀態。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
         <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
-        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <target state="translated">以 TaskCreationOptions 取代 TaskContinuationOptions。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <target state="translated">引數內含 TaskContinuationsOptions 列舉，而非 TaskCreationOptions 列舉。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <target state="translated">傳遞到 TaskCompletionSource 建構函式的引數應為 TaskCreationOptions 列舉，而非 TaskContinuationOptions 列舉。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -1034,7 +1034,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
         <source>Change to call the two argument constructor, pass null for the message.</source>
-        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <target state="translated">變更為呼叫兩個引數建構函式，針對訊息傳遞 Null。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
@@ -1044,7 +1044,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
         <source>Swap the arguments order</source>
-        <target state="new">Swap the arguments order</target>
+        <target state="translated">交換引數順序</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1059,7 +1059,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="needs-review-translation">請呼叫包含 message 及 (或) paramName 參數的 {0} 建構函式。</target>
+        <target state="translated">請呼叫包含 message 及 (或) paramName 參數的 {0} 建構函式。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1384,7 +1384,7 @@
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
+        <target state="translated">將 '{0}' 方法呼叫變更為接收 '{1}' 的多載。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
@@ -1429,17 +1429,17 @@
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
         <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
-        <target state="new">'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</target>
+        <target state="translated">當字串是單一字元時，'StringBuilder.Append(char)' 比 'StringBuilder.Append(string)' 更有效率。當以常數呼叫 'Append' 時，建議使用常數字元，而不要使用包含一個字元的常數字串。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
         <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
-        <target state="new">Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</target>
+        <target state="translated">當輸入為常數單元字串時，請使用 'StringBuilder.Append(char)'，而不要使用 'StringBuilder.Append(string)'。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
         <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
-        <target state="new">Consider using 'StringBuilder.Append(char)' when applicable.</target>
+        <target state="translated">請在適當時考慮使用 'StringBuilder.Append(char)'。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">

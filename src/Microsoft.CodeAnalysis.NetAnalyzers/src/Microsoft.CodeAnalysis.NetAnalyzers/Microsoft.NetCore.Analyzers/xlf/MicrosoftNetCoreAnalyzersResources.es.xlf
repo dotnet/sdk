@@ -369,22 +369,22 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
-        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <target state="translated">TaskCompletionSource tiene constructores que toman elementos TaskCreationOption para controlar la tarea subyacente y constructores que toman el estado del objeto que se almacena en la tarea. Si se pasa accidentalmente un elemento TaskContinuationOption en lugar de un objeto TaskCreationOption, la llamada trata las opciones como estado.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
         <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
-        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <target state="translated">Reemplace TaskContinuationOptions por TaskCreationOptions.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <target state="translated">El argumento contiene la enumeración TaskContinuationsOptions en lugar de la enumeración TaskCreationOptions.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <target state="translated">El argumento pasado al constructor TaskCompletionSource debe ser una enumeración TaskCreationOptions en lugar de TaskContinuationOptions.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -1034,7 +1034,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
         <source>Change to call the two argument constructor, pass null for the message.</source>
-        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <target state="translated">Cámbielo para llamar al constructor con dos argumentos; pase un valor NULL para el mensaje.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
@@ -1044,7 +1044,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
         <source>Swap the arguments order</source>
-        <target state="new">Swap the arguments order</target>
+        <target state="translated">Intercambiar el orden de los argumentos</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1059,7 +1059,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="needs-review-translation">Llame al constructor {0} que contiene un mensaje o un parámetro paramName.</target>
+        <target state="translated">Llame al constructor {0} que contiene un mensaje o un parámetro paramName.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1384,7 +1384,7 @@
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
+        <target state="translated">Cambie la llamada de método "{0}" a la sobrecarga que recibe una instancia de "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
@@ -1429,17 +1429,17 @@
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
         <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
-        <target state="new">'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</target>
+        <target state="translated">"StringBuilder.Append(char)" es más eficaz que "StringBuilder.Append(string)" cuando la cadena es de un solo carácter. Cuando se llama a "Append" con una constante, es preferible usar una constante char en lugar de una cadena de constante que contenga un carácter.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
         <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
-        <target state="new">Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</target>
+        <target state="translated">Use "StringBuilder.Append(char)" en lugar de "StringBuilder.Append(string)" cuando la entrada es una cadena de unidad constante.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
         <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
-        <target state="new">Consider using 'StringBuilder.Append(char)' when applicable.</target>
+        <target state="translated">Puede usar "StringBuilder.Append(char)" cuando sea aplicable.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
