@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="5.0.0-preview.5.20227.1">
+    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="5.0.0-preview.6.20262.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>f658b13953b2afd593aa84a96c30c4e35fa9ae56</Sha>
+      <Sha>34a444a9723780c1d77e8e8151df1afb109168ff</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="5.0.0-preview.6.20262.14">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -33,45 +33,45 @@
       <Uri>https://github.com/dotnet/CliCommandLineParser</Uri>
       <Sha>0e89c2116ad28e404ba56c14d1c3f938caa25a01</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="16.7.0-preview-20257-02">
+    <Dependency Name="Microsoft.Build" Version="16.7.0-preview-20258-02">
       <Uri>https://github.com/microsoft/msbuild</Uri>
-      <Sha>b861333fc1131173a760ef8552f82b433d18558f</Sha>
+      <Sha>26f6d1d87700faa8b38d215dbde5968e6b8381f6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="16.7.0-preview-20257-02">
+    <Dependency Name="Microsoft.Build.Localization" Version="16.7.0-preview-20258-02">
       <Uri>https://github.com/microsoft/msbuild</Uri>
-      <Sha>b861333fc1131173a760ef8552f82b433d18558f</Sha>
+      <Sha>26f6d1d87700faa8b38d215dbde5968e6b8381f6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="11.0.0-beta.20254.8">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="11.0.0-beta.20261.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>f5eaae6fd7bb0384f5119e747b1a90a12d564d78</Sha>
+      <Sha>bd105d557568a50a311fe01c56661d7a3f4c840a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.6.0-2.20153.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>6f2112b58316c97c4f1b97e0f282aef4346947fc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="5.0.0-preview.5.20255.6">
+    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="5.0.0-preview.6.20263.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>32b28946109414a3652beb40e3b3acac5c8a275e</Sha>
+      <Sha>327b9d2f43a73a6238433bc27a284eacc08a79bd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.5.20255.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="5.0.0-preview.5.20260.1">
       <Uri>https://github.com/dotnet/aspnetcore-tooling</Uri>
-      <Sha>e2ce8c9809acd3860e77940a246e722af95495b4</Sha>
+      <Sha>a60b721dbb07a55a4a91452ef3cf8af4e6fbec46</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="5.6.0-preview.2.6532">
+    <Dependency Name="NuGet.Build.Tasks" Version="5.7.0-preview.1.6609">
       <Uri>https://github.com/NuGet/NuGet.Client</Uri>
-      <Sha>1c2681b16a0bb9be9271abe043a1cbf892761ef8</Sha>
+      <Sha>12a375a8a02764b772a20371abaf797639a7f961</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="16.7.0-preview-20200429-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>df61f73a1f4608df5ee0957350fbd3e81f924c6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Web" Version="5.0.100-preview.5.20256.1">
+    <Dependency Name="Microsoft.NET.Sdk.Web" Version="5.0.100-preview.6.20261.3">
       <Uri>https://github.com/dotnet/websdk</Uri>
-      <Sha>fef0f9ebee61ed98c0b2aa8787edae1b0146b0e5</Sha>
+      <Sha>88083d733dcc50a0f0844053dde0a0b6396cc3e5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="5.0.0-preview.3.20256.5">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="5.0.0-preview.3.20261.2">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>fe2d8f8c2007ecf3789df3d8169d9809111875bb</Sha>
+      <Sha>ffec224a2a69f0cde4c43d9c90090dcb294ca6c6</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="5.0.0-preview.6.20262.14">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -89,9 +89,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bc3bec788cd8d1f9d882b359ca8368248bf051a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-preview.5.20256.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-preview.6.20261.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>2f95c33ebdd10e74831783968b8830f02e0134b6</Sha>
+      <Sha>853a83968c707d17b0d763b112e9f77ad100c11c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.5.20222.1" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>

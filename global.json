@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "5.0.100-preview.5.20261.8",
+    "dotnet": "5.0.100-preview.5.20258.4",
     "runtimes": {
       "dotnet": [
         "$(MicrosoftNETCoreAppRuntimePackageVersion)"
