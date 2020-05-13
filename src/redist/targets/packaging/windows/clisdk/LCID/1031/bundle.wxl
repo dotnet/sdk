@@ -51,7 +51,7 @@
 
 Folgende Komponenten wurden unter [DOTNETHOME] installiert:
     • .NET SDK [DOTNETSDKVERSION]
-    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • .NET-Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core-Runtime [ASPNETCOREVERSION]
     • .NET Windows Desktop-Runtime [WINFORMSANDWPFVERSION]
 
@@ -65,16 +65,17 @@ Ressourcen
     • Tutorials: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET ist eine plattformübergreifende Open-Source-Software, die von Microsoft unterstützt wird. Verwenden Sie sie zur Entwicklung Ihrer nächsten App mit C#, F# oder VB. Wir wünschen Ihnen viel Spaß!</String>
+    Das .NET SDK wird zum Erstellen, Ausführen und Testen von .NET-Anwendungen verwendet. Sie können aus mehreren Sprachen, Editoren und Entwicklertools auswählen und ein großes Bibliotheksnetzwerk nutzen, um Apps für das Web, mobile Geräte, Desktops, Gaming und IoT zu entwickeln. Wir wünschen Ihnen viel Spaß damit!</String>
   <String Id="LearnMoreTitle">Weitere Informationen zu .NET</String>
   <String Id="ResourcesHeader">Ressourcen</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET-Dokumentation&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK-Dokumentation&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Datenschutzerklärung&lt;/A&gt;</String>
-  <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Lizenzbedingungen für die .NET-Bibliothek&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Lizenzierungsinformationen für .NET&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Installationshinweis</String>
   <String Id="InstallationNote">Während des Installationsvorgangs wird ein Befehl ausgeführt, durch den die Geschwindigkeit der Projektwiederherstellung verbessert und der Offlinezugriff aktiviert wird. Der Vorgang dauert bis zu einer Minute.
   </String>
-  <String Id="VisualStudioWarning">Wenn Sie .NET 5.0 mit Visual Studio verwenden möchten, ist Visual Studio 2019 16.6 oder höher erforderlich. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Weitere Informationen&lt;/A&gt;.
-  </String>
+  <String Id="VisualStudioWarning">Wenn Sie .NET 5.0 mit Visual Studio verwenden möchten, ist Visual Studio 2019 16.6 oder höher erforderlich. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Erfahren Sie mehr&lt;/A&gt;.
+</String>
+  <String Id="LicenseAssent">Durch Klicken auf "Installieren" stimmen Sie den nachstehenden Bedingungen zu.</String>
 </WixLocalization>

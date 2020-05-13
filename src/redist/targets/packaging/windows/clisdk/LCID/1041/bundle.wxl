@@ -55,7 +55,7 @@
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
     • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
-この製品は使用データを収集します
+この製品は使用状況データを収集します
     • 詳細およびオプトアウト https://aka.ms/dotnet-cli-telemetry
 
 リソース
@@ -65,16 +65,17 @@
     • チュートリアル https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET は、オープンソースまたはクロスプラットフォームで、Microsoft によってサポートされています。これを使用して、C#、F# または VB で次のアプリをビルドできます。お楽しみいただければ幸いです。</String>
+    .Net SDK は、.NET アプリケーションをビルド、実行、テストするために使用されます。複数の言語、エディター、開発者ツールから選択し、ライブラリの大規模なエコシステムを利用して、Web、モバイル、デスクトップ、ゲーム、IoT 用のアプリを作成できます。ぜひご利用ください。</String>
   <String Id="LearnMoreTitle">.Net の詳細情報</String>
   <String Id="ResourcesHeader">リソース</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET ドキュメント&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK ドキュメント&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;プライバシーに関する声明&lt;/A&gt;</String>
-  <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;.NET ライブラリのライセンス条項&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;.NET のライセンス情報&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">インストール メモ</String>
   <String Id="InstallationNote">コマンドはインストール処理中に実行されるので、プロジェクトの復元速度が向上し、オフラインでアクセスできます。完了するまでに最大 1 分かかります。
   </String>
-  <String Id="VisualStudioWarning">.NET 5.0 を Visual Studio と共に使用する場合は、Visual Studio 2019 16.6 以降が必要です。&lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;詳細情報&lt;/A&gt;。
+  <String Id="VisualStudioWarning">.NET 5.0 を Visual Studio と共に使用する場合は、Visual Studio 2019 16.6 以降が必要です。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;詳細情報&lt;/A&gt;。
   </String>
+  <String Id="LicenseAssent">[インストール] をクリックすると、次の条項に同意したものと見なされます。</String>
 </WixLocalization>
