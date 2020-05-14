@@ -73,8 +73,10 @@
 
       <NetCore31RuntimePackRids Include="@(NetCore30RuntimePackRids)"/>
 
+      <NetCore5AppHostRids Include="@(NetCore31RuntimePackRids)"/>
+      
       <NetCore5RuntimePackRids Include="
-          @(NetCore31RuntimePackRids);
+          @(NetCore5AppHostRids);
           ios-arm64;
           ios-arm;
           ios-x64;
@@ -88,7 +90,8 @@
           browser-wasm;
           " />
 
-      <NetCoreRuntimePackRids Include="@(NetCore5RuntimePackRids)"/>
+      <NetCoreAppHostRids Include="@(NetCore5AppHostRids)" />
+      <NetCoreRuntimePackRids Include="@(NetCore5RuntimePackRids)" />
 
       <AspNetCore30RuntimePackRids Include="
         win-x64;
@@ -215,7 +218,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       TargetFramework="netcoreapp5.0"
                       AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
                       AppHostPackVersion="$(_NETCoreAppPackageVersion)"
-                      AppHostRuntimeIdentifiers="@(NetCoreRuntimePackRids, '%3B')"
+                      AppHostRuntimeIdentifiers="@(NetCoreAppHostRids, '%3B')"
                       />
 
     <KnownCrossgen2Pack Include="Microsoft.NETCore.App.Crossgen2"
