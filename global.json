@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "3.1.202",
+    "dotnet": "3.1.300-servicing-015161",
     "vs-opt": {
       "version": "15.9"
     }
