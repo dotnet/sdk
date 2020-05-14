@@ -1383,13 +1383,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountDescription">
-        <source>Prefer IsEmpty over Count when checking if your instance is empty.</source>
-        <target state="new">Prefer IsEmpty over Count when checking if your instance is empty.</target>
+        <source>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</source>
+        <target state="new">For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
-        <source>Prefer IsEmpty over Count when checking if your instance is empty.</source>
-        <target state="new">Prefer IsEmpty over Count when checking if your instance is empty.</target>
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
+        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
