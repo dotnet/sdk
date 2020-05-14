@@ -356,9 +356,9 @@ public static class C
 }}
 ");
 
-        [Fact(Skip = "TODO: As part of relaxing property detection, should EII be considered? This would requere changes in the Fixer in order to properly reference the property in the interface.")]
-        public static Task CSharp_ICollectionOfTImplementerWithExplicitCount_Fixed()
-            => VerifyCS.VerifyCodeFixAsync(
+        [Fact]
+        public static Task CSharp_ICollectionOfTImplementerWithExplicitCount_NoDiagnostic()
+            => VerifyCS.VerifyAnalyzerAsync(
                 $@"using System;
 using System.Linq;
 public class T : global::System.Collections.Generic.ICollection<string>
@@ -377,29 +377,6 @@ public static class C
 {{
     public static T GetData() => default;
     public static int M() => GetData().Count();
-}}
-",
-                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.CA1829)
-                    .WithLocation(18, 30)
-                    .WithArguments("Count"),
-                $@"using System;
-using System.Linq;
-public class T : global::System.Collections.Generic.ICollection<string>
-{{
-    int global::System.Collections.Generic.ICollection<string>.Count => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.IsReadOnly => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.Add(string item) => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.Clear() => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.Contains(string item) => throw new NotImplementedException();
-    void global::System.Collections.Generic.ICollection<string>.CopyTo(string[] array, int arrayIndex) => throw new NotImplementedException();
-    public global::System.Collections.Generic.IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-    global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new NotImplementedException();
-    bool global::System.Collections.Generic.ICollection<string>.Remove(string item) => throw new NotImplementedException();
-}}
-public static class C
-{{
-    public static T GetData() => default;
-    public static int M() => GetData().Count;
 }}
 ");
 

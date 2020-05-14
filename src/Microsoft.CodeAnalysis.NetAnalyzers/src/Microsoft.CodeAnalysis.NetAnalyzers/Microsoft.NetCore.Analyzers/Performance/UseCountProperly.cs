@@ -539,32 +539,45 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static bool TypeContainsVsibileProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound)
         {
-            ITypeSymbol? currentType = type;
-
-            while (currentType != null)
+            if (type.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol property)
             {
-                if (currentType.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol property)
-                {
-                    return !property.IsStatic &&
-                        IsInRangeInclusive((uint)property.Type.SpecialType, (uint)lowerBound, (uint)upperBound) &&
-                        property.GetMethod != null &&
-                        context.Compilation.IsSymbolAccessibleWithin(property, context.ContainingSymbol.ContainingType) &&
-                        context.Compilation.IsSymbolAccessibleWithin(property.GetMethod, context.ContainingSymbol.ContainingType);
-                }
+                return IsPropertyValidAndVisible(context, property, lowerBound, upperBound);
+            }
 
-                foreach (var @interface in currentType.Interfaces)
+            // The property might not be defined on the specified type if the type is an interface, it can be defined in one of the parent interfaces.
+            if (type.TypeKind == TypeKind.Interface)
+            {
+                foreach (var @interface in type.AllInterfaces)
                 {
-                    if (TypeContainsVsibileProperty(context, @interface, propertyName, lowerBound, upperBound))
+                    if (@interface.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol interfaceProperty)
                     {
-                        return true;
+                        return IsPropertyValidAndVisible(context, interfaceProperty, lowerBound, upperBound);
                     }
                 }
+            }
+            else
+            {
+                ITypeSymbol? currentType = type.BaseType;
+                while (currentType != null)
+                {
+                    if (currentType.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol typeProperty)
+                    {
+                        return IsPropertyValidAndVisible(context, typeProperty, lowerBound, upperBound);
+                    }
 
-                currentType = currentType.BaseType;
+                    currentType = currentType.BaseType;
+                }
             }
 
             return false;
         }
+
+        private static bool IsPropertyValidAndVisible(OperationAnalysisContext context, IPropertySymbol property, SpecialType lowerBound, SpecialType upperBound)
+            => !property.IsStatic &&
+            IsInRangeInclusive((uint)property.Type.SpecialType, (uint)lowerBound, (uint)upperBound) &&
+            property.GetMethod != null &&
+            context.Compilation.IsSymbolAccessibleWithin(property, context.ContainingSymbol.ContainingType) &&
+            context.Compilation.IsSymbolAccessibleWithin(property.GetMethod, context.ContainingSymbol.ContainingType);
 
         private static bool TryGetZeroOrOneConstant(IOperation operation, out int constant)
         {
