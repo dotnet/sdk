@@ -238,13 +238,14 @@ jobs:
     - ${{ if eq(parameters.agentOs, 'Linux_Perf_Helix') }}:
         - checkout: self
           clean: true
-        - task: Bash@3
-          displayName: Setup Private Feeds Credentials
-          inputs:
-            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-            arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-          env:
-            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - template: /eng/common/templates/steps/send-to-helix.yml
           parameters:
             HelixSource: 'pr/dotnet/sdk/$(Build.SourceBranch)'
@@ -259,13 +260,14 @@ jobs:
             continueOnError: true
 
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf_CI', 'Linux_Perf_CI', 'Windows_Perf_Helix', 'Windows_Perf_CI_FullFramework', 'Windows_Perf_Helix_Fullframework', 'Linux_Perf_Helix') }}:
-      - task: Bash@3
-        displayName: Setup Private Feeds Credentials
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-          arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-        env:
-          Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: Bash@3
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+            arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng/common/cibuild.sh 
                   --configuration $(_BuildConfig)
                   $(_PublishArgs)
