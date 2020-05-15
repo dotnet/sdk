@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
   <String Id="FirstTimeWelcomeMessage">已成功安装。
 
-下列项安装于: “[DOTNETHOME]”
+下列项安装于: "[DOTNETHOME]"
     • .NET SDK [DOTNETSDKVERSION]
     • .NET 运行时 [DOTNETRUNTIMEVERSION]
     • ASP.NET Core 运行时 [ASPNETCOREVERSION]
@@ -65,16 +65,17 @@
     • 教程: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET 是开源、跨平台的，且由 Microsoft 提供支持。通过它，可使用 C#、F# 或 VB 构建你的下一个应用。希望你喜欢它!</String>
+    .NET SDK 用于生成、运行和测试 .NET 应用程序。有多种语言、编辑器和开发人员工具可供选择，你也可使用由库构成的大型生态系统来构建面向 Web、移动设备、桌面、游戏和 IoT 的应用。希望你喜欢它!</String>
   <String Id="LearnMoreTitle">了解有关 .NET 的详细信息</String>
   <String Id="ResourcesHeader">资源</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET 文档&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK 文档&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;隐私声明&lt;/A&gt;</String>
-  <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;.NET 库 EULA&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;.NET 的许可信息&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">安装说明</String>
   <String Id="InstallationNote">将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。
   </String>
-  <String Id="VisualStudioWarning">如果计划结合使用 .NET 5.0 和 Visual Studio，需要 Visual Studio 2019 16.6 或更高版本。&lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;了解详细信息&lt;/A&gt;。
+  <String Id="VisualStudioWarning">如果计划结合使用 .NET 5.0 和 Visual Studio，需要 Visual Studio 2019 16.6 或更高版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;了解详细信息&lt;/A&gt;。
   </String>
+  <String Id="LicenseAssent">单击“安装”即表示你同意以下条款。</String>
 </WixLocalization>

@@ -58,23 +58,24 @@ I componenti seguenti sono stati installati in '[DOTNETHOME]'
 Questo prodotto consente di raccogliere i dati sull'utilizzo
     • Altre informazioni e annullamento sottoscrizione https://aka.ms/dotnet-cli-telemetry
 
-Resources
+Risorse
     • Documentazione di .NET https://aka.ms/dotnet-docs
     • Documentazione dell'SDK https://aka.ms/dotnet-sdk-docs
     • Note sulla versione https://aka.ms/dotnet5-release-notes
     • Esercitazioni https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET è open source, multipiattaforma e supportata da Microsoft. È possibile usarla per compilare la prossima app con C#, F# o VB.</String>
+    .NET SDK consente di creare, eseguire e testare applicazioni NET. È possibile scegliere tra più linguaggi, editor e strumenti di sviluppo e sfruttare un vasto ecosistema di librerie per creare app per Web, dispositivi mobili, desktop, giochi e IoT.</String>
   <String Id="LearnMoreTitle">Altre informazioni su .NET</String>
   <String Id="ResourcesHeader">Risorse</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentazione di .NET&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentazione dell'SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Informativa sulla privacy&lt;/A&gt;</String>
-  <String Id="DotNetEulaLink">&lt;A HREF="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Condizioni di licenza della libreria .NET&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Informazioni sulla licenza per .NET&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Nota sull'installazione</String>
   <String Id="InstallationNote">Durante il processo di installazione verrà eseguito un comando che migliorerà la velocità di ripristino del progetto e abiliterà l'accesso offline. Il completamento del comando richiederà un minuto.
   </String>
-  <String Id="VisualStudioWarning">Se si intende usare .NET 5.0 con Visual Studio, è richiesto Visual Studio 2019 16.6 o versione successiva. &lt;A HREF="https://go.microsoft.com/fwlink/?linkid=866799"&gt;Altre informazioni&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Se si intende usare .NET 5.0 con Visual Studio, è richiesto Visual Studio 2019 16.6 o versione successiva. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Altre informazioni&lt;/A&gt;.
   </String>
+  <String Id="LicenseAssent">Facendo clic su Installa, si accettano le condizioni seguenti.</String>
 </WixLocalization>
