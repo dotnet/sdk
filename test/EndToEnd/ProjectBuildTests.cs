@@ -83,7 +83,7 @@ namespace EndToEnd.Tests
                 .Should().Pass().And.HaveStdOutContaining("Hello World!");
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void ItCanPublishArm64Winforms()
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
@@ -109,7 +109,7 @@ namespace EndToEnd.Tests
             selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
         
-        [Fact]
+        [WindowsOnlyFact]
         public void ItCantPublishArm64Wpf()
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
