@@ -12,6 +12,36 @@
         <target state="translated">Sterownik testów dla platformy .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameCrashDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameCrashDumpTypeDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangDumpTypeDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangTimeoutDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Uruchom testy bez wyświetlania baneru platformy testowej firmy Microsoft</target>
@@ -117,6 +147,21 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
       <trans-unit id="CmdPathToResultsDirectory">
         <source>RESULTS_DIR</source>
         <target state="translated">KATALOG_WYNIKÓW</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CrashDumpTypeArgumentName">
+        <source>DUMP_TYPE</source>
+        <target state="new">DUMP_TYPE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HangDumpTypeArgumentName">
+        <source>DUMP_TYPE</source>
+        <target state="new">DUMP_TYPE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HangTimeoutArgumentName">
+        <source>TIMESPAN</source>
+        <target state="new">TIMESPAN</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoredArgumentsMessage">
