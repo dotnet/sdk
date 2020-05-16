@@ -54,6 +54,14 @@ jobs:
         - _PerfIterations: 25
     steps:
     - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: PowerShell@2
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+            arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng\CIBuild.cmd
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
@@ -67,6 +75,14 @@ jobs:
           PublishType: $(_PublishType)
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: PowerShell@2
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+            arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
@@ -80,6 +96,14 @@ jobs:
           TestFullMSBuild: 'true'
 
     - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: PowerShell@2
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+            arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng\common\CIBuild.cmd
                   -configuration $(_BuildConfig)
                   $(_PublishArgs)
@@ -93,6 +117,14 @@ jobs:
           PublishType: $(_PublishType)
 
     - ${{ if eq(parameters.agentOs, 'Windows_Perf_CI') }}:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: PowerShell@2
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+            arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: build.cmd
                   -configuration $(_BuildConfig)
                   -ci -msbuildEngine dotnet
@@ -102,6 +134,14 @@ jobs:
           BuildConfig: $(_BuildConfig)
 
     - ${{ if eq(parameters.agentOs, 'Windows_Perf_CI_FullFramework') }}:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: PowerShell@2
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+            arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: build.cmd
                   -configuration $(_BuildConfig)
                   -ci
@@ -112,6 +152,14 @@ jobs:
           TestFullMSBuild: 'true'
 
     - ${{ if eq(parameters.agentOs, 'Linux_Perf_CI') }}:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: Bash@3
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+            arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: ./build.sh
                   --configuration $(_BuildConfig)
                   --ci --performancetest
@@ -122,6 +170,14 @@ jobs:
     - ${{ if eq(parameters.agentOs, 'Windows_Perf_Helix') }}:
         - checkout: self
           clean: true
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: PowerShell@2
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci -msbuildEngine dotnet
           displayName: Pre-Build
         - script: (robocopy $(Build.SourcesDirectory) $(Build.SourcesDirectory)\helix-package /NP /E /XD $(Build.SourcesDirectory)\helix-package $(Build.SourcesDirectory)\.dotnet $(Build.SourcesDirectory)\artifacts\bin\Tests $(Build.SourcesDirectory)\artifacts\obj\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions $(Build.SourcesDirectory)\artifacts\bin\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions) ^& IF %ERRORLEVEL% LEQ 1 exit 0
@@ -148,6 +204,14 @@ jobs:
     - ${{ if eq(parameters.agentOs, 'Windows_Perf_Helix_Fullframework') }}:
         - checkout: self
           clean: true
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: PowerShell@2
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - script: $(Build.SourcesDirectory)\build.cmd -configuration $(_BuildConfig) -ci
           displayName: Pre-Build
         - script: (robocopy $(Build.SourcesDirectory) $(Build.SourcesDirectory)\helix-package /NP /E /XD $(Build.SourcesDirectory)\helix-package $(Build.SourcesDirectory)\.dotnet $(Build.SourcesDirectory)\artifacts\bin\Tests $(Build.SourcesDirectory)\artifacts\obj\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions $(Build.SourcesDirectory)\artifacts\bin\$(_BuildConfig)\Sdks\Microsoft.NET.Build.Extensions) ^& IF %ERRORLEVEL% LEQ 1 exit 0
@@ -174,6 +238,14 @@ jobs:
     - ${{ if eq(parameters.agentOs, 'Linux_Perf_Helix') }}:
         - checkout: self
           clean: true
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - task: Bash@3
+            displayName: Setup Private Feeds Credentials
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+              arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
         - template: /eng/common/templates/steps/send-to-helix.yml
           parameters:
             HelixSource: 'pr/dotnet/sdk/$(Build.SourceBranch)'
@@ -188,6 +260,14 @@ jobs:
             continueOnError: true
 
     - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools', 'Windows_Perf_CI', 'Linux_Perf_CI', 'Windows_Perf_Helix', 'Windows_Perf_CI_FullFramework', 'Windows_Perf_Helix_Fullframework', 'Linux_Perf_Helix') }}:
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+        - task: Bash@3
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+            arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng/common/cibuild.sh 
                   --configuration $(_BuildConfig)
                   $(_PublishArgs)
@@ -199,33 +279,33 @@ jobs:
           BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
 
-    - task: PublishTestResults@1	
-      displayName: Publish Test Results	
-      inputs:	
-        testRunner: XUnit	
-        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
-        testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
-        platform: '$(BuildPlatform)'	
-        configuration: '$(_BuildConfig)'	
+    - task: PublishTestResults@1  
+      displayName: Publish Test Results 
+      inputs: 
+        testRunner: XUnit 
+        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml' 
+        testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'  
+        platform: '$(BuildPlatform)'  
+        configuration: '$(_BuildConfig)'  
       condition: not(succeeded())
 
-    - task: CopyFiles@2	
-      displayName: Gather Logs	
-      inputs:	
-        SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-        Contents: |	
-         log/$(_BuildConfig)/**/*	
-         TestResults/$(_BuildConfig)/**/*	
+    - task: CopyFiles@2 
+      displayName: Gather Logs  
+      inputs: 
+        SourceFolder: '$(Build.SourcesDirectory)/artifacts' 
+        Contents: | 
+         log/$(_BuildConfig)/**/* 
+         TestResults/$(_BuildConfig)/**/* 
          SymStore/$(_BuildConfig)/**/*
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-      continueOnError: true	
+        TargetFolder: '$(Build.ArtifactStagingDirectory)' 
+      continueOnError: true 
       condition: always()
 
-    - task: PublishBuildArtifacts@1	
-      displayName: Publish Logs to VSTS	
-      inputs:	
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-        ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-        publishLocation: Container	
-      continueOnError: true	
+    - task: PublishBuildArtifacts@1 
+      displayName: Publish Logs to VSTS 
+      inputs: 
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'  
+        ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)' 
+        publishLocation: Container  
+      continueOnError: true 
       condition: always()
