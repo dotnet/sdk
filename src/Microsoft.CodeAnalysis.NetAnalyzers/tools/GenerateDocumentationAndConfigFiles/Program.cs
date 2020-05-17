@@ -163,7 +163,7 @@ namespace GenerateDocumentationAndConfigFiles
             return 0;
 
             // Local functions.
-            static void AnalyzerFileReference_AnalyzerLoadFailed(object sender, AnalyzerLoadFailureEventArgs e)
+            static void AnalyzerFileReference_AnalyzerLoadFailed(object? sender, AnalyzerLoadFailureEventArgs e)
                 => throw e.Exception;
 
             void createRulesetAndEditorconfig(
@@ -564,7 +564,7 @@ Rule ID | Missing Help Link | Title |
 
             static string getSeverityString(DiagnosticSeverity? severityOpt)
             {
-                return severityOpt.HasValue ? severityOpt.ToString() : "None";
+                return severityOpt.HasValue ? severityOpt.ToString() ?? "None" : "None";
             }
         }
 

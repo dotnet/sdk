@@ -369,22 +369,22 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
-        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <target state="translated">TaskCompletionSource verfügt über Konstruktoren, die TaskCreationOptions zum Steuern der zugrunde liegenden Aufgabe akzeptieren, und Konstruktoren, die den in der Aufgabe gespeicherten Objektzustand übernehmen. Das versehentliche Übergeben von TaskContinuationOptions anstelle von TaskCreationOptions führt dazu, dass der Aufruf die Optionen als Zustand behandelt.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
         <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
-        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <target state="translated">Ersetzen Sie TaskContinuationOptions durch TaskCreationOptions.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <target state="translated">Das Argument enthält die TaskContinuationsOptions-Enumeration anstelle der TaskCreationOptions-Enumeration.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <target state="translated">Anstelle einer TaskContinuationOptions-Enumeration muss eine TaskCreationOptions-Enumeration als Argument an den TaskCompletionSource-Konstruktor übergeben werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -1034,7 +1034,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
         <source>Change to call the two argument constructor, pass null for the message.</source>
-        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <target state="translated">Ändern Sie diese Option, um den Konstruktor mit zwei Argumenten aufzurufen und NULL als Nachricht zu übergeben.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
@@ -1044,7 +1044,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
         <source>Swap the arguments order</source>
-        <target state="new">Swap the arguments order</target>
+        <target state="translated">Argumentreihenfolge tauschen</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1059,7 +1059,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="needs-review-translation">Rufen Sie den Konstruktur "{0}" auf, der eine Nachricht und/oder einen paramName-Parameter enthält.</target>
+        <target state="translated">Rufen Sie den Konstruktur "{0}" auf, der eine Nachricht und/oder einen paramName-Parameter enthält.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1359,7 +1359,7 @@
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableTitle">
         <source>PInvoke declarations should be portable</source>
-        <target state="translated">PInvoke-Deklarationen müssen portabel sein</target>
+        <target state="translated">PInvoke-Deklarationen müssen portierbar sein</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokesShouldNotBeVisibleDescription">
@@ -1379,17 +1379,17 @@
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
-        <target state="new">'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</target>
+        <target state="translated">"Stream" verfügt über eine Überladung "ReadAsync", die "Memory&lt;Byte&gt;" als erstes Argument verwendet, sowie über eine Überladung "WriteAsync", die "ReadOnlyMemory&lt;Byte&gt;" als erstes Argument verwendet. Bevorzugen Sie die Aufrufe der arbeitsspeicherbasierten Überladungen, da diese effizienter sind.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
+        <target state="translated">Ändern Sie den Methodenaufruf "{0}" in die Überladung, die "{1}" empfängt.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
         <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</source>
-        <target state="new">Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</target>
+        <target state="translated">Arbeitsspeicherbasierte Überladungen für "ReadAsync" und "WriteAsync" bevorzugen</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
@@ -1429,17 +1429,17 @@
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
         <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
-        <target state="new">'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</target>
+        <target state="translated">"StringBuilder.Append(char)" ist effizienter als "StringBuilder.Append(string)", wenn die Zeichenfolge ein einzelnes Zeichen enthält. Wenn "Append" mit einer Konstante aufgerufen wird, verwenden Sie eher ein konstantes Zeichen anstelle einer konstanten Zeichenfolge, die nur ein Zeichen enthält.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
         <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
-        <target state="new">Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</target>
+        <target state="translated">Verwenden Sie "StringBuilder.Append(char)" anstelle von "StringBuilder.Append(string)", wenn es sich bei der Eingabe um eine konstante Einheitenzeichenfolge handelt.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
         <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
-        <target state="new">Consider using 'StringBuilder.Append(char)' when applicable.</target>
+        <target state="translated">Erwägen Sie ggf. die Verwendung von "StringBuilder.Append(char)".</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">

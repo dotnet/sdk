@@ -369,22 +369,22 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
-        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <target state="translated">TaskCompletionSource má konstruktory, které přijímají možnosti TaskCreationOptions určující příslušnou úlohu, a konstruktory, které přijímají stav objektu uložený v úloze. Když se místo TaskCreationOptions omylem předá TaskContinuationOptions, způsobí to, že volání bude možnosti považovat za stav.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
         <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
-        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <target state="translated">Nahraďte TaskContinuationOptions za TaskCreationOptions.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <target state="translated">Argument obsahuje výčet TaskContinuationsOptions místo výčtu TaskCreationOptions.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <target state="translated">Argument předaný konstruktoru TaskCompletionSource by měl být výčet TaskCreationOptions, nikoli výčet TaskContinuationOptions</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -1034,7 +1034,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
         <source>Change to call the two argument constructor, pass null for the message.</source>
-        <target state="new">Change to call the two argument constructor, pass null for the message.</target>
+        <target state="translated">Změňte volání tak, aby se volal konstruktor se dvěma parametry, a jako zprávu předejte null.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
@@ -1044,7 +1044,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
         <source>Swap the arguments order</source>
-        <target state="new">Swap the arguments order</target>
+        <target state="translated">Prohodit pořadí argumentů</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1059,7 +1059,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="needs-review-translation">Zavolejte konstruktor {0}, který obsahuje zprávu a/nebo parametr paramName.</target>
+        <target state="translated">Zavolejte konstruktor {0}, který obsahuje zprávu a/nebo parametr paramName.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1377,34 +1377,34 @@
         <target state="translated">Metody P/Invoke nemají být viditelné</target>
         <note />
       </trans-unit>
-      <trans-unit id="PreferStringContainsOverIndexOfDescription">
-        <source>Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</source>
-        <target state="new">Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PreferStringContainsOverIndexOfMessage">
-        <source>Use 'String.Contains' instead of 'String.IndexOf' to improve readability</source>
-        <target state="new">Use 'String.Contains' instead of 'String.IndexOf' to improve readability</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PreferStringContainsOverIndexOfTitle">
-        <source>Consider using 'String.Contains' instead of 'String.IndexOf'</source>
-        <target state="new">Consider using 'String.Contains' instead of 'String.IndexOf'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
-        <target state="new">'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</target>
+        <target state="translated">Stream má přetížení ReadAsync, které jako první argument přijímá Memory&lt;Byte&gt;, a přetížení WriteAsync, které jako první argument přijímá ReadOnlyMemory&lt;Byte&gt;. Upřednostňujte volání přetížení založených na paměti, která jsou efektivnější.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="new">Change the '{0}' method call to the overload that receives a '{1}'.</target>
+        <target state="translated">Změňte volání metody {0} na přetížení, které přijímá {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
         <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</source>
-        <target state="new">Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</target>
+        <target state="translated">Pro ReadAsync a WriteAsync upřednostňovat přetížení založená na Memory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfDescription">
+        <source>Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</source>
+        <target state="translated">Volání metody String.IndexOf, kde se pomocí výsledku kontroluje přítomnost nebo nepřítomnost podřetězce, se dá nahradit metodou String.Contains.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfMessage">
+        <source>Use 'String.Contains' instead of 'String.IndexOf' to improve readability</source>
+        <target state="translated">Pro lepší čitelnost použijte místo String.IndexOf metodu String.Contains.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfTitle">
+        <source>Consider using 'String.Contains' instead of 'String.IndexOf'</source>
+        <target state="translated">Zvážit možnost místo String.IndexOf použít String.Contains</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
@@ -1429,17 +1429,17 @@
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
         <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
-        <target state="new">'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</target>
+        <target state="translated">Když je string jen jeden znak, je StringBuilder.Append(char) efektivnější než StringBuilder.Append(string). Při volání Append s konstantou dávejte přednost možnosti použít konstantní typ char namísto konstantního typu string, který bude obsahovat jen jeden znak.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
         <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
-        <target state="new">Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</target>
+        <target state="translated">Když je vstup konstantní jednotkový řetězec, použijte místo StringBuilder.Append(string) metodu StringBuilder.Append(char).</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
         <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
-        <target state="new">Consider using 'StringBuilder.Append(char)' when applicable.</target>
+        <target state="translated">Zvažte možnost použít metodu StringBuilder.Append(char) tam, kde je to možné.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
