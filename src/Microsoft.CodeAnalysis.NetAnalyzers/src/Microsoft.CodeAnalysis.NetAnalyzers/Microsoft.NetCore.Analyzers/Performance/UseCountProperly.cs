@@ -122,8 +122,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static void OnCompilationStart(CompilationStartAnalysisContext context)
         {
-            HashSet<IMethodSymbol> syncMethods = new HashSet<IMethodSymbol>();
-            HashSet<IMethodSymbol> asyncMethods = new HashSet<IMethodSymbol>();
+            ImmutableHashSet<IMethodSymbol>.Builder syncMethods = ImmutableHashSet.CreateBuilder<IMethodSymbol>();
+            ImmutableHashSet<IMethodSymbol>.Builder asyncMethods = ImmutableHashSet.CreateBuilder<IMethodSymbol>();
 
             INamedTypeSymbol? namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
             IEnumerable<IMethodSymbol>? methods = namedType?.GetMembers(Count).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
@@ -155,23 +155,30 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             if (syncMethods.Count > 0 || asyncMethods.Count > 0)
             {
-                context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(operationContext, syncMethods, asyncMethods), OperationKind.Invocation);
+                context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(operationContext, syncMethods.ToImmutable(), asyncMethods.ToImmutable()), OperationKind.Invocation);
             }
 
             context.RegisterOperationAction(AnalyzePropertyReference, OperationKind.PropertyReference);
+
+            static void AddIfNotNull(ImmutableHashSet<IMethodSymbol>.Builder set, IEnumerable<IMethodSymbol>? others)
+            {
+                if (others != null)
+                {
+                    set.UnionWith(others);
+                }
+            }
         }
 
-        private static void AnalyzeInvocationOperation(OperationAnalysisContext context, HashSet<IMethodSymbol> syncMethods, HashSet<IMethodSymbol> asyncMethods)
+        private static void AnalyzeInvocationOperation(
+            OperationAnalysisContext context, ImmutableHashSet<IMethodSymbol> syncMethods, ImmutableHashSet<IMethodSymbol> asyncMethods)
         {
             var invocationOperation = (IInvocationOperation)context.Operation;
 
             // For C#, TargetMethod returns the actual extension method that we are looking for.
             // For VB, TargetMethod shows as a member of the extended class, in order to get the static extension method, we need to call ReducedFrom.
 
-            // We use OriginalDefinition to normalize the method to its generic version. For VB we don't use it since I assume ReducedFrom already goes directly to the generic version.
-            IMethodSymbol originalDefinition = invocationOperation.Language == LanguageNames.VisualBasic ?
-                invocationOperation.TargetMethod.ReducedFrom :
-                invocationOperation.TargetMethod.OriginalDefinition;
+            // We use OriginalDefinition to normalize the method to its generic version.
+            IMethodSymbol originalDefinition = (invocationOperation.TargetMethod.ReducedFrom ?? invocationOperation.TargetMethod).OriginalDefinition;
 
             bool isAsync = false;
 
@@ -205,19 +212,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (parentOperation is IBinaryOperation parentBinaryOperation)
             {
                 AnalyzeParentBinaryOperation(context, invocationOperation, parentBinaryOperation,
-                    isAsync, originalDefinition.Name);
+                    isAsync, allowLinq: true, originalDefinition.Name);
             }
-            // Analize invocation operation, potentially obj.Count().Equals(0).
+            // Analyze invocation operation, potentially obj.Count().Equals(0).
             else if (parentOperation is IInvocationOperation parentInvocationOperation)
             {
                 AnalyzeParentInvocationOperation(context, invocationOperation, parentInvocationOperation,
-                    isInstance: true, isAsync, originalDefinition.Name);
+                    isInstance: true, isAsync, allowLinq: true, originalDefinition.Name);
             }
-            // Analize argument operation, potentially 0.Equals(obj.Count()).
+            // Analyze argument operation, potentially 0.Equals(obj.Count()).
             else if (parentOperation is IArgumentOperation argumentOperation)
             {
                 AnalyzeParentInvocationOperation(context, invocationOperation, (IInvocationOperation)argumentOperation.Parent,
-                    isInstance: false, isAsync, originalDefinition.Name);
+                    isInstance: false, isAsync, allowLinq: true, originalDefinition.Name);
             }
             // Standalone call to Count(), potentially i = obj.Count(); we can't replace with Any() or IsEmpty but we can lookup if property Count or Lengh can be used instead.
             else if (!isAsync)
@@ -238,24 +245,24 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (parentOperation is IBinaryOperation parentBinaryOperation)
             {
                 AnalyzeParentBinaryOperation(context, propertyReferenceOperation, parentBinaryOperation,
-                    isAsync: false, methodName: null);
+                    isAsync: false, allowLinq: false, methodName: null);
             }
-            // Analize invocation operation, potentially obj.Count.Equals(0).
+            // Analyze invocation operation, potentially obj.Count.Equals(0).
             else if (parentOperation is IInvocationOperation parentInvocationOperation)
             {
                 AnalyzeParentInvocationOperation(context, propertyReferenceOperation, parentInvocationOperation,
-                    isInstance: true, isAsync: false, methodName: null);
+                    isInstance: true, isAsync: false, allowLinq: false, methodName: null);
             }
-            // Analize argument operation, potentially 0.Equals(obj.Count).
+            // Analyze argument operation, potentially 0.Equals(obj.Count).
             else if (parentOperation is IArgumentOperation argumentOperation)
             {
                 AnalyzeParentInvocationOperation(context, propertyReferenceOperation, (IInvocationOperation)argumentOperation.Parent,
-                    isInstance: false, isAsync: false, methodName: null);
+                    isInstance: false, isAsync: false, allowLinq: false, methodName: null);
             }
         }
 
         private static void AnalyzeParentBinaryOperation(
-            OperationAnalysisContext context, IOperation operation, IBinaryOperation parent, bool isAsync, string? methodName)
+            OperationAnalysisContext context, IOperation operation, IBinaryOperation parent, bool isAsync, bool allowLinq, string? methodName)
         {
             bool useRightSideExpression = default;
             if (!IsLeftCountComparison(parent, out bool shouldNegateIsEmpty))
@@ -268,20 +275,20 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 useRightSideExpression = true;
             }
 
-            if (isAsync)
+            if (allowLinq && isAsync)
             {
                 bool shouldNegateAny = !shouldNegateIsEmpty;
                 ReportCA1828(context, shouldNegateAny, useRightSideExpression ? OperationBinaryRight : OperationBinaryLeft, methodName!, parent);
             }
             else
             {
-                ITypeSymbol type = operation.GetInstanceType();
+                ITypeSymbol? type = operation.GetInstanceType();
 
-                if (TypeContainsVsibileProperty(context, type, IsEmpty, SpecialType.System_Boolean))
+                if (type != null && TypeContainsVsibileProperty(context, type, IsEmpty, SpecialType.System_Boolean))
                 {
                     ReportCA1836(context, useRightSideExpression, shouldNegateIsEmpty, parent);
                 }
-                else
+                else if (allowLinq)
                 {
                     bool shouldNegateAny = !shouldNegateIsEmpty;
                     ReportCA1827(context, shouldNegateAny, useRightSideExpression ? OperationBinaryRight : OperationBinaryLeft, methodName!, parent);
@@ -290,7 +297,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
         private static void AnalyzeParentInvocationOperation(
-            OperationAnalysisContext context, IOperation operation, IInvocationOperation parent, bool isInstance, bool isAsync, string? methodName)
+            OperationAnalysisContext context, IOperation operation, IInvocationOperation parent, bool isInstance, bool isAsync, bool allowLinq, string? methodName)
         {
             if (!IsIntEqualsMethod(parent))
             {
@@ -309,19 +316,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
-            if (isAsync)
+            if (allowLinq && isAsync)
             {
                 ReportCA1828(context, shouldNegate: true, isInstance ? OperationEqualsInstance : OperationEqualsArgument, methodName!, parent);
             }
             else
             {
-                ITypeSymbol type = operation.GetInstanceType();
+                ITypeSymbol? type = operation.GetInstanceType();
 
-                if (TypeContainsVsibileProperty(context, type, IsEmpty, SpecialType.System_Boolean))
+                if (type != null && TypeContainsVsibileProperty(context, type, IsEmpty, SpecialType.System_Boolean))
                 {
                     ReportCA1836(context, !isInstance, shouldNegate: false, parent);
                 }
-                else
+                else if (allowLinq)
                 {
                     ReportCA1827(context, shouldNegate: true, isInstance ? OperationEqualsInstance : OperationEqualsArgument, methodName!, parent);
                 }
@@ -330,10 +337,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static void AnalyzeCountInvocationOperation(OperationAnalysisContext context, IInvocationOperation invocationOperation)
         {
-            ITypeSymbol type = invocationOperation.GetInstanceType();
+            ITypeSymbol? type = invocationOperation.GetInstanceType();
 
             string propertyName = Length;
-            if (!TypeContainsVsibileProperty(context, type, propertyName, SpecialType.System_Int32, SpecialType.System_UInt64))
+            if (type != null && !TypeContainsVsibileProperty(context, type, propertyName, SpecialType.System_Int32, SpecialType.System_UInt64))
             {
                 propertyName = Count;
                 if (!TypeContainsVsibileProperty(context, type, propertyName, SpecialType.System_Int32, SpecialType.System_UInt64))
@@ -430,13 +437,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 && IsInRangeInclusive((uint)methodSymbol.ContainingType.SpecialType, (uint)SpecialType.System_Int32, (uint)SpecialType.System_UInt64);
         }
 
-        private static void AddIfNotNull(HashSet<IMethodSymbol> set, IEnumerable<IMethodSymbol>? others)
-        {
-            if (others != null)
-            {
-                set.UnionWith(others);
-            }
-        }
 
         private static bool IsLeftCountComparison(IBinaryOperation binaryOperation, out bool shouldNegate)
         {
@@ -539,9 +539,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static bool TypeContainsVsibileProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound)
         {
-            if (type.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol property)
+            if (TypeContainsMember(context, type, propertyName, lowerBound, upperBound, out bool isPropertyValidAndVisible))
             {
-                return IsPropertyValidAndVisible(context, property, lowerBound, upperBound);
+                return isPropertyValidAndVisible;
             }
 
             // The property might not be defined on the specified type if the type is an interface, it can be defined in one of the parent interfaces.
@@ -549,9 +549,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 foreach (var @interface in type.AllInterfaces)
                 {
-                    if (@interface.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol interfaceProperty)
+                    if (TypeContainsMember(context, @interface, propertyName, lowerBound, upperBound, out isPropertyValidAndVisible))
                     {
-                        return IsPropertyValidAndVisible(context, interfaceProperty, lowerBound, upperBound);
+                        return isPropertyValidAndVisible;
                     }
                 }
             }
@@ -560,9 +560,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 ITypeSymbol? currentType = type.BaseType;
                 while (currentType != null)
                 {
-                    if (currentType.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol typeProperty)
+                    if (TypeContainsMember(context, currentType, propertyName, lowerBound, upperBound, out isPropertyValidAndVisible))
                     {
-                        return IsPropertyValidAndVisible(context, typeProperty, lowerBound, upperBound);
+                        return isPropertyValidAndVisible;
                     }
 
                     currentType = currentType.BaseType;
@@ -570,26 +570,41 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             return false;
-        }
 
-        private static bool IsPropertyValidAndVisible(OperationAnalysisContext context, IPropertySymbol property, SpecialType lowerBound, SpecialType upperBound)
-            => !property.IsStatic &&
-            IsInRangeInclusive((uint)property.Type.SpecialType, (uint)lowerBound, (uint)upperBound) &&
-            property.GetMethod != null &&
-            context.Compilation.IsSymbolAccessibleWithin(property, context.ContainingSymbol.ContainingType) &&
-            context.Compilation.IsSymbolAccessibleWithin(property.GetMethod, context.ContainingSymbol.ContainingType);
+            static bool TypeContainsMember(
+                OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound, out bool isPropertyValidAndVisible)
+            {
+                if (type.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol property)
+                {
+                    isPropertyValidAndVisible = !property.IsStatic &&
+                        IsInRangeInclusive((uint)property.Type.SpecialType, (uint)lowerBound, (uint)upperBound) &&
+                        property.GetMethod != null &&
+                        context.Compilation.IsSymbolAccessibleWithin(property, context.ContainingSymbol.ContainingType) &&
+                        context.Compilation.IsSymbolAccessibleWithin(property.GetMethod, context.ContainingSymbol.ContainingType);
+
+                    return true;
+                }
+
+                isPropertyValidAndVisible = default;
+                return false;
+            }
+        }
 
         private static bool TryGetZeroOrOneConstant(IOperation operation, out int constant)
         {
             constant = default;
 
-            if (operation?.Type?.SpecialType != SpecialType.System_Int32 &&
-                operation?.Type?.SpecialType != SpecialType.System_Int64 &&
-                operation?.Type?.SpecialType != SpecialType.System_UInt32 &&
-                operation?.Type?.SpecialType != SpecialType.System_UInt64 &&
-                operation?.Type?.SpecialType != SpecialType.System_Object)
+            switch (operation?.Type?.SpecialType)
             {
-                return false;
+                case SpecialType.System_Int32:
+                case SpecialType.System_Int64:
+                case SpecialType.System_UInt32:
+                case SpecialType.System_UInt64:
+                case SpecialType.System_Object:
+                    break;
+
+                default:
+                    return false;
             }
 
             operation = operation.WalkDownConversion();
