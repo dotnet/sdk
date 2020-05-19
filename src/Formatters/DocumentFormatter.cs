@@ -139,7 +139,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             var changes = formattedText.GetChangeRanges(originalText);
             if (workspaceFolder is null)
             {
-                throw new Exception($"Unable to fine directory name for '{workspacePath}'");
+                throw new Exception($"Unable to find directory name for '{workspacePath}'");
             }
 
             foreach (var change in changes)
