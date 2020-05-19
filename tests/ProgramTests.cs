@@ -123,14 +123,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var sut = Program.CreateCommandLineOptions();
             var handlerWasCalled = false;
             sut.Handler = CommandHandler.Create(new TestCommandHandlerDelegate(TestCommandHandler));
-            
+
             void TestCommandHandler(string project, string folder, string workspace, string verbosity, bool check, string[] include, string[] exclude, string report, bool includeGenerated)
             {
                 handlerWasCalled = true;
                 Assert.Equal("projectValue", project);
                 Assert.Equal("verbosity", verbosity);
             };
-            
+
             // Act
             var result = sut.Invoke(new[] { "--verbosity", "verbosity", "projectValue" });
 
