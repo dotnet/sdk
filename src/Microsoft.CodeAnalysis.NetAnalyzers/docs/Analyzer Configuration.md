@@ -693,3 +693,12 @@ Examples:
 |`dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod1\|MyMethod2` | Matches all methods named either 'MyMethod1' or 'MyMethod2' in the compilation
 |`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS.MyType.MyMethod(ParamType)` | Matches specific method 'MyMethod' with given fully qualified signature
 |`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS1.MyType1.MyMethod1(ParamType)\|M:NS2.MyType2.MyMethod2(ParamType)` | Matches specific methods 'MyMethod1' and 'MyMethod2' with respective fully qualified signature
+
+### Allowed suffixes
+Option Name: `allowed_suffixes`
+
+Configurable Rules: [CA1711](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1711)
+
+Option Values: List (separated by '|') of allowed suffixes
+
+Example: `dotnet_code_quality.CA1711.allowed_suffixes = Flag|Flags`

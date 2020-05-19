@@ -3,10 +3,10 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -149,12 +149,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 return;
                             }
 
+                            var allowedSuffixes = namedTypeSymbol.DeclaringSyntaxReferences
+                                .Select(syntaxRef => symbolAnalysisContext.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule, syntaxRef.SyntaxTree, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
+                                .SelectMany(option => option.Split('|'))
+                                .ToImmutableHashSet();
+
                             string name = namedTypeSymbol.Name;
                             Compilation compilation = symbolAnalysisContext.Compilation;
 
                             foreach (string suffix in s_suffixToBaseTypeNamesDictionary.Keys)
                             {
-                                if (IsNotChildOfAnyButHasSuffix(namedTypeSymbol, suffixToBaseTypeDictionary[suffix], suffix))
+                                if (IsNotChildOfAnyButHasSuffix(namedTypeSymbol, suffixToBaseTypeDictionary[suffix], suffix, allowedSuffixes))
                                 {
                                     symbolAnalysisContext.ReportDiagnostic(
                                         namedTypeSymbol.CreateDiagnostic(TypeNoAlternateRule, name, suffix));
@@ -164,7 +169,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                             foreach (string suffix in s_suffixToAllowedTypesDictionary.Keys)
                             {
-                                if (name.HasSuffix(suffix)
+                                if (IsInvalidSuffix(name, suffix, allowedSuffixes)
                                     && !s_suffixToAllowedTypesDictionary[suffix].Contains(name))
                                 {
                                     symbolAnalysisContext.ReportDiagnostic(
@@ -173,7 +178,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 }
                             }
 
-                            if (name.HasSuffix(ImplSuffix))
+                            if (IsInvalidSuffix(name, ImplSuffix, allowedSuffixes))
                             {
                                 symbolAnalysisContext.ReportDiagnostic(
                                     namedTypeSymbol.CreateDiagnostic(MemberWithAlternateRule, ImplSuffix, name, CoreSuffix));
@@ -183,14 +188,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             // FxCop performed the length check for "Ex", but not for any of the other
                             // suffixes, because alone among the suffixes, "Ex" is the only one that
                             // isn't itself a known type or a language keyword.
-                            if (name.HasSuffix(ExSuffix) && name.Length > ExSuffix.Length)
+                            if (IsInvalidSuffix(name, ExSuffix, allowedSuffixes) && name.Length > ExSuffix.Length)
                             {
                                 symbolAnalysisContext.ReportDiagnostic(
                                     namedTypeSymbol.CreateDiagnostic(TypeNewerVersionRule, ExSuffix, name));
                                 return;
                             }
 
-                            if (name.HasSuffix(NewSuffix))
+                            if (IsInvalidSuffix(name, NewSuffix, allowedSuffixes))
                             {
                                 symbolAnalysisContext.ReportDiagnostic(
                                     namedTypeSymbol.CreateDiagnostic(TypeNewerVersionRule, NewSuffix, name));
@@ -199,14 +204,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                             if (namedTypeSymbol.TypeKind == TypeKind.Enum)
                             {
-                                if (name.HasSuffix(FlagSuffix))
+                                if (IsInvalidSuffix(name, FlagSuffix, allowedSuffixes))
                                 {
                                     symbolAnalysisContext.ReportDiagnostic(
                                         namedTypeSymbol.CreateDiagnostic(TypeNoAlternateRule, name, FlagSuffix));
                                     return;
                                 }
 
-                                if (name.HasSuffix(FlagsSuffix))
+                                if (IsInvalidSuffix(name, FlagsSuffix, allowedSuffixes))
                                 {
                                     symbolAnalysisContext.ReportDiagnostic(
                                         namedTypeSymbol.CreateDiagnostic(TypeNoAlternateRule, name, FlagsSuffix));
@@ -243,7 +248,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     string name = memberSymbol.Name;
 
-                    if (name.HasSuffix(ExSuffix))
+                    var allowedSuffixes = memberSymbol.DeclaringSyntaxReferences
+                        .Select(syntaxRef => context.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule, syntaxRef.SyntaxTree, context.Compilation, context.CancellationToken))
+                        .SelectMany(option => option.Split('|'))
+                        .ToImmutableHashSet();
+
+                    if (IsInvalidSuffix(name, ExSuffix, allowedSuffixes))
                     {
                         context.ReportDiagnostic(
                             memberSymbol.CreateDiagnostic(MemberNewerVersionRule, ExSuffix, name));
@@ -254,7 +264,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // another member minus the suffix, e.g., we only fire on "MemberNew" if
                     // "Member" already exists. For some reason FxCop did not apply the
                     // same logic to the "Ex" suffix, and we follow FxCop's implementation.
-                    if (name.HasSuffix(NewSuffix))
+                    if (IsInvalidSuffix(name, NewSuffix, allowedSuffixes))
                     {
                         string nameWithoutSuffix = name.WithoutSuffix(NewSuffix);
                         INamedTypeSymbol containingType = memberSymbol.ContainingType;
@@ -267,7 +277,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         }
                     }
 
-                    if (name.HasSuffix(ImplSuffix))
+                    if (IsInvalidSuffix(name, ImplSuffix, allowedSuffixes))
                     {
                         context.ReportDiagnostic(
                             memberSymbol.CreateDiagnostic(MemberWithAlternateRule, ImplSuffix, name, CoreSuffix));
@@ -288,7 +298,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return false;
         }
 
-        private static bool IsNotChildOfAnyButHasSuffix(INamedTypeSymbol namedTypeSymbol, ImmutableArray<INamedTypeSymbol> parentTypes, string suffix)
+        private static bool IsNotChildOfAnyButHasSuffix(INamedTypeSymbol namedTypeSymbol, ImmutableArray<INamedTypeSymbol> parentTypes, string suffix, ImmutableHashSet<string> allowedSuffixes)
         {
             if (parentTypes.IsEmpty)
             {
@@ -296,8 +306,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return false;
             }
 
-            return namedTypeSymbol.Name.HasSuffix(suffix)
+            return IsInvalidSuffix(namedTypeSymbol.Name, suffix, allowedSuffixes)
                 && !parentTypes.Any(parentType => namedTypeSymbol.DerivesFromOrImplementsAnyConstructionOf(parentType));
         }
+
+        private static bool IsInvalidSuffix(string name, string suffix, ImmutableHashSet<string> allowedSuffixes)
+            => !allowedSuffixes.Contains(suffix) && name.HasSuffix(suffix);
     }
 }
