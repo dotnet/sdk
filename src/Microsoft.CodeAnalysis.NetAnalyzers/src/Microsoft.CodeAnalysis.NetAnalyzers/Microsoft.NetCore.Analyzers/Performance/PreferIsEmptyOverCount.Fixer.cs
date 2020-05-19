@@ -24,10 +24,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
         {
             SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode binaryExpression = root.FindNode(context.Span);
+            if (binaryExpression == null)
+            {
+                return;
+            }
 
             ImmutableDictionary<string, string> properties = context.Diagnostics[0].Properties;
+            if (properties == null)
+            {
+                return;
+            }
 
-            // Indicates weather the Count property is on the Right or Left side.
+            // Indicates whether the Count property is on the Right or Left side.
             bool useRightSideExpression = properties.ContainsKey(UseCountProperlyAnalyzer.UseRightSideExpressionKey);
             // Indicates if the replacing IsEmpty node should be negated. (!IsEmpty). 
             bool shouldNegate = properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);
@@ -38,10 +46,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
                     SyntaxGenerator generator = editor.Generator;
+
                     // The Count property within the binary expression.
                     SyntaxNode countAccessor = GetMemberAccessorFromBinary(binaryExpression, useRightSideExpression);
+
                     // The object that the Count property belongs to OR null if countAccessor is not a MemberAccessExpressionSyntax.
                     SyntaxNode? objectExpression = GetExpressionFromMemberAccessor(countAccessor);
+
                     // The IsEmpty property meant to replace the binary expression.
                     SyntaxNode isEmptyNode = objectExpression is null ?
                         generator.IdentifierName(UseCountProperlyAnalyzer.IsEmpty) :
