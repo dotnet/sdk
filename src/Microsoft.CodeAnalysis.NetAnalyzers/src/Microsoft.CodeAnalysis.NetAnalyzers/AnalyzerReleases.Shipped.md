@@ -102,7 +102,6 @@ CA2002 | Reliability | Disabled | DoNotLockOnObjectsWithWeakIdentityAnalyzer, [D
 CA2007 | Reliability | Disabled | DoNotDirectlyAwaitATaskAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2007)
 CA2008 | Reliability | Disabled | DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2008)
 CA2009 | Reliability | Info | DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2009)
-CA2010 | Reliability | Info | AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2010)
 CA2100 | Security | Disabled | ReviewSqlQueriesForSecurityVulnerabilities, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2100)
 CA2101 | Globalization | Info | PInvokeDiagnosticAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2101)
 CA2109 | Security | Disabled | ReviewVisibleEventHandlersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2109)

@@ -12,21 +12,6 @@
         <target state="translated">新增可序列化屬性</target>
         <note />
       </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">PreserveSigAttribute 表示方法會傳回 HRESULT，而非擲回例外狀況。因此，請務必使用該方法所傳回的 HRESULT，才可偵測到錯誤。一般來說，上述作業可透過呼叫 Marshal.ThrowExceptionForHR 完成。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">使用 '{0}' 方法傳回的 hresult，並呼叫 Marshal.ThrowExceptionForHR。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">一律使用標記有 PreserveSigAttribute 的方法所傳回的值</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">與加密專家一同審查 Cipher 模式使用方式</target>
@@ -384,22 +369,22 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
-        <target state="new">TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</target>
+        <target state="translated">TaskCompletionSource 有建構函式會採用控制基礎工作的 TaskCreationOptions，也有會採用儲存在工作內物件狀態的建構函式。不小心傳遞了 TaskContinuationOptions 而非 TaskCreationOptions 時，會導致呼叫將選項視為狀態。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
         <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
-        <target state="new">Replace TaskContinuationOptions with TaskCreationOptions.</target>
+        <target state="translated">以 TaskCreationOptions 取代 TaskContinuationOptions。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="new">Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</target>
+        <target state="translated">引數內含 TaskContinuationsOptions 列舉，而非 TaskCreationOptions 列舉。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="new">Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</target>
+        <target state="translated">傳遞到 TaskCompletionSource 建構函式的引數應為 TaskCreationOptions 列舉，而非 TaskContinuationOptions 列舉。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -419,17 +404,17 @@
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <target state="translated">將完成項新增到衍生自 MemoryManager&lt;T&gt; 的類型時，可能會允許在 Span&lt;T&gt; 仍在使用記憶體時，釋出該記憶體。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="new">Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</target>
+        <target state="translated">將完成項新增到衍生自 MemoryManager&lt;T&gt; 的類型時，可能會允許在 Span&lt;T&gt; 仍在使用記憶體時，釋出該記憶體。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
         <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
-        <target state="new">Do not define finalizers for types derived from MemoryManager&lt;T&gt;</target>
+        <target state="translated">請勿為衍生自 MemoryManager&lt;T&gt; 的類型定義完成項</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -804,17 +789,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsDescription">
         <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
-        <target state="new">Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</target>
+        <target state="translated">stackalloc 配置的堆疊空間只會在目前方法的引動過程結束時釋出。在迴圈中使用該空間可能會造成堆疊無限增長，最終導致堆疊溢位。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsMessage">
         <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
-        <target state="new">Potential stack overflow. Move the stackalloc out of the loop.</target>
+        <target state="translated">可能發生堆疊溢位。請將 stackalloc 移出迴圈。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
         <source>Do not use stackalloc in loops.</source>
-        <target state="new">Do not use stackalloc in loops.</target>
+        <target state="translated">請勿在迴圈中使用 stackalloc。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -1047,9 +1032,19 @@
         <target state="translated">初始化實值型別靜態欄位內嵌</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="translated">變更為呼叫兩個引數建構函式，針對訊息傳遞 Null。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">已呼叫例外狀況類型為 ArgumentException 或由其衍生的預設 (無參數) 建構函式; 或將不正確的字串引數傳遞到例外狀況類型為 ArgumentException 或由其衍生的參數化建構函式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="translated">交換引數順序</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1382,24 +1377,69 @@
         <target state="translated">不應看得見 P/Invoke</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
+        <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
+        <target state="new">'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
+        <target state="translated">將 '{0}' 方法呼叫變更為接收 '{1}' 的多載。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
+        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</source>
+        <target state="new">Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfDescription">
+        <source>Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</source>
+        <target state="new">Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfMessage">
+        <source>Use 'String.Contains' instead of 'String.IndexOf' to improve readability</source>
+        <target state="new">Use 'String.Contains' instead of 'String.IndexOf' to improve readability</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfTitle">
+        <source>Consider using 'String.Contains' instead of 'String.IndexOf'</source>
+        <target state="new">Consider using 'String.Contains' instead of 'String.IndexOf'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
         <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
-        <target state="new">StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</target>
+        <target state="translated">StringBuilder.Append 與 StringBuilder.Insert 可為 System.String 以外的多種類型提供多載。建議盡可能使用強型別多載，而非 ToString() 與字串式多載。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
-        <target state="new">Remove the ToString call in order to use a strongly-typed StringBuilder overload.</target>
+        <target state="translated">移除 ToString 呼叫，以使用強型別 StringBuilder 多載。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
         <source>Remove the ToString call</source>
-        <target state="new">Remove the ToString call</target>
+        <target state="translated">移除 ToString 呼叫</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
         <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
-        <target state="new">Prefer strongly-typed Append and Insert method overloads on StringBuilder.</target>
+        <target state="translated">建議在 StringBuilder 上使用強型別 Append 及 Insert 方法多載。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
+        <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
+        <target state="translated">當字串是單一字元時，'StringBuilder.Append(char)' 比 'StringBuilder.Append(string)' 更有效率。當以常數呼叫 'Append' 時，建議使用常數字元，而不要使用包含一個字元的常數字串。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
+        <target state="translated">當輸入為常數單元字串時，請使用 'StringBuilder.Append(char)'，而不要使用 'StringBuilder.Append(string)'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
+        <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
+        <target state="translated">請在適當時考慮使用 'StringBuilder.Append(char)'。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1749,27 +1789,27 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
-        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</target>
+        <target state="translated">陣列值中以 Range 為基礎的索引子會產生陣列中要求部分的複本。隱含使用此複本作為 Span 或 Memory 值時，通常不需此複本。請使用 AsSpan 方法來避免使用此複本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
-        <target state="new">Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</target>
+        <target state="translated">在 '{2}' 上使用 '{0}' 代替以 '{1}' 為基礎的索引子，以避免建立不必要的資料複本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
         <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
-        <target state="new">Use AsSpan or AsMemory instead of Range-based indexers when appropriate</target>
+        <target state="translated">在適當情況下使用 AsSpan 或 AsMemory 取代以 Range 為基礎的索引子</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
         <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
-        <target state="new">The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <target state="translated">字串值中以 Range 為基礎的索引子會產生字串中要求部分的複本。隱含使用此複本作為 ReadOnlySpan 或 ReadOnlyMemory 值時，通常不需此複本。請使用 AsSpan 方法來避免使用不必要的複本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
         <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
-        <target state="new">The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</target>
+        <target state="translated">陣列值中以 Range 為基礎的索引子會產生陣列中要求部分的複本。隱含使用此複本作為 ReadOnlySpan 或 ReadOnlyMemory 值時，通常不需此複本。請使用 AsSpan 方法來避免使用不必要的複本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">

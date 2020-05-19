@@ -424,10 +424,10 @@
   <data name="PassSystemUriObjectsInsteadOfStringsMessage" xml:space="preserve">
     <value>Modify '{0}' to call '{1}' instead of '{2}'.</value>
   </data>
-  <data name="ImplementIEquatableWhenOverridingObjectEqualsTitle" xml:space="preserve">
+  <data name="ImplementIEquatableWhenOverridingObjectEqualsMessage" xml:space="preserve">
     <value>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</value>
   </data>
-  <data name="ImplementIEquatableWhenOverridingObjectEqualsMessage" xml:space="preserve">
+  <data name="ImplementIEquatableWhenOverridingObjectEqualsTitle" xml:space="preserve">
     <value>Implement IEquatable when overriding Object.Equals</value>
   </data>
   <data name="CancellationTokenParametersMustComeLastTitle" xml:space="preserve">
@@ -1250,11 +1250,8 @@
   <data name="ReviewVisibleEventHandlersDescription" xml:space="preserve">
     <value>A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.</value>
   </data>
-  <data name="ReviewVisibleEventHandlersMessageSecurity" xml:space="preserve">
-    <value>Consider making {0} not externally visible or ensure that it is benign code.</value>
-  </data>
   <data name="ReviewVisibleEventHandlersMessageDefault" xml:space="preserve">
-    <value>Consider making {0} not externally visible.</value>
+    <value>Consider making '{0}' not externally visible</value>
   </data>
   <data name="SealMethodsThatSatisfyPrivateInterfacesTitle" xml:space="preserve">
     <value>Seal methods that satisfy private interfaces</value>
@@ -1308,10 +1305,13 @@
     <value>Indexed elements in objects initializers must initialize unique elements. A duplicate index might overwrite a previous element initialization.</value>
   </data>
   <data name="AvoidDuplicateElementInitializationMessage" xml:space="preserve">
-    <value>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</value>
+    <value>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</value>
   </data>
   <data name="AvoidDuplicateElementInitializationTitle" xml:space="preserve">
     <value>Do not duplicate indexed element initializations</value>
+  </data>
+  <data name="RemoveRedundantElementInitializationCodeFixTitle" xml:space="preserve">
+    <value>Remove redundant element initializer</value>
   </data>
   <data name="ValidateArgumentsOfPublicMethodsDescription" xml:space="preserve">
     <value>An externally visible method dereferences one of its reference arguments without verifying whether that argument is null (Nothing in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against null. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument. If the method is designed to be called only by known assemblies, you should make the method internal.</value>
@@ -1409,6 +1409,24 @@
   <data name="DoNotExposeGenericListsTitle" xml:space="preserve">
     <value>Do not expose generic lists</value>
   </data>
+  <data name="DoNotDeclareEventFieldsAsVirtualDescription" xml:space="preserve">
+    <value>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</value>
+  </data>
+  <data name="DoNotDeclareEventFieldsAsVirtualMessage" xml:space="preserve">
+    <value>Event '{0}' should not be declared virtual.</value>
+  </data>
+  <data name="DoNotDeclareEventFieldsAsVirtualTitle" xml:space="preserve">
+    <value>Do not declare event fields as virtual</value>
+  </data>
+  <data name="DoNotOverloadOperatorEqualsOnReferenceTypesDescription" xml:space="preserve">
+    <value>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</value>
+  </data>
+  <data name="DoNotOverloadOperatorEqualsOnReferenceTypesMessage" xml:space="preserve">
+    <value>'{0}' should not overload the equality operator.</value>
+  </data>
+  <data name="DoNotOverloadOperatorEqualsOnReferenceTypesTitle" xml:space="preserve">
+    <value>Do not overload equality operator on reference types</value>
+  </data>
   <data name="DoNotPassTypesByReferenceMessage" xml:space="preserve">
     <value>Consider a design that does not require that '{0}' be a reference parameter.</value>
   </data>
@@ -1426,5 +1444,8 @@
   </data>
   <data name="EventsShouldNotHaveBeforeOrAfterPrefixTitle" xml:space="preserve">
     <value>Events should not have 'Before' or 'After' prefix</value>
+  </data>
+  <data name="DoNotIgnoreMethodResultsMessageUserDefinedMethod" xml:space="preserve">
+    <value>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</value>
   </data>
 </root>
