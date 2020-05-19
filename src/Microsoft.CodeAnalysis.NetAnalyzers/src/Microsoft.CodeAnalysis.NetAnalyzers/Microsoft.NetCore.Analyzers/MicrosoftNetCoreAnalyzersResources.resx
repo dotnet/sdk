@@ -1323,4 +1323,13 @@
   <data name="PreferConstCharOverConstUnitStringInStringBuilderTitle" xml:space="preserve">
     <value>Consider using 'StringBuilder.Append(char)' when applicable.</value>
   </data>
+  <data name="ProvideCorrectArgumentToEnumHasFlagDescription" xml:space="preserve">
+    <value>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</value>
+  </data>
+  <data name="ProvideCorrectArgumentToEnumHasFlagMessage" xml:space="preserve">
+    <value>The argument type, '{0}', must be the same as the enum type '{1}'</value>
+  </data>
+  <data name="ProvideCorrectArgumentToEnumHasFlagTitle" xml:space="preserve">
+    <value>Provide correct 'enum' argument to 'Enum.HasFlag'</value>
+  </data>
 </root>
