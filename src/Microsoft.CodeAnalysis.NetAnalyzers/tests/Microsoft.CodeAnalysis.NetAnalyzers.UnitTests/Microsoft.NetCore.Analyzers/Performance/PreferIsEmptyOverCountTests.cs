@@ -155,29 +155,6 @@ End Class
                 vbFix);
         }
 
-//        [Fact]
-//        public Task QuickTest()
-//        {
-//            return VerifyCS.VerifyCodeFixAsync(
-//@"using System;
-
-//public class Test
-//{
-//    private int Count {get;}
-//    public int Length {get;}
-//    //public bool IsEmpty;
-//    public bool Foo => Count > 0;
-//}",
-//                    VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836),
-//@"using System;
-
-//public class Test
-//{
-//    private static int Count = 0;
-//    public bool Foo => !GetData().IsEmpty;
-//}");
-//        }
-
         [Theory]
         [InlineData("(Count) > 0")]
         [InlineData("Count > (0)")]
