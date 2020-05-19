@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Performance;
 using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
+using Test.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -1269,5 +1273,151 @@ End Namespace
                   output)
         {
         }
+    }
+
+    public class CSharpDoNotUseCountAsyncWhenAnyCanBeUsedTestsConcurrent
+    {
+        private readonly DoNotUseCountWhenAnyCanBeUsedTestsBase.TestsSourceCodeProvider _sourceProvider;
+        public CSharpDoNotUseCountAsyncWhenAnyCanBeUsedTestsConcurrent()
+        {
+            _sourceProvider =
+                  new DoNotUseCountWhenAnyCanBeUsedTestsBase.CSharpTestsSourceCodeProvider(
+                      "Count",
+                      "global::System.Collections.Concurrent.ConcurrentBag<int>",
+                      "System.Linq",
+                      "Enumerable",
+                      false);
+        }
+
+        private static Task VerifyAnalyzerAsync<TAnalyzer, TCodeFix>(string testSource, params DiagnosticResult[] expected)
+            where TAnalyzer : DiagnosticAnalyzer, new()
+            where TCodeFix : CodeFixProvider, new()
+            => CSharpCodeFixVerifier<TAnalyzer, TCodeFix>.VerifyAnalyzerAsync(testSource, expected);
+
+        private static Task VerifyCodeFixAsync<TAnalyzer, TCodeFix>(string testSource, DiagnosticResult expected, string fixedSource)
+            where TAnalyzer : DiagnosticAnalyzer, new()
+            where TCodeFix : CodeFixProvider, new()
+            => CSharpCodeFixVerifier<TAnalyzer, TCodeFix>.VerifyCodeFixAsync(testSource, expected, fixedSource);
+
+        [Fact]
+        public Task CountEqualsNonZero_WithPredicate_NoDiagnostic()
+            => VerifyAnalyzerAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                    testSource: _sourceProvider.GetCodeWithExpression(
+                        _sourceProvider.GetTargetExpressionEqualsInvocationCode(1, withPredicate: true, _sourceProvider.MethodName),
+                        _sourceProvider.ExtensionsNamespace));
+
+        [Fact]
+        public Task CountEqualsNonZero_WithoutPredicate_Diagnostic_CA1829()
+            => VerifyAnalyzerAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetTargetExpressionEqualsInvocationCode(1, withPredicate: false, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                    CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                        .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1829)
+                        .WithArguments("Count")
+                        .WithSpan(10, 21, 10, 38));
+
+        [Fact]
+        public Task NonZeroEqualsCount_WithPredicate_NoDiagnostic()
+            => VerifyAnalyzerAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetEqualsTargetExpressionInvocationCode(1, withPredicate: true, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace));
+
+        [Fact]
+        public Task NonZeroEqualsCount_WithoutPredicate_Diagnostic_CA1829()
+            => VerifyAnalyzerAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetEqualsTargetExpressionInvocationCode(1, withPredicate: false, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                    CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                        .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1829)
+                        .WithArguments("Count")
+                        .WithSpan(10, 30, 10, 47));
+
+        [Fact]
+        public Task CountEqualsZero_WithPredicate_Diagnostic_CA1827()
+            => VerifyCodeFixAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetTargetExpressionEqualsInvocationCode(0, withPredicate: true, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827)
+                .WithArguments("Count")
+                .WithSpan(10, 21, 10, 57),
+                fixedSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetFixedExpressionCode(withPredicate: true, negate: true),
+                    _sourceProvider.ExtensionsNamespace));
+
+        [Fact]
+        public Task CountEqualsZero_WithoutPredicate_Diagnostic_CA1836()
+            => VerifyAnalyzerAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetTargetExpressionEqualsInvocationCode(0, withPredicate: false, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836)
+                .WithSpan(10, 21, 10, 48));
+
+        [Fact]
+        public Task ZeroEqualsCount_WithPredicate_Diagnostic_CA1827()
+            => VerifyCodeFixAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetEqualsTargetExpressionInvocationCode(0, withPredicate: true, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827)
+                .WithArguments("Count")
+                .WithSpan(10, 21, 10, 57),
+                fixedSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetFixedExpressionCode(withPredicate: true, negate: true),
+                    _sourceProvider.ExtensionsNamespace));
+
+        [Fact]
+        public Task ZeroEqualsCount_WithoutPredicate_Diagnostic_CA1836()
+            => VerifyAnalyzerAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetEqualsTargetExpressionInvocationCode(0, withPredicate: false, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                    CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                    .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836)
+                    .WithArguments("Count")
+                    .WithSpan(10, 21, 10, 48));
+
+        [Fact]
+        public Task CountGreaterThanZero_WithPredicate_Diagnostic_CA1827()
+            => VerifyCodeFixAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetTargetExpressionBinaryExpressionCode(BinaryOperatorKind.GreaterThan, 0, withPredicate: true, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1827)
+                .WithArguments("Count")
+                .WithSpan(10, 21, 10, 51),
+                fixedSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetFixedExpressionCode(withPredicate: true, negate: false),
+                    _sourceProvider.ExtensionsNamespace));
+
+        [Fact]
+        public Task CountGreaterThanZero_WithoutPredicate_Diagnostic_CA1836()
+            => VerifyAnalyzerAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetTargetExpressionBinaryExpressionCode(BinaryOperatorKind.GreaterThan, 0, withPredicate: false, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836)
+                .WithArguments("Count")
+                .WithSpan(10, 21, 10, 42));
+
+        [Fact]
+        public Task CountGreaterThanOne_WithoutPredicate_Diagnostic_CA1829()
+            => VerifyAnalyzerAsync<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>(
+                testSource: _sourceProvider.GetCodeWithExpression(
+                    _sourceProvider.GetTargetExpressionBinaryExpressionCode(BinaryOperatorKind.GreaterThan, 1, withPredicate: false, _sourceProvider.MethodName),
+                    _sourceProvider.ExtensionsNamespace),
+                CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>
+                .Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1829)
+                .WithArguments("Count")
+                .WithSpan(10, 21, 10, 38));
     }
 }
