@@ -273,7 +273,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                     // If there's a conditional successor, we not only need to follow it, we need to evaluate the
                     // condition. That condition might be something like "if (vt.IsCompleted)", in which case
                     // we need to flow that completion knowledge (just as with asserts) into the relevant branch.
-                    if (block.ConditionalSuccessor != null)
+                    if (block.ConditionalSuccessor?.Destination is BasicBlock conditional)
                     {
                         if (!(setFallthroughKnownCompletion | setConditionalKnownCompletion) ||
                             block.BranchValue != null)
@@ -292,14 +292,14 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                             }
                         }
 
-                        HandleSuccessor(block.ConditionalSuccessor.Destination, setConditionalKnownCompletion);
+                        HandleSuccessor(conditional, setConditionalKnownCompletion);
                     }
 
                     // If there's a fallback successor, follow it as well. We computed any necessary completion
                     // value previously, so just pass that along.
-                    if (block.FallThroughSuccessor != null)
+                    if (block.FallThroughSuccessor?.Destination is BasicBlock fallthrough)
                     {
-                        HandleSuccessor(block.FallThroughSuccessor.Destination, setFallthroughKnownCompletion);
+                        HandleSuccessor(fallthrough, setFallthroughKnownCompletion);
                     }
 
                     // Processes a successor, determining whether to push it onto the evaluation stack or update

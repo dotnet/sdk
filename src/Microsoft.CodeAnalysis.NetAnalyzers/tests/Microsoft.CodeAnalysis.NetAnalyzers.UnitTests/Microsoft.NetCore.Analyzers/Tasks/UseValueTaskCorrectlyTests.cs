@@ -887,6 +887,51 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
+        public async Task NoDiagnostics_StoreLocalUnused()
+        {
+            // NOTE: This is a false negative.  Ideally the analyzer would catch
+            // this case, but the validation to ensure the local is properly consumed
+            // is challenging and we prefer false negatives over false positives.
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public void StoreLocalUnused()
+                    {
+                        ValueTask vt0 = Helpers.ReturnsValueTask();
+                        ValueTask<string> vt1 = Helpers.ReturnsValueTaskOfT<string>();
+                        ValueTask<int> vt2 = Helpers.ReturnsValueTaskOfInt();
+                    }
+                }")
+            );
+        }
+
+        [Fact]
+        public async Task NoDiagnostics_StoreLocalUnused_Guarded()
+        {
+            // NOTE: This is a false negative.  Ideally the analyzer would catch
+            // this case, but the validation to ensure the local is properly consumed
+            // is challenging and we prefer false negatives over false positives.
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public void StoreLocalUnused(bool guard)
+                    {
+                        if (guard) throw new Exception();
+                        ValueTask vt0 = Helpers.ReturnsValueTask();
+                        ValueTask<string> vt1 = Helpers.ReturnsValueTaskOfT<string>();
+                        ValueTask<int> vt2 = Helpers.ReturnsValueTaskOfInt();
+                    }
+                }")
+            );
+        }
+
+        [Fact]
         public async Task Diagnostics_PassAsGeneric()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"

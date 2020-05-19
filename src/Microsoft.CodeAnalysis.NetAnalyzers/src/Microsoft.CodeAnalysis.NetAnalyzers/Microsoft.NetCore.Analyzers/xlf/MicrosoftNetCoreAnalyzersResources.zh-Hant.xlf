@@ -1457,6 +1457,21 @@
         <target state="translated">請在適當時考慮使用 'StringBuilder.Append(char)'。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
+        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</source>
+        <target state="new">'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessage">
+        <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
+        <target state="new">The argument type, '{0}', must be the same as the enum type '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
+        <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
+        <target state="new">Provide correct 'enum' argument to 'Enum.HasFlag'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
         <source>The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.</source>
         <target state="translated">傳遞給 System.String.Format 的格式化引數，並未包含與每個物件引數相對應的格式項目，反之亦然。</target>
