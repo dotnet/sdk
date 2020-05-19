@@ -25,6 +25,14 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static async Task<int> Main(string[] args)
         {
+            var rootCommand = CreateCommandLineOptions();
+
+            // Parse the incoming args and invoke the handler
+            return await rootCommand.InvokeAsync(args);
+        }
+
+        public static RootCommand CreateCommandLineOptions()
+        {
             var rootCommand = new RootCommand
             {
                 new Option(new[] { "--folder", "-f" }, Resources.The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option)
@@ -64,9 +72,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             rootCommand.Description = "dotnet-format";
             rootCommand.Handler = CommandHandler.Create(typeof(Program).GetMethod(nameof(Run)));
-
-            // Parse the incoming args and invoke the handler
-            return await rootCommand.InvokeAsync(args);
+            return rootCommand;
         }
 
         public static async Task<int> Run(string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
