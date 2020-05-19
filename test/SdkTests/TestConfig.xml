@@ -137,5 +137,9 @@
             Skip="true"
             Issue="https://github.com/dotnet/wpf/issues/2363"
             Reason="Desktop SDK missing required files."/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_runs_single_file_apps"
+            Skip="true"
+            Issue=""
+            Reason="Need all .NET core runtime"/>
   </SkippedTests>
 </Tests>
