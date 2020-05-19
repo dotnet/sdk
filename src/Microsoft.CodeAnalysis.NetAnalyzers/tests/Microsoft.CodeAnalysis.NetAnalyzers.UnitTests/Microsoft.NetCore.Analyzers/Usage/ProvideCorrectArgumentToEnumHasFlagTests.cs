@@ -160,5 +160,49 @@ Public Class C
 End Class
 ");
         }
+
+        [Fact]
+        public async Task CA2248_NullAsArgument_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    [Flags]
+    public enum MyEnum { A, B, }
+
+    [Flags]
+    public enum OtherEnum { A, }
+
+    public void Method(MyEnum m)
+    {
+        {|#0:m.HasFlag(null)|};
+    }
+}",
+                VerifyCS.Diagnostic().WithLocation(0).WithArguments("<null>", "MyEnum"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    <Flags>
+    Public Enum MyEnum
+        A
+        B
+    End Enum
+
+    <Flags>
+    Public Enum OtherEnum
+        A
+    End Enum
+
+    Public Sub Method(ByVal m As MyEnum)
+        {|#0:m.HasFlag(Nothing)|}
+    End Sub
+End Class
+",
+                VerifyVB.Diagnostic().WithLocation(0).WithArguments("<Nothing>", "MyEnum"));
+        }
     }
 }

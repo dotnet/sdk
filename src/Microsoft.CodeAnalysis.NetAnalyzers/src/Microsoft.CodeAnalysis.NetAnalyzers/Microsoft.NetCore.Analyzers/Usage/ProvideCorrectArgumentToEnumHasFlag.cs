@@ -46,9 +46,21 @@ namespace Microsoft.NetCore.Analyzers.Usage
                     invocation.Arguments[0].Value is IConversionOperation conversion &&
                     !invocation.Instance.Type.Equals(conversion.Operand.Type))
                 {
-                    context.ReportDiagnostic(invocation.CreateDiagnostic(Rule, conversion.Operand.Type.Name, invocation.Instance.Type.Name));
+                    context.ReportDiagnostic(invocation.CreateDiagnostic(Rule, GetArgumentTypeName(conversion), invocation.Instance.Type.Name));
                 }
             }, OperationKind.Invocation);
+        }
+
+        private static string GetArgumentTypeName(IConversionOperation conversion)
+        {
+            if (conversion.Operand.Type != null)
+            {
+                return conversion.Operand.Type.Name;
+            }
+
+            return conversion.Language == LanguageNames.VisualBasic
+                ? "<Nothing>"
+                : "<null>";
         }
     }
 }
