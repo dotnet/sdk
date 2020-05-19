@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -35,6 +37,11 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             var rootCommand = new RootCommand
             {
+                new Argument<string>("project")
+                {
+                    Arity = ArgumentArity.ZeroOrOne,
+                    Description = Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one
+                },
                 new Option(new[] { "--folder", "-f" }, Resources.The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option)
                 {
                     Argument = new Argument<string?>(() => null)

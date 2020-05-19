@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
@@ -36,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
-        public void CommandLine_OptionsAreParedCorrectly()
+        public void CommandLine_OptionsAreParsedCorrectly()
         {
             // Arrange
             var sut = Program.CreateCommandLineOptions();
@@ -64,6 +65,50 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal("report", result.ValueForOption("report"));
             Assert.Equal("verbosity", result.ValueForOption("verbosity"));
             Assert.True(result.ValueForOption<bool>("include-generated"));
+        }
+
+        [Fact]
+        public void CommandLine_ProjectArgument_Simple()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "projectValue" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+            Assert.Equal("projectValue", result.CommandResult.GetArgumentValueOrDefault("project"));
+        }
+
+        [Fact]
+        public void CommandLine_ProjectArgument_WithOption_AfterArgument()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "projectValue", "--verbosity", "verbosity" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+            Assert.Equal("projectValue", result.CommandResult.GetArgumentValueOrDefault("project"));
+            Assert.Equal("verbosity", result.ValueForOption("verbosity"));
+        }
+
+        [Fact]
+        public void CommandLine_ProjectArgument_WithOption_BeforeArgument()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--verbosity", "verbosity", "projectValue" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+            Assert.Equal("projectValue", result.CommandResult.GetArgumentValueOrDefault("project"));
+            Assert.Equal("verbosity", result.ValueForOption("verbosity"));
         }
     }
 }
