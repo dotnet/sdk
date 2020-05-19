@@ -137,5 +137,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Assert
             Assert.True(handlerWasCalled);
         }
+
+
+        [Fact]
+        public void CommandLine_ProjectArgument_FailesIfSpecifiedTwice()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "projectValue1", "projectValue2" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
     }
 }
