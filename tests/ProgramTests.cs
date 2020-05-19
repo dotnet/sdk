@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using Xunit;
 
@@ -9,6 +10,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 {
     public class ProgramTests
     {
+        // Should be kept in sync with Program.Run
+        // 
+        private delegate void TestCommandHandlerDelegate(string project, string folder, string workspace, string verbosity, bool check, string[] include, string[] exclude, string report, bool includeGenerated);
+
         [Fact]
         public void ExitCodeIsOneWithCheckAndAnyFilesFormatted()
         {
@@ -109,6 +114,28 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal(0, result.Errors.Count);
             Assert.Equal("projectValue", result.CommandResult.GetArgumentValueOrDefault("project"));
             Assert.Equal("verbosity", result.ValueForOption("verbosity"));
+        }
+
+        [Fact]
+        public void CommandLine_ProjectArgument_GetsPassedToHandler()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+            var handlerWasCalled = false;
+            sut.Handler = CommandHandler.Create(new TestCommandHandlerDelegate(TestCommandHandler));
+            
+            void TestCommandHandler(string project, string folder, string workspace, string verbosity, bool check, string[] include, string[] exclude, string report, bool includeGenerated)
+            {
+                handlerWasCalled = true;
+                Assert.Equal("projectValue", project);
+                Assert.Equal("verbosity", verbosity);
+            };
+            
+            // Act
+            var result = sut.Invoke(new[] { "--verbosity", "verbosity", "projectValue" });
+
+            // Assert
+            Assert.True(handlerWasCalled);
         }
     }
 }
