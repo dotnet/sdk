@@ -82,7 +82,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return rootCommand;
         }
 
-        public static async Task<int> Run(string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
+        public static async Task<int> Run(string? project, string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
         {
             // Setup logging.
             var serviceCollection = new ServiceCollection();
@@ -109,7 +109,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 string workspaceDirectory;
                 string workspacePath;
                 WorkspaceType workspaceType;
-
+                workspace ??= project;
                 if (!string.IsNullOrEmpty(folder) && !string.IsNullOrEmpty(workspace))
                 {
                     logger.LogWarning(Resources.Cannot_specify_both_folder_and_workspace_options);
