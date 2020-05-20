@@ -68,7 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             });
         }
 
-        private void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableHashSet<INamedTypeSymbol> allowedTypes)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableHashSet<INamedTypeSymbol> allowedTypes)
         {
             var symbol = (IPropertySymbol)context.Symbol;
             if (!symbol.IsIndexer || symbol.IsOverride)
