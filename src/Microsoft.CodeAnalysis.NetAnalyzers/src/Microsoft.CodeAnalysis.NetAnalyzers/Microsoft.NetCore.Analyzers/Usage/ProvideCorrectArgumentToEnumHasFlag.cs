@@ -15,40 +15,64 @@ namespace Microsoft.NetCore.Analyzers.Usage
         internal const string RuleId = "CA2248";
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageDifferentType = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagMessageDifferentType), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageNotFlags = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagMessageNotFlags), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+        internal static DiagnosticDescriptor DifferentTypeRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
-            s_localizableMessage,
+            s_localizableMessageDifferentType,
             DiagnosticCategory.Usage,
             RuleLevel.IdeSuggestion,
             description: s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        internal static DiagnosticDescriptor NotFlagsRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            s_localizableMessageNotFlags,
+            DiagnosticCategory.Usage,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DifferentTypeRule, NotFlagsRule);
 
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            context.RegisterOperationAction(context =>
+            context.RegisterCompilationStartAction(context =>
             {
-                var invocation = (IInvocationOperation)context.Operation;
+                var flagsAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemFlagsAttribute);
 
-                if (invocation.TargetMethod.ContainingType.SpecialType == SpecialType.System_Enum &&
-                    invocation.Arguments.Length == 1 &&
-                    invocation.Instance != null &&
-                    invocation.TargetMethod.Name == "HasFlag" &&
-                    invocation.Arguments[0].Value is IConversionOperation conversion &&
-                    !invocation.Instance.Type.Equals(conversion.Operand.Type))
+                context.RegisterOperationAction(context =>
                 {
-                    context.ReportDiagnostic(invocation.CreateDiagnostic(Rule, GetArgumentTypeName(conversion), invocation.Instance.Type.Name));
-                }
-            }, OperationKind.Invocation);
+                    var invocation = (IInvocationOperation)context.Operation;
+
+                    if (invocation.TargetMethod.ContainingType.SpecialType != SpecialType.System_Enum ||
+                        invocation.Arguments.Length != 1 ||
+                        invocation.Instance == null ||
+                        invocation.TargetMethod.Name != "HasFlag" ||
+                        !(invocation.Arguments[0].Value is IConversionOperation conversion))
+                    {
+                        return;
+                    }
+
+                    if (!invocation.Instance.Type.Equals(conversion.Operand.Type))
+                    {
+                        context.ReportDiagnostic(invocation.CreateDiagnostic(DifferentTypeRule, GetArgumentTypeName(conversion), invocation.Instance.Type.Name));
+                    }
+                    else if (flagsAttributeType != null && !invocation.Instance.Type.HasAttribute(flagsAttributeType))
+                    {
+                        context.ReportDiagnostic(invocation.CreateDiagnostic(NotFlagsRule, invocation.Instance.Type.Name));
+                    }
+                }, OperationKind.Invocation);
+            });
         }
 
         private static string GetArgumentTypeName(IConversionOperation conversion)
