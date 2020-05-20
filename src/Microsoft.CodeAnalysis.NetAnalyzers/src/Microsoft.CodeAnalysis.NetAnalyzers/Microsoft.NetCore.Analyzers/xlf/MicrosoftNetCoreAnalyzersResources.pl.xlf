@@ -1444,13 +1444,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
-        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</source>
-        <target state="new">'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</target>
+        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
+        <target state="new">'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessage">
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
         <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
         <target state="new">The argument type, '{0}', must be the same as the enum type '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
+        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
+        <target state="new">This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">

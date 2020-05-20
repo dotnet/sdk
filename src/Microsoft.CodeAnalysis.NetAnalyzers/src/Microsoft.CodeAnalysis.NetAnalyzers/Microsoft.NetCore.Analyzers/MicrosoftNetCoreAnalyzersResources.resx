@@ -1324,12 +1324,15 @@
     <value>Consider using 'StringBuilder.Append(char)' when applicable.</value>
   </data>
   <data name="ProvideCorrectArgumentToEnumHasFlagDescription" xml:space="preserve">
-    <value>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</value>
+    <value>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</value>
   </data>
-  <data name="ProvideCorrectArgumentToEnumHasFlagMessage" xml:space="preserve">
+  <data name="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType" xml:space="preserve">
     <value>The argument type, '{0}', must be the same as the enum type '{1}'</value>
   </data>
   <data name="ProvideCorrectArgumentToEnumHasFlagTitle" xml:space="preserve">
     <value>Provide correct 'enum' argument to 'Enum.HasFlag'</value>
+  </data>
+  <data name="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags" xml:space="preserve">
+    <value>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</value>
   </data>
 </root>
