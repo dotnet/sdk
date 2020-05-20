@@ -67,7 +67,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var stringFormat = (string)formatStringArgument.Value.ConstantValue.Value;
                     int expectedStringFormatArgumentCount = GetFormattingArguments(stringFormat);
 
-                    // explict parameter case
+                    // explicit parameter case
                     if (info.ExpectedStringFormatArgumentCount >= 0)
                     {
                         // __arglist is not supported here
@@ -351,6 +351,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, context.CancellationToken);
                 if (additionalStringFormatMethodsOption.Contains(method.OriginalDefinition) &&
                     TryGetFormatInfo(method, out info))
+                {
+                    return info;
+                }
+
+                // Check if method could be a string formatting method.
+                // This is defined as a method with a 'format' argument followed by an 'params object[]'.
+                if (TryGetFormatInfo(method, out info))
                 {
                     return info;
                 }

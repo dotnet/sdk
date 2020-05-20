@@ -335,6 +335,64 @@ public class C
 ");
         }
 
+        [Fact]
+        public async Task CA2241AutoDetectStringFormattingMethods()
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+class Test
+{
+    public static string MyFormat(string format, params object[] args) => format;
+
+    void M1(string param)
+    {
+        var a = MyFormat("""", 1);
+    }
+}"
+                    },
+                }
+            };
+
+
+            csharpTest.ExpectedDiagnostics.Add(
+                // Test0.cs(8,17): warning CA2241: Provide correct arguments to formatting methods
+                GetCSharpResultAt(8, 17));
+
+            await csharpTest.RunAsync();
+
+            var basicTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Class Test
+    Public Shared Function MyFormat(format As String, ParamArray args As Object()) As String
+        Return format
+    End Function
+
+    Private Sub M1(ByVal param As String)
+        Dim a = MyFormat("""", 1)
+    End Sub
+End Class"
+},
+                }
+            };
+
+
+            basicTest.ExpectedDiagnostics.Add(
+                // Test0.vb(8,17): warning CA2241: Provide correct arguments to formatting methods
+                GetBasicResultAt(8, 17));
+
+            await basicTest.RunAsync();
+        }
+
         [Theory]
         [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]
         // No configuration - validate no diagnostics in default configuration
