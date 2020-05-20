@@ -71,10 +71,6 @@ namespace Microsoft.NetCore.Analyzers.Usage
                     {
                         context.ReportDiagnostic(invocation.CreateDiagnostic(NotFlagsRule, invocation.Instance.Type.Name));
                     }
-                    else
-                    {
-                        // do nothing
-                    }
                 }, OperationKind.Invocation);
             });
         }
