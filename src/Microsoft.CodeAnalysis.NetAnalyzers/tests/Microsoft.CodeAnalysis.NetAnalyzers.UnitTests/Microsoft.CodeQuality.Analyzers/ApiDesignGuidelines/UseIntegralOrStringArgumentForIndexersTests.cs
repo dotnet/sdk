@@ -200,6 +200,66 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     End Class");
         }
 
+        [Fact, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
+        public async Task CA1043_IndexerOfTypeSystemIndex_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp30,
+                TestCode = @"
+public class C
+{
+    public string this[System.Index index]
+    {
+        get => null;
+    }
+}",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp30,
+                TestCode = @"
+Public Class Months
+    Default ReadOnly Property Item(index As System.Index) As String
+        Get
+            Return Nothing
+        End Get
+    End Property
+End Class",
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3638, "https://github.com/dotnet/roslyn-analyzers/issues/3638")]
+        public async Task CA1043_IndexerOfTypeSystemRange_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp30,
+                TestCode = @"
+public class C
+{
+    public string this[System.Range range]
+    {
+        get => null;
+    }
+}",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp30,
+                TestCode = @"
+Public Class Months
+    Default ReadOnly Property Item(index As System.Range) As String
+        Get
+            Return Nothing
+        End Get
+    End Property
+End Class",
+            }.RunAsync();
+        }
+
         private static DiagnosticResult CreateCSharpResult(int line, int col)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, col);

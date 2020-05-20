@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        private static readonly SpecialType[] s_allowedTypes = new[] {
+        private static readonly SpecialType[] s_allowedSpecialTypes = new[] {
                         SpecialType.System_String,
                         SpecialType.System_Int16,
                         SpecialType.System_Int32,
@@ -49,10 +49,25 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+            analysisContext.RegisterCompilationStartAction(context =>
+            {
+                var allowedTypes = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
+
+                if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRange, out var rangeType))
+                {
+                    allowedTypes.Add(rangeType);
+                }
+
+                if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIndex, out var indexType))
+                {
+                    allowedTypes.Add(indexType);
+                }
+
+                context.RegisterSymbolAction(context => AnalyzeSymbol(context, allowedTypes.ToImmutableHashSet()), SymbolKind.Property);
+            });
         }
 
-        private void AnalyzeSymbol(SymbolAnalysisContext context)
+        private void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableHashSet<INamedTypeSymbol> allowedTypes)
         {
             var symbol = (IPropertySymbol)context.Symbol;
             if (symbol.IsIndexer &&
@@ -73,7 +88,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         paramType = ((INamedTypeSymbol)paramType).EnumUnderlyingType;
                     }
 
-                    if (!s_allowedTypes.Contains(paramType.SpecialType))
+                    if (!s_allowedSpecialTypes.Contains(paramType.SpecialType) &&
+                        !allowedTypes.Contains(paramType))
                     {
                         context.ReportDiagnostic(symbol.CreateDiagnostic(Rule));
                     }
