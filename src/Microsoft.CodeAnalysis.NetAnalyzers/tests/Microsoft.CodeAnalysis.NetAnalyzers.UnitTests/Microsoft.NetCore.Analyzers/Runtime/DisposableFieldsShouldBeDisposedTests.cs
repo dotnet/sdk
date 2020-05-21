@@ -3205,5 +3205,75 @@ End Class"
 
             await basicTest.RunAsync();
         }
+
+        [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
+        public async Task CloseAsyncDisposable_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
+class A : IAsyncDisposable
+{
+    public ValueTask DisposeAsync()
+    {
+        return default(ValueTask);
+    }
+
+    public Task CloseAsync() => null;
+}
+
+class B : IAsyncDisposable
+{
+    private A a;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (a != null)
+        {
+            await a.CloseAsync().ConfigureAwait(false);
+            a = null;
+        }
+    }
+}
+"
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
+Class A
+    Implements IAsyncDisposable
+
+    Public Function DisposeAsync() As ValueTask Implements IAsyncDisposable.DisposeAsync
+        Return Nothing
+    End Function
+
+    Public Function CloseAsync() As Task
+        Return Nothing
+    End Function
+End Class
+
+Class B
+    Implements IAsyncDisposable
+
+    Private a As A
+
+    Public Function DisposeAsync() As ValueTask Implements IAsyncDisposable.DisposeAsync
+        If a IsNot Nothing Then
+            a.CloseAsync().ConfigureAwait(False)
+            a = Nothing
+        End If
+    End Function
+End Class"
+            }.RunAsync();
+        }
     }
 }
