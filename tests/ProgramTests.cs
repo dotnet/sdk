@@ -11,7 +11,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
     public class ProgramTests
     {
         // Should be kept in sync with Program.Run
-        // 
         private delegate void TestCommandHandlerDelegate(string project, string folder, string workspace, string verbosity, bool check, string[] include, string[] exclude, string report, bool includeGenerated);
 
         [Fact]
@@ -64,8 +63,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal(0, result.UnparsedTokens.Count);
             Assert.Equal("folder", result.ValueForOption("folder"));
             Assert.Equal("workspace", result.ValueForOption("workspace"));
-            Assert.Collection(result.ValueForOption<IEnumerable<string>>("include"), i0 => Assert.Equal("include1", i0), i1 => Assert.Equal("include2", i1));
-            Assert.Collection(result.ValueForOption<IEnumerable<string>>("exclude"), i0 => Assert.Equal("exclude1", i0), i1 => Assert.Equal("exclude2", i1));
+            Assert.Collection(result.ValueForOption<IEnumerable<string>>("include"),
+                i0 => Assert.Equal("include1", i0),
+                i1 => Assert.Equal("include2", i1));
+            Assert.Collection(result.ValueForOption<IEnumerable<string>>("exclude"),
+                i0 => Assert.Equal("exclude1", i0),
+                i1 => Assert.Equal("exclude2", i1));
             Assert.True(result.ValueForOption<bool>("check"));
             Assert.Equal("report", result.ValueForOption("report"));
             Assert.Equal("verbosity", result.ValueForOption("verbosity"));
@@ -159,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var sut = Program.CreateCommandLineOptions();
 
             // Act
-            var result = sut.Parse(new[] { "projectValue", "--workspace", "workspace"});
+            var result = sut.Parse(new[] { "projectValue", "--workspace", "workspace" });
 
             // Assert
             Assert.Equal(1, result.Errors.Count);
@@ -186,6 +189,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Act
             var result = sut.Parse(new[] { "--workspace", "workspace", "--folder", "folder" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
+        public void CommandLine_InvalidArgumentsDontCrashTheValidators()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--workspace", "workspace1", "--workspace", "workspace2" });
 
             // Assert
             Assert.Equal(1, result.Errors.Count);

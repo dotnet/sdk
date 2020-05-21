@@ -88,11 +88,17 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static string? ValidateProjectArgumentAndWorkspace(CommandResult symbolResult)
         {
-            var project = symbolResult.GetArgumentValueOrDefault<string>("project");
-            var workspace = symbolResult.OptionResult("workspace").GetValueOrDefault<string>();
-            if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(workspace))
+            try
             {
-                return Resources.Cannot_specify_both_project_argument_and_workspace_option;
+                var project = symbolResult.GetArgumentValueOrDefault<string>("project");
+                var workspace = symbolResult.ValueForOption<string>("workspace");
+                if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(workspace))
+                {
+                    return Resources.Cannot_specify_both_project_argument_and_workspace_option;
+                }
+            }
+            catch (InvalidOperationException) // Parsing of arguments failed. This will be reported later.
+            {
             }
 
             return null;
@@ -100,13 +106,19 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static string? ValidateWorkspaceAndFolder(CommandResult symbolResult)
         {
-            var project = symbolResult.GetArgumentValueOrDefault<string>("project");
-            var workspace = symbolResult.OptionResult("workspace").GetValueOrDefault<string>();
-            var folder = symbolResult.OptionResult("folder").GetValueOrDefault<string>();
-            project ??= workspace;
-            if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(folder))
+            try
             {
-                return Resources.Cannot_specify_both_folder_and_workspace_options;
+                var project = symbolResult.GetArgumentValueOrDefault<string>("project");
+                var workspace = symbolResult.ValueForOption<string>("workspace");
+                var folder = symbolResult.ValueForOption<string>("folder");
+                project ??= workspace;
+                if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(folder))
+                {
+                    return Resources.Cannot_specify_both_folder_and_workspace_options;
+                }
+            }
+            catch (InvalidOperationException)// Parsing of arguments failed. This will be reported later.
+            {
             }
 
             return null;
