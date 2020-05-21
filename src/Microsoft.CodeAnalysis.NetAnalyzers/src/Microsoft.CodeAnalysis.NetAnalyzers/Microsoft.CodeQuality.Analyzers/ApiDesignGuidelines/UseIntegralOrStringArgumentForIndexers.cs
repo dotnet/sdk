@@ -31,16 +31,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        private static readonly SpecialType[] s_allowedTypes = new[] {
-                        SpecialType.System_String,
-                        SpecialType.System_Int16,
-                        SpecialType.System_Int32,
-                        SpecialType.System_Int64,
-                        SpecialType.System_Object,
-                        SpecialType.System_UInt16,
-                        SpecialType.System_UInt32,
-                        SpecialType.System_UInt64
-                        };
+        private static readonly ImmutableHashSet<SpecialType> s_allowedSpecialTypes =
+            ImmutableHashSet.Create(
+                SpecialType.System_String,
+                SpecialType.System_Int16,
+                SpecialType.System_Int32,
+                SpecialType.System_Int64,
+                SpecialType.System_Object,
+                SpecialType.System_UInt16,
+                SpecialType.System_UInt32,
+                SpecialType.System_UInt64
+            );
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -49,35 +50,57 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property);
+            analysisContext.RegisterCompilationStartAction(context =>
+            {
+                var allowedTypes = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
+
+                if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRange, out var rangeType))
+                {
+                    allowedTypes.Add(rangeType);
+                }
+
+                if (context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIndex, out var indexType))
+                {
+                    allowedTypes.Add(indexType);
+                }
+
+                context.RegisterSymbolAction(context => AnalyzeSymbol(context, allowedTypes.ToImmutableHashSet()), SymbolKind.Property);
+            });
         }
 
-        private void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableHashSet<INamedTypeSymbol> allowedTypes)
         {
             var symbol = (IPropertySymbol)context.Symbol;
-            if (symbol.IsIndexer &&
-                !symbol.IsOverride &&
-                symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+            if (!symbol.IsIndexer || symbol.IsOverride)
             {
-                if (symbol.GetParameters().Length == 1)
-                {
-                    ITypeSymbol paramType = symbol.GetParameters()[0].Type;
+                return;
+            }
 
-                    if (paramType.TypeKind == TypeKind.TypeParameter)
-                    {
-                        return;
-                    }
+            if (symbol.Parameters.Length != 1)
+            {
+                return;
+            }
 
-                    if (paramType.TypeKind == TypeKind.Enum)
-                    {
-                        paramType = ((INamedTypeSymbol)paramType).EnumUnderlyingType;
-                    }
+            ITypeSymbol paramType = symbol.Parameters[0].Type;
 
-                    if (!s_allowedTypes.Contains(paramType.SpecialType))
-                    {
-                        context.ReportDiagnostic(symbol.CreateDiagnostic(Rule));
-                    }
-                }
+            if (paramType.TypeKind == TypeKind.TypeParameter)
+            {
+                return;
+            }
+
+            if (paramType.TypeKind == TypeKind.Enum)
+            {
+                paramType = ((INamedTypeSymbol)paramType).EnumUnderlyingType;
+            }
+
+            if (s_allowedSpecialTypes.Contains(paramType.SpecialType) || allowedTypes.Contains(paramType))
+            {
+                return;
+            }
+
+            if (symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+            {
+                context.ReportDiagnostic(symbol.CreateDiagnostic(Rule));
             }
         }
     }
