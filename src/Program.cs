@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return await rootCommand.InvokeAsync(args);
         }
 
-        public static RootCommand CreateCommandLineOptions()
+        internal static RootCommand CreateCommandLineOptions()
         {
             var rootCommand = new RootCommand
             {
