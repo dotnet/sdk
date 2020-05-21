@@ -80,8 +80,36 @@ namespace Microsoft.CodeAnalysis.Tools
             };
 
             rootCommand.Description = "dotnet-format";
+            rootCommand.AddValidator(ValidateProjectArgumentAndWorkspace);
+            rootCommand.AddValidator(ValidateWorkspaceAndFolder);
             rootCommand.Handler = CommandHandler.Create(typeof(Program).GetMethod(nameof(Run)));
             return rootCommand;
+        }
+
+        private static string? ValidateProjectArgumentAndWorkspace(CommandResult symbolResult)
+        {
+            var project = symbolResult.GetArgumentValueOrDefault<string>("project");
+            var workspace = symbolResult.OptionResult("workspace").GetValueOrDefault<string>();
+            if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(workspace))
+            {
+                return Resources.Cannot_specify_both_project_argument_and_workspace_option;
+            }
+
+            return null;
+        }
+
+        private static string? ValidateWorkspaceAndFolder(CommandResult symbolResult)
+        {
+            var project = symbolResult.GetArgumentValueOrDefault<string>("project");
+            var workspace = symbolResult.OptionResult("workspace").GetValueOrDefault<string>();
+            var folder = symbolResult.OptionResult("folder").GetValueOrDefault<string>();
+            project ??= workspace;
+            if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(folder))
+            {
+                return Resources.Cannot_specify_both_folder_and_workspace_options;
+            }
+
+            return null;
         }
 
         public static async Task<int> Run(string? project, string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
@@ -111,6 +139,11 @@ namespace Microsoft.CodeAnalysis.Tools
                 string workspaceDirectory;
                 string workspacePath;
                 WorkspaceType workspaceType;
+                if (!string.IsNullOrEmpty(workspace) && string.IsNullOrEmpty(project))
+                {
+                    logger.LogWarning(Resources.Workspace_option_is_deprecated_Use_the_project_argument_instead);
+                }
+
                 workspace ??= project;
                 if (!string.IsNullOrEmpty(folder) && !string.IsNullOrEmpty(workspace))
                 {

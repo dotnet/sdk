@@ -27,6 +27,11 @@
         <target state="new">Cannot specify both folder and workspace options.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_both_project_argument_and_workspace_option">
+        <source>Cannot specify both project argument and workspace option.</source>
+        <target state="new">Cannot specify both project argument and workspace option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Complete_in_0_ms">
         <source>Complete in {0}ms.</source>
         <target state="new">Complete in {0}ms.</target>

@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 "--include-generated"});
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
+            Assert.Equal(1, result.Errors.Count); // folder and workspace can not be combined
             Assert.Equal(0, result.UnmatchedTokens.Count);
             Assert.Equal(0, result.UnparsedTokens.Count);
             Assert.Equal("folder", result.ValueForOption("folder"));
@@ -147,6 +147,45 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Act
             var result = sut.Parse(new[] { "projectValue1", "projectValue2" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
+        public void CommandLine_ProjectArgumentAndWorkspaceCanNotBeCombined()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "projectValue", "--workspace", "workspace"});
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
+        public void CommandLine_ProjectWorkspaceAndFolderCanNotBeCombined1()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "projectValue", "--folder", "folder" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
+        public void CommandLine_ProjectWorkspaceAndFolderCanNotBeCombined2()
+        {
+            // Arrange
+            var sut = Program.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--workspace", "workspace", "--folder", "folder" });
 
             // Assert
             Assert.Equal(1, result.Errors.Count);
