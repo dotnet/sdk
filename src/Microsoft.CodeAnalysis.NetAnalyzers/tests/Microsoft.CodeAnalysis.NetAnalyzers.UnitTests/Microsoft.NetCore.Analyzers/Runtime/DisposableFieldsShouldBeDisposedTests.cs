@@ -3266,9 +3266,9 @@ Class B
 
     Private a As A
 
-    Public Async Function DisposeAsync() As ValueTask Implements IAsyncDisposable.DisposeAsync
+    Public Function DisposeAsync() As ValueTask Implements IAsyncDisposable.DisposeAsync
         If a IsNot Nothing Then
-            Await a.CloseAsync().ConfigureAwait(False)
+            a.CloseAsync().ConfigureAwait(False)
             a = Nothing
         End If
     End Function
