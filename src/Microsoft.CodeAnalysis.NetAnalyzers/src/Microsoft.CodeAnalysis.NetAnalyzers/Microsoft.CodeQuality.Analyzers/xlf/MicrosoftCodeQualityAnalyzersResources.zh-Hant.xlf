@@ -168,13 +168,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
-        <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="translated">請勿在基底類別中宣告虛擬事件，然後在衍生類別中加以覆寫。C# 編譯器無法正確地處理這些事件，而且無法預期衍生事件的訂閱者是否會實際訂閱基底類別事件。</target>
+        <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="needs-review-translation">請勿在基底類別中宣告虛擬事件，然後在衍生類別中加以覆寫。C# 編譯器無法正確地處理這些事件，而且無法預期衍生事件的訂閱者是否會實際訂閱基底類別事件。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
-        <source>Event '{0}' should not be declared virtual.</source>
-        <target state="translated">事件 '{0}' 不應宣告為虛擬。</target>
+        <source>Event '{0}' should not be declared virtual</source>
+        <target state="needs-review-translation">事件 '{0}' 不應宣告為虛擬。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">

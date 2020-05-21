@@ -168,13 +168,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
-        <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="translated">Nie przesłaniaj w klasie pochodnej zdarzeń wirtualnych zadeklarowanych w klasie bazowej. Kompilator języka C# nie obsługuje takich zdarzeń poprawnie i nie da się przewidzieć, czy subskrybent zdarzenia pochodnego w rzeczywistości będzie subskrybował zdarzenie klasy bazowej.</target>
+        <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="needs-review-translation">Nie przesłaniaj w klasie pochodnej zdarzeń wirtualnych zadeklarowanych w klasie bazowej. Kompilator języka C# nie obsługuje takich zdarzeń poprawnie i nie da się przewidzieć, czy subskrybent zdarzenia pochodnego w rzeczywistości będzie subskrybował zdarzenie klasy bazowej.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
-        <source>Event '{0}' should not be declared virtual.</source>
-        <target state="translated">Zdarzenie „{0}” nie powinno być zadeklarowane jako wirtualne.</target>
+        <source>Event '{0}' should not be declared virtual</source>
+        <target state="needs-review-translation">Zdarzenie „{0}” nie powinno być zadeklarowane jako wirtualne.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
