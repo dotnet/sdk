@@ -168,13 +168,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
-        <source>Do not declare virtual events in a base class and override them in a derived class. The C# compiler does not handle these correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="translated">仮想イベントを基底クラスで宣言しないで、派生クラスでオーバーライドしてください。C# コンパイラはこれらを正しく処理しないため、派生イベントのサブスクライバーが実際に基底クラスのイベントをサブスクライブしているかどうかを予測できません。</target>
+        <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="needs-review-translation">仮想イベントを基底クラスで宣言しないで、派生クラスでオーバーライドしてください。C# コンパイラはこれらを正しく処理しないため、派生イベントのサブスクライバーが実際に基底クラスのイベントをサブスクライブしているかどうかを予測できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
-        <source>Event '{0}' should not be declared virtual.</source>
-        <target state="translated">イベント '{0}' を virtual として宣言することはできません。</target>
+        <source>Event '{0}' should not be declared virtual</source>
+        <target state="needs-review-translation">イベント '{0}' を virtual として宣言することはできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
