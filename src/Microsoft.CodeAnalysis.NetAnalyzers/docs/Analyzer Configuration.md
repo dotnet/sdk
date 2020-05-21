@@ -239,6 +239,16 @@ Examples:
 |`dotnet_code_quality.additional_string_formatting_methods = NS.MyType.MyFormat(ParamType)` | Matches specific method 'MyFormat' with given fully qualified signature
 |`dotnet_code_quality.additional_string_formatting_methods = NS1.MyType1.MyFormat1(ParamType)\|NS2.MyType2.MyFormat2(ParamType)` | Matches specific methods 'MyFormat1' and 'MyFormat2' with respective fully qualified signature
 
+Option Name: `try_determine_additional_string_formatting_methods_automatically`
+
+Configurable Rules: [CA2241](https://docs.microsoft.com/visualstudio/code-quality/ca2241)
+
+Option Values: Boolean values
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.try_determine_additional_string_formatting_methods_automatically = true`
+
 ### Excluded symbol names
 
 Option Name: `excluded_symbol_names`

@@ -346,7 +346,7 @@ public class C
         public async Task EditorConfigConfiguration_HeuristicAdditionalStringFormattingMethods(bool? editorConfig)
         {
             string editorConfigText = editorConfig == null ? string.Empty :
-                "dotnet_code_quality.heuristic_determine_additional_string_formatting_methods = " + editorConfig.Value;
+                "dotnet_code_quality.try_determine_additional_string_formatting_methods_automatically = " + editorConfig.Value;
 
             var csharpTest = new VerifyCS.Test
             {
@@ -410,7 +410,6 @@ End Class"
 
             await basicTest.RunAsync();
         }
-
 
         [Theory]
         [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]

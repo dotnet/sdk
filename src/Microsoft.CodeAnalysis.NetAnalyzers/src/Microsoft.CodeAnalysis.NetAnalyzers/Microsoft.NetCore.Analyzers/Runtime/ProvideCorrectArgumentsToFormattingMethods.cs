@@ -355,10 +355,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return info;
                 }
 
-                var heuristicDetermineAdditionalStringFormatMethodsOption = context.Options.GetBoolOptionValue(EditorConfigOptionNames.HeuristicDetermineAdditionalStringFormattingMethods, Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, false, context.CancellationToken);
-                // Check if method could be a string formatting method.
-                // This is defined as a method with a 'format' argument followed by an 'params object[]'.
-                if (heuristicDetermineAdditionalStringFormatMethodsOption &&
+                // Check if the user configured automatic determination of formatting methods.
+                // If so, check if the method called has a 'string format' parameter followed by an params array.
+                bool defaultTryDetermineAdditionalStringFormattingMethodsAutomatically = false;
+                var canTryDetermineAdditionalStringFormattingMethodsAutomatically = context.Options.GetBoolOptionValue(EditorConfigOptionNames.TryDetermineAdditionalStringFormattingMethodsAutomatically,
+                        Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultTryDetermineAdditionalStringFormattingMethodsAutomatically, context.CancellationToken);
+                if (canTryDetermineAdditionalStringFormattingMethodsAutomatically &&
                     TryGetFormatInfo(method, out info) && info.ExpectedStringFormatArgumentCount == -1)
                 {
                     return info;
