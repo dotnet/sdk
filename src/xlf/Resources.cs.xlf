@@ -137,6 +137,11 @@
         <target state="translated">Přeskočí se odkazovaný projekt {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="The_dotnet_CLI_version_is_0">
+        <source>The dotnet CLI version is '{0}'.</source>
+        <target state="new">The dotnet CLI version is '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
         <source>The file '{0}' does not appear to be a valid project or solution file.</source>
         <target state="translated">Soubor {0} zřejmě není platný soubor projektu nebo řešení.</target>
@@ -172,9 +177,14 @@
         <target state="new">Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
+        <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
+        <target state="new">Unable to locate dotnet CLI. Ensure that it is on the PATH.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Using_msbuildexe_located_in_0">
-        <source>Using MSBuild.exe located in '{0}'</source>
-        <target state="new">Using MSBuild.exe located in '{0}'</target>
+        <source>Using MSBuild.exe located in '{0}'.</source>
+        <target state="new">Using MSBuild.exe located in '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
