@@ -84,44 +84,44 @@ namespace Microsoft.CodeAnalysis.Tools
             rootCommand.AddValidator(ValidateWorkspaceAndFolder);
             rootCommand.Handler = CommandHandler.Create(typeof(Program).GetMethod(nameof(Run)));
             return rootCommand;
-        }
 
-        private static string? ValidateProjectArgumentAndWorkspace(CommandResult symbolResult)
-        {
-            try
+            static string? ValidateProjectArgumentAndWorkspace(CommandResult symbolResult)
             {
-                var project = symbolResult.GetArgumentValueOrDefault<string>("project");
-                var workspace = symbolResult.ValueForOption<string>("workspace");
-                if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(workspace))
+                try
                 {
-                    return Resources.Cannot_specify_both_project_argument_and_workspace_option;
+                    var project = symbolResult.GetArgumentValueOrDefault<string>("project");
+                    var workspace = symbolResult.ValueForOption<string>("workspace");
+                    if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(workspace))
+                    {
+                        return Resources.Cannot_specify_both_project_argument_and_workspace_option;
+                    }
                 }
-            }
-            catch (InvalidOperationException) // Parsing of arguments failed. This will be reported later.
-            {
-            }
-
-            return null;
-        }
-
-        private static string? ValidateWorkspaceAndFolder(CommandResult symbolResult)
-        {
-            try
-            {
-                var project = symbolResult.GetArgumentValueOrDefault<string>("project");
-                var workspace = symbolResult.ValueForOption<string>("workspace");
-                var folder = symbolResult.ValueForOption<string>("folder");
-                project ??= workspace;
-                if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(folder))
+                catch (InvalidOperationException) // Parsing of arguments failed. This will be reported later.
                 {
-                    return Resources.Cannot_specify_both_folder_and_workspace_options;
                 }
-            }
-            catch (InvalidOperationException)// Parsing of arguments failed. This will be reported later.
-            {
+
+                return null;
             }
 
-            return null;
+            static string? ValidateWorkspaceAndFolder(CommandResult symbolResult)
+            {
+                try
+                {
+                    var project = symbolResult.GetArgumentValueOrDefault<string>("project");
+                    var workspace = symbolResult.ValueForOption<string>("workspace");
+                    var folder = symbolResult.ValueForOption<string>("folder");
+                    project ??= workspace;
+                    if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(folder))
+                    {
+                        return Resources.Cannot_specify_both_folder_and_workspace_options;
+                    }
+                }
+                catch (InvalidOperationException)// Parsing of arguments failed. This will be reported later.
+                {
+                }
+
+                return null;
+            }
         }
 
         public static async Task<int> Run(string? project, string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)

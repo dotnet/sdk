@@ -11,7 +11,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
     public class ProgramTests
     {
         // Should be kept in sync with Program.Run
-        private delegate void TestCommandHandlerDelegate(string project, string folder, string workspace, string verbosity, bool check, string[] include, string[] exclude, string report, bool includeGenerated);
+        private delegate void TestCommandHandlerDelegate(string project, string folder, string workspace, string verbosity, bool check, 
+            string[] include, string[] exclude, string report, bool includeGenerated);
 
         [Fact]
         public void ExitCodeIsOneWithCheckAndAnyFilesFormatted()
@@ -127,7 +128,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var handlerWasCalled = false;
             sut.Handler = CommandHandler.Create(new TestCommandHandlerDelegate(TestCommandHandler));
 
-            void TestCommandHandler(string project, string folder, string workspace, string verbosity, bool check, string[] include, string[] exclude, string report, bool includeGenerated)
+            void TestCommandHandler(string project, string folder, string workspace, string verbosity, bool check, 
+                string[] include, string[] exclude, string report, bool includeGenerated)
             {
                 handlerWasCalled = true;
                 Assert.Equal("projectValue", project);
@@ -140,7 +142,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Assert
             Assert.True(handlerWasCalled);
         }
-
 
         [Fact]
         public void CommandLine_ProjectArgument_FailesIfSpecifiedTwice()
