@@ -31,8 +31,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        private static readonly ImmutableHashSet<SpecialType> s_allowedSpecialTypes =
-            ImmutableHashSet.Create(
+        /// <summary>
+        /// PERF: ImmutableArray contains performs better than ImmutableHashSet for small arrays of primitive types.
+        /// See: https://github.com/dotnet/roslyn-analyzers/pull/3648#discussion_r428714894
+        /// </summary>
+        private static readonly ImmutableArray<SpecialType> s_allowedSpecialTypes =
+            ImmutableArray.Create(
                 SpecialType.System_String,
                 SpecialType.System_Int16,
                 SpecialType.System_Int32,
