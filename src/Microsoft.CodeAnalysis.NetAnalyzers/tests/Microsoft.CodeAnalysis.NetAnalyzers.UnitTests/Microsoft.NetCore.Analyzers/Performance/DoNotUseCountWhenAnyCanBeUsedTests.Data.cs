@@ -110,8 +110,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         {
             { 0, BinaryOperatorKind.Equals             , true }, // !Any
             { 0, BinaryOperatorKind.NotEquals          , false }, // Any
-            { 0, BinaryOperatorKind.LessThan           , true }, // !Any
-            { 0, BinaryOperatorKind.GreaterThanOrEqual , false }, // Any
+            { 0, BinaryOperatorKind.LessThan           , false }, // Any
+            { 0, BinaryOperatorKind.GreaterThanOrEqual , true }, // !Any
             { 1, BinaryOperatorKind.GreaterThan        , true }, // !Any
             { 1, BinaryOperatorKind.LessThanOrEqual    , false }, // Any
         };

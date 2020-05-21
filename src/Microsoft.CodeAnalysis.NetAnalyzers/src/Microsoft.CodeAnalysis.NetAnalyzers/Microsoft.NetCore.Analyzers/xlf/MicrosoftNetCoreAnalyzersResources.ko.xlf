@@ -1382,6 +1382,21 @@
         <target state="new">'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountDescription">
+        <source>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</source>
+        <target state="new">For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountMessage">
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
+        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountTitle">
+        <source>Prefer IsEmpty over Count</source>
+        <target state="new">Prefer IsEmpty over Count</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
         <target state="translated">'{0}' 메서드 호출을 '{1}'을(를) 수신하는 오버로드로 변경합니다.</target>
@@ -1393,18 +1408,18 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
-        <source>Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</source>
-        <target state="new">Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</target>
+        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</source>
+        <target state="new">Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
-        <source>Use 'String.Contains' instead of 'String.IndexOf' to improve readability</source>
-        <target state="new">Use 'String.Contains' instead of 'String.IndexOf' to improve readability</target>
+        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
+        <target state="new">Use 'string.Contains' instead of 'string.IndexOf' to improve readability</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfTitle">
-        <source>Consider using 'String.Contains' instead of 'String.IndexOf'</source>
-        <target state="new">Consider using 'String.Contains' instead of 'String.IndexOf'</target>
+        <source>Consider using 'string.Contains' instead of 'string.IndexOf'</source>
+        <target state="new">Consider using 'string.Contains' instead of 'string.IndexOf'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
@@ -1443,13 +1458,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
-        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</source>
-        <target state="new">'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</target>
+        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
+        <target state="new">'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessage">
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
         <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
         <target state="new">The argument type, '{0}', must be the same as the enum type '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
+        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
+        <target state="new">This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">

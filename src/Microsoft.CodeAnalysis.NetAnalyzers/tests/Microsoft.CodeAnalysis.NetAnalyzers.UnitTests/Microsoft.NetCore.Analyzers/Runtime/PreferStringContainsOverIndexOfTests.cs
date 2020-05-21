@@ -6,27 +6,21 @@ using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferStringContainsOverIndexOfAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.NetCore.Analyzers.Runtime.PreferStringContainsOverIndexOfFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferStringContainsOverIndexOfAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-
-// The following pragmas should be removed when the fixer is implemented. 
-#pragma warning disable IDE0060 // Remove unused parameter
-#pragma warning disable IDE0059 // Unnecessary assignment of a value
-#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-#pragma warning disable CA1801 // Unused parameter
+    Microsoft.NetCore.Analyzers.Runtime.PreferStringContainsOverIndexOfFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class PreferStringContainsOverIndexOfTests
     {
         [Theory]
-        [InlineData("This", "This", false, " == ", " -1", "!")]
-        [InlineData("a", "a", true, " == ", " -1", "!")]
-        [InlineData("This", "This", false, " >= ", " 0", "")]
-        [InlineData("a", "a", true, " >= ", " 0", "")]
-        public async Task TestStringAndChar(string input, string fix, bool isCharTest, string operatorKind, string value, string notString)
+        [InlineData("This", false, " == ", " -1")]
+        [InlineData("a", true, " == ", " -1")]
+        [InlineData("This", false, " >= ", " 0")]
+        [InlineData("a", true, " >= ", " 0")]
+        public async Task TestStringAndChar(string input, bool isCharTest, string operatorKind, string value)
         {
             string startQuote = isCharTest ? "'" : "\"";
             string endQuote = isCharTest ? "'" : "\", System.StringComparison.Ordinal";
@@ -50,7 +44,6 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testOrdinal.RunAsync();
 
@@ -58,7 +51,6 @@ namespace TestNamespace
             string vbCharLiteral = isCharTest ? "c" : "";
             string stringComparison = isCharTest ? "" : ", System.StringComparison.Ordinal";
             operatorKind = operatorKind == " == " ? " = " : operatorKind;
-            notString = notString == "!" ? " Not" : notString;
 
             string vbInput = @"
 Public Class StringOf
@@ -83,9 +75,9 @@ End Class
         }
 
         [Theory]
-        [InlineData(" == ", " -1", "!")]
-        [InlineData(" >= ", " 0", "")]
-        public async Task TestStringNoComparisonArgument(string operatorKind, string value, string notString)
+        [InlineData(" == ", " -1")]
+        [InlineData(" >= ", " 0")]
+        public async Task TestStringNoComparisonArgument(string operatorKind, string value)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -107,12 +99,10 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testOrdinal.RunAsync();
 
             operatorKind = operatorKind == " == " ? " = " : operatorKind;
-            notString = notString == "!" ? " Not" : notString;
             string vbInput = @"
 Public Class StringOf
     Class TestClass
@@ -136,9 +126,9 @@ End Class
         }
 
         [Theory]
-        [InlineData(" == ", " -1", "!")]
-        [InlineData(" >= ", " 0", "")]
-        public async Task TestCharAndOrdinal(string operatorKind, string value, string notString)
+        [InlineData(" == ", " -1")]
+        [InlineData(" >= ", " 0")]
+        public async Task TestCharAndOrdinal(string operatorKind, string value)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -160,12 +150,10 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testOrdinal.RunAsync();
 
             operatorKind = operatorKind == " == " ? " = " : operatorKind;
-            notString = notString == "!" ? " Not" : notString;
             string vbInput = @"
 Public Class StringOf
     Class TestClass
@@ -189,9 +177,9 @@ End Class
         }
 
         [Theory]
-        [InlineData("This", "This", false)]
-        [InlineData("a", "a", true)]
-        public async Task TestStringAndCharWithMultipleDiagnostics(string input, string fix, bool isCharTest)
+        [InlineData("This", false)]
+        [InlineData("a", true)]
+        public async Task TestStringAndCharWithMultipleDiagnostics(string input, bool isCharTest)
         {
             string startQuote = isCharTest ? "'" : "\"";
             string endQuote = isCharTest ? "'" : "\", System.StringComparison.Ordinal";
@@ -221,7 +209,6 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testOrdinal.RunAsync();
 
@@ -255,9 +242,9 @@ End Class
         }
 
         [Theory]
-        [InlineData("This", "This", false)]
-        [InlineData("a", "a", true)]
-        public async Task TestStringAndCharWithComparison(string input, string fix, bool isCharTest)
+        [InlineData("This", false)]
+        [InlineData("a", true)]
+        public async Task TestStringAndCharWithComparison(string input, bool isCharTest)
         {
             string quotes = isCharTest ? "'" : "\"";
             string csInput = @" 
@@ -281,7 +268,6 @@ namespace TestNamespace
             {
                 TestCode = csInput,
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await test.RunAsync();
 
@@ -310,9 +296,9 @@ End Class
         }
 
         [Theory]
-        [InlineData("This", "This", false)]
-        [InlineData("a", "a", true)]
-        public async Task TestLeftAndRightOperandInvocations(string input, string fix, bool isCharTest)
+        [InlineData("This", false)]
+        [InlineData("a", true)]
+        public async Task TestLeftAndRightOperandInvocations(string input, bool isCharTest)
         {
             string startQuote = isCharTest ? "'" : "\"";
             string endQuote = isCharTest ? "'" : "\", System.StringComparison.Ordinal";
@@ -335,11 +321,30 @@ namespace TestNamespace
         } 
     } 
 }";
+            string csFix = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if (!str.Contains(" + startQuote + input + startQuote + @"))
+            {
+
+            }
+            if (!str.Contains(" + startQuote + input + startQuote + @"))
+            {
+
+            }
+        } 
+    } 
+}";
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
+                FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testOrdinal.RunAsync();
 
@@ -361,13 +366,323 @@ Public Class StringOf
     End Class
 End Class
 ";
+            string vbFix = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If Not Str.Contains(" + startQuote + input + startQuote + vbCharLiteral + @") Then
 
+            End If
+            If Not Str.Contains(" + startQuote + input + startQuote + vbCharLiteral + @") Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
+                FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
             };
             await testOrdinal_vb.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("This", false)]
+        [InlineData("a", true)]
+        public async Task TestStringAndCharNamedArgumentCombinationVB(string input, bool isCharTest)
+        {
+            string startQuote = "\"";
+            string vbCharLiteral = isCharTest ? "c" : "";
+            string vbInput = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If [|Str.IndexOf(value:= " + startQuote + input + startQuote + vbCharLiteral + @", System.StringComparison.Ordinal) = -1|] Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
+            string vbFix = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If Not Str.Contains(value:= " + startQuote + input + startQuote + vbCharLiteral + @") Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
+            var testOrdinal_vb = new VerifyVB.Test
+            {
+                TestState = { Sources = { vbInput } },
+                FixedState = { Sources = { vbFix } },
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+            };
+            await testOrdinal_vb.RunAsync();
+
+            vbInput = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If [|Str.IndexOf(value:= " + startQuote + input + startQuote + vbCharLiteral + @", comparisonType:= System.StringComparison.OrdinalIgnoreCase) = -1|] Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
+            vbFix = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If Not Str.Contains(value:= " + startQuote + input + startQuote + vbCharLiteral + @", comparisonType:= System.StringComparison.OrdinalIgnoreCase) Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
+            testOrdinal_vb = new VerifyVB.Test
+            {
+                TestState = { Sources = { vbInput } },
+                FixedState = { Sources = { vbFix } },
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+            };
+            await testOrdinal_vb.RunAsync();
+
+            vbInput = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If [|Str.IndexOf(" + startQuote + input + startQuote + vbCharLiteral + @", comparisonType:= System.StringComparison.OrdinalIgnoreCase) = -1|] Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
+            vbFix = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If Not Str.Contains(" + startQuote + input + startQuote + vbCharLiteral + @", comparisonType:= System.StringComparison.OrdinalIgnoreCase) Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
+            testOrdinal_vb = new VerifyVB.Test
+            {
+                TestState = { Sources = { vbInput } },
+                FixedState = { Sources = { vbFix } },
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+            };
+            await testOrdinal_vb.RunAsync();
+
+            vbInput = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If [|Str.IndexOf(comparisonType:= System.StringComparison.OrdinalIgnoreCase, value:= " + startQuote + input + startQuote + vbCharLiteral + @") = -1|] Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
+            vbFix = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub Main()
+            Dim Str As String = ""This is a statement""
+            If Not Str.Contains(value:= " + startQuote + input + startQuote + vbCharLiteral + @", comparisonType:= System.StringComparison.OrdinalIgnoreCase) Then
+
+            End If
+        End Sub
+    End Class
+End Class
+";
+            testOrdinal_vb = new VerifyVB.Test
+            {
+                TestState = { Sources = { vbInput } },
+                FixedState = { Sources = { vbFix } },
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+            };
+            await testOrdinal_vb.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("This", false)]
+        [InlineData("a", true)]
+        public async Task TestStringAndCharNamedArgumentCombinationsCS(string input, bool isCharTest)
+        {
+            string startQuote = isCharTest ? "'" : "\"";
+            string csInput = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if ([|str.IndexOf(value: " + startQuote + input + startQuote + @", System.StringComparison.Ordinal) == -1|])
+            {
+
+            }
+        } 
+    } 
+}";
+            string csFix = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if (!str.Contains(value: " + startQuote + input + startQuote + @"))
+            {
+
+            }
+        } 
+    } 
+}";
+            var testOrdinal = new VerifyCS.Test
+            {
+                TestState = { Sources = { csInput } },
+                FixedState = { Sources = { csFix } },
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+            };
+            await testOrdinal.RunAsync();
+
+            csInput = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if ([|str.IndexOf(value: " + startQuote + input + startQuote + @", comparisonType: System.StringComparison.OrdinalIgnoreCase) == -1|])
+            {
+
+            }
+        } 
+    } 
+}";
+            csFix = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if (!str.Contains(value: " + startQuote + input + startQuote + @", comparisonType: System.StringComparison.OrdinalIgnoreCase))
+            {
+
+            }
+        } 
+    } 
+}";
+            testOrdinal = new VerifyCS.Test
+            {
+                TestState = { Sources = { csInput } },
+                FixedState = { Sources = { csFix } },
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+            };
+            await testOrdinal.RunAsync();
+
+            csInput = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if ([|str.IndexOf(" + startQuote + input + startQuote + @", comparisonType: System.StringComparison.OrdinalIgnoreCase) == -1|])
+            {
+
+            }
+        } 
+    } 
+}";
+            csFix = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if (!str.Contains(" + startQuote + input + startQuote + @", comparisonType: System.StringComparison.OrdinalIgnoreCase))
+            {
+
+            }
+        } 
+    } 
+}";
+            testOrdinal = new VerifyCS.Test
+            {
+                TestState = { Sources = { csInput } },
+                FixedState = { Sources = { csFix } },
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+            };
+            await testOrdinal.RunAsync();
+
+            csInput = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if ([|str.IndexOf(comparisonType: System.StringComparison.OrdinalIgnoreCase, value: " + startQuote + input + startQuote + @") == -1|])
+            {
+
+            }
+        } 
+    } 
+}";
+            csFix = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod() 
+        { 
+            const string str = ""This is a string"";
+            if (!str.Contains(comparisonType: System.StringComparison.OrdinalIgnoreCase, value: " + startQuote + input + startQuote + @"))
+            {
+
+            }
+        } 
+    } 
+}";
+            testOrdinal = new VerifyCS.Test
+            {
+                TestState = { Sources = { csInput } },
+                FixedState = { Sources = { csFix } },
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+            };
+            await testOrdinal.RunAsync();
         }
 
         [Theory]
@@ -681,11 +996,24 @@ namespace TestNamespace
         } 
     } 
 }";
+            string csFix = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod(string str) 
+        { 
+            if (" + notString + @"str.Contains(""This"", System.StringComparison.CurrentCulture)" + @")
+            {
+            }
+        } 
+    } 
+}";
             var testCulture = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
+                FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testCulture.RunAsync();
 
@@ -702,10 +1030,21 @@ Public Class StringOf
     End Class
 End Class
 ";
+            string vbFix = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub AMethod(arg As String)
+            If" + notString + @" arg.Contains(""This"", System.StringComparison.CurrentCulture)" + @" Then
 
+            End If
+        End Sub
+    End Class
+End Class
+";
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
+                FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
             };
             await testOrdinal_vb.RunAsync();
@@ -729,11 +1068,24 @@ namespace TestNamespace
         } 
     } 
 }";
+            string csFix = @"
+namespace TestNamespace 
+{ 
+    class TestClass 
+    { 
+        private void TestMethod(string str, System.StringComparison comparison) 
+        { 
+            if (" + notString + @"str.Contains(""This"", comparison)" + @")
+            {
+            }
+        } 
+    } 
+}";
             var testCulture = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
+                FixedState = { Sources = { csFix } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testCulture.RunAsync();
 
@@ -750,19 +1102,30 @@ Public Class StringOf
     End Class
 End Class
 ";
+            string vbFix = @"
+Public Class StringOf
+    Class TestClass
+        Public Sub AMethod(arg As String, comparison As System.StringComparison)
+            If" + notString + @" arg.Contains(""This"", comparison)" + @" Then
 
+            End If
+        End Sub
+    End Class
+End Class
+";
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
+                FixedState = { Sources = { vbFix } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
             };
             await testOrdinal_vb.RunAsync();
         }
 
         [Theory]
-        [InlineData(" == ", " -1", "!")]
-        [InlineData(" >= ", " 0", "")]
-        public async Task TestReversedMultipleDeclarations(string operatorKind, string value, string notString)
+        [InlineData(" == ", " -1")]
+        [InlineData(" >= ", " 0")]
+        public async Task TestReversedMultipleDeclarations(string operatorKind, string value)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -784,12 +1147,10 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testOrdinal.RunAsync();
 
             operatorKind = operatorKind == " == " ? " = " : operatorKind;
-            notString = notString == "!" ? " Not" : notString;
             string vbInput = @"
 Public Class StringOf
     Class TestClass
@@ -813,9 +1174,9 @@ End Class
         }
 
         [Theory]
-        [InlineData(" == ", " -1", "!")]
-        [InlineData(" >= ", " 0", "")]
-        public async Task TestMultipleDeclarations(string operatorKind, string value, string notString)
+        [InlineData(" == ", " -1")]
+        [InlineData(" >= ", " 0")]
+        public async Task TestMultipleDeclarations(string operatorKind, string value)
         {
             string csInput = @"
 namespace TestNamespace 
@@ -837,12 +1198,10 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             await testOrdinal.RunAsync();
 
             operatorKind = operatorKind == " == " ? " = " : operatorKind;
-            notString = notString == "!" ? " Not" : notString;
             string vbInput = @"
 Public Class StringOf
     Class TestClass

@@ -1306,13 +1306,13 @@
     <value>Remove the ToString call</value>
   </data>
   <data name="PreferStringContainsOverIndexOfDescription" xml:space="preserve">
-    <value>Calls to 'String.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'String.Contains'</value>
+    <value>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</value>
   </data>
   <data name="PreferStringContainsOverIndexOfMessage" xml:space="preserve">
-    <value>Use 'String.Contains' instead of 'String.IndexOf' to improve readability</value>
+    <value>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</value>
   </data>
   <data name="PreferStringContainsOverIndexOfTitle" xml:space="preserve">
-    <value>Consider using 'String.Contains' instead of 'String.IndexOf'</value>
+    <value>Consider using 'string.Contains' instead of 'string.IndexOf'</value>
   </data>
   <data name="PreferConstCharOverConstUnitStringInStringBuilderDescription" xml:space="preserve">
     <value>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</value>
@@ -1324,12 +1324,24 @@
     <value>Consider using 'StringBuilder.Append(char)' when applicable.</value>
   </data>
   <data name="ProvideCorrectArgumentToEnumHasFlagDescription" xml:space="preserve">
-    <value>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked. If these are different 'enum' types, an unhandled exception will be thrown at runtime.</value>
+    <value>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</value>
   </data>
-  <data name="ProvideCorrectArgumentToEnumHasFlagMessage" xml:space="preserve">
+  <data name="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType" xml:space="preserve">
     <value>The argument type, '{0}', must be the same as the enum type '{1}'</value>
   </data>
   <data name="ProvideCorrectArgumentToEnumHasFlagTitle" xml:space="preserve">
     <value>Provide correct 'enum' argument to 'Enum.HasFlag'</value>
+  </data>
+  <data name="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags" xml:space="preserve">
+    <value>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</value>
+  </data>
+  <data name="PreferIsEmptyOverCountDescription" xml:space="preserve">
+    <value>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</value>
+  </data>
+  <data name="PreferIsEmptyOverCountMessage" xml:space="preserve">
+    <value>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</value>
+  </data>
+  <data name="PreferIsEmptyOverCountTitle" xml:space="preserve">
+    <value>Prefer IsEmpty over Count</value>
   </data>
 </root>

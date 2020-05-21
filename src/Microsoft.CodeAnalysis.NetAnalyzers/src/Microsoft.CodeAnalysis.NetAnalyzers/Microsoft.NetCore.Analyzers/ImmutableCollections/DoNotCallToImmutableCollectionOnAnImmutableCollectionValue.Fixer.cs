@@ -62,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
 
         private static Task<Document> RemoveRedundantCall(Document document, SyntaxNode root, SyntaxNode invocationNode, IInvocationOperation invocationOperation)
         {
-            var instance = invocationOperation.GetInstance().WithTriviaFrom(invocationNode);
+            var instance = invocationOperation.GetInstanceSyntax().WithTriviaFrom(invocationNode);
             var newRoot = root.ReplaceNode(invocationNode, instance);
             var newDocument = document.WithSyntaxRoot(newRoot);
             return Task.FromResult(newDocument);

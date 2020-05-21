@@ -63,7 +63,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            var collectionSyntax = invocationOperation.GetInstance();
+            var collectionSyntax = invocationOperation.GetInstanceSyntax();
             if (collectionSyntax == null)
             {
                 return;
