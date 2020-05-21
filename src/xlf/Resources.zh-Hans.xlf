@@ -197,6 +197,11 @@
         <target state="new">Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Workspace_option_is_deprecated_Use_the_project_argument_instead">
+        <source>"workspace" option is deprecated. Use the project argument instead.</source>
+        <target state="new">"workspace" option is deprecated. Use the project argument instead.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Writing_formatting_report_to_0">
         <source>Writing formatting report to: '{0}'.</source>
         <target state="new">Writing formatting report to: '{0}'.</target>
