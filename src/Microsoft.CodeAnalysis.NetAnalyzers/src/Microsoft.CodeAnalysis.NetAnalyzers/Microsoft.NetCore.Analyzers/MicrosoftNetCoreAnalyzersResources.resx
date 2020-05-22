@@ -1212,4 +1212,22 @@
   <data name="DoNotUseCreateEncryptorWithNonDefaultIVDescription" xml:space="preserve">
     <value>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</value>
   </data>
+  <data name="DataTableReadXmlMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</value>
+  </data>
+  <data name="DataTableReadXmlTitle" xml:space="preserve">
+    <value>Do not use insecure deserialization with DataTable.ReadXml()</value>
+  </data>
+  <data name="DataSetDefinitelyInsecureMessage" xml:space="preserve">
+    <value>When deserializing untrusted input, DataSet.ReadXml() without first calling DataSet.ReadXmlSchema() is insecure.</value>
+  </data>
+  <data name="DataSetDefinitelyInsecureTitle" xml:space="preserve">
+    <value>Do not use DataSet.ReadXml() without ReadXmlSchema() on untrusted data</value>
+  </data>
+  <data name="DataSetMaybeInsecureMessage" xml:space="preserve">
+    <value>When deserializing untrusted input, DataSet.ReadXml() without first calling DataSet.ReadXmlSchema() is insecure.</value>
+  </data>
+  <data name="DataSetMaybeInsecureTitle" xml:space="preserve">
+    <value>Ensure DataSet.ReadXmlSchema() is called before ReadXml() on untrusted data</value>
+  </data>
 </root>

@@ -187,6 +187,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         this.DeserializerTypeMetadataName,
                                         DoNotUseInsecureDeserializerWithoutBinderBase.ConstructorMapper,
                                         propertyMappers,
+                                        InvocationMapperCollection.Empty,
                                         hazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,

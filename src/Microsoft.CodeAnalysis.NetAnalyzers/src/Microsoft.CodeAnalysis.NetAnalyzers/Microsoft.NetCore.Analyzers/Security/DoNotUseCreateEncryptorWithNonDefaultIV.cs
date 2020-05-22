@@ -155,6 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         WellKnownTypeNames.SystemSecurityCryptographySymmetricAlgorithm,
                                         ConstructorMapper,
                                         PropertyMappers,
+                                        InvocationMapperCollection.Empty,
                                         HazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,

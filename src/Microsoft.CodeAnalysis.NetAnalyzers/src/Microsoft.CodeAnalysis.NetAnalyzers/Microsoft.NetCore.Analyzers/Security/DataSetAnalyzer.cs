@@ -1,60 +1,44 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
-
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
+using System.Text;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    internal class SetHttpOnlyForHttpCookie : DiagnosticAnalyzer
+    public sealed class DataSetAnalyzer : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor Rule = SecurityHelpers.CreateDiagnosticDescriptor(
-            "CA5396",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.SetHttpOnlyForHttpCookie),
-            nameof(MicrosoftNetCoreAnalyzersResources.SetHttpOnlyForHttpCookieMessage),
+        internal DiagnosticDescriptor DefinitelyNoReadXmlSchemaDescriptor = SecurityHelpers.CreateDiagnosticDescriptor(
+            "CA2351",
+            nameof(MicrosoftNetCoreAnalyzersResources.DataSetDefinitelyInsecureTitle),
+            nameof(MicrosoftNetCoreAnalyzersResources.DataSetDefinitelyInsecureMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
-            isDataflowRule: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.SetHttpOnlyForHttpCookieDescription));
+            isDataflowRule: true);
+        internal DiagnosticDescriptor MaybeNoReadXmlSchemaDescriptor = SecurityHelpers.CreateDiagnosticDescriptor(
+            "CA2352",
+            nameof(MicrosoftNetCoreAnalyzersResources.DataSetDefinitelyInsecureTitle),
+            nameof(MicrosoftNetCoreAnalyzersResources.DataSetDefinitelyInsecureMessage),
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-            ImmutableArray.Create(
-                Rule);
+            ImmutableArray.Create(DefinitelyNoReadXmlSchemaDescriptor, MaybeNoReadXmlSchemaDescriptor);
 
-        private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(
-            (IMethodSymbol constructorMethod,
-            IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
-            {
-                return PropertySetAbstractValue.GetInstance(PropertySetAbstractValueKind.Flagged);
-            });
-
-        // If HttpOnly is set explictly, the callbacks of OperationKind.SimpleAssignment can cover that case.
-        // Otherwise, using PropertySetAnalysis to cover the case where HttpCookie object is returned without initializing or assgining HttpOnly property.
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
-            new PropertyMapper(
-                "HttpOnly",
-                (PointsToAbstractValue pointsToAbstractValue) =>
-                   PropertySetAbstractValueKind.Unflagged));
-
-        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new HazardousUsageEvaluatorCollection(
-                    new HazardousUsageEvaluator(
-                        HazardousUsageEvaluatorKind.Return,
-                        PropertySetCallbacks.HazardousIfAllFlaggedAndAtLeastOneKnown),
-                    new HazardousUsageEvaluator(
-                        HazardousUsageEvaluatorKind.Argument,
-                        PropertySetCallbacks.HazardousIfAllFlaggedAndAtLeastOneKnown));
+        private static readonly PropertyMapperCollection PropertyMappers =
+            new PropertyMapperCollection(
+                new PropertyMapper("...dummy", PropertySetCallbacks.AlwaysUnknown));
+        private static readonly ConstructorMapper ConstructorMapper =
+            new ConstructorMapper(PropertySetAbstractValueKind.Flagged);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -66,8 +50,9 @@ namespace Microsoft.NetCore.Analyzers.Security
             context.RegisterCompilationStartAction(
                 (CompilationStartAnalysisContext compilationStartAnalysisContext) =>
                 {
-                    if (!compilationStartAnalysisContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebHttpCookie,
-                            out INamedTypeSymbol? httpCookieSymbol))
+                    if (!compilationStartAnalysisContext.Compilation.TryGetOrCreateTypeByMetadataName(
+                            WellKnownTypeNames.SystemDataDataSet,
+                            out INamedTypeSymbol? dataSetTypeSymbol))
                     {
                         return;
                     }
@@ -79,9 +64,15 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             ISymbol owningSymbol = operationBlockStartAnalysisContext.OwningSymbol;
 
+                            // TODO: Handle case when exactly one of the below rules is configured to skip analysis.
                             if (owningSymbol.IsConfiguredToSkipAnalysis(
                                     operationBlockStartAnalysisContext.Options,
-                                    Rule,
+                                    DefinitelyNoReadXmlSchemaDescriptor,
+                                    operationBlockStartAnalysisContext.Compilation,
+                                    operationBlockStartAnalysisContext.CancellationToken)
+                                && owningSymbol.IsConfiguredToSkipAnalysis(
+                                    operationBlockStartAnalysisContext.Options,
+                                    MaybeNoReadXmlSchemaDescriptor,
                                     operationBlockStartAnalysisContext.Compilation,
                                     operationBlockStartAnalysisContext.CancellationToken))
                             {
@@ -91,60 +82,61 @@ namespace Microsoft.NetCore.Analyzers.Security
                             operationBlockStartAnalysisContext.RegisterOperationAction(
                                 (OperationAnalysisContext operationAnalysisContext) =>
                                 {
-                                    ISimpleAssignmentOperation simpleAssignmentOperation =
-                                        (ISimpleAssignmentOperation)operationAnalysisContext.Operation;
-
-                                    if (simpleAssignmentOperation.Target is IPropertyReferenceOperation propertyReferenceOperation &&
-                                        httpCookieSymbol.Equals(propertyReferenceOperation.Property.ContainingType) &&
-                                        propertyReferenceOperation.Property.Name == "HttpOnly" &&
-                                        simpleAssignmentOperation.Value.ConstantValue.HasValue &&
-                                        simpleAssignmentOperation.Value.ConstantValue.Value.Equals(false))
-                                    {
-                                        operationAnalysisContext.ReportDiagnostic(
-                                            simpleAssignmentOperation.CreateDiagnostic(
-                                                Rule));
-                                    }
-                                },
-                                OperationKind.SimpleAssignment);
-
-                            operationBlockStartAnalysisContext.RegisterOperationAction(
-                                (OperationAnalysisContext operationAnalysisContext) =>
-                                {
-                                    IReturnOperation returnOperation = (IReturnOperation)operationAnalysisContext.Operation;
-
-                                    if (httpCookieSymbol.Equals(returnOperation.ReturnedValue?.Type))
+                                    IObjectCreationOperation creationOperation =
+                                        (IObjectCreationOperation)operationAnalysisContext.Operation;
+                                    if (creationOperation.Type?.DerivesFrom(dataSetTypeSymbol) == true)
                                     {
                                         lock (rootOperationsNeedingAnalysis)
                                         {
                                             rootOperationsNeedingAnalysis.Add(
-                                                (returnOperation.GetRoot(), operationAnalysisContext.ContainingSymbol));
+                                                (operationAnalysisContext.Operation.GetRoot(),
+                                                operationAnalysisContext.ContainingSymbol));
                                         }
                                     }
                                 },
-                                OperationKind.Return);
+                                OperationKind.ObjectCreation);
 
                             operationBlockStartAnalysisContext.RegisterOperationAction(
                                 (OperationAnalysisContext operationAnalysisContext) =>
                                 {
-                                    IArgumentOperation argumentOperation = (IArgumentOperation)operationAnalysisContext.Operation;
-
-                                    if (httpCookieSymbol.Equals(argumentOperation.Value.Type))
+                                    IInvocationOperation invocationOperation =
+                                        (IInvocationOperation)operationAnalysisContext.Operation;
+                                    if (invocationOperation.Type?.DerivesFrom(dataSetTypeSymbol) == true
+                                        && invocationOperation.TargetMethod.Name == "ReadXml")
                                     {
                                         lock (rootOperationsNeedingAnalysis)
                                         {
                                             rootOperationsNeedingAnalysis.Add(
-                                                (argumentOperation.GetRoot(), operationAnalysisContext.ContainingSymbol));
+                                                (operationAnalysisContext.Operation.GetRoot(),
+                                                operationAnalysisContext.ContainingSymbol));
                                         }
                                     }
                                 },
-                                OperationKind.Argument);
+                                OperationKind.Invocation);
+
+                            operationBlockStartAnalysisContext.RegisterOperationAction(
+                                (OperationAnalysisContext operationAnalysisContext) =>
+                                {
+                                    IMethodReferenceOperation methodReferenceOperation =
+                                        (IMethodReferenceOperation)operationAnalysisContext.Operation;
+                                    if (methodReferenceOperation.Instance?.Type.DerivesFrom(dataSetTypeSymbol) == true
+                                       && methodReferenceOperation.Method.MetadataName == "ReadXml")
+                                    {
+                                        lock (rootOperationsNeedingAnalysis)
+                                        {
+                                            rootOperationsNeedingAnalysis.Add(
+                                                (operationAnalysisContext.Operation.GetRoot(),
+                                                operationAnalysisContext.ContainingSymbol));
+                                        }
+                                    }
+                                },
+                                OperationKind.MethodReference);
                         });
 
                     compilationStartAnalysisContext.RegisterCompilationEndAction(
                         (CompilationAnalysisContext compilationAnalysisContext) =>
                         {
                             PooledDictionary<(Location Location, IMethodSymbol? Method), HazardousUsageEvaluationResult>? allResults = null;
-
                             try
                             {
                                 lock (rootOperationsNeedingAnalysis)
@@ -158,11 +150,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         compilationAnalysisContext.Compilation,
                                         rootOperationsNeedingAnalysis,
                                         compilationAnalysisContext.Options,
-                                        WellKnownTypeNames.SystemWebHttpCookie,
-                                        ConstructorMapper,
-                                        PropertyMappers,
+                                        this.DeserializerTypeMetadataName,
+                                        DoNotUseInsecureDeserializerWithoutBinderBase.ConstructorMapper,
+                                        propertyMappers,
                                         InvocationMapperCollection.Empty,
-                                        HazardousUsageEvaluators,
+                                        hazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,
                                             SupportedDiagnostics,
@@ -178,13 +170,29 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 foreach (KeyValuePair<(Location Location, IMethodSymbol? Method), HazardousUsageEvaluationResult> kvp
                                     in allResults)
                                 {
-                                    if (kvp.Value == HazardousUsageEvaluationResult.Flagged)
+                                    DiagnosticDescriptor descriptor;
+                                    switch (kvp.Value)
                                     {
-                                        compilationAnalysisContext.ReportDiagnostic(
-                                            Diagnostic.Create(
-                                                Rule,
-                                                kvp.Key.Location));
+                                        case HazardousUsageEvaluationResult.Flagged:
+                                            descriptor = this.BinderDefinitelyNotSetDescriptor!;
+                                            break;
+
+                                        case HazardousUsageEvaluationResult.MaybeFlagged:
+                                            descriptor = this.BinderMaybeNotSetDescriptor!;
+                                            break;
+
+                                        default:
+                                            Debug.Fail($"Unhandled result value {kvp.Value}");
+                                            continue;
                                     }
+
+                                    RoslynDebug.Assert(kvp.Key.Method != null);    // HazardousUsageEvaluations only for invocations.
+                                                compilationAnalysisContext.ReportDiagnostic(
+                                        Diagnostic.Create(
+                                            descriptor,
+                                            kvp.Key.Location,
+                                            kvp.Key.Method.ToDisplayString(
+                                                SymbolDisplayFormat.MinimallyQualifiedFormat)));
                                 }
                             }
                             finally
@@ -194,6 +202,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                             }
                         });
                 });
-        }
-    }
+
+                    }
+                }
 }

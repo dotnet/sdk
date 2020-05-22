@@ -152,6 +152,15 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 "Populate");
 
         /// <summary>
+        /// Deserialization methods for <see cref="T:System.Data.DataTable"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> DataTableDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "ReadXml");
+
+        /// <summary>
         /// Gets a <see cref="LocalizableResourceString"/> from <see cref="MicrosoftNetCoreAnalyzersResources"/>.
         /// </summary>
         /// <param name="resourceSource">Type containing the resource strings.</param>

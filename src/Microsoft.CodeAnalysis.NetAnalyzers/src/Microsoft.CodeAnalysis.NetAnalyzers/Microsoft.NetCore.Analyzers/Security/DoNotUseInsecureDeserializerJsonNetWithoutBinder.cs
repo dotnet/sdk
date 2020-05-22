@@ -198,6 +198,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         WellKnownTypeNames.NewtonsoftJsonJsonSerializer,
                                         ConstructorMapper,
                                         PropertyMappers,
+                                        InvocationMapperCollection.Empty,
                                         HazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,

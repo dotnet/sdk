@@ -157,6 +157,36 @@
         <target state="translated">可靠性</target>
         <note />
       </trans-unit>
+      <trans-unit id="DataSetDefinitelyInsecureMessage">
+        <source>When deserializing untrusted input, DataSet.ReadXml() without first calling DataSet.ReadXmlSchema() is insecure.</source>
+        <target state="new">When deserializing untrusted input, DataSet.ReadXml() without first calling DataSet.ReadXmlSchema() is insecure.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DataSetDefinitelyInsecureTitle">
+        <source>Do not use DataSet.ReadXml() without ReadXmlSchema() on untrusted data</source>
+        <target state="new">Do not use DataSet.ReadXml() without ReadXmlSchema() on untrusted data</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DataSetMaybeInsecureMessage">
+        <source>When deserializing untrusted input, DataSet.ReadXml() without first calling DataSet.ReadXmlSchema() is insecure.</source>
+        <target state="new">When deserializing untrusted input, DataSet.ReadXml() without first calling DataSet.ReadXmlSchema() is insecure.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DataSetMaybeInsecureTitle">
+        <source>Ensure DataSet.ReadXmlSchema() is called before ReadXml() on untrusted data</source>
+        <target state="new">Ensure DataSet.ReadXmlSchema() is called before ReadXml() on untrusted data</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DataTableReadXmlMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</source>
+        <target state="new">The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DataTableReadXmlTitle">
+        <source>Do not use insecure deserialization with DataTable.ReadXml()</source>
+        <target state="new">Do not use insecure deserialization with DataTable.ReadXml()</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
         <source>HttpClients should enable certificate revocation list checks</source>
         <target state="translated">HttpClients 应启用证书吊销列表检查</target>

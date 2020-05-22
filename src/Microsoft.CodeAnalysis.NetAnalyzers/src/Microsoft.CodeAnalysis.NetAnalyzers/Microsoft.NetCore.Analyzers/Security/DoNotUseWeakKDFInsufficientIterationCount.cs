@@ -175,6 +175,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         WellKnownTypeNames.SystemSecurityCryptographyRfc2898DeriveBytes,
                                         constructorMapper,
                                         propertyMappers,
+                                        InvocationMapperCollection.Empty,
                                         hazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,

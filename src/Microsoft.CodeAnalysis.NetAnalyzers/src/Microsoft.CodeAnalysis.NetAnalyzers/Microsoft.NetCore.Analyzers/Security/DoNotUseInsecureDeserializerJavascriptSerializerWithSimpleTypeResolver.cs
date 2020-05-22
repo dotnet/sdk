@@ -216,6 +216,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         WellKnownTypeNames.SystemWebScriptSerializationJavaScriptSerializer,
                                         constructorMapper,
                                         PropertyMappers,
+                                        InvocationMapperCollection.Empty,
                                         hazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,
