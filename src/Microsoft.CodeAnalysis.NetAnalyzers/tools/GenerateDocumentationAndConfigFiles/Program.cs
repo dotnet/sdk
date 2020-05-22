@@ -189,20 +189,11 @@ namespace GenerateDocumentationAndConfigFiles
 
                 var fileContents =
 $@"<Project DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-  {getEditorConfigAsAdditionalFile()}{getCodeAnalysisTreatWarningsNotAsErrors()}{getRulesetOverrides()}{getFlowAnalysisFeatureFlag()}
+  {getCodeAnalysisTreatWarningsNotAsErrors()}
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
                 File.WriteAllText(fileWithPath, fileContents);
-            }
-
-            static string getFlowAnalysisFeatureFlag()
-            {
-                return @"
-
-  <PropertyGroup>
-    <Features>$(Features);flow-analysis</Features> 
-  </PropertyGroup>";
             }
 
             string getCodeAnalysisTreatWarningsNotAsErrors()
@@ -216,62 +207,6 @@ $@"<Project DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/develo
   <PropertyGroup Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">
     <WarningsNotAsErrors>$(WarningsNotAsErrors);{allRuleIds}</WarningsNotAsErrors>
   </PropertyGroup>";
-            }
-
-            string getRulesetOverrides()
-            {
-                if (containsPortedFxCopRules)
-                {
-                    var rulesetOverridesBuilder = new StringBuilder();
-                    foreach (var category in categories.OrderBy(k => k))
-                    {
-                        // Each rule entry format is: -[Category]#[ID];
-                        // For example, -Microsoft.Design#CA1001;
-                        var categoryPrefix = $"      -Microsoft.{category}#";
-                        var entries = allRulesById
-                                          .Where(ruleIdAndDescriptor => ruleIdAndDescriptor.Value.Category == category &&
-                                                                        FxCopWellKnownDiagnosticTags.IsPortedFxCopRule(ruleIdAndDescriptor.Value))
-                                          .Select(ruleIdAndDescriptor => $"{categoryPrefix}{ruleIdAndDescriptor.Key};")
-                                          .Distinct();
-
-                        if (entries.Any())
-                        {
-                            rulesetOverridesBuilder.AppendLine();
-                            rulesetOverridesBuilder.Append(string.Join(Environment.NewLine, entries));
-                            rulesetOverridesBuilder.AppendLine();
-                        }
-                    }
-
-                    if (rulesetOverridesBuilder.Length > 0)
-                    {
-                        return $@"
-
-  <!-- 
-    This property group contains the rules that have been implemented in this package and therefore should be disabled for the binary FxCop.
-    The format is -[Category]#[ID], e.g., -Microsoft.Design#CA1001;
-  -->
-  <PropertyGroup>
-    <CodeAnalysisRuleSetOverrides>
-      $(CodeAnalysisRuleSetOverrides);{rulesetOverridesBuilder}
-    </CodeAnalysisRuleSetOverrides>
-  </PropertyGroup>";
-                    }
-                }
-
-                return string.Empty;
-            }
-
-            static string getEditorConfigAsAdditionalFile()
-            {
-                return $@"
-  <!-- 
-    This item group adds any .editorconfig file present at the project root directory
-    as an additional file.
-  -->  
-  <ItemGroup Condition=""'$(SkipDefaultEditorConfigAsAdditionalFile)' != 'true' And Exists('$(MSBuildProjectDirectory)\.editorconfig')"" >
-    <AdditionalFiles Include=""$(MSBuildProjectDirectory)\.editorconfig"" />
-  </ItemGroup>
-";
             }
 
             void createAnalyzerDocumentationFile()
