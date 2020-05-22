@@ -5,6 +5,25 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "dotnet-format -f ../roslyn --dry-run",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      // If you have changed target frameworks, make sure to update the program path.
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
+      "args": [
+        "-f",
+        "../roslyn/src",
+        "-v",
+        "diag",
+        "--dry-run"
+      ],
+      "cwd": "${workspaceFolder}",
+      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
       "name": "dotnet-format -f . --dry-run",
       "type": "coreclr",
       "request": "launch",

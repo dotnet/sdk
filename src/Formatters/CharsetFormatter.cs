@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -23,15 +23,15 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected override Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
-            OptionSet options,
-            ICodingConventionsSnapshot codingConventions,
+            OptionSet optionSet,
+            AnalyzerConfigOptions? analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                if (!TryGetCharset(codingConventions, out var encoding)
+                if (!TryGetCharset(analyzerConfigOptions, out var encoding)
                     || sourceText.Encoding?.Equals(encoding) == true
                     || IsEncodingEquivalent(sourceText, encoding))
                 {
@@ -67,9 +67,10 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             return stream.ToArray();
         }
 
-        private static bool TryGetCharset(ICodingConventionsSnapshot codingConventions, [NotNullWhen(true)] out Encoding? encoding)
+        private static bool TryGetCharset(AnalyzerConfigOptions? analyzerConfigOptions, [NotNullWhen(true)] out Encoding? encoding)
         {
-            if (codingConventions.TryGetConventionValue("charset", out string charsetOption))
+            if (analyzerConfigOptions is object &&
+                analyzerConfigOptions.TryGetValue("charset", out var charsetOption))
             {
                 encoding = GetCharset(charsetOption);
                 return true;

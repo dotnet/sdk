@@ -19,7 +19,7 @@ try {
 
     if ($stage -eq "prepare") {
         Write-Output "$(Get-Date) - Cloning $repoName."
-        git.exe clone $repo $repoPath
+        git.exe clone $repo $repoPath --single-branch --no-tags
     }
 
     Set-Location $repoPath
@@ -56,7 +56,7 @@ try {
 
             if ($stage -eq "format-workspace") {
                 Write-Output "$(Get-Date) - $solutionFile - Formatting Workspace"
-                $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- -w $solution -v d --dry-run | Out-String
+                $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- -w $solution -v diag --check | Out-String
                 Write-Output $output.TrimEnd()
 
                 # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
@@ -77,7 +77,7 @@ try {
 
     if ($stage -eq "format-folder") {
         Write-Output "$(Get-Date) - $folderName - Formatting Folder"
-        $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- -f $repoPath -v d --dry-run | Out-String
+        $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- -f $repoPath -v diag --check | Out-String
         Write-Output $output.TrimEnd()
 
         # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.

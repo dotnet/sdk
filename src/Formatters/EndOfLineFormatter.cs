@@ -4,10 +4,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -18,15 +18,15 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected override Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
-            OptionSet options,
-            ICodingConventionsSnapshot codingConventions,
+            OptionSet optionSet,
+            AnalyzerConfigOptions? analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             return Task.Run(() =>
             {
-                if (!TryGetEndOfLine(codingConventions, out var endOfLine))
+                if (!TryGetEndOfLine(analyzerConfigOptions, out var endOfLine))
                 {
                     return sourceText;
                 }
@@ -58,9 +58,10 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             });
         }
 
-        public static bool TryGetEndOfLine(ICodingConventionsSnapshot codingConventions, [NotNullWhen(true)] out string? endOfLine)
+        public static bool TryGetEndOfLine(AnalyzerConfigOptions? analyzerConfigOptions, [NotNullWhen(true)] out string? endOfLine)
         {
-            if (codingConventions.TryGetConventionValue("end_of_line", out string endOfLineOption))
+            if (analyzerConfigOptions is object &&
+                analyzerConfigOptions.TryGetValue("end_of_line", out var endOfLineOption))
             {
                 endOfLine = GetEndOfLine(endOfLineOption);
                 return true;

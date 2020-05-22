@@ -6,10 +6,10 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         public async Task<Solution> FormatAsync(
             Solution solution,
-            ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
+            ImmutableArray<DocumentWithOptions> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             List<FormattedFile> formattedFiles,
@@ -41,8 +41,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected abstract Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
-            OptionSet options,
-            ICodingConventionsSnapshot codingConventions,
+            OptionSet optionSet,
+            AnalyzerConfigOptions? analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken);
@@ -52,20 +52,21 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         private ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> FormatFiles(
             Solution solution,
-            ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
+            ImmutableArray<DocumentWithOptions> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<(SourceText originalText, SourceText? formattedText)>)>(formattableDocuments.Length);
 
-            foreach (var (documentId, options, codingConventions) in formattableDocuments)
+            foreach (var formattableDocument in formattableDocuments)
             {
-                var document = solution.GetDocument(documentId);
+                var document = solution.GetDocument(formattableDocument.Document.Id);
                 if (document is null)
                     continue;
 
-                var formatTask = Task.Run(async () => await GetFormattedSourceTextAsync(document, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false), cancellationToken);
+                var formatTask = Task.Run(async ()
+                    => await GetFormattedSourceTextAsync(document, formattableDocument.OptionSet, formattableDocument.AnalyzerConfigOptions, formatOptions, logger, cancellationToken).ConfigureAwait(false), cancellationToken);
 
                 formattedDocuments.Add((document, formatTask));
             }
@@ -78,14 +79,14 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         private async Task<(SourceText originalText, SourceText? formattedText)> GetFormattedSourceTextAsync(
             Document document,
-            OptionSet options,
-            ICodingConventionsSnapshot codingConventions,
+            OptionSet optionSet,
+            AnalyzerConfigOptions? analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
-            var formattedSourceText = await FormatFileAsync(document, originalSourceText, options, codingConventions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
+            var formattedSourceText = await FormatFileAsync(document, originalSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
 
             return !formattedSourceText.ContentEquals(originalSourceText) || !formattedSourceText.Encoding?.Equals(originalSourceText.Encoding) == true
                 ? (originalSourceText, formattedSourceText)

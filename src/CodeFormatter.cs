@@ -10,14 +10,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Logging;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools
 {
@@ -30,6 +29,9 @@ namespace Microsoft.CodeAnalysis.Tools
             new EndOfLineFormatter(),
             new CharsetFormatter(),
         }.ToImmutableArray();
+
+        private static readonly Dictionary<ProjectId, AnalyzerConfigSet> s_analyzerConfigSets = new Dictionary<ProjectId, AnalyzerConfigSet>();
+        private static readonly Dictionary<AnalyzerConfigOptionsResult, EditorConfigOptions> s_editorConfigOptions = new Dictionary<AnalyzerConfigOptionsResult, EditorConfigOptions>();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
             FormatOptions options,
@@ -46,8 +48,10 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var workspaceStopwatch = Stopwatch.StartNew();
 
-            using var workspace = await OpenWorkspaceAsync(
-                workspaceFilePath, workspaceType, fileMatcher, logWorkspaceWarnings, logger, cancellationToken, createBinaryLog).ConfigureAwait(false);
+            using var workspace = workspaceType == WorkspaceType.Folder
+                ? await OpenFolderWorkspaceAsync(workspaceFilePath, fileMatcher, cancellationToken).ConfigureAwait(false)
+                : await OpenMSBuildWorkspaceAsync(workspaceFilePath, workspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
+
             if (workspace is null)
             {
                 return new WorkspaceFormatResult(filesFormatted: 0, fileCount: 0, exitCode: 1);
@@ -61,7 +65,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             logger.LogTrace(Resources.Determining_formattable_files);
 
-            var (fileCount, formatableFiles) = await DetermineFormattableFiles(
+            var (fileCount, formatableFiles) = await DetermineFormattableFilesAsync(
                 solution, projectPath, fileMatcher, includeGeneratedFiles, logger, cancellationToken).ConfigureAwait(false);
 
             var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
@@ -144,32 +148,20 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        private static async Task<Workspace?> OpenWorkspaceAsync(
-            string workspacePath,
-            WorkspaceType workspaceType,
-            Matcher fileMatcher,
-            bool logWorkspaceWarnings,
-            ILogger logger,
-            CancellationToken cancellationToken,
-            bool createBinaryLog = false)
+        private static async Task<Workspace> OpenFolderWorkspaceAsync(string workspacePath, Matcher fileMatcher, CancellationToken cancellationToken)
         {
-            if (workspaceType == WorkspaceType.Folder)
-            {
-                var folderWorkspace = FolderWorkspace.Create();
-                await folderWorkspace.OpenFolder(workspacePath, fileMatcher, cancellationToken);
-                return folderWorkspace;
-            }
-
-            return await OpenMSBuildWorkspaceAsync(workspacePath, workspaceType, logWorkspaceWarnings, logger, cancellationToken, createBinaryLog);
+            var folderWorkspace = FolderWorkspace.Create();
+            await folderWorkspace.OpenFolder(workspacePath, fileMatcher, cancellationToken).ConfigureAwait(false);
+            return folderWorkspace;
         }
 
         private static async Task<Workspace?> OpenMSBuildWorkspaceAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
+            bool createBinaryLog,
             bool logWorkspaceWarnings,
             ILogger logger,
-            CancellationToken cancellationToken,
-            bool createBinaryLog = false)
+            CancellationToken cancellationToken)
         {
             var properties = new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -215,36 +207,36 @@ namespace Microsoft.CodeAnalysis.Tools
             LogWorkspaceDiagnostics(logger, logWorkspaceWarnings, workspace.Diagnostics);
 
             return workspace;
-        }
 
-        private static void LogWorkspaceDiagnostics(ILogger logger, bool logWorkspaceWarnings, ImmutableList<WorkspaceDiagnostic> diagnostics)
-        {
-            if (!logWorkspaceWarnings)
+            static void LogWorkspaceDiagnostics(ILogger logger, bool logWorkspaceWarnings, ImmutableList<WorkspaceDiagnostic> diagnostics)
             {
-                if (diagnostics.Count > 0)
+                if (!logWorkspaceWarnings)
                 {
-                    logger.LogWarning(Resources.Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings);
+                    if (diagnostics.Count > 0)
+                    {
+                        logger.LogWarning(Resources.Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings);
+                    }
+
+                    return;
                 }
 
-                return;
-            }
-
-            foreach (var diagnostic in diagnostics)
-            {
-                if (diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
+                foreach (var diagnostic in diagnostics)
                 {
-                    logger.LogError(diagnostic.Message);
-                }
-                else
-                {
-                    logger.LogWarning(diagnostic.Message);
+                    if (diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
+                    {
+                        logger.LogError(diagnostic.Message);
+                    }
+                    else
+                    {
+                        logger.LogWarning(diagnostic.Message);
+                    }
                 }
             }
         }
 
         private static async Task<Solution> RunCodeFormattersAsync(
             Solution solution,
-            ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
+            ImmutableArray<DocumentWithOptions> formattableDocuments,
             FormatOptions options,
             ILogger logger,
             List<FormattedFile> formattedFiles,
@@ -260,7 +252,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return formattedSolution;
         }
 
-        internal static async Task<(int, ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)>)> DetermineFormattableFiles(
+        internal static async Task<(int, ImmutableArray<DocumentWithOptions>)> DetermineFormattableFilesAsync(
             Solution solution,
             string projectPath,
             Matcher fileMatcher,
@@ -268,16 +260,20 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var codingConventionsManager = CodingConventionsManagerFactory.CreateCodingConventionsManager();
-            var optionsApplier = new EditorConfigOptionsApplier();
+            var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count);
+            int projectFileCount = 0;
 
-            var fileCount = 0;
-            var getDocumentsAndOptions = new List<Task<(Document?, OptionSet?, ICodingConventionsSnapshot?, bool)>>(solution.Projects.Sum(project => project.DocumentIds.Count));
+            var documentsCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentWithOptions>(totalFileCount);
+            var documentsNotCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentWithOptions>(totalFileCount);
+
+            var addedFilePaths = new HashSet<string>(totalFileCount);
 
             foreach (var project in solution.Projects)
             {
-                if (project.FilePath is null)
+                if (project?.FilePath is null)
+                {
                     continue;
+                }
 
                 // If a project is used as a workspace, then ignore other referenced projects.
                 if (!string.IsNullOrEmpty(projectPath) && !project.FilePath.Equals(projectPath, StringComparison.OrdinalIgnoreCase))
@@ -293,99 +289,105 @@ namespace Microsoft.CodeAnalysis.Tools
                     continue;
                 }
 
-                fileCount += project.DocumentIds.Count;
+                projectFileCount += project.DocumentIds.Count;
 
-                // Get project documents and options with .editorconfig settings applied.
-                var getProjectDocuments = project.DocumentIds.Select(documentId => GetDocumentAndOptions(
-                    project, documentId, fileMatcher, includeGeneratedFiles, codingConventionsManager, optionsApplier, cancellationToken));
-                getDocumentsAndOptions.AddRange(getProjectDocuments);
+                foreach (var document in project.Documents)
+                {
+                    // If we've already added this document, either via a link or multi-targeted framework, then ignore.
+                    if (document?.FilePath is null ||
+                        addedFilePaths.Contains(document.FilePath))
+                    {
+                        continue;
+                    }
+
+                    addedFilePaths.Add(document.FilePath);
+
+                    if (!fileMatcher.Match(document.FilePath).HasMatches ||
+                        !document.SupportsSyntaxTree)
+                    {
+                        continue;
+                    }
+
+                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+                    if (syntaxTree is null)
+                    {
+                        throw new Exception($"Unable to get a syntax tree for '{document.Name}'");
+                    }
+
+                    if (!includeGeneratedFiles &&
+                        await GeneratedCodeUtilities.IsGeneratedCodeAsync(syntaxTree, cancellationToken).ConfigureAwait(false))
+                    {
+                        continue;
+                    }
+
+                    var analyzerConfigOptions = await GetAnalyzerConfigOptionsAsync(document, cancellationToken).ConfigureAwait(false);
+                    var optionSet = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
+
+                    var formattableDocument = new DocumentWithOptions(document, optionSet, analyzerConfigOptions);
+
+                    // Track files covered by and editorconfig and those not covered.
+                    if (formattableDocument.AnalyzerConfigOptions is object)
+                    {
+                        documentsCoveredByEditorConfig.Add(formattableDocument);
+                    }
+                    else
+                    {
+                        documentsNotCoveredByEditorConfig.Add(formattableDocument);
+                    }
+                }
             }
 
-            var documentsAndOptions = await Task.WhenAll(getDocumentsAndOptions).ConfigureAwait(false);
-            var foundEditorConfig = documentsAndOptions.Any(documentAndOptions => documentAndOptions.Item4);
-
-            var addedFilePaths = new HashSet<string>(documentsAndOptions.Length);
-            var formattableFiles = ImmutableArray.CreateBuilder<(DocumentId, OptionSet, ICodingConventionsSnapshot)>(documentsAndOptions.Length);
-            foreach (var (document, options, codingConventions, hasEditorConfig) in documentsAndOptions)
-            {
-                if (document?.FilePath is null)
-                {
-                    continue;
-                }
-
-                // If any code file has an .editorconfig, then we should ignore files without an .editorconfig entry.
-                if (foundEditorConfig && !hasEditorConfig)
-                {
-                    continue;
-                }
-
-                // If we've already added this document, either via a link or multi-targeted framework, then ignore.
-                if (addedFilePaths.Contains(document.FilePath))
-                {
-                    continue;
-                }
-
-                addedFilePaths.Add(document.FilePath);
-                formattableFiles.Add((document.Id, options, codingConventions));
-            }
-
-            return (fileCount, formattableFiles.ToImmutableArray());
+            // If no files are covered by an editorconfig, then return them all. Otherwise only return
+            // files that are covered by an editorconfig.
+            return documentsCoveredByEditorConfig.Count == 0
+                ? (projectFileCount, documentsNotCoveredByEditorConfig.ToImmutableArray())
+                : (projectFileCount, documentsCoveredByEditorConfig.ToImmutableArray());
         }
 
-        private static async Task<(Document?, OptionSet?, ICodingConventionsSnapshot?, bool)> GetDocumentAndOptions(
-            Project project,
-            DocumentId documentId,
-            Matcher fileMatcher,
-            bool includeGeneratedFiles,
-            ICodingConventionsManager codingConventionsManager,
-            EditorConfigOptionsApplier optionsApplier,
-            CancellationToken cancellationToken)
+        private static async Task<AnalyzerConfigOptions?> GetAnalyzerConfigOptionsAsync(Document document, CancellationToken cancellationToken)
         {
-            var document = project.Solution.GetDocument(documentId);
+            // Once https://github.com/dotnet/roslyn/issues/42154 is fixed we should be able to request
+            // options from document.Project directly. For now we will create AnalyzerConfigSets ourselves
+            // and return our own AnalyzerConfigOptions class.
+            var configSet = await GetAnalyzerConfigSetAsync(document.Project, cancellationToken).ConfigureAwait(false);
+            var result = configSet.GetOptionsForSourcePath(document.FilePath!);
 
-            if (document is null || await ShouldIgnoreDocument(document, fileMatcher, includeGeneratedFiles, cancellationToken))
+            if (result.AnalyzerOptions.Count == 0)
             {
-                return (null, null, null, false);
+                return null;
             }
 
-            var context = await codingConventionsManager.GetConventionContextAsync(
-                document.FilePath, cancellationToken).ConfigureAwait(false);
-
-            OptionSet options = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
-
-            // Check whether an .editorconfig was found for this document.
-            if (context?.CurrentConventions is null)
+            // The compiler will reuse the same instance of AnalyzerOptions if matched .editorconfig sections
+            // for multiple files are the same.
+            if (s_editorConfigOptions.TryGetValue(result, out var editorConfigOptions))
             {
-                return (document, options, null, false);
+                return editorConfigOptions;
             }
 
-            options = optionsApplier.ApplyConventions(options, context.CurrentConventions, project.Language);
-            return (document, options, context.CurrentConventions, true);
+            var configOptions = new EditorConfigOptions(result.AnalyzerOptions);
+            s_editorConfigOptions[result] = configOptions;
+            return configOptions;
         }
 
-        private static async Task<bool> ShouldIgnoreDocument(
-            Document document,
-            Matcher fileMatcher,
-            bool includeGeneratedFiles,
-            CancellationToken cancellationToken)
+        private static async Task<AnalyzerConfigSet> GetAnalyzerConfigSetAsync(Project project, CancellationToken cancellationToken)
         {
-            if (!fileMatcher.Match(document.FilePath).HasMatches)
+            if (s_analyzerConfigSets.TryGetValue(project.Id, out var configSet))
             {
-                // If a files list was passed in, then ignore files not present in the list.
-                return true;
+                return configSet;
             }
-            else if (!document.SupportsSyntaxTree)
+
+            var parseConfigs = project.AnalyzerConfigDocuments.Select(ParseAnalyzerConfigAsync);
+            var configs = await Task.WhenAll(parseConfigs);
+            configSet = AnalyzerConfigSet.Create(configs);
+
+            s_analyzerConfigSets[project.Id] = configSet;
+
+            return configSet;
+
+            async Task<AnalyzerConfig> ParseAnalyzerConfigAsync(AnalyzerConfigDocument document)
             {
-                return true;
-            }
-            else if (!includeGeneratedFiles && await GeneratedCodeUtilities.IsGeneratedCodeAsync(document, cancellationToken).ConfigureAwait(false))
-            {
-                // Ignore generated code files.
-                return true;
-            }
-            else
-            {
-                return false;
+                var text = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
+                return AnalyzerConfig.Parse(text, document.FilePath!);
             }
         }
     }
