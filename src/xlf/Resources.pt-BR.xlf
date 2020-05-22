@@ -27,6 +27,11 @@
         <target state="new">Cannot specify both folder and workspace options.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_both_project_argument_and_workspace_option">
+        <source>Cannot specify both project argument and workspace option.</source>
+        <target state="new">Cannot specify both project argument and workspace option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Complete_in_0_ms">
         <source>Complete in {0}ms.</source>
         <target state="new">Complete in {0}ms.</target>
@@ -190,6 +195,11 @@
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
         <source>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</source>
         <target state="new">Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Workspace_option_is_deprecated_Use_the_project_argument_instead">
+        <source>"workspace" option is deprecated. Use the project argument instead.</source>
+        <target state="new">"workspace" option is deprecated. Use the project argument instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="Writing_formatting_report_to_0">

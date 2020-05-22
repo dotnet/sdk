@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -27,8 +29,21 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static async Task<int> Main(string[] args)
         {
+            var rootCommand = CreateCommandLineOptions();
+
+            // Parse the incoming args and invoke the handler
+            return await rootCommand.InvokeAsync(args);
+        }
+
+        internal static RootCommand CreateCommandLineOptions()
+        {
             var rootCommand = new RootCommand
             {
+                new Argument<string>("project")
+                {
+                    Arity = ArgumentArity.ZeroOrOne,
+                    Description = Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one
+                },
                 new Option(new[] { "--folder", "-f" }, Resources.The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option)
                 {
                     Argument = new Argument<string?>(() => null)
@@ -65,13 +80,51 @@ namespace Microsoft.CodeAnalysis.Tools
             };
 
             rootCommand.Description = "dotnet-format";
+            rootCommand.AddValidator(ValidateProjectArgumentAndWorkspace);
+            rootCommand.AddValidator(ValidateWorkspaceAndFolder);
             rootCommand.Handler = CommandHandler.Create(typeof(Program).GetMethod(nameof(Run)));
+            return rootCommand;
 
-            // Parse the incoming args and invoke the handler
-            return await rootCommand.InvokeAsync(args);
+            static string? ValidateProjectArgumentAndWorkspace(CommandResult symbolResult)
+            {
+                try
+                {
+                    var project = symbolResult.GetArgumentValueOrDefault<string>("project");
+                    var workspace = symbolResult.ValueForOption<string>("workspace");
+                    if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(workspace))
+                    {
+                        return Resources.Cannot_specify_both_project_argument_and_workspace_option;
+                    }
+                }
+                catch (InvalidOperationException) // Parsing of arguments failed. This will be reported later.
+                {
+                }
+
+                return null;
+            }
+
+            static string? ValidateWorkspaceAndFolder(CommandResult symbolResult)
+            {
+                try
+                {
+                    var project = symbolResult.GetArgumentValueOrDefault<string>("project");
+                    var workspace = symbolResult.ValueForOption<string>("workspace");
+                    var folder = symbolResult.ValueForOption<string>("folder");
+                    project ??= workspace;
+                    if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(folder))
+                    {
+                        return Resources.Cannot_specify_both_folder_and_workspace_options;
+                    }
+                }
+                catch (InvalidOperationException)// Parsing of arguments failed. This will be reported later.
+                {
+                }
+
+                return null;
+            }
         }
 
-        public static async Task<int> Run(string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
+        public static async Task<int> Run(string? project, string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
         {
             // Setup logging.
             var serviceCollection = new ServiceCollection();
@@ -98,13 +151,13 @@ namespace Microsoft.CodeAnalysis.Tools
                 string workspaceDirectory;
                 string workspacePath;
                 WorkspaceType workspaceType;
-
-                if (!string.IsNullOrEmpty(folder) && !string.IsNullOrEmpty(workspace))
+                if (!string.IsNullOrEmpty(workspace) && string.IsNullOrEmpty(project))
                 {
-                    logger.LogWarning(Resources.Cannot_specify_both_folder_and_workspace_options);
-                    return 1;
+                    logger.LogWarning(Resources.Workspace_option_is_deprecated_Use_the_project_argument_instead);
                 }
-                else if (!string.IsNullOrEmpty(workspace))
+
+                workspace ??= project;
+                if (!string.IsNullOrEmpty(workspace))
                 {
                     var (isSolution, workspaceFilePath) = MSBuildWorkspaceFinder.FindWorkspace(currentDirectory, workspace);
 
@@ -118,7 +171,10 @@ namespace Microsoft.CodeAnalysis.Tools
                     // a global.json if present.
                     var directoryName = Path.GetDirectoryName(workspacePath);
                     if (directoryName is null)
+                    {
                         throw new Exception($"Unable to find folder at '{workspacePath}'");
+                    }
+
                     workspaceDirectory = directoryName;
                 }
                 else
