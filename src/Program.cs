@@ -157,12 +157,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 }
 
                 workspace ??= project;
-                if (!string.IsNullOrEmpty(folder) && !string.IsNullOrEmpty(workspace))
-                {
-                    logger.LogWarning(Resources.Cannot_specify_both_folder_and_workspace_options);
-                    return 1;
-                }
-                else if (!string.IsNullOrEmpty(workspace))
+                if (!string.IsNullOrEmpty(workspace))
                 {
                     var (isSolution, workspaceFilePath) = MSBuildWorkspaceFinder.FindWorkspace(currentDirectory, workspace);
 
@@ -176,7 +171,10 @@ namespace Microsoft.CodeAnalysis.Tools
                     // a global.json if present.
                     var directoryName = Path.GetDirectoryName(workspacePath);
                     if (directoryName is null)
+                    {
                         throw new Exception($"Unable to find folder at '{workspacePath}'");
+                    }
+
                     workspaceDirectory = directoryName;
                 }
                 else
