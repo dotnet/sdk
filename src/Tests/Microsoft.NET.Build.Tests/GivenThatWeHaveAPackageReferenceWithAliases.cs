@@ -7,6 +7,7 @@ using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -44,8 +45,8 @@ namespace Microsoft.NET.Build.Tests
                     aliases: "Special"));
             var packagesPaths = packageReferences.Select(e => Path.GetDirectoryName(e.NupkgPath));
 
-            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources",
-                                     "$(RestoreAdditionalProjectSources);" + string.Join(";", packagesPaths));
+            testProject.AdditionalProperties.Add("RestoreSources",
+                                     "$(RestoreSources);" + string.Join(";", packagesPaths));
 
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
@@ -53,7 +54,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            buildCommand.Execute()
+                        buildCommand.Execute()
                 .Should()
                 .Pass();
         }
@@ -89,8 +90,8 @@ namespace Microsoft.NET.Build.Tests
                    packageReferenceB.PrivateAssets,
                    aliases: "Second"));
 
-            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources",
-                                     "$(RestoreAdditionalProjectSources);" + Path.GetDirectoryName(packageReferenceA.NupkgPath) + ";" + Path.GetDirectoryName(packageReferenceB.NupkgPath));
+            testProject.AdditionalProperties.Add("RestoreSources",
+                                     "$(RestoreSources);" + Path.GetDirectoryName(packageReferenceA.NupkgPath) + ";" + Path.GetDirectoryName(packageReferenceB.NupkgPath));
 
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
@@ -126,8 +127,8 @@ namespace Microsoft.NET.Build.Tests
                    packageReferenceA.PrivateAssets,
                    aliases: "First,Second"));
 
-            testProject.AdditionalProperties.Add("RestoreAdditionalProjectSources",
-                                     "$(RestoreAdditionalProjectSources);" + Path.GetDirectoryName(packageReferenceA.NupkgPath));
+            testProject.AdditionalProperties.Add("RestoreSources",
+                                     "$(RestoreSources);" + Path.GetDirectoryName(packageReferenceA.NupkgPath));
 
             //  Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
