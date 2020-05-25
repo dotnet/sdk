@@ -90,6 +90,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool IsSelfContained { get; set; }
 
+        public bool IsSingleFile { get; set; }
+
         public bool IncludeRuntimeFileVersions { get; set; }
 
         [Required]
@@ -169,7 +171,11 @@ namespace Microsoft.NET.Build.Tasks
                 SingleProjectInfo.CreateProjectReferenceInfos(ReferencePaths, ReferenceSatellitePaths, isUserRuntimeAssembly);
 
             IEnumerable<RuntimePackAssetInfo> runtimePackAssets =
-                IsSelfContained ? RuntimePackAssets.Select(item => RuntimePackAssetInfo.FromItem(item)) : Enumerable.Empty<RuntimePackAssetInfo>();
+                IsSelfContained ? 
+                    IsSingleFile ? RuntimePackAssets.Where(item => !item.GetMetadata(MetadataKeys.DropFromSingleFile).Equals("true"))
+                                                    .Select(item => RuntimePackAssetInfo.FromItem(item)) :
+                                   RuntimePackAssets.Select(item => RuntimePackAssetInfo.FromItem(item)) : 
+                    Enumerable.Empty<RuntimePackAssetInfo>();
 
             DependencyContextBuilder builder;
             if (projectContext != null)
