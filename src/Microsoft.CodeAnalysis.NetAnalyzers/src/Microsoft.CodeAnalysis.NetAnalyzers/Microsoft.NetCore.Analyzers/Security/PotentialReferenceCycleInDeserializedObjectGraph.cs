@@ -12,19 +12,19 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.NetCore.Analyzers.Security
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class DoNotReferSelfInSerializableClass : DiagnosticAnalyzer
+    public sealed class PotentialReferenceCycleInDeserializedObjectGraph : DiagnosticAnalyzer
     {
         internal const string DiagnosticId = "CA5362";
         private static readonly LocalizableString s_Title = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotReferSelfInSerializableClass),
+            nameof(MicrosoftNetCoreAnalyzersResources.PotentialReferenceCycleInDeserializedObjectGraphTitle),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_Message = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotReferSelfInSerializableClassMessage),
+            nameof(MicrosoftNetCoreAnalyzersResources.PotentialReferenceCycleInDeserializedObjectGraphMessage),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_Description = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotReferSelfInSerializableClassDescription),
+            nameof(MicrosoftNetCoreAnalyzersResources.PotentialReferenceCycleInDeserializedObjectGraphDescription),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
 
