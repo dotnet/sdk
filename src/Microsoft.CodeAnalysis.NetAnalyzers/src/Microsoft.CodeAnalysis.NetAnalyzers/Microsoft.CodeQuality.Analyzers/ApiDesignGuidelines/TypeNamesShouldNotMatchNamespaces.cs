@@ -154,9 +154,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 lock (s_lock)
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code - https://github.com/dotnet/roslyn-analyzers/issues/2180
                     if (s_wellKnownSystemNamespaceTable == null)
-#pragma warning restore CA1508 // Avoid dead conditional code
                     {
                         #region List of Well known System Namespaces
                         var wellKnownSystemNamespaces = new List<string>
