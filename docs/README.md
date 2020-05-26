@@ -8,10 +8,10 @@
 
 ### Specify a workspace (Required)
 
-It is required to specify a workspace when running dotnet-format. Choosing a workspace determines which code files are considered for formatting.
+A project path is needed when running dotnet-format. By default, the current folder will be used as the project path. The project path and type of project determines which code files are considered for formatting.
 
-- `--folder` - The folder to operate on. Cannot be used with the `--workspace` option.
-- `--workspace` - The solution or project file to operate on. If a file is not specified, the command will search the current directory for one.
+- Solutions and Projects - By default dotnet-format will open the project path as a MSBuild solution or project.
+- `--folder` - When the folder options is specified the project path will be treated as a folder of code files.
 
 ### Filter files to format
 
@@ -27,7 +27,7 @@ Other repos built as part of your project can be included using git submodules. 
 The following command sets the repo folder as the workspace. It then includes the `src` and `tests` folders for formatting. The `submodule-a` folder is excluded from the formatting validation.
 
 ```console
-dotnet format -f . --include ./src/ ./tests/ --exclude ./src/submodule-a/ --check
+dotnet format -f --include ./src/ ./tests/ --exclude ./src/submodule-a/ --check
 ```
 
 ### Logging and Reports

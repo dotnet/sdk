@@ -171,7 +171,7 @@
   <data name="Format_files_but_do_not_save_changes_to_disk" xml:space="preserve">
     <value>Format files, but do not save changes to disk.</value>
   </data>
-  <data name="Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted" xml:space="preserve">
+  <data name="Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted" xml:space="preserve">
     <value>Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</value>
   </data>
   <data name="A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty" xml:space="preserve">
@@ -204,8 +204,8 @@
   <data name="Fix_file_encoding" xml:space="preserve">
     <value>Fix file encoding.</value>
   </data>
-  <data name="The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option" xml:space="preserve">
-    <value>The folder to operate on. Cannot be used with the `--workspace` option.</value>
+  <data name="Whether_to_treat_the_project_path_as_a_folder_of_files" xml:space="preserve">
+    <value>Whether to treat the `&lt;project&gt;` path as a folder of files.</value>
   </data>
   <data name="Cannot_specify_both_folder_and_workspace_options" xml:space="preserve">
     <value>Cannot specify both folder and workspace options.</value>
@@ -220,12 +220,36 @@
     <value>A list of relative file or folder paths to exclude from formatting.</value>
   </data>
   <data name="Using_msbuildexe_located_in_0" xml:space="preserve">
-    <value>Using MSBuild.exe located in '{0}'</value>
+    <value>Using MSBuild.exe located in '{0}'.</value>
   </data>
   <data name="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer" xml:space="preserve">
     <value>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</value>
   </data>
   <data name="Include_generated_code_files_in_formatting_operations" xml:space="preserve">
     <value>Include generated code files in formatting operations.</value>
+  </data>
+  <data name="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH" xml:space="preserve">
+    <value>Unable to locate dotnet CLI. Ensure that it is on the PATH.</value>
+  </data>
+  <data name="The_dotnet_CLI_version_is_0" xml:space="preserve">
+    <value>The dotnet CLI version is '{0}'.</value>
+  </data>
+  <data name="Cannot_specify_both_project_argument_and_workspace_option" xml:space="preserve">
+    <value>Cannot specify both project argument and workspace option.</value>
+  </data>
+  <data name="Cannot_specify_both_project_argument_and_folder_options" xml:space="preserve">
+    <value>Cannot specify both project argument and folder options.</value>
+  </data>
+  <data name="The_workspace_option_is_deprecated_Use_the_project_argument_instead" xml:space="preserve">
+    <value>The `--workspace` option is deprecated. Use the `&lt;project&gt;` argument instead.</value>
+  </data>
+    <data name="The_folder_option_is_deprecated_for_specifying_the_path_Pass_the_folder_option_but_specify_the_path_with_the_project_argument_instead" xml:space="preserve">
+    <value>The `--folder` option is deprecated for specifying the path. Pass the `--folder` option but specify the path with the project argument instead.</value>
+  </data>
+  <data name="The_files_option_is_deprecated_Use_the_include_option_instead" xml:space="preserve">
+    <value>The `--files` option is deprecated. Use the `--include` option instead.</value>
+  </data>
+    <data name="The_dry_run_option_is_deprecated_Use_the_check_option_instead" xml:space="preserve">
+    <value>The `--dry-run` option is deprecated. Use the `--check` option instead.</value>
   </data>
 </root>

@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "format -f . --check",
+      "name": "format -f --check",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
@@ -13,7 +13,6 @@
       "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
       "args": [
         "-f",
-        ".",
         "-v",
         "diag",
         "--check"
