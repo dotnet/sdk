@@ -203,7 +203,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 if (operation == null)
                 {
-                    // Null instance is replacable.
+                    // Null instance is replacable. For example, null instance for a static field/property reference which is used to invoke an instance member, say "SomeType.StaticField.InstanceMethod();"
                     return true;
                 }
 
