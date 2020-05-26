@@ -39,7 +39,17 @@ namespace Microsoft.CodeAnalysis.Tools
             return await rootCommand.InvokeAsync(args);
         }
 
-        public static async Task<int> Run(string? project, string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
+        public static async Task<int> Run(
+            string? project,
+            string? folder,
+            string? workspace,
+            string? verbosity,
+            bool check,
+            string[] include,
+            string[] exclude,
+            string? report,
+            bool includeGenerated,
+            IConsole console = null!)
         {
             if (s_parseResult == null)
             {
