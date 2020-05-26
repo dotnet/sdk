@@ -184,7 +184,7 @@ Public Class MembersTests
 End Class");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_ReferencesInSameType_MemberReferences()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -288,7 +288,7 @@ Public Class C
 End Class");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_ReferencesInSameType_Invocations()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -297,6 +297,8 @@ public class C
     private int x;
     private C fieldC;
     private C PropertyC { get; set; }
+    private static C staticFieldC;
+    private static C StaticPropertyC { get; set; }
 
     public int [|M1|]()
     {
@@ -306,7 +308,7 @@ public class C
     public void M2(C paramC)
     {
         var localC = fieldC;
-        x = M1() + paramC.M1() + localC.M1() + fieldC.M1() + PropertyC.M1() + fieldC.PropertyC.M1() + this.M1();
+        x = M1() + paramC.M1() + localC.M1() + fieldC.M1() + PropertyC.M1() + fieldC.PropertyC.M1() + this.M1() + C.staticFieldC.M1() + StaticPropertyC.M1();
     }
 }",
 @"
@@ -315,6 +317,8 @@ public class C
     private int x;
     private C fieldC;
     private C PropertyC { get; set; }
+    private static C staticFieldC;
+    private static C StaticPropertyC { get; set; }
 
     public static int M1()
     {
@@ -324,7 +328,7 @@ public class C
     public void M2(C paramC)
     {
         var localC = fieldC;
-        x = M1() + M1() + M1() + M1() + M1() + M1() + M1();
+        x = M1() + M1() + M1() + M1() + M1() + M1() + M1() + M1() + M1();
     }
 }");
         }
@@ -364,7 +368,7 @@ Public Class C
 End Class");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_ReferencesInSameFile_MemberReferences()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -425,7 +429,7 @@ class C2
 }");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_ReferencesInSameFile_Invocations()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -480,7 +484,7 @@ class C2
 }");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_ReferencesInMultipleFiles_MemberReferences()
         {
             await new VerifyCS.Test
@@ -592,7 +596,7 @@ class C3
             }.RunAsync();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_ReferencesInMultipleFiles_Invocations()
         {
             await new VerifyCS.Test
@@ -692,7 +696,7 @@ class C3
             }.RunAsync();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_ReferenceInArgument()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -758,7 +762,7 @@ Public Class C
 End Class");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_GenericMethod()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -809,10 +813,63 @@ public class C2<T2>
     public void M2(C paramC)
     {
         // Explicit type argument
-        C.M1<int>(fieldC, 0);
+        C.M1(fieldC, 0);
 
         // Implicit type argument
         C.M1(fieldC, this);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TestCSharp_GenericMethod_02()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class C
+{
+    private C fieldC;
+    public C [|M1|]<T>(C c)
+    {
+        return c;
+    }
+
+    public C M1<T>(T t)
+    {
+        return fieldC;
+    }
+}
+
+public class C2<T2>
+{
+    private C fieldC;
+    public void M2(C paramC)
+    {
+        // Explicit type argument
+        paramC.M1<int>(fieldC);
+    }
+}",
+@"
+public class C
+{
+    private C fieldC;
+    public static C M1<T>(C c)
+    {
+        return c;
+    }
+
+    public C M1<T>(T t)
+    {
+        return fieldC;
+    }
+}
+
+public class C2<T2>
+{
+    private C fieldC;
+    public void M2(C paramC)
+    {
+        // Explicit type argument
+        C.M1<int>(fieldC);
     }
 }");
         }
@@ -870,7 +927,7 @@ Public Class C2(Of T2)
 End Class");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_InvocationInInstance()
         {
             // We don't make the replacement if instance has an invocation.
@@ -913,7 +970,7 @@ public class C
     public C M2(C paramC)
     {
         var localC = fieldC;
-        return M1(paramC).M1(M1(localC));
+        return {|CS0176:M1(paramC).M1|}(M1(localC));
     }
 }",
                     },
@@ -1036,7 +1093,7 @@ Public Class C
 End Class");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2286")]
+        [Fact]
         public async Task TestCSharp_FixAll()
         {
             await new VerifyCS.Test
