@@ -169,7 +169,11 @@ class MyAsyncDisposable : IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = code
+            }.RunAsync();
         }
 
         [Fact]
