@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "dotnet-format -f . --dry-run",
+      "name": "dotnet-format -f --check",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
@@ -13,10 +13,9 @@
       "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
       "args": [
         "-f",
-        ".",
         "-v",
         "diag",
-        "--dry-run"
+        "--check",
       ],
       "cwd": "${workspaceFolder}/src",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -24,18 +23,17 @@
       "stopAtEntry": false
     },
     {
-      "name": "dotnet-format -w format.sln --dry-run",
+      "name": "dotnet-format format.sln --check",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
       "args": [
-        "-w",
         "format.sln",
         "-v",
         "diag",
-        "--dry-run"
+        "--check"
       ],
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

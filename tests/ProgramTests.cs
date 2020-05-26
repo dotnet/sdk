@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_OptionsAreParsedCorrectly()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] {
@@ -80,7 +80,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_Simple()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] { "projectValue" });
@@ -94,7 +94,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_WithOption_AfterArgument()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] { "projectValue", "--verbosity", "verbosity" });
@@ -109,7 +109,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_WithOption_BeforeArgument()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] { "--verbosity", "verbosity", "projectValue" });
@@ -124,7 +124,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_GetsPassedToHandler()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
             var handlerWasCalled = false;
             sut.Handler = CommandHandler.Create(new TestCommandHandlerDelegate(TestCommandHandler));
 
@@ -147,7 +147,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgument_FailesIfSpecifiedTwice()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] { "projectValue1", "projectValue2" });
@@ -160,7 +160,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectArgumentAndWorkspaceCanNotBeCombined()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] { "projectValue", "--workspace", "workspace" });
@@ -170,10 +170,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
-        public void CommandLine_ProjectWorkspaceAndFolderCanNotBeCombined1()
+        public void CommandLine_ProjectArgumentAndFolderCanNotBeCombined1()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] { "projectValue", "--folder", "folder" });
@@ -186,7 +186,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_ProjectWorkspaceAndFolderCanNotBeCombined2()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] { "--workspace", "workspace", "--folder", "folder" });
@@ -199,7 +199,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public void CommandLine_InvalidArgumentsDontCrashTheValidators()
         {
             // Arrange
-            var sut = Program.CreateCommandLineOptions();
+            var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
             var result = sut.Parse(new[] { "--workspace", "workspace1", "--workspace", "workspace2" });

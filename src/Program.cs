@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
@@ -27,112 +26,39 @@ namespace Microsoft.CodeAnalysis.Tools
         internal const int UnableToLocateMSBuildExitCode = 3;
         internal const int UnableToLocateDotNetCliExitCode = 4;
 
+        private static ParseResult? s_parseResult;
+
         private static async Task<int> Main(string[] args)
         {
-            var rootCommand = CreateCommandLineOptions();
+            var rootCommand = FormatCommand.CreateCommandLineOptions();
+            rootCommand.Handler = CommandHandler.Create(typeof(Program).GetMethod(nameof(Run)));
 
-            // Parse the incoming args and invoke the handler
+            // Parse the incoming args so we can give warnings when deprecated options are used.
+            s_parseResult = rootCommand.Parse(args);
+
             return await rootCommand.InvokeAsync(args);
         }
 
-        internal static RootCommand CreateCommandLineOptions()
+        public static async Task<int> Run(
+            string? project,
+            string? folder,
+            string? workspace,
+            string? verbosity,
+            bool check,
+            string[] include,
+            string[] exclude,
+            string? report,
+            bool includeGenerated,
+            IConsole console = null!)
         {
-            var rootCommand = new RootCommand
+            if (s_parseResult == null)
             {
-                new Argument<string>("project")
-                {
-                    Arity = ArgumentArity.ZeroOrOne,
-                    Description = Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one
-                },
-                new Option(new[] { "--folder", "-f" }, Resources.The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option)
-                {
-                    Argument = new Argument<string?>(() => null)
-                },
-                new Option(new[] { "--workspace", "-w" }, Resources.The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one)
-                {
-                    Argument = new Argument<string?>(() => null)
-                },
-                new Option(new[] { "--include", "--files" }, Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
-                {
-                    Argument = new Argument<string[]>(() => Array.Empty<string>())
-                },
-                new Option(new[] { "--exclude" }, Resources.A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting)
-                {
-                    Argument = new Argument<string[]>(() => Array.Empty<string>())
-                },
-                new Option(new[] { "--check", "--dry-run" }, Resources.Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted)
-                {
-                    Argument = new Argument<bool>()
-                },
-                new Option(new[] { "--report" }, Resources.Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory)
-                {
-                    Argument = new Argument<string?>(() => null)
-                },
-                new Option(new[] { "--verbosity", "-v" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic)
-                {
-                    Argument = new Argument<string?>() { Arity = ArgumentArity.ExactlyOne }
-                },
-                new Option(new[] { "--include-generated" }, Resources.Include_generated_code_files_in_formatting_operations)
-                {
-                    Argument = new Argument<bool>(),
-                    IsHidden = true
-                },
-            };
-
-            rootCommand.Description = "dotnet-format";
-            rootCommand.AddValidator(ValidateProjectArgumentAndWorkspace);
-            rootCommand.AddValidator(ValidateWorkspaceAndFolder);
-            rootCommand.Handler = CommandHandler.Create(typeof(Program).GetMethod(nameof(Run)));
-            return rootCommand;
-
-            static string? ValidateProjectArgumentAndWorkspace(CommandResult symbolResult)
-            {
-                try
-                {
-                    var project = symbolResult.GetArgumentValueOrDefault<string>("project");
-                    var workspace = symbolResult.ValueForOption<string>("workspace");
-                    if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(workspace))
-                    {
-                        return Resources.Cannot_specify_both_project_argument_and_workspace_option;
-                    }
-                }
-                catch (InvalidOperationException) // Parsing of arguments failed. This will be reported later.
-                {
-                }
-
-                return null;
+                return 1;
             }
 
-            static string? ValidateWorkspaceAndFolder(CommandResult symbolResult)
-            {
-                try
-                {
-                    var project = symbolResult.GetArgumentValueOrDefault<string>("project");
-                    var workspace = symbolResult.ValueForOption<string>("workspace");
-                    var folder = symbolResult.ValueForOption<string>("folder");
-                    project ??= workspace;
-                    if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(folder))
-                    {
-                        return Resources.Cannot_specify_both_folder_and_workspace_options;
-                    }
-                }
-                catch (InvalidOperationException)// Parsing of arguments failed. This will be reported later.
-                {
-                }
-
-                return null;
-            }
-        }
-
-        public static async Task<int> Run(string? project, string? folder, string? workspace, string? verbosity, bool check, string[] include, string[] exclude, string? report, bool includeGenerated, IConsole console = null!)
-        {
             // Setup logging.
-            var serviceCollection = new ServiceCollection();
             var logLevel = GetLogLevel(verbosity);
-            ConfigureServices(serviceCollection, console, logLevel);
-
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var logger = serviceProvider.GetService<ILogger<Program>>();
+            var logger = SetupLogging(console, logLevel);
 
             // Hook so we can cancel and exit when ctrl+c is pressed.
             var cancellationTokenSource = new CancellationTokenSource();
@@ -148,18 +74,44 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 currentDirectory = Environment.CurrentDirectory;
 
+                // Check for deprecated options and assign package if specified via `-w | -f` options.
+                if (!string.IsNullOrEmpty(workspace) && string.IsNullOrEmpty(project))
+                {
+                    logger.LogWarning(Resources.The_workspace_option_is_deprecated_Use_the_project_argument_instead);
+                    project = workspace;
+                }
+                else if (!string.IsNullOrEmpty(folder) && string.IsNullOrEmpty(project))
+                {
+                    logger.LogWarning(Resources.The_folder_option_is_deprecated_for_specifying_the_path_Pass_the_folder_option_but_specify_the_path_with_the_project_argument_instead);
+                    project = folder;
+                }
+
+                if (s_parseResult.WasOptionUsed("--files"))
+                {
+                    logger.LogWarning(Resources.The_files_option_is_deprecated_Use_the_include_option_instead);
+                }
+
+                if (s_parseResult.WasOptionUsed("--dry-run"))
+                {
+                    logger.LogWarning(Resources.The_dry_run_option_is_deprecated_Use_the_check_option_instead);
+                }
+
                 string workspaceDirectory;
                 string workspacePath;
                 WorkspaceType workspaceType;
-                if (!string.IsNullOrEmpty(workspace) && string.IsNullOrEmpty(project))
-                {
-                    logger.LogWarning(Resources.Workspace_option_is_deprecated_Use_the_project_argument_instead);
-                }
 
-                workspace ??= project;
-                if (!string.IsNullOrEmpty(workspace))
+                // The presence of the folder token means we should treat the project path as a folder path.
+                // This will change in the following version so that the folder option is a bool flag.
+                if (s_parseResult.WasOptionUsed("-f", "--folder"))
                 {
-                    var (isSolution, workspaceFilePath) = MSBuildWorkspaceFinder.FindWorkspace(currentDirectory, workspace);
+                    // If folder isn't populated, then use the current directory
+                    workspacePath = Path.GetFullPath(project ?? ".", Environment.CurrentDirectory);
+                    workspaceDirectory = workspacePath;
+                    workspaceType = WorkspaceType.Folder;
+                }
+                else
+                {
+                    var (isSolution, workspaceFilePath) = MSBuildWorkspaceFinder.FindWorkspace(currentDirectory, project);
 
                     workspacePath = workspaceFilePath;
                     workspaceType = isSolution
@@ -169,23 +121,14 @@ namespace Microsoft.CodeAnalysis.Tools
                     // To ensure we get the version of MSBuild packaged with the dotnet SDK used by the
                     // workspace, use its directory as our working directory which will take into account
                     // a global.json if present.
-                    var directoryName = Path.GetDirectoryName(workspacePath);
-                    if (directoryName is null)
+                    workspaceDirectory = Path.GetDirectoryName(workspacePath);
+                    if (workspaceDirectory is null)
                     {
                         throw new Exception($"Unable to find folder at '{workspacePath}'");
                     }
-
-                    workspaceDirectory = directoryName;
-                }
-                else
-                {
-                    // If folder isn't populated, then use the current directory
-                    folder = Path.GetFullPath(folder ?? ".", Environment.CurrentDirectory);
-                    workspacePath = folder;
-                    workspaceDirectory = workspacePath;
-                    workspaceType = WorkspaceType.Folder;
                 }
 
+                // Load MSBuild
                 Environment.CurrentDirectory = workspaceDirectory;
 
                 if (!TryGetDotNetCliVersion(out var dotnetVersion))
@@ -276,10 +219,16 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        private static void ConfigureServices(ServiceCollection serviceCollection, IConsole console, LogLevel logLevel)
+        private static ILogger<Program> SetupLogging(IConsole console, LogLevel logLevel)
         {
+            var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(new LoggerFactory().AddSimpleConsole(console, logLevel));
             serviceCollection.AddLogging();
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var logger = serviceProvider.GetService<ILogger<Program>>();
+
+            return logger;
         }
 
         private static bool TryGetDotNetCliVersion([NotNullWhen(returnValue: true)] out string? dotnetVersion)
