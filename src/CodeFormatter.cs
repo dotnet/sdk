@@ -321,8 +321,8 @@ namespace Microsoft.CodeAnalysis.Tools
 
                     var formattableDocument = new DocumentWithOptions(document, optionSet, analyzerConfigOptions);
 
-                    // Track files covered by and editorconfig and those not covered.
-                    if (formattableDocument.AnalyzerConfigOptions is object)
+                    // Track files covered by an editorconfig separately from those not covered.
+                    if (analyzerConfigOptions is object)
                     {
                         documentsCoveredByEditorConfig.Add(formattableDocument);
                     }
@@ -332,6 +332,12 @@ namespace Microsoft.CodeAnalysis.Tools
                     }
                 }
             }
+
+            // Initially we would format all documents in a workspace, even if some files weren't covered by an
+            // .editorconfig and would have defaults applied. This behavior was an early requested change since
+            // users were surprised to have files not specified by the .editorconfig modified. The assumption is
+            // that users without an .editorconfig still wanted formatting (they did run a formatter after all),
+            // so we run on all files with defaults.
 
             // If no files are covered by an editorconfig, then return them all. Otherwise only return
             // files that are covered by an editorconfig.
