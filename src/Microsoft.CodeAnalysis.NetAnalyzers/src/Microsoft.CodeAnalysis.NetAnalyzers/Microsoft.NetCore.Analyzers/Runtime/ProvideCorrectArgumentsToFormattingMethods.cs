@@ -67,7 +67,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var stringFormat = (string)formatStringArgument.Value.ConstantValue.Value;
                     int expectedStringFormatArgumentCount = GetFormattingArguments(stringFormat);
 
-                    // explict parameter case
+                    // explicit parameter case
                     if (info.ExpectedStringFormatArgumentCount >= 0)
                     {
                         // __arglist is not supported here
@@ -355,6 +355,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return info;
                 }
 
+                // Check if the user configured automatic determination of formatting methods.
+                // If so, check if the method called has a 'string format' parameter followed by an params array.
+                var determineAdditionalStringFormattingMethodsAutomatically = context.Options.GetBoolOptionValue(EditorConfigOptionNames.TryDetermineAdditionalStringFormattingMethodsAutomatically,
+                        Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultValue: false, context.CancellationToken);
+                if (determineAdditionalStringFormattingMethodsAutomatically &&
+                    TryGetFormatInfo(method, out info) &&
+                    info.ExpectedStringFormatArgumentCount == -1)
+                {
+                    return info;
+                }
+
                 return null;
             }
 
@@ -380,6 +391,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 int formatIndex = FindParameterIndexOfName(method.Parameters, Format);
                 if (formatIndex < 0 || formatIndex == method.Parameters.Length - 1)
+                {
+                    // no valid format string
+                    return false;
+                }
+
+                if (method.Parameters[formatIndex].Type.SpecialType != SpecialType.System_String)
                 {
                     // no valid format string
                     return false;
