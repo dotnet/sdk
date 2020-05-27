@@ -33,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                     .Select(path =>
                         DocumentInfo.Create(
                             DocumentId.CreateNewId(projectId),
-                            name: ".editorconfig",
+                            name: path,
                             loader: new FileTextLoader(path, Encoding.UTF8),
                             filePath: path))
                     .ToImmutableArray();
