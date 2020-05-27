@@ -357,11 +357,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 // Check if the user configured automatic determination of formatting methods.
                 // If so, check if the method called has a 'string format' parameter followed by an params array.
-                bool defaultTryDetermineAdditionalStringFormattingMethodsAutomatically = false;
-                var canTryDetermineAdditionalStringFormattingMethodsAutomatically = context.Options.GetBoolOptionValue(EditorConfigOptionNames.TryDetermineAdditionalStringFormattingMethodsAutomatically,
-                        Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultTryDetermineAdditionalStringFormattingMethodsAutomatically, context.CancellationToken);
-                if (canTryDetermineAdditionalStringFormattingMethodsAutomatically &&
-                    TryGetFormatInfo(method, out info) && info.ExpectedStringFormatArgumentCount == -1)
+                var determineAdditionalStringFormattingMethodsAutomatically = context.Options.GetBoolOptionValue(EditorConfigOptionNames.TryDetermineAdditionalStringFormattingMethodsAutomatically,
+                        Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultValue: false, context.CancellationToken);
+                if (determineAdditionalStringFormattingMethodsAutomatically &&
+                    TryGetFormatInfo(method, out info) &&
+                    info.ExpectedStringFormatArgumentCount == -1)
                 {
                     return info;
                 }

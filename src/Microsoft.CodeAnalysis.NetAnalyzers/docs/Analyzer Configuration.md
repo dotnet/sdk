@@ -241,6 +241,9 @@ Examples:
 
 Option Name: `try_determine_additional_string_formatting_methods_automatically`
 
+Boolean option to enable heuristically detecting of additional string formatting methods
+A method is considered a string formatting method if it has a 'string format' parameter followed by a 'params object[]' parameter.
+
 Configurable Rules: [CA2241](https://docs.microsoft.com/visualstudio/code-quality/ca2241)
 
 Option Values: Boolean values
