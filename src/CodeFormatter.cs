@@ -10,7 +10,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Logging;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Utilities;
@@ -29,9 +28,6 @@ namespace Microsoft.CodeAnalysis.Tools
             new EndOfLineFormatter(),
             new CharsetFormatter(),
         }.ToImmutableArray();
-
-        private static readonly Dictionary<ProjectId, AnalyzerConfigSet> s_analyzerConfigSets = new Dictionary<ProjectId, AnalyzerConfigSet>();
-        private static readonly Dictionary<AnalyzerConfigOptionsResult, EditorConfigOptions> s_editorConfigOptions = new Dictionary<AnalyzerConfigOptionsResult, EditorConfigOptions>();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
             FormatOptions options,
@@ -320,7 +316,7 @@ namespace Microsoft.CodeAnalysis.Tools
                         continue;
                     }
 
-                    var analyzerConfigOptions = await GetAnalyzerConfigOptionsAsync(document, cancellationToken).ConfigureAwait(false);
+                    var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
                     var optionSet = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
 
                     var formattableDocument = new DocumentWithOptions(document, optionSet, analyzerConfigOptions);
@@ -342,53 +338,6 @@ namespace Microsoft.CodeAnalysis.Tools
             return documentsCoveredByEditorConfig.Count == 0
                 ? (projectFileCount, documentsNotCoveredByEditorConfig.ToImmutableArray())
                 : (projectFileCount, documentsCoveredByEditorConfig.ToImmutableArray());
-        }
-
-        private static async Task<AnalyzerConfigOptions?> GetAnalyzerConfigOptionsAsync(Document document, CancellationToken cancellationToken)
-        {
-            // Once https://github.com/dotnet/roslyn/issues/42154 is fixed we should be able to request
-            // options from document.Project directly. For now we will create AnalyzerConfigSets ourselves
-            // and return our own AnalyzerConfigOptions class.
-            var configSet = await GetAnalyzerConfigSetAsync(document.Project, cancellationToken).ConfigureAwait(false);
-            var result = configSet.GetOptionsForSourcePath(document.FilePath!);
-
-            if (result.AnalyzerOptions.Count == 0)
-            {
-                return null;
-            }
-
-            // The compiler will reuse the same instance of AnalyzerOptions if matched .editorconfig sections
-            // for multiple files are the same.
-            if (s_editorConfigOptions.TryGetValue(result, out var editorConfigOptions))
-            {
-                return editorConfigOptions;
-            }
-
-            var configOptions = new EditorConfigOptions(result.AnalyzerOptions);
-            s_editorConfigOptions[result] = configOptions;
-            return configOptions;
-        }
-
-        private static async Task<AnalyzerConfigSet> GetAnalyzerConfigSetAsync(Project project, CancellationToken cancellationToken)
-        {
-            if (s_analyzerConfigSets.TryGetValue(project.Id, out var configSet))
-            {
-                return configSet;
-            }
-
-            var parseConfigs = project.AnalyzerConfigDocuments.Select(ParseAnalyzerConfigAsync);
-            var configs = await Task.WhenAll(parseConfigs);
-            configSet = AnalyzerConfigSet.Create(configs);
-
-            s_analyzerConfigSets[project.Id] = configSet;
-
-            return configSet;
-
-            async Task<AnalyzerConfig> ParseAnalyzerConfigAsync(AnalyzerConfigDocument document)
-            {
-                var text = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
-                return AnalyzerConfig.Parse(text, document.FilePath!);
-            }
         }
     }
 }
