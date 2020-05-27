@@ -80,7 +80,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 if (fieldSymbol.Type.SpecialType == SpecialType.System_String)
                 {
-                    return fieldSymbol.ConstantValue != null && ((string)fieldSymbol.ConstantValue).Length == 0;
+                    return (fieldSymbol.IsReadOnly && fieldSymbol.Name == "Empty") ||
+                        fieldSymbol.ConstantValue != null && ((string)fieldSymbol.ConstantValue).Length == 0;
                 }
             }
 
