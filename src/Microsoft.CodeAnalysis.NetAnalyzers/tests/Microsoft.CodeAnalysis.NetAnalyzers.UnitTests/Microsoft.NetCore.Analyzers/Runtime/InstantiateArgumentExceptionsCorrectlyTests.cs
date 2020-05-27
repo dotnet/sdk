@@ -915,6 +915,46 @@ public class C
                End Class");
         }
 
+        [Fact]
+        public async Task ArgumentExceptionType_NotHavingConstructorWithParameterName_NoArgument_DoesNotWarn()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                public class Class
+                {
+                    public void Test(string first)
+                    {
+                        throw new System.Text.DecoderFallbackException ();
+                    }
+                }");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+               Public Class [MyClass]
+                   Public Sub Test(first As String)
+                       Throw New System.Text.DecoderFallbackException ()
+                   End Sub
+               End Class");
+        }
+
+        [Fact]
+        public async Task ArgumentExceptionType_NotHavingConstructor_WithParameterName_WithArgument_DoesNotWarn()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                public class Class
+                {
+                    public void Test(string first)
+                    {
+                        throw new System.Text.DecoderFallbackException (""first"");
+                    }
+                }");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+               Public Class [MyClass]
+                   Public Sub Test(first As String)
+                       Throw New System.Text.DecoderFallbackException (""first"")
+                   End Sub
+               End Class");
+        }
+
         [Fact, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
         public async Task ArgumentNullException_LocalFunctionParameter_DoesNotWarn()
         {

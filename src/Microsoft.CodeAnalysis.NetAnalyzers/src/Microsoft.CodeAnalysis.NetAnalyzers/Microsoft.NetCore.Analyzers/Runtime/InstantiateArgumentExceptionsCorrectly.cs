@@ -86,14 +86,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ITypeSymbol argumentExceptionType)
         {
             var creation = (IObjectCreationOperation)context.Operation;
-            if (!creation.Type.Inherits(argumentExceptionType) || !MatchesConfiguredVisibility(owningSymbol, context))
+            if (!creation.Type.Inherits(argumentExceptionType) || !MatchesConfiguredVisibility(owningSymbol, context) || !HasParameterNameConstructor(creation.Type))
             {
                 return;
             }
 
             if (creation.Arguments.Length == 0)
             {
-                if (HasParameters(owningSymbol) && HasMessageOrParameterNameConstructor(creation.Type))
+                if (HasParameters(owningSymbol))
                 {
                     // Call the {0} constructor that contains a message and/ or paramName parameter
                     context.ReportDiagnostic(context.Operation.Syntax.CreateDiagnostic(RuleNoArguments, creation.Type.Name));
@@ -174,7 +174,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return parameter.Name == "paramName" || parameter.Name == "parameterName";
         }
 
-        private static bool HasMessageOrParameterNameConstructor(ITypeSymbol type)
+        private static bool HasParameterNameConstructor(ITypeSymbol type)
         {
             foreach (ISymbol member in type.GetMembers())
             {
@@ -186,7 +186,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 foreach (IParameterSymbol parameter in member.GetParameters())
                 {
                     if (parameter.Type.SpecialType == SpecialType.System_String
-                        && (IsMessage(parameter) || IsParameterName(parameter)))
+                        && IsParameterName(parameter))
                     {
                         return true;
                     }
