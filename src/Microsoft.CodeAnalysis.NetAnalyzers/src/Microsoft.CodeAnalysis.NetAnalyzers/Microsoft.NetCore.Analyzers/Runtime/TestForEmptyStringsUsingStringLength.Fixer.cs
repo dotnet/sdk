@@ -76,12 +76,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool ContainsSystemStringEmpty(SyntaxNode expressionSyntax, SemanticModel model)
         {
+            if (expressionSyntax is LiteralExpressionSyntax literalExpressionSyntax)
+            {
+                if (literalExpressionSyntax.Token.ValueText.Length == 0)
+                {
+                    return true;
+                }
+            }
             if (model.GetSymbolInfo(expressionSyntax).Symbol is IFieldSymbol fieldSymbol)
             {
                 if (fieldSymbol.Type.SpecialType == SpecialType.System_String)
                 {
-                    return (fieldSymbol.IsReadOnly && fieldSymbol.Name == "Empty") ||
-                        fieldSymbol.ConstantValue != null && ((string)fieldSymbol.ConstantValue).Length == 0;
+                    return (fieldSymbol.IsReadOnly && fieldSymbol.Name == "Empty");
                 }
             }
 
