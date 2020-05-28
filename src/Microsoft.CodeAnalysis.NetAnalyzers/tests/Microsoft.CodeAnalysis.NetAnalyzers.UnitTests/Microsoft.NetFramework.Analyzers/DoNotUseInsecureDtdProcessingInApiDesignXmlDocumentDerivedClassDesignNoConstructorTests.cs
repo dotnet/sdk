@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
@@ -15,14 +16,10 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingInApiDesignAnalyzerTests
     {
         private static DiagnosticResult GetCA3077NoConstructorCSharpResultAt(int line, int column, string name)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingInApiDesignAnalyzer.RuleDoNotUseInsecureDtdProcessingInApiDesign).WithLocation(line, column).WithArguments(string.Format(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage, name));
-        }
+            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage, name));
 
         private static DiagnosticResult GetCA3077NoConstructorBasicResultAt(int line, int column, string name)
-        {
-            return new DiagnosticResult(DoNotUseInsecureDtdProcessingInApiDesignAnalyzer.RuleDoNotUseInsecureDtdProcessingInApiDesign).WithLocation(line, column).WithArguments(string.Format(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage, name));
-        }
+            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage, name));
 
         [Fact]
         public async Task NonXmlDocumentDerivedTypeWithNoConstructorShouldNotGenerateDiagnostic()

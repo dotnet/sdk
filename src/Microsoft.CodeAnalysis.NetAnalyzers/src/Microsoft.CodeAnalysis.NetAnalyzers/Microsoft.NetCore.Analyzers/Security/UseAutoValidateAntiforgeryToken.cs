@@ -91,11 +91,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                 }
 
                 var cancellationToken = compilationStartAnalysisContext.CancellationToken;
-                var onlyLookAtDerivedClassesOfController = compilationStartAnalysisContext.Options.GetBoolOptionValue(
-                    optionName: EditorConfigOptionNames.ExcludeAspnetCoreMvcControllerBase,
-                    rule: UseAutoValidateAntiforgeryTokenRule,
-                    defaultValue: true,
-                    cancellationToken: cancellationToken);
 
                 // A dictionary from method symbol to set of methods calling it directly.
                 var inverseGraph = new ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>>();
@@ -106,7 +101,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 // Verify that validate anti forgery token attributes are used somewhere within this project,
                 // to avoid reporting false positives on projects that use an alternative approach to mitigate CSRF issues.
                 var usingValidateAntiForgeryAttribute = false;
-                var onAuthorizationAsyncMethodSymbols = new ConcurrentDictionary<IMethodSymbol, bool>();
+                ConcurrentDictionary<IMethodSymbol, bool> onAuthorizationAsyncMethodSymbols = new ConcurrentDictionary<IMethodSymbol, bool>();
                 var actionMethodSymbols = new ConcurrentDictionary<(IMethodSymbol, string), bool>();
                 var actionMethodNeedAddingHttpVerbAttributeSymbols = new ConcurrentDictionary<IMethodSymbol, bool>();
 
@@ -219,6 +214,14 @@ namespace Microsoft.NetCore.Analyzers.Security
                     {
                         return;
                     }
+
+                    var onlyLookAtDerivedClassesOfController = compilationStartAnalysisContext.Options.GetBoolOptionValue(
+                        optionName: EditorConfigOptionNames.ExcludeAspnetCoreMvcControllerBase,
+                        rule: UseAutoValidateAntiforgeryTokenRule,
+                        symbolAnalysisContext.Symbol,
+                        compilation,
+                        defaultValue: true,
+                        cancellationToken: cancellationToken);
 
                     var derivedControllerTypeSymbol = (INamedTypeSymbol)symbolAnalysisContext.Symbol;
                     var baseTypes = derivedControllerTypeSymbol.GetBaseTypes();

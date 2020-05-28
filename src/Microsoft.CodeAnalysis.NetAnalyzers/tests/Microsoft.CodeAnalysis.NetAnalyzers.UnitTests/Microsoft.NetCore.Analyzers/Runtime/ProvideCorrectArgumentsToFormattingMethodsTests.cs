@@ -1,31 +1,26 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.ProvideCorrectArgumentsToFormattingMethodsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.ProvideCorrectArgumentsToFormattingMethodsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public class ProvideCorrectArgumentsToFormattingMethodsTests : DiagnosticAnalyzerTestBase
+    public class ProvideCorrectArgumentsToFormattingMethodsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ProvideCorrectArgumentsToFormattingMethodsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ProvideCorrectArgumentsToFormattingMethodsAnalyzer();
-        }
-
         #region Diagnostic Tests
 
         [Fact]
-        public void CA2241CSharpString()
+        public async Task CA2241CSharpString()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -46,22 +41,22 @@ public class C
     }
 }
 ",
-            GetCA2241CSharpResultAt(8, 17),
-            GetCA2241CSharpResultAt(9, 17),
-            GetCA2241CSharpResultAt(10, 17),
-            GetCA2241CSharpResultAt(11, 17),
-            GetCA2241CSharpResultAt(12, 17),
+            GetCSharpResultAt(8, 17),
+            GetCSharpResultAt(9, 17),
+            GetCSharpResultAt(10, 17),
+            GetCSharpResultAt(11, 17),
+            GetCSharpResultAt(12, 17),
 
-            GetCA2241CSharpResultAt(15, 17),
-            GetCA2241CSharpResultAt(16, 17),
-            GetCA2241CSharpResultAt(17, 17),
-            GetCA2241CSharpResultAt(18, 17));
+            GetCSharpResultAt(15, 17),
+            GetCSharpResultAt(16, 17),
+            GetCSharpResultAt(17, 17),
+            GetCSharpResultAt(18, 17));
         }
 
         [Fact]
-        public void CA2241CSharpConsoleWrite()
+        public async Task CA2241CSharpConsoleWrite()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -76,17 +71,17 @@ public class C
     }
 }
 ",
-            GetCA2241CSharpResultAt(8, 9),
-            GetCA2241CSharpResultAt(9, 9),
-            GetCA2241CSharpResultAt(10, 9),
-            GetCA2241CSharpResultAt(11, 9),
-            GetCA2241CSharpResultAt(12, 9));
+            GetCSharpResultAt(8, 9),
+            GetCSharpResultAt(9, 9),
+            GetCSharpResultAt(10, 9),
+            GetCSharpResultAt(11, 9),
+            GetCSharpResultAt(12, 9));
         }
 
         [Fact]
-        public void CA2241CSharpConsoleWriteLine()
+        public async Task CA2241CSharpConsoleWriteLine()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -101,17 +96,17 @@ public class C
     }
 }
 ",
-            GetCA2241CSharpResultAt(8, 9),
-            GetCA2241CSharpResultAt(9, 9),
-            GetCA2241CSharpResultAt(10, 9),
-            GetCA2241CSharpResultAt(11, 9),
-            GetCA2241CSharpResultAt(12, 9));
+            GetCSharpResultAt(8, 9),
+            GetCSharpResultAt(9, 9),
+            GetCSharpResultAt(10, 9),
+            GetCSharpResultAt(11, 9),
+            GetCSharpResultAt(12, 9));
         }
 
         [Fact]
-        public void CA2241CSharpPassing()
+        public async Task CA2241CSharpPassing()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -143,9 +138,9 @@ public class C
         }
 
         [Fact]
-        public void CA2241CSharpExplicitObjectArraySupported()
+        public async Task CA2241CSharpExplicitObjectArraySupported()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -158,16 +153,16 @@ public class C
     }
 }
 ",
-            GetCA2241CSharpResultAt(8, 17),
-            GetCA2241CSharpResultAt(9, 9),
-            GetCA2241CSharpResultAt(10, 9));
+            GetCSharpResultAt(8, 17),
+            GetCSharpResultAt(9, 9),
+            GetCSharpResultAt(10, 9));
         }
 
         [Fact]
-        public void CA2241CSharpVarArgsNotSupported()
+        public async Task CA2241CSharpVarArgsNotSupported()
         {
             // currently not supported due to "https://github.com/dotnet/roslyn/issues/7346"
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -182,9 +177,9 @@ public class C
         }
 
         [Fact]
-        public void CA2241VBString()
+        public async Task CA2241VBString()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -202,26 +197,26 @@ Public Class C
     End Sub
 End Class
 ",
-            GetCA2241BasicResultAt(6, 17),
-            GetCA2241BasicResultAt(7, 17),
-            GetCA2241BasicResultAt(8, 17),
-            GetCA2241BasicResultAt(9, 17),
+            GetBasicResultAt(6, 17),
+            GetBasicResultAt(7, 17),
+            GetBasicResultAt(8, 17),
+            GetBasicResultAt(9, 17),
 
-            GetCA2241BasicResultAt(12, 17),
-            GetCA2241BasicResultAt(13, 17),
-            GetCA2241BasicResultAt(14, 17),
-            GetCA2241BasicResultAt(15, 17));
+            GetBasicResultAt(12, 17),
+            GetBasicResultAt(13, 17),
+            GetBasicResultAt(14, 17),
+            GetBasicResultAt(15, 17));
         }
 
         [Fact]
-        public void CA2241VBConsoleWrite()
+        public async Task CA2241VBConsoleWrite()
         {
             // this works in VB
             // Dim s = Console.WriteLine(""{0} {1} {2}"", 1, 2, 3, 4)
             // since VB bind it to __arglist version where we skip analysis
             // due to a bug - https://github.com/dotnet/roslyn/issues/7346
             // we might skip it only in C# since VB doesnt support __arglist
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -234,21 +229,21 @@ Public Class C
     End Sub
 End Class
 ",
-            GetCA2241BasicResultAt(6, 9),
-            GetCA2241BasicResultAt(7, 9),
-            GetCA2241BasicResultAt(8, 9),
-            GetCA2241BasicResultAt(10, 9));
+            GetBasicResultAt(6, 9),
+            GetBasicResultAt(7, 9),
+            GetBasicResultAt(8, 9),
+            GetBasicResultAt(10, 9));
         }
 
         [Fact]
-        public void CA2241VBConsoleWriteLine()
+        public async Task CA2241VBConsoleWriteLine()
         {
             // this works in VB
             // Dim s = Console.WriteLine(""{0} {1} {2}"", 1, 2, 3, 4)
             // since VB bind it to __arglist version where we skip analysis
             // due to a bug - https://github.com/dotnet/roslyn/issues/7346
             // we might skip it only in C# since VB doesnt support __arglist
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -261,16 +256,16 @@ Public Class C
     End Sub
 End Class
 ",
-            GetCA2241BasicResultAt(6, 9),
-            GetCA2241BasicResultAt(7, 9),
-            GetCA2241BasicResultAt(8, 9),
-            GetCA2241BasicResultAt(10, 9));
+            GetBasicResultAt(6, 9),
+            GetBasicResultAt(7, 9),
+            GetBasicResultAt(8, 9),
+            GetBasicResultAt(10, 9));
         }
 
         [Fact]
-        public void CA2241VBPassing()
+        public async Task CA2241VBPassing()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -297,9 +292,9 @@ End Class
         }
 
         [Fact]
-        public void CA2241VBExplicitObjectArraySupported()
+        public async Task CA2241VBExplicitObjectArraySupported()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -310,15 +305,15 @@ Public Class C
     End Sub
 End Class
 ",
-            GetCA2241BasicResultAt(6, 17),
-            GetCA2241BasicResultAt(7, 9),
-            GetCA2241BasicResultAt(8, 9));
+            GetBasicResultAt(6, 17),
+            GetBasicResultAt(7, 9),
+            GetBasicResultAt(8, 9));
         }
 
         [Fact]
-        public void CA2241CSharpFormatStringParser()
+        public async Task CA2241CSharpFormatStringParser()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -343,6 +338,82 @@ public class C
         [Theory]
         [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]
         // No configuration - validate no diagnostics in default configuration
+        [InlineData(null)]
+        // Configured but disabled
+        [InlineData(false)]
+        // Configured and enabled
+        [InlineData(true)]
+        public async Task EditorConfigConfiguration_HeuristicAdditionalStringFormattingMethods(bool? editorConfig)
+        {
+            string editorConfigText = editorConfig == null ? string.Empty :
+                "dotnet_code_quality.try_determine_additional_string_formatting_methods_automatically = " + editorConfig.Value;
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+class Test
+{
+    public static string MyFormat(string format, params object[] args) => format;
+
+    void M1(string param)
+    {
+        var a = MyFormat("""", 1);
+    }
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
+
+            if (editorConfig == true)
+            {
+                csharpTest.ExpectedDiagnostics.Add(
+                    // Test0.cs(8,17): warning CA2241: Provide correct arguments to formatting methods
+                    GetCSharpResultAt(8, 17));
+            }
+
+            await csharpTest.RunAsync();
+
+            var basicTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Class Test
+    Public Shared Function MyFormat(format As String, ParamArray args As Object()) As String
+        Return format
+    End Function
+
+    Private Sub M1(ByVal param As String)
+        Dim a = MyFormat("""", 1)
+    End Sub
+End Class"
+},
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
+
+            if (editorConfig == true)
+            {
+                basicTest.ExpectedDiagnostics.Add(
+                    // Test0.vb(8,17): warning CA2241: Provide correct arguments to formatting methods
+                    GetBasicResultAt(8, 17));
+            }
+
+            await basicTest.RunAsync();
+        }
+
+        [Theory]
+        [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]
+        // No configuration - validate no diagnostics in default configuration
         [InlineData("")]
         // Match by method name
         [InlineData("dotnet_code_quality.additional_string_formatting_methods = MyFormat")]
@@ -352,19 +423,15 @@ public class C
         [InlineData("dotnet_code_quality.additional_string_formatting_methods = Test.MyFormat(System.String,System.Object[])~System.String")]
         // Match by documentation ID with "M:" prefix
         [InlineData("dotnet_code_quality.additional_string_formatting_methods = M:Test.MyFormat(System.String,System.Object[])~System.String")]
-        public void EditorConfigConfiguration_AdditionalStringFormattingMethods(string editorConfigText)
+        public async Task EditorConfigConfiguration_AdditionalStringFormattingMethods(string editorConfigText)
         {
-            var expected = Array.Empty<DiagnosticResult>();
-            if (editorConfigText.Length > 0)
+            var csharpTest = new VerifyCS.Test
             {
-                expected = new DiagnosticResult[]
+                TestState =
                 {
-                    // Test0.cs(8,17): warning CA2241: Provide correct arguments to formatting methods
-                    GetCA2241CSharpResultAt(8, 17)
-                };
-            }
-
-            VerifyCSharp(@"
+                    Sources =
+                    {
+                        @"
 class Test
 {
     public static string MyFormat(string format, params object[] args) => format;
@@ -373,19 +440,29 @@ class Test
     {
         var a = MyFormat("""", 1);
     }
-}", GetEditorConfigAdditionalFile(editorConfigText), expected);
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
 
-            expected = Array.Empty<DiagnosticResult>();
+
             if (editorConfigText.Length > 0)
             {
-                expected = new DiagnosticResult[]
-                {
-                    // Test0.vb(8,17): warning CA2241: Provide correct arguments to formatting methods
-                    GetCA2241BasicResultAt(8, 17)
-                };
+                csharpTest.ExpectedDiagnostics.Add(
+                    // Test0.cs(8,17): warning CA2241: Provide correct arguments to formatting methods
+                    GetCSharpResultAt(8, 17));
             }
 
-            VerifyBasic(@"
+            await csharpTest.RunAsync();
+
+            var basicTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Class Test
     Public Shared Function MyFormat(format As String, ParamArray args As Object()) As String
         Return format
@@ -394,19 +471,31 @@ Class Test
     Private Sub M1(ByVal param As String)
         Dim a = MyFormat("""", 1)
     End Sub
-End Class", GetEditorConfigAdditionalFile(editorConfigText), expected);
+End Class"
+},
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
+
+            if (editorConfigText.Length > 0)
+            {
+                basicTest.ExpectedDiagnostics.Add(
+                    // Test0.vb(8,17): warning CA2241: Provide correct arguments to formatting methods
+                    GetBasicResultAt(8, 17));
+            }
+
+            await basicTest.RunAsync();
         }
 
         #endregion
 
-        private static DiagnosticResult GetCA2241CSharpResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, ProvideCorrectArgumentsToFormattingMethodsAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentsToFormattingMethodsMessage);
-        }
+        private static DiagnosticResult GetCSharpResultAt(int line, int column)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
-        private static DiagnosticResult GetCA2241BasicResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, ProvideCorrectArgumentsToFormattingMethodsAnalyzer.RuleId, MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentsToFormattingMethodsMessage);
-        }
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

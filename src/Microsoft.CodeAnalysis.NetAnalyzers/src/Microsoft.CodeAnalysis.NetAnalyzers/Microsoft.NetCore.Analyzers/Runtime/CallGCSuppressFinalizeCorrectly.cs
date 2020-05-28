@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageNotCalledWithFinalizer,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -38,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageNotCalled,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageNotPassedThis,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageOutsideDispose,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);

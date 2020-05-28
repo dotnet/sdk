@@ -1,24 +1,29 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Testing;
+using System.Threading.Tasks;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.CancellationTokenParametersMustComeLastAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.CancellationTokenParametersMustComeLastAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class CancellationTokenParametersMustComeLast : DiagnosticAnalyzerTestBase
+    public class CancellationTokenParametersMustComeLast
     {
         [Fact]
-        public void NoDiagnosticInEmptyFile()
+        public async Task NoDiagnosticInEmptyFile()
         {
             var test = @"";
 
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact]
-        public void DiagnosticForMethod()
+        public async Task DiagnosticForMethod()
         {
             var source = @"
 using System.Threading;
@@ -28,12 +33,12 @@ class T
     {
     }
 }";
-            var expected = new DiagnosticResult(CancellationTokenParametersMustComeLastAnalyzer.Rule).WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int)");
-            VerifyCSharp(source, expected);
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int)");
+            await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
         [Fact]
-        public void DiagnosticWhenFirstAndLastByOtherInBetween()
+        public async Task DiagnosticWhenFirstAndLastByOtherInBetween()
         {
             var source = @"
 using System.Threading;
@@ -43,12 +48,12 @@ class T
     {
     }
 }";
-            var expected = new DiagnosticResult(CancellationTokenParametersMustComeLastAnalyzer.Rule).WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int, System.Threading.CancellationToken)");
-            VerifyCSharp(source, expected);
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int, System.Threading.CancellationToken)");
+            await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
         [Fact]
-        public void NoDiagnosticWhenLastParam()
+        public async Task NoDiagnosticWhenLastParam()
         {
             var test = @"
 using System.Threading;
@@ -58,11 +63,11 @@ class T
     {
     }
 }";
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact]
-        public void NoDiagnosticWhenOnlyParam()
+        public async Task NoDiagnosticWhenOnlyParam()
         {
             var test = @"
 using System.Threading;
@@ -72,11 +77,11 @@ class T
     {
     }
 }";
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact]
-        public void NoDiagnosticWhenParamsComesAfter()
+        public async Task NoDiagnosticWhenParamsComesAfter()
         {
             var test = @"
 using System.Threading;
@@ -86,11 +91,11 @@ class T
     {
     }
 }";
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact]
-        public void NoDiagnosticWhenOutComesAfter()
+        public async Task NoDiagnosticWhenOutComesAfter()
         {
             var test = @"
 using System.Threading;
@@ -101,11 +106,11 @@ class T
         i = 2;
     }
 }";
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact]
-        public void NoDiagnosticWhenRefComesAfter()
+        public async Task NoDiagnosticWhenRefComesAfter()
         {
             var test = @"
 using System.Threading;
@@ -115,11 +120,11 @@ class T
     {
     }
 }";
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact]
-        public void NoDiagnosticWhenOptionalParameterComesAfterNonOptionalCancellationToken()
+        public async Task NoDiagnosticWhenOptionalParameterComesAfterNonOptionalCancellationToken()
         {
             var test = @"
 using System.Threading;
@@ -129,11 +134,11 @@ class T
     {
     }
 }";
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact]
-        public void NoDiagnosticOnOverride()
+        public async Task NoDiagnosticOnOverride()
         {
             var test = @"
 using System.Threading;
@@ -148,12 +153,12 @@ class T : B
 }";
 
             // One diagnostic for the virtual, but none for the override.
-            var expected = new DiagnosticResult(CancellationTokenParametersMustComeLastAnalyzer.Rule).WithLocation(5, 28).WithArguments("B.M(System.Threading.CancellationToken, int)");
-            VerifyCSharp(test, expected);
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 28).WithArguments("B.M(System.Threading.CancellationToken, int)");
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
         [Fact]
-        public void NoDiagnosticOnImplicitInterfaceImplementation()
+        public async Task NoDiagnosticOnImplicitInterfaceImplementation()
         {
             var test = @"
 using System.Threading;
@@ -168,12 +173,12 @@ class T : I
 }";
 
             // One diagnostic for the interface, but none for the implementation.
-            var expected = new DiagnosticResult(CancellationTokenParametersMustComeLastAnalyzer.Rule).WithLocation(5, 10).WithArguments("I.M(System.Threading.CancellationToken, int)");
-            VerifyCSharp(test, expected);
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("I.M(System.Threading.CancellationToken, int)");
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
         [Fact]
-        public void NoDiagnosticOnExplicitInterfaceImplementation()
+        public async Task NoDiagnosticOnExplicitInterfaceImplementation()
         {
             var test = @"
 using System.Threading;
@@ -188,12 +193,12 @@ class T : I
 }";
 
             // One diagnostic for the interface, but none for the implementation.
-            var expected = new DiagnosticResult(CancellationTokenParametersMustComeLastAnalyzer.Rule).WithLocation(5, 10).WithArguments("I.M(System.Threading.CancellationToken, int)");
-            VerifyCSharp(test, expected);
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("I.M(System.Threading.CancellationToken, int)");
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
         [Fact, WorkItem(1491, "https://github.com/dotnet/roslyn-analyzers/issues/1491")]
-        public void NoDiagnosticOnCancellationTokenExtensionMethod()
+        public async Task NoDiagnosticOnCancellationTokenExtensionMethod()
         {
             var test = @"
 using System.Threading;
@@ -203,11 +208,11 @@ static class C1
     {
     }
 }";
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact, WorkItem(1816, "https://github.com/dotnet/roslyn-analyzers/issues/1816")]
-        public void NoDiagnosticWhenMultipleAtEndOfParameterList()
+        public async Task NoDiagnosticWhenMultipleAtEndOfParameterList()
         {
             var test = @"
 using System.Threading;
@@ -219,11 +224,11 @@ static class C1
     public static void M4(CancellationToken token1, CancellationToken token2 = default(CancellationToken)) { }
     public static void M5(CancellationToken token1 = default(CancellationToken), CancellationToken token2 = default(CancellationToken)) { }
 }";
-            VerifyCSharp(test);
+            await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
         [Fact]
-        public void DiagnosticOnExtensionMethodWhenCancellationTokenIsNotFirstParameter()
+        public async Task DiagnosticOnExtensionMethodWhenCancellationTokenIsNotFirstParameter()
         {
             var test = @"
 using System.Threading;
@@ -234,18 +239,100 @@ static class C1
     }
 }";
 
-            var expected = new DiagnosticResult(CancellationTokenParametersMustComeLastAnalyzer.Rule).WithLocation(5, 24).WithArguments("C1.M1(object, System.Threading.CancellationToken, object)");
-            VerifyCSharp(test, expected);
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 24).WithArguments("C1.M1(object, System.Threading.CancellationToken, object)");
+            await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
+        [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
+        public async Task CA1068_DoNotReportOnIProgressLastAndCancellationTokenBeforeLast()
         {
-            return new CancellationTokenParametersMustComeLastAnalyzer();
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(object o, CancellationToken cancellationToken, IProgress<int> progress)
+    {
+        throw new NotImplementedException();
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Public Class C
+    Public Function SomeAsync(ByVal o As Object, ByVal cancellationToken As CancellationToken, ByVal progress As IProgress(Of Integer)) As Task
+        Throw New NotImplementedException()
+    End Function
+End Class");
         }
 
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
+        [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
+        public async Task CA1068_ReportOnIProgressLastAndCancellationTokenNotBeforeLast()
         {
-            return new CancellationTokenParametersMustComeLastAnalyzer();
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(CancellationToken cancellationToken, object o, IProgress<int> progress)
+    {
+        throw new NotImplementedException();
+    }
+}",
+            VerifyCS.Diagnostic().WithLocation(8, 17)
+                .WithArguments("C.SomeAsync(System.Threading.CancellationToken, object, System.IProgress<int>)"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Public Class C
+    Public Function SomeAsync(ByVal cancellationToken As CancellationToken, ByVal o As Object, ByVal progress As IProgress(Of Integer)) As Task
+        Throw New NotImplementedException()
+    End Function
+End Class",
+            VerifyVB.Diagnostic().WithLocation(7, 21)
+                .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, o As Object, progress As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
+        }
+
+        [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
+        public async Task CA1068_OnlyExcludeOneIProgressAtTheEnd()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(CancellationToken cancellationToken, IProgress<int> progress1, IProgress<int> progress2)
+    {
+        throw new NotImplementedException();
+    }
+}",
+            VerifyCS.Diagnostic().WithLocation(8, 17)
+                .WithArguments("C.SomeAsync(System.Threading.CancellationToken, System.IProgress<int>, System.IProgress<int>)"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Public Class C
+    Public Function SomeAsync(ByVal cancellationToken As CancellationToken, ByVal progress1 As IProgress(Of Integer), ByVal progress2 As IProgress(Of Integer)) As Task
+        Throw New NotImplementedException()
+    End Function
+End Class",
+            VerifyVB.Diagnostic().WithLocation(7, 21)
+                .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, progress1 As System.IProgress(Of Integer), progress2 As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
     }
 }

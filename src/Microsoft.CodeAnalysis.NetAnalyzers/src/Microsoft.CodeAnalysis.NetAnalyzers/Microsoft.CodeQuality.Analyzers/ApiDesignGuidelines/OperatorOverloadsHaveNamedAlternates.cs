@@ -82,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // FxCop compat: only analyze externally visible symbols by default.
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
-            if (!methodSymbol.MatchesConfiguredVisibility(symbolContext.Options, DefaultRule, symbolContext.CancellationToken))
+            if (!methodSymbol.MatchesConfiguredVisibility(symbolContext.Options, DefaultRule, symbolContext.Compilation, symbolContext.CancellationToken))
             {
                 return;
             }
@@ -188,7 +188,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         internal static ExpectedAlternateMethodGroup? GetExpectedAlternateMethodGroup(string operatorName, ITypeSymbol returnType, ITypeSymbol? parameterType)
         {
-            // list of operator alternate names: https://docs.microsoft.com/visualstudio/code-quality/ca2225-operator-overloads-have-named-alternates
+            // list of operator alternate names: https://docs.microsoft.com/visualstudio/code-quality/ca2225
 
             // the most common case; create a static method with the already specified types
             static ExpectedAlternateMethodGroup createSingle(string methodName) => new ExpectedAlternateMethodGroup(methodName);

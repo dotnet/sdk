@@ -1,46 +1,43 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareVisibleInstanceFieldsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareVisibleInstanceFieldsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class DoNotDeclareVisibleInstanceFieldsTests : DiagnosticAnalyzerTestBase
+    public class DoNotDeclareVisibleInstanceFieldsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotDeclareVisibleInstanceFieldsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotDeclareVisibleInstanceFieldsAnalyzer();
-        }
-
         [Fact]
-        public void CSharp_PublicVariable_PublicContainingType()
+        public async Task CSharp_PublicVariable_PublicContainingType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public string field; 
-}", GetCSharpResultAt(4, 19, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
+}", GetCSharpResultAt(4, 19));
         }
 
         [Fact]
-        public void VisualBasic_PublicVariable_PublicContainingType()
+        public async Task VisualBasic_PublicVariable_PublicContainingType()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Public field As System.String
-End Class", GetBasicResultAt(3, 12, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
+End Class", GetBasicResultAt(3, 12));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharp_PublicVariable_InternalContainingType()
+        public async Task CSharp_PublicVariable_InternalContainingType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal class A
 {
     public string field; 
@@ -53,9 +50,9 @@ internal class A
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void VisualBasic_PublicVariable_InternalContainingType()
+        public async Task VisualBasic_PublicVariable_InternalContainingType()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Class A
     Public field As System.String
 
@@ -67,9 +64,9 @@ End Class
         }
 
         [Fact]
-        public void CSharp_DefaultVisibility()
+        public async Task CSharp_DefaultVisibility()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     string field; 
@@ -77,18 +74,18 @@ public class A
         }
 
         [Fact]
-        public void VisualBasic_DefaultVisibility()
+        public async Task VisualBasic_DefaultVisibility()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Dim field As System.String
 End Class");
         }
 
         [Fact]
-        public void CSharp_PublicStaticVariable()
+        public async Task CSharp_PublicStaticVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public static string field; 
@@ -96,18 +93,18 @@ public class A
         }
 
         [Fact]
-        public void VisualBasic_PublicStaticVariable()
+        public async Task VisualBasic_PublicStaticVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Public Shared field as System.String
 End Class");
         }
 
         [Fact]
-        public void CSharp_PublicStaticReadonlyVariable()
+        public async Task CSharp_PublicStaticReadonlyVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public static readonly string field; 
@@ -115,56 +112,56 @@ public class A
         }
 
         [Fact]
-        public void VisualBasic_PublicStaticReadonlyVariable()
+        public async Task VisualBasic_PublicStaticReadonlyVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Public Shared ReadOnly field as System.String
 End Class");
         }
 
         [Fact]
-        public void CSharp_PublicConstVariable()
+        public async Task CSharp_PublicConstVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public const string field = ""X""; 
+    public const string field = ""X"";
 }");
         }
 
         [Fact]
-        public void VisualBasic_PublicConstVariable()
+        public async Task VisualBasic_PublicConstVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Public Const field as System.String = ""X""
 End Class");
         }
 
         [Fact]
-        public void CSharp_ProtectedVariable_PublicContainingType()
+        public async Task CSharp_ProtectedVariable_PublicContainingType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     protected string field;
-}", GetCSharpResultAt(4, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
+}", GetCSharpResultAt(4, 22));
         }
 
         [Fact]
-        public void VisualBasic_ProtectedVariable_PublicContainingType()
+        public async Task VisualBasic_ProtectedVariable_PublicContainingType()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Protected field As System.String
-End Class", GetBasicResultAt(3, 15, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
+End Class", GetBasicResultAt(3, 15));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharp_ProtectedVariable_InternalContainingType()
+        public async Task CSharp_ProtectedVariable_InternalContainingType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
         internal class A
         {
             protected string field; 
@@ -177,9 +174,9 @@ End Class", GetBasicResultAt(3, 15, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void VisualBasic_ProtectedVariable_InternalContainingType()
+        public async Task VisualBasic_ProtectedVariable_InternalContainingType()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
         Friend Class A
             Protected field As System.String
 
@@ -191,9 +188,9 @@ End Class", GetBasicResultAt(3, 15, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
         }
 
         [Fact]
-        public void CSharp_ProtectedStaticVariable()
+        public async Task CSharp_ProtectedStaticVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
         public class A
         {
             protected static string field; 
@@ -201,18 +198,18 @@ End Class", GetBasicResultAt(3, 15, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
         }
 
         [Fact]
-        public void VisualBasic_ProtectedStaticVariable()
+        public async Task VisualBasic_ProtectedStaticVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
         Public Class A
             Protected Shared field as System.String
         End Class");
         }
 
         [Fact]
-        public void CSharp_ProtectedStaticReadonlyVariable()
+        public async Task CSharp_ProtectedStaticReadonlyVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
         public class A
         {
             protected static readonly string field; 
@@ -220,56 +217,56 @@ End Class", GetBasicResultAt(3, 15, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
         }
 
         [Fact]
-        public void VisualBasic_ProtectedStaticReadonlyVariable()
+        public async Task VisualBasic_ProtectedStaticReadonlyVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
         Public Class A
             Protected Shared ReadOnly field as System.String
         End Class");
         }
 
         [Fact]
-        public void CSharp_ProtectedConstVariable()
+        public async Task CSharp_ProtectedConstVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
         public class A
         {
-            protected const string field = ""X""; 
+            protected const string field = ""X"";
         }");
         }
 
         [Fact]
-        public void VisualBasic_ProtectedConstVariable()
+        public async Task VisualBasic_ProtectedConstVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
         Public Class A
             Protected Const field as System.String = ""X""
         End Class");
         }
 
         [Fact]
-        public void CSharp_ProtectedInternalVariable_PublicContainingType()
+        public async Task CSharp_ProtectedInternalVariable_PublicContainingType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     protected internal string field;
-}", GetCSharpResultAt(4, 31, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
+}", GetCSharpResultAt(4, 31));
         }
 
         [Fact]
-        public void VisualBasic_ProtectedFriendVariable_PublicContainingType()
+        public async Task VisualBasic_ProtectedFriendVariable_PublicContainingType()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
     Protected Friend field As System.String
-End Class", GetBasicResultAt(3, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.Rule));
+End Class", GetBasicResultAt(3, 22));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharp_ProtectedInternalVariable_InternalContainingType()
+        public async Task CSharp_ProtectedInternalVariable_InternalContainingType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
         internal class A
         {
             protected internal string field; 
@@ -282,9 +279,9 @@ End Class", GetBasicResultAt(3, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void VisualBasic_ProtectedFriendVariable_InternalContainingType()
+        public async Task VisualBasic_ProtectedFriendVariable_InternalContainingType()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
         Friend Class A
             Protected Friend field As System.String
 
@@ -296,9 +293,9 @@ End Class", GetBasicResultAt(3, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
         }
 
         [Fact]
-        public void CSharp_ProtectedInternalStaticVariable()
+        public async Task CSharp_ProtectedInternalStaticVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
         public class A
         {
             protected internal static string field; 
@@ -306,18 +303,18 @@ End Class", GetBasicResultAt(3, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
         }
 
         [Fact]
-        public void VisualBasic_ProtectedFriendStaticVariable()
+        public async Task VisualBasic_ProtectedFriendStaticVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
         Public Class A
             Protected Friend Shared field as System.String
         End Class");
         }
 
         [Fact]
-        public void CSharp_ProtectedInternalStaticReadonlyVariable()
+        public async Task CSharp_ProtectedInternalStaticReadonlyVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
         public class A
         {
             protected internal static readonly string field; 
@@ -325,31 +322,37 @@ End Class", GetBasicResultAt(3, 22, DoNotDeclareVisibleInstanceFieldsAnalyzer.Ru
         }
 
         [Fact]
-        public void VisualBasic_ProtectedFriendStaticReadonlyVariable()
+        public async Task VisualBasic_ProtectedFriendStaticReadonlyVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
         Public Class A
             Protected Friend Shared ReadOnly field as System.String
         End Class");
         }
 
         [Fact]
-        public void CSharp_ProtectedInternalConstVariable()
+        public async Task CSharp_ProtectedInternalConstVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
         public class A
         {
-            protected internal const string field = ""X""; 
+            protected internal const string field = ""X"";
         }");
         }
 
         [Fact]
-        public void VisualBasic_ProtectedFriendConstVariable()
+        public async Task VisualBasic_ProtectedFriendConstVariable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
         Public Class A
             Protected Friend Const field as System.String = ""X""
         End Class");
         }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column)
+            => VerifyCS.Diagnostic().WithLocation(line, column);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic().WithLocation(line, column);
     }
 }

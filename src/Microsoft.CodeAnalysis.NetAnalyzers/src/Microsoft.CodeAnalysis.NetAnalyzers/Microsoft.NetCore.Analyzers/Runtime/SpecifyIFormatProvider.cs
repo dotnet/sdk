@@ -78,11 +78,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 var objectType = csaContext.Compilation.GetSpecialType(SpecialType.System_Object);
+                var charType = csaContext.Compilation.GetSpecialType(SpecialType.System_Char);
+                var boolType = csaContext.Compilation.GetSpecialType(SpecialType.System_Boolean);
                 var stringType = csaContext.Compilation.GetSpecialType(SpecialType.System_String);
                 if (objectType == null || stringType == null)
                 {
                     return;
                 }
+
+                var guidType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemGuid);
 
                 var stringFormatMembers = stringType.GetMembers("Format").OfType<IMethodSymbol>();
 
@@ -129,9 +133,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var targetMethod = invocationExpression.TargetMethod;
 
                     #region "Exceptions"
+                    const string ToStringMethodName = "ToString";
                     if (targetMethod.IsGenericMethod || targetMethod.ContainingType.IsErrorType() ||
                         (activatorType != null && activatorType.Equals(targetMethod.ContainingType)) ||
-                         (resourceManagerType != null && resourceManagerType.Equals(targetMethod.ContainingType)))
+                         (resourceManagerType != null && resourceManagerType.Equals(targetMethod.ContainingType)) ||
+                         targetMethod.Name == ToStringMethodName &&
+                            stringType != null && stringType.Equals(targetMethod.ContainingType) ||
+                            (charType != null && charType.Equals(targetMethod.ContainingType)) ||
+                            (boolType != null && boolType.Equals(targetMethod.ContainingType)) ||
+                            (guidType != null && guidType.Equals(targetMethod.ContainingType)))
                     {
                         return;
                     }

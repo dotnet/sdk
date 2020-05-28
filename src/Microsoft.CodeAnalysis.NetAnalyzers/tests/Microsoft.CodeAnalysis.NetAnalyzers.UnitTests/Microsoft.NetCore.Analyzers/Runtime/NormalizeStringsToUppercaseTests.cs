@@ -1,31 +1,25 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Globalization;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.NormalizeStringsToUppercaseAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpNormalizeStringsToUppercaseFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.NormalizeStringsToUppercaseAnalyzer,
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicNormalizeStringsToUppercaseFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public class NormalizeStringsToUppercaseTests : DiagnosticAnalyzerTestBase
+    public class NormalizeStringsToUppercaseTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new NormalizeStringsToUppercaseAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new NormalizeStringsToUppercaseAnalyzer();
-        }
-
         #region No Diagnostic Tests
 
         [Fact]
-        public void NoDiagnostic_ToUpperCases()
+        public async Task NoDiagnostic_ToUpperCases()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -33,65 +27,65 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethodOneA()
     {
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.InvariantCulture));
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.InvariantCulture));
     }
 
     public void TestMethodOneB()
     {
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.CurrentCulture));
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.CurrentCulture));
     }
 
     public void TestMethodOneC()
     {
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.CurrentUICulture));
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.CurrentUICulture));
     }
 
     public void TestMethodOneD()
     {
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.InstalledUICulture));
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.InstalledUICulture));
     }
 
     public void TestMethodOneE()
     {
         var dynamicCulture = CultureInfo.CurrentCulture;
-        Console.WriteLine(""FOO"".ToUpper(dynamicCulture));
+        Console.WriteLine(""AAA"".ToUpper(dynamicCulture));
     }
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethodOneA()
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.InvariantCulture))
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.InvariantCulture))
     End Sub
 
     Public Sub TestMethodOneB()
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.CurrentCulture))
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.CurrentCulture))
     End Sub
 
     Public Sub TestMethodOneC()
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.CurrentUICulture))
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.CurrentUICulture))
     End Sub
 
     Public Sub TestMethodOneD()
-        Console.WriteLine(""FOO"".ToUpper(CultureInfo.InstalledUICulture))
+        Console.WriteLine(""AAA"".ToUpper(CultureInfo.InstalledUICulture))
     End Sub
 
     Public Sub TestMethodOneE()
         Dim dynamicCulture = CultureInfo.CurrentCulture
-        Console.WriteLine(""FOO"".ToUpper(dynamicCulture))
+        Console.WriteLine(""AAA"".ToUpper(dynamicCulture))
     End Sub
 End Class
 ");
         }
 
         [Fact]
-        public void NoDiagnostic_ToLowerCases()
+        public async Task NoDiagnostic_ToLowerCases()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -99,65 +93,65 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethodTwoA()
     {
-        Console.WriteLine(""FOO"".ToLower());
+        Console.WriteLine(""AAA"".ToLower());
     }
 
     public void TestMethodTwoB()
     {
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.CurrentCulture));
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.CurrentCulture));
     }
 
     public void TestMethodTwoC()
     {
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.CurrentUICulture));
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.CurrentUICulture));
     }
 
     public void TestMethodTwoD()
     {
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.InstalledUICulture));
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.InstalledUICulture));
     }
 
     public void TestMethodTwoE()
     {
         var dynamicCulture = CultureInfo.CurrentCulture;
-        Console.WriteLine(""FOO"".ToLower(dynamicCulture));
+        Console.WriteLine(""AAA"".ToLower(dynamicCulture));
     }
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethodTwoA()
-        Console.WriteLine(""FOO"".ToLower())
+        Console.WriteLine(""AAA"".ToLower())
     End Sub
 
     Public Sub TestMethodTwoB()
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.CurrentCulture))
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.CurrentCulture))
     End Sub
 
     Public Sub TestMethodTwoC()
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.CurrentUICulture))
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.CurrentUICulture))
     End Sub
 
     Public Sub TestMethodTwoD()
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.InstalledUICulture))
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.InstalledUICulture))
     End Sub
 
     Public Sub TestMethodTwoE()
         Dim dynamicCulture = CultureInfo.CurrentCulture
-        Console.WriteLine(""FOO"".ToLower(dynamicCulture))
+        Console.WriteLine(""AAA"".ToLower(dynamicCulture))
     End Sub
 End Class
 ");
         }
 
         [Fact]
-        public void NoDiagnostic_ToUpperInvariantCases()
+        public async Task NoDiagnostic_ToUpperInvariantCases()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -165,18 +159,18 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethodThree()
     {
-        Console.WriteLine(""FOO"".ToUpperInvariant());
+        Console.WriteLine(""AAA"".ToUpperInvariant());
     }
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethodThree()
-        Console.WriteLine(""FOO"".ToUpperInvariant())
+        Console.WriteLine(""AAA"".ToUpperInvariant())
     End Sub
 End Class
 ");
@@ -187,9 +181,9 @@ End Class
         #region Diagnostic Tests
 
         [Fact]
-        public void Diagnostic_ToLowerCases()
+        public async Task Diagnostic_ToLowerCases()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -197,19 +191,19 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethod()
     {
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.InvariantCulture));
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.InvariantCulture));
     }
 }
 ",
             GetCSharpDefaultResultAt(9, 27, "TestMethod", "ToLower", "ToUpperInvariant"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethod()
-        Console.WriteLine(""FOO"".ToLower(CultureInfo.InvariantCulture))
+        Console.WriteLine(""AAA"".ToLower(CultureInfo.InvariantCulture))
     End Sub
 End Class
 ",
@@ -217,9 +211,9 @@ End Class
         }
 
         [Fact]
-        public void Diagnostic_ToLowerInvariantCases()
+        public async Task Diagnostic_ToLowerInvariantCases()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -227,19 +221,19 @@ public class NormalizeStringsTesterClass
 {
     public void TestMethod()
     {
-        Console.WriteLine(""FOO"".ToLowerInvariant());
+        Console.WriteLine(""AAA"".ToLowerInvariant());
     }
 }
 ",
             GetCSharpDefaultResultAt(9, 27, "TestMethod", "ToLowerInvariant", "ToUpperInvariant"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
 Public Class NormalizeStringsTesterClass
     Public Sub TestMethod()
-        Console.WriteLine(""FOO"".ToLowerInvariant())
+        Console.WriteLine(""AAA"".ToLowerInvariant())
     End Sub
 End Class
 ",
@@ -251,18 +245,14 @@ End Class
         #region Helpers
 
         private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string containingMethod, string invokedMethod, string suggestedMethod)
-        {
-            // In method '{0}', replace the call to '{1}' with '{2}'.
-            string message = string.Format(NormalizeStringsToUppercaseAnalyzer.ToUpperRule.MessageFormat.ToString(CultureInfo.CurrentUICulture), containingMethod, invokedMethod, suggestedMethod);
-            return GetCSharpResultAt(line, column, NormalizeStringsToUppercaseAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(containingMethod, invokedMethod, suggestedMethod);
 
         private static DiagnosticResult GetBasicDefaultResultAt(int line, int column, string containingMethod, string invokedMethod, string suggestedMethod)
-        {
-            // In method '{0}', replace the call to '{1}' with '{2}'.
-            string message = string.Format(NormalizeStringsToUppercaseAnalyzer.ToUpperRule.MessageFormat.ToString(CultureInfo.CurrentUICulture), containingMethod, invokedMethod, suggestedMethod);
-            return GetBasicResultAt(line, column, NormalizeStringsToUppercaseAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(containingMethod, invokedMethod, suggestedMethod);
 
         #endregion
     }

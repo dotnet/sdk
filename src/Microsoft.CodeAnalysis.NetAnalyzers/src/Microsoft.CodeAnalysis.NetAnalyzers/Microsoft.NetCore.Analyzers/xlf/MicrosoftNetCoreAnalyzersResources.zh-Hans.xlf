@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../MicrosoftNetCoreAnalyzersResources.resx">
+  <file datatype="xml" source-language="en" target-language="zh-HANS" original="../MicrosoftNetCoreAnalyzersResources.resx">
     <body>
       <trans-unit id="AddNonSerializedAttributeCodeActionTitle">
         <source>Add the 'NonSerialized' attribute to this field.</source>
@@ -10,21 +10,6 @@
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
         <source>Add Serializable attribute</source>
         <target state="translated">添加 Serializable 特性</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">PreserveSigAttribute 表示方法将返回一个 HRESULT，而不是引发异常。因此，请务必使用方法返回的 HRESULT，以便可以检测到错误。通常，通过调用 Marshal.ThrowExceptionForHR 来执行此操作。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">使用方法“{0}”返回的 HRESULT，并调用 Marshal.ThrowExceptionForHR。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">始终使用带有 PreserveSigAttribute 标记的方法返回的值</target>
         <note />
       </trans-unit>
       <trans-unit id="ApprovedCipherMode">
@@ -382,6 +367,26 @@
         <target state="translated">不要在常规处理程序中捕获损坏状态异常。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
+        <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
+        <target state="translated">TaskCompletionSource 具有采用 TaskCreationOptions 的控制基础任务的构造函数，以及采用任务中存储的对象状态的构造函数。如果意外地传递 TaskContinuationOptions 而不是 TaskCreationOptions，会导致调用将选项视为状态。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
+        <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
+        <target state="translated">将 TaskContinuationOptions 替换为 TaskCreationOptions。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
+        <target state="translated">参数包含 TaskContinuationsOptions 枚举而不是 TaskCreationOptions 枚举。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
+        <target state="translated">传递到 TaskCompletionSource 构造函数的参数应为 TaskCreationOptions 枚举，而不是 TaskContinuationOptions 枚举。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
         <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
         <target state="translated">除非使用具有 TaskScheduler 的任一重载，否则不要创建任务。默认是在 TaskScheduler.Current 上进行调度，但这将导致死锁。可使用 TaskScheduler.Default 在线程池上进行调度，或显示传递 TaskScheduler.Current 以明确表达意图。</target>
@@ -395,6 +400,21 @@
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
         <source>Do not create tasks without passing a TaskScheduler</source>
         <target state="translated">不要在未传递 TaskScheduler 的情况下创建任务</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="translated">将终结器添加到派生自 MemoryManager&lt;T&gt; 的类型可能使内存在仍被 Span&lt;T&gt; 使用时得到释放。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="translated">将终结器添加到派生自 MemoryManager&lt;T&gt; 的类型可能使内存在仍被 Span&lt;T&gt; 使用时得到释放。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="translated">请勿为派生自 MemoryManager&lt;T&gt; 的类型定义终结器</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -722,6 +742,26 @@
         <target state="translated">调用已过时的密钥派生功能 {0}。{1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">不要将值类型为“{0}”的参数传递给 "ReferenceEqualityComparer" 上的 "Equals" 方法。由于值装箱，对 "Equals" 的此调用将始终返回 "false"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">每次调用此方法时，值类型的类型化参数都唯一装箱，因此结果始终为 false。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">不要将值类型为“{0}”的参数传递给 "ReferenceEquals"。由于值装箱，对 "ReferenceEquals" 的此调用将始终返回 "false"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">不要使用具有值类型的 ReferenceEquals</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">不要使用不安全的加密算法 SHA1。</target>
@@ -730,6 +770,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">此类型实现 SHA1，它是一种不安全的加密哈希函数。在计算方面，SHA-1 和 SHA-0 算法可能出现哈希冲突。请将此使用项替换为 SHA-2 系列哈希算法(SHA512、SHA384、SHA256)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="translated">Stackalloc 分配的堆栈空间仅在当前方法的调用结束时释放。 在循环中使用它可能会导致无限堆栈增长和最终堆栈溢出条件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="translated">潜在的堆栈溢出。将 stackalloc 移出循环。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="translated">不要在循环中使用 stackalloc。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -962,9 +1017,19 @@
         <target state="translated">以内联方式初始化值类型的静态字段</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="translated">更改为调用两个参数构造函数，请为消息传递 null。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">调用了 ArgumentException 异常类型或其派生异常类型的默认(无参数)构造函数，或将不正确的字符串参数传递给 ArgumentException. 异常类型或其派生异常类型的参数化构造函数。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="translated">交换参数顺序</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1312,6 +1377,106 @@
         <target state="new">Potential reference cycle in deserialized object graph</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
+        <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
+        <target state="new">'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountDescription">
+        <source>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</source>
+        <target state="new">For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountMessage">
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
+        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountTitle">
+        <source>Prefer IsEmpty over Count</source>
+        <target state="new">Prefer IsEmpty over Count</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
+        <target state="translated">将“{0}”方法调用更改为接收“{1}”的重载。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
+        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</source>
+        <target state="translated">对于 "ReadAsync" 和 "WriteAsync"，首选基于内存的重载。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfDescription">
+        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</source>
+        <target state="new">Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfMessage">
+        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
+        <target state="new">Use 'string.Contains' instead of 'string.IndexOf' to improve readability</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfTitle">
+        <source>Consider using 'string.Contains' instead of 'string.IndexOf'</source>
+        <target state="new">Consider using 'string.Contains' instead of 'string.IndexOf'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
+        <target state="translated">StringBuilder.Append 和 StringBuilder.Insert 为 System.String 之外的多种类型提供重载。在可能情况下，尽量使用强类型重载而非使用 ToString() 和基于字符串的重载。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
+        <target state="translated">删除 ToString 调用以使用强类型 StringBuilder 重载。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
+        <source>Remove the ToString call</source>
+        <target state="translated">删除 ToString 调用</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
+        <target state="translated">最好使用 StringBuilder 的强类型 Append 和 Insert 方法重载。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
+        <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
+        <target state="translated">当字符串是单个字符时，"StringBuilder.Append(char)" 比 "StringBuilder.Append(string)" 更高效。使用常量调用 "Append" 时，请首选使用常量字符，而不是包含一个字符的常量字符串。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
+        <target state="translated">当输入是常量单位字符串时，请使用 "StringBuilder.Append(char)" 而不是 "StringBuilder.Append(string)"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
+        <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
+        <target state="translated">若适用，请考虑使用 "StringBuilder.Append(char)"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
+        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
+        <target state="new">'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
+        <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
+        <target state="new">The argument type, '{0}', must be the same as the enum type '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
+        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
+        <target state="new">This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
+        <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
+        <target state="new">Provide correct 'enum' argument to 'Enum.HasFlag'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
         <source>The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.</source>
         <target state="translated">传递到 System.String.Format 的 format 参数不包含与各对象参数相对应的格式项，反之亦然。</target>
@@ -1657,6 +1822,31 @@
         <target state="translated">使用 Array.Empty</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
+        <target state="translated">数组值的基于范围的索引器生成数组所请求部分的副本。此副本在隐式用作 Span 或 Memory 值时常常是不需要的。使用 AsSpan 方法可避免此副本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
+        <target state="translated">请使用 "{0}" 代替 "{2}" 上的基于 "{1}" 的索引器，以避免创建不必要的数据副本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
+        <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
+        <target state="translated">适当时，使用 AsSpan 或 AsMemory，而不是基于范围的索引器</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
+        <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="translated">字符串值基于范围的索引器生成字符串的请求部分的副本。此副本在隐式用作 ReadOnlySpan 或 ReadOnlyMemory 值时常常是不需要的。使用 AsSpan 方法可避免使用不必要的副本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="translated">数组值的基于范围的索引器生成数组所请求部分的副本。此副本在隐式用作 ReadOnlySpan 或 ReadOnlyMemory 值时常常是不需要的。使用 AsSpan 方法可避免使用不必要的副本。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">在 ASP.NET Core MVC 控制器中使用防伪造令牌</target>
@@ -1790,6 +1980,36 @@
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
         <target state="translated">如果可能，请考虑使用 Azure 基于角色的访问控制，而不是共享访问签名(SAS)。如果仍需使用 SAS，请指定 SharedAccessProtocol.HttpsOnly</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="translated">应直接等待从成员调用返回的 ValueTask。尝试多次使用 ValueTask 或在已知完成前直接访问结果可能导致异常或损坏。 忽略此类 ValueTask 很可能表示存在功能 bug，可能会降低性能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="translated">ValueTask 实例不应让其结果可直接访问，除非该实例已完成。与任务不同，对 ValueTask 调用 Result 或 GetAwaiter().GetResult() 不能保证在操作完成前保持阻止。如果不能仅仅等待该实例，请考虑首先检查其 IsCompleted 属性(如果你知道是这种情况，则断言为 true)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="translated">ValueTask 实例应只使用一次，例如通过 await。多次使用同一个 ValueTask 实例会导致异常和数据损坏。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="translated">从方法调用返回的 ValueTask 实例应直接等待、返回或作为参数传递给另一个方法调用。其他用法(例如，将实例存储到本地或字段中)可能表示存在 bug，因为 ValueTask 实例必须只使用一次。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="translated">从方法调用返回的 ValueTask 实例应始终被使用(通常被等待)。如果不是这样，那么通常表示存在功能性 bug，但即使不存在功能性 bug，如果目标方法池对象与 ValueTask 一起使用，可能导致性能下降。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="translated">正确使用 ValueTask</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

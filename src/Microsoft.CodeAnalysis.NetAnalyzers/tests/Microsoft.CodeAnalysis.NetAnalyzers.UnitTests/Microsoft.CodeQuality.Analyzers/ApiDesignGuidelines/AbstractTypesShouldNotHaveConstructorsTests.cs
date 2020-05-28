@@ -1,26 +1,22 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.AbstractTypesShouldNotHaveConstructorsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.AbstractTypesShouldNotHaveConstructorsFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.AbstractTypesShouldNotHaveConstructorsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.AbstractTypesShouldNotHaveConstructorsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public partial class CA1012Tests : DiagnosticAnalyzerTestBase
+    public class CA1012Tests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new AbstractTypesShouldNotHaveConstructorsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new AbstractTypesShouldNotHaveConstructorsAnalyzer();
-        }
-
         [Fact]
-        public void TestCSPublicAbstractClass()
+        public async Task TestCSPublicAbstractClass()
         {
             var code = @"
 public abstract class C
@@ -30,11 +26,11 @@ public abstract class C
     }
 }
 ";
-            VerifyCSharp(code, GetCA1012CSharpResultAt(2, 23, "C"));
+            await VerifyCS.VerifyAnalyzerAsync(code, GetCA1012CSharpResultAt(2, 23, "C"));
         }
 
         [Fact]
-        public void TestVBPublicAbstractClass()
+        public async Task TestVBPublicAbstractClass()
         {
             var code = @"
 Public MustInherit Class C
@@ -42,11 +38,11 @@ Public MustInherit Class C
     End Sub
 End Class
 ";
-            VerifyBasic(code, GetCA1012BasicResultAt(2, 26, "C"));
+            await VerifyVB.VerifyAnalyzerAsync(code, GetCA1012BasicResultAt(2, 26, "C"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestCSInternalAbstractClass()
+        public async Task TestCSInternalAbstractClass()
         {
             var code = @"
 abstract class C
@@ -56,11 +52,11 @@ abstract class C
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestVBInternalAbstractClass()
+        public async Task TestVBInternalAbstractClass()
         {
             var code = @"
 MustInherit Class C
@@ -68,11 +64,11 @@ MustInherit Class C
     End Sub
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void TestCSAbstractClassWithProtectedConstructor()
+        public async Task TestCSAbstractClassWithProtectedConstructor()
         {
             var code = @"
 public abstract class C
@@ -82,11 +78,11 @@ public abstract class C
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void TestVBAbstractClassWithProtectedConstructor()
+        public async Task TestVBAbstractClassWithProtectedConstructor()
         {
             var code = @"
 Public MustInherit Class C
@@ -94,11 +90,11 @@ Public MustInherit Class C
     End Sub
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestCSNestedAbstractClassWithPublicConstructor1()
+        public async Task TestCSNestedAbstractClassWithPublicConstructor1()
         {
             var code = @"
 public struct C
@@ -109,11 +105,11 @@ public struct C
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void TestVBNestedAbstractClassWithPublicConstructor1()
+        public async Task TestVBNestedAbstractClassWithPublicConstructor1()
         {
             var code = @"
 Public Structure C
@@ -123,11 +119,11 @@ Public Structure C
     End Class
 End Structure
 ";
-            VerifyBasic(code, GetCA1012BasicResultAt(3, 23, "D"));
+            await VerifyVB.VerifyAnalyzerAsync(code, GetCA1012BasicResultAt(3, 23, "D"));
         }
 
         [Fact]
-        public void TestNestedAbstractClassWithPublicConstructor2()
+        public async Task TestNestedAbstractClassWithPublicConstructor2()
         {
             var code = @"
 public abstract class C
@@ -138,11 +134,11 @@ public abstract class C
     }
 }
 ";
-            VerifyCSharp(code, GetCA1012CSharpResultAt(4, 27, "D"));
+            await VerifyCS.VerifyAnalyzerAsync(code, GetCA1012CSharpResultAt(4, 27, "D"));
         }
 
         [Fact]
-        public void TestVBNestedAbstractClassWithPublicConstructor2()
+        public async Task TestVBNestedAbstractClassWithPublicConstructor2()
         {
             var code = @"
 Public MustInherit Class C
@@ -152,11 +148,11 @@ Public MustInherit Class C
     End Class
 End Class
 ";
-            VerifyBasic(code, GetCA1012BasicResultAt(3, 39, "D"));
+            await VerifyVB.VerifyAnalyzerAsync(code, GetCA1012BasicResultAt(3, 39, "D"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestNestedAbstractClassWithPublicConstructor3()
+        public async Task TestNestedAbstractClassWithPublicConstructor3()
         {
             var code = @"
 internal abstract class C
@@ -167,11 +163,11 @@ internal abstract class C
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void TestVBNestedAbstractClassWithPublicConstructor3()
+        public async Task TestVBNestedAbstractClassWithPublicConstructor3()
         {
             var code = @"
 MustInherit Class C
@@ -181,19 +177,17 @@ MustInherit Class C
     End Class
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
-
-        internal static readonly string CA1012Message = MicrosoftCodeQualityAnalyzersResources.AbstractTypesShouldNotHaveConstructorsMessage;
 
         private static DiagnosticResult GetCA1012CSharpResultAt(int line, int column, string objectName)
-        {
-            return GetCSharpResultAt(line, column, AbstractTypesShouldNotHaveConstructorsAnalyzer.RuleId, string.Format(CA1012Message, objectName));
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(objectName);
 
         private static DiagnosticResult GetCA1012BasicResultAt(int line, int column, string objectName)
-        {
-            return GetBasicResultAt(line, column, AbstractTypesShouldNotHaveConstructorsAnalyzer.RuleId, string.Format(CA1012Message, objectName));
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(objectName);
     }
 }

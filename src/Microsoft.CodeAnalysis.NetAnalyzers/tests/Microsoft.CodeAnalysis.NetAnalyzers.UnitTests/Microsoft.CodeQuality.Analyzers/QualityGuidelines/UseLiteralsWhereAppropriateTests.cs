@@ -1,29 +1,25 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
-    public class UseLiteralsWhereAppropriateTests : DiagnosticAnalyzerTestBase
+    public class UseLiteralsWhereAppropriateTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new UseLiteralsWhereAppropriateAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new UseLiteralsWhereAppropriateAnalyzer();
-        }
-
         [Fact]
-        public void CA1802_Diagnostics_CSharp()
+        public async Task CA1802_Diagnostics_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
     static readonly string f1 = """";
@@ -43,9 +39,9 @@ public class Class1
         }
 
         [Fact]
-        public void CA1802_NoDiagnostics_CSharp()
+        public async Task CA1802_NoDiagnostics_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
     public static readonly string f1 = """"; // Not private or Internal
@@ -64,9 +60,9 @@ public class Class1
         }
 
         [Fact]
-        public void CA1802_Diagnostics_VisualBasic()
+        public async Task CA1802_Diagnostics_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
     Shared ReadOnly f1 As String = """"
     Shared ReadOnly f2 As String = ""Nothing""
@@ -85,9 +81,9 @@ End Class",
         }
 
         [Fact]
-        public void CA1802_NoDiagnostics_VisualBasic()
+        public async Task CA1802_NoDiagnostics_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
     ' Not Private or Friend
     Public Shared ReadOnly f1 As String = """"
@@ -115,58 +111,82 @@ End Class");
         [InlineData("dotnet_code_quality.required_modifiers = static", false)]
         [InlineData("dotnet_code_quality.required_modifiers = none", true)]
         [InlineData("dotnet_code_quality." + UseLiteralsWhereAppropriateAnalyzer.RuleId + ".required_modifiers = none", true)]
-        public void EditorConfigConfiguration_RequiredModifiersOption(string editorConfigText, bool reportDiagnostic)
+        public async Task EditorConfigConfiguration_RequiredModifiersOption(string editorConfigText, bool reportDiagnostic)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (reportDiagnostic)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     GetCSharpDefaultResultAt(4, 26, "field")
                 };
             }
 
-            VerifyCSharp(@"
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class Test
 {
     private readonly int field = 0;
 }
-", GetEditorConfigAdditionalFile(editorConfigText), expected);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            };
+            csTest.ExpectedDiagnostics.AddRange(expected);
+            await csTest.RunAsync();
 
             expected = Array.Empty<DiagnosticResult>();
             if (reportDiagnostic)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     GetBasicDefaultResultAt(3, 22, "field")
                 };
             }
 
-            VerifyBasic(@"
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class Test
     Private ReadOnly field As Integer = 0
 End Class
-", GetEditorConfigAdditionalFile(editorConfigText), expected);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+            vbTest.ExpectedDiagnostics.AddRange(expected);
+            await vbTest.RunAsync();
         }
 
-        private DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)
-        {
-            return GetCSharpResultAt(line, column, UseLiteralsWhereAppropriateAnalyzer.DefaultRule, symbolName);
-        }
+        private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)
+            => VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName);
 
-        private DiagnosticResult GetCSharpEmptyStringResultAt(int line, int column, string symbolName)
-        {
-            return GetCSharpResultAt(line, column, UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule, symbolName);
-        }
+        private static DiagnosticResult GetCSharpEmptyStringResultAt(int line, int column, string symbolName)
+            => VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName);
 
-        private DiagnosticResult GetBasicDefaultResultAt(int line, int column, string symbolName)
-        {
-            return GetBasicResultAt(line, column, UseLiteralsWhereAppropriateAnalyzer.DefaultRule, symbolName);
-        }
+        private static DiagnosticResult GetBasicDefaultResultAt(int line, int column, string symbolName)
+            => VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName);
 
-        private DiagnosticResult GetBasicEmptyStringResultAt(int line, int column, string symbolName)
-        {
-            return GetBasicResultAt(line, column, UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule, symbolName);
-        }
+        private static DiagnosticResult GetBasicEmptyStringResultAt(int line, int column, string symbolName)
+            => VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule)
+                .WithLocation(line, column)
+                .WithArguments(symbolName);
     }
 }

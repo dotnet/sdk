@@ -1,21 +1,31 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Text;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.Maintainability.ReviewUnusedParametersAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpReviewUnusedParametersFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.Maintainability.ReviewUnusedParametersAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicReviewUnusedParametersFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
-    public class ReviewUnusedParametersTests : DiagnosticAnalyzerTestBase
+    public class ReviewUnusedParametersTests
     {
         #region Unit tests for no analyzer diagnostic
 
         [Fact]
         [WorkItem(459, "https://github.com/dotnet/roslyn-analyzers/issues/459")]
-        public void NoDiagnosticSimpleCasesTest()
+        public async Task NoDiagnosticSimpleCasesTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class NeatCode
@@ -39,7 +49,7 @@ public class NeatCode
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class NeatCode
@@ -62,9 +72,9 @@ End Class
 
         [Fact]
         [WorkItem(459, "https://github.com/dotnet/roslyn-analyzers/issues/459")]
-        public void NoDiagnosticDelegateTest()
+        public async Task NoDiagnosticDelegateTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class NeatCode
@@ -89,7 +99,7 @@ public class NeatCode
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class NeatCode
@@ -111,9 +121,9 @@ End Class
 
         [Fact]
         [WorkItem(8884, "https://github.com/dotnet/roslyn/issues/8884")]
-        public void NoDiagnosticDelegateTest2_CSharp()
+        public async Task NoDiagnosticDelegateTest2_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class NeatCode
@@ -131,9 +141,9 @@ public class NeatCode
 
         [Fact]
         [WorkItem(459, "https://github.com/dotnet/roslyn-analyzers/issues/459")]
-        public void NoDiagnosticDelegateTest2_VB()
+        public async Task NoDiagnosticDelegateTest2_VB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class NeatCode
@@ -149,9 +159,9 @@ End Class
 
         [Fact]
         [WorkItem(8884, "https://github.com/dotnet/roslyn/issues/8884")]
-        public void NoDiagnosticUsingTest_CSharp()
+        public async Task NoDiagnosticUsingTest_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C
@@ -169,9 +179,9 @@ class C
 
         [Fact]
         [WorkItem(8884, "https://github.com/dotnet/roslyn/issues/8884")]
-        public void NoDiagnosticUsingTest_VB()
+        public async Task NoDiagnosticUsingTest_VB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class C
@@ -186,9 +196,9 @@ End Class
 
         [Fact]
         [WorkItem(8884, "https://github.com/dotnet/roslyn/issues/8884")]
-        public void NoDiagnosticLinqTest_CSharp()
+        public async Task NoDiagnosticLinqTest_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Linq;
 using System.Reflection;
@@ -208,9 +218,9 @@ class C
 
         [Fact]
         [WorkItem(8884, "https://github.com/dotnet/roslyn/issues/8884")]
-        public void NoDiagnosticLinqTest_VB()
+        public async Task NoDiagnosticLinqTest_VB()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Linq
 Imports System.Reflection
@@ -226,9 +236,9 @@ End Class
 
         [Fact]
         [WorkItem(459, "https://github.com/dotnet/roslyn-analyzers/issues/459")]
-        public void NoDiagnosticSpecialCasesTest()
+        public async Task NoDiagnosticSpecialCasesTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Runtime.InteropServices;
 
@@ -287,7 +297,7 @@ public class ClassWithExtern
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Runtime.InteropServices
 
@@ -337,16 +347,16 @@ Public Class ClassWithExtern
     Public Shared Sub DllImportMethod(param As Integer)
     End Sub
 
-    Public Declare Function DeclareFunction Lib ""Dependency.dll"" (param As Integer) As Integer    
+    Public Declare Function DeclareFunction Lib ""Dependency.dll"" (param As Integer) As Integer
 End Class
 ");
         }
 
         [Fact]
         [WorkItem(459, "https://github.com/dotnet/roslyn-analyzers/issues/459")]
-        public void NoDiagnosticForMethodsWithSpecialAttributesTest()
+        public async Task NoDiagnosticForMethodsWithSpecialAttributesTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 #define CONDITION_1
 
 using System;
@@ -396,7 +406,7 @@ public class SerializableMethodsClass
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 #Const CONDITION_1 = 5
 
 Imports System
@@ -440,9 +450,9 @@ End Class
         }
 
         [Fact, WorkItem(1218, "https://github.com/dotnet/roslyn-analyzers/issues/1218")]
-        public void NoDiagnosticForMethodsUsedAsDelegatesCSharp()
+        public async Task NoDiagnosticForMethodsUsedAsDelegatesCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C1
@@ -492,9 +502,9 @@ public class C3
         }
 
         [Fact, WorkItem(1218, "https://github.com/dotnet/roslyn-analyzers/issues/1218")]
-        public void NoDiagnosticForMethodsUsedAsDelegatesBasic()
+        public async Task NoDiagnosticForMethodsUsedAsDelegatesBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Class C1
     Private _handler As Action(Of Object)
@@ -534,9 +544,9 @@ End Class
         }
 
         [Fact, WorkItem(1218, "https://github.com/dotnet/roslyn-analyzers/issues/1218")]
-        public void NoDiagnosticForObsoleteMethods()
+        public async Task NoDiagnosticForObsoleteMethods()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C1
@@ -547,7 +557,7 @@ public class C1
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C1
@@ -558,9 +568,9 @@ End Class");
         }
 
         [Fact, WorkItem(1218, "https://github.com/dotnet/roslyn-analyzers/issues/1218")]
-        public void NoDiagnosticMethodJustThrowsNotImplemented()
+        public async Task NoDiagnosticMethodJustThrowsNotImplemented()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class MyAttribute: Attribute
@@ -600,7 +610,7 @@ public class C1
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C1
@@ -620,9 +630,9 @@ End Class");
         }
 
         [Fact, WorkItem(1218, "https://github.com/dotnet/roslyn-analyzers/issues/1218")]
-        public void NoDiagnosticMethodJustThrowsNotSupported()
+        public async Task NoDiagnosticMethodJustThrowsNotSupported()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C1
@@ -647,7 +657,7 @@ public class C1
     public void Method2(object o1) => throw new NotSupportedException();
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C1
@@ -667,9 +677,9 @@ End Class");
         }
 
         [Fact]
-        public void NoDiagnosticsForIndexer()
+        public async Task NoDiagnosticsForIndexer()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     public int this[int i]
@@ -680,7 +690,7 @@ class C
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Public Property Item(i As Integer) As Integer
         Get
@@ -695,9 +705,9 @@ End Class
         }
 
         [Fact]
-        public void NoDiagnosticsForPropertySetter()
+        public async Task NoDiagnosticsForPropertySetter()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     public int Property
@@ -708,7 +718,7 @@ class C
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Public Property Property1 As Integer
         Get
@@ -722,9 +732,9 @@ End Class
 ");
         }
         [Fact]
-        public void NoDiagnosticsForFirstParameterOfExtensionMethod()
+        public async Task NoDiagnosticsForFirstParameterOfExtensionMethod()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 static class C
 {
     static void ExtensionMethod(this int i) { }
@@ -734,24 +744,24 @@ static class C
         }
 
         [Fact]
-        public void NoDiagnosticsForSingleStatementMethodsWithDefaultParameters()
+        public async Task NoDiagnosticsForSingleStatementMethodsWithDefaultParameters()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
 {
-    public void Foo(string bar, string baz = null)
+    public void SomeMethod(string p1, string p2 = null)
     {
         throw new NotImplementedException();
     }
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Class C
-    Public Sub Test(bar As String, Optional baz As String = Nothing)
+    Public Sub Test(p1 As String, Optional p2 As String = Nothing)
         Throw New NotImplementedException()
     End Sub
 End Class");
@@ -760,9 +770,9 @@ End Class");
         [Fact]
         [WorkItem(2589, "https://github.com/dotnet/roslyn-analyzers/issues/2589")]
         [WorkItem(2593, "https://github.com/dotnet/roslyn-analyzers/issues/2593")]
-        public void NoDiagnosticDiscardParameterNames()
+        public async Task NoDiagnosticDiscardParameterNames()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -773,7 +783,7 @@ public class C
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -786,9 +796,9 @@ End Class
 
         [Fact]
         [WorkItem(2466, "https://github.com/dotnet/roslyn-analyzers/issues/2466")]
-        public void NoDiagnosticUsedLocalFunctionParameters()
+        public async Task NoDiagnosticUsedLocalFunctionParameters()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -809,30 +819,351 @@ public class C
 
         [Theory]
         [WorkItem(1375, "https://github.com/dotnet/roslyn-analyzers/issues/1375")]
-        [InlineData("public", "dotnet_code_quality.api_surface = private")]
-        [InlineData("private", "dotnet_code_quality.api_surface = internal, public")]
-        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = internal, private")]
-        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = Friend, Private")]
-        [InlineData("public", "dotnet_code_quality.Usage.api_surface = internal, private")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private", false)]
+        [InlineData("private", "dotnet_code_quality.api_surface = internal, public", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = internal, private", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = Friend, Private", false)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = internal, private", false)]
         [InlineData("public", @"dotnet_code_quality.api_surface = all
-                                dotnet_code_quality.CA1801.api_surface = private")]
-        public void EditorConfigConfiguration_ApiSurfaceOption(string accessibility, string editorConfigText)
+                                dotnet_code_quality.CA1801.api_surface = private", false)]
+        [InlineData("public", "dotnet_code_quality.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.api_surface = internal, public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = all", true)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = public, private", true)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = public", true)]
+        public async Task EditorConfigConfiguration_ApiSurfaceOption_AsAdditionalDocument(string accessibility, string editorConfigText, bool expectDiagnostic)
         {
-            VerifyCSharp($@"
+            var paramName = expectDiagnostic ? "[|unused|]" : "unused";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+public class C
+{{
+    {accessibility} void M(int {paramName})
+    {{
+    }}
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Public Class C
+    {accessibility} Sub M({paramName} As Integer)
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
+        }
+
+        [Theory]
+        [WorkItem(1375, "https://github.com/dotnet/roslyn-analyzers/issues/1375")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private", false)]
+        [InlineData("private", "dotnet_code_quality.api_surface = internal, public", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = internal, private", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = Friend, Private", false)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = internal, private", false)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = private", false)]
+        [InlineData("public", "dotnet_code_quality.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.api_surface = internal, public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = all", true)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = public, private", true)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = public", true)]
+        public async Task EditorConfigConfiguration_ApiSurfaceOption_AsAnalyzerConfigDocument(string accessibility, string editorConfigText, bool expectDiagnostic)
+        {
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
 public class C
 {{
     {accessibility} void M(int unused)
     {{
     }}
-}}",
-                GetEditorConfigAdditionalFile(editorConfigText));
+}}"
+                    }
+                },
+                SolutionTransforms = { WithAnalyzerConfigDocument }
+            };
 
-            VerifyBasic($@"
+            if (expectDiagnostic)
+            {
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"z:\Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
+            }
+
+            await csTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
 Public Class C
     {accessibility} Sub M(unused As Integer)
     End Sub
-End Class",
-                GetEditorConfigAdditionalFile(editorConfigText));
+End Class"
+                    },
+                },
+                SolutionTransforms = { WithAnalyzerConfigDocument }
+            };
+
+            if (expectDiagnostic)
+            {
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"z:\Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
+            }
+
+            await vbTest.RunAsync();
+            return;
+
+            Solution WithAnalyzerConfigDocument(Solution solution, ProjectId projectId)
+            {
+                var project = solution.GetProject(projectId)!;
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                solution = solution.WithProjectFilePath(projectId, projectFilePath);
+
+                var documentId = project.DocumentIds.Single();
+                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
+                solution = solution.WithDocumentFilePath(documentId, $@"z:\Test0.{documentExtension}");
+
+                return solution.GetProject(projectId)!
+                    .AddAnalyzerConfigDocument(
+                        ".editorconfig",
+                        SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
+                        filePath: @"z:\.editorconfig")
+                    .Project.Solution;
+            }
+        }
+
+        [Theory]
+        [WorkItem(1375, "https://github.com/dotnet/roslyn-analyzers/issues/1375")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private", false)]
+        [InlineData("private", "dotnet_code_quality.api_surface = internal, public", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = internal, private", false)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = Friend, Private", false)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = internal, private", false)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = private", false)]
+        [InlineData("public", "dotnet_code_quality.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.api_surface = internal, public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = public", true)]
+        [InlineData("public", "dotnet_code_quality.CA1801.api_surface = all", true)]
+        [InlineData("public", "dotnet_code_quality.Usage.api_surface = public, private", true)]
+        [InlineData("public", @"dotnet_code_quality.api_surface = all
+                                dotnet_code_quality.CA1801.api_surface = public", true)]
+        public async Task EditorConfigConfiguration_ApiSurfaceOption_AsAnalyzerConfigDocumentAndAdditionalDocument(string accessibility, string editorConfigText, bool expectDiagnostic)
+        {
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+public class C
+{{
+    {accessibility} void M(int unused)
+    {{
+    }}
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+                SolutionTransforms = { WithAnalyzerConfigDocument }
+            };
+
+            if (expectDiagnostic)
+            {
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"z:\Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
+            }
+
+            await csTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Public Class C
+    {accessibility} Sub M(unused As Integer)
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+                SolutionTransforms = { WithAnalyzerConfigDocument }
+            };
+
+            if (expectDiagnostic)
+            {
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"z:\Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
+            }
+
+            await vbTest.RunAsync();
+            return;
+
+            Solution WithAnalyzerConfigDocument(Solution solution, ProjectId projectId)
+            {
+                var project = solution.GetProject(projectId)!;
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                solution = solution.WithProjectFilePath(projectId, projectFilePath);
+
+                var documentId = project.DocumentIds.Single();
+                var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
+                solution = solution.WithDocumentFilePath(documentId, $@"z:\Test0.{documentExtension}");
+
+                return solution.GetProject(projectId)!
+                    .AddAnalyzerConfigDocument(
+                        ".editorconfig",
+                        SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
+                        filePath: @"z:\.editorconfig")
+                    .Project.Solution;
+            }
+        }
+
+        [Fact, WorkItem(3106, "https://github.com/dotnet/roslyn-analyzers/issues/3106")]
+        public async Task EventArgsNotInheritingFromSystemEventArgs_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+// Reproduce UWP some specific EventArgs
+namespace Windows.UI.Xaml
+{
+    public class RoutedEventArgs {}
+    public class SizeChangedEventArgs : RoutedEventArgs {}
+    public class WindowCreatedEventArgs {}
+}
+
+namespace SomeNamespace
+{
+    public class MyCustomEventArgs {}
+}
+
+public class C
+{
+    private void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e) {}
+    private void OnSizeChanged(object sender, Windows.UI.Xaml.SizeChangedEventArgs e) {}
+    private void OnWindowCreated(object sender, Windows.UI.Xaml.WindowCreatedEventArgs e) {}
+
+    private void OnSomething(object sender, SomeNamespace.MyCustomEventArgs e) {}
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+' Reproduce UWP some specific EventArgs
+Namespace Windows.UI.Xaml
+    Public Class RoutedEventArgs
+    End Class
+
+    Public Class SizeChangedEventArgs
+        Inherits RoutedEventArgs
+    End Class
+
+    Public Class WindowCreatedEventArgs
+    End Class
+End Namespace
+
+Namespace SomeNamespace
+    Public Class MyCustomEventArgs
+    End Class
+End Namespace
+
+Public Class C
+    Private Sub Page_Loaded(ByVal sender As Object, ByVal e As Windows.UI.Xaml.RoutedEventArgs)
+    End Sub
+
+    Private Sub OnSizeChanged(ByVal sender As Object, ByVal e As Windows.UI.Xaml.SizeChangedEventArgs)
+    End Sub
+
+    Private Sub OnWindowCreated(ByVal sender As Object, ByVal e As Windows.UI.Xaml.WindowCreatedEventArgs)
+    End Sub
+
+    Private Sub OnSomething(ByVal sender As Object, ByVal e As SomeNamespace.MyCustomEventArgs)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3039, "https://github.com/dotnet/roslyn-analyzers/issues/3039")]
+        public async Task SerializationConstructorParameters_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
+
+public class C
+{
+    protected C(SerializationInfo info, StreamingContext context)
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.Serialization
+
+Public Class C
+    Protected Sub New(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3039, "https://github.com/dotnet/roslyn-analyzers/issues/3039")]
+        public async Task GetObjectDataParameters_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
+
+public class C
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.Serialization
+
+Public Class C
+    Public Sub GetObjectData(ByVal info As SerializationInfo, ByVal context As StreamingContext)
+    End Sub
+End Class");
+        }
+
+        [Fact]
+        [WorkItem(2846, "https://github.com/dotnet/roslyn-analyzers/issues/2846")]
+        public async Task CA1801_MethodThrowArrowExpression_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class Class1
+{
+    public int Method1(int value) => throw new NotImplementedException();
+}
+");
         }
 
         #endregion
@@ -841,9 +1172,9 @@ End Class",
 
         [Fact]
         [WorkItem(459, "https://github.com/dotnet/roslyn-analyzers/issues/459")]
-        public void CSharp_DiagnosticForSimpleCasesTest()
+        public async Task CSharp_DiagnosticForSimpleCasesTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C
@@ -876,36 +1207,27 @@ class C
     {
     }
 
-    public void UnusedErrorTypeParamMethod(UndefinedType param1) // error CS0246: The type or namespace name 'UndefinedType' could not be found.
+    public void UnusedErrorTypeParamMethod({|CS0246:UndefinedType|} param1)
     {
     }
 }
-", TestValidationMode.AllowCompileErrors,
-          // Test0.cs(6,18): warning CA1801: Parameter param of method .ctor is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(6, 18, "param", ".ctor"),
-          // Test0.cs(10,39): warning CA1801: Parameter param of method UnusedParamMethod is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(10, 39, "param", "UnusedParamMethod"),
-          // Test0.cs(14,52): warning CA1801: Parameter param1 of method UnusedParamStaticMethod is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(14, 52, "param1", "UnusedParamStaticMethod"),
-          // Test0.cs(18,46): warning CA1801: Parameter defaultParam of method UnusedDefaultParamMethod is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(18, 46, "defaultParam", "UnusedDefaultParamMethod"),
-          // Test0.cs(22,59): warning CA1801: Parameter paramsArr of method UnusedParamsArrayParamMethod is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(22, 59, "paramsArr", "UnusedParamsArrayParamMethod"),
-          // Test0.cs(26,48): warning CA1801: Parameter param1 of method MultipleUnusedParamsMethod is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(26, 48, "param1", "MultipleUnusedParamsMethod"),
-          // Test0.cs(26,60): warning CA1801: Parameter param2 of method MultipleUnusedParamsMethod is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(26, 60, "param2", "MultipleUnusedParamsMethod"),
-          // Test0.cs(30,47): warning CA1801: Parameter param1 of method UnusedRefParamMethod is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(30, 47, "param1", "UnusedRefParamMethod"),
-          // Test0.cs(34,58): warning CA1801: Parameter param1 of method UnusedErrorTypeParamMethod is never used. Remove the parameter or use it in the method body.
-          GetCSharpUnusedParameterResultAt(34, 58, "param1", "UnusedErrorTypeParamMethod"));
+",
+                GetCSharpUnusedParameterResultAt(6, 18, "param", ".ctor"),
+                GetCSharpUnusedParameterResultAt(10, 39, "param", "UnusedParamMethod"),
+                GetCSharpUnusedParameterResultAt(14, 52, "param1", "UnusedParamStaticMethod"),
+                GetCSharpUnusedParameterResultAt(18, 46, "defaultParam", "UnusedDefaultParamMethod"),
+                GetCSharpUnusedParameterResultAt(22, 59, "paramsArr", "UnusedParamsArrayParamMethod"),
+                GetCSharpUnusedParameterResultAt(26, 48, "param1", "MultipleUnusedParamsMethod"),
+                GetCSharpUnusedParameterResultAt(26, 60, "param2", "MultipleUnusedParamsMethod"),
+                GetCSharpUnusedParameterResultAt(30, 47, "param1", "UnusedRefParamMethod"),
+                GetCSharpUnusedParameterResultAt(34, 58, "param1", "UnusedErrorTypeParamMethod"));
         }
 
         [Fact]
         [WorkItem(459, "https://github.com/dotnet/roslyn-analyzers/issues/459")]
-        public void Basic_DiagnosticForSimpleCasesTest()
+        public async Task Basic_DiagnosticForSimpleCasesTest()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Public Sub New(param As Integer)
     End Sub
@@ -928,48 +1250,38 @@ Class C
     Private Sub UnusedRefParamMethod(ByRef param1 As Integer)
     End Sub
 
-    Public Sub UnusedErrorTypeParamMethod(param1 As UndefinedType) ' error BC30002: Type 'UndefinedType' is not defined.
+    Public Sub UnusedErrorTypeParamMethod(param1 As {|BC30002:UndefinedType|})
     End Sub
 End Class
-", TestValidationMode.AllowCompileErrors,
-      // Test0.vb(3,20): warning CA1801: Parameter param of method .ctor is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(3, 20, "param", ".ctor"),
-      // Test0.vb(6,34): warning CA1801: Parameter param of method UnusedParamMethod is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(6, 34, "param", "UnusedParamMethod"),
-      // Test0.vb(9,47): warning CA1801: Parameter param1 of method UnusedParamStaticMethod is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(9, 47, "param1", "UnusedParamStaticMethod"),
-      // Test0.vb(12,50): warning CA1801: Parameter defaultParam of method UnusedDefaultParamMethod is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(12, 50, "defaultParam", "UnusedDefaultParamMethod"),
-      // Test0.vb(15,56): warning CA1801: Parameter paramsArr of method UnusedParamsArrayParamMethod is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(15, 56, "paramsArr", "UnusedParamsArrayParamMethod"),
-      // Test0.vb(18,43): warning CA1801: Parameter param1 of method MultipleUnusedParamsMethod is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(18, 43, "param1", "MultipleUnusedParamsMethod"),
-      // Test0.vb(18,62): warning CA1801: Parameter param2 of method MultipleUnusedParamsMethod is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(18, 62, "param2", "MultipleUnusedParamsMethod"),
-      // Test0.vb(21,44): warning CA1801: Parameter param1 of method UnusedRefParamMethod is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(21, 44, "param1", "UnusedRefParamMethod"),
-      // Test0.vb(24,43): warning CA1801: Parameter param1 of method UnusedErrorTypeParamMethod is never used. Remove the parameter or use it in the method body.
-      GetBasicUnusedParameterResultAt(24, 43, "param1", "UnusedErrorTypeParamMethod"));
+",
+                GetBasicUnusedParameterResultAt(3, 20, "param", ".ctor"),
+                GetBasicUnusedParameterResultAt(6, 34, "param", "UnusedParamMethod"),
+                GetBasicUnusedParameterResultAt(9, 47, "param1", "UnusedParamStaticMethod"),
+                GetBasicUnusedParameterResultAt(12, 50, "defaultParam", "UnusedDefaultParamMethod"),
+                GetBasicUnusedParameterResultAt(15, 56, "paramsArr", "UnusedParamsArrayParamMethod"),
+                GetBasicUnusedParameterResultAt(18, 43, "param1", "MultipleUnusedParamsMethod"),
+                GetBasicUnusedParameterResultAt(18, 62, "param2", "MultipleUnusedParamsMethod"),
+                GetBasicUnusedParameterResultAt(21, 44, "param1", "UnusedRefParamMethod"),
+                GetBasicUnusedParameterResultAt(24, 43, "param1", "UnusedErrorTypeParamMethod"));
         }
 
         [Fact]
-        public void DiagnosticsForNonFirstParameterOfExtensionMethod()
+        public async Task DiagnosticsForNonFirstParameterOfExtensionMethod()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 static class C
 {
     static void ExtensionMethod(this int i, int anotherParam) { }
 }
 ",
-    // Test0.cs(4,49): warning CA1801: Parameter anotherParam of method ExtensionMethod is never used. Remove the parameter or use it in the method body.
-    GetCSharpUnusedParameterResultAt(4, 49, "anotherParam", "ExtensionMethod"));
+                GetCSharpUnusedParameterResultAt(4, 49, "anotherParam", "ExtensionMethod"));
         }
 
         [Fact]
         [WorkItem(2466, "https://github.com/dotnet/roslyn-analyzers/issues/2466")]
-        public void DiagnosticForUnusedLocalFunctionParameters_01()
+        public async Task DiagnosticForUnusedLocalFunctionParameters_01()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -984,15 +1296,14 @@ public class C
         }
     }
 }",
-            // Test0.cs(11,32): warning CA1801: Parameter x of method LocalFunction is never used. Remove the parameter or use it in the method body.
-            GetCSharpUnusedParameterResultAt(11, 32, "x", "LocalFunction"));
+                GetCSharpUnusedParameterResultAt(11, 32, "x", "LocalFunction"));
         }
 
         [Fact]
         [WorkItem(2466, "https://github.com/dotnet/roslyn-analyzers/issues/2466")]
-        public void DiagnosticForUnusedLocalFunctionParameters_02()
+        public async Task DiagnosticForUnusedLocalFunctionParameters_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -1005,35 +1316,44 @@ public class C
         }
     }
 }",
-            // Test0.cs(9,32): warning CA1801: Parameter x of method LocalFunction is never used. Remove the parameter or use it in the method body.
-            GetCSharpUnusedParameterResultAt(9, 32, "x", "LocalFunction"));
+                GetCSharpUnusedParameterResultAt(9, 32, "x", "LocalFunction"));
+        }
+
+
+        [Fact]
+        public async Task DiagnosticForMethodsInNestedTypes()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public void OuterM(int [|x|])
+    {
+    }
+
+    public class NestedType
+    {
+        public void InnerM(int [|y|])
+        {
+        }
+    }
+}");
         }
 
         #endregion
 
         #region Helpers
 
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ReviewUnusedParametersAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ReviewUnusedParametersAnalyzer();
-        }
-
         private static DiagnosticResult GetCSharpUnusedParameterResultAt(int line, int column, string parameterName, string methodName)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ReviewUnusedParametersMessage, parameterName, methodName);
-            return GetCSharpResultAt(line, column, ReviewUnusedParametersAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(parameterName, methodName);
 
         private static DiagnosticResult GetBasicUnusedParameterResultAt(int line, int column, string parameterName, string methodName)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ReviewUnusedParametersMessage, parameterName, methodName);
-            return GetBasicResultAt(line, column, ReviewUnusedParametersAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(parameterName, methodName);
 
         #endregion
     }

@@ -1,10 +1,16 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.ValidateArgumentsOfPublicMethods,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.ValidateArgumentsOfPublicMethods,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
@@ -13,21 +19,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-    public partial class ValidateArgumentsOfPublicMethodsTests : DiagnosticAnalyzerTestBase
+    public class ValidateArgumentsOfPublicMethodsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer() => new ValidateArgumentsOfPublicMethods();
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new ValidateArgumentsOfPublicMethods();
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string methodSignature, string parameterName)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(methodSignature, parameterName);
 
-        private new DiagnosticResult GetCSharpResultAt(int line, int column, string methodSignature, string parameterName) =>
-            GetCSharpResultAt(line, column, ValidateArgumentsOfPublicMethods.Rule, methodSignature, parameterName);
-
-        private new DiagnosticResult GetBasicResultAt(int line, int column, string methodSignature, string parameterName) =>
-            GetBasicResultAt(line, column, ValidateArgumentsOfPublicMethods.Rule, methodSignature, parameterName);
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string methodSignature, string parameterName)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(methodSignature, parameterName);
 
         [Fact]
-        public void ValueTypeParameter_NoDiagnostic()
+        public async Task ValueTypeParameter_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public struct C
 {
     public int X;
@@ -42,7 +49,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure C
     Public X As Integer
 End Structure
@@ -55,9 +62,9 @@ End Class");
         }
 
         [Fact]
-        public void ReferenceTypeParameter_NoUsages_NoDiagnostic()
+        public async Task ReferenceTypeParameter_NoUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Test
 {
     public void M1(string str)
@@ -66,7 +73,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Test
     Public Sub M1(str As String)
     End Sub
@@ -74,9 +81,9 @@ End Class");
         }
 
         [Fact]
-        public void ReferenceTypeParameter_NoHazardousUsages_NoDiagnostic()
+        public async Task ReferenceTypeParameter_NoHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Test
 {
     public void M1(string str)
@@ -91,7 +98,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Test
     Public Sub M1(str As String)
         Dim x = str
@@ -104,9 +111,9 @@ End Class");
         }
 
         [Fact]
-        public void NonExternallyVisibleMethod_NoDiagnostic()
+        public async Task NonExternallyVisibleMethod_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -144,7 +151,7 @@ internal class Test2
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -175,9 +182,9 @@ End Class");
         }
 
         [Fact]
-        public void HazardousUsage_MethodReference_Diagnostic()
+        public async Task HazardousUsage_MethodReference_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Test
 {
     public void M1(string str)
@@ -189,7 +196,7 @@ public class Test
             // Test0.cs(6,17): warning CA1062: In externally visible method 'void Test.M1(string str)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(6, 17, "void Test.M1(string str)", "str"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Test
     Public Sub M1(str As String)
         Dim x = str.ToString()
@@ -201,9 +208,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsage_FieldReference_Diagnostic()
+        public async Task HazardousUsage_FieldReference_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -220,7 +227,7 @@ public class Test
             // Test0.cs(11,17): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(11, 17, "void Test.M1(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -236,9 +243,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsage_PropertyReference_Diagnostic()
+        public async Task HazardousUsage_PropertyReference_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X { get; }
@@ -255,7 +262,7 @@ public class Test
             // Test0.cs(11,17): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(11, 17, "void Test.M1(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public ReadOnly Property X As Integer
 End Class
@@ -271,9 +278,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsage_EventReference_Diagnostic()
+        public async Task HazardousUsage_EventReference_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public delegate void MyDelegate();
@@ -295,7 +302,7 @@ public class Test
             // Test0.cs(12,9): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(12, 9, "void Test.M1(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public Event X()
 End Class
@@ -314,9 +321,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsage_ArrayElementReference_Diagnostic()
+        public async Task HazardousUsage_ArrayElementReference_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Test
 {
     public void M1(Test[] tArray)
@@ -328,7 +335,7 @@ public class Test
             // Test0.cs(6,17): warning CA1062: In externally visible method 'void Test.M1(Test[] tArray)', validate parameter 'tArray' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(6, 17, "void Test.M1(Test[] tArray)", "tArray"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Test
     Public Sub M1(tArray As Test())
         Dim x = tArray(0)
@@ -340,9 +347,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsage_ReferenceInConditiona_Diagnostic()
+        public async Task HazardousUsage_ReferenceInConditiona_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public bool X;
@@ -361,7 +368,7 @@ public class Test
             // Test0.cs(11,13): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(11, 13, "void Test.M1(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Boolean
 End Class
@@ -378,9 +385,9 @@ End Class
         }
 
         [Fact]
-        public void MultipleHazardousUsages_OneReportPerParameter_Diagnostic()
+        public async Task MultipleHazardousUsages_OneReportPerParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -406,7 +413,7 @@ public class Test
         // Test0.cs(16,18): warning CA1062: In externally visible method 'void Test.M1(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
         GetCSharpResultAt(16, 18, "void Test.M1(C c1, C c2)", "c2"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
     Public Y As Integer
@@ -432,9 +439,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsage_OptionalParameter_Diagnostic()
+        public async Task HazardousUsage_OptionalParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Test
 {
     private const string _constStr = """";
@@ -447,7 +454,7 @@ public class Test
             // Test0.cs(7,17): warning CA1062: In externally visible method 'void Test.M1(string str = "")', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(7, 17, @"void Test.M1(string str = """")", "str"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Test
     Private Const _constStr As String = """"
     Public Sub M1(Optional str As String = _constStr)
@@ -460,9 +467,9 @@ End Class
         }
 
         [Fact]
-        public void ConditionalAccessUsages_NoDiagnostic()
+        public async Task ConditionalAccessUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -480,7 +487,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -496,9 +503,9 @@ End Class");
         }
 
         [Fact]
-        public void ValidatedNonNullAttribute_PossibleNullRefUsage_NoDiagnostic()
+        public async Task ValidatedNonNullAttribute_PossibleNullRefUsage_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class ValidatedNotNullAttribute : System.Attribute
 {
 }
@@ -512,7 +519,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class ValidatedNotNullAttribute
     Inherits System.Attribute
 End Class
@@ -526,9 +533,9 @@ End Class
         }
 
         [Fact]
-        public void ValidatedNonNullAttribute_PossibleNullRefUsageOnDifferentParam_Diagnostic()
+        public async Task ValidatedNonNullAttribute_PossibleNullRefUsageOnDifferentParam_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class ValidatedNotNullAttribute : System.Attribute
 {
 }
@@ -544,7 +551,7 @@ public class Test
             // Test0.cs(10,34): warning CA1062: In externally visible method 'void Test.M1(string str, string str2)', validate parameter 'str2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(10, 34, "void Test.M1(string str, string str2)", "str2"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class ValidatedNotNullAttribute
     Inherits System.Attribute
 End Class
@@ -560,9 +567,9 @@ End Class
         }
 
         [Fact]
-        public void DefiniteSimpleAssignment_BeforeHazardousUsages_NoDiagnostic()
+        public async Task DefiniteSimpleAssignment_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -582,7 +589,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -600,9 +607,9 @@ End Class");
         }
 
         [Fact]
-        public void AssignedToFieldAndValidated_BeforeHazardousUsages_NoDiagnostic()
+        public async Task AssignedToFieldAndValidated_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -628,7 +635,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -651,9 +658,9 @@ End Class");
         }
 
         [Fact]
-        public void AssignedToFieldAndNotValidated_BeforeHazardousUsages_Diagnostic()
+        public async Task AssignedToFieldAndNotValidated_BeforeHazardousUsages_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -692,7 +699,7 @@ public class Test
             // Test0.cs(27,17): warning CA1062: In externally visible method 'void Test.M2(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(27, 17, "void Test.M2(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -726,9 +733,9 @@ End Class",
         }
 
         [Fact]
-        public void MayBeAssigned_BeforeHazardousUsages_Diagnostic()
+        public async Task MayBeAssigned_BeforeHazardousUsages_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -756,7 +763,7 @@ public class Test
             // Test0.cs(20,17): warning CA1062: In externally visible method 'void Test.M1(string str, C c, bool flag)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(20, 17, "void Test.M1(string str, C c, bool flag)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -769,7 +776,7 @@ Public Class Test
             x = ""newString""
             c = New C()
         End If
-        
+
         ' Below may or may not cause null refs
         Dim y = x.ToString()
         Dim z = c.X
@@ -782,9 +789,15 @@ End Class",
         }
 
         [Fact]
-        public void ConditionalButDefiniteNonNullAssigned_BeforeHazardousUsages_NoDiagnostic_CopyAnalysis()
+        public async Task ConditionalButDefiniteNonNullAssigned_BeforeHazardousUsages_NoDiagnostic_CopyAnalysis()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class C
 {
     public int X;
@@ -844,9 +857,19 @@ public class Test
         var z = c.X;
     }
 }
-", GetEditorConfigToEnableCopyAnalysis());
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                }
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class C
     Public X As Integer
 End Class
@@ -897,13 +920,17 @@ Public Class Test
         Dim z = c.X
     End Sub
 
-End Class", GetEditorConfigToEnableCopyAnalysis());
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void ThrowOnNull_BeforeHazardousUsages_NoDiagnostic()
+        public async Task ThrowOnNull_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -944,7 +971,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -979,9 +1006,9 @@ End Class");
         }
 
         [Fact]
-        public void ThrowOnNullForSomeParameter_HazardousUsageForDifferentParameter_Diagnostic()
+        public async Task ThrowOnNullForSomeParameter_HazardousUsageForDifferentParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -1026,7 +1053,7 @@ public class Test
             // Test0.cs(37,17): warning CA1062: In externally visible method 'void Test.M2(string str, C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(37, 17, "void Test.M2(string str, C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -1066,9 +1093,9 @@ End Class
         }
 
         [Fact]
-        public void ThrowOnNull_AfterHazardousUsages_Diagnostic()
+        public async Task ThrowOnNull_AfterHazardousUsages_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -1089,7 +1116,7 @@ public class Test
             // Test0.cs(11,17): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(11, 17, "void Test.M1(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -1108,9 +1135,9 @@ End Class
         }
 
         [Fact]
-        public void NullCoalescingThrowExpressionOnNull_BeforeHazardousUsages_NoDiagnostic()
+        public async Task NullCoalescingThrowExpressionOnNull_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -1134,9 +1161,9 @@ public class Test
         }
 
         [Fact]
-        public void ThrowOnNull_UncommonNullCheckSyntax_BeforeHazardousUsages_NoDiagnostic()
+        public async Task ThrowOnNull_UncommonNullCheckSyntax_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -1195,7 +1222,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -1245,9 +1272,15 @@ End Class");
         }
 
         [Fact]
-        public void ContractCheck_NoDiagnostic_CopyAnalysis()
+        public async Task ContractCheck_NoDiagnostic_CopyAnalysis()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class C
 {
     public int X;
@@ -1290,9 +1323,19 @@ public class Test
         var z = c.X;
     }
 }
-", GetEditorConfigToEnableCopyAnalysis());
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                }
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class C
 
     Public X As Integer
@@ -1330,14 +1373,18 @@ Public Class Test
         Dim z = c.X
     End Sub
 End Class
-", GetEditorConfigToEnableCopyAnalysis());
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") }
+                }
+            }.RunAsync();
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
         [Fact]
-        public void ContractCheck_Diagnostic()
+        public async Task ContractCheck_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -1387,7 +1434,7 @@ public class Test
             // Test0.cs(30,17): warning CA1062: In externally visible method 'void Test.M3(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(30, 17, "void Test.M3(C c1, C c2)", "c2"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
 
     Public X As Integer
@@ -1435,9 +1482,9 @@ End Class",
         }
 
         [Fact]
-        public void ReturnOnNull_BeforeHazardousUsages_NoDiagnostic()
+        public async Task ReturnOnNull_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -1493,7 +1540,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -1540,9 +1587,9 @@ End Class
         }
 
         [Fact]
-        public void ReturnOnNullForSomeParameter_HazardousUsageForDifferentParameter_Diagnostic()
+        public async Task ReturnOnNullForSomeParameter_HazardousUsageForDifferentParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -1587,7 +1634,7 @@ public class Test
             // Test0.cs(37,17): warning CA1062: In externally visible method 'void Test.M2(string str, C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(37, 17, "void Test.M2(string str, C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -1627,9 +1674,9 @@ End Class
         }
 
         [Fact]
-        public void StringIsNullCheck_BeforeHazardousUsages_NoDiagnostic()
+        public async Task StringIsNullCheck_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Test
 {
     public void M1(string str)
@@ -1642,7 +1689,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Test
     Public Sub M1(ByVal str As String)
         If Not String.IsNullOrEmpty(str) Then
@@ -1653,9 +1700,9 @@ End Class");
         }
 
         [Fact]
-        public void StringIsNullCheck_WithCopyAnalysis_BeforeHazardousUsages_NoDiagnostic()
+        public async Task StringIsNullCheck_WithCopyAnalysis_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Test
 {
     public void M1(string str)
@@ -1669,7 +1716,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Test
     Public Sub M1(ByVal str As String)
         Dim x = str
@@ -1681,9 +1728,9 @@ End Class");
         }
 
         [Fact]
-        public void SpecialCase_ExceptionGetObjectData_NoDiagnostic()
+        public async Task SpecialCase_ExceptionGetObjectData_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Runtime.Serialization;
 
@@ -1718,7 +1765,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Runtime.Serialization
 
@@ -1749,9 +1796,9 @@ End Class
         }
 
         [Fact]
-        public void NullCheckWithNegationBasedCondition_BeforeHazardousUsages_NoDiagnostic()
+        public async Task NullCheckWithNegationBasedCondition_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -1773,7 +1820,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -1792,9 +1839,9 @@ End Class");
         }
 
         [Fact]
-        public void HazardousUsageInInvokedMethod_PrivateMethod_Diagnostic()
+        public async Task HazardousUsageInInvokedMethod_PrivateMethod_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -1821,7 +1868,7 @@ public class Test
             // Test0.cs(12,12): warning CA1062: In externally visible method 'void Test.M1(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(12, 12, "void Test.M1(C c1, C c2)", "c2"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -1849,9 +1896,15 @@ End Class
         [InlineData(@"dotnet_code_quality.max_interprocedural_method_call_chain = 0")]
         [InlineData(@"dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive
                       dotnet_code_quality.max_interprocedural_method_call_chain = 0")]
-        public void HazardousUsageInInvokedMethod_PrivateMethod_EditorConfig_NoInterproceduralAnalysis_NoDiagnostic(string editorConfigText)
+        public async Task HazardousUsageInInvokedMethod_PrivateMethod_EditorConfig_NoInterproceduralAnalysis_NoDiagnostic(string editorConfigText)
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class C
 {
     public int X;
@@ -1874,9 +1927,19 @@ public class Test
         var x = c.X;
     }
 }
-", GetEditorConfigAdditionalFile(editorConfigText));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class C
     Public X As Integer
 End Class
@@ -1894,7 +1957,11 @@ Public Class Test
         Dim x = c.X
     End Sub
 End Class
-", GetEditorConfigAdditionalFile(editorConfigText));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
         }
 
         [Theory, WorkItem(2525, "https://github.com/dotnet/roslyn-analyzers/issues/2525")]
@@ -1902,9 +1969,15 @@ End Class
         [InlineData(@"dotnet_code_quality.max_interprocedural_method_call_chain = 0")]
         [InlineData(@"dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive
                       dotnet_code_quality.max_interprocedural_method_call_chain = 0")]
-        public void ValidatedNotNullAttributeInInvokedMethod_EditorConfig_NoInterproceduralAnalysis_NoDiagnostic(string editorConfigText)
+        public async Task ValidatedNotNullAttributeInInvokedMethod_EditorConfig_NoInterproceduralAnalysis_NoDiagnostic(string editorConfigText)
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class ValidatedNotNullAttribute : System.Attribute
 {
 }
@@ -1928,15 +2001,22 @@ public class C
     {
     }
 }
-", GetEditorConfigAdditionalFile(editorConfigText),
-            // Test0.cs(14,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(14, 13, "void C.M1(C c1, C c2)", "c2"));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(14,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetCSharpResultAt(14, 13, "void C.M1(C c1, C c2)", "c2"),
+                }
+            }.RunAsync();
         }
 
         [Fact, WorkItem(2525, "https://github.com/dotnet/roslyn-analyzers/issues/2525")]
-        public void ValidatedNotNullAttributeInInvokedMethod_EditorConfig_NoInterproceduralAnalysis_NoDiagnostic_02()
+        public async Task ValidatedNotNullAttributeInInvokedMethod_EditorConfig_NoInterproceduralAnalysis_NoDiagnostic_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1963,10 +2043,10 @@ public static class Issue2578Test
         Param.RequireNotNull(input);
 
         // This line still generates a CA1062 error.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(DataThing input)
+    private static void SomeMethod(DataThing input)
     {
         input.Items.Any();
     }
@@ -1975,9 +2055,9 @@ public static class Issue2578Test
         }
 
         [Fact, WorkItem(2525, "https://github.com/dotnet/roslyn-analyzers/issues/2525")]
-        public void ValidatedNotNullAttributeInInvokedMethod_EditorConfig_NoInterproceduralAnalysis_NoDiagnostic_03()
+        public async Task ValidatedNotNullAttributeInInvokedMethod_EditorConfig_NoInterproceduralAnalysis_NoDiagnostic_03()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -2013,10 +2093,10 @@ public static class Issue2578Test
         Param.RequireNotNull(input);
 
         // This line still generates a CA1062 error.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(DataThing input)
+    private static void SomeMethod(DataThing input)
     {
         input.Items.Any();
     }
@@ -2034,9 +2114,15 @@ public static class Issue2578Test
         // Match multiple methods by method documentation ID with "M:" prefix
         [InlineData(@"dotnet_code_quality.interprocedural_analysis_kind = None
                       dotnet_code_quality.null_check_validation_methods = M:C.Validate(C)|M:Helper`1.Validate(C)|M:Helper`1.Validate``1(C,``0)")]
-        public void NullCheckValidationMethod_ConfiguredInEditorConfig_NoInterproceduralAnalysis_NoDiagnostic(string editorConfigText)
+        public async Task NullCheckValidationMethod_ConfiguredInEditorConfig_NoInterproceduralAnalysis_NoDiagnostic(string editorConfigText)
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class C
 {
     public void M1(C c1, C c2, C c3, C c4, C c5, C c6)
@@ -2087,19 +2173,26 @@ internal static class Helper<T>
     {
     }
 }
-", GetEditorConfigAdditionalFile(editorConfigText),
-            // Test0.cs(16,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c4' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(16, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c4"),
-            // Test0.cs(19,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c5' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(19, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c5"),
-            // Test0.cs(22,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c6' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(22, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c6"));
+"
+},
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(16,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c4' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetCSharpResultAt(16, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c4"),
+                    // Test0.cs(19,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c5' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetCSharpResultAt(19, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c5"),
+                    // Test0.cs(22,13): warning CA1062: In externally visible method 'void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)', validate parameter 'c6' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetCSharpResultAt(22, 13, "void C.M1(C c1, C c2, C c3, C c4, C c5, C c6)", "c6"),
+                }
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1707, "https://github.com/dotnet/roslyn-analyzers/issues/1707")]
-        public void HazardousUsageInInvokedMethod_PrivateMethod_Generic_Diagnostic()
+        public async Task HazardousUsageInInvokedMethod_PrivateMethod_Generic_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2126,7 +2219,7 @@ public class Test
             // Test0.cs(12,12): warning CA1062: In externally visible method 'void Test.M1(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(12, 12, "void Test.M1(C c1, C c2)", "c2"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2150,9 +2243,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsageInInvokedMethod_PublicMethod_Diagnostic()
+        public async Task HazardousUsageInInvokedMethod_PublicMethod_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2179,7 +2272,7 @@ public class Test
             // Test0.cs(21,17): warning CA1062: In externally visible method 'void Test.M3(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(21, 17, "void Test.M3(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2203,9 +2296,9 @@ End Class
         }
 
         [Fact, WorkItem(1707, "https://github.com/dotnet/roslyn-analyzers/issues/1707")]
-        public void HazardousUsageInInvokedMethod_PublicMethod_Generic_Diagnostic()
+        public async Task HazardousUsageInInvokedMethod_PublicMethod_Generic_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2232,7 +2325,7 @@ public class Test
             // Test0.cs(21,17): warning CA1062: In externally visible method 'void Test.M3<T>(T c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(21, 17, "void Test.M3<T>(T c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2256,9 +2349,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsageInInvokedMethod_PrivateMethod_MultipleLevelsDown_NoDiagnostic()
+        public async Task HazardousUsageInInvokedMethod_PrivateMethod_MultipleLevelsDown_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2283,7 +2376,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2305,10 +2398,10 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsageInInvokedMethod_WithInvocationCycles_Diagnostic()
+        public async Task HazardousUsageInInvokedMethod_WithInvocationCycles_Diagnostic()
         {
             // Code with cyclic call graph to verify we don't analyze indefinitely.
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2337,7 +2430,7 @@ public class Test
             // Test0.cs(12,12): warning CA1062: In externally visible method 'void Test.M1(C c1, C c2)', validate parameter 'c2' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(12, 12, "void Test.M1(C c1, C c2)", "c2"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2361,9 +2454,9 @@ End Class
         }
 
         [Fact]
-        public void HazardousUsageInInvokedMethod_InvokedAfterValidation_NoDiagnostic()
+        public async Task HazardousUsageInInvokedMethod_InvokedAfterValidation_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2386,7 +2479,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2406,9 +2499,9 @@ End Class
         }
 
         [Fact]
-        public void ValidatedInInvokedMethod_NoDiagnostic()
+        public async Task ValidatedInInvokedMethod_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -2434,7 +2527,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2456,9 +2549,9 @@ End Class");
         }
 
         [Fact, WorkItem(1707, "https://github.com/dotnet/roslyn-analyzers/issues/1707")]
-        public void ValidatedInInvokedMethod_Generic_NoDiagnostic()
+        public async Task ValidatedInInvokedMethod_Generic_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -2484,7 +2577,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2506,9 +2599,9 @@ End Class");
         }
 
         [Fact, WorkItem(2504, "https://github.com/dotnet/roslyn-analyzers/issues/2504")]
-        public void ValidatedInInvokedMethod_Generic_02_NoDiagnostic()
+        public async Task ValidatedInInvokedMethod_Generic_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -2538,9 +2631,9 @@ public class Test
         }
 
         [Fact]
-        public void MaybeValidatedInInvokedMethod_Diagnostic()
+        public async Task MaybeValidatedInInvokedMethod_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -2570,7 +2663,7 @@ public class Test
             // Test0.cs(16,17): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(16, 17, "void Test.M1(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2596,9 +2689,9 @@ End Class",
         }
 
         [Fact]
-        public void ValidatedButNoExceptionThrownInInvokedMethod_Diagnostic()
+        public async Task ValidatedButNoExceptionThrownInInvokedMethod_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -2628,7 +2721,7 @@ public class Test
             // Test0.cs(14,17): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(14, 17, "void Test.M1(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2654,9 +2747,9 @@ End Class",
         }
 
         [Fact]
-        public void ValidatedInInvokedMethod_AfterHazardousUsage_Diagnostic()
+        public async Task ValidatedInInvokedMethod_AfterHazardousUsage_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -2684,7 +2777,7 @@ public class Test
             // Test0.cs(13,17): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(13, 17, "void Test.M1(C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2708,9 +2801,9 @@ End Class",
         }
 
         [Fact]
-        public void WhileLoop_NullCheckInCondition_NoDiagnostic()
+        public async Task WhileLoop_NullCheckInCondition_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2730,7 +2823,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2747,9 +2840,9 @@ End Class");
         }
 
         [Fact]
-        public void WhileLoop_NullCheckInCondition_HazardousUsageOnExit_Diagnostic()
+        public async Task WhileLoop_NullCheckInCondition_HazardousUsageOnExit_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2776,7 +2869,7 @@ public class Test
             // Test0.cs(19,18): warning CA1062: In externally visible method 'void Test.M1(string str, C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(19, 18, "void Test.M1(string str, C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2800,9 +2893,9 @@ End Class",
         }
 
         [Fact]
-        public void ForLoop_NullCheckInCondition_NoDiagnostic()
+        public async Task ForLoop_NullCheckInCondition_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2823,9 +2916,9 @@ public class Test
         }
 
         [Fact]
-        public void ForLoop_NullCheckInCondition_HazardousUsageOnExit_Diagnostic()
+        public async Task ForLoop_NullCheckInCondition_HazardousUsageOnExit_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2853,9 +2946,9 @@ public class Test
         }
 
         [Fact]
-        public void LocalFunctionInvocation_EmptyBody_Diagnostic()
+        public async Task LocalFunctionInvocation_EmptyBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2886,9 +2979,9 @@ public class Test
         }
 
         [Fact]
-        public void LocalFunction_HazardousUsagesInBody_Diagnostic()
+        public async Task LocalFunction_HazardousUsagesInBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2921,9 +3014,9 @@ public class Test
         }
 
         [Fact]
-        public void LambdaInvocation_EmptyBody_Diagnostic()
+        public async Task LambdaInvocation_EmptyBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -2950,7 +3043,7 @@ public class Test
             // Test0.cs(19,17): warning CA1062: In externally visible method 'void Test.M1(string str, C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(19, 17, "void Test.M1(string str, C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -2974,9 +3067,9 @@ End Class",
         }
 
         [Fact]
-        public void Lambda_HazardousUsagesInBody_Diagnostic()
+        public async Task Lambda_HazardousUsagesInBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -3005,7 +3098,7 @@ public class Test
             // Test0.cs(17,21): warning CA1062: In externally visible method 'void Test.M1(string str, C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(17, 21, "void Test.M1(string str, C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -3031,9 +3124,9 @@ End Class",
         }
 
         [Fact]
-        public void DelegateInvocation_ValidatedArguments_NoDiagnostic()
+        public async Task DelegateInvocation_ValidatedArguments_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -3069,7 +3162,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -3100,9 +3193,9 @@ End Class");
         }
 
         [Fact]
-        public void DelegateInvocation_EmptyBody_Diagnostic()
+        public async Task DelegateInvocation_EmptyBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -3131,7 +3224,7 @@ public class Test
             // Test0.cs(17,17): warning CA1062: In externally visible method 'void Test.M1(string str, C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(17, 17, "void Test.M1(string str, C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -3157,9 +3250,9 @@ End Class",
         }
 
         [Fact]
-        public void DelegateInvocation_HazardousUsagesInBody_Diagnostic()
+        public async Task DelegateInvocation_HazardousUsagesInBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -3187,7 +3280,7 @@ public class Test
             // Test0.cs(14,23): warning CA1062: In externally visible method 'void Test.M1(string str, C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(14, 23, "void Test.M1(string str, C c)", "c"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -3212,9 +3305,9 @@ End Class",
         }
 
         [Fact]
-        public void TryCast_NoDiagnostic()
+        public async Task TryCast_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
 }
@@ -3240,7 +3333,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
 End Class
 
@@ -3258,9 +3351,9 @@ End Class");
         }
 
         [Fact]
-        public void DirectCastToObject_BeforeNullCheck_NoDiagnostic()
+        public async Task DirectCastToObject_BeforeNullCheck_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -3280,7 +3373,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -3297,9 +3390,9 @@ End Class");
         }
 
         [Fact]
-        public void StaticObjectReferenceEquals_BeforeHazardousUsages_NoDiagnostic()
+        public async Task StaticObjectReferenceEquals_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -3319,7 +3412,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -3336,9 +3429,9 @@ End Class");
         }
 
         [Fact]
-        public void StaticObjectEquals_BeforeHazardousUsages_NoDiagnostic()
+        public async Task StaticObjectEquals_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -3358,7 +3451,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -3375,9 +3468,9 @@ End Class");
         }
 
         [Fact]
-        public void ObjectEquals_BeforeHazardousUsages_NoDiagnostic()
+        public async Task ObjectEquals_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -3397,7 +3490,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 End Class
@@ -3414,9 +3507,9 @@ End Class");
         }
 
         [Fact]
-        public void ObjectEqualsOverride_BeforeHazardousUsages_NoDiagnostic()
+        public async Task ObjectEqualsOverride_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public int X;
@@ -3438,7 +3531,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public X As Integer
 
@@ -3459,9 +3552,9 @@ End Class");
         }
 
         [Fact]
-        public void IEquatableEquals_ExplicitImplementation_BeforeHazardousUsages_NoDiagnostic()
+        public async Task IEquatableEquals_ExplicitImplementation_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IEquatable<C>
@@ -3485,7 +3578,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -3509,9 +3602,9 @@ End Class");
         }
 
         [Fact]
-        public void IEquatableEquals_ImplicitImplementation_BeforeHazardousUsages_NoDiagnostic()
+        public async Task IEquatableEquals_ImplicitImplementation_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IEquatable<C>
@@ -3537,9 +3630,9 @@ public class Test
         }
 
         [Fact]
-        public void IEquatableEquals_Override_BeforeHazardousUsages_NoDiagnostic()
+        public async Task IEquatableEquals_Override_BeforeHazardousUsages_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public abstract class MyEquatable<T> : IEquatable<T>
@@ -3569,9 +3662,9 @@ public class Test
         }
 
         [Fact, WorkItem(1852, "https://github.com/dotnet/roslyn-analyzers/issues/1852")]
-        public void Issue1852()
+        public async Task Issue1852()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -3599,9 +3692,9 @@ namespace Blah
         }
 
         [Fact, WorkItem(1856, "https://github.com/dotnet/roslyn-analyzers/issues/1856")]
-        public void PointsToDataFlowOperationVisitor_VisitInstanceReference_Assert()
+        public async Task PointsToDataFlowOperationVisitor_VisitInstanceReference_Assert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Xml.Linq;
  namespace Blah
@@ -3689,21 +3782,21 @@ using System.Xml.Linq;
         }
     }
 }",
-            // Test0.cs(77,21): warning CA1062: In externally visible method 'void Idk<TContent>.ExportInfo(TContent part, ContentContext context)', validate parameter 'context' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(77, 21, "void Idk<TContent>.ExportInfo(TContent part, ContentContext context)", "context"));
+                // Test0.cs(77,21): warning CA1062: In externally visible method 'void Idk<TContent>.ExportInfo(TContent part, ContentContext context)', validate parameter 'context' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                GetCSharpResultAt(77, 21, "void Idk<TContent>.ExportInfo(TContent part, ContentContext context)", "context"));
         }
 
         [Fact, WorkItem(1856, "https://github.com/dotnet/roslyn-analyzers/issues/1856")]
-        public void InvocationThroughAnUninitializedLocalInstance()
+        public async Task InvocationThroughAnUninitializedLocalInstance()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     private int _field;
     public void M(C c)
     {
         C c2;
-        c2.M2(c);
+        {|CS0165:c2|}.M2(c);
     }
 
     private void M2(C c)
@@ -3711,15 +3804,15 @@ public class C
         var x = c._field;
     }
 }
-", validationMode: TestValidationMode.AllowCompileErrors, expected:
+",
             // Test0.cs(8,15): warning CA1062: In externally visible method 'void C.M(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
             GetCSharpResultAt(8, 15, "void C.M(C c)", "c"));
         }
 
         [Fact, WorkItem(1870, "https://github.com/dotnet/roslyn-analyzers/issues/1870")]
-        public void Issue1870()
+        public async Task Issue1870()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -3764,9 +3857,9 @@ using System.Reflection;
         }
 
         [Fact, WorkItem(1870, "https://github.com/dotnet/roslyn-analyzers/issues/1870")]
-        public void Issue1870_02()
+        public async Task Issue1870_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -3790,9 +3883,9 @@ namespace ANamespace
         }
 
         [Fact, WorkItem(1886, "https://github.com/dotnet/roslyn-analyzers/issues/1886")]
-        public void Issue1886()
+        public async Task Issue1886()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public enum Status
 {
     Status1,
@@ -3819,9 +3912,15 @@ public class C2
         }
 
         [Fact, WorkItem(1891, "https://github.com/dotnet/roslyn-analyzers/issues/1891")]
-        public void Issue1891()
+        public async Task Issue1891()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.IO;
 using System.Threading;
@@ -3982,17 +4081,24 @@ public class Class1
         }
         return true;
     }
-}",
-            // Test0.cs(115,28): warning CA1062: In externally visible method 'void Class1.Method(IContext aContext)', validate parameter 'aContext' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(115, 28, "void Class1.Method(IContext aContext)", "aContext"),
-            // Test0.cs(156,13): warning CA1062: In externally visible method 'bool Class1.HasUrl(IContext filterContext)', validate parameter 'filterContext' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(156, 13, "bool Class1.HasUrl(IContext filterContext)", "filterContext"));
+}"
+                    },
+                    AdditionalReferences = { AdditionalMetadataReferences.SystemWeb }
+                },
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(115,28): warning CA1062: In externally visible method 'void Class1.Method(IContext aContext)', validate parameter 'aContext' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetCSharpResultAt(115, 28, "void Class1.Method(IContext aContext)", "aContext"),
+                    // Test0.cs(156,13): warning CA1062: In externally visible method 'bool Class1.HasUrl(IContext filterContext)', validate parameter 'filterContext' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetCSharpResultAt(156, 13, "bool Class1.HasUrl(IContext filterContext)", "filterContext"),
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void MakeNullAndMakeMayBeNullAssert()
+        public async Task MakeNullAndMakeMayBeNullAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -4050,9 +4156,9 @@ public class Class1
         }
 
         [Fact]
-        public void OutParameterAssert()
+        public async Task OutParameterAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public void M(string s, bool b)
@@ -4084,9 +4190,9 @@ internal class C2
         }
 
         [Fact]
-        public void OutParameterAssert_02()
+        public async Task OutParameterAssert_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -4126,9 +4232,9 @@ internal static class EncodingExtensions
         }
 
         [Fact]
-        public void GetValueOrDefaultAssert()
+        public async Task GetValueOrDefaultAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public struct S
 {
     public bool Flag;
@@ -4150,9 +4256,9 @@ public struct S
         }
 
         [Fact]
-        public void GetValueOrDefaultAssert_02()
+        public async Task GetValueOrDefaultAssert_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public struct S
 {
     public object Node;
@@ -4188,9 +4294,9 @@ public struct S2
         }
 
         [Fact]
-        public void GetValueAssert()
+        public async Task GetValueAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public struct S
 {
     public int Major { get; }
@@ -4226,9 +4332,9 @@ public struct S2
         }
 
         [Fact]
-        public void SameFlowCaptureIdAcrossInterproceduralMethod()
+        public async Task SameFlowCaptureIdAcrossInterproceduralMethod()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public bool Flag;
@@ -4250,9 +4356,9 @@ public class C
         }
 
         [Fact]
-        public void HashCodeClashForUnequalPointsToAbstractValues()
+        public async Task HashCodeClashForUnequalPointsToAbstractValues()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
 
 internal static class FileUtilities
@@ -4320,9 +4426,9 @@ public class C
         }
 
         [Fact]
-        public void AssignmentInTry_CatchWithThrow()
+        public async Task AssignmentInTry_CatchWithThrow()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
@@ -4356,9 +4462,9 @@ public class C2
         }
 
         [Fact]
-        public void AnalysisEntityWithIndexAssert()
+        public async Task AnalysisEntityWithIndexAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public struct C1
 {
     public void M1(int index, C2 c2)
@@ -4387,9 +4493,9 @@ public struct S { }
         }
 
         [Fact]
-        public void NonMonotonicMergeAssert_FieldAllocatedInCallee()
+        public async Task NonMonotonicMergeAssert_FieldAllocatedInCallee()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -4457,9 +4563,9 @@ public struct S { }
         }
 
         [Fact]
-        public void NonMonotonicMergeAssert_LValueFlowCatpure_ResetAcrossInterproceduralCall()
+        public async Task NonMonotonicMergeAssert_LValueFlowCatpure_ResetAcrossInterproceduralCall()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 
 public class C<T> where T : class
@@ -4487,9 +4593,9 @@ public class C<T> where T : class
         }
 
         [Fact]
-        public void YieldReturn_WithinLoop()
+        public async Task YieldReturn_WithinLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
 
 public class C
@@ -4534,9 +4640,9 @@ public class E : C
         }
 
         [Fact]
-        public void NonMonotonicMergeAssert_UnknownValueMerge()
+        public async Task NonMonotonicMergeAssert_UnknownValueMerge()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
 using System.IO;
 
@@ -4573,9 +4679,9 @@ public class C
         }
 
         [Fact]
-        public void NonMonotonicMergeAssert_DefaultEntityEntryMissing()
+        public async Task NonMonotonicMergeAssert_DefaultEntityEntryMissing()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
 
 public class C
@@ -4622,9 +4728,9 @@ internal static class FileUtilities
         }
 
         [Fact]
-        public void NonMonotonicMergeAssert_DefaultEntityEntryMissing_02()
+        public async Task NonMonotonicMergeAssert_DefaultEntityEntryMissing_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -4659,9 +4765,9 @@ public class GreenNode { }
         }
 
         [Fact]
-        public void ComparisonOfValueTypeCastToObjectWithNull()
+        public async Task ComparisonOfValueTypeCastToObjectWithNull()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public void M(object p)
@@ -4678,9 +4784,9 @@ public struct S { }",
         }
 
         [Fact]
-        public void InvalidParentInstanceAssertForAnalysisEntity()
+        public async Task InvalidParentInstanceAssertForAnalysisEntity()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 
 public struct S
@@ -4705,9 +4811,9 @@ public class C
         }
 
         [Fact]
-        public void InvalidParentInstanceAssertForAnalysisEntity_02()
+        public async Task InvalidParentInstanceAssertForAnalysisEntity_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 
 public struct S
@@ -4732,9 +4838,9 @@ internal static class C
         }
 
         [Fact]
-        public void IndexedEntityInstanceLocationMergeAssert()
+        public async Task IndexedEntityInstanceLocationMergeAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
 using System.Threading;
 
@@ -4844,9 +4950,9 @@ public class C
         }
 
         [Fact]
-        public void CopyValueMergeAssert()
+        public async Task CopyValueMergeAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public void M(object obj, ref int index)
@@ -4873,9 +4979,9 @@ public class C
         }
 
         [Fact]
-        public void CopyValueInvalidResetDataAssert()
+        public async Task CopyValueInvalidResetDataAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -4911,9 +5017,9 @@ public class C
         }
 
         [Fact]
-        public void CopyValueAddressSharedEntityAssert()
+        public async Task CopyValueAddressSharedEntityAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -4935,9 +5041,9 @@ public class C
         }
 
         [Fact]
-        public void CopyValueAddressSharedEntityAssert_RecursiveInvocations()
+        public async Task CopyValueAddressSharedEntityAssert_RecursiveInvocations()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -4966,9 +5072,9 @@ public class C
         }
 
         [Fact]
-        public void CopyValueTrackingEntityWithUnknownInstanceLocationAssert()
+        public async Task CopyValueTrackingEntityWithUnknownInstanceLocationAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -5005,9 +5111,9 @@ public class C
         }
 
         [Fact]
-        public void RecursiveLocalFunctionInvocation()
+        public async Task RecursiveLocalFunctionInvocation()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -5035,9 +5141,9 @@ public class C
         }
 
         [Fact]
-        public void MultiChainedLocalFunctionInvocations()
+        public async Task MultiChainedLocalFunctionInvocations()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -5073,9 +5179,9 @@ public class C
         }
 
         [Fact]
-        public void MultiChainedLambdaInvocations()
+        public async Task MultiChainedLambdaInvocations()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -5104,9 +5210,9 @@ public class C
         }
 
         [Fact]
-        public void IsPatterExpression_UndefinedValueAssert()
+        public async Task IsPatterExpression_UndefinedValueAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 public class C
 {
@@ -5129,9 +5235,9 @@ public class D : C { }
 
         [WorkItem(1939, "https://github.com/dotnet/roslyn-analyzers/issues/1939")]
         [Fact]
-        public void Issue1939()
+        public async Task Issue1939()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class Test
@@ -5154,9 +5260,9 @@ public class Test
         }
 
         [Fact]
-        public void CopyAnalysisGetTrimmedDataAssert()
+        public async Task CopyAnalysisGetTrimmedDataAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -5179,9 +5285,9 @@ public class C
         }
 
         [Fact]
-        public void CopyAnalysisGetTrimmedDataAssert_02()
+        public async Task CopyAnalysisGetTrimmedDataAssert_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 using System.Text;
@@ -5218,9 +5324,9 @@ public class C
         }
 
         [Fact]
-        public void CopyAnalysisFlowCaptureReturnValueAssert()
+        public async Task CopyAnalysisFlowCaptureReturnValueAssert()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -5264,9 +5370,9 @@ public enum Kind
         }
 
         [Fact]
-        public void CopyAnalysisFlowCaptureReturnValueAssert_02()
+        public async Task CopyAnalysisFlowCaptureReturnValueAssert_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -5312,9 +5418,15 @@ public enum Kind
 
         [WorkItem(1943, "https://github.com/dotnet/roslyn-analyzers/issues/1943")]
         [Fact]
-        public void Issue1943()
+        public async Task Issue1943()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System.IO;
 using System.Web;
 
@@ -5373,15 +5485,19 @@ namespace MyComments
         }
     }
 }
-");
+"
+                    },
+                    AdditionalReferences = { AdditionalMetadataReferences.SystemWeb }
+                }
+            }.RunAsync();
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void CopyAnalysisAssert_AddressSharedOutParam()
+        public async Task CopyAnalysisAssert_AddressSharedOutParam()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public void M(C c)
@@ -5403,9 +5519,9 @@ public class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void CopyAnalysisAssert_ApplyInterproceduralResult()
+        public async Task CopyAnalysisAssert_ApplyInterproceduralResult()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class SyntaxNode
 {
     public SyntaxNode Parent { get; }
@@ -5492,9 +5608,9 @@ public class CSharpSyntaxNode : SyntaxNode
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2339, "https://github.com/dotnet/roslyn-analyzers/issues/2339")]
-        public void ParameterReassignedAfterNullCheck()
+        public async Task ParameterReassignedAfterNullCheck()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public static class C
@@ -5518,9 +5634,9 @@ public static class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2327, "https://github.com/dotnet/roslyn-analyzers/issues/2327")]
-        public void ForEachLoopsAfterNullCheck()
+        public async Task ForEachLoopsAfterNullCheck()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.ObjectModel;
 
@@ -5555,9 +5671,9 @@ public class Model
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2280, "https://github.com/dotnet/roslyn-analyzers/issues/2280")]
-        public void ConditionalAssignmentAfterNullCheck()
+        public async Task ConditionalAssignmentAfterNullCheck()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class Node
@@ -5576,9 +5692,9 @@ public class Node
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2276, "https://github.com/dotnet/roslyn-analyzers/issues/2276")]
-        public void AssignedArrayEmptyOnNullPath()
+        public async Task AssignedArrayEmptyOnNullPath()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Data.Common;
 
@@ -5606,9 +5722,9 @@ public class TableSet
         [Theory, WorkItem(2275, "https://github.com/dotnet/roslyn-analyzers/issues/2275")]
         [InlineData("IsNullOrWhiteSpace")]
         [InlineData("IsNullOrEmpty")]
-        public void StringNullCheckApis(string apiName)
+        public async Task StringNullCheckApis(string apiName)
         {
-            VerifyCSharp($@"
+            await VerifyCS.VerifyAnalyzerAsync($@"
 using System.Globalization;
 
 public class C
@@ -5644,9 +5760,9 @@ public class C
         [Theory, WorkItem(2369, "https://github.com/dotnet/roslyn-analyzers/issues/2369")]
         [InlineData("IsNullOrWhiteSpace")]
         [InlineData("IsNullOrEmpty")]
-        public void StringNullCheckApis_02(string apiName)
+        public async Task StringNullCheckApis_02(string apiName)
         {
-            VerifyCSharp($@"
+            await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
 
 public class C
@@ -5672,9 +5788,9 @@ public class C
         [Theory, WorkItem(2369, "https://github.com/dotnet/roslyn-analyzers/issues/2369")]
         [InlineData("IsNullOrWhiteSpace")]
         [InlineData("IsNullOrEmpty")]
-        public void StringNullCheckApis_03(string apiName)
+        public async Task StringNullCheckApis_03(string apiName)
         {
-            VerifyCSharp($@"
+            await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
 
 public class C
@@ -5696,9 +5812,9 @@ public class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2582, "https://github.com/dotnet/roslyn-analyzers/issues/2582")]
-        public void StringEmptyFieldIsNonNull()
+        public async Task StringEmptyFieldIsNonNull()
         {
-            VerifyCSharp($@"
+            await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
 
 public class Class1
@@ -5714,9 +5830,9 @@ public class Class1
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2582, "https://github.com/dotnet/roslyn-analyzers/issues/2582")]
-        public void ArrayEmptyMethodIsNonNull()
+        public async Task ArrayEmptyMethodIsNonNull()
         {
-            VerifyCSharp($@"
+            await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
 
 public class Class1
@@ -5732,9 +5848,9 @@ public class Class1
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2582, "https://github.com/dotnet/roslyn-analyzers/issues/2582")]
-        public void ImmutableCreationMethodIsNonNull()
+        public async Task ImmutableCreationMethodIsNonNull()
         {
-            VerifyCSharp($@"
+            await VerifyCS.VerifyAnalyzerAsync($@"
 using System.Collections.Immutable;
 
 public class Class1
@@ -5755,9 +5871,9 @@ public class Class1
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact]
-        public void NamedArgumentInDifferentOrder()
+        public async Task NamedArgumentInDifferentOrder()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public void M(C c1, C c2)
@@ -5785,9 +5901,9 @@ public class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2528, "https://github.com/dotnet/roslyn-analyzers/issues/2528")]
-        public void ParamArrayIsNotFlagged()
+        public async Task ParamArrayIsNotFlagged()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public void M(params int[] p)
@@ -5796,7 +5912,7 @@ public class C
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public Sub M(ParamArray p As Integer())
         Dim x = p.Length
@@ -5807,9 +5923,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2269, "https://github.com/dotnet/roslyn-analyzers/issues/2269")]
-        public void ProtectedMemberOfSealedClassNotFlagged()
+        public async Task ProtectedMemberOfSealedClassNotFlagged()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public abstract class A
@@ -5827,9 +5943,9 @@ public sealed class B : A
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2526, "https://github.com/dotnet/roslyn-analyzers/issues/2526")]
-        public void CheckedWithConditionalAccess_01()
+        public async Task CheckedWithConditionalAccess_01()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
 
 public class C
@@ -5847,9 +5963,9 @@ public class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2526, "https://github.com/dotnet/roslyn-analyzers/issues/2526")]
-        public void CheckedWithConditionalAccess_02()
+        public async Task CheckedWithConditionalAccess_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
 
 public class C
@@ -5863,9 +5979,9 @@ public class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2586, "https://github.com/dotnet/roslyn-analyzers/issues/2586")]
-        public void CheckedWithConditionalAccess_03()
+        public async Task CheckedWithConditionalAccess_03()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
 
 public class C
@@ -5888,18 +6004,18 @@ public class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2630, "https://github.com/dotnet/roslyn-analyzers/issues/2630")]
-        public void IsPatternInConditionalExpression_01_NoDiagnostic()
+        public async Task IsPatternInConditionalExpression_01_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
     public static void DoSomething(object input)
     {
         // Ensure no diagnostic here.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1)
         {
@@ -5912,18 +6028,18 @@ public class Class1
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2630, "https://github.com/dotnet/roslyn-analyzers/issues/2630")]
-        public void IsPatternInConditionalExpression_01_Diagnostic()
+        public async Task IsPatternInConditionalExpression_01_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
     public static void DoSomething(object input)
     {
         // Ensure diagnostic here.
-        Bar(input);
+        SomeMethod(input);
     }
 
-    private static void Bar(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1)
         {
@@ -5937,23 +6053,23 @@ public class Class1
     }
 }",
             // Test0.cs(7,13): warning CA1062: In externally visible method 'void Class1.DoSomething(object input)', validate parameter 'input' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(7, 13, "void Class1.DoSomething(object input)", "input"));
+            GetCSharpResultAt(7, 20, "void Class1.DoSomething(object input)", "input"));
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Fact, WorkItem(2630, "https://github.com/dotnet/roslyn-analyzers/issues/2630")]
-        public void IsPatternInConditionalExpression_02_NoDiagnostic()
+        public async Task IsPatternInConditionalExpression_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
     public static void DoSomething(object input)
     {
         // Ensure no diagnostic here.
-        Bar2(input);
+        SomeMethod(input);
     }
 
-    private static void Bar2(object input)
+    private static void SomeMethod(object input)
     {
         if (input is Class1 c)
         {
@@ -5968,19 +6084,25 @@ public class Class1
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality." + ValidateArgumentsOfPublicMethods.RuleId + ".excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public void EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.cs(6,17): warning CA1062: In externally visible method 'void Test.M1(string str)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(6, 17, "void Test.M1(string str)", "str")
                 };
             }
 
-            VerifyCSharp(@"
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public class Test
 {
     public void M1(string str)
@@ -5988,25 +6110,44 @@ public class Test
         var x = str.ToString();
     }
 }
-", GetEditorConfigAdditionalFile(editorConfigText), expected);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            };
+            csTest.ExpectedDiagnostics.AddRange(expected);
+            await csTest.RunAsync();
+
 
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.vb(4,17): warning CA1062: In externally visible method 'Sub Test.M1(str As String)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetBasicResultAt(4, 17, "Sub Test.M1(str As String)", "str")
                 };
             }
 
-            VerifyBasic(@"
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class Test
     Public Sub M1(str As String)
         Dim x = str.ToString()
     End Sub
 End Class
-", GetEditorConfigAdditionalFile(editorConfigText), expected);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+            vbTest.ExpectedDiagnostics.AddRange(expected);
+            await vbTest.RunAsync();
         }
 
         [Theory]
@@ -6015,19 +6156,25 @@ End Class
         [InlineData("dotnet_code_quality.exclude_extension_method_this_parameter = true")]
         [InlineData("dotnet_code_quality." + ValidateArgumentsOfPublicMethods.RuleId + ".exclude_extension_method_this_parameter = true")]
         [InlineData("dotnet_code_quality.dataflow.exclude_extension_method_this_parameter = true")]
-        public void EditorConfigConfiguration_ExcludeExtensionMethodThisParameterOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludeExtensionMethodThisParameterOption(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.cs(6,17): warning CA1062: In externally visible method 'void Test.M1(string str)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetCSharpResultAt(6, 17, "void Test.M1(string str)", "str")
                 };
             }
 
-            VerifyCSharp(@"
+            var csTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 public static class Test
 {
     public static void M1(this string str)
@@ -6035,19 +6182,31 @@ public static class Test
         var x = str.ToString();
     }
 }
-", GetEditorConfigAdditionalFile(editorConfigText), expected);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            };
+            csTest.ExpectedDiagnostics.AddRange(expected);
+            await csTest.RunAsync();
 
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                expected = new[]
                 {
                     // Test0.vb(7,17): warning CA1062: In externally visible method 'Sub Test.M1(str As String)', validate parameter 'str' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
                     GetBasicResultAt(7, 17, "Sub Test.M1(str As String)", "str")
                 };
             }
 
-            VerifyBasic(@"
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System.Runtime.CompilerServices
 
 Public Module Test
@@ -6055,7 +6214,13 @@ Public Module Test
     Public Sub M1(str As String)
         Dim x = str.ToString()
     End Sub
-End Module", GetEditorConfigAdditionalFile(editorConfigText), expected);
+End Module"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+            vbTest.ExpectedDiagnostics.AddRange(expected);
+            await vbTest.RunAsync();
         }
     }
 }

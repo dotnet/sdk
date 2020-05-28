@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">  
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <NonShipping>true</NonShipping>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <MicrosoftCodeAnalysisVersion>$(MicrosoftCodeAnalysisForRoslynDiagnosticsAnalyzersVersion)</MicrosoftCodeAnalysisVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Utilities\Compiler\Extensions\WellKnownDiagnosticTagsExtensions.cs" Link="WellKnownDiagnosticTagsExtensions.cs" />
+    <Compile Include="..\..\Utilities\Compiler\FxCopWellKnownDiagnosticTags.cs" Link="FxCopWellKnownDiagnosticTags.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
+  </ItemGroup>
+</Project>

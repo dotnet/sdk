@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.DisposeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -89,7 +90,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    var disposeAnalysisKind = operationBlockContext.Options.GetDisposeAnalysisKindOption(NotDisposedOnExceptionPathsRule, DisposeAnalysisKind.NonExceptionPaths, operationBlockContext.CancellationToken);
+                    var disposeAnalysisKind = operationBlockContext.Options.GetDisposeAnalysisKindOption(NotDisposedOnExceptionPathsRule, containingMethod,
+                        operationBlockContext.Compilation, DisposeAnalysisKind.NonExceptionPaths, operationBlockContext.CancellationToken);
                     var trackExceptionPaths = disposeAnalysisKind.AreExceptionPathsEnabled();
 
                     // For non-exception paths analysis, we can skip interprocedural analysis for certain invocations.
@@ -139,7 +141,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 return;
                             }
 
-                            if (disposeAnalysisResult.ControlFlowGraph.OriginalOperation.HasAnyOperationDescendant(o => o.Kind == OperationKind.None))
+                            if (disposeAnalysisResult.ControlFlowGraph.OriginalOperation.HasAnyOperationDescendant(o => o.Kind == OperationKind.None && !(o.Parent is INameOfOperation)))
                             {
                                 // Workaround for https://github.com/dotnet/roslyn/issues/32100
                                 // Bail out in presence of OperationKind.None - not implemented IOperation.

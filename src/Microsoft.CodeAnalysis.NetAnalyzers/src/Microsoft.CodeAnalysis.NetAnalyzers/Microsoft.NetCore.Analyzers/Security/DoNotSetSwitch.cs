@@ -125,6 +125,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                             InterproceduralAnalysisConfiguration.Create(
                                 operationAnalysisContext.Options,
                                 SupportedDiagnostics,
+                                invocationOperation.Syntax.SyntaxTree,
+                                operationAnalysisContext.Compilation,
                                 InterproceduralAnalysisKind.None,   // Just looking for simple cases.
                                 operationAnalysisContext.CancellationToken),
                             out _,

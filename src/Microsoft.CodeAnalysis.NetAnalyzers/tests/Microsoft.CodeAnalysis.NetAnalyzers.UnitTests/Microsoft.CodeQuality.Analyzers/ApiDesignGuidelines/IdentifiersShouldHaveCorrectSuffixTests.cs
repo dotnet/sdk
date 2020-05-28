@@ -1,34 +1,30 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldHaveCorrectSuffixAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldHaveCorrectSuffixFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldHaveCorrectSuffixAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicIdentifiersShouldHaveCorrectSuffixFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class IdentifiersShouldHaveCorrectSuffixTests : DiagnosticAnalyzerTestBase
+    public class IdentifiersShouldHaveCorrectSuffixTests
     {
-        public IdentifiersShouldHaveCorrectSuffixTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldHaveCorrectSuffixAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldHaveCorrectSuffixAnalyzer();
-        }
-
         [Fact]
-        public void CA1710_AllScenarioDiagnostics_CSharp()
+        public async Task CA1710_AllScenarioDiagnostics_CSharp()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -218,37 +214,44 @@ public class DataTableWithWrongSuffix : DataTable
     protected DataTableWithWrongSuffix(SerializationInfo info, StreamingContext context)
         : base(info, context) { }
 }",
-GetCA1710CSharpResultAt(line: 16, column: 14, symbolName: "EventsItemsDerived", replacementName: "EventArgs"),
-GetCA1710CSharpResultAt(line: 18, column: 14, symbolName: "EventsItems", replacementName: "EventArgs"),
-GetCA1710CSharpResultAt(line: 24, column: 32, symbolName: "EventCallback", replacementName: "EventHandler"),
-GetCA1710CSharpResultAt(line: 28, column: 14, symbolName: "DiskError", replacementName: "Exception"),
-GetCA1710CSharpResultAt(line: 39, column: 21, symbolName: "Verifiable", replacementName: "Attribute"),
-GetCA1710CSharpResultAt(line: 43, column: 14, symbolName: "ConditionClass", replacementName: "Condition"),
-GetCA1710CSharpResultAt(line: 54, column: 14, symbolName: "MyTable<TKey, TValue>", replacementName: "Dictionary"),
-GetCA1710CSharpResultAt(line: 60, column: 14, symbolName: "MyStringObjectHashtable", replacementName: "Dictionary"),
-GetCA1710CSharpResultAt(line: 65, column: 14, symbolName: "MyList<T>", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 67, column: 14, symbolName: "StringGrouping<T>", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 69, column: 14, symbolName: "LastInFirstOut<T>", replacementName: "Stack", isSpecial: true),
-GetCA1710CSharpResultAt(line: 71, column: 14, symbolName: "StackOfIntegers", replacementName: "Stack", isSpecial: true),
-GetCA1710CSharpResultAt(line: 73, column: 14, symbolName: "FirstInFirstOut<T>", replacementName: "Queue", isSpecial: true),
-GetCA1710CSharpResultAt(line: 75, column: 14, symbolName: "QueueOfNumbers", replacementName: "Queue", isSpecial: true),
-GetCA1710CSharpResultAt(line: 77, column: 14, symbolName: "MyDataStructure", replacementName: "Stack", isSpecial: true),
-GetCA1710CSharpResultAt(line: 79, column: 14, symbolName: "AnotherDataStructure", replacementName: "Queue", isSpecial: true),
-GetCA1710CSharpResultAt(line: 81, column: 14, symbolName: "WronglyNamedPermissionClass", replacementName: "Permission"),
-GetCA1710CSharpResultAt(line: 90, column: 14, symbolName: "WronglyNamedIPermissionClass", replacementName: "Permission"),
-GetCA1710CSharpResultAt(line: 101, column: 14, symbolName: "WronglyNamedType", replacementName: "Stream"),
-GetCA1710CSharpResultAt(line: 116, column: 14, symbolName: "MyCollectionIsEnumerable", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 165, column: 14, symbolName: "CollectionDoesNotEndInCollectionClass", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 168, column: 14, symbolName: "DictionaryDoesNotEndInDictionaryClass", replacementName: "Dictionary"),
-GetCA1710CSharpResultAt(line: 174, column: 14, symbolName: "MyTest<T>", replacementName: "Collection"),
-GetCA1710CSharpResultAt(line: 179, column: 14, symbolName: "DataSetWithWrongSuffix", replacementName: "DataSet"),
-GetCA1710CSharpResultAt(line: 186, column: 14, symbolName: "DataTableWithWrongSuffix", replacementName: "DataTable", isSpecial: true));
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1710CSharpResultAt(line: 16, column: 14, typeName: "EventsItemsDerived", suffix: "EventArgs"),
+                        GetCA1710CSharpResultAt(line: 18, column: 14, typeName: "EventsItems", suffix: "EventArgs"),
+                        GetCA1710CSharpResultAt(line: 24, column: 32, typeName: "EventCallback", suffix: "EventHandler"),
+                        GetCA1710CSharpResultAt(line: 28, column: 14, typeName: "DiskError", suffix: "Exception"),
+                        GetCA1710CSharpResultAt(line: 39, column: 21, typeName: "Verifiable", suffix: "Attribute"),
+                        GetCA1710CSharpResultAt(line: 43, column: 14, typeName: "ConditionClass", suffix: "Condition"),
+                        GetCA1710CSharpResultAt(line: 54, column: 14, typeName: "MyTable<TKey, TValue>", suffix: "Dictionary"),
+                        GetCA1710CSharpResultAt(line: 60, column: 14, typeName: "MyStringObjectHashtable", suffix: "Dictionary"),
+                        GetCA1710CSharpResultAt(line: 65, column: 14, typeName: "MyList<T>", suffix: "Collection"),
+                        GetCA1710CSharpResultAt(line: 67, column: 14, typeName: "StringGrouping<T>", suffix: "Collection"),
+                        GetCA1710CSharpResultAt(line: 69, column: 14, typeName: "LastInFirstOut<T>", suffix: "Stack", isSpecial: true),
+                        GetCA1710CSharpResultAt(line: 71, column: 14, typeName: "StackOfIntegers", suffix: "Stack", isSpecial: true),
+                        GetCA1710CSharpResultAt(line: 73, column: 14, typeName: "FirstInFirstOut<T>", suffix: "Queue", isSpecial: true),
+                        GetCA1710CSharpResultAt(line: 75, column: 14, typeName: "QueueOfNumbers", suffix: "Queue", isSpecial: true),
+                        GetCA1710CSharpResultAt(line: 77, column: 14, typeName: "MyDataStructure", suffix: "Stack", isSpecial: true),
+                        GetCA1710CSharpResultAt(line: 79, column: 14, typeName: "AnotherDataStructure", suffix: "Queue", isSpecial: true),
+                        GetCA1710CSharpResultAt(line: 81, column: 14, typeName: "WronglyNamedPermissionClass", suffix: "Permission"),
+                        GetCA1710CSharpResultAt(line: 90, column: 14, typeName: "WronglyNamedIPermissionClass", suffix: "Permission"),
+                        GetCA1710CSharpResultAt(line: 101, column: 14, typeName: "WronglyNamedType", suffix: "Stream"),
+                        GetCA1710CSharpResultAt(line: 116, column: 14, typeName: "MyCollectionIsEnumerable", suffix: "Collection"),
+                        GetCA1710CSharpResultAt(line: 165, column: 14, typeName: "CollectionDoesNotEndInCollectionClass", suffix: "Collection"),
+                        GetCA1710CSharpResultAt(line: 168, column: 14, typeName: "DictionaryDoesNotEndInDictionaryClass", suffix: "Dictionary"),
+                        GetCA1710CSharpResultAt(line: 174, column: 14, typeName: "MyTest<T>", suffix: "Collection"),
+                        GetCA1710CSharpResultAt(line: 179, column: 14, typeName: "DataSetWithWrongSuffix", suffix: "DataSet"),
+                        GetCA1710CSharpResultAt(line: 186, column: 14, typeName: "DataTableWithWrongSuffix", suffix: "DataTable", isSpecial: true),
+                    }
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA1710_NoDiagnostics_CSharp()
+        public async Task CA1710_NoDiagnostics_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -424,9 +427,15 @@ public class MyCollectionDataTable : DataTable, IEnumerable
         }
 
         [Fact]
-        public void CA1710_AllScenarioDiagnostics_VisualBasic()
+        public async Task CA1710_AllScenarioDiagnostics_VisualBasic()
         {
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Collections
 Imports System.Collections.Generic
@@ -748,36 +757,43 @@ Public Class WronglyNamedType
     End Property
 
 End Class",
-GetCA1710BasicResultAt(line: 13, column: 14, symbolName: "AnotherDataStructure", replacementName: "Queue", isSpecial: true),
-GetCA1710BasicResultAt(line: 17, column: 14, symbolName: "CollectionDoesNotEndInCollectionClass", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 22, column: 14, symbolName: "ConditionClass", replacementName: "Condition"),
-GetCA1710BasicResultAt(line: 64, column: 14, symbolName: "DataSetWithWrongSuffix", replacementName: "DataSet"),
-GetCA1710BasicResultAt(line: 75, column: 14, symbolName: "DataTableWithWrongSuffix", replacementName: "DataTable", isSpecial: true),
-GetCA1710BasicResultAt(line: 86, column: 14, symbolName: "DictionaryDoesNotEndInDictionaryClass", replacementName: "Dictionary"),
-GetCA1710BasicResultAt(line: 97, column: 14, symbolName: "DiskError", replacementName: "Exception"),
-GetCA1710BasicResultAt(line: 122, column: 18, symbolName: "EventCallback", replacementName: "EventHandler"),
-GetCA1710BasicResultAt(line: 125, column: 14, symbolName: "EventsItems", replacementName: "EventArgs"),
-GetCA1710BasicResultAt(line: 130, column: 14, symbolName: "FirstInFirstOut(Of T)", replacementName: "Queue", isSpecial: true),
-GetCA1710BasicResultAt(line: 135, column: 14, symbolName: "LastInFirstOut(Of T)", replacementName: "Stack", isSpecial: true),
-GetCA1710BasicResultAt(line: 140, column: 14, symbolName: "MyCollectionIsEnumerable", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 148, column: 14, symbolName: "MyDataStructure", replacementName: "Stack", isSpecial: true),
-GetCA1710BasicResultAt(line: 153, column: 14, symbolName: "MyList(Of T)", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 159, column: 14, symbolName: "MyStringObjectHashtable", replacementName: "Dictionary"),
-GetCA1710BasicResultAt(line: 170, column: 14, symbolName: "MyTable(Of TKey, TValue)", replacementName: "Dictionary"),
-GetCA1710BasicResultAt(line: 180, column: 14, symbolName: "MyTest(Of T)", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 185, column: 14, symbolName: "QueueOfNumbers", replacementName: "Queue", isSpecial: true),
-GetCA1710BasicResultAt(line: 190, column: 14, symbolName: "StackOfIntegers", replacementName: "Stack", isSpecial: true),
-GetCA1710BasicResultAt(line: 195, column: 14, symbolName: "StringGrouping(Of T)", replacementName: "Collection"),
-GetCA1710BasicResultAt(line: 201, column: 29, symbolName: "Verifiable", replacementName: "Attribute"),
-GetCA1710BasicResultAt(line: 206, column: 14, symbolName: "WronglyNamedIPermissionClass", replacementName: "Permission"),
-GetCA1710BasicResultAt(line: 238, column: 14, symbolName: "WronglyNamedPermissionClass", replacementName: "Permission"),
-GetCA1710BasicResultAt(line: 263, column: 14, symbolName: "WronglyNamedType", replacementName: "Stream"));
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1710BasicResultAt(line: 13, column: 14, typeName: "AnotherDataStructure", suffix: "Queue", isSpecial: true),
+                        GetCA1710BasicResultAt(line: 17, column: 14, typeName: "CollectionDoesNotEndInCollectionClass", suffix: "Collection"),
+                        GetCA1710BasicResultAt(line: 22, column: 14, typeName: "ConditionClass", suffix: "Condition"),
+                        GetCA1710BasicResultAt(line: 64, column: 14, typeName: "DataSetWithWrongSuffix", suffix: "DataSet"),
+                        GetCA1710BasicResultAt(line: 75, column: 14, typeName: "DataTableWithWrongSuffix", suffix: "DataTable", isSpecial: true),
+                        GetCA1710BasicResultAt(line: 86, column: 14, typeName: "DictionaryDoesNotEndInDictionaryClass", suffix: "Dictionary"),
+                        GetCA1710BasicResultAt(line: 97, column: 14, typeName: "DiskError", suffix: "Exception"),
+                        GetCA1710BasicResultAt(line: 122, column: 18, typeName: "EventCallback", suffix: "EventHandler"),
+                        GetCA1710BasicResultAt(line: 125, column: 14, typeName: "EventsItems", suffix: "EventArgs"),
+                        GetCA1710BasicResultAt(line: 130, column: 14, typeName: "FirstInFirstOut(Of T)", suffix: "Queue", isSpecial: true),
+                        GetCA1710BasicResultAt(line: 135, column: 14, typeName: "LastInFirstOut(Of T)", suffix: "Stack", isSpecial: true),
+                        GetCA1710BasicResultAt(line: 140, column: 14, typeName: "MyCollectionIsEnumerable", suffix: "Collection"),
+                        GetCA1710BasicResultAt(line: 148, column: 14, typeName: "MyDataStructure", suffix: "Stack", isSpecial: true),
+                        GetCA1710BasicResultAt(line: 153, column: 14, typeName: "MyList(Of T)", suffix: "Collection"),
+                        GetCA1710BasicResultAt(line: 159, column: 14, typeName: "MyStringObjectHashtable", suffix: "Dictionary"),
+                        GetCA1710BasicResultAt(line: 170, column: 14, typeName: "MyTable(Of TKey, TValue)", suffix: "Dictionary"),
+                        GetCA1710BasicResultAt(line: 180, column: 14, typeName: "MyTest(Of T)", suffix: "Collection"),
+                        GetCA1710BasicResultAt(line: 185, column: 14, typeName: "QueueOfNumbers", suffix: "Queue", isSpecial: true),
+                        GetCA1710BasicResultAt(line: 190, column: 14, typeName: "StackOfIntegers", suffix: "Stack", isSpecial: true),
+                        GetCA1710BasicResultAt(line: 195, column: 14, typeName: "StringGrouping(Of T)", suffix: "Collection"),
+                        GetCA1710BasicResultAt(line: 201, column: 29, typeName: "Verifiable", suffix: "Attribute"),
+                        GetCA1710BasicResultAt(line: 206, column: 14, typeName: "WronglyNamedIPermissionClass", suffix: "Permission"),
+                        GetCA1710BasicResultAt(line: 238, column: 14, typeName: "WronglyNamedPermissionClass", suffix: "Permission"),
+                        GetCA1710BasicResultAt(line: 263, column: 14, typeName: "WronglyNamedType", suffix: "Stream"),
+                    }
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA1710_NoDiagnostics_VisualBasic()
+        public async Task CA1710_NoDiagnostics_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Collections
 Imports System.Collections.Generic
@@ -1084,9 +1100,9 @@ End Class");
         }
 
         [Fact, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
-        public void CA1710_SystemAction_CSharp()
+        public async Task CA1710_SystemAction_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -1096,9 +1112,9 @@ public class C
         }
 
         [Fact, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
-        public void CA1710_CustomDelegate_CSharp()
+        public async Task CA1710_CustomDelegate_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -1108,24 +1124,780 @@ public class C
 }");
         }
 
-        private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
+        [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
+        public async Task CA1710_IReadOnlyDictionary()
         {
-            return GetBasicResultAt(
-                line,
-                column,
-                isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule,
-                symbolName,
-                replacementName);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class C : IReadOnlyDictionary<int, string>
+{
+    public string this[int key] => throw new System.NotImplementedException();
+
+    public IEnumerable<int> Keys => throw new System.NotImplementedException();
+
+    public IEnumerable<string> Values => throw new System.NotImplementedException();
+
+    public int Count => throw new System.NotImplementedException();
+
+    public bool ContainsKey(int key) => throw new System.NotImplementedException();
+    public IEnumerator<KeyValuePair<int, string>> GetEnumerator() => throw new System.NotImplementedException();
+    public bool TryGetValue(int key, out string value) => throw new System.NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+}",
+                GetCA1710CSharpResultAt(6, 14, "C", "Dictionary"));
         }
 
-        private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string symbolName, string replacementName, bool isSpecial = false)
+        [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
+        public async Task CA1710_IReadOnlyCollection()
         {
-            return GetCSharpResultAt(
-                line,
-                column,
-                isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule,
-                symbolName,
-                replacementName);
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class C : IReadOnlyCollection<int>
+{
+    public int Count => throw new System.NotImplementedException();
+
+    public IEnumerator<int> GetEnumerator() => throw new System.NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+}",
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1710CSharpResultAt(6, 14, "C", "Collection"),
+                    },
+                }
+            }.RunAsync();
         }
+
+        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = SomeOtherClass->ABC")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:SomeOtherClass->ABC")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.IMyInterface->Interface")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.IMyInterface->Interface")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = invalid")]
+        // In case of duplicated entries, only the first is kept
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.SomeClass->SecondSuffix")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.SomeClass->SecondSuffix")]
+        public async Task CA1710_AdditionalSuffixes(string editorConfigText)
+        {
+            editorConfigText = $@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+{editorConfigText}";
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+
+namespace MyNamespace
+{
+    public interface IMyInterface {}
+    public class SomeClass {}
+
+    public class SomeSubClass : SomeClass {}
+    public class SomeSubSubClass : SomeSubClass {}
+
+    public class C : ICloneable, IMyInterface
+    {
+        public object Clone() => null;
+    }
+}
+
+public class SomeOtherClass
+{
+}
+
+public class SomeOtherSubClass : SomeOtherClass {}"},
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            };
+
+            if (editorConfigText.EndsWith("Suffix", System.StringComparison.Ordinal))
+            {
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCA1710CSharpResultAt(9, 18, "MyNamespace.SomeSubClass", "FirstSuffix"),
+                    GetCA1710CSharpResultAt(10, 18, "MyNamespace.SomeSubSubClass", "FirstSuffix"),
+                });
+            }
+            else if (editorConfigText.EndsWith("ABC", System.StringComparison.Ordinal))
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(22, 14, "SomeOtherSubClass", "ABC"));
+            }
+            else if (editorConfigText.EndsWith("Interface", System.StringComparison.Ordinal))
+            {
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCA1710CSharpResultAt(9, 18, "MyNamespace.SomeSubClass", "FirstSuffix"),
+                    GetCA1710CSharpResultAt(10, 18, "MyNamespace.SomeSubSubClass", "FirstSuffix"),
+                    GetCA1710CSharpResultAt(12, 18, "MyNamespace.C", "Interface"),
+                });
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+
+Namespace MyNamespace
+    Interface IMyInterface
+    End Interface
+
+    Public Class SomeClass
+    End Class
+
+    Public Class SomeSubClass
+        Inherits SomeClass
+    End Class
+
+    Public Class SomeSubSubClass
+        Inherits SomeSubClass
+    End Class
+
+    Public Class C
+        Implements ICloneable, IMyInterface
+
+        Public Function Clone() As Object Implements ICloneable.Clone
+            Return Nothing
+        End Function
+    End Class
+End Namespace
+
+Public Class SomeOtherClass
+End Class
+
+Public Class SomeOtherSubClass
+    Inherits SomeOtherClass
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            };
+
+            if (editorConfigText.EndsWith("Suffix", System.StringComparison.Ordinal))
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCA1710BasicResultAt(11, 18, "MyNamespace.SomeSubClass", "FirstSuffix"),
+                    GetCA1710BasicResultAt(15, 18, "MyNamespace.SomeSubSubClass", "FirstSuffix"),
+                });
+            }
+            else if (editorConfigText.EndsWith("ABC", System.StringComparison.Ordinal))
+            {
+                vbTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(31, 14, "SomeOtherSubClass", "ABC"));
+            }
+            else if (editorConfigText.EndsWith("Interface", System.StringComparison.Ordinal))
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCA1710BasicResultAt(11, 18, "MyNamespace.SomeSubClass", "FirstSuffix"),
+                    GetCA1710BasicResultAt(15, 18, "MyNamespace.SomeSubSubClass", "FirstSuffix"),
+                    GetCA1710BasicResultAt(19, 18, "MyNamespace.C", "Interface"),
+                });
+            }
+
+            await vbTest.RunAsync();
+        }
+
+        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        // methods are not handled
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = M:MyNamespace.SomeClass.MyMethod()->Suffix")]
+        // namespaces are not handled
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = N:MyNamespace:Suffix")]
+        // more than one -> is not handled
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->Suffix1->Suffix2")]
+        // no suffix
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass")]
+        public async Task CA1710_InvalidSyntaxNoSuffix(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace MyNamespace
+{
+    public class SomeClass
+    {
+        public void MyMethod() {}
+    }
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace MyNamespace
+    Public Class SomeClass
+        Public Sub MyMethod()
+        End Sub
+    End Class
+End Namespace"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            }.RunAsync();
+        }
+
+
+        [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        public async Task CA1710_UserMappingWinsOverHardcoded()
+        {
+            var editorConfigText = @"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IDictionary`2->MySuffix";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Collections.Generic;
+
+public class SomeClass : Dictionary<string, string>
+{
+}
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1710CSharpResultAt(4, 14, "SomeClass", "MySuffix"),
+                    }
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System.Collections.Generic
+
+Public Class SomeClass
+    Inherits Dictionary(Of String, String)
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    ExpectedDiagnostics =
+                    {
+                        GetCA1710BasicResultAt(4, 14, "SomeClass", "MySuffix"),
+                    }
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
+        public async Task CA1710_DefaultValueForExclusion()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+public class FreezableList : ReadOnlyCollection<int>
+{
+    public FreezableList(IList<int> list) : base(list)
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Collections
+Imports System.Collections.Generic
+Imports System.Collections.ObjectModel
+
+Public Class FreezableList
+    Inherits ReadOnlyCollection(Of Integer)
+
+    Public Sub New(ByVal list As IList(Of Integer))
+        MyBase.New(list)
+    End Sub
+End Class");
+        }
+
+        [Theory, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {}")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{} ")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {} ")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ }")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { }")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ } ")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { } ")]
+        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {     } ")]
+        public async Task CA1710_AllowEmptySuffix(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Data;
+
+public class SomeClass : IDataReader
+{
+    public object this[int i] => throw new NotImplementedException();
+
+    public object this[string name] => throw new NotImplementedException();
+
+    public int Depth => throw new NotImplementedException();
+
+    public bool IsClosed => throw new NotImplementedException();
+
+    public int RecordsAffected => throw new NotImplementedException();
+
+    public int FieldCount => throw new NotImplementedException();
+
+    public void Close() => throw new NotImplementedException();
+    public void Dispose() => throw new NotImplementedException();
+    public bool GetBoolean(int i) => throw new NotImplementedException();
+    public byte GetByte(int i) => throw new NotImplementedException();
+    public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length) => throw new NotImplementedException();
+    public char GetChar(int i) => throw new NotImplementedException();
+    public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length) => throw new NotImplementedException();
+    public IDataReader GetData(int i) => throw new NotImplementedException();
+    public string GetDataTypeName(int i) => throw new NotImplementedException();
+    public DateTime GetDateTime(int i) => throw new NotImplementedException();
+    public decimal GetDecimal(int i) => throw new NotImplementedException();
+    public double GetDouble(int i) => throw new NotImplementedException();
+    public Type GetFieldType(int i) => throw new NotImplementedException();
+    public float GetFloat(int i) => throw new NotImplementedException();
+    public Guid GetGuid(int i) => throw new NotImplementedException();
+    public short GetInt16(int i) => throw new NotImplementedException();
+    public int GetInt32(int i) => throw new NotImplementedException();
+    public long GetInt64(int i) => throw new NotImplementedException();
+    public string GetName(int i) => throw new NotImplementedException();
+    public int GetOrdinal(string name) => throw new NotImplementedException();
+    public DataTable GetSchemaTable() => throw new NotImplementedException();
+    public string GetString(int i) => throw new NotImplementedException();
+    public object GetValue(int i) => throw new NotImplementedException();
+    public int GetValues(object[] values) => throw new NotImplementedException();
+    public bool IsDBNull(int i) => throw new NotImplementedException();
+    public bool NextResult() => throw new NotImplementedException();
+    public bool Read() => throw new NotImplementedException();
+}
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+Imports System.Data
+
+Public Class SomeClass
+    Implements System.Data.IDataReader
+
+    Public ReadOnly Property Depth As Integer Implements IDataReader.Depth
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property IsClosed As Boolean Implements IDataReader.IsClosed
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property RecordsAffected As Integer Implements IDataReader.RecordsAffected
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public ReadOnly Property FieldCount As Integer Implements IDataRecord.FieldCount
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Default Public ReadOnly Property Item(i As Integer) As Object Implements IDataRecord.Item
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Default Public ReadOnly Property Item(name As String) As Object Implements IDataRecord.Item
+        Get
+            Throw New NotImplementedException()
+        End Get
+    End Property
+
+    Public Sub Close() Implements IDataReader.Close
+        Throw New NotImplementedException()
+    End Sub
+
+    Public Function GetSchemaTable() As DataTable Implements IDataReader.GetSchemaTable
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function NextResult() As Boolean Implements IDataReader.NextResult
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function Read() As Boolean Implements IDataReader.Read
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetBoolean(i As Integer) As Boolean Implements IDataRecord.GetBoolean
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetByte(i As Integer) As Byte Implements IDataRecord.GetByte
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetBytes(i As Integer, fieldOffset As Long, buffer() As Byte, bufferoffset As Integer, length As Integer) As Long Implements IDataRecord.GetBytes
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetChar(i As Integer) As Char Implements IDataRecord.GetChar
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetChars(i As Integer, fieldoffset As Long, buffer() As Char, bufferoffset As Integer, length As Integer) As Long Implements IDataRecord.GetChars
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetData(i As Integer) As IDataReader Implements IDataRecord.GetData
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetDataTypeName(i As Integer) As String Implements IDataRecord.GetDataTypeName
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetDateTime(i As Integer) As Date Implements IDataRecord.GetDateTime
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetDecimal(i As Integer) As Decimal Implements IDataRecord.GetDecimal
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetDouble(i As Integer) As Double Implements IDataRecord.GetDouble
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetFieldType(i As Integer) As Type Implements IDataRecord.GetFieldType
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetFloat(i As Integer) As Single Implements IDataRecord.GetFloat
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetGuid(i As Integer) As Guid Implements IDataRecord.GetGuid
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetInt16(i As Integer) As Short Implements IDataRecord.GetInt16
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetInt32(i As Integer) As Integer Implements IDataRecord.GetInt32
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetInt64(i As Integer) As Long Implements IDataRecord.GetInt64
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetName(i As Integer) As String Implements IDataRecord.GetName
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetOrdinal(name As String) As Integer Implements IDataRecord.GetOrdinal
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetString(i As Integer) As String Implements IDataRecord.GetString
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetValue(i As Integer) As Object Implements IDataRecord.GetValue
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function GetValues(values() As Object) As Integer Implements IDataRecord.GetValues
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function IsDBNull(i As Integer) As Boolean Implements IDataRecord.IsDBNull
+        Throw New NotImplementedException()
+    End Function
+
+#Region ""IDisposable Support""
+    Private disposedValue As Boolean ' To detect redundant calls
+
+    ' IDisposable
+    Protected Overridable Sub Dispose(disposing As Boolean)
+        If Not disposedValue Then
+            If disposing Then
+                ' TODO: dispose managed state (managed objects).
+            End If
+
+            ' TODO: free unmanaged resources (unmanaged objects) and override Finalize() below.
+            ' TODO: set large fields to null.
+        End If
+        disposedValue = True
+    End Sub
+
+    ' TODO: override Finalize() only if Dispose(disposing As Boolean) above has code to free unmanaged resources.
+    'Protected Overrides Sub Finalize()
+    '    ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+    '    Dispose(False)
+    '    MyBase.Finalize()
+    'End Sub
+
+    ' This code added by Visual Basic to correctly implement the disposable pattern.
+    Public Sub Dispose() Implements IDisposable.Dispose
+        ' Do not change this code.  Put cleanup code in Dispose(disposing As Boolean) above.
+        Dispose(True)
+        ' TODO: uncomment the following line if Finalize() is overridden above.
+        ' GC.SuppressFinalize(Me)
+    End Sub
+#End Region
+
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                }
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]
+        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = true")]
+        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = invalid")]
+        [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = true
+                      dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
+        [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+                      dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
+        public async Task CA1710_ExcludeIndirectTypes(string editorConfigText)
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+public class C : Exception {}
+public class Sub : C {}
+
+public class FreezableList : ReadOnlyCollection<int>
+{
+    public FreezableList(IList<int> list) : base(list)
+    {
+    }
+}
+
+public class SomeClass {}
+public class SomeSubClass : SomeClass {}
+public class SomeSubSubClass : SomeSubClass {}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    ExpectedDiagnostics = { GetCA1710CSharpResultAt(7, 14, "C", "Exception") },
+                }
+            };
+
+            if (editorConfigText.Contains("exclude_indirect_base_types = false"))
+            {
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCA1710CSharpResultAt(8, 14, "Sub", "Exception"),
+                    GetCA1710CSharpResultAt(10, 14, "FreezableList", "Collection"),
+                });
+
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
+                {
+                    csharpTest.ExpectedDiagnostics.AddRange(new[]
+                    {
+                        GetCA1710CSharpResultAt(18, 14, "SomeSubClass", "Suffix1"),
+                        GetCA1710CSharpResultAt(19, 14, "SomeSubSubClass", "Suffix1"),
+                    });
+                }
+            }
+            else
+            {
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
+                {
+                    csharpTest.ExpectedDiagnostics.Add(GetCA1710CSharpResultAt(18, 14, "SomeSubClass", "Suffix1"));
+                }
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+Imports System.Collections
+Imports System.Collections.Generic
+Imports System.Collections.ObjectModel
+
+Public Class C
+    Inherits Exception
+End Class
+
+Public Class [Sub]
+    Inherits C
+End Class
+
+Public Class FreezableList
+    Inherits ReadOnlyCollection(Of Integer)
+
+    Public Sub New(ByVal list As IList(Of Integer))
+        MyBase.New(list)
+    End Sub
+End Class
+
+Public Class SomeClass
+End Class
+
+Public Class SomeSubClass
+    Inherits SomeClass
+End Class
+
+Public Class SomeSubSubClass
+    Inherits SomeSubClass
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText)  },
+                    ExpectedDiagnostics = { GetCA1710BasicResultAt(7, 14, "C", "Exception") },
+                }
+            };
+
+            if (editorConfigText.Contains("exclude_indirect_base_types = false"))
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    GetCA1710BasicResultAt(11, 14, "[Sub]", "Exception"),
+                    GetCA1710BasicResultAt(15, 14, "FreezableList", "Collection"),
+                });
+
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
+                {
+                    vbTest.ExpectedDiagnostics.AddRange(new[]
+                    {
+                        GetCA1710BasicResultAt(26, 14, "SomeSubClass", "Suffix1"),
+                        GetCA1710BasicResultAt(30, 14, "SomeSubSubClass", "Suffix1"),
+                    });
+                }
+            }
+            else
+            {
+                if (editorConfigText.EndsWith("Suffix1", System.StringComparison.Ordinal))
+                {
+                    vbTest.ExpectedDiagnostics.Add(GetCA1710BasicResultAt(26, 14, "SomeSubClass", "Suffix1"));
+                }
+            }
+
+            await vbTest.RunAsync();
+        }
+
+        [Fact, WorkItem(3414, "https://github.com/dotnet/roslyn-analyzers/issues/3414")]
+        public async Task CA1710_Interfaces()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface I
+{
+}");
+        }
+
+        [Fact]
+        public async Task EventArgsNotInheritingFromSystemEventArgs_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+// Reproduce UWP specific EventArgs
+namespace Windows.UI.Xaml
+{
+    public class RoutedEventArgs {}
+}
+public class C
+{
+    public delegate void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e);
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+' Reproduce UWP specific EventArgs
+Namespace Windows.UI.Xaml
+    Public Class RoutedEventArgs
+    End Class
+End Namespace
+
+Public Class C
+    Public Delegate Sub Page_Loaded(ByVal sender As Object, ByVal e As Windows.UI.Xaml.RoutedEventArgs)
+End Class");
+        }
+
+        private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
+            VerifyVB.Diagnostic(isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName, suffix);
+
+        private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
+            VerifyCS.Diagnostic(isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName, suffix);
     }
 }

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -43,10 +44,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             analysisContext.RegisterCompilationStartAction(startContext =>
             {
-                var instantiatedTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
+                ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
                 var internalTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
 
                 var compilation = startContext.Compilation;
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
 
                 // If the assembly being built by this compilation exposes its internals to
                 // any other assembly, don't report any "uninstantiated internal class" errors.
@@ -56,19 +58,21 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 // better to have false negatives (which would happen if the type were *not*
                 // instantiated by any friend assembly, but we didn't report the issue) than
                 // to have false positives.
-                var internalsVisibleToAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute);
+                var internalsVisibleToAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute);
                 if (compilation.Assembly.HasAttribute(internalsVisibleToAttributeSymbol))
                 {
                     return;
                 }
 
-                var systemAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttribute);
-                var iConfigurationSectionHandlerSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConfigurationIConfigurationSectionHandler);
-                var configurationSectionSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConfigurationConfigurationSection);
-                var safeHandleSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesSafeHandle);
-                var traceListenerSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsTraceListener);
-                var mef1ExportAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelCompositionExportAttribute);
-                var mef2ExportAttributeSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCompositionExportAttribute);
+                var systemAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttribute);
+                var iConfigurationSectionHandlerSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConfigurationIConfigurationSectionHandler);
+                var configurationSectionSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemConfigurationConfigurationSection);
+                var safeHandleSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesSafeHandle);
+                var traceListenerSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsTraceListener);
+                var mef1ExportAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelCompositionExportAttribute);
+                var mef2ExportAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCompositionExportAttribute);
+                var coClassAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesCoClassAttribute);
+                var designerAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelDesignerAttribute);
 
                 startContext.RegisterOperationAction(context =>
                 {
@@ -99,6 +103,54 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     if (type.BaseType != null)
                     {
                         instantiatedTypes.TryAdd(type.BaseType, null);
+                    }
+
+                    // Consider class types declared in the CoClassAttribute or DesignerAttribute as instantiated
+                    if ((coClassAttributeSymbol != null || designerAttributeSymbol != null) &&
+                        (type.TypeKind == TypeKind.Class || type.TypeKind == TypeKind.Interface))
+                    {
+                        bool isCoClassHandled = false;
+                        foreach (var attribute in type.GetAttributes())
+                        {
+                            if (coClassAttributeSymbol != null &&
+                                !isCoClassHandled &&
+                                attribute.AttributeClass.Equals(coClassAttributeSymbol))
+                            {
+                                isCoClassHandled = true;
+                                if (attribute.ConstructorArguments.Length == 1 &&
+                                    attribute.ConstructorArguments[0].Kind == TypedConstantKind.Type &&
+                                    attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeSymbol &&
+                                    typeSymbol.TypeKind == TypeKind.Class)
+                                {
+                                    instantiatedTypes.TryAdd(typeSymbol, null);
+                                }
+                            }
+
+                            if (designerAttributeSymbol != null &&
+                                (attribute.ConstructorArguments.Length == 1 || attribute.ConstructorArguments.Length == 2) &&
+                                attribute.AttributeClass.Equals(designerAttributeSymbol))
+                            {
+                                switch (attribute.ConstructorArguments[0].Value)
+                                {
+                                    case string designerTypeName when designerTypeName != null:
+                                        {
+                                            var nameParts = designerTypeName.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                                            if (nameParts.Length >= 2 &&
+                                                nameParts[1].Trim().Equals(context.Compilation.AssemblyName, StringComparison.Ordinal) &&
+                                                wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(nameParts[0].Trim(), out var namedType) &&
+                                                namedType.ContainingAssembly.Equals(compilation.Assembly))
+                                            {
+                                                instantiatedTypes.TryAdd(namedType, null);
+                                            }
+                                            break;
+                                        }
+
+                                    case INamedTypeSymbol namedType when namedType != null:
+                                        instantiatedTypes.TryAdd(namedType, null);
+                                        break;
+                                }
+                            }
+                        }
                     }
                 }, SymbolKind.NamedType);
 
@@ -306,8 +358,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return false;
             }
 
-            var taskSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask);
-            var genericTaskSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTask);
+            var wellKnowTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
+            var taskSymbol = wellKnowTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask);
+            var genericTaskSymbol = wellKnowTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTask);
 
             // TODO: Handle the case where Compilation.Options.MainTypeName matches this type.
             // TODO: Test: can't have type parameters.

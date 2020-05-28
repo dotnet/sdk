@@ -46,18 +46,48 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             analysisContext.RegisterCompilationStartAction(compilationStartContext =>
             {
-                Compilation compilation = compilationStartContext.Compilation;
+                var compilation = compilationStartContext.Compilation;
+
+                compilationStartContext.RegisterOperationAction(
+                    context => ReportOnWeakIdentityObject(((ILockOperation)context.Operation).LockedValue, context),
+                    OperationKind.Lock);
+
                 compilationStartContext.RegisterOperationAction(context =>
                 {
-                    var lockStatement = (ILockOperation)context.Operation;
-                    if (lockStatement.LockedValue?.Type is ITypeSymbol type &&
-                        TypeHasWeakIdentity(type, compilation))
+                    var invocationOperation = (IInvocationOperation)context.Operation;
+                    var method = invocationOperation.TargetMethod;
+
+                    if ((method.Name != "Enter" && method.Name != "TryEnter") ||
+                        invocationOperation.Arguments.Length == 0)
                     {
-                        context.ReportDiagnostic(lockStatement.LockedValue.Syntax.CreateDiagnostic(Rule, type.ToDisplayString()));
+                        return;
+                    }
+
+                    if (compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingMonitor, out var monitorType) &&
+                        method.ContainingType.Equals(monitorType) &&
+                        invocationOperation.Arguments[0].Value is IConversionOperation conversionOperation)
+                    {
+                        ReportOnWeakIdentityObject(conversionOperation.Operand, context);
                     }
                 },
-                OperationKind.Lock);
+                OperationKind.Invocation);
             });
+        }
+
+        private static void ReportOnWeakIdentityObject(IOperation operation, OperationAnalysisContext context)
+        {
+            if (operation is IInstanceReferenceOperation instanceReference &&
+                instanceReference.ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
+            {
+                context.ReportDiagnostic(operation.CreateDiagnostic(Rule, operation.Syntax.ToString()));
+            }
+            else
+            {
+                if (operation.Type is ITypeSymbol type && TypeHasWeakIdentity(type, context.Compilation))
+                {
+                    context.ReportDiagnostic(operation.CreateDiagnostic(Rule, type.ToDisplayString()));
+                }
+            }
         }
 
         private static bool TypeHasWeakIdentity(ITypeSymbol type, Compilation compilation)

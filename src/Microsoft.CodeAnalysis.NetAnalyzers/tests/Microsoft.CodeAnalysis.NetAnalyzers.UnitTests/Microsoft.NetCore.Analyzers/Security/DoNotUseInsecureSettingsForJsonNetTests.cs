@@ -898,7 +898,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-class Foo
+class SomeClass
 {
     public static Func<ISerializationBinder> GetBinder { get; set; }
 }
@@ -909,7 +909,7 @@ class Blah
     public static JsonSerializerSettings Settings { get; } = new JsonSerializerSettings()
         {
             TypeNameHandling = TypeNameHandling.Objects,
-            SerializationBinder = Foo.GetBinder(),
+            SerializationBinder = SomeClass.GetBinder(),
         };
 }",
                 GetCSharpResultAt(14, 60, MaybeRule));
@@ -1296,7 +1296,7 @@ class Blah
         [InlineData(@"dotnet_code_quality.CA2327.excluded_symbol_names = Method
                       dotnet_code_quality.CA2328.excluded_symbol_names = Method")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = Method")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {

@@ -11,7 +11,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     public partial class DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
-        protected abstract class TestsSourceCodeProvider
+        public abstract class TestsSourceCodeProvider
         {
             protected TestsSourceCodeProvider(
                 string operationName,
@@ -79,7 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             internal abstract object GetLogicalNotText(bool negate);
         }
 
-        protected sealed class CSharpTestsSourceCodeProvider : TestsSourceCodeProvider
+        public sealed class CSharpTestsSourceCodeProvider : TestsSourceCodeProvider
         {
             public CSharpTestsSourceCodeProvider(
                 string operationName,
@@ -214,7 +214,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             internal override object GetLogicalNotText(bool negate) => negate ? "!" : string.Empty;
         }
 
-        protected sealed class BasicTestsSourceCodeProvider : TestsSourceCodeProvider
+        public sealed class BasicTestsSourceCodeProvider : TestsSourceCodeProvider
         {
             public BasicTestsSourceCodeProvider(
                 string operationName,

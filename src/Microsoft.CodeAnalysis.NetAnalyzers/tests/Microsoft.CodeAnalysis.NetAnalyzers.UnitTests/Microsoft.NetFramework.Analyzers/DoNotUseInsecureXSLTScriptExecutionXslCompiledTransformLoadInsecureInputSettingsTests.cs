@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.NetFramework.CSharp.Analyzers;
-using Microsoft.NetFramework.VisualBasic.Analyzers;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.CSharp.Analyzers.CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer,
@@ -17,14 +16,10 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureXSLTScriptExecutionAnalyzerTests
     {
         private static DiagnosticResult GetCA3076LoadInsecureConstructedCSharpResultAt(int line, int column, string name)
-        {
-            return new DiagnosticResult(CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer.RuleDoNotUseInsecureXSLTScriptExecution).WithLocation(line, column).WithArguments(string.Format(MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureConstructedMessage, name));
-        }
+            => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureConstructedMessage, name));
 
         private static DiagnosticResult GetCA3076LoadInsecureConstructedBasicResultAt(int line, int column, string name)
-        {
-            return new DiagnosticResult(BasicDoNotUseInsecureXSLTScriptExecutionAnalyzer.RuleDoNotUseInsecureXSLTScriptExecution).WithLocation(line, column).WithArguments(string.Format(MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureConstructedMessage, name));
-        }
+            => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureConstructedMessage, name));
 
         [Fact]
         public async Task UseXslCompiledTransformLoadInputSettingsAndNonSecureResolverShouldGenerateDiagnostic()

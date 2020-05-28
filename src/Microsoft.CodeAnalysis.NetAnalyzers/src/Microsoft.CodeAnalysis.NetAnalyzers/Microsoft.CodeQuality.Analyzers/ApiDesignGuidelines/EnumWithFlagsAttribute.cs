@@ -3,12 +3,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.Helpers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -90,8 +91,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             if (symbol != null &&
                 symbol.TypeKind == TypeKind.Enum)
             {
-                var reportCA1027 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule1027, symbolContext.CancellationToken);
-                var reportCA2217 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule2217, symbolContext.CancellationToken);
+                var reportCA1027 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule1027, symbolContext.Compilation, symbolContext.CancellationToken);
+                var reportCA2217 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule2217, symbolContext.Compilation, symbolContext.CancellationToken);
                 if (!reportCA1027 && !reportCA2217)
                 {
                     return;
@@ -107,7 +108,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         {
                             Debug.Assert(missingValues != null);
 
-                            string missingValuesString = missingValues.Select(v => v.ToString()).Aggregate((i, j) => i + ", " + j);
+                            string missingValuesString = missingValues.Select(v => v.ToString(CultureInfo.InvariantCulture)).Aggregate((i, j) => i + ", " + j);
                             symbolContext.ReportDiagnostic(symbol.CreateDiagnostic(Rule2217, symbol.Name, missingValuesString));
                         }
                     }

@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessageImplementIEquatable = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescriptionImplementIEquatable = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        private static readonly DiagnosticDescriptor s_implementIEquatableDescriptor = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor ImplementIEquatableDescriptor = DiagnosticDescriptorHelper.Create(
             ImplementIEquatableRuleId,
             s_localizableTitleImplementIEquatable,
             s_localizableMessageImplementIEquatable,
@@ -33,17 +33,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static readonly LocalizableString s_localizableMessageOverridesObjectEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableDescriptionOverridesObjectEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        private static readonly DiagnosticDescriptor s_overridesObjectEqualsDescriptor = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor OverridesObjectEqualsDescriptor = DiagnosticDescriptorHelper.Create(
             OverrideObjectEqualsRuleId,
             s_localizableTitleOverridesObjectEquals,
             s_localizableMessageOverridesObjectEquals,
             DiagnosticCategory.Design,
-            RuleLevel.BuildWarning,
+            RuleLevel.BuildWarningCandidate,
             description: s_localizableDescriptionOverridesObjectEquals,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(s_implementIEquatableDescriptor, s_overridesObjectEqualsDescriptor);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ImplementIEquatableDescriptor, OverridesObjectEqualsDescriptor);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -65,7 +65,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context, INamedTypeSymbol equatableType)
         {
-            if (!(context.Symbol is INamedTypeSymbol namedType) || !(namedType.TypeKind == TypeKind.Struct || namedType.TypeKind == TypeKind.Class))
+            if (!(context.Symbol is INamedTypeSymbol namedType)
+                || (namedType.TypeKind != TypeKind.Struct && namedType.TypeKind != TypeKind.Class)
+                || (namedType.TypeKind == TypeKind.Struct && namedType.IsRefLikeType))
             {
                 return;
             }
@@ -97,12 +99,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             if (overridesObjectEquals && !implementsEquatable && namedType.TypeKind == TypeKind.Struct)
             {
-                context.ReportDiagnostic(namedType.CreateDiagnostic(s_implementIEquatableDescriptor, namedType));
+                context.ReportDiagnostic(namedType.CreateDiagnostic(ImplementIEquatableDescriptor, namedType));
             }
 
             if (!overridesObjectEquals && implementsEquatable)
             {
-                context.ReportDiagnostic(namedType.CreateDiagnostic(s_overridesObjectEqualsDescriptor, namedType));
+                context.ReportDiagnostic(namedType.CreateDiagnostic(OverridesObjectEqualsDescriptor, namedType));
             }
         }
     }

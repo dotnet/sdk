@@ -1,16 +1,21 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.DisposableTypesShouldDeclareFinalizerAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDisposableTypesShouldDeclareFinalizerFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.DisposableTypesShouldDeclareFinalizerAnalyzer,
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicDisposableTypesShouldDeclareFinalizerFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public class DisposableTypesShouldDeclareFinalizerTests : DiagnosticAnalyzerTestBase
+    public class DisposableTypesShouldDeclareFinalizerTests
     {
         [Fact]
-        public void CSharpDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExists()
+        public async Task CSharpDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExists()
         {
             var code = @"
 using System;
@@ -36,12 +41,12 @@ public class A : IDisposable
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpDiagnostic(11, 14));
         }
 
         [Fact]
-        public void BasicDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExists()
+        public async Task BasicDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExists()
         {
             var code = @"
 Imports System
@@ -66,12 +71,12 @@ Public Class A
     End Sub
 End Class
 ";
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicDiagnostic(11, 14));
         }
 
         [Fact]
-        public void CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExists()
+        public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExists()
         {
             var code = @"
 using System;
@@ -101,11 +106,11 @@ public class A : IDisposable
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExists()
+        public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExists()
         {
             var code = @"
 Imports System
@@ -133,11 +138,11 @@ Public Class A
     End Sub
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void CSharpNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCode()
+        public async Task CSharpNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCode()
         {
             var code = @"
 using System;
@@ -163,11 +168,11 @@ public struct A : IDisposable // Although disposable structs are evil
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCode()
+        public async Task BasicNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCode()
         {
             var code = @"
 Imports System
@@ -192,11 +197,11 @@ Public Structure A
     End Sub
 End Structure
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void CSharpNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCode()
+        public async Task CSharpNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCode()
         {
             var code = @"
 using System;
@@ -218,11 +223,11 @@ public class A
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCode()
+        public async Task BasicNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCode()
         {
             var code = @"
 Imports System
@@ -245,11 +250,11 @@ Public Class A
     End Sub
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCode()
+        public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCode()
         {
             var code = @"
 using System;
@@ -276,11 +281,11 @@ public class A : IDisposable
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCode()
+        public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCode()
         {
             var code = @"
 Imports System
@@ -304,11 +309,11 @@ Public Class A
     End Sub
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void CSharpDiagnosticIfUIntPtrFieldIsAssignedFromNativeCode()
+        public async Task CSharpDiagnosticIfUIntPtrFieldIsAssignedFromNativeCode()
         {
             var code = @"
 using System;
@@ -334,12 +339,12 @@ public class A : IDisposable
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpDiagnostic(11, 14));
         }
 
         [Fact]
-        public void BasicDiagnosticIfUIntPtrFieldIsAssignedFromNativeCode()
+        public async Task BasicDiagnosticIfUIntPtrFieldIsAssignedFromNativeCode()
         {
             var code = @"
 Imports System
@@ -364,12 +369,12 @@ Public Class A
     End Sub
 End Class
 ";
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicDiagnostic(11, 14));
         }
 
         [Fact]
-        public void CSharpDiagnosticIfHandleRefFieldIsAssignedFromNativeCode()
+        public async Task CSharpDiagnosticIfHandleRefFieldIsAssignedFromNativeCode()
         {
             var code = @"
 using System;
@@ -395,12 +400,12 @@ public class A : IDisposable
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpDiagnostic(11, 14));
         }
 
         [Fact]
-        public void BasicDiagnosticIfHandleRefFieldIsAssignedFromNativeCode()
+        public async Task BasicDiagnosticIfHandleRefFieldIsAssignedFromNativeCode()
         {
             var code = @"
 Imports System
@@ -425,12 +430,12 @@ Public Class A
     End Sub
 End Class
 ";
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicDiagnostic(11, 14));
         }
 
         [Fact]
-        public void CSharpNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCode()
+        public async Task CSharpNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCode()
         {
             var code = @"
 using System;
@@ -456,11 +461,11 @@ public class A : IDisposable
     }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCode()
+        public async Task BasicNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCode()
         {
             var code = @"
 Imports System
@@ -485,32 +490,13 @@ Public Class A
     End Sub
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DisposableTypesShouldDeclareFinalizerAnalyzer();
-        }
+        private static DiagnosticResult GetCSharpDiagnostic(int line, int column) =>
+            VerifyCS.Diagnostic().WithLocation(line, column);
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DisposableTypesShouldDeclareFinalizerAnalyzer();
-        }
-
-        private static DiagnosticResult GetCSharpDiagnostic(int line, int column)
-        {
-            return GetExpectedDiagnostic(line, column);
-        }
-
-        private static DiagnosticResult GetBasicDiagnostic(int line, int column)
-        {
-            return GetExpectedDiagnostic(line, column);
-        }
-
-        private static DiagnosticResult GetExpectedDiagnostic(int line, int column)
-        {
-            return new DiagnosticResult(DisposableTypesShouldDeclareFinalizerAnalyzer.Rule).WithLocation(line, column);
-        }
+        private static DiagnosticResult GetBasicDiagnostic(int line, int column) =>
+            VerifyVB.Diagnostic().WithLocation(line, column);
     }
 }
