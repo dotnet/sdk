@@ -61,12 +61,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SyntaxNode leftOperand = GetLeftOperand(binaryExpressionSyntax);
             SyntaxNode rightOperand = GetRightOperand(binaryExpressionSyntax);
 
-            if (ContainsSystemStringEmpty(leftOperand, model))
+            if (ContainsSystemStringEmpty(leftOperand, model) || ContainsEmptyStringLiteral(leftOperand))
             {
                 return new FixResolution(binaryExpressionSyntax, rightOperand, isEqualsOperator);
             }
 
-            if (ContainsSystemStringEmpty(rightOperand, model))
+            if (ContainsSystemStringEmpty(rightOperand, model) || ContainsEmptyStringLiteral(rightOperand))
             {
                 return new FixResolution(binaryExpressionSyntax, leftOperand, isEqualsOperator);
             }
@@ -76,20 +76,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool ContainsSystemStringEmpty(SyntaxNode expressionSyntax, SemanticModel model)
         {
-            if (expressionSyntax is CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax literalExpressionSyntaxCS)
-            {
-                if (literalExpressionSyntaxCS.Token.ValueText.Length == 0)
-                {
-                    return true;
-                }
-            }
-            if (expressionSyntax is CodeAnalysis.VisualBasic.Syntax.LiteralExpressionSyntax literalExpressionSyntaxVB)
-            {
-                if (literalExpressionSyntaxVB.Token.ValueText.Length == 0)
-                {
-                    return true;
-                }
-            }
             if (model.GetSymbolInfo(expressionSyntax).Symbol is IFieldSymbol fieldSymbol)
             {
                 if (fieldSymbol.Type.SpecialType == SpecialType.System_String)
@@ -154,6 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected abstract bool IsNotEqualsOperator(SyntaxNode node);
         protected abstract SyntaxNode GetLeftOperand(SyntaxNode binaryExpressionSyntax);
         protected abstract SyntaxNode GetRightOperand(SyntaxNode binaryExpressionSyntax);
+        protected abstract bool ContainsEmptyStringLiteral(SyntaxNode node);
 
         private sealed class FixResolution
         {
