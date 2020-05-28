@@ -23,7 +23,7 @@ public class A
 {
     public bool Compare(string s)
     {
-        return [|s == ""|];
+        return [|s == """"|];
     }
 }
 ", @"
@@ -38,7 +38,7 @@ public class A
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class A
     Public Function Compare(s As String) As Boolean
-        Return [|s = ""|]
+        Return [|s = """"|]
     End Function
 End Class
 ", @"
