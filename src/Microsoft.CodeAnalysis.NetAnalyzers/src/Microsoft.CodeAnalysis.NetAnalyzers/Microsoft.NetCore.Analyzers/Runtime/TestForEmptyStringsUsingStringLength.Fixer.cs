@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 
@@ -77,9 +76,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool ContainsSystemStringEmpty(SyntaxNode expressionSyntax, SemanticModel model)
         {
-            if (expressionSyntax is LiteralExpressionSyntax literalExpressionSyntax)
+            if (expressionSyntax is CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax literalExpressionSyntaxCS)
             {
-                if (literalExpressionSyntax.Token.ValueText.Length == 0)
+                if (literalExpressionSyntaxCS.Token.ValueText.Length == 0)
+                {
+                    return true;
+                }
+            }
+            if (expressionSyntax is CodeAnalysis.VisualBasic.Syntax.LiteralExpressionSyntax literalExpressionSyntaxVB)
+            {
+                if (literalExpressionSyntaxVB.Token.ValueText.Length == 0)
                 {
                     return true;
                 }
