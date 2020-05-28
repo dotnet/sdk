@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_fails_when_referencing_winmds_for_net5_0_or_newer()
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("WinMDClasslibrary")
+                .CopyTestAsset("WinMDClassLibrary")
                 .WithSource();
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_successfully_builds_when_referencing_winmds(string targetFramework)
         {
             var testAsset = _testAssetsManager
-                .CopyTestAsset("WinMDClasslibrary")
+                .CopyTestAsset("WinMDClassLibrary")
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
