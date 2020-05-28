@@ -852,13 +852,13 @@
   <data name="DoNotInstallRootCertDescription" xml:space="preserve">
     <value>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</value>
   </data>
-  <data name="DoNotReferSelfInSerializableClass" xml:space="preserve">
-    <value>Do Not Refer Self In Serializable Class</value>
+  <data name="PotentialReferenceCycleInDeserializedObjectGraphTitle" xml:space="preserve">
+    <value>Potential reference cycle in deserialized object graph</value>
   </data>
-  <data name="DoNotReferSelfInSerializableClassDescription" xml:space="preserve">
-    <value>This can allow an attacker to DOS or exhaust the memory of the process.</value>
+  <data name="PotentialReferenceCycleInDeserializedObjectGraphDescription" xml:space="preserve">
+    <value>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</value>
   </data>
-  <data name="DoNotReferSelfInSerializableClassMessage" xml:space="preserve">
+  <data name="PotentialReferenceCycleInDeserializedObjectGraphMessage" xml:space="preserve">
     <value>{0} participates in a potential reference cycle</value>
   </data>
   <data name="DoNotSerializeTypesWithPointerFields" xml:space="preserve">

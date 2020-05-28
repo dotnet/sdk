@@ -577,21 +577,6 @@
         <target state="translated">請勿引發保留的例外狀況類型</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotReferSelfInSerializableClass">
-        <source>Do Not Refer Self In Serializable Class</source>
-        <target state="translated">請勿在可序列化類別中參考自己</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotReferSelfInSerializableClassDescription">
-        <source>This can allow an attacker to DOS or exhaust the memory of the process.</source>
-        <target state="translated">這可能會允許攻擊者發動 DOS 攻擊，或耗盡處理序的記憶體。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotReferSelfInSerializableClassMessage">
-        <source>{0} participates in a potential reference cycle</source>
-        <target state="translated">{0} 參與了可能的參照循環</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFields">
         <source>Do Not Serialize Types With Pointer Fields</source>
         <target state="translated">請勿將類型序列化為指標欄位</target>
@@ -1375,6 +1360,21 @@
       <trans-unit id="PInvokesShouldNotBeVisibleTitle">
         <source>P/Invokes should not be visible</source>
         <target state="translated">不應看得見 P/Invoke</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
+        <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>
+        <target state="new">Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphMessage">
+        <source>{0} participates in a potential reference cycle</source>
+        <target state="new">{0} participates in a potential reference cycle</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphTitle">
+        <source>Potential reference cycle in deserialized object graph</source>
+        <target state="new">Potential reference cycle in deserialized object graph</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
