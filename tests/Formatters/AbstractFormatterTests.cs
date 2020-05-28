@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +17,6 @@ using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.CodingConventions;
 using Microsoft.VisualStudio.Composition;
 using Xunit;
 
@@ -76,7 +76,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         public abstract string Language { get; }
 
         private static ILogger Logger => new TestLogger();
-        private static EditorConfigOptionsApplier OptionsApplier => new EditorConfigOptionsApplier();
 
         public SolutionState TestState { get; }
 
@@ -121,15 +120,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="solution">A Solution containing a single Project containing a single Document.</param>
         /// <param name="editorConfig">The editorconfig to apply to the documents options set.</param>
         /// <returns>The document contained within along with option set and coding conventions.</returns>
-        protected async Task<ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)>> GetOnlyFileToFormatAsync(Solution solution, IReadOnlyDictionary<string, string> editorConfig)
+        internal async Task<ImmutableArray<DocumentWithOptions>> GetOnlyFileToFormatAsync(Solution solution, IReadOnlyDictionary<string, string> editorConfig)
         {
             var document = GetOnlyDocument(solution);
             var options = (OptionSet)await document.GetOptionsAsync();
+            AnalyzerConfigOptions analyzerConfigOptions = new EditorConfigOptions(editorConfig);
 
-            ICodingConventionsSnapshot codingConventions = new TestCodingConventionsSnapshot(editorConfig);
-            options = OptionsApplier.ApplyConventions(options, codingConventions, Language);
-
-            return ImmutableArray.Create((document.Id, options, codingConventions));
+            return ImmutableArray.Create(new DocumentWithOptions(document, options, analyzerConfigOptions));
         }
 
         /// <summary>

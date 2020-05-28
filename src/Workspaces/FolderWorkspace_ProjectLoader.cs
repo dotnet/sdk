@@ -3,8 +3,10 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
@@ -27,6 +29,15 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                     return null;
                 }
 
+                var editorConfigDocuments = EditorConfigFinder.GetEditorConfigPaths(folderPath)
+                    .Select(path =>
+                        DocumentInfo.Create(
+                            DocumentId.CreateNewId(projectId),
+                            name: path,
+                            loader: new FileTextLoader(path, Encoding.UTF8),
+                            filePath: path))
+                    .ToImmutableArray();
+
                 return ProjectInfo.Create(
                     projectId,
                     version: default,
@@ -34,7 +45,8 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                     assemblyName: folderPath,
                     Language,
                     filePath: folderPath,
-                    documents: documents);
+                    documents: documents)
+                    .WithAnalyzerConfigDocuments(editorConfigDocuments);
             }
 
             private static Task<ImmutableArray<DocumentInfo>> LoadDocumentInfosAsync(ProjectId projectId, string folderPath, string fileExtension, Matcher fileMatcher)

@@ -24,10 +24,15 @@
     <MicrosoftExtensionsDependencyInjectionVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsFileSystemGlobbingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftVisualStudioCodingConventionsVersion>1.1.20180503.2</MicrosoftVisualStudioCodingConventionsVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftCodeAnalysisVersion>$(MicrosoftNETCoreCompilersPackageVersion)</MicrosoftCodeAnalysisVersion>
     <SystemTextJsonVersion>4.7.0</SystemTextJsonVersion>
+
+    <!--
+      Workaround for the inability to load the NugetSdkResolver from the .NET 5 SDK
+      https://github.com/microsoft/MSBuildLocator/issues/88
+    -->
+    <NewtonsoftJsonVersion>12.0.2</NewtonsoftJsonVersion>
   </PropertyGroup>
   <PropertyGroup>
     <DiscoverEditorConfigFiles>true</DiscoverEditorConfigFiles>

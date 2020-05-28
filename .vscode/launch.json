@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "dotnet-format -f --check",
+      "name": "format -f --check",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
@@ -15,7 +15,7 @@
         "-f",
         "-v",
         "diag",
-        "--check",
+        "--check"
       ],
       "cwd": "${workspaceFolder}/src",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -23,7 +23,7 @@
       "stopAtEntry": false
     },
     {
-      "name": "dotnet-format format.sln --check",
+      "name": "format format.sln --check",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
