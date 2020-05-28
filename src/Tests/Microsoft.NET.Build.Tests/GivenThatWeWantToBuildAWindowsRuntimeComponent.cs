@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_fails_from_producing_winmds_for_net5_0()
+        public void It_fails_from_producing_winmds_for_net5_0_or_newer()
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("WindowsRuntimeComponent")
@@ -37,12 +37,11 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_fails_from_referencing_winmds_for_net5_0()
+        public void It_fails_from_referencing_winmds_for_net5_0_or_newer()
         {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("WinMDClasslibrary")
                 .WithSource();
-
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
             buildCommand
@@ -67,7 +66,6 @@ namespace Microsoft.NET.Build.Tests
                     var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
                     propertyGroup.Element("TargetFramework").ReplaceWith(new XElement("TargetFramework", targetFramework));
                 });
-
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
             buildCommand
