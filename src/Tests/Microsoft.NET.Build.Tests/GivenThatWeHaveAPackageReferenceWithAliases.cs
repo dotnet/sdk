@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeHaveAPackageReferenceWithAliases(ITestOutputHelper log) : base(log)
         { }
 
-        [CoreMSBuildOnlyFact]
+        [RequiresMSBuildVersionFact("16.7.0")]
         public void CanBuildProjectWithPackageReferencesWithConflictingTypes()
         {
             var targetFramework = "netcoreapp5.0";
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [CoreMSBuildOnlyFact]
+        [RequiresMSBuildVersionFact("16.7.0")]
         public void CanBuildProjectWithMultiplePackageReferencesWithAliases()
         {
             var targetFramework = "netcoreapp5.0";
@@ -104,7 +104,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [CoreMSBuildOnlyFact]
+        [RequiresMSBuildVersionFact("16.7.0")]
         public void CanBuildProjectWithAPackageReferenceWithMultipleAliases()
         {
             var targetFramework = "netcoreapp5.0";
