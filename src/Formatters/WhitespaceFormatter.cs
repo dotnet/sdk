@@ -1,14 +1,12 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Buffers;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -22,38 +20,38 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected override async Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
-            OptionSet options,
-            ICodingConventionsSnapshot codingConventions,
+            OptionSet optionSet,
+            AnalyzerConfigOptions? analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             if (formatOptions.SaveFormattedFiles)
             {
-                return await GetFormattedDocument(document, options, cancellationToken);
+                return await GetFormattedDocument(document, optionSet, cancellationToken);
             }
             else
             {
-                return await GetFormattedDocumentWithDetailedChanges(document, sourceText, options, cancellationToken);
+                return await GetFormattedDocumentWithDetailedChanges(document, sourceText, optionSet, cancellationToken);
             }
         }
 
         /// <summary>
         /// Returns a formatted <see cref="SourceText"/> with a single <see cref="TextChange"/> that encompasses the entire document.
         /// </summary>
-        private static async Task<SourceText> GetFormattedDocument(Document document, OptionSet options, CancellationToken cancellationToken)
+        private static async Task<SourceText> GetFormattedDocument(Document document, OptionSet optionSet, CancellationToken cancellationToken)
         {
-            var formattedDocument = await Formatter.FormatAsync(document, options, cancellationToken).ConfigureAwait(false);
+            var formattedDocument = await Formatter.FormatAsync(document, optionSet, cancellationToken).ConfigureAwait(false);
             return await formattedDocument.GetTextAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Returns a formatted <see cref="SoureText"/> with multiple <see cref="TextChange"/>s for each formatting change.
         /// </summary>
-        private static async Task<SourceText> GetFormattedDocumentWithDetailedChanges(Document document, SourceText sourceText, OptionSet options, CancellationToken cancellationToken)
+        private static async Task<SourceText> GetFormattedDocumentWithDetailedChanges(Document document, SourceText sourceText, OptionSet optionSet, CancellationToken cancellationToken)
         {
             var root = await document.GetSyntaxRootAsync(cancellationToken);
-            var formattingTextChanges = Formatter.GetFormattedTextChanges(root, document.Project.Solution.Workspace, options, cancellationToken);
+            var formattingTextChanges = Formatter.GetFormattedTextChanges(root, document.Project.Solution.Workspace, optionSet, cancellationToken);
 
             return sourceText.WithChanges(formattingTextChanges);
         }

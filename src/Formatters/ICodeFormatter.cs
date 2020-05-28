@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -17,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         Task<Solution> FormatAsync(
             Solution solution,
-            ImmutableArray<(DocumentId, OptionSet, ICodingConventionsSnapshot)> formattableDocuments,
+            ImmutableArray<DocumentWithOptions> formattableDocuments,
             FormatOptions options,
             ILogger logger,
             List<FormattedFile> formattedFiles,

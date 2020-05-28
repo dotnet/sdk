@@ -44,16 +44,15 @@ By default `dotnet-format` will look in the current directory for a project or s
 
 ```sh
 Usage:
-  dotnet-format [options]
+  dotnet-format <project> [options]
 
 Options:
-  -f, --folder <FOLDER>           The folder to operate on. Cannot be used with the `--workspace` option.
-  -w, --workspace <WORKSPACE>     The solution or project file to operate on. If a file is not specified, the command will search the current directory for one.
-  --files, --include <INCLUDE>    A list of relative file or folder paths to include in formatting. All files are formatted if empty.
+  --folder, -f                    Whether to treat the `<project>` path as a folder of files.
+  --include <INCLUDE>             A list of relative file or folder paths to include in formatting. All files are formatted if empty.
   --exclude <EXCLUDE>             A list of relative file or folder paths to exclude from formatting.
-  --check, --dry-run <CHECK>      Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
+  --check <CHECK>                 Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
   --report <REPORT>               Accepts a file path, which if provided, will produce a json report in the given directory.
-  -v, --verbosity <VERBOSITY>     Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+  --verbosity, -v <VERBOSITY>     Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
   --version                       Display version information
 ```
 
@@ -62,8 +61,8 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | Examples                                                   | Description                                                                                   |
 | ---------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
 | dotnet **format**                                          | Formats the project or solution in the current directory.                                     |
-| dotnet **format** -f &lt;folder&gt;                        | Formats a particular folder and subfolders.                                                   |
-| dotnet **format** -w &lt;workspace&gt;                     | Formats a specific project or solution.                                                       |
+| dotnet **format** &lt;workspace&gt;                        | Formats a specific project or solution.                                                       |
+| dotnet **format** &lt;folder&gt; -f                        | Formats a particular folder and subfolders.                                                   |
 | dotnet **format** -v diag                                  | Formats with very verbose logging.                                                            |
 | dotnet **format** --include Programs.cs Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
 | dotnet **format** --check                                  | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |

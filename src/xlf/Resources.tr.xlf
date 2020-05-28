@@ -27,6 +27,16 @@
         <target state="new">Cannot specify both folder and workspace options.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_both_project_argument_and_folder_options">
+        <source>Cannot specify both project argument and folder options.</source>
+        <target state="new">Cannot specify both project argument and folder options.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Cannot_specify_both_project_argument_and_workspace_option">
+        <source>Cannot specify both project argument and workspace option.</source>
+        <target state="new">Cannot specify both project argument and workspace option.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Complete_in_0_ms">
         <source>Complete in {0}ms.</source>
         <target state="new">Complete in {0}ms.</target>
@@ -82,7 +92,7 @@
         <target state="translated">Dosyaları biçimlendir, ancak değişiklikleri diske kaydetme.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Formats_files_without_saving_changes_to_disk_Terminate_with_a_non_zero_exit_code_if_any_files_were_formatted">
+      <trans-unit id="Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted">
         <source>Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</source>
         <target state="new">Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</target>
         <note />
@@ -137,14 +147,29 @@
         <target state="translated">Atlama projesi '{0}' başvuru.</target>
         <note />
       </trans-unit>
+      <trans-unit id="The_dotnet_CLI_version_is_0">
+        <source>The dotnet CLI version is '{0}'.</source>
+        <target state="new">The dotnet CLI version is '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_dry_run_option_is_deprecated_Use_the_check_option_instead">
+        <source>The `--dry-run` option is deprecated. Use the `--check` option instead.</source>
+        <target state="new">The `--dry-run` option is deprecated. Use the `--check` option instead.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
         <source>The file '{0}' does not appear to be a valid project or solution file.</source>
         <target state="translated">'{0}' dosyası geçerli proje veya çözüm dosyası gibi görünmüyor.</target>
         <note />
       </trans-unit>
-      <trans-unit id="The_folder_to_operate_on_Cannot_be_used_with_the_workspace_option">
-        <source>The folder to operate on. Cannot be used with the `--workspace` option.</source>
-        <target state="new">The folder to operate on. Cannot be used with the `--workspace` option.</target>
+      <trans-unit id="The_files_option_is_deprecated_Use_the_include_option_instead">
+        <source>The `--files` option is deprecated. Use the `--include` option instead.</source>
+        <target state="new">The `--files` option is deprecated. Use the `--include` option instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_folder_option_is_deprecated_for_specifying_the_path_Pass_the_folder_option_but_specify_the_path_with_the_project_argument_instead">
+        <source>The `--folder` option is deprecated for specifying the path. Pass the `--folder` option but specify the path with the project argument instead.</source>
+        <target state="new">The `--folder` option is deprecated for specifying the path. Pass the `--folder` option but specify the path with the project argument instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
@@ -167,19 +192,34 @@
         <target state="new">Formatted code file '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="The_workspace_option_is_deprecated_Use_the_project_argument_instead">
+        <source>The `--workspace` option is deprecated. Use the `&lt;project&gt;` argument instead.</source>
+        <target state="new">The `--workspace` option is deprecated. Use the `&lt;project&gt;` argument instead.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
         <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
         <target state="new">Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
+        <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
+        <target state="new">Unable to locate dotnet CLI. Ensure that it is on the PATH.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Using_msbuildexe_located_in_0">
-        <source>Using MSBuild.exe located in '{0}'</source>
-        <target state="new">Using MSBuild.exe located in '{0}'</target>
+        <source>Using MSBuild.exe located in '{0}'.</source>
+        <target state="new">Using MSBuild.exe located in '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
         <source>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</source>
         <target state="new">Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Whether_to_treat_the_project_path_as_a_folder_of_files">
+        <source>Whether to treat the `&lt;project&gt;` path as a folder of files.</source>
+        <target state="new">Whether to treat the `&lt;project&gt;` path as a folder of files.</target>
         <note />
       </trans-unit>
       <trans-unit id="Writing_formatting_report_to_0">
