@@ -1,11 +1,12 @@
-﻿
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.CodingConventions;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -14,20 +15,27 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     /// </summary>
     internal sealed class ImportsFormatter : DocumentFormatter
     {
-        // TODO: Use warning from Resources.
-        protected override string FormatWarningDescription => "Fix imports.";
+        protected override string FormatWarningDescription => Resources.Fix_imports_ordering;
+        private readonly DocumentFormatter _endOfLineFormatter = new EndOfLineFormatter();
 
-        protected override async Task<SourceText> FormatFileAsync(
+        internal override async Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
-            OptionSet options,
-            ICodingConventionsSnapshot codingConventions,
+            OptionSet optionSet,
+            AnalyzerConfigOptions? analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var formattedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken).ConfigureAwait(false);
-            return await formattedDocument.GetTextAsync(cancellationToken).ConfigureAwait(false);
+            var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken);
+            if (organizedDocument == document)
+            {
+                return sourceText;
+            }
+
+            // Because the Formatter does not abide the `end_of_line` option we have to fix up the ends of the organized lines.
+            var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken);
+            return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
         }
     }
 }

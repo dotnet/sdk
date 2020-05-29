@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// <summary>
         /// Applies formatting and returns the changed <see cref="SourceText"/> for a <see cref="Document"/>.
         /// </summary>
-        protected abstract Task<SourceText> FormatFileAsync(
+        internal abstract Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
             OptionSet optionSet,
