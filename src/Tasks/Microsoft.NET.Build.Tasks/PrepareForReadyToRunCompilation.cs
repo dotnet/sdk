@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks
         public string OutputPath { get; set; }
         [Required]
         public bool IncludeSymbolsInSingleFile { get; set; }
-        [Required]
+
         public ITaskItem CrossgenTool { get; set; }
         public ITaskItem Crossgen2Tool { get; set; }
 
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             // Future: when crossgen2 supports generating PDBs, update this to check crossgen2 when we are using crossgen2.
-            string diaSymReaderPath = CrossgenTool.GetMetadata("DiaSymReader");
+            string diaSymReaderPath = CrossgenTool?.GetMetadata("DiaSymReader");
             bool hasValidDiaSymReaderLib = !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(diaSymReaderPath);
 
             // Process input lists of files
