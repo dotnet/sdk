@@ -80,7 +80,7 @@ namespace Microsoft.NET.Publish.Tests
                    RuntimeInformation.RuntimeIdentifier.StartsWith("osx") ? "lib" + baseName + ".dylib" :  "lib" + baseName + ".so";
         }
 
-        private DirectoryInfo GetPublishDirectory(PublishCommand publishCommand, string targetFramework = "netcoreapp5.0")
+        private DirectoryInfo GetPublishDirectory(PublishCommand publishCommand, string targetFramework = "net5.0")
         {
             return publishCommand.GetOutputDirectory(targetFramework: targetFramework,
                                                      runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
@@ -425,14 +425,14 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("netcoreapp3.0", true, IncludeDefault)]
         [InlineData("netcoreapp3.1", false, IncludeDefault)]
         [InlineData("netcoreapp3.1", true, IncludeDefault)]
-        [InlineData("netcoreapp5.0", false, IncludeDefault)]
-        [InlineData("netcoreapp5.0", false, IncludeNative)]
-        [InlineData("netcoreapp5.0", false, IncludeAllContent)]
-        [InlineData("netcoreapp5.0", false, IncludePdb)]
-        [InlineData("netcoreapp5.0", true, IncludeDefault)]
-        [InlineData("netcoreapp5.0", true, IncludeNative)]
-        [InlineData("netcoreapp5.0", true, IncludeAllContent)]
-        [InlineData("netcoreapp5.0", true, IncludePdb)]
+        [InlineData("net5.0", false, IncludeDefault)]
+        [InlineData("net5.0", false, IncludeNative)]
+        [InlineData("net5.0", false, IncludeAllContent)]
+        [InlineData("net5.0", false, IncludePdb)]
+        [InlineData("net5.0", true, IncludeDefault)]
+        [InlineData("net5.0", true, IncludeNative)]
+        [InlineData("net5.0", true, IncludeAllContent)]
+        [InlineData("net5.0", true, IncludePdb)]
         public void It_runs_single_file_apps(string targetFramework, bool selfContained, string bundleOption)
         {
             var testProject = new TestProject()

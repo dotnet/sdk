@@ -172,9 +172,8 @@ namespace Microsoft.NET.Build.Tasks
 
             IEnumerable<RuntimePackAssetInfo> runtimePackAssets =
                 IsSelfContained ? 
-                    IsSingleFile ? RuntimePackAssets.Where(item => !item.GetMetadata(MetadataKeys.DropFromSingleFile).Equals("true"))
-                                                    .Select(item => RuntimePackAssetInfo.FromItem(item)) :
-                                   RuntimePackAssets.Select(item => RuntimePackAssetInfo.FromItem(item)) : 
+                    RuntimePackAssets.Where(item => !IsSingleFile || !item.GetMetadata(MetadataKeys.DropFromSingleFile).Equals("true"))
+                                     .Select(item => RuntimePackAssetInfo.FromItem(item)) :
                     Enumerable.Empty<RuntimePackAssetInfo>();
 
             DependencyContextBuilder builder;
