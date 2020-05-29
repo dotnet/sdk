@@ -77,6 +77,11 @@
         <target state="new">Fix final newline.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Fix_imports_ordering">
+        <source>Fix imports ordering.</source>
+        <target state="new">Fix imports ordering.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Fix_whitespace_formatting">
         <source>Fix whitespace formatting.</source>
         <target state="new">Fix whitespace formatting.</target>

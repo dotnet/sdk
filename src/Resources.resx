@@ -249,7 +249,10 @@
   <data name="The_files_option_is_deprecated_Use_the_include_option_instead" xml:space="preserve">
     <value>The `--files` option is deprecated. Use the `--include` option instead.</value>
   </data>
-    <data name="The_dry_run_option_is_deprecated_Use_the_check_option_instead" xml:space="preserve">
+  <data name="The_dry_run_option_is_deprecated_Use_the_check_option_instead" xml:space="preserve">
     <value>The `--dry-run` option is deprecated. Use the `--check` option instead.</value>
+  </data>
+  <data name="Fix_imports_ordering" xml:space="preserve">
+    <value>Fix imports ordering.</value>
   </data>
 </root>
