@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.IO;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 
 namespace Microsoft.CodeAnalysis.Tools.Utilities

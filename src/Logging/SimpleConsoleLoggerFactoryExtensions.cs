@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Logging;
 using System.CommandLine;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Logging
 {
