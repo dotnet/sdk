@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -27,15 +28,24 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken);
-            if (organizedDocument == document)
+            try
             {
+                var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken);
+                if (organizedDocument == document)
+                {
+                    return sourceText;
+                }
+
+                // Because the Formatter does not abide the `end_of_line` option we have to fix up the ends of the organized lines.
+                var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken);
+                return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+            }
+            catch (InsufficientExecutionStackException)
+            {
+                // This case is normally not hit when running against a handwritten code file.
+                // https://github.com/dotnet/roslyn/issues/44710#issuecomment-636253053
                 return sourceText;
             }
-
-            // Because the Formatter does not abide the `end_of_line` option we have to fix up the ends of the organized lines.
-            var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken);
-            return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
         }
     }
 }
