@@ -37,6 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 }
 
                 // Because the Formatter does not abide the `end_of_line` option we have to fix up the ends of the organized lines.
+                // See https://github.com/dotnet/roslyn/issues/44136
                 var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken);
                 return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
             }
