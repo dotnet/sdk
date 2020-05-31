@@ -67,7 +67,8 @@ try {
 
                 if (($output -notmatch "(?m)Formatted \d+ of (\d+) files") -or ($Matches[1] -eq "0")) {
                     Write-Output "$(Get-Date) - No files found for solution."
-                    exit -1
+                    # The dotnet/sdk has a toolset solution with no files.
+                    # exit -1
                 }
             }
 

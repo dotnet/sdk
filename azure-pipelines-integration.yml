@@ -19,35 +19,35 @@ jobs:
       format:
         _repo: "https://github.com/dotnet/format"
         _repoName: "dotnet/format"
-        _sha: "4ff73616469a2aaa5ff07d11b7f6951eca83d76e"
+        _sha: "686fc1efbe07d0a2d47147e36677ffcb09a74edc"
       roslyn:
         _repo: "https://github.com/dotnet/roslyn"
         _repoName: "dotnet/roslyn"
-        _sha: "1bd191ea896b19e3b06a152f815f3a998e87049a"
-      cli:
-        _repo: "https://github.com/dotnet/cli"
-        _repoName: "dotnet/cli"
-        _sha: "45f1c5f7f3275ff483c804e7c90bf61731a83e97"
+        _sha: "686fc1efbe07d0a2d47147e36677ffcb09a74edc"
+      sdk:
+        _repo: "https://github.com/dotnet/sdk"
+        _repoName: "dotnet/sdk"
+        _sha: "d03f6695c294a7c0dd4d46a292e650b7a6f6b667"
       project-system:
         _repo: "https://github.com/dotnet/project-system"
         _repoName: "dotnet/project-system"
-        _sha: "fc3b12e47adaad6e4813dc600acf190156fecc24"
+        _sha: "e7baa11d85b75c1871e866c240ca4aa4240d7818"
       msbuild:
         _repo: "https://github.com/Microsoft/msbuild"
         _repoName: "Microsoft/msbuild"
-        _sha: "e92633a735b0e23e2cbf818d02ba89dd7a426f89"
-      Blazor:
-        _repo: "https://github.com/aspnet/Blazor"
-        _repoName: "aspnet/Blazor"
-        _sha: "7eeab316fa122b69a9bd777c93dcc78bc6a68905"
-      EntityFrameworkCore:
-        _repo: "https://github.com/aspnet/EntityFrameworkCore"
-        _repoName: "aspnet/EntityFrameworkCore"
-        _sha: "94f5bdf081f9a774f5d7f01bfa279bac26dab303"
-      EntityFramework6:
-        _repo: "https://github.com/aspnet/EntityFramework6"
-        _repoName: "aspnet/EntityFramework6"
-        _sha: "9099ad2f6e5936ecdf549f88394b5a59fa75c869"
+        _sha: "a936b97e30679dcea4d99c362efa6f732c9d3587"
+      blazor:
+        _repo: "https://github.com/aspnet/blazor"
+        _repoName: "aspnet/blazor"
+        _sha: "cc449601d638ffaab58ae9487f0fd010bb178a12"
+      efcore:
+        _repo: "https://github.com/dotnet/efcore"
+        _repoName: "dotnet/efcore"
+        _sha: "0afeb9279ca72d0a5aa6738adf902fe6a30ba5c4"
+      ef6:
+        _repo: "https://github.com/dotnet/ef6"
+        _repoName: "dotnet/ef6"
+        _sha: "603c30382a5aec6677b4d90043694ac412cbb426"
   timeoutInMinutes: 20
   steps:
     - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
