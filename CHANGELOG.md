@@ -2,7 +2,7 @@
 All changes to the project will be documented in this file.
 
 ## [4.0.130103] - 2020-06-01
-[View Complete Diff of Changes](https://www.github.com/dotnet/roslyn/compare/3f2b20c65d32a59ca6bbc68b788a31ed38576d8e...61e5536d636f5b13c74f710d658bb320b224026d)
+[View Complete Diff of Changes](https://www.github.com/dotnet/format/compare/3f2b20c65d32a59ca6bbc68b788a31ed38576d8e...61e5536d636f5b13c74f710d658bb320b224026d)
 ### Breaking Changes:
 - Added an imports formatter for sorting imports.
 - Format now runs on the latest installed Runtime.
