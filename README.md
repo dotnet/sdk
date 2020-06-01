@@ -12,11 +12,32 @@
 
 `dotnet-format` is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used. At this time `dotnet-format` is able to format C# and Visual Basic projects with a subset of [supported .editorconfig options](./docs/Supported-.editorconfig-options.md).
 
-### New in v3.3.111304
-- [Enhance --files option to support folder paths and add --include alias (533)](https://github.com/dotnet/format/pull/533)
-- [format-500: Add `--exclude` option to ignore given files/folders (529)](https://github.com/dotnet/format/pull/529)
-- [format-379: Add `--report` command line argument to export json format report to given directory (495)](https://github.com/dotnet/format/pull/495)
-- [Update charset formatter to check for equivalent encodings (508)](https://github.com/dotnet/format/pull/508)
+### New in v4.0.130103
+#### Breaking Changes:
+- Added an imports formatter for sorting imports.
+- Format now runs on the latest installed Runtime.
+- `--check` and `--dry-run` have combined into a single option.
+- `--include` and `--exclude` use space-separated paths instead of comma-separated.
+
+#### Deprecations:
+- Added warning to use the default argument instead of `--workspace` option. Use `dotnet format ./format.sln` instead of `dotnet format -w ./format.sln`
+- Added warning to use the default argument to specify the folder path when using the `--folder` option. Use `dotnet format ./src -f` instead of `dotnet format -f ./src`
+- Added warning to use `--include` instead of `--files` alias.
+- Added warning to use `--check` instead of `--dry-run` alias.
+
+#### Changes:
+- [Add Imports Formatter (693)](https://www.github.com/dotnet/roslyn/pull/693)
+- [Always run on the latest Runtime (694)](https://www.github.com/dotnet/roslyn/pull/694)
+- [Move to Roslyn's editorconfig support (590)](https://www.github.com/dotnet/roslyn/pull/590)
+- [Command line argument for solution/project as positional argument (681)](https://www.github.com/dotnet/roslyn/pull/681)
+- [Add option to format generated code files. (673)](https://www.github.com/dotnet/roslyn/pull/673)
+- [Produce a binlog when verbosity is set to detailed (605)](https://www.github.com/dotnet/roslyn/pull/605)
+- [Fix #581 - Add final newline false positive (633)](https://www.github.com/dotnet/roslyn/pull/633)
+- [Combine --check and --dry-run into a single option. (541)](https://github.com/dotnet/format/pull/541)
+- [Use space-separated paths instead of comma-separated for --include and --exclude (551)](https://github.com/dotnet/format/pull/551)
+- [Support loading commandline options from response files (552)](https://github.com/dotnet/format/pull/552)
+- [Support file globbing in --include and --exclude options (555)](https://github.com/dotnet/format/pull/555)
+
 
 ### How To Install
 

@@ -1,8 +1,28 @@
 # Changelog
 All changes to the project will be documented in this file.
 
-## [4.0.x] - Not Yet Released
+## [4.0.130103] - 2020-06-01
+[View Complete Diff of Changes](https://www.github.com/dotnet/roslyn/compare/3f2b20c65d32a59ca6bbc68b788a31ed38576d8e...61e5536d636f5b13c74f710d658bb320b224026d)
+### Breaking Changes:
+- Added an imports formatter for sorting imports.
+- Format now runs on the latest installed Runtime.
+- `--check` and `--dry-run` have combined into a single option.
+- `--include` and `--exclude` use space-separated paths instead of comma-separated.
+
+### Deprecations:
+- Added warning to use the default argument instead of `--workspace` option. Use `dotnet format ./format.sln` instead of `dotnet format -w ./format.sln`
+- Added warning to use the default argument to specify the folder path when using the `--folder` option. Use `dotnet format ./src -f` instead of `dotnet format -f ./src`
+- Added warning to use `--include` instead of `--files` alias.
+- Added warning to use `--check` instead of `--dry-run` alias.
+
 ### Merged PRs:
+- [Add Imports Formatter (693)](https://www.github.com/dotnet/roslyn/pull/693)
+- [Always run on the latest Runtime (694)](https://www.github.com/dotnet/roslyn/pull/694)
+- [Move to Roslyn's editorconfig support (590)](https://www.github.com/dotnet/roslyn/pull/590)
+- [Command line argument for solution/project as positional argument (681)](https://www.github.com/dotnet/roslyn/pull/681)
+- [Add option to format generated code files. (673)](https://www.github.com/dotnet/roslyn/pull/673)
+- [Produce a binlog when verbosity is set to detailed (605)](https://www.github.com/dotnet/roslyn/pull/605)
+- [Fix #581 - Add final newline false positive (633)](https://www.github.com/dotnet/roslyn/pull/633)
 - [Combine --check and --dry-run into a single option. (541)](https://github.com/dotnet/format/pull/541)
 - [Use space-separated paths instead of comma-separated for --include and --exclude (551)](https://github.com/dotnet/format/pull/551)
 - [Support loading commandline options from response files (552)](https://github.com/dotnet/format/pull/552)
