@@ -18,6 +18,46 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public static partial class UsePropertyInsteadOfCountMethodWhenAvailableTests
     {
         [Fact]
+        public static Task CSharp_AsMethodArgument_Tests()
+            => new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources=
+                    {
+                $@"using System;
+using System.Linq;
+public static class C
+{{
+    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+    public static void M()
+    {{
+        var b = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}});
+    }}
+}}
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources=
+                    {
+                $@"using System;
+using System.Linq;
+public static class C
+{{
+    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+    public static void M()
+    {{
+        var b = 1.Equals(GetData().Length);
+    }}
+}}
+" ,
+                    },
+                },
+            }.RunAsync();
+
+        [Fact]
         public static Task CSharp_ImmutableArray_Tests()
             => new VerifyCS.Test
             {

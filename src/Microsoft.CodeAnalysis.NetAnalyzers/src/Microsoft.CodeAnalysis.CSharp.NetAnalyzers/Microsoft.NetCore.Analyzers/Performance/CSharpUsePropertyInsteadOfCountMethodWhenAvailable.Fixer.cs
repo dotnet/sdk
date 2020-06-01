@@ -50,5 +50,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             nameNode = default;
             return false;
         }
+
+        protected override SyntaxNode TryGetInvocationNodeFromArgumentSyntax(SyntaxNode node)
+        {
+            return node is ArgumentSyntax argumentSyntax ? argumentSyntax.Expression : node;
+        }
     }
 }
