@@ -233,7 +233,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
         private static async Task<Solution> RunCodeFormattersAsync(
             Solution solution,
-            ImmutableArray<DocumentWithOptions> formattableDocuments,
+            ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions options,
             ILogger logger,
             List<FormattedFile> formattedFiles,
@@ -249,7 +249,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return formattedSolution;
         }
 
-        internal static async Task<(int, ImmutableArray<DocumentWithOptions>)> DetermineFormattableFilesAsync(
+        internal static async Task<(int, ImmutableArray<DocumentId>)> DetermineFormattableFilesAsync(
             Solution solution,
             string projectPath,
             Matcher fileMatcher,
@@ -258,10 +258,10 @@ namespace Microsoft.CodeAnalysis.Tools
             CancellationToken cancellationToken)
         {
             var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count);
-            int projectFileCount = 0;
+            var projectFileCount = 0;
 
-            var documentsCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentWithOptions>(totalFileCount);
-            var documentsNotCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentWithOptions>(totalFileCount);
+            var documentsCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentId>(totalFileCount);
+            var documentsNotCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentId>(totalFileCount);
 
             var addedFilePaths = new HashSet<string>(totalFileCount);
 
@@ -317,19 +317,15 @@ namespace Microsoft.CodeAnalysis.Tools
                         continue;
                     }
 
-                    var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
-                    var optionSet = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
-
-                    var formattableDocument = new DocumentWithOptions(document, optionSet, analyzerConfigOptions);
-
                     // Track files covered by an editorconfig separately from those not covered.
+                    var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
                     if (analyzerConfigOptions is object)
                     {
-                        documentsCoveredByEditorConfig.Add(formattableDocument);
+                        documentsCoveredByEditorConfig.Add(document.Id);
                     }
                     else
                     {
-                        documentsNotCoveredByEditorConfig.Add(formattableDocument);
+                        documentsNotCoveredByEditorConfig.Add(document.Id);
                     }
                 }
             }

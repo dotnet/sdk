@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 reportPath: string.Empty,
                 includeGeneratedFiles: false);
 
-            var pathsToFormat = await GetOnlyFileToFormatAsync(solution);
+            var pathsToFormat = GetOnlyFileToFormat(solution);
 
             var formattedFiles = new List<FormattedFile>();
             await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, new TestLogger(), formattedFiles, default);

@@ -125,7 +125,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 reportPath: string.Empty,
                 includeGeneratedFiles: false);
 
-            var pathsToFormat = await GetOnlyFileToFormatAsync(solution);
+            var pathsToFormat = GetOnlyFileToFormat(solution);
 
             var formattedSolution = await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, Logger, new List<FormattedFile>(), default);
             var formattedDocument = GetOnlyDocument(formattedSolution);
@@ -137,21 +137,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         }
 
         /// <summary>
-        /// Gets the only <see cref="Document"/> along with related options and conventions.
+        /// Gets the only <see cref="DocumentId"/>.
         /// </summary>
         /// <param name="solution">A Solution containing a single Project containing a single Document.</param>
-        /// <param name="editorConfig">The editorconfig to apply to the documents options set.</param>
-        /// <returns>The document contained within along with option set and coding conventions.</returns>
-        internal async Task<ImmutableArray<DocumentWithOptions>> GetOnlyFileToFormatAsync(Solution solution)
-        {
-            var document = GetOnlyDocument(solution);
-            var options = (OptionSet)await document.GetOptionsAsync();
-
-            var syntaxTree = await document.GetSyntaxTreeAsync();
-            var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
-
-            return ImmutableArray.Create(new DocumentWithOptions(document, options, analyzerConfigOptions));
-        }
+        /// <returns>The only document id.</returns>
+        internal ImmutableArray<DocumentId> GetOnlyFileToFormat(Solution solution) => ImmutableArray.Create(GetOnlyDocument(solution).Id);
 
         /// <summary>
         /// Gets the only <see cref="Document"/> contained within the only <see cref="Project"/> within the <see cref="Solution"/>.
