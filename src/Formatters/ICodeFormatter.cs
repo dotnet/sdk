@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         Task<Solution> FormatAsync(
             Solution solution,
-            ImmutableArray<DocumentWithOptions> formattableDocuments,
+            ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions options,
             ILogger logger,
             List<FormattedFile> formattedFiles,

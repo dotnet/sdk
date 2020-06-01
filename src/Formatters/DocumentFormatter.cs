@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         public async Task<Solution> FormatAsync(
             Solution solution,
-            ImmutableArray<DocumentWithOptions> formattableDocuments,
+            ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             List<FormattedFile> formattedFiles,
@@ -52,21 +52,32 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         private ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> FormatFiles(
             Solution solution,
-            ImmutableArray<DocumentWithOptions> formattableDocuments,
+            ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<(SourceText originalText, SourceText? formattedText)>)>(formattableDocuments.Length);
 
-            foreach (var formattableDocument in formattableDocuments)
+            foreach (var documentId in formattableDocuments)
             {
-                var document = solution.GetDocument(formattableDocument.Document.Id);
+                var document = solution.GetDocument(documentId);
                 if (document is null)
                     continue;
 
-                var formatTask = Task.Run(async ()
-                    => await GetFormattedSourceTextAsync(document, formattableDocument.OptionSet, formattableDocument.AnalyzerConfigOptions, formatOptions, logger, cancellationToken).ConfigureAwait(false), cancellationToken);
+                var formatTask = Task.Run(async () =>
+                {
+                    var originalSourceText = await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
+
+                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+                    if (syntaxTree is null)
+                        return (originalSourceText, null);
+
+                    var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
+                    var optionSet = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
+
+                    return await GetFormattedSourceTextAsync(document, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
+                }, cancellationToken);
 
                 formattedDocuments.Add((document, formatTask));
             }
