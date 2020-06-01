@@ -628,4 +628,8 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</value>
     <comment>{StrBegin="NETSDK1131: "}</comment>
   </data>
+  <data name="UnsupportedTargetPlatformIdentifier" xml:space="preserve">
+    <value>NETSDK1132: The TargetPlatformIdentifier {0} is not supported.</value>
+    <comment>{StrBegin="NETSDK1132: "}</comment>
+  </data>
 </root>

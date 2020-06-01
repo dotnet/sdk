@@ -109,6 +109,19 @@ Copyright (c) .NET Foundation. All rights reserved.
                  FormatArguments="$([MSBuild]::Escape('$(TargetFramework)'))" />
   </Target>
 
+  <Target Name="_CheckForUnsupportedTargetPlatformIdentifier"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;RunResolvePackageDependencies;GetFrameworkPaths;GetReferenceAssemblyPaths"
+          Condition=" '$(TargetPlatformIdentifier)' != '' and 'ErrorOnUnsupportedTargetPlatformIdentifier' != 'false' " >
+    
+    <ItemGroup>
+      <_MatchingSupportedTargetPlatformIdentifiers Include="@(SupportedTargetPlatform)" Condition="'%(SupportedTargetPlatform.Identity)' == '$(TargetPlatformIdentifier)' "/>
+    </ItemGroup>    
+
+    <NETSdkError Condition=" '@(_MatchingSupportedTargetPlatformIdentifiers)' == '' "
+                 ResourceName="UnsupportedTargetPlatformIdentifier"
+                 FormatArguments="$([MSBuild]::Escape('$(TargetPlatformIdentifier)'))" />
+  </Target>
+
   <UsingTask TaskName="AllowEmptyTelemetry" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <Target Name="_CollectTargetFrameworkForTelemetry" AfterTargets="_CheckForUnsupportedTargetFramework">
