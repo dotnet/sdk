@@ -212,6 +212,11 @@
         <target state="new">Unable to locate dotnet CLI. Ensure that it is on the PATH.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_organize_imports_for_0_The_document_is_too_complex">
+        <source>Unable to organize imports for '{0}'. The document is too complex.</source>
+        <target state="new">Unable to organize imports for '{0}'. The document is too complex.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Using_msbuildexe_located_in_0">
         <source>Using MSBuild.exe located in '{0}'.</source>
         <target state="new">Using MSBuild.exe located in '{0}'.</target>

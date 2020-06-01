@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
@@ -31,7 +32,9 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             try
             {
                 var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken);
-                if (organizedDocument == document)
+
+                var isSameVersion = await IsSameDocumentAndVersionAsync(document, organizedDocument, cancellationToken).ConfigureAwait(false);
+                if (isSameVersion)
                 {
                     return sourceText;
                 }
@@ -45,8 +48,27 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             {
                 // This case is normally not hit when running against a handwritten code file.
                 // https://github.com/dotnet/roslyn/issues/44710#issuecomment-636253053
+                logger.LogWarning(Resources.Unable_to_organize_imports_for_0_The_document_is_too_complex, Path.GetFileName(document.FilePath));
                 return sourceText;
             }
+        }
+
+        private static async Task<bool> IsSameDocumentAndVersionAsync(Document a, Document b, CancellationToken cancellationToken)
+        {
+            if (a == b)
+            {
+                return true;
+            }
+
+            if (a.Id != b.Id)
+            {
+                return false;
+            }
+
+            var aVersion = await a.GetTextVersionAsync(cancellationToken);
+            var bVersion = await b.GetTextVersionAsync(cancellationToken);
+
+            return aVersion == bVersion;
         }
     }
 }
