@@ -53,13 +53,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         protected virtual string DefaultTestProjectName => "TestProject";
 
-        protected virtual string DefaultFolderPath => Path.DirectorySeparatorChar + DefaultTestProjectName + Path.DirectorySeparatorChar;
+        // This folder path needs to appear rooted when adding the AnalyzerConfigDocument.
+        // We achieve this by prepending a directory separator.
+        protected virtual string DefaultFolderPath => Path.DirectorySeparatorChar + DefaultTestProjectName;
 
-        protected virtual string DefaultTestProjectPath => DefaultFolderPath + DefaultTestProjectName + "." + DefaultFileExt + "proj";
+        protected virtual string DefaultTestProjectPath => Path.Combine(DefaultFolderPath, $"{DefaultTestProjectName}.{DefaultFileExt}proj");
 
-        protected virtual string DefaultEditorConfigPath => DefaultFolderPath + ".editorconfig";
+        protected virtual string DefaultEditorConfigPath => Path.Combine(DefaultFolderPath + ".editorconfig");
 
-        protected virtual string DefaultFilePath => DefaultFolderPath + DefaultFilePathPrefix + 0 + "." + DefaultFileExt;
+        protected virtual string DefaultFilePath => Path.Combine(DefaultFolderPath, $"{DefaultFilePathPrefix}0.{DefaultFileExt}");
 
         protected abstract string DefaultFileExt { get; }
 
