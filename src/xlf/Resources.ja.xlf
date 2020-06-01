@@ -77,6 +77,11 @@
         <target state="new">Fix final newline.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Fix_imports_ordering">
+        <source>Fix imports ordering.</source>
+        <target state="new">Fix imports ordering.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Fix_whitespace_formatting">
         <source>Fix whitespace formatting.</source>
         <target state="new">Fix whitespace formatting.</target>
@@ -205,6 +210,11 @@
       <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
         <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
         <target state="new">Unable to locate dotnet CLI. Ensure that it is on the PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Unable_to_organize_imports_for_0_The_document_is_too_complex">
+        <source>Unable to organize imports for '{0}'. The document is too complex.</source>
+        <target state="new">Unable to organize imports for '{0}'. The document is too complex.</target>
         <note />
       </trans-unit>
       <trans-unit id="Using_msbuildexe_located_in_0">

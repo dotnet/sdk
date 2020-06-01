@@ -60,3 +60,9 @@ These formatting rules concern the use of single lines versus separate lines for
 
 - csharp_preserve_single_line_statements (default value: `true`)
 - csharp_preserve_single_line_blocks (default value: `true`)
+
+**Organize using directives**
+These formatting rules concern the sorting and display of using directives and Imports statements.
+
+- dotnet_sort_system_directives_first  (default value: `true`)
+- dotnet_separate_import_directive_groups  (default value: `true`)

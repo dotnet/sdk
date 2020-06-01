@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     {
         protected override string FormatWarningDescription => Resources.Fix_end_of_line_marker;
 
-        protected override Task<SourceText> FormatFileAsync(
+        internal override Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
             OptionSet optionSet,
@@ -79,6 +79,17 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 "cr" => "\r",
                 "crlf" => "\r\n",
                 _ => Environment.NewLine,
+            };
+        }
+
+        internal static string GetEndOfLineOption(string newLine)
+        {
+            return newLine switch
+            {
+                "\n" => "lf",
+                "\r" => "cr",
+                "\r\n" => "crlf",
+                _ => GetEndOfLineOption(Environment.NewLine),
             };
         }
     }

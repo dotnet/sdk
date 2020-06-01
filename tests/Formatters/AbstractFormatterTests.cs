@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Testing;
@@ -50,13 +49,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        protected virtual string DefaultFilePathPrefix { get; } = "Test";
+        protected virtual string DefaultFilePathPrefix => "Test";
 
-        protected virtual string DefaultTestProjectName { get; } = "TestProject";
+        protected virtual string DefaultTestProjectName => "TestProject";
 
-        protected virtual string DefaultTestProjectPath => "." + Path.DirectorySeparatorChar + DefaultTestProjectName + "." + DefaultFileExt + "proj";
+        // This folder path needs to appear rooted when adding the AnalyzerConfigDocument.
+        // We achieve this by prepending a directory separator.
+        protected virtual string DefaultFolderPath => Path.DirectorySeparatorChar + DefaultTestProjectName;
 
-        protected virtual string DefaultFilePath => DefaultFilePathPrefix + 0 + "." + DefaultFileExt;
+        protected virtual string DefaultTestProjectPath => Path.Combine(DefaultFolderPath, $"{DefaultTestProjectName}.{DefaultFileExt}proj");
+
+        protected virtual string DefaultEditorConfigPath => Path.Combine(DefaultFolderPath + ".editorconfig");
+
+        protected virtual string DefaultFilePath => Path.Combine(DefaultFolderPath, $"{DefaultFilePathPrefix}0.{DefaultFileExt}");
 
         protected abstract string DefaultFileExt { get; }
 
@@ -64,7 +69,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         protected AbstractFormatterTest()
         {
-            TestState = new SolutionState(DefaultFilePathPrefix, DefaultFileExt);
+            TestState = new SolutionState(DefaultFolderPath + DefaultFilePathPrefix, DefaultFileExt);
         }
 
         /// <summary>
@@ -79,19 +84,36 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         public SolutionState TestState { get; }
 
+        private protected string ToEditorConfig(IReadOnlyDictionary<string, string> editorConfig) => $@"root = true
+
+[*.{DefaultFileExt}]
+{ string.Join(Environment.NewLine, editorConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}")) }
+";
+
         private protected Task<SourceText> TestAsync(string testCode, string expectedCode, IReadOnlyDictionary<string, string> editorConfig)
         {
             return TestAsync(testCode, expectedCode, editorConfig, Encoding.UTF8);
         }
 
-        private protected async Task<SourceText> TestAsync(string testCode, string expectedCode, IReadOnlyDictionary<string, string> editorConfig, Encoding encoding)
+        private protected Task<SourceText> TestAsync(string testCode, string expectedCode, string editorConfigText)
+        {
+            return TestAsync(testCode, expectedCode, editorConfigText, Encoding.UTF8);
+        }
+
+        private protected Task<SourceText> TestAsync(string testCode, string expectedCode, IReadOnlyDictionary<string, string> editorConfig, Encoding encoding)
+        {
+            return TestAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding);
+        }
+
+        private protected async Task<SourceText> TestAsync(string testCode, string expectedCode, string editorConfig, Encoding encoding)
         {
             var text = SourceText.From(testCode, encoding);
             TestState.Sources.Add(text);
 
-            var solution = GetSolution(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray());
+            var solution = GetSolution(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), editorConfig);
             var project = solution.Projects.Single();
             var document = project.Documents.Single();
+
             var fileMatcher = SourceFileMatcher.CreateMatcher(new[] { document.FilePath }, exclude: Array.Empty<string>());
             var formatOptions = new FormatOptions(
                 workspaceFilePath: project.FilePath,
@@ -103,7 +125,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 reportPath: string.Empty,
                 includeGeneratedFiles: false);
 
-            var pathsToFormat = await GetOnlyFileToFormatAsync(solution, editorConfig);
+            var pathsToFormat = await GetOnlyFileToFormatAsync(solution);
 
             var formattedSolution = await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, Logger, new List<FormattedFile>(), default);
             var formattedDocument = GetOnlyDocument(formattedSolution);
@@ -120,11 +142,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="solution">A Solution containing a single Project containing a single Document.</param>
         /// <param name="editorConfig">The editorconfig to apply to the documents options set.</param>
         /// <returns>The document contained within along with option set and coding conventions.</returns>
-        internal async Task<ImmutableArray<DocumentWithOptions>> GetOnlyFileToFormatAsync(Solution solution, IReadOnlyDictionary<string, string> editorConfig)
+        internal async Task<ImmutableArray<DocumentWithOptions>> GetOnlyFileToFormatAsync(Solution solution)
         {
             var document = GetOnlyDocument(solution);
             var options = (OptionSet)await document.GetOptionsAsync();
-            AnalyzerConfigOptions analyzerConfigOptions = new EditorConfigOptions(editorConfig);
+
+            var syntaxTree = await document.GetSyntaxTreeAsync();
+            var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
 
             return ImmutableArray.Create(new DocumentWithOptions(document, options, analyzerConfigOptions));
         }
@@ -158,10 +182,25 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="sources">Classes in the form of strings.</param>
         /// <param name="additionalFiles">Additional documents to include in the project.</param>
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
+        /// <param name="editorConfig">The .editorconfig to apply to this solution.</param>
         /// <returns>A solution containing a project with the specified sources and additional files.</returns>
-        private protected Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences)
+        private protected Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, IReadOnlyDictionary<string, string> editorConfig)
         {
-            var project = CreateProject(sources, additionalFiles, additionalMetadataReferences, Language);
+            return GetSolution(sources, additionalFiles, additionalMetadataReferences, ToEditorConfig(editorConfig));
+        }
+
+        /// <summary>
+        /// Given an array of strings as sources and a language, turn them into a <see cref="Project"/> and return the
+        /// solution.
+        /// </summary>
+        /// <param name="sources">Classes in the form of strings.</param>
+        /// <param name="additionalFiles">Additional documents to include in the project.</param>
+        /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
+        /// <param name="editorConfig">The .editorconfig to apply to this solution.</param>
+        /// <returns>A solution containing a project with the specified sources and additional files.</returns>
+        private protected Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string editorConfig)
+        {
+            var project = CreateProject(sources, additionalFiles, additionalMetadataReferences, Language, SourceText.From(editorConfig, Encoding.UTF8));
             return project.Solution;
         }
 
@@ -177,12 +216,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
         /// <param name="language">The language the source classes are in. Values may be taken from the
         /// <see cref="LanguageNames"/> class.</param>
+        /// <param name="editorConfigText">The .editorconfig to apply to this project.</param>
         /// <returns>A <see cref="Project"/> created out of the <see cref="Document"/>s created from the source
         /// strings.</returns>
-        protected Project CreateProject((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language)
+        protected Project CreateProject((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language, SourceText editorConfigText)
         {
             language ??= Language;
-            return CreateProjectImpl(sources, additionalFiles, additionalMetadataReferences, language);
+            return CreateProjectImpl(sources, additionalFiles, additionalMetadataReferences, language, editorConfigText);
         }
 
         /// <summary>
@@ -193,12 +233,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
         /// <param name="language">The language the source classes are in. Values may be taken from the
         /// <see cref="LanguageNames"/> class.</param>
+        /// <param name="editorConfigText">The .editorconfig to apply to this project.</param>
         /// <returns>A <see cref="Project"/> created out of the <see cref="Document"/>s created from the source
         /// strings.</returns>
-        protected virtual Project CreateProjectImpl((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language)
+        protected virtual Project CreateProjectImpl((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language, SourceText editorConfigText)
         {
             var projectId = ProjectId.CreateNewId(debugName: DefaultTestProjectName);
-            var solution = CreateSolution(projectId, language);
+            var solution = CreateSolution(projectId, language, editorConfigText);
 
             solution = solution.AddMetadataReferences(projectId, additionalMetadataReferences);
 
@@ -224,8 +265,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// </summary>
         /// <param name="projectId">The project identifier to use.</param>
         /// <param name="language">The language for which the solution is being created.</param>
+        /// <param name="editorConfigText">The .editorconfig to apply to this solution.</param>
         /// <returns>The created solution.</returns>
-        protected virtual Solution CreateSolution(ProjectId projectId, string language)
+        protected virtual Solution CreateSolution(ProjectId projectId, string language, SourceText editorConfigText)
         {
             var compilationOptions = CreateCompilationOptions();
 
@@ -237,9 +279,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             compilationOptions = compilationOptions.WithXmlReferenceResolver(xmlReferenceResolver);
 
+            var editorConfigDocument = DocumentInfo.Create(
+                DocumentId.CreateNewId(projectId, DefaultEditorConfigPath),
+                name: DefaultEditorConfigPath,
+                loader: TextLoader.From(TextAndVersion.Create(editorConfigText, VersionStamp.Create())),
+                filePath: DefaultEditorConfigPath);
+
+            var projectInfo = ProjectInfo.Create(projectId, VersionStamp.Create(), DefaultTestProjectName, DefaultTestProjectName, language, filePath: DefaultTestProjectPath)
+                .WithAnalyzerConfigDocuments(ImmutableArray.Create(editorConfigDocument));
+
             var solution = CreateWorkspace()
                 .CurrentSolution
-                .AddProject(ProjectInfo.Create(projectId, VersionStamp.Create(), DefaultTestProjectName, DefaultTestProjectName, language, filePath: DefaultTestProjectPath))
+                .AddProject(projectInfo)
                 .WithProjectCompilationOptions(projectId, compilationOptions)
                 .AddMetadataReference(projectId, CorlibReference)
                 .AddMetadataReference(projectId, SystemReference)

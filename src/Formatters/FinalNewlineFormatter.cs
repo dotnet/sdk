@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     {
         protected override string FormatWarningDescription => Resources.Fix_final_newline;
 
-        protected override async Task<SourceText> FormatFileAsync(
+        internal override async Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
             OptionSet optionSet,

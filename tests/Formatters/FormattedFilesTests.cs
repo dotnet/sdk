@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,9 +49,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var text = SourceText.From(testCode, Encoding.UTF8);
             TestState.Sources.Add(text);
 
-            var solution = GetSolution(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray());
+            var solution = GetSolution(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), EditorConfig);
             var project = solution.Projects.Single();
             var document = project.Documents.Single();
+
             var fileMatcher = SourceFileMatcher.CreateMatcher(new[] { document.FilePath }, exclude: Array.Empty<string>());
             var formatOptions = new FormatOptions(
                 workspaceFilePath: project.FilePath,
@@ -61,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 reportPath: string.Empty,
                 includeGeneratedFiles: false);
 
-            var pathsToFormat = await GetOnlyFileToFormatAsync(solution, EditorConfig);
+            var pathsToFormat = await GetOnlyFileToFormatAsync(solution);
 
             var formattedFiles = new List<FormattedFile>();
             await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, new TestLogger(), formattedFiles, default);

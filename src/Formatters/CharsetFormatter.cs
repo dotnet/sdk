@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         private static Encoding Utf8 => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         private static Encoding Latin1 => Encoding.GetEncoding("iso-8859-1");
 
-        protected override Task<SourceText> FormatFileAsync(
+        internal override Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
             OptionSet optionSet,
