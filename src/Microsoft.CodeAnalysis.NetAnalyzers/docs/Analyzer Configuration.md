@@ -697,7 +697,7 @@ Examples:
 ### Allowed suffixes
 Option Name: `allowed_suffixes`
 
-Configurable Rules: [CA1711](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1711)
+Configurable Rules: [CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711)
 
 Option Values: List (separated by '|') of allowed suffixes
 
