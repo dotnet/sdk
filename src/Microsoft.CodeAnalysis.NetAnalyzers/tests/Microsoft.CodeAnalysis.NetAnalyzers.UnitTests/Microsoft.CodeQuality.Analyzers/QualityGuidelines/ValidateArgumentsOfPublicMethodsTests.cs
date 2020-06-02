@@ -6222,5 +6222,44 @@ End Module"
             vbTest.ExpectedDiagnostics.AddRange(expected);
             await vbTest.RunAsync();
         }
+
+        [Fact, WorkItem(3437, "https://github.com/dotnet/roslyn-analyzers/issues/3437")]
+        public async Task ReDim_FirstInstruction_NoDiagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Sub GetValues(ByRef Values() As String)
+        ReDim Values(0)
+        Values(0) = ""Test Value""
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3437, "https://github.com/dotnet/roslyn-analyzers/issues/3437")]
+        public async Task ReDim_FirstInstructionMultipleVariables_NoDiagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Sub GetValues(ByRef Values() As String, ByRef OtherValues() As String)
+        ReDim Values(0), OtherValues(0)
+        Values(0) = ""Test Value""
+        OtherValues(0) = Values(0)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3437, "https://github.com/dotnet/roslyn-analyzers/issues/3437")]
+        public async Task ReDim_ParameterAccessFirst_Diagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Sub GetValues(ByRef Values() As String)
+        Values(0) = ""Test Value""
+        ReDim Values(0)
+        Values(0) = ""Test Value""
+    End Sub
+End Class",
+                GetBasicResultAt(4, 9, "Sub C.GetValues(ByRef Values As String())", "Values"));
+        }
     }
 }
