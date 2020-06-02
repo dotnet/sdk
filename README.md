@@ -12,7 +12,7 @@
 
 `dotnet-format` is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used. At this time `dotnet-format` is able to format C# and Visual Basic projects with a subset of [supported .editorconfig options](./docs/Supported-.editorconfig-options.md).
 
-### New in v4.0.130103
+### New in v4.0.130203
 #### Breaking Changes:
 - Added an imports formatter for sorting imports.
 - Format now runs on the latest installed Runtime.
