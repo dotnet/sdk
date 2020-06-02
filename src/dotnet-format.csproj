@@ -59,7 +59,6 @@
 
   <ItemGroup>
     <None Include="..\README.md" />
-    <None Include="..\packageicon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
