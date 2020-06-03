@@ -103,7 +103,9 @@ namespace Microsoft.NET.Build.Tasks
             bool windowsOnlyErrorLogged = false;
             foreach (var knownFrameworkReference in knownFrameworkReferencesForTargetFramework)
             {
-                frameworkReferenceMap.TryGetValue(knownFrameworkReference.Name, out ITaskItem frameworkReference);
+                // If the framework reference is not actually requested, discard it.
+                if (!frameworkReferenceMap.TryGetValue(knownFrameworkReference.Name, out ITaskItem frameworkReference))
+                    continue;
 
                 // Handle Windows-only frameworks on non-Windows platforms
                 if (knownFrameworkReference.IsWindowsOnly &&
