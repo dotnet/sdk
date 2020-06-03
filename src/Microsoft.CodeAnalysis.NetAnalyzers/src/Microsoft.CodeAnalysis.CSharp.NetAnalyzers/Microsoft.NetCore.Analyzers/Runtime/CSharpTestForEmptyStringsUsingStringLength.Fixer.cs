@@ -39,8 +39,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         }
 
         protected override bool ContainsEmptyStringLiteral(SyntaxNode node)
-        {
-            return node is LiteralExpressionSyntax literalExpressionSyntax && literalExpressionSyntax.Token.ValueText.Length == 0;
-        }
+        => node is LiteralExpressionSyntax literalExpressionSyntax &&
+        	literalExpressionSyntax.Token.ValueText.Length == 0;
     }
 }

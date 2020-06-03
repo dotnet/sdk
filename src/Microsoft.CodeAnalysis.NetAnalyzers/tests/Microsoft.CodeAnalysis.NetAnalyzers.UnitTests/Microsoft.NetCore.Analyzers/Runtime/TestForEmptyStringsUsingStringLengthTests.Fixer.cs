@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     {
         private const int c_StringLengthCodeActionIndex = 1;
 
-        [Fact]
+        [Fact, WorkItem(3686, "https://github.com/dotnet/roslyn-analyzers/pull/3686")]
         public async Task CA1820_FixTestEmptyStringsUsingIsNullOrEmpty_WhenStringIsLiteral()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
