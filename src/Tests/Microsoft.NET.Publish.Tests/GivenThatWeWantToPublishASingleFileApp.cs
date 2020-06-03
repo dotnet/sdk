@@ -461,5 +461,39 @@ namespace Microsoft.NET.Publish.Tests
                 .And
                 .HaveStdOutContaining("Hello World");
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_errors_on_duplicate_files(bool shouldPublishSingleFile)
+        {
+            var targetFramework = "netcoreapp3.1";
+            var testProject = new TestProject()
+            {
+                Name = "DuplicateFiles",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+                IsExe = true,
+                RuntimeIdentifier = "win-x64"
+            };
+            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.TestPlatform.CLI", "16.5.0"));
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
+            CommandResult result;
+            if (shouldPublishSingleFile) {
+                result = publishCommand.Execute(PublishSingleFile);
+            }
+            else
+            {
+                result = publishCommand.Execute();
+            }
+
+            result.Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1132");
+        }
     }
 }

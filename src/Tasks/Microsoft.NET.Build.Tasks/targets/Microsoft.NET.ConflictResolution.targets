@@ -89,4 +89,22 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <UsingTask TaskName="CheckForDuplicateItemMetadata" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <Target Name="_HandleFileConflictsForPublish"
+          AfterTargets="ComputeFilesToPublish"
+          BeforeTargets="CopyFilesToPublishDirectory;_ComputeFilesToBundle" >
+
+    <CheckForDuplicateItemMetadata
+      Items="@(ResolvedFileToPublish)"
+      MetadataName="RelativePath"
+      ContinueOnError="false">
+      <Output TaskParameter="DuplicatesExist" PropertyName="_ResolvedFileToPublishContainsDuplicates" />
+    </CheckForDuplicateItemMetadata>
+
+    <NETSdkError Condition="'$(_ResolvedFileToPublishContainsDuplicates)' == 'true'"
+             ResourceName="DuplicatePublishOutputFiles"/>
+
+  </Target>
+
 </Project>
