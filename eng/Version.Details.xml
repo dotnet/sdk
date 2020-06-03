@@ -65,10 +65,6 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>fb089793a07b2748cb88840c668d799f33c38505</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Web" Version="5.0.100-preview.7.20301.1">
-      <Uri>https://github.com/dotnet/websdk</Uri>
-      <Sha>5a6e750fcadf11b9ddeb929627b23207aa930e25</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="5.0.0-preview.3.20303.1">
       <Uri>https://github.com/mono/linker</Uri>
       <Sha>83b3efbc925a2b0604d22d95d0516db5b85dd1b0</Sha>
@@ -96,6 +92,26 @@
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.7.20302.4" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
       <Sha>89cb348d8fb5256e4a96e50facea31e726b033af</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Analyzers" Version="5.0.0-preview.6.20279.12">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>5c155d41477d0e79819fcba5af498fbee92fbe97</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="5.0.0-preview.6.20279.12">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>5c155d41477d0e79819fcba5af498fbee92fbe97</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Analyzers" Version="5.0.0-preview.6.20279.12">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>5c155d41477d0e79819fcba5af498fbee92fbe97</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Api.Analyzers" Version="5.0.0-preview.6.20279.12">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>5c155d41477d0e79819fcba5af498fbee92fbe97</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Web.Xdt" Version="3.0.0" Pinned="true">
+      <Uri>https://github.com/aspnet/xdt</Uri>
+      <Sha>c01a538851a8ab1a1fbeb2e6243f391fff7587b4</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
