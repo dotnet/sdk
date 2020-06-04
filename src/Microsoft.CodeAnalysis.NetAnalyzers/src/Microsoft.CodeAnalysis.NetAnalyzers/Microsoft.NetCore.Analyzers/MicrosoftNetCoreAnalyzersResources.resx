@@ -1285,7 +1285,7 @@
     <value>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</value>
   </data>
   <data name="PreferStreamAsyncMemoryOverloadsMessage" xml:space="preserve">
-    <value>Change the '{0}' method call to the overload that receives a '{1}'.</value>
+    <value>Change the '{0}' method call to use the '{1}' overload</value>
   </data>
   <data name="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle" xml:space="preserve">
     <value>Change to call the two argument constructor, pass null for the message.</value>

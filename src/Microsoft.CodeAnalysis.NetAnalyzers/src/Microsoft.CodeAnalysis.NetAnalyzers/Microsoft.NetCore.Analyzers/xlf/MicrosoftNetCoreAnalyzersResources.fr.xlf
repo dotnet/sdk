@@ -1398,8 +1398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
-        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="translated">Remplacez l'appel de méthode '{0}' par la surcharge qui reçoit '{1}'.</target>
+        <source>Change the '{0}' method call to use the '{1}' overload</source>
+        <target state="needs-review-translation">Remplacez l'appel de méthode '{0}' par la surcharge qui reçoit '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">

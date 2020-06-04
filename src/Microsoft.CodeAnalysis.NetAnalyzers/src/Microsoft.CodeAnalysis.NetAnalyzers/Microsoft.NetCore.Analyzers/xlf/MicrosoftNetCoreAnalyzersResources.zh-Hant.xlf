@@ -1398,8 +1398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
-        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="translated">將 '{0}' 方法呼叫變更為接收 '{1}' 的多載。</target>
+        <source>Change the '{0}' method call to use the '{1}' overload</source>
+        <target state="needs-review-translation">將 '{0}' 方法呼叫變更為接收 '{1}' 的多載。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">

@@ -1399,8 +1399,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
-        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="translated">Zmień wywołanie metody „{0}” na przeciążenie, które odbiera argument „{1}”.</target>
+        <source>Change the '{0}' method call to use the '{1}' overload</source>
+        <target state="needs-review-translation">Zmień wywołanie metody „{0}” na przeciążenie, które odbiera argument „{1}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
