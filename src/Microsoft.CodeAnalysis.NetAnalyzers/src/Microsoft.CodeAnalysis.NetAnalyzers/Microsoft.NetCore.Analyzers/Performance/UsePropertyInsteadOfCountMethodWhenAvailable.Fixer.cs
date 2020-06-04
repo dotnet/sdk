@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            var node = root.FindNode(context.Span, getInnerMostNodeForTie: true);
+            var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
 
             if (node is object &&
                 context.Diagnostics[0].Properties.TryGetValue(UseCountProperlyAnalyzer.PropertyNameKey, out var propertyName) &&
