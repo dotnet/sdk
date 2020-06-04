@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForEmptyStringsUsingStringLengthAnalyzer,
@@ -15,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     {
         private const int c_StringLengthCodeActionIndex = 1;
 
-        [Fact]
+        [Fact, WorkItem(3686, "https://github.com/dotnet/roslyn-analyzers/pull/3686")]
         public async Task CA1820_FixTestEmptyStringsUsingIsNullOrEmpty_WhenStringIsLiteral()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
