@@ -595,7 +595,10 @@ public class Program
             var referenceProject = new TestProject()
             {
                 Name = referenceProjectName,
-                TargetFrameworks = targetFramework,
+                // NOTE: If using a package reference for the reference project, it will be retrieved
+                // from the nuget cache. Set the reference project TFM to the lowest common denominator
+                // of these tests to prevent conflicts.
+                TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFramework,
                 IsSdkProject = true
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
