@@ -145,13 +145,79 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_error_on_nonboolean_optimization_flag(string property)
         {
             var projectName = "HelloWorld";
+            var targetFramework = "net5.0";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            var testProject = CreateTestProjectForILLinkTesting("net5.0", projectName);
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: property);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute("/p:PublishTrimmed=true", $"/p:SelfContained=true", "/p:PublishTrimmed=true", $"/p:{property}=NonBool")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", $"/p:{property}=NonBool")
                 .Should().Fail().And.HaveStdOutContaining("MSB4030");
+        }
+
+        [Fact]
+        public void ILLink_respects_feature_settings_from_host_config()
+        {
+            var projectName = "HelloWorld";
+            var referenceProjectName = "ClassLibForILLink";
+            var targetFramework = "net5.0";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
+            // Set up a conditional feature substitution for the "FeatureDisabled" property, and
+            // enable the substitution via RuntimeHostConfigurationOption
+            AddFeatureSetting(testProject, referenceProjectName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
+                .WithProjectChanges(project => EmbedSubstitutions(project))
+                .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
+                                    $"/p:_ExtraTrimmerArgs=-p link {referenceProjectName}").Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var referenceDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
+
+            File.Exists(referenceDll).Should().BeTrue();
+            DoesImageHaveMethod(referenceDll, "FeatureAPI").Should().BeTrue();
+            DoesImageHaveMethod(referenceDll, "get_FeatureDisabled").Should().BeTrue();
+            // Check that this method is removed when the feature is disabled
+            DoesImageHaveMethod(referenceDll, "FeatureImplementation").Should().BeFalse();
+        }
+
+        [Fact]
+        public void ILLink_ignores_host_config_settings_with_link_false()
+        {
+            var projectName = "HelloWorld";
+            var referenceProjectName = "ClassLibForILLink";
+            var targetFramework = "net5.0";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
+            // Set up a conditional feature substitution for the "FeatureDisabled" property, and
+            // enable the substitution via RuntimeHostConfigurationOption
+            AddFeatureSetting(testProject, referenceProjectName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
+                .WithProjectChanges(project => EmbedSubstitutions(project))
+                // Set Link="False" on the RuntimeHostConfigurationOption
+                .WithProjectChanges(project => DisableLinkingForHostConfig(project))
+                .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
+                                    $"/p:_ExtraTrimmerArgs=-p link {referenceProjectName}").Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var referenceDll = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
+
+            File.Exists(referenceDll).Should().BeTrue();
+            DoesImageHaveMethod(referenceDll, "FeatureAPI").Should().BeTrue();
+            DoesImageHaveMethod(referenceDll, "get_FeatureDisabled").Should().BeTrue();
+            // Check that the feature substitution did not apply
+            DoesImageHaveMethod(referenceDll, "FeatureImplementation").Should().BeTrue();
         }
 
         [Theory]
@@ -454,6 +520,48 @@ namespace Microsoft.NET.Publish.Tests
                                                  new XElement("action"))));
         }
 
+        static readonly string substitutionsFilename = "ILLink.Substitutions.xml";
+
+        private void EmbedSubstitutions(XDocument project)
+        {
+            var ns = project.Root.Name.Namespace;
+
+            project.Root.Add (new XElement(ns + "ItemGroup",
+                                new XElement("EmbeddedResource",
+                                    new XAttribute("Include", substitutionsFilename),
+                                    new XElement("LogicalName", substitutionsFilename))));
+        }
+
+        private void AddFeatureSetting(TestProject testProject, string referenceAssemblyName)
+        {
+            // Add a feature definition that replaces Main. We use the existing InvariantGlobalization property
+            // just to check that the RuntimeHostConfigurationOption items correctly flow to the linker, even
+            // though this option is unrelated to the transformation we are defining here.
+            testProject.AdditionalProperties["InvariantGlobalization"] = "true";
+            testProject.EmbeddedResources[substitutionsFilename] = $@"
+<linker>
+  <assembly fullname=""{referenceAssemblyName}"" feature=""System.Globalization.Invariant"" featurevalue=""true"">
+    <type fullname=""ClassLib"">
+      <method signature=""System.Boolean get_FeatureDisabled()"" body=""stub"" value=""true"" />
+    </type>
+  </assembly>
+</linker>
+";
+        }
+
+        private void DisableLinkingForHostConfig(XDocument project)
+        {
+            var ns = project.Root.Name.Namespace;
+
+            var target = new XElement(ns + "Target",
+                                new XAttribute("BeforeTargets", "_SetILLinkDefaults"),
+                                new XAttribute("Name", "_DisableLinkingForHostConfig"));
+            project.Root.Add(target);
+            target.Add(new XElement(ns + "ItemGroup",
+                        new XElement(ns + "RuntimeHostConfigurationOption",
+                            new XElement("Link", "false"))));
+        }
+
         private TestProject CreateTestProjectForILLinkTesting(
             string targetFramework,
             string mainProjectName,
@@ -501,6 +609,20 @@ public class ClassLib
     public void UnusedMethodToRoot()
     {
     }
+
+    public static bool FeatureDisabled { get; }
+
+    public static void FeatureAPI()
+    {
+        if (FeatureDisabled)
+            return;
+
+        FeatureImplementation();
+    }
+
+    public static void FeatureImplementation()
+    {
+    }
 }
 ";
 
@@ -523,6 +645,7 @@ public class ClassLib
   <assembly fullname=""{referenceProjectName}"">
     <type fullname=""ClassLib"">
       <method name=""UnusedMethodToRoot"" />
+      <method name=""FeatureAPI"" />
     </type>
   </assembly>
 </linker>
