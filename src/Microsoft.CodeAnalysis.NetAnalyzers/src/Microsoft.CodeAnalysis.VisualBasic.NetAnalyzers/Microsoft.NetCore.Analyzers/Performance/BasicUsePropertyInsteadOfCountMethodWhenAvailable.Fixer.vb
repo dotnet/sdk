@@ -51,11 +51,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
         End Function
 
-        Protected Overrides Function TryGetInvocationNodeFromArgumentSyntax(node As SyntaxNode) As SyntaxNode
-            Dim argumentSyntax = TryCast(node, ArgumentSyntax)
-            If argumentSyntax Is Nothing Then Return node
-            Return argumentSyntax.GetExpression()
-        End Function
     End Class
 
 End Namespace
