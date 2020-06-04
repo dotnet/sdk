@@ -5,6 +5,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic
 Imports Microsoft.CodeQuality.Analyzers.QualityGuidelines
+Imports System.Threading
 
 Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
@@ -36,14 +37,14 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
 
                     Case SyntaxKind.CatchStatement
                         Dim catchStatement = DirectCast(node, CatchStatementSyntax)
-                        If IsCaughtLocalThrown(context.SemanticModel, catchStatement, throwExpression) Then
+                        If IsCaughtLocalThrown(context.SemanticModel, catchStatement, throwExpression, context.CancellationToken) Then
                             context.ReportDiagnostic(CreateDiagnostic(throwStatement))
                             Return
                         End If
 
                     Case SyntaxKind.CatchBlock
                         Dim catchStatement = DirectCast(node, CatchBlockSyntax).CatchStatement
-                        If IsCaughtLocalThrown(context.SemanticModel, catchStatement, throwExpression) Then
+                        If IsCaughtLocalThrown(context.SemanticModel, catchStatement, throwExpression, context.CancellationToken) Then
                             context.ReportDiagnostic(CreateDiagnostic(throwStatement))
                             Return
                         End If
@@ -53,8 +54,8 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
             End While
         End Sub
 
-        Private Shared Function IsCaughtLocalThrown(semanticModel As SemanticModel, catchStatement As CatchStatementSyntax, throwExpression As ExpressionSyntax) As Boolean
-            Dim local = TryCast(semanticModel.GetSymbolInfo(throwExpression).Symbol, ILocalSymbol)
+        Private Shared Function IsCaughtLocalThrown(semanticModel As SemanticModel, catchStatement As CatchStatementSyntax, throwExpression As ExpressionSyntax, cancellationToken As CancellationToken) As Boolean
+            Dim local = TryCast(semanticModel.GetSymbolInfo(throwExpression, cancellationToken).Symbol, ILocalSymbol)
             Dim catchBlock = DirectCast(catchStatement.Parent, CatchBlockSyntax)
             If local Is Nothing _
                     OrElse local.Locations.Length = 0 _
