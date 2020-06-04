@@ -49,14 +49,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span, getInnerMostNodeForTie: true);
-            var invocationNode = TryGetInvocationNodeFromArgumentSyntax(node);
             if (node is object &&
                 context.Diagnostics[0].Properties.TryGetValue(UseCountProperlyAnalyzer.PropertyNameKey, out var propertyName) &&
                 propertyName is object &&
-                TryGetExpression(invocationNode, out var expressionNode, out var nameNode))
+                TryGetExpression(node, out var expressionNode, out var nameNode))
             {
                 context.RegisterCodeFix(
-                    new UsePropertyInsteadOfCountMethodWhenAvailableCodeAction(context.Document, invocationNode, expressionNode, nameNode, propertyName),
+                    new UsePropertyInsteadOfCountMethodWhenAvailableCodeAction(context.Document, node, expressionNode, nameNode, propertyName),
                     context.Diagnostics);
             }
         }
