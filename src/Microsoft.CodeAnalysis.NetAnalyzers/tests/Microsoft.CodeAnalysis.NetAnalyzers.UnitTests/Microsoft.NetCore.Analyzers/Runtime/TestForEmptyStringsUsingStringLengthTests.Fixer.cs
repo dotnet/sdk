@@ -26,11 +26,21 @@ public class A
     {
         return [|s == """"|];
     }
+
+    public bool CompareEmptyIsLeft(string s)
+    {
+        return [|"""" == s|];
+    }
 }
 ", @"
 public class A
 {
     public bool Compare(string s)
+    {
+        return string.IsNullOrEmpty(s);
+    }
+
+    public bool CompareEmptyIsLeft(string s)
     {
         return string.IsNullOrEmpty(s);
     }
@@ -41,14 +51,94 @@ Public Class A
     Public Function Compare(s As String) As Boolean
         Return [|s = """"|]
     End Function
+
+    Public Function CompareEmptyIsLeft(s As String) As Boolean
+        Return [|"""" = s|]
+    End Function
 End Class
 ", @"
 Public Class A
     Public Function Compare(s As String) As Boolean
         Return String.IsNullOrEmpty(s)
     End Function
+
+    Public Function CompareEmptyIsLeft(s As String) As Boolean
+        Return String.IsNullOrEmpty(s)
+    End Function
 End Class
 ");
+        }
+
+        [Fact]
+        public async Task CA1820_FixTestEmptyStringsUsingStringLength_WhenStringIsLiteral()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return [|s == """"|];
+    }
+}
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return s.Length == 0;
+    }
+}
+",
+                    },
+                },
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return [|s = """"|]
+    End Function
+End Class
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return s.Length = 0
+    End Function
+End Class
+",
+                    },
+                },
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+            }.RunAsync();
         }
 
         [Fact]
