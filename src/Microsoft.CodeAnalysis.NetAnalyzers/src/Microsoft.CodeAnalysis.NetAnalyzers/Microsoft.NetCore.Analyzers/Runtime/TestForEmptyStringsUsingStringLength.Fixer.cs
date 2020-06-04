@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using System.Threading;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -37,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
-            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model);
+            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, context.CancellationToken);
 
             if (resolution != null)
             {
@@ -55,18 +56,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model)
+        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, CancellationToken cancellationToken)
         {
             bool isEqualsOperator = IsEqualsOperator(binaryExpressionSyntax);
             SyntaxNode leftOperand = GetLeftOperand(binaryExpressionSyntax);
             SyntaxNode rightOperand = GetRightOperand(binaryExpressionSyntax);
 
-            if (ContainsSystemStringEmpty(leftOperand, model) || ContainsEmptyStringLiteral(leftOperand))
+            if (ContainsSystemStringEmpty(leftOperand, model) || ContainsEmptyStringLiteral(leftOperand, model, cancellationToken))
             {
                 return new FixResolution(binaryExpressionSyntax, rightOperand, isEqualsOperator);
             }
 
-            if (ContainsSystemStringEmpty(rightOperand, model) || ContainsEmptyStringLiteral(rightOperand))
+            if (ContainsSystemStringEmpty(rightOperand, model) || ContainsEmptyStringLiteral(rightOperand, model, cancellationToken))
             {
                 return new FixResolution(binaryExpressionSyntax, leftOperand, isEqualsOperator);
             }
@@ -135,12 +136,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return editor.GetChangedDocument();
         }
 
+        private static bool ContainsEmptyStringLiteral(SyntaxNode node, SemanticModel model, CancellationToken cancellationToken)
+            => model.GetConstantValue(node, cancellationToken) is Optional<object> optionalValue &&
+            optionalValue.HasValue && optionalValue.Value is string value && value.Length == 0;
+
         protected abstract SyntaxNode GetBinaryExpression(SyntaxNode node);
         protected abstract bool IsEqualsOperator(SyntaxNode node);
         protected abstract bool IsNotEqualsOperator(SyntaxNode node);
         protected abstract SyntaxNode GetLeftOperand(SyntaxNode binaryExpressionSyntax);
         protected abstract SyntaxNode GetRightOperand(SyntaxNode binaryExpressionSyntax);
-        protected abstract bool ContainsEmptyStringLiteral(SyntaxNode node);
 
         private sealed class FixResolution
         {

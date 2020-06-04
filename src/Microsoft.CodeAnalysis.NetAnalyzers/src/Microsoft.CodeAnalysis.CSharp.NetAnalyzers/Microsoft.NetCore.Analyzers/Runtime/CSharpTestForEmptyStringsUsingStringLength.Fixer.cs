@@ -37,10 +37,5 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             return ((BinaryExpressionSyntax)binaryExpressionSyntax).Right;
         }
-
-        protected override bool ContainsEmptyStringLiteral(SyntaxNode node)
-        {
-            return node is LiteralExpressionSyntax literalExpressionSyntax && literalExpressionSyntax.Token.ValueText.Length == 0;
-        }
     }
 }

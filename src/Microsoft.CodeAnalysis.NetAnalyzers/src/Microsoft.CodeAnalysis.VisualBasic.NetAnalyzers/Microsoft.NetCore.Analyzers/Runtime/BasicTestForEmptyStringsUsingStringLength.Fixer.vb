@@ -34,9 +34,5 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         Protected Overrides Function GetRightOperand(binaryExpressionSyntax As SyntaxNode) As SyntaxNode
             Return DirectCast(binaryExpressionSyntax, BinaryExpressionSyntax).Right
         End Function
-
-        Protected Overrides Function ContainsEmptyStringLiteral(node As SyntaxNode) As Boolean
-            Return TypeOf node Is LiteralExpressionSyntax AndAlso DirectCast(node, LiteralExpressionSyntax).Token.ValueText.Length = 0
-        End Function
     End Class
 End Namespace
