@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             if (!options.SaveFormattedFiles)
             {
-                await LogDiagnosticsAsync(solution, formattableDocuments, options, logger, cancellationToken);
+                await LogDiagnosticsAsync(solution, formattableDocuments, options, logger, formattedFiles, cancellationToken);
             }
             else
             {
@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             return solution;
         }
 
-        private async Task LogDiagnosticsAsync(Solution solution, ImmutableArray<DocumentId> formattableDocuments, FormatOptions options, ILogger logger, CancellationToken cancellationToken)
+        private async Task LogDiagnosticsAsync(Solution solution, ImmutableArray<DocumentId> formattableDocuments, FormatOptions options, ILogger logger, List<FormattedFile> formattedFiles, CancellationToken cancellationToken)
         {
             var pairs = _finder.GetAnalyzersAndFixers();
             var paths = formattableDocuments.Select(id => solution.GetDocument(id)?.FilePath)
@@ -66,14 +66,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var result = new CodeAnalysisResult();
             await solution.Projects.ForEachAsync(async (project, token) =>
             {
-                await _runner.RunCodeAnalysisAsync(result, analyzers, project, paths, logger, token);
-            }, cancellationToken);
+                await _runner.RunCodeAnalysisAsync(result, analyzers, project, paths, logger, token).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
 
-            LogDiagnosticLocations(result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger);
+            LogDiagnosticLocations(result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger, formattedFiles);
 
             return;
 
-            static void LogDiagnosticLocations(IEnumerable<Diagnostic> diagnostics, string workspacePath, bool changesAreErrors, ILogger logger)
+            static void LogDiagnosticLocations(IEnumerable<Diagnostic> diagnostics, string workspacePath, bool changesAreErrors, ILogger logger, List<FormattedFile> formattedFiles)
             {
                 var workspaceFolder = Path.GetDirectoryName(workspacePath);
 
@@ -111,15 +111,15 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 var result = new CodeAnalysisResult();
                 await solution.Projects.ForEachAsync(async (project, token) =>
                 {
-                    await _runner.RunCodeAnalysisAsync(result, analyzer, project, paths, logger, token);
-                }, cancellationToken);
+                    await _runner.RunCodeAnalysisAsync(result, analyzer, project, paths, logger, token).ConfigureAwait(false);
+                }, cancellationToken).ConfigureAwait(false);
 
                 var hasDiagnostics = result.Diagnostics.Any(kvp => kvp.Value.Count > 0);
                 if (hasDiagnostics && codefix is object)
                 {
                     logger.LogTrace($"Applying fixes for {codefix.GetType().Name}");
-                    solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken);
-                    var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken);
+                    solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
+                    var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
                     if (changedSolution.GetChanges(solution).Any())
                     {
                         solution = changedSolution;

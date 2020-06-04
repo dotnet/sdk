@@ -18,42 +18,47 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         public ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> GetAnalyzersAndFixers()
         {
-            var analyzers = FindAllAnalyzers();
-
-            // TODO: Match CodeFixes to the analyzers that produce the diagnostic ids they fix.
-            return analyzers.Select(analyzer => (analyzer, (CodeFixProvider?)null)).ToImmutableArray();
-        }
-
-        private ImmutableArray<DiagnosticAnalyzer> FindAllAnalyzers()
-        {
-            var featuresCSharpReference = new AnalyzerFileReference(_featuresCSharpPath, AssemblyLoader.Instance);
-            var csharpAnalyzers = featuresCSharpReference.GetAnalyzers(LanguageNames.CSharp);
-
-            var featuresVisualBasicReference = new AnalyzerFileReference(_featuresVisualBasicPath, AssemblyLoader.Instance);
-            var visualBasicAnalyzers = featuresVisualBasicReference.GetAnalyzers(LanguageNames.VisualBasic);
-
-            var allAnalyzers = csharpAnalyzers.Concat(visualBasicAnalyzers).ToImmutableArray();
-            return allAnalyzers;
-        }
-
-        private ImmutableArray<CodeFixProvider> FindAllCodeFixesAsync()
-        {
-            // TODO: Discover CodeFixes
-            return ImmutableArray<CodeFixProvider>.Empty;
-        }
-
-        internal class AssemblyLoader : IAnalyzerAssemblyLoader
-        {
-            public static AssemblyLoader Instance = new AssemblyLoader();
-
-            public void AddDependencyLocation(string fullPath)
+            var assemblies = new[]
             {
+                _featuresCSharpPath,
+                _featuresVisualBasicPath
+            }.Select(path => Assembly.LoadFile(path));
+
+            // This is borrowed from omnisharp.
+            // see https://github.com/OmniSharp/omnisharp-roslyn/blob/62b3b52d01251fdc0564a600010936e677f24a2e/src/OmniSharp.Roslyn/Services/AbstractCodeActionProvider.cs#L26-L49
+            var types = assemblies
+                .SelectMany(assembly => assembly.GetTypes()
+                .Where(type => !type.GetTypeInfo().IsInterface &&
+                            !type.GetTypeInfo().IsAbstract &&
+                            !type.GetTypeInfo().ContainsGenericParameters));
+
+            var codeFixProviders = types
+                .Where(t => typeof(CodeFixProvider).IsAssignableFrom(t))
+                .Select(type => type.TryCreateInstance<CodeFixProvider>(out var instance) ? instance : null)
+                .OfType<CodeFixProvider>()
+                .ToImmutableArray();
+
+            var diagnosticAnalyzers = types
+                .Where(t => typeof(DiagnosticAnalyzer).IsAssignableFrom(t))
+                .Select(type => type.TryCreateInstance<DiagnosticAnalyzer>(out var instance) ? instance : null)
+                .OfType<DiagnosticAnalyzer>()
+                .ToImmutableArray();
+
+            var builder = ImmutableArray.CreateBuilder<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)>();
+            foreach (var diagnosticAnalyzer in diagnosticAnalyzers)
+            {
+                var diagnosticIds = diagnosticAnalyzer.SupportedDiagnostics.Select(diagnostic => diagnostic.Id).ToImmutableHashSet();
+                var codeFixProvider = codeFixProviders.FirstOrDefault(codeFixProvider => codeFixProvider.FixableDiagnosticIds.Any(id => diagnosticIds.Contains(id)));
+
+                if (codeFixProvider is null)
+                {
+                    continue;
+                }
+
+                builder.Add((diagnosticAnalyzer, codeFixProvider));
             }
 
-            public Assembly LoadFromPath(string fullPath)
-            {
-                return Assembly.LoadFrom(fullPath);
-            }
+            return builder.ToImmutableArray();
         }
     }
 }
