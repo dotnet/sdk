@@ -49,6 +49,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span, getInnerMostNodeForTie: true);
+
             if (node is object &&
                 context.Diagnostics[0].Properties.TryGetValue(UseCountProperlyAnalyzer.PropertyNameKey, out var propertyName) &&
                 propertyName is object &&
@@ -73,8 +74,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
             SyntaxNode invocationNode,
             [NotNullWhen(returnValue: true)] out SyntaxNode? memberAccessNode,
             [NotNullWhen(returnValue: true)] out SyntaxNode? nameNode);
-
-        protected abstract SyntaxNode TryGetInvocationNodeFromArgumentSyntax(SyntaxNode node);
 
         /// <summary>
         /// Implements the <see cref="CodeAction"/> for replacing the use of <see cref="System.Linq.Enumerable.Count{TSource}(System.Collections.Generic.IEnumerable{TSource})"/> 
