@@ -2126,14 +2126,25 @@ namespace N1
         {
         }
     }
+
+    class C9_10_lines
+    {
+
+        // Leading Comment1
+
+        // Leading Comment2
+        void M10_6_lines_blank_lines_between_leading_comments_are_counted()
+        {
+        }
+    }
 }
 
 
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 95, ExecutableLines: 0, MntIndex: 100, CycCxty: 9, DepthInherit: 1)
-    N1: (Lines: 95, ExecutableLines: 0, MntIndex: 100, CycCxty: 9, DepthInherit: 1)
+Assembly: (Lines: 106, ExecutableLines: 0, MntIndex: 100, CycCxty: 10, DepthInherit: 1)
+    N1: (Lines: 106, ExecutableLines: 0, MntIndex: 100, CycCxty: 10, DepthInherit: 1)
         C1_10_lines: (Lines: 10, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
             N1.C1_10_lines.M1_3_lines_has_leading_and_trailing_newlines(): (Lines: 3, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
         C2_13_lines: (Lines: 13, ExecutableLines: 0, MntIndex: 100, CycCxty: 2, DepthInherit: 1)
@@ -2151,6 +2162,8 @@ Assembly: (Lines: 95, ExecutableLines: 0, MntIndex: 100, CycCxty: 9, DepthInheri
             N1.C7_9_lines.M8_5_lines_has_doc_comment(): (Lines: 5, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
         C8_10_lines: (Lines: 10, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
             N1.C8_10_lines.M9_6_lines_has_leading_block_comment(): (Lines: 6, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
+        C9_10_lines: (Lines: 10, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+            N1.C9_10_lines.M10_6_lines_blank_lines_between_leading_comments_are_counted(): (Lines: 6, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
 ";
 
             VerifyCSharp(source, expectedMetricsText);
