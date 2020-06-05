@@ -31,7 +31,7 @@
 	- Review each of the failures in those repositories and determine the course of action for each. 
 - Document for review: severity, default, categorization, numbering, titles, messages, and descriptions.
 - Document for review: matching and non-matching scenarios, including any discovered nuance. 
-- Create the appropriate documentation for [docs.microsoft.com](https://github.com/MicrosoftDocs/visualstudio-docs-pr/tree/master/docs/code-quality) within **ONE WEEK** [instructions on OneNote](https://microsoft.sharepoint.com/teams/netfx/corefx/_layouts/15/Doc.aspx?sourcedoc={0cfbc196-0645-4781-84c6-5dffabd76bee}&action=edit&wd=target%28Engineering.one%7Cab467035-bb64-4353-b933-97f5877d508b%2FAdding%20documentation%20for%20new%20CA%20rules%7C9e44fc32-5cd8-4f7f-bbf8-3600653ca9b9%2F%29&wdorigin=703). External contributors should create an issue at https://github.com/microsoftDocs/visualstudio-docs/issues with a subject `Add documentation for analyzer rule [Your Rule ID]`. 
+- Create the appropriate documentation for [docs.microsoft.com](https://github.com/MicrosoftDocs/visualstudio-docs-pr/tree/master/docs/code-quality) within **ONE WEEK**, instructions available on OneNote. External contributors should create an issue at https://github.com/microsoftDocs/visualstudio-docs/issues with a subject `Add documentation for analyzer rule [Your Rule ID]`. 
 - PR merged into `dotnet/roslyn-analyzers`. 
 - Failures in `dotnet/runtime` addressed. 
 
