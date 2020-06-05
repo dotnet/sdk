@@ -2065,14 +2065,75 @@ namespace N1
     class C3_3_lines
     {   void M4_1_lines_has_no_newlines() { }
     }
+
+    class C4_14_lines
+    {
+
+
+        // Leading Comment
+
+        void M5_5_lines_has_leading_trailing_newlines_and_comments()
+        {
+        }
+
+        // Trailing Comment does not count for method above
+
+
+    }
+
+    class C5_12_lines
+    {
+
+
+        // Leading Comment1
+        // Leading Comment2
+        void M6_5_lines_has_leading_comments_trailing_newlines()
+        {
+        }
+
+
+    }
+
+    class C6_11_lines
+    {
+
+
+        void M7_3_lines_has_trailing_comments_leading_newlines()
+        {
+        }
+
+        // Trailing Comment1 does not count for method above
+        // Trailing Comment2 does not count for method above
+    }
+
+    class C7_9_lines
+    {
+
+        /// <summary>
+        /// </summary>
+        void M8_5_lines_has_doc_comment()
+        {
+        }
+    }
+
+    class C8_10_lines
+    {
+
+        /*
+            Block comment
+        */
+        void M9_6_lines_has_leading_block_comment()
+        {
+        }
+    }
 }
 
 
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 34, ExecutableLines: 0, MntIndex: 100, CycCxty: 4, DepthInherit: 1)
-    N1: (Lines: 34, ExecutableLines: 0, MntIndex: 100, CycCxty: 4, DepthInherit: 1)
+Assembly: (Lines: 95, ExecutableLines: 0, MntIndex: 100, CycCxty: 9, DepthInherit: 1)
+    N1: (Lines: 95, ExecutableLines: 0, MntIndex: 100, CycCxty: 9, DepthInherit: 1)
         C1_10_lines: (Lines: 10, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
             N1.C1_10_lines.M1_3_lines_has_leading_and_trailing_newlines(): (Lines: 3, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
         C2_13_lines: (Lines: 13, ExecutableLines: 0, MntIndex: 100, CycCxty: 2, DepthInherit: 1)
@@ -2080,6 +2141,16 @@ Assembly: (Lines: 34, ExecutableLines: 0, MntIndex: 100, CycCxty: 4, DepthInheri
             N1.C2_13_lines.M3_3_lines_has_trailing_newlines(): (Lines: 3, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
         C3_3_lines: (Lines: 3, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
             N1.C3_3_lines.M4_1_lines_has_no_newlines(): (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
+        C4_14_lines: (Lines: 14, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+            N1.C4_14_lines.M5_5_lines_has_leading_trailing_newlines_and_comments(): (Lines: 5, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
+        C5_12_lines: (Lines: 12, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+            N1.C5_12_lines.M6_5_lines_has_leading_comments_trailing_newlines(): (Lines: 5, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
+        C6_11_lines: (Lines: 11, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+            N1.C6_11_lines.M7_3_lines_has_trailing_comments_leading_newlines(): (Lines: 3, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
+        C7_9_lines: (Lines: 9, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+            N1.C7_9_lines.M8_5_lines_has_doc_comment(): (Lines: 5, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
+        C8_10_lines: (Lines: 10, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
+            N1.C8_10_lines.M9_6_lines_has_leading_block_comment(): (Lines: 6, ExecutableLines: 0, MntIndex: 100, CycCxty: 1)
 ";
 
             VerifyCSharp(source, expectedMetricsText);
