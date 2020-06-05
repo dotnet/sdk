@@ -57,7 +57,6 @@
       https://github.com/microsoft/MSBuildLocator/issues/88
     -->
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
-    <PackageReference Include="NonBlocking" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -42,8 +42,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 fixAllDiagnosticProvider: new DiagnosticProvider(result),
                 cancellationToken: cancellationToken);
 
-            var action = await fixAllProvider.GetFixAsync(fixAllContext);
-            var operations = await (action?.GetOperationsAsync(cancellationToken) ?? Task.FromResult(ImmutableArray<CodeActionOperation>.Empty));
+            var action = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
+            var operations = action is object
+                ? await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false)
+                : ImmutableArray<CodeActionOperation>.Empty;
             var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();
             return applyChangesOperation?.ChangedSolution ?? solution;
         }

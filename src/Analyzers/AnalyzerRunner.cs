@@ -29,17 +29,21 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var compilation = await project.GetCompilationAsync(cancellationToken);
+            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
             if (compilation is null)
             {
                 return;
             }
 
-            var analyzerCompilation = compilation.WithAnalyzers(
-                analyzers,
-                options: project.AnalyzerOptions,
-                cancellationToken);
-            var diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken);
+            var analyzerOptions = new CompilationWithAnalyzersOptions(
+                project.AnalyzerOptions,
+                onAnalyzerException: null,
+                concurrentAnalysis: true,
+                logAnalyzerExecutionTime: false,
+                reportSuppressedDiagnostics: false);
+            var analyzerCompilation = compilation.WithAnalyzers(analyzers, analyzerOptions);
+            var diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
+
             // filter diagnostics
             foreach (var diagnostic in diagnostics)
             {
