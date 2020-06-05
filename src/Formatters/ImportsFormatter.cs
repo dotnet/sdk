@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         {
             try
             {
-                var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken);
+                var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken).ConfigureAwait(false);
 
                 var isSameVersion = await IsSameDocumentAndVersionAsync(document, organizedDocument, cancellationToken).ConfigureAwait(false);
                 if (isSameVersion)
@@ -42,8 +42,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                 // Because the Formatter does not abide the `end_of_line` option we have to fix up the ends of the organized lines.
                 // See https://github.com/dotnet/roslyn/issues/44136
-                var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken);
-                return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+                var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken).ConfigureAwait(false);
+                return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken).ConfigureAwait(false);
             }
             catch (InsufficientExecutionStackException)
             {
@@ -66,8 +66,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 return false;
             }
 
-            var aVersion = await a.GetTextVersionAsync(cancellationToken);
-            var bVersion = await b.GetTextVersionAsync(cancellationToken);
+            var aVersion = await a.GetTextVersionAsync(cancellationToken).ConfigureAwait(false);
+            var bVersion = await b.GetTextVersionAsync(cancellationToken).ConfigureAwait(false);
 
             return aVersion == bVersion;
         }

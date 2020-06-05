@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     Argument = new Argument<string?>(() => null),
                     IsHidden = true
                 },
-                new Option(new[] { "--fix-style", "-fs" }, Resources.Run_code_style_analyzer_and_apply_fixes)
+                new Option(new[] { "--fix-style" }, Resources.Run_code_style_analyzer_and_apply_fixes)
                 {
                     Argument = new Argument<bool>()
                 },
