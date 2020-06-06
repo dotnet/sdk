@@ -18,6 +18,94 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public static partial class UsePropertyInsteadOfCountMethodWhenAvailableTests
     {
         [Fact]
+        public static Task CSharp_AsMethodArgument_Tests()
+            => new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources=
+                    {
+                $@"using System;
+using System.Linq;
+public static class C
+{{
+    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+    public static void M()
+    {{
+        var a = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}});
+        var b = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:(GetData()).Count()|}});
+        var c = 1.Equals(({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}));
+    }}
+}}
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources=
+                    {
+                $@"using System;
+using System.Linq;
+public static class C
+{{
+    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+    public static void M()
+    {{
+        var a = 1.Equals(GetData().Length);
+        var b = 1.Equals((GetData()).Length);
+        var c = 1.Equals((GetData().Length));
+    }}
+}}
+" ,
+                    },
+                },
+            }.RunAsync();
+
+        [Fact]
+        public static Task Basic_AsMethodArgument_Tests()
+            => new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources=
+                    {
+                $@"Imports System
+Imports System.Linq
+Public Class Program
+    Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
+        Return Nothing
+    End Function
+    Public Sub M()
+        Dim a = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}})
+        Dim b = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:(GetData()).Count()|}})
+        Dim c = 1.Equals(({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}))
+    End Sub
+End Class
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources=
+                    {
+                $@"Imports System
+Imports System.Linq
+Public Class Program
+    Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
+        Return Nothing
+    End Function
+    Public Sub M()
+        Dim a = 1.Equals(GetData().Length)
+        Dim b = 1.Equals((GetData()).Length)
+        Dim c = 1.Equals((GetData().Length))
+    End Sub
+End Class
+" ,
+                    },
+                },
+            }.RunAsync();
+
+        [Fact]
         public static Task CSharp_ImmutableArray_Tests()
             => new VerifyCS.Test
             {
