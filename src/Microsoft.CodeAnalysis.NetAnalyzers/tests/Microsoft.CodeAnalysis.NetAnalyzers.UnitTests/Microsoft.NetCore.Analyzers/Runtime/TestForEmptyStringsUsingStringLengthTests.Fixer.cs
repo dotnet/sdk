@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForEmptyStringsUsingStringLengthAnalyzer,
@@ -14,6 +15,132 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class TestForEmptyStringsUsingStringLengthFixerTests
     {
         private const int c_StringLengthCodeActionIndex = 1;
+
+        [Fact, WorkItem(3686, "https://github.com/dotnet/roslyn-analyzers/pull/3686")]
+        public async Task CA1820_FixTestEmptyStringsUsingIsNullOrEmpty_WhenStringIsLiteral()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return [|s == """"|];
+    }
+
+    public bool CompareEmptyIsLeft(string s)
+    {
+        return [|"""" == s|];
+    }
+}
+", @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return string.IsNullOrEmpty(s);
+    }
+
+    public bool CompareEmptyIsLeft(string s)
+    {
+        return string.IsNullOrEmpty(s);
+    }
+}
+");
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return [|s = """"|]
+    End Function
+
+    Public Function CompareEmptyIsLeft(s As String) As Boolean
+        Return [|"""" = s|]
+    End Function
+End Class
+", @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return String.IsNullOrEmpty(s)
+    End Function
+
+    Public Function CompareEmptyIsLeft(s As String) As Boolean
+        Return String.IsNullOrEmpty(s)
+    End Function
+End Class
+");
+        }
+
+        [Fact]
+        public async Task CA1820_FixTestEmptyStringsUsingStringLength_WhenStringIsLiteral()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return [|s == """"|];
+    }
+}
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return s.Length == 0;
+    }
+}
+",
+                    },
+                },
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return [|s = """"|]
+    End Function
+End Class
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return s.Length = 0
+    End Function
+End Class
+",
+                    },
+                },
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+            }.RunAsync();
+        }
+
         [Fact]
         public async Task CA1820_FixTestEmptyStringsUsingIsNullOrEmpty()
         {
