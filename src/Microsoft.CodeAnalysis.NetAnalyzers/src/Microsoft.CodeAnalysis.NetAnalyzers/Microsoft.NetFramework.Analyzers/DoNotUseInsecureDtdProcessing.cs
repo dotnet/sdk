@@ -352,7 +352,7 @@ namespace Microsoft.NetFramework.Analyzers
 
                 xmlDocumentEnvironment.XmlDocumentDefinition = objCreation.Syntax;
                 SyntaxNode node = objCreation.Syntax;
-                bool isXmlDocumentSecureResolver = xmlDocumentEnvironment.IsSecureResolver;
+                bool isXmlDocumentSecureResolver = _isFrameworkSecure;
 
                 // if XmlSecureResolver declared as XmlResolver by constructor
                 // or if IsSecureResolver set to true by _isFrameworkSecure == true; version > 4.5.2

@@ -645,9 +645,11 @@ End Namespace"
         }
 
         [Fact]
-        public async Task XmlDocumentSetResolversInDifferentBlock()
+        public async Task XmlDocumentSetResolversInDifferentBlockPre452ShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 using System.Xml;
 
 namespace TestNamespace
@@ -657,7 +659,7 @@ namespace TestNamespace
         private static void TestMethod()
         {
             {
-                XmlDocument doc = new XmlDocument();
+                XmlDocument doc = new XmlDocument(); //warn
             }
             {
                 XmlDocument doc = new XmlDocument();
@@ -687,6 +689,52 @@ Namespace TestNamespace
 End Namespace",
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 28)
             );
+        }
+
+        [Fact]
+        public async Task XmlDocumentSetResolversInDifferentBlockPost452ShouldGenerateDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
+using System.Xml;
+
+namespace TestNamespace
+{
+    class TestClass
+    {
+        private static void TestMethod()
+        {
+            {
+                XmlDocument doc = new XmlDocument(); //ok in 4.5.2
+            }
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.XmlResolver = null;
+            }
+        }
+    }
+}"
+            );
+
+//            await VerifyVB.VerifyAnalyzerAsync(@"
+//Imports System.Xml
+
+//Namespace TestNamespace
+//    Class TestClass
+//        Private Shared Sub TestMethod()
+//            If True Then
+//                Dim doc As New XmlDocument()
+//            End If
+//            If True Then
+//                Dim doc As New XmlDocument()
+//                doc.XmlResolver = Nothing
+//            End If
+//        End Sub
+//    End Class
+//End Namespace",
+//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 28)
+//            );
         }
 
         [Fact]
