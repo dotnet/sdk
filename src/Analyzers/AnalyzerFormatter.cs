@@ -45,11 +45,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             var analyzersAndFixers = _finder.GetAnalyzersAndFixers();
             var formattablePaths = formattableDocuments.Select(id => solution.GetDocument(id)?.FilePath)
-                .OfType<string>().ToImmutableArray();
+                .OfType<string>().ToImmutableHashSet();
 
             logger.LogTrace("Determining diagnostics.");
 
-            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, analyzersAndFixers, formattablePaths, options, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+            var allAnalyzers = analyzersAndFixers.Select(pair => pair.Analyzer).ToImmutableArray();
+            var projectAnalyzers = await FilterBySeverityAsync(solution.Projects, allAnalyzers, formattablePaths, DiagnosticSeverity.Warning, cancellationToken).ConfigureAwait(false);
+
+            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, options, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
 
             var projectDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, projectDiagnosticsMS);
@@ -67,22 +70,53 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             logger.LogTrace("Analysis complete in {0}ms.", analysisStopwatch.ElapsedMilliseconds);
 
             return solution;
+
+            static async Task<ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>>> FilterBySeverityAsync(
+                IEnumerable<Project> projects,
+                ImmutableArray<DiagnosticAnalyzer> allAnalyzers,
+                ImmutableHashSet<string> formattablePaths,
+                DiagnosticSeverity minimumSeverity,
+                CancellationToken cancellationToken)
+            {
+                var projectAnalyzers = ImmutableDictionary.CreateBuilder<Project, ImmutableArray<DiagnosticAnalyzer>>();
+                foreach (var project in projects)
+                {
+                    var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
+
+                    foreach (var analyzer in allAnalyzers)
+                    {
+                        var severity = await analyzer.GetSeverityAsync(project, formattablePaths, cancellationToken).ConfigureAwait(false);
+                        if (severity >= minimumSeverity)
+                        {
+                            analyzers.Add(analyzer);
+                        }
+                    }
+
+                    projectAnalyzers.Add(project, analyzers.ToImmutableArray());
+                }
+
+                return projectAnalyzers.ToImmutableDictionary();
+            }
         }
 
         private async Task<ImmutableDictionary<ProjectId, ImmutableHashSet<string>>> GetProjectDiagnosticsAsync(
             Solution solution,
-            ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> analyzersAndFixers,
-            ImmutableArray<string> formattablePaths,
+            ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>> projectAnalyzers,
+            ImmutableHashSet<string> formattablePaths,
             FormatOptions options,
             ILogger logger,
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
         {
-            var analyzers = analyzersAndFixers.Select(pair => pair.Analyzer).ToImmutableArray();
-
             var result = new CodeAnalysisResult();
             foreach (var project in solution.Projects)
             {
+                var analyzers = projectAnalyzers[project];
+                if (analyzers.Length == 0)
+                {
+                    continue;
+                }
+
                 await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, logger, cancellationToken).ConfigureAwait(false);
             }
 
@@ -120,7 +154,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             Solution solution,
             ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> analyzersAndFixers,
             ImmutableDictionary<ProjectId, ImmutableHashSet<string>> projectDiagnostics,
-            ImmutableArray<string> formattablePaths,
+            ImmutableHashSet<string> formattablePaths,
             ILogger logger,
             CancellationToken cancellationToken)
         {

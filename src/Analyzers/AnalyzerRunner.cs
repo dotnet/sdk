@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             CodeAnalysisResult result,
             DiagnosticAnalyzer analyzers,
             Project project,
-            ImmutableArray<string> formattableDocumentPaths,
+            ImmutableHashSet<string> formattableDocumentPaths,
             ILogger logger,
             CancellationToken cancellationToken)
             => RunCodeAnalysisAsync(result, ImmutableArray.Create(analyzers), project, formattableDocumentPaths, logger, cancellationToken);
@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             CodeAnalysisResult result,
             ImmutableArray<DiagnosticAnalyzer> analyzers,
             Project project,
-            ImmutableArray<string> formattableDocumentPaths,
+            ImmutableHashSet<string> formattableDocumentPaths,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -50,7 +50,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 if (!diagnostic.IsSuppressed &&
                     diagnostic.Severity >= DiagnosticSeverity.Warning &&
                     diagnostic.Location.IsInSource &&
-                    formattableDocumentPaths.Contains(diagnostic.Location.SourceTree?.FilePath, StringComparer.OrdinalIgnoreCase))
+                    diagnostic.Location.SourceTree is object &&
+                    formattableDocumentPaths.Contains(diagnostic.Location.SourceTree.FilePath))
                 {
                     result.AddDiagnostic(project, diagnostic);
                 }
