@@ -122,9 +122,14 @@ namespace Microsoft.NetFramework.Analyzers
 
                 internal XmlDocumentEnvironment(bool isTargetFrameworkSecure)
                 {
+                    IsXmlResolverSet = false;
                     if (isTargetFrameworkSecure)
                     {
                         IsSecureResolver = true;
+                    }
+                    else
+                    {
+                        IsSecureResolver = false;
                     }
                 }
             }
@@ -199,11 +204,7 @@ namespace Microsoft.NetFramework.Analyzers
                     // if Version > 4.5.2 => XmlDocument = secure!!
                     // Before 4.5.2, insecure if XmlResolver set as null for XmlUrlResolver
                     // After 4.5.2, insecure only if XmlResolver set as XmlUrlResolver
-                    if ((!_isFrameworkSecure &&
-                            (!(env.IsXmlResolverSet | env.IsSecureResolver))) ||
-                        (_isFrameworkSecure &&
-                            !env.IsXmlResolverSet && !env.IsSecureResolver)
-                        )
+                    if (!(env.IsXmlResolverSet | env.IsSecureResolver))
                     {
                         context.ReportDiagnostic(env.XmlDocumentDefinition.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
                     }
@@ -346,20 +347,18 @@ namespace Microsoft.NetFramework.Analyzers
                 // create new environment representation if does not alreay exist
                 if (variable == null || !_xmlDocumentEnvironments.TryGetValue(variable, out var xmlDocumentEnvironment))
                 {
-                    xmlDocumentEnvironment = new XmlDocumentEnvironment(_isFrameworkSecure)
-                    {
-                        IsXmlResolverSet = false
-                    };
+                    xmlDocumentEnvironment = new XmlDocumentEnvironment(_isFrameworkSecure);
                 }
 
                 xmlDocumentEnvironment.XmlDocumentDefinition = objCreation.Syntax;
                 SyntaxNode node = objCreation.Syntax;
-                bool isXmlDocumentSecureResolver = false;
+                bool isXmlDocumentSecureResolver = xmlDocumentEnvironment.IsSecureResolver;
 
                 // if XmlSecureResolver declared as XmlResolver by constructor
                 // or if IsSecureResolver set to true by _isFrameworkSecure == true; version > 4.5.2
-                if ((!Equals(objCreation.Constructor.ContainingType, _xmlTypes.XmlDocument)) ||
-                    (xmlDocumentEnvironment.IsSecureResolver == true))
+
+
+                if (!Equals(objCreation.Constructor.ContainingType, _xmlTypes.XmlDocument))
                 {
                     isXmlDocumentSecureResolver = true;
                 }
