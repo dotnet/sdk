@@ -509,46 +509,48 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(15, 38)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System
-//Imports System.IO
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net451.Default,
+    @"
+Imports System
+Imports System.IO
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Public Shared Function TestMethod(inputRule As String) As String
-//            Dim outputRule As String
-//            Try
-//                Dim xmlDoc As New XmlDocument()
-//                ' CA3075 for not setting secure Xml resolver
-//                Dim stringReader As New StringReader(inputRule)
-//                Dim textReader As New XmlTextReader(stringReader) With { _
-//                    .DtdProcessing = DtdProcessing.Ignore, _
-//                    .XmlResolver = Nothing _
-//                }
-//                Dim settings As New XmlReaderSettings() With { _
-//                    .ConformanceLevel = ConformanceLevel.Auto, _
-//                    .IgnoreComments = True, _
-//                    .DtdProcessing = DtdProcessing.Ignore, _
-//                    .XmlResolver = Nothing _
-//                }
-//                Dim reader As XmlReader = XmlReader.Create(textReader, settings)
-//                xmlDoc.Load(reader)
-//                Dim enabledAttribute As XmlAttribute = xmlDoc.CreateAttribute(""enabled"")
-//                Dim ruleAttrColl As XmlAttributeCollection = xmlDoc.DocumentElement.Attributes
-//                Dim nameAttribute As XmlAttribute = DirectCast(ruleAttrColl.GetNamedItem(""name""), XmlAttribute)
-//                ruleAttrColl.Remove(ruleAttrColl(""enabled""))
-//                ruleAttrColl.InsertAfter(enabledAttribute, nameAttribute)
-//                outputRule = xmlDoc.OuterXml
-//            Catch e As XmlException
-//                Throw New Exception(""Compliance policy parsing error"", e)
-//            End Try
-//            Return outputRule
-//        End Function
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(11, 31)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Public Shared Function TestMethod(inputRule As String) As String
+            Dim outputRule As String
+            Try
+                Dim xmlDoc As New XmlDocument()
+                ' CA3075 for not setting secure Xml resolver
+                Dim stringReader As New StringReader(inputRule)
+                Dim textReader As New XmlTextReader(stringReader) With { _
+                    .DtdProcessing = DtdProcessing.Ignore, _
+                    .XmlResolver = Nothing _
+                }
+                Dim settings As New XmlReaderSettings() With { _
+                    .ConformanceLevel = ConformanceLevel.Auto, _
+                    .IgnoreComments = True, _
+                    .DtdProcessing = DtdProcessing.Ignore, _
+                    .XmlResolver = Nothing _
+                }
+                Dim reader As XmlReader = XmlReader.Create(textReader, settings)
+                xmlDoc.Load(reader)
+                Dim enabledAttribute As XmlAttribute = xmlDoc.CreateAttribute(""enabled"")
+                Dim ruleAttrColl As XmlAttributeCollection = xmlDoc.DocumentElement.Attributes
+                Dim nameAttribute As XmlAttribute = DirectCast(ruleAttrColl.GetNamedItem(""name""), XmlAttribute)
+                ruleAttrColl.Remove(ruleAttrColl(""enabled""))
+                ruleAttrColl.InsertAfter(enabledAttribute, nameAttribute)
+                outputRule = xmlDoc.OuterXml
+            Catch e As XmlException
+                Throw New Exception(""Compliance policy parsing error"", e)
+            End Try
+            Return outputRule
+        End Function
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(11, 31)
+            );
         }
 
         [Fact]
@@ -604,46 +606,47 @@ namespace TestNamespace
 "
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System
-//Imports System.IO
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
+Imports System
+Imports System.IO
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Public Shared Function TestMethod(inputRule As String) As String
-//            Dim outputRule As String
-//            Try
-//                Dim xmlDoc As New XmlDocument()
-//                ' CA3075 for not setting secure Xml resolver
-//                Dim stringReader As New StringReader(inputRule)
-//                Dim textReader As New XmlTextReader(stringReader) With { _
-//                    .DtdProcessing = DtdProcessing.Ignore, _
-//                    .XmlResolver = Nothing _
-//                }
-//                Dim settings As New XmlReaderSettings() With { _
-//                    .ConformanceLevel = ConformanceLevel.Auto, _
-//                    .IgnoreComments = True, _
-//                    .DtdProcessing = DtdProcessing.Ignore, _
-//                    .XmlResolver = Nothing _
-//                }
-//                Dim reader As XmlReader = XmlReader.Create(textReader, settings)
-//                xmlDoc.Load(reader)
-//                Dim enabledAttribute As XmlAttribute = xmlDoc.CreateAttribute(""enabled"")
-//                Dim ruleAttrColl As XmlAttributeCollection = xmlDoc.DocumentElement.Attributes
-//                Dim nameAttribute As XmlAttribute = DirectCast(ruleAttrColl.GetNamedItem(""name""), XmlAttribute)
-//                ruleAttrColl.Remove(ruleAttrColl(""enabled""))
-//                ruleAttrColl.InsertAfter(enabledAttribute, nameAttribute)
-//                outputRule = xmlDoc.OuterXml
-//            Catch e As XmlException
-//                Throw New Exception(""Compliance policy parsing error"", e)
-//            End Try
-//            Return outputRule
-//        End Function
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(11, 31)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Public Shared Function TestMethod(inputRule As String) As String
+            Dim outputRule As String
+            Try
+                Dim xmlDoc As New XmlDocument()
+                ' ok
+                Dim stringReader As New StringReader(inputRule)
+                Dim textReader As New XmlTextReader(stringReader) With { _
+                    .DtdProcessing = DtdProcessing.Ignore, _
+                    .XmlResolver = Nothing _
+                }
+                Dim settings As New XmlReaderSettings() With { _
+                    .ConformanceLevel = ConformanceLevel.Auto, _
+                    .IgnoreComments = True, _
+                    .DtdProcessing = DtdProcessing.Ignore, _
+                    .XmlResolver = Nothing _
+                }
+                Dim reader As XmlReader = XmlReader.Create(textReader, settings)
+                xmlDoc.Load(reader)
+                Dim enabledAttribute As XmlAttribute = xmlDoc.CreateAttribute(""enabled"")
+                Dim ruleAttrColl As XmlAttributeCollection = xmlDoc.DocumentElement.Attributes
+                Dim nameAttribute As XmlAttribute = DirectCast(ruleAttrColl.GetNamedItem(""name""), XmlAttribute)
+                ruleAttrColl.Remove(ruleAttrColl(""enabled""))
+                ruleAttrColl.InsertAfter(enabledAttribute, nameAttribute)
+                outputRule = xmlDoc.OuterXml
+            Catch e As XmlException
+                Throw New Exception(""Compliance policy parsing error"", e)
+            End Try
+            Return outputRule
+        End Function
+    End Class
+End Namespace"
+            );
         }
     }
 }

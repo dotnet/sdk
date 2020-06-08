@@ -169,16 +169,18 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(8, 34)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net451.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Public doc As XmlDocument = New XmlDocument()
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Public doc As XmlDocument = New XmlDocument()
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37)
+            );
         }
 
         [Fact]
@@ -198,16 +200,17 @@ namespace TestNamespace
 }"
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Public doc As XmlDocument = New XmlDocument()
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Public doc As XmlDocument = New XmlDocument()
+    End Class
+End Namespace"
+            );
         }
 
         [Fact]
@@ -395,18 +398,20 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(10, 31)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net451.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Private Shared Sub TestMethod()
-//            Dim doc As New XmlDocument()
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(7, 24)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Private Shared Sub TestMethod()
+            Dim doc As New XmlDocument()
+        End Sub
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(7, 24)
+            );
         }
 
         [Fact]
@@ -429,18 +434,19 @@ namespace TestNamespace
 }"
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Private Shared Sub TestMethod()
-//            Dim doc As New XmlDocument()
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(7, 24)
-            //);
+Namespace TestNamespace
+    Class TestClass
+        Private Shared Sub TestMethod()
+            Dim doc As New XmlDocument()
+        End Sub
+    End Class
+End Namespace"
+            );
         }
 
         [Fact]
@@ -586,22 +592,24 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(14, 19)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net451.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Private Shared Sub TestMethod()
-//            Dim doc As New XmlDocument() With { _
-//                .XmlResolver = Nothing _
-//            }
-//            doc = New XmlDocument()
-//            ' warn
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(10, 19)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Private Shared Sub TestMethod()
+            Dim doc As New XmlDocument() With { _
+                .XmlResolver = Nothing _
+            }
+            doc = New XmlDocument()
+            ' warn
+        End Sub
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(10, 19)
+            );
         }
 
         [Fact]
@@ -628,7 +636,9 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -671,24 +681,26 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(11, 35)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Private Shared Sub TestMethod()
-//            If True Then
-//                Dim doc As New XmlDocument()
-//            End If
-//            If True Then
-//                Dim doc As New XmlDocument()
-//                doc.XmlResolver = Nothing
-//            End If
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 28)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Private Shared Sub TestMethod()
+            If True Then
+                Dim doc As New XmlDocument()
+            End If
+            If True Then
+                Dim doc As New XmlDocument()
+                doc.XmlResolver = Nothing
+            End If
+        End Sub
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 28)
+            );
         }
 
         [Fact]
@@ -717,24 +729,25 @@ namespace TestNamespace
 }"
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Private Shared Sub TestMethod()
-//            If True Then
-//                Dim doc As New XmlDocument()
-//            End If
-//            If True Then
-//                Dim doc As New XmlDocument()
-//                doc.XmlResolver = Nothing
-//            End If
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 28)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Private Shared Sub TestMethod()
+            If True Then
+                Dim doc As New XmlDocument()
+            End If
+            If True Then
+                Dim doc As New XmlDocument()
+                doc.XmlResolver = Nothing
+            End If
+        End Sub
+    End Class
+End Namespace"
+            );
         }
 
         [Fact]
@@ -761,21 +774,23 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(12, 13)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net451.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Public doc As XmlDocument = New XmlDocument()
-//        ' warn
-//        Public Sub Method1()
-//            Me.doc.XmlResolver = New XmlUrlResolver()
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37),
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(9, 13)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Public doc As XmlDocument = New XmlDocument()
+        ' warn
+        Public Sub Method1()
+            Me.doc.XmlResolver = New XmlUrlResolver()
+        End Sub
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37),
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(9, 13)
+            );
         }
 
         [Fact]
@@ -801,21 +816,23 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(12, 13)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Public doc As XmlDocument = New XmlDocument()
-//        ' warn
-//        Public Sub Method1()
-//            Me.doc.XmlResolver = New XmlUrlResolver()
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37),
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(9, 13)
-//            );
+Namespace TestNamespace
+    Class TestClass
+        Public doc As XmlDocument = New XmlDocument()
+        ' ok
+        Public Sub Method1()
+            Me.doc.XmlResolver = New XmlUrlResolver()
+        ' warn
+        End Sub
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(9, 13)
+            );
         }
 
         [Fact]
@@ -847,26 +864,28 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(17, 13)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net451.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Public doc As XmlDocument = New XmlDocument()
-//        ' warn
-//        Public Sub Method1()
-//            Me.doc.XmlResolver = Nothing
-//        End Sub
+Namespace TestNamespace
+    Class TestClass
+        Public doc As XmlDocument = New XmlDocument()
+        ' warn
+        Public Sub Method1()
+            Me.doc.XmlResolver = Nothing
+        End Sub
 
-//        Public Sub Method2()
-//            Me.doc.XmlResolver = New XmlUrlResolver()
-//            ' warn
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37),
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(13, 13)
-//            );
+        Public Sub Method2()
+            Me.doc.XmlResolver = New XmlUrlResolver()
+            ' warn
+        End Sub
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37),
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(13, 13)
+            );
         }
 
         [Fact]
@@ -898,24 +917,26 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(8, 34)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net451.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
-//        Public doc As XmlDocument = New XmlDocument()
+Namespace TestNamespace
+    Class TestClass
+        Public doc As XmlDocument = New XmlDocument()
 
-//        Public Sub Method1()
-//            Me.doc.XmlResolver = Nothing
-//        End Sub
+        Public Sub Method1()
+            Me.doc.XmlResolver = Nothing
+        End Sub
 
-//        Public Sub Method2(reader As XmlReader)
-//            Me.doc.Load(reader)
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37)
-//            );
+        Public Sub Method2(reader As XmlReader)
+            Me.doc.Load(reader)
+        End Sub
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37)
+            );
         }
 
         [Fact]
@@ -946,26 +967,27 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(17, 13)
             );
 
-            //            await VerifyVB.VerifyAnalyzerAsync(@"
-            //Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
+            Imports System.Xml
 
-            //Namespace TestNamespace
-            //    Class TestClass
-            //        Public doc As XmlDocument = New XmlDocument()
-            //        ' warn
-            //        Public Sub Method1()
-            //            Me.doc.XmlResolver = Nothing
-            //        End Sub
+            Namespace TestNamespace
+                Class TestClass
+                    Public doc As XmlDocument = New XmlDocument()
+                    ' ok
+                    Public Sub Method1()
+                        Me.doc.XmlResolver = Nothing
+                    End Sub
 
-            //        Public Sub Method2()
-            //            Me.doc.XmlResolver = New XmlUrlResolver()
-            //            ' warn
-            //        End Sub
-            //    End Class
-            //End Namespace",
-            //                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37),
-            //                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(13, 13)
-            //            );
+                    Public Sub Method2()
+                        Me.doc.XmlResolver = New XmlUrlResolver()
+                        ' warn
+                    End Sub
+                End Class
+            End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(13, 25)
+            );
         }
 
         [Fact]
@@ -995,7 +1017,9 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -1038,22 +1062,24 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(11, 21)
             );
 
-//            await VerifyVB.VerifyAnalyzerAsync(@"
-//Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net451.Default,
+    @"
+Imports System.Xml
 
-//Namespace TestNamespace
-//    Class TestClass
+Namespace TestNamespace
+    Class TestClass
 
-//        Public Sub Method1()
-//            Method2(New XmlDocument())
-//        End Sub
+        Public Sub Method1()
+            Method2(New XmlDocument())
+        End Sub
 
-//        Public Sub Method2(doc As XmlDocument)
-//        End Sub
-//    End Class
-//End Namespace",
-//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 21)
-//            );
+        Public Sub Method2(doc As XmlDocument)
+        End Sub
+    End Class
+End Namespace",
+                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 21)
+            );
         }
 
         [Fact]
@@ -1079,7 +1105,9 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+    ReferenceAssemblies.NetFramework.Net452.Default,
+    @"
 Imports System.Xml
 
 Namespace TestNamespace
