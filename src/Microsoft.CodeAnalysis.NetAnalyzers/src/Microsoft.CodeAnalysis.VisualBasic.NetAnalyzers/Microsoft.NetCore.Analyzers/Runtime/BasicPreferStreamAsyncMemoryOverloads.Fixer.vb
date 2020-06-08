@@ -10,7 +10,7 @@ Imports Microsoft.NetCore.Analyzers.Runtime
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
     <ExportCodeFixProvider(LanguageNames.VisualBasic)>
-    Public NotInheritable Class PreferStreamAsyncMemoryOverloadsVisualBasicFixer
+    Public NotInheritable Class BasicPreferStreamAsyncMemoryOverloadsFixer
 
         Inherits PreferStreamAsyncMemoryOverloadsFixer
 

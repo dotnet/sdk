@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferStreamAsyncMemoryOverloads,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.PreferStreamAsyncMemoryOverloadsCSharpFixer>;
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpPreferStreamAsyncMemoryOverloadsFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferStreamAsyncMemoryOverloads,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.PreferStreamAsyncMemoryOverloadsVisualBasicFixer>;
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicPreferStreamAsyncMemoryOverloadsFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
