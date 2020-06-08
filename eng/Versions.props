@@ -16,8 +16,8 @@
     Other Dependency versions
   -->
   <PropertyGroup>
-    <SystemCommandLineVersion>2.0.0-beta1.20104.2</SystemCommandLineVersion>
-    <SystemCommandLineRenderingVersion>0.3.0-alpha.20104.2</SystemCommandLineRenderingVersion>
+    <SystemCommandLineVersion>2.0.0-beta1.20303.1</SystemCommandLineVersion>
+    <SystemCommandLineRenderingVersion>0.3.0-alpha.20303.1</SystemCommandLineRenderingVersion>
     <MicrosoftBuildFrameworkVersion>$(MicrosoftBuildVersion)</MicrosoftBuildFrameworkVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.0.1-beta1.20114.4</MicrosoftCodeAnalysisAnalyzerTestingVersion>
