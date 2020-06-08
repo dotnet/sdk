@@ -205,7 +205,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--workspace", "workspace1", "--workspace", "workspace2" });
 
             // Assert
-            Assert.Equal(1, result.Errors.Count);
+            Assert.Equal(2, result.Errors.Count);
         }
     }
 }
