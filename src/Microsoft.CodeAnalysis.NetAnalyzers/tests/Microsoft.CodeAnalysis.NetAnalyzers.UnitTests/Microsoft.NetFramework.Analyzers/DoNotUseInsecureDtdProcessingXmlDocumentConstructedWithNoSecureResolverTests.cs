@@ -671,24 +671,24 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(11, 35)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+//            await VerifyVB.VerifyAnalyzerAsync(@"
+//Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            If True Then
-                Dim doc As New XmlDocument()
-            End If
-            If True Then
-                Dim doc As New XmlDocument()
-                doc.XmlResolver = Nothing
-            End If
-        End Sub
-    End Class
-End Namespace",
-                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 28)
-            );
+//Namespace TestNamespace
+//    Class TestClass
+//        Private Shared Sub TestMethod()
+//            If True Then
+//                Dim doc As New XmlDocument()
+//            End If
+//            If True Then
+//                Dim doc As New XmlDocument()
+//                doc.XmlResolver = Nothing
+//            End If
+//        End Sub
+//    End Class
+//End Namespace",
+//                GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 28)
+//            );
         }
 
         [Fact]
