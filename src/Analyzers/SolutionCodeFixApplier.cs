@@ -21,10 +21,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            var diagnosticId = result.Diagnostics.FirstOrDefault().Value.FirstOrDefault()?.Id;
+
             var fixAllProvider = codeFix.GetFixAllProvider();
-            if (!fixAllProvider.GetSupportedFixAllScopes().Contains(FixAllScope.Solution))
+            if (fixAllProvider?.GetSupportedFixAllScopes()?.Contains(FixAllScope.Solution) != true)
             {
-                throw new InvalidOperationException($"Code fix {codeFix.GetType()} doesn't support Fix All in Solution");
+                logger.LogWarning($"Unable to fix {diagnosticId}. Code fix {codeFix.GetType().Name} doesn't support Fix All in Solution.");
+                return solution;
             }
 
             var project = solution.Projects.FirstOrDefault();
@@ -42,17 +45,25 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 fixAllDiagnosticProvider: new DiagnosticProvider(result),
                 cancellationToken: cancellationToken);
 
-            var action = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
-            var operations = action is object
-                ? await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false)
-                : ImmutableArray<CodeActionOperation>.Empty;
-            var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();
-            return applyChangesOperation?.ChangedSolution ?? solution;
+            try
+            {
+                var action = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
+                var operations = action is object
+                    ? await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false)
+                    : ImmutableArray<CodeActionOperation>.Empty;
+                var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();
+                return applyChangesOperation?.ChangedSolution ?? solution;
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning($"Failed to apply code fix {codeFix?.GetType().Name} for {diagnosticId}: {ex.Message}");
+                return solution;
+            }
         }
 
         private class DiagnosticProvider : FixAllContext.DiagnosticProvider
         {
-            private static readonly Task<IEnumerable<Diagnostic>> EmptyDignosticResult = Task.FromResult(Enumerable.Empty<Diagnostic>());
+            private static Task<IEnumerable<Diagnostic>> EmptyDignosticResult => Task.FromResult(Enumerable.Empty<Diagnostic>());
             private readonly IReadOnlyDictionary<Project, List<Diagnostic>> _diagnosticsByProject;
 
             internal DiagnosticProvider(CodeAnalysisResult analysisResult)

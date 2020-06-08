@@ -29,7 +29,11 @@ namespace Microsoft.CodeAnalysis.Tools
                 },
                 new Option(new[] { "--fix-style" }, Resources.Run_code_style_analyzer_and_apply_fixes)
                 {
-                    Argument = new Argument<bool>()
+                    Argument = new Argument<string?>("severity") { Arity = ArgumentArity.ZeroOrOne }
+                },
+                new Option(new[] { "--fix-analyzers" }, Resources.Run_code_style_analyzer_and_apply_fixes)
+                {
+                    Argument = new Argument<string?>("severity") { Arity = ArgumentArity.ZeroOrOne }
                 },
                 new Option(new[] { "--include", "--files" }, Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
                 {
