@@ -170,7 +170,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 var codeStyleOptions = (IEnumerable)parameters[2]!;
                 foreach (var codeStyleOptionObj in codeStyleOptions)
                 {
-                    IOption codeStyleOption = (IOption)codeStyleOptionObj;
+                    var codeStyleOption = (IOption)codeStyleOptionObj;
                     var option = options.GetOption(new OptionKey(codeStyleOption, codeStyleOption.IsPerLanguage ? compilation.Language : null));
                     if (option is null)
                     {
