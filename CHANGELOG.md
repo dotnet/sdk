@@ -1,6 +1,10 @@
 # Changelog
 All changes to the project will be documented in this file.
 
+## [4.1.x] - Not yet released
+- [Remove the 255 argument limit for OneOrMany options such as --include and --exclude(700)](https://www.github.com/dotnet/roslyn/pull/700)
+- [Only run Imports formatter when is has configuration in the .editorconfig(701)](https://www.github.com/dotnet/roslyn/pull/701)
+
 ## [4.0.130203] - 2020-06-01
 [View Complete Diff of Changes](https://www.github.com/dotnet/format/compare/3f2b20c65d32a59ca6bbc68b788a31ed38576d8e...f772fc306ff4b70cabebbea76beba9cdfd7ecb80)
 ### Breaking Changes:

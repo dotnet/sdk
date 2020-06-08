@@ -19,13 +19,12 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             Document document,
             SourceText sourceText,
             OptionSet optionSet,
-            AnalyzerConfigOptions? analyzerConfigOptions,
+            AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            if (analyzerConfigOptions is null ||
-                !analyzerConfigOptions.TryGetValue("insert_final_newline", out var insertFinalNewlineValue) ||
+            if (!analyzerConfigOptions.TryGetValue("insert_final_newline", out var insertFinalNewlineValue) ||
                 !bool.TryParse(insertFinalNewlineValue, out var insertFinalNewline))
             {
                 return await document.GetTextAsync(cancellationToken);
