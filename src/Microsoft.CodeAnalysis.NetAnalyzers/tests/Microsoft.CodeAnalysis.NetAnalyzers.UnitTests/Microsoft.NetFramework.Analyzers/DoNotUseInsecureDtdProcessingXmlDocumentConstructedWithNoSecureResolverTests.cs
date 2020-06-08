@@ -379,7 +379,6 @@ End Namespace"
         [Fact]
         public async Task XmlDocumentNoResolverPre452ShouldGenerateDiagnostic()
         {
-            // TODO: line 202
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
                 @"
@@ -891,7 +890,6 @@ End Namespace",
         [Fact]
         public async Task XmlDocumentAsFieldSetResolverToNullInSomeMethodPre452ShouldGenerateDiagnostics()
         {
-            //TODO: why?
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
                 @"
@@ -901,7 +899,7 @@ namespace TestNamespace
 {
     class TestClass
     {
-        public XmlDocument doc = new XmlDocument();
+        public XmlDocument doc = new XmlDocument(); // warn
 
         public void Method1()
         {
