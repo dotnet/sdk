@@ -24,7 +24,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             Document document,
             SourceText sourceText,
             OptionSet optionSet,
-            AnalyzerConfigOptions? analyzerConfigOptions,
+            AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -67,10 +67,9 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             return stream.ToArray();
         }
 
-        private static bool TryGetCharset(AnalyzerConfigOptions? analyzerConfigOptions, [NotNullWhen(true)] out Encoding? encoding)
+        private static bool TryGetCharset(AnalyzerConfigOptions analyzerConfigOptions, [NotNullWhen(true)] out Encoding? encoding)
         {
-            if (analyzerConfigOptions is object &&
-                analyzerConfigOptions.TryGetValue("charset", out var charsetOption))
+            if (analyzerConfigOptions.TryGetValue("charset", out var charsetOption))
             {
                 encoding = GetCharset(charsetOption);
                 return true;

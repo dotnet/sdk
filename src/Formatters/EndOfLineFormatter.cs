@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             Document document,
             SourceText sourceText,
             OptionSet optionSet,
-            AnalyzerConfigOptions? analyzerConfigOptions,
+            AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -58,10 +58,9 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             });
         }
 
-        public static bool TryGetEndOfLine(AnalyzerConfigOptions? analyzerConfigOptions, [NotNullWhen(true)] out string? endOfLine)
+        public static bool TryGetEndOfLine(AnalyzerConfigOptions analyzerConfigOptions, [NotNullWhen(true)] out string? endOfLine)
         {
-            if (analyzerConfigOptions is object &&
-                analyzerConfigOptions.TryGetValue("end_of_line", out var endOfLineOption))
+            if (analyzerConfigOptions.TryGetValue("end_of_line", out var endOfLineOption))
             {
                 endOfLine = GetEndOfLine(endOfLineOption);
                 return true;

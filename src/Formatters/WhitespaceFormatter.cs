@@ -21,7 +21,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             Document document,
             SourceText sourceText,
             OptionSet optionSet,
-            AnalyzerConfigOptions? analyzerConfigOptions,
+            AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
