@@ -344,7 +344,7 @@ namespace Microsoft.NetFramework.Analyzers
 
             private void AnalyzeObjectCreationForXmlDocument(OperationAnalysisContext context, ISymbol variable, IObjectCreationOperation objCreation)
             {
-                // create new environment representation if does not alreay exist
+                // create new environment representation if does not already exist
                 if (variable == null || !_xmlDocumentEnvironments.TryGetValue(variable, out var xmlDocumentEnvironment))
                 {
                     xmlDocumentEnvironment = new XmlDocumentEnvironment(_isFrameworkSecure);
@@ -352,11 +352,11 @@ namespace Microsoft.NetFramework.Analyzers
 
                 xmlDocumentEnvironment.XmlDocumentDefinition = objCreation.Syntax;
                 SyntaxNode node = objCreation.Syntax;
+
+                // initial XmlResolver secure value dependent on whether framework version secure
+                // < .NET 4.5.2 insecure - XmlDocument would set XmlResolver as XmlUrlResolver
+                // > .NET 4.5.2 secure - XmlDocument would set XmlResolver as null
                 bool isXmlDocumentSecureResolver = _isFrameworkSecure;
-
-                // if XmlSecureResolver declared as XmlResolver by constructor
-                // or if IsSecureResolver set to true by _isFrameworkSecure == true; version > 4.5.2
-
 
                 if (!Equals(objCreation.Constructor.ContainingType, _xmlTypes.XmlDocument))
                 {
@@ -385,15 +385,18 @@ namespace Microsoft.NetFramework.Analyzers
                                     return;
                                 }
 
+                                // if XmlResolver declared as XmlSecureResolver by initializer
                                 if (SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Operand.Type, _xmlTypes))
                                 {
                                     isXmlDocumentSecureResolver = true;
                                 }
+                                // if XmlResolver declared as null by initializer
                                 else if (SecurityDiagnosticHelpers.IsExpressionEqualsNull(operation.Operand))
                                 {
                                     isXmlDocumentSecureResolver = true;
                                 }
-                                else // Non secure resolvers
+                                // otherwise insecure resolver
+                                else
                                 {
                                     context.ReportDiagnostic(assign.Syntax.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
                                     return;
@@ -409,11 +412,13 @@ namespace Microsoft.NetFramework.Analyzers
 
                 xmlDocumentEnvironment.IsSecureResolver = isXmlDocumentSecureResolver;
 
+                // if XmlDocument object not temporary (variable not null), add environment to dictionary
                 if (variable != null)
                 {
                     _xmlDocumentEnvironments[variable] = xmlDocumentEnvironment;
                 }
-                else if (!xmlDocumentEnvironment.IsSecureResolver) // Insecure temp object
+                // else is temporary (variable null) and XmlResolver insecure, then report now
+                else if (!xmlDocumentEnvironment.IsSecureResolver)
                 {
                     context.ReportDiagnostic(node.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
                 }
