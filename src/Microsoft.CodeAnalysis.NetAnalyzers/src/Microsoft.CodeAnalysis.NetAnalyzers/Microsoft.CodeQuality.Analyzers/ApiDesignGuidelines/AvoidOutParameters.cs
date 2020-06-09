@@ -83,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 methodSymbol.Name.StartsWith("Try", StringComparison.Ordinal) &&
                 methodSymbol.ReturnType.SpecialType == SpecialType.System_Boolean &&
                 methodSymbol.Parameters.Length >= 1 &&
-                IsOutParameter(methodSymbol.Parameters[methodSymbol.Parameters.Length - 1]) &&
+                IsOutParameter(methodSymbol.Parameters[^1]) &&
                 numberOfOutParams == 1;
 
             private bool IsDeconstructPattern(IMethodSymbol methodSymbol)

@@ -157,7 +157,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             var parameters = targetSymbol.GetParameters();
-            if (parameters.Length == 0 || !parameters[parameters.Length - 1].IsParams)
+            if (parameters.Length == 0 || !parameters[^1].IsParams)
             {
                 return false;
             }
