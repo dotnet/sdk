@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             try
             {
                 var action = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
-                var operations = action is object
+                var operations = action != null
                     ? await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false)
                     : ImmutableArray<CodeActionOperation>.Empty;
                 var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();

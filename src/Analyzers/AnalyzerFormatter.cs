@@ -50,7 +50,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var analysisStopwatch = Stopwatch.StartNew();
             logger.LogTrace($"Running {_name} analysis.");
 
-            var formattablePaths = formattableDocuments.Select(id => solution.GetDocument(id)?.FilePath)
+            var formattablePaths = formattableDocuments.Select(id => solution.GetDocument(id)!.FilePath)
                     .OfType<string>().ToImmutableHashSet();
 
             logger.LogTrace("Determining diagnostics...");
@@ -152,7 +152,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 }
 
                 var hasDiagnostics = result.Diagnostics.Any(kvp => kvp.Value.Count > 0);
-                if (hasDiagnostics && codefix is object)
+                if (hasDiagnostics && codefix != null)
                 {
                     solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
                     var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);

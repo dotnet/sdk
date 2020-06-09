@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         culture: null)
                     : null;
 
-                return instance is object;
+                return instance != null;
             }
             catch (Exception ex)
             {

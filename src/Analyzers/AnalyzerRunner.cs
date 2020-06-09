@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 if (!diagnostic.IsSuppressed &&
                     diagnostic.Severity >= DiagnosticSeverity.Warning &&
                     diagnostic.Location.IsInSource &&
-                    diagnostic.Location.SourceTree is object &&
+                    diagnostic.Location.SourceTree != null &&
                     formattableDocumentPaths.Contains(diagnostic.Location.SourceTree.FilePath))
                 {
                     result.AddDiagnostic(project, diagnostic);

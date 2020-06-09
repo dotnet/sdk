@@ -254,12 +254,12 @@ namespace Microsoft.CodeAnalysis.Tools
         }
 
         internal static async Task<(int, ImmutableArray<DocumentId>)> DetermineFormattableFilesAsync(
-    Solution solution,
-    string projectPath,
-    Matcher fileMatcher,
-    bool includeGeneratedFiles,
-    ILogger logger,
-    CancellationToken cancellationToken)
+            Solution solution,
+            string projectPath,
+            Matcher fileMatcher,
+            bool includeGeneratedFiles,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count);
             var projectFileCount = 0;
@@ -323,7 +323,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                     // Track files covered by an editorconfig separately from those not covered.
                     var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
-                    if (analyzerConfigOptions is object)
+                    if (analyzerConfigOptions != null)
                     {
                         documentsCoveredByEditorConfig.Add(document.Id);
                     }

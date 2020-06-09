@@ -155,10 +155,10 @@ namespace Microsoft.CodeAnalysis.Tools
                     workspacePath,
                     workspaceType,
                     logLevel,
-                    fixCodeStyle: s_parseResult.WasOptionUsed("--fix-style"),
-                    codeStyleSeverity: GetSeverity(fixStyle ?? "error"),
-                    fixAnalyzers: s_parseResult.WasOptionUsed("--fix-analyzers"),
-                    analyerSeverity: GetSeverity(fixAnalyzers ?? "error"),
+                    fixCodeStyle: s_parseResult.WasOptionUsed("--fix-style", "-fs"),
+                    codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
+                    fixAnalyzers: s_parseResult.WasOptionUsed("--fix-analyzers", "-fa"),
+                    analyerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
                     fileMatcher,
@@ -229,9 +229,9 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             return severity?.ToLowerInvariant() switch
             {
-                "error" => DiagnosticSeverity.Error,
-                "warn" => DiagnosticSeverity.Warning,
-                "info" => DiagnosticSeverity.Info,
+                FixSeverity.Error => DiagnosticSeverity.Error,
+                FixSeverity.Warn => DiagnosticSeverity.Warning,
+                FixSeverity.Info => DiagnosticSeverity.Info,
                 _ => throw new ArgumentOutOfRangeException(nameof(severity)),
             };
         }
