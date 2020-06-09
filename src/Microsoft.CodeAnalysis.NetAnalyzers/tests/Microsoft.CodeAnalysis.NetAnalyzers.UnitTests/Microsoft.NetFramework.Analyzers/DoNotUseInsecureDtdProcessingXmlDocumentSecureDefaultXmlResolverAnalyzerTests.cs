@@ -12,7 +12,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
-        	=> VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlDocumentWithNoSecureResolver).WithLocation(line, column);
+            => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlDocumentWithNoSecureResolver).WithLocation(line, column);
 
         [Fact]
         public async Task XmlDocumentDefaultResolversInXmlReaderSettingsPre452ShouldGenerateDiagnostic()
