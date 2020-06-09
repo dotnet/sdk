@@ -165,12 +165,13 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            // Set up a conditional feature substitution for the "FeatureDisabled" property, and
-            // enable the substitution via RuntimeHostConfigurationOption
-            AddFeatureSetting(testProject, referenceProjectName);
+            // Set up a conditional feature substitution for the "FeatureDisabled" property
+            AddFeatureDefinition(testProject, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .WithProjectChanges(project => EmbedSubstitutions(project))
+                // Set a matching RuntimeHostConfigurationOption, with Trim = "true"
+                .WithProjectChanges(project => AddRuntimeConfigOption(project, trim: true))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -196,14 +197,13 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            // Set up a conditional feature substitution for the "FeatureDisabled" property, and
-            // enable the substitution via RuntimeHostConfigurationOption
-            AddFeatureSetting(testProject, referenceProjectName);
+            // Set up a conditional feature substitution for the "FeatureDisabled" property
+            AddFeatureDefinition(testProject, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
                 .WithProjectChanges(project => EmbedSubstitutions(project))
-                // Set Link="False" on the RuntimeHostConfigurationOption
-                .WithProjectChanges(project => DisableLinkingForHostConfig(project))
+                // Set a matching RuntimeHostConfigurationOption, with Trim = "false"
+                .WithProjectChanges(project => AddRuntimeConfigOption(project, trim: false))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -532,15 +532,12 @@ namespace Microsoft.NET.Publish.Tests
                                     new XElement("LogicalName", substitutionsFilename))));
         }
 
-        private void AddFeatureSetting(TestProject testProject, string referenceAssemblyName)
+        private void AddFeatureDefinition(TestProject testProject, string referenceAssemblyName)
         {
-            // Add a feature definition that replaces Main. We use the existing InvariantGlobalization property
-            // just to check that the RuntimeHostConfigurationOption items correctly flow to the linker, even
-            // though this option is unrelated to the transformation we are defining here.
-            testProject.AdditionalProperties["InvariantGlobalization"] = "true";
+            // Add a feature definition that replaces the FeatureDisabled property when DisableFeature is true.
             testProject.EmbeddedResources[substitutionsFilename] = $@"
 <linker>
-  <assembly fullname=""{referenceAssemblyName}"" feature=""System.Globalization.Invariant"" featurevalue=""true"">
+  <assembly fullname=""{referenceAssemblyName}"" feature=""DisableFeature"" featurevalue=""true"">
     <type fullname=""ClassLib"">
       <method signature=""System.Boolean get_FeatureDisabled()"" body=""stub"" value=""true"" />
     </type>
@@ -549,17 +546,15 @@ namespace Microsoft.NET.Publish.Tests
 ";
         }
 
-        private void DisableLinkingForHostConfig(XDocument project)
+        private void AddRuntimeConfigOption(XDocument project, bool trim)
         {
             var ns = project.Root.Name.Namespace;
 
-            var target = new XElement(ns + "Target",
-                                new XAttribute("BeforeTargets", "_SetILLinkDefaults"),
-                                new XAttribute("Name", "_DisableLinkingForHostConfig"));
-            project.Root.Add(target);
-            target.Add(new XElement(ns + "ItemGroup",
-                        new XElement(ns + "RuntimeHostConfigurationOption",
-                            new XElement("Link", "false"))));
+            project.Root.Add (new XElement(ns + "ItemGroup",
+                                new XElement("RuntimeHostConfigurationOption",
+                                    new XAttribute("Include", "DisableFeature"),
+                                    new XAttribute("Value", "true"),
+                                    new XAttribute("Trim", trim.ToString ()))));
         }
 
         private TestProject CreateTestProjectForILLinkTesting(
