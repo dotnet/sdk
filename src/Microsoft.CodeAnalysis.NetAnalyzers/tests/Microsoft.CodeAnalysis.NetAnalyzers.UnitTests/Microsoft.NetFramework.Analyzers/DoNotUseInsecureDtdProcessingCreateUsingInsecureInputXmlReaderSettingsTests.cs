@@ -582,7 +582,7 @@ namespace TestNamespace
                 XmlReaderSettings settings = new XmlReaderSettings
                 {
                     ConformanceLevel = ConformanceLevel.Auto,
-                    IgnoreComments = true,            await VerifyVisualBasicAnalyzerAsync(
+                    IgnoreComments = true,
                     DtdProcessing = DtdProcessing.Ignore,
                     XmlResolver = null
                 };

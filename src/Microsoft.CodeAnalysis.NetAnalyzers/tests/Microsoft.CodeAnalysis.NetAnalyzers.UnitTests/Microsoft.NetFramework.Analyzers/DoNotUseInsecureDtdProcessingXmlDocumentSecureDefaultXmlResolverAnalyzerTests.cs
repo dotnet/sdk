@@ -15,7 +15,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         	=> VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlDocumentWithNoSecureResolver).WithLocation(line, column);
 
         [Fact]
-        public async Task XmlDocument_TargetFx451_ShouldGenerateDiagnostic()
+        public async Task XmlDocumentDefaultResolversInXmlReaderSettingsPre452ShouldGenerateDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
@@ -44,7 +44,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public async Task XmlDocument_TargetFx452_ShouldNotGenerateDiagnostic()
+        public async Task XmlDocumentDefaultResolversInXmlReaderSettingsPre452ShouldNotGenerateDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
