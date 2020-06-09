@@ -348,7 +348,7 @@ namespace Microsoft.NetFramework.Analyzers
 
                 // initial XmlResolver secure value dependent on whether framework version secure
                 // < .NET 4.5.2 insecure - XmlDocument would set XmlResolver as XmlUrlResolver
-                // > .NET 4.5.2 secure - XmlDocument would set XmlResolver as null
+                // >= .NET 4.5.2 secure - XmlDocument would set XmlResolver as null
                 bool isXmlDocumentSecureResolver = _isFrameworkSecure;
 
                 if (!Equals(objCreation.Constructor.ContainingType, _xmlTypes.XmlDocument))
