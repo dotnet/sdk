@@ -149,9 +149,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 return;
                             }
 
-                            var allowedSuffixes = namedTypeSymbol.DeclaringSyntaxReferences
-                                .Select(syntaxRef => symbolAnalysisContext.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule, syntaxRef.SyntaxTree, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
-                                .SelectMany(option => option.Split('|'))
+                            var allowedSuffixes = symbolAnalysisContext.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule,
+                                    namedTypeSymbol.Locations[0].SourceTree, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken)
+                                .Split('|')
                                 .ToImmutableHashSet();
 
                             string name = namedTypeSymbol.Name;
