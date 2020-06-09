@@ -248,9 +248,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     string name = memberSymbol.Name;
 
-                    var allowedSuffixes = memberSymbol.DeclaringSyntaxReferences
-                        .Select(syntaxRef => context.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule, syntaxRef.SyntaxTree, context.Compilation, context.CancellationToken))
-                        .SelectMany(option => option.Split('|'))
+                    var allowedSuffixes = context.Options.GetStringOptionValue(EditorConfigOptionNames.AllowedSuffixes, TypeNoAlternateRule,
+                            memberSymbol.Locations[0].SourceTree, context.Compilation, context.CancellationToken)
+                        .Split('|')
                         .ToImmutableHashSet();
 
                     if (IsInvalidSuffix(name, ExSuffix, allowedSuffixes))
