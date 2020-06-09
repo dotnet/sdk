@@ -15,7 +15,7 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         Private Sub New()
         End Sub
 
-        Public Overrides Function GetClassDeclarationTypeSymbol(node As SyntaxNode, semanticModel As SemanticModel) As ITypeSymbol
+        Public Overrides Function GetClassDeclarationTypeSymbol(node As SyntaxNode, semanticModel As SemanticModel) As ITypeSymbol ' Same here.
             If node Is Nothing Then
                 Return Nothing
             End If

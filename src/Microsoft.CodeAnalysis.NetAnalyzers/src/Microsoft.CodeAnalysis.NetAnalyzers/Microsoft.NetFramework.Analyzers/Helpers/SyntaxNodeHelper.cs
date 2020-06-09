@@ -123,17 +123,17 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             return GetDeclaredSymbol(node, semanticModel) ?? GetReferencedSymbol(node, semanticModel);
         }
 
-        public static ISymbol? GetDeclaredSymbol(SyntaxNode? node, SemanticModel semanticModel)
+        public static ISymbol? GetDeclaredSymbol(SyntaxNode? node, SemanticModel semanticModel) // TODO: Should I add an optional CancellationToken argument here to this public method?
         {
             if (node == null)
             {
                 return null;
             }
 
-            return semanticModel.GetDeclaredSymbol(node);
+            return semanticModel.GetDeclaredSymbol(node); // And pass it here?
         }
 
-        public static ISymbol? GetReferencedSymbol(SyntaxNode? node, SemanticModel semanticModel)
+        public static ISymbol? GetReferencedSymbol(SyntaxNode? node, SemanticModel semanticModel) // TODO: SAME HERE.
         {
             if (node == null)
             {
@@ -143,7 +143,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             return semanticModel.GetSymbolInfo(node).Symbol;
         }
 
-        public static IEnumerable<ISymbol> GetCandidateReferencedSymbols(SyntaxNode? node, SemanticModel semanticModel)
+        public static IEnumerable<ISymbol> GetCandidateReferencedSymbols(SyntaxNode? node, SemanticModel semanticModel) // TODO: SAME HERE.
         {
             if (node == null)
             {
@@ -153,7 +153,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             return semanticModel.GetSymbolInfo(node).CandidateSymbols;
         }
 
-        public static bool NodeHasConstantValueNull(SyntaxNode? node, SemanticModel? model)
+        public static bool NodeHasConstantValueNull(SyntaxNode? node, SemanticModel? model) // Add cancellation token argument?
         {
             if (node == null || model == null)
             {
@@ -163,7 +163,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             return value.HasValue && value.Value == null;
         }
 
-        public static bool NodeHasConstantValueIntZero(SyntaxNode? node, SemanticModel? model)
+        public static bool NodeHasConstantValueIntZero(SyntaxNode? node, SemanticModel? model) // Add cancellation token argument?
         {
             if (node == null || model == null)
             {
@@ -174,7 +174,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
                    value.Value is 0;
         }
 
-        public static bool NodeHasConstantValueBoolFalse(SyntaxNode? node, SemanticModel? model)
+        public static bool NodeHasConstantValueBoolFalse(SyntaxNode? node, SemanticModel? model) // Add cancellation token argument?
         {
             if (node == null || model == null)
             {

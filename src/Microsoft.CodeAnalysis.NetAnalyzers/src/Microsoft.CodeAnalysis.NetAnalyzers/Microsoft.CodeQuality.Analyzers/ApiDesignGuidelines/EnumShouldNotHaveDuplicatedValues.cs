@@ -107,7 +107,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Handle all enum fields without an explicit initializer
                     foreach ((var field, var value) in enumFieldsWithImplicitValue)
                     {
-                        var fieldSyntax = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+                        var fieldSyntax = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(sac.CancellationToken);
 
                         if (fieldSyntax != null)
                         {

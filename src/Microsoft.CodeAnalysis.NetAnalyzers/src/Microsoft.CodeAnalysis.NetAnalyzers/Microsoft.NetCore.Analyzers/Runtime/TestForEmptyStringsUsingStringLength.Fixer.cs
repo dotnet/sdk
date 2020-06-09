@@ -62,12 +62,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SyntaxNode leftOperand = GetLeftOperand(binaryExpressionSyntax);
             SyntaxNode rightOperand = GetRightOperand(binaryExpressionSyntax);
 
-            if (ContainsSystemStringEmpty(leftOperand, model) || ContainsEmptyStringLiteral(leftOperand, model, cancellationToken))
+            if (ContainsSystemStringEmpty(leftOperand, model, cancellationToken) || ContainsEmptyStringLiteral(leftOperand, model, cancellationToken))
             {
                 return new FixResolution(binaryExpressionSyntax, rightOperand, isEqualsOperator);
             }
 
-            if (ContainsSystemStringEmpty(rightOperand, model) || ContainsEmptyStringLiteral(rightOperand, model, cancellationToken))
+            if (ContainsSystemStringEmpty(rightOperand, model, cancellationToken) || ContainsEmptyStringLiteral(rightOperand, model, cancellationToken))
             {
                 return new FixResolution(binaryExpressionSyntax, leftOperand, isEqualsOperator);
             }
@@ -75,9 +75,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
-        private static bool ContainsSystemStringEmpty(SyntaxNode expressionSyntax, SemanticModel model)
+        private static bool ContainsSystemStringEmpty(SyntaxNode expressionSyntax, SemanticModel model, CancellationToken cancellationToken)
         {
-            if (model.GetSymbolInfo(expressionSyntax).Symbol is IFieldSymbol fieldSymbol)
+            if (model.GetSymbolInfo(expressionSyntax, cancellationToken).Symbol is IFieldSymbol fieldSymbol)
             {
                 if (fieldSymbol.Type.SpecialType == SpecialType.System_String)
                 {

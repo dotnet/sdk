@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -81,18 +82,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             analysisContext.RegisterSymbolAction(saContext =>
             {
                 var symbol = saContext.Symbol;
-                AnalyzeSymbol(saContext.ReportDiagnostic, symbol);
+                AnalyzeSymbol(saContext.ReportDiagnostic, symbol, saContext.CancellationToken);
                 switch (symbol.Kind)
                 {
                     case SymbolKind.NamedType:
                         {
                             var namedType = (INamedTypeSymbol)symbol;
 
-                            AnalyzeSymbols(saContext.ReportDiagnostic, namedType.TypeParameters);
+                            AnalyzeSymbols(saContext.ReportDiagnostic, namedType.TypeParameters, saContext.CancellationToken);
 
                             if (namedType.TypeKind == TypeKind.Delegate && namedType.DelegateInvokeMethod != null)
                             {
-                                AnalyzeSymbols(saContext.ReportDiagnostic, namedType.DelegateInvokeMethod.Parameters);
+                                AnalyzeSymbols(saContext.ReportDiagnostic, namedType.DelegateInvokeMethod.Parameters, saContext.CancellationToken);
                             }
 
                             return;
@@ -103,8 +104,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             var methodSymbol = (IMethodSymbol)symbol;
                             if (!methodSymbol.IsAccessorMethod())
                             {
-                                AnalyzeSymbols(saContext.ReportDiagnostic, methodSymbol.Parameters);
-                                AnalyzeSymbols(saContext.ReportDiagnostic, methodSymbol.TypeParameters);
+                                AnalyzeSymbols(saContext.ReportDiagnostic, methodSymbol.Parameters, saContext.CancellationToken);
+                                AnalyzeSymbols(saContext.ReportDiagnostic, methodSymbol.TypeParameters, saContext.CancellationToken);
                             }
 
                             return;
@@ -113,7 +114,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     case SymbolKind.Property:
                         {
                             var propertySymbol = (IPropertySymbol)symbol;
-                            AnalyzeSymbols(saContext.ReportDiagnostic, propertySymbol.Parameters);
+                            AnalyzeSymbols(saContext.ReportDiagnostic, propertySymbol.Parameters, saContext.CancellationToken);
                             return;
                         }
                 }
@@ -124,29 +125,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             analysisContext.RegisterCompilationAction(caContext =>
             {
                 var compilation = caContext.Compilation;
-                AnalyzeSymbol(caContext.ReportDiagnostic, compilation.Assembly);
+                AnalyzeSymbol(caContext.ReportDiagnostic, compilation.Assembly, caContext.CancellationToken);
             });
         }
 
-        private static void AnalyzeSymbols(Action<Diagnostic> reportDiagnostic, IEnumerable<ISymbol> symbols)
+        private static void AnalyzeSymbols(Action<Diagnostic> reportDiagnostic, IEnumerable<ISymbol> symbols, CancellationToken cancellationToken)
         {
             foreach (var symbol in symbols)
             {
-                AnalyzeSymbol(reportDiagnostic, symbol);
+                AnalyzeSymbol(reportDiagnostic, symbol, cancellationToken);
             }
         }
 
-        private static void AnalyzeSymbol(Action<Diagnostic> reportDiagnostic, ISymbol symbol)
+        private static void AnalyzeSymbol(Action<Diagnostic> reportDiagnostic, ISymbol symbol, CancellationToken cancellationToken)
         {
             var attributes = symbol.GetAttributes();
 
             foreach (var attribute in attributes)
             {
-                Analyze(reportDiagnostic, attribute);
+                Analyze(reportDiagnostic, attribute, cancellationToken);
             }
         }
 
-        private static void Analyze(Action<Diagnostic> reportDiagnostic, AttributeData attributeData)
+        private static void Analyze(Action<Diagnostic> reportDiagnostic, AttributeData attributeData, CancellationToken cancellationToken)
         {
             var attributeConstructor = attributeData.AttributeConstructor;
             var constructorArguments = attributeData.ConstructorArguments;
@@ -156,7 +157,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            var syntax = attributeData.ApplicationSyntaxReference.GetSyntax();
+            var syntax = attributeData.ApplicationSyntaxReference.GetSyntax(cancellationToken);
 
             for (int i = 0; i < attributeConstructor.Parameters.Count(); i++)
             {

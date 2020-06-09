@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            var typeSymbol = model.GetDeclaredSymbol(declaration) as INamedTypeSymbol;
+            var typeSymbol = model.GetDeclaredSymbol(declaration, context.CancellationToken) as INamedTypeSymbol;
             if (typeSymbol?.TypeKind != TypeKind.Class &&
                 typeSymbol?.TypeKind != TypeKind.Struct)
             {
