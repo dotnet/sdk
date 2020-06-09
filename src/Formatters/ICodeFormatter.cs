@@ -10,8 +10,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     internal interface ICodeFormatter
     {
-        FormatType FormatType { get; }
-
         /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>.
         /// </summary>

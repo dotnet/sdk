@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.Extensions.Logging;
 
@@ -14,17 +16,18 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal class AnalyzerFormatter : ICodeFormatter
     {
-        public FormatType FormatType => FormatType.CodeStyle;
-
+        private readonly string _name;
         private readonly IAnalyzerFinder _finder;
         private readonly IAnalyzerRunner _runner;
         private readonly ICodeFixApplier _applier;
 
         public AnalyzerFormatter(
+            string name,
             IAnalyzerFinder finder,
             IAnalyzerRunner runner,
             ICodeFixApplier applier)
         {
+            _name = name;
             _finder = finder;
             _runner = runner;
             _applier = applier;
@@ -33,47 +36,71 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         public async Task<Solution> FormatAsync(
             Solution solution,
             ImmutableArray<DocumentId> formattableDocuments,
-            FormatOptions options,
+            FormatOptions formatOptions,
             ILogger logger,
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
         {
-            var analysisStopwatch = Stopwatch.StartNew();
-            logger.LogTrace($"Analyzing code style.");
+            var analyzersAndFixers = _finder.GetAnalyzersAndFixers(solution, formatOptions, logger);
+            if (analyzersAndFixers.Length == 0)
+            {
+                return solution;
+            }
 
-            if (!options.SaveFormattedFiles)
-            {
-                await LogDiagnosticsAsync(solution, formattableDocuments, options, logger, cancellationToken);
-            }
-            else
-            {
-                solution = await FixDiagnosticsAsync(solution, formattableDocuments, logger, cancellationToken);
-            }
+            var analysisStopwatch = Stopwatch.StartNew();
+            logger.LogTrace($"Running {_name} analysis.");
+
+            var formattablePaths = formattableDocuments.Select(id => solution.GetDocument(id)!.FilePath)
+                    .OfType<string>().ToImmutableHashSet();
+
+            logger.LogTrace("Determining diagnostics...");
+
+            var allAnalyzers = analyzersAndFixers.Select(pair => pair.Analyzer).ToImmutableArray();
+            var projectAnalyzers = await _finder.FilterBySeverityAsync(solution.Projects, allAnalyzers, formattablePaths, formatOptions, cancellationToken).ConfigureAwait(false);
+
+            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+
+            var projectDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds;
+            logger.LogTrace(Resources.Complete_in_0_ms, projectDiagnosticsMS);
+
+            logger.LogTrace("Fixing diagnostics...");
+
+            solution = await FixDiagnosticsAsync(solution, analyzersAndFixers, projectDiagnostics, formattablePaths, logger, cancellationToken).ConfigureAwait(false);
+
+            var fixDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds - projectDiagnosticsMS;
+            logger.LogTrace(Resources.Complete_in_0_ms, fixDiagnosticsMS);
 
             logger.LogTrace("Analysis complete in {0}ms.", analysisStopwatch.ElapsedMilliseconds);
 
             return solution;
         }
 
-        private async Task LogDiagnosticsAsync(Solution solution, ImmutableArray<DocumentId> formattableDocuments, FormatOptions options, ILogger logger, CancellationToken cancellationToken)
+        private async Task<ImmutableDictionary<ProjectId, ImmutableHashSet<string>>> GetProjectDiagnosticsAsync(
+            Solution solution,
+            ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>> projectAnalyzers,
+            ImmutableHashSet<string> formattablePaths,
+            FormatOptions options,
+            ILogger logger,
+            List<FormattedFile> formattedFiles,
+            CancellationToken cancellationToken)
         {
-            var pairs = _finder.GetAnalyzersAndFixers();
-            var paths = formattableDocuments.Select(id => solution.GetDocument(id)?.FilePath)
-                .OfType<string>().ToImmutableArray();
-
-            // no need to run codefixes as we won't persist the changes
-            var analyzers = pairs.Select(x => x.Analyzer).ToImmutableArray();
             var result = new CodeAnalysisResult();
-            await solution.Projects.ForEachAsync(async (project, token) =>
+            foreach (var project in solution.Projects)
             {
-                await _runner.RunCodeAnalysisAsync(result, analyzers, project, paths, logger, token);
-            }, cancellationToken);
+                var analyzers = projectAnalyzers[project];
+                if (analyzers.Length == 0)
+                {
+                    continue;
+                }
 
-            LogDiagnosticLocations(result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger);
+                await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, logger, cancellationToken).ConfigureAwait(false);
+            }
 
-            return;
+            LogDiagnosticLocations(solution, result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger, formattedFiles);
 
-            static void LogDiagnosticLocations(IEnumerable<Diagnostic> diagnostics, string workspacePath, bool changesAreErrors, ILogger logger)
+            return result.Diagnostics.ToImmutableDictionary(kvp => kvp.Key.Id, kvp => kvp.Value.Select(diagnostic => diagnostic.Id).ToImmutableHashSet());
+
+            static void LogDiagnosticLocations(Solution solution, IEnumerable<Diagnostic> diagnostics, string workspacePath, bool changesAreErrors, ILogger logger, List<FormattedFile> formattedFiles)
             {
                 var workspaceFolder = Path.GetDirectoryName(workspacePath);
 
@@ -81,11 +108,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 {
                     var message = diagnostic.GetMessage();
                     var filePath = diagnostic.Location.SourceTree?.FilePath;
+                    var document = solution.GetDocument(diagnostic.Location.SourceTree);
 
                     var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
                     var changePosition = mappedLineSpan.StartLinePosition;
 
                     var formatMessage = $"{Path.GetRelativePath(workspaceFolder, filePath)}({changePosition.Line + 1},{changePosition.Character + 1}): {message}";
+                    formattedFiles.Add(new FormattedFile(document!, new[] { new FileChange(changePosition, message) }));
 
                     if (changesAreErrors)
                     {
@@ -99,27 +128,34 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
         }
 
-        private async Task<Solution> FixDiagnosticsAsync(Solution solution, ImmutableArray<DocumentId> formattableDocuments, ILogger logger, CancellationToken cancellationToken)
+        private async Task<Solution> FixDiagnosticsAsync(
+            Solution solution,
+            ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> analyzersAndFixers,
+            ImmutableDictionary<ProjectId, ImmutableHashSet<string>> projectDiagnostics,
+            ImmutableHashSet<string> formattablePaths,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            var pairs = _finder.GetAnalyzersAndFixers();
-            var paths = formattableDocuments.Select(id => solution.GetDocument(id)?.FilePath)
-                .OfType<string>().ToImmutableArray();
-
             // we need to run each codefix iteratively so ensure that all diagnostics are found and fixed
-            foreach (var (analyzer, codefix) in pairs)
+            foreach (var (analyzer, codefix) in analyzersAndFixers)
             {
                 var result = new CodeAnalysisResult();
-                await solution.Projects.ForEachAsync(async (project, token) =>
+                foreach (var project in solution.Projects)
                 {
-                    await _runner.RunCodeAnalysisAsync(result, analyzer, project, paths, logger, token);
-                }, cancellationToken);
+                    if (!projectDiagnostics.TryGetValue(project.Id, out var diagnosticIds) ||
+                        !analyzer.SupportedDiagnostics.Any(diagnostic => diagnosticIds.Contains(diagnostic.Id)))
+                    {
+                        continue;
+                    }
+
+                    await _runner.RunCodeAnalysisAsync(result, analyzer, project, formattablePaths, logger, cancellationToken).ConfigureAwait(false);
+                }
 
                 var hasDiagnostics = result.Diagnostics.Any(kvp => kvp.Value.Count > 0);
-                if (hasDiagnostics && codefix is object)
+                if (hasDiagnostics && codefix != null)
                 {
-                    logger.LogTrace($"Applying fixes for {codefix.GetType().Name}");
-                    solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken);
-                    var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken);
+                    solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
+                    var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
                     if (changedSolution.GetChanges(solution).Any())
                     {
                         solution = changedSolution;

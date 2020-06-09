@@ -15,7 +15,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     /// </summary>
     internal sealed class WhitespaceFormatter : DocumentFormatter
     {
-        public override FormatType FormatType => FormatType.Whitespace;
         protected override string FormatWarningDescription => Resources.Fix_whitespace_formatting;
 
         internal override async Task<SourceText> FormatFileAsync(
@@ -29,11 +28,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         {
             if (formatOptions.SaveFormattedFiles)
             {
-                return await GetFormattedDocument(document, optionSet, cancellationToken);
+                return await GetFormattedDocument(document, optionSet, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                return await GetFormattedDocumentWithDetailedChanges(document, sourceText, optionSet, cancellationToken);
+                return await GetFormattedDocumentWithDetailedChanges(document, sourceText, optionSet, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -51,7 +50,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         private static async Task<SourceText> GetFormattedDocumentWithDetailedChanges(Document document, SourceText sourceText, OptionSet optionSet, CancellationToken cancellationToken)
         {
-            var root = await document.GetSyntaxRootAsync(cancellationToken);
+            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var formattingTextChanges = Formatter.GetFormattedTextChanges(root, document.Project.Solution.Workspace, optionSet, cancellationToken);
 
             return sourceText.WithChanges(formattingTextChanges);

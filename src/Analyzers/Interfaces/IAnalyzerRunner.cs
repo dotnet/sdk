@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             CodeAnalysisResult result,
             DiagnosticAnalyzer analyzers,
             Project project,
-            ImmutableArray<string> formattableDocumentPaths,
+            ImmutableHashSet<string> formattableDocumentPaths,
             ILogger logger,
             CancellationToken cancellationToken);
 
@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             CodeAnalysisResult result,
             ImmutableArray<DiagnosticAnalyzer> analyzers,
             Project project,
-            ImmutableArray<string> formattableDocumentPaths,
+            ImmutableHashSet<string> formattableDocumentPaths,
             ILogger logger,
             CancellationToken cancellationToken);
     }

@@ -2,39 +2,33 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    internal class RoslynCodeStyleAnalyzerFinder : IAnalyzerFinder
+    internal class AnalyzerReferenceAnalyzerFinder : IAnalyzerFinder
     {
-        private static readonly string s_executingPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-        private readonly string _featuresCSharpPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.CSharp.Features.dll");
-        private readonly string _featuresVisualBasicPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.VisualBasic.Features.dll");
-
         public ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> GetAnalyzersAndFixers(
             Solution solution,
-            FormatOptions options,
+            FormatOptions formatOptions,
             ILogger logger)
         {
-            if (!options.FixCodeStyle)
+            if (!formatOptions.FixAnalyzers)
             {
                 return ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)>.Empty;
             }
 
-            var assemblies = new[]
-            {
-                _featuresCSharpPath,
-                _featuresVisualBasicPath
-            }.Select(path => Assembly.LoadFrom(path));
+            var assemblies = solution.Projects
+                .SelectMany(project => project.AnalyzerReferences.Select(reference => reference.FullPath))
+                .Distinct()
+                .Select(path => Assembly.LoadFrom(path));
 
             return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies, logger);
         }
@@ -46,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             FormatOptions formatOptions,
             CancellationToken cancellationToken)
         {
-            return AnalyzerFinderHelpers.FilterBySeverityAsync(projects, allAnalyzers, formattablePaths, formatOptions.CodeStyleSeverity, cancellationToken);
+            return AnalyzerFinderHelpers.FilterBySeverityAsync(projects, allAnalyzers, formattablePaths, formatOptions.AnalyzerSeverity, cancellationToken);
         }
     }
 }

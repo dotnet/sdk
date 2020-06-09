@@ -13,7 +13,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     internal sealed class EndOfLineFormatter : DocumentFormatter
     {
-        public override FormatType FormatType => FormatType.Whitespace;
         protected override string FormatWarningDescription => Resources.Fix_end_of_line_marker;
 
         internal override Task<SourceText> FormatFileAsync(
@@ -61,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         public static bool TryGetEndOfLine(AnalyzerConfigOptions? analyzerConfigOptions, [NotNullWhen(true)] out string? endOfLine)
         {
-            if (analyzerConfigOptions is object &&
+            if (analyzerConfigOptions != null &&
                 analyzerConfigOptions.TryGetValue("end_of_line", out var endOfLineOption))
             {
                 endOfLine = GetEndOfLine(endOfLineOption);

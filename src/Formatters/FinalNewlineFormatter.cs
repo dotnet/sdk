@@ -13,7 +13,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     internal sealed class FinalNewlineFormatter : DocumentFormatter
     {
-        public override FormatType FormatType => FormatType.Whitespace;
         protected override string FormatWarningDescription => Resources.Fix_final_newline;
 
         internal override async Task<SourceText> FormatFileAsync(
@@ -29,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 !analyzerConfigOptions.TryGetValue("insert_final_newline", out var insertFinalNewlineValue) ||
                 !bool.TryParse(insertFinalNewlineValue, out var insertFinalNewline))
             {
-                return await document.GetTextAsync(cancellationToken);
+                return await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
             }
 
             if (!EndOfLineFormatter.TryGetEndOfLine(analyzerConfigOptions, out var endOfLine))

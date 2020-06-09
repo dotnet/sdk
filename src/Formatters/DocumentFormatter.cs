@@ -18,7 +18,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     /// </summary>
     internal abstract class DocumentFormatter : ICodeFormatter
     {
-        public abstract FormatType FormatType { get; }
         protected abstract string FormatWarningDescription { get; }
 
         /// <summary>

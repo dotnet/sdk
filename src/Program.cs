@@ -43,7 +43,8 @@ namespace Microsoft.CodeAnalysis.Tools
             string? project,
             string? folder,
             string? workspace,
-            bool fixStyle,
+            string? fixStyle,
+            string? fixAnalyzers,
             string? verbosity,
             bool check,
             string[] include,
@@ -154,7 +155,10 @@ namespace Microsoft.CodeAnalysis.Tools
                     workspacePath,
                     workspaceType,
                     logLevel,
-                    fixStyle ? FormatType.All : FormatType.Whitespace,
+                    fixCodeStyle: s_parseResult.WasOptionUsed("--fix-style", "-fs"),
+                    codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
+                    fixAnalyzers: s_parseResult.WasOptionUsed("--fix-analyzers", "-fa"),
+                    analyerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
                     fileMatcher,
@@ -219,6 +223,17 @@ namespace Microsoft.CodeAnalysis.Tools
                 default:
                     return LogLevel.Information;
             }
+        }
+
+        internal static DiagnosticSeverity GetSeverity(string? severity)
+        {
+            return severity?.ToLowerInvariant() switch
+            {
+                FixSeverity.Error => DiagnosticSeverity.Error,
+                FixSeverity.Warn => DiagnosticSeverity.Warning,
+                FixSeverity.Info => DiagnosticSeverity.Info,
+                _ => throw new ArgumentOutOfRangeException(nameof(severity)),
+            };
         }
 
         private static ILogger<Program> SetupLogging(IConsole console, LogLevel logLevel)

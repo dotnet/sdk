@@ -15,7 +15,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     internal sealed class CharsetFormatter : DocumentFormatter
     {
-        public override FormatType FormatType => FormatType.Whitespace;
         protected override string FormatWarningDescription => Resources.Fix_file_encoding;
 
         private static Encoding Utf8 => new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
@@ -70,7 +69,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         private static bool TryGetCharset(AnalyzerConfigOptions? analyzerConfigOptions, [NotNullWhen(true)] out Encoding? encoding)
         {
-            if (analyzerConfigOptions is object &&
+            if (analyzerConfigOptions != null &&
                 analyzerConfigOptions.TryGetValue("charset", out var charsetOption))
             {
                 encoding = GetCharset(charsetOption);

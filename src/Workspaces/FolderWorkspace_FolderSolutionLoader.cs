@@ -26,7 +26,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 // Create projects for each of the supported languages.
                 foreach (var loader in ProjectLoaders)
                 {
-                    var projectInfo = await loader.LoadProjectInfoAsync(folderPath, fileMatcher, cancellationToken);
+                    var projectInfo = await loader.LoadProjectInfoAsync(folderPath, fileMatcher, cancellationToken).ConfigureAwait(false);
                     if (projectInfo is null)
                     {
                         continue;
