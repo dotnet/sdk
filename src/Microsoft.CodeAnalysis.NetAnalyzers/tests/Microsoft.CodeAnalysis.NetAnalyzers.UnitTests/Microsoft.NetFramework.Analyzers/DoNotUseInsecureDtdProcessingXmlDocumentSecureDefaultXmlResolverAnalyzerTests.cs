@@ -12,7 +12,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
-        => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlDocumentWithNoSecureResolver).WithLocation(line, column);
+        	=> VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlDocumentWithNoSecureResolver).WithLocation(line, column);
 
         [Fact]
         public async Task XmlDocument_TargetFx451_ShouldGenerateDiagnostic()
@@ -21,8 +21,8 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
                 ReferenceAssemblies.NetFramework.Net451.Default,
                 @"
 using System;
-using System.Reflection;               
-using System.Xml;   
+using System.Reflection;
+using System.Xml;
 
 namespace TestNamespace
 {
@@ -50,8 +50,8 @@ namespace TestNamespace
                 ReferenceAssemblies.NetFramework.Net452.Default,
                 @"
 using System;
-using System.Reflection;               
-using System.Xml;   
+using System.Reflection;
+using System.Xml;
 
 namespace TestNamespace
 {

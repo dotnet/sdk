@@ -456,7 +456,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task RealCodeSnippitFromCustomerPre452ShouldGenerateDiagnostic()
+        public async Task RealCodeSnippetFromCustomerPre452ShouldGenerateDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
@@ -554,7 +554,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task RealCodeSnippitFromCustomerPost452ShouldNotGenerateDiagnostic()
+        public async Task RealCodeSnippetFromCustomerPost452ShouldNotGenerateDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,

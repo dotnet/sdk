@@ -405,7 +405,7 @@ namespace Microsoft.NetFramework.Analyzers
 
                 xmlDocumentEnvironment.IsSecureResolver = isXmlDocumentSecureResolver;
 
-                // if XmlDocument object not temporary (variable not null), add environment to dictionary
+                // if XmlDocument object not temporary, add environment to dictionary
                 if (variable != null)
                 {
                     _xmlDocumentEnvironments[variable] = xmlDocumentEnvironment;
