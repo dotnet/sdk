@@ -646,5 +646,22 @@ public class SomeClass
                     .WithLocation(8, 23)
                     .WithArguments(nameof(IReadOnlyCollection<int>.Count)));
         }
+
+        [Fact, WorkItem(3724, "https://github.com/dotnet/roslyn-analyzers/issues/3724")]
+        public static async Task PropertyAccessParentIsNotAlwaysDirectlyTheInvocation()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+
+public class C
+{
+    public static bool IsChildPath(string parentPath, string childPath)
+    {
+        return (IsDirectorySeparator(childPath[parentPath.Length]) || IsDirectorySeparator(childPath[{|CA1829:parentPath.Count()|}]));
+    }
+
+    public static bool IsDirectorySeparator(char c) => false;
+}");
+        }
     }
 }

@@ -228,10 +228,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 operationKey = OperationEqualsInstance;
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count()).
-            else if (parentOperation is IArgumentOperation argumentOperation)
+            else if (parentOperation is IArgumentOperation argumentOperation &&
+                argumentOperation.GetAncestor<IInvocationOperation>(OperationKind.Invocation) is { } invocation)
             {
-                parentOperation = argumentOperation.Parent;
-                shouldReplaceParent = AnalyzeParentInvocationOperation((IInvocationOperation)parentOperation, isInstance: false);
+                parentOperation = invocation;
+                shouldReplaceParent = AnalyzeParentInvocationOperation(invocation, isInstance: false);
                 operationKey = OperationEqualsArgument;
             }
 
@@ -270,10 +271,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 shouldReplaceParent = AnalyzeParentInvocationOperation(parentInvocationOperation, isInstance: true);
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count).
-            else if (parentOperation is IArgumentOperation argumentOperation)
+            else if (parentOperation is IArgumentOperation argumentOperation &&
+                argumentOperation.GetAncestor<IInvocationOperation>(OperationKind.Invocation) is { } invocation)
             {
-                parentOperation = argumentOperation.Parent;
-                shouldReplaceParent = AnalyzeParentInvocationOperation((IInvocationOperation)parentOperation, isInstance: false);
+                parentOperation = invocation;
+                shouldReplaceParent = AnalyzeParentInvocationOperation(invocation, isInstance: false);
             }
 
             if (shouldReplaceParent)
@@ -403,9 +405,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (!shouldReplaceParent)
             {
                 // Parent expression doesn't met the criteria to be replaced; fallback on analysis for standalone call to Count().
-                if (!isAsync && !hasPredicate)
+                if (!isAsync && !hasPredicate && operation is IInvocationOperation invocation)
                 {
-                    AnalyzeCountInvocationOperation(context, (IInvocationOperation)operation);
+                    AnalyzeCountInvocationOperation(context, invocation);
                 }
             }
             else if (isAsync)
@@ -418,8 +420,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 ITypeSymbol? type = operation.GetInstanceType();
                 if (type != null)
                 {
-                    // If the invocation has a predicate we can only suggest CA1827; 
-                    // otherwise, we would loose the lambda if we suggest CA1829 or CA1836. 
+                    // If the invocation has a predicate we can only suggest CA1827;
+                    // otherwise, we would loose the lambda if we suggest CA1829 or CA1836.
                     if (hasPredicate)
                     {
                         bool shouldNegateAny = !shouldNegateIsEmpty;
