@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Text;
 using System.Threading.Tasks;
 using Test.Utilities;
 using Xunit;
@@ -652,6 +653,7 @@ public class SomeClass
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Linq;
+using System.Text;
 
 public class C
 {
@@ -662,6 +664,20 @@ public class C
 
     public static bool IsDirectorySeparator(char c) => false;
 }");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Linq
+
+Public Class C
+    Public Shared Function IsChildPath(ByVal parentPath As String, ByVal childPath As String) As Boolean
+        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Count())))
+    End Function
+
+    Public Shared Function IsDirectorySeparator(ByVal c As Char) As Boolean
+        Return False
+    End Function
+End Class
+");
         }
     }
 }

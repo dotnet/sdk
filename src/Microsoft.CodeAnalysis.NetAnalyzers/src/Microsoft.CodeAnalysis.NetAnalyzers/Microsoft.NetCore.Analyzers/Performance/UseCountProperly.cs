@@ -229,7 +229,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count()).
             else if (parentOperation is IArgumentOperation argumentOperation &&
-                argumentOperation.GetAncestor<IInvocationOperation>(OperationKind.Invocation) is { } invocation)
+                argumentOperation.Parent is IInvocationOperation invocation)
             {
                 parentOperation = invocation;
                 shouldReplaceParent = AnalyzeParentInvocationOperation(invocation, isInstance: false);
@@ -272,7 +272,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count).
             else if (parentOperation is IArgumentOperation argumentOperation &&
-                argumentOperation.GetAncestor<IInvocationOperation>(OperationKind.Invocation) is { } invocation)
+                argumentOperation.Parent is IInvocationOperation invocation)
             {
                 parentOperation = invocation;
                 shouldReplaceParent = AnalyzeParentInvocationOperation(invocation, isInstance: false);
