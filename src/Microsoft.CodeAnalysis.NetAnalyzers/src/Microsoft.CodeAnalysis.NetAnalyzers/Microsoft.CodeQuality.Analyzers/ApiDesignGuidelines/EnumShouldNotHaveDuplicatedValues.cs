@@ -73,7 +73,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     var fieldInitializerOperation = (IFieldInitializerOperation)oc.Operation;
 
                     if (fieldInitializerOperation.InitializedFields.Length != 1 ||
-                        !fieldInitializerOperation.Value.ConstantValue.HasValue)
+                        !fieldInitializerOperation.Value.ConstantValue.HasValue ||
+                        fieldInitializerOperation.Value.ConstantValue.Value == null)
                     {
                         return;
                     }
@@ -87,7 +88,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         .OfType<IFieldReferenceOperation>()
                         .Where(fro => fro.Field.ContainingType.Equals(enumSymbol))
                         .Any();
-                    if (onlyReferencesOneField || fieldInitializerOperation.Value.ConstantValue.Value == null)
+                    if (onlyReferencesOneField)
                     {
                         return;
                     }
