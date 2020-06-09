@@ -193,10 +193,6 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     XmlDocumentEnvironment env = p.Value;
 
-                    // secure 4.5.2 version not being checked for secure
-                    // if Version > 4.5.2 => XmlDocument = secure!!
-                    // Before 4.5.2, insecure if XmlResolver set as null for XmlUrlResolver
-                    // After 4.5.2, insecure only if XmlResolver set as XmlUrlResolver
                     if (!(env.IsXmlResolverSet | env.IsSecureResolver))
                     {
                         context.ReportDiagnostic(env.XmlDocumentDefinition.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));

@@ -170,8 +170,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net451.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -201,8 +201,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -398,8 +398,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net451.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -434,8 +434,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -592,8 +592,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net451.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -636,8 +636,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -703,7 +703,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlDocumentSetResolversInDifferentBlockPost452ShouldGenerateDiagnostic()
+        public async Task XmlDocumentSetResolversInDifferentBlockPost452ShouldNotGenerateDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
@@ -729,8 +729,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -774,8 +774,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net451.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -816,8 +816,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -864,8 +864,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net451.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -916,8 +916,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net451.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -966,8 +966,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
             Imports System.Xml
 
             Namespace TestNamespace
@@ -1016,8 +1016,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -1061,8 +1061,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net451.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -1104,8 +1104,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace

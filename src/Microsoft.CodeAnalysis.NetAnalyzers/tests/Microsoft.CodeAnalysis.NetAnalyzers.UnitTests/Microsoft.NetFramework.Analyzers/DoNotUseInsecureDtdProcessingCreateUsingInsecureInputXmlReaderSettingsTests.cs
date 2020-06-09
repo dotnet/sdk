@@ -510,8 +510,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net451.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System
 Imports System.IO
 Imports System.Xml
@@ -582,7 +582,7 @@ namespace TestNamespace
                 XmlReaderSettings settings = new XmlReaderSettings
                 {
                     ConformanceLevel = ConformanceLevel.Auto,
-                    IgnoreComments = true,
+                    IgnoreComments = true,            await VerifyVisualBasicAnalyzerAsync(
                     DtdProcessing = DtdProcessing.Ignore,
                     XmlResolver = null
                 };
@@ -607,8 +607,8 @@ namespace TestNamespace
             );
 
             await VerifyVisualBasicAnalyzerAsync(
-    ReferenceAssemblies.NetFramework.Net452.Default,
-    @"
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System
 Imports System.IO
 Imports System.Xml
