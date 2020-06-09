@@ -123,14 +123,7 @@ namespace Microsoft.NetFramework.Analyzers
                 internal XmlDocumentEnvironment(bool isTargetFrameworkSecure)
                 {
                     IsXmlResolverSet = false;
-                    if (isTargetFrameworkSecure)
-                    {
-                        IsSecureResolver = true;
-                    }
-                    else
-                    {
-                        IsSecureResolver = false;
-                    }
+                    IsSecureResolver = isTargetFrameworkSecure;
                 }
             }
 
