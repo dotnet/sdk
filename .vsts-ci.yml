@@ -10,7 +10,7 @@ jobs:
 - job: debug_osx
   displayName: OSX Debug
   pool:
-    vmImage: macOS-10.13
+    vmImage: macOS-10.15
   variables:
     DOTNET_RUNTIME_ID: osx.10.12-x64
   steps:
@@ -40,6 +40,12 @@ jobs:
 - job: debug_ubuntu1604
   displayName: Ubuntu16.04 Debug
   pool:
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      name: NetCorePublic-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64.Open
+    ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      name: NetCoreInternal-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64
     vmImage: ubuntu-16.04
   steps:
   - checkout: self
@@ -126,7 +132,7 @@ jobs:
 - job: release_osx
   displayName: OSX Release
   pool:
-    vmImage: macOS-10.13
+    vmImage: macOS-10.15
   variables:
     DOTNET_RUNTIME_ID: osx.10.12-x64
   steps:
@@ -156,6 +162,12 @@ jobs:
 - job: release_ubuntu1604
   displayName: Ubuntu16.04 Release
   pool:
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      name: NetCorePublic-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64.Open
+    ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      name: NetCoreInternal-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64
     vmImage: ubuntu-16.04
   steps:
   - checkout: self
