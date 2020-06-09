@@ -229,10 +229,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count()).
             else if (parentOperation is IArgumentOperation argumentOperation &&
-                argumentOperation.Parent is IInvocationOperation invocation)
+                argumentOperation.Parent is IInvocationOperation argumentParentInvocationOperation)
             {
-                parentOperation = invocation;
-                shouldReplaceParent = AnalyzeParentInvocationOperation(invocation, isInstance: false);
+                parentOperation = argumentParentInvocationOperation;
+                shouldReplaceParent = AnalyzeParentInvocationOperation(argumentParentInvocationOperation, isInstance: false);
                 operationKey = OperationEqualsArgument;
             }
 
@@ -272,10 +272,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count).
             else if (parentOperation is IArgumentOperation argumentOperation &&
-                argumentOperation.Parent is IInvocationOperation invocation)
+                argumentOperation.Parent is IInvocationOperation argumentParentInvocationOperation)
             {
-                parentOperation = invocation;
-                shouldReplaceParent = AnalyzeParentInvocationOperation(invocation, isInstance: false);
+                parentOperation = argumentParentInvocationOperation;
+                shouldReplaceParent = AnalyzeParentInvocationOperation(argumentParentInvocationOperation, isInstance: false);
             }
 
             if (shouldReplaceParent)
@@ -400,14 +400,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     properties: propertiesBuilder.ToImmutable()));
         }
 
-        private static void DetermineReportForInvocationAnalysis(OperationAnalysisContext context, IOperation operation, IOperation parent, bool shouldReplaceParent, bool isAsync, bool useRightSide, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey)
+        private static void DetermineReportForInvocationAnalysis(OperationAnalysisContext context, IInvocationOperation invocationOperation, IOperation parent, bool shouldReplaceParent, bool isAsync, bool useRightSide, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey)
         {
             if (!shouldReplaceParent)
             {
                 // Parent expression doesn't met the criteria to be replaced; fallback on analysis for standalone call to Count().
-                if (!isAsync && !hasPredicate && operation is IInvocationOperation invocation)
+                if (!isAsync && !hasPredicate)
                 {
-                    AnalyzeCountInvocationOperation(context, invocation);
+                    AnalyzeCountInvocationOperation(context, invocationOperation);
                 }
             }
             else if (isAsync)
@@ -417,7 +417,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             else
             {
-                ITypeSymbol? type = operation.GetInstanceType();
+                ITypeSymbol? type = invocationOperation.GetInstanceType();
                 if (type != null)
                 {
                     // If the invocation has a predicate we can only suggest CA1827;
@@ -435,11 +435,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         }
                         else if (TypeContainsVisibileProperty(context, type, Length, SpecialType.System_Int32, SpecialType.System_UInt64))
                         {
-                            ReportCA1829(context, Length, operation);
+                            ReportCA1829(context, Length, invocationOperation);
                         }
                         else if (TypeContainsVisibileProperty(context, type, Count, SpecialType.System_Int32, SpecialType.System_UInt64))
                         {
-                            ReportCA1829(context, Count, operation);
+                            ReportCA1829(context, Count, invocationOperation);
                         }
                         else
                         {
