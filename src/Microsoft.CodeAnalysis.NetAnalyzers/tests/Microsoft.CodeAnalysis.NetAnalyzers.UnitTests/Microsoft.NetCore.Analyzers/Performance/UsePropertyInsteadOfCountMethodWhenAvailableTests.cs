@@ -705,7 +705,7 @@ Imports System.Linq
 
 Public Class C
     Public Shared Function IsChildPath(parentPath As String, childPath As String, obj As IEnumerable(Of String)) As Boolean
-        Return IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)))
+        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)))
     End Function
 
     Public Shared Function IsDirectorySeparator(c As Char) As Boolean
