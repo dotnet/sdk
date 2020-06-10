@@ -662,8 +662,7 @@ public class C
     public static bool IsChildPath(string parentPath, string childPath, IEnumerable<string> obj)
     {
         return (IsDirectorySeparator(childPath[parentPath.Length]) ||
-            IsDirectorySeparator(childPath[{|CA1829:parentPath.Count()|}])) ||
-            0.Equals((uint)obj.Count());
+            IsDirectorySeparator(childPath[{|CA1829:parentPath.Count()|}]));
     }
 
     public static bool IsDirectorySeparator(char c) => false;
@@ -677,8 +676,7 @@ public class C
     public static bool IsChildPath(string parentPath, string childPath, IEnumerable<string> obj)
     {
         return (IsDirectorySeparator(childPath[parentPath.Length]) ||
-            IsDirectorySeparator(childPath[parentPath.Length])) ||
-            0.Equals((uint)obj.Count());
+            IsDirectorySeparator(childPath[parentPath.Length]));
     }
 
     public static bool IsDirectorySeparator(char c) => false;
@@ -692,11 +690,11 @@ Imports System.Collections.Generic
 Imports System.Linq
 
 Public Class C
-    Public Shared Function IsChildPath(ByVal parentPath As String, ByVal childPath As String, ByVal obj As IEnumerable(Of String)) As Boolean
-        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath({|CA1829:parentPath.Count()|})) OrElse 0.Equals(CUInt(obj.Count()))
+    Public Shared Function IsChildPath(parentPath As String, childPath As String, obj As IEnumerable(Of String)) As Boolean
+        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath({|CA1829:parentPath.Count()|})))
     End Function
 
-    Public Shared Function IsDirectorySeparator(ByVal c As Char) As Boolean
+    Public Shared Function IsDirectorySeparator(c As Char) As Boolean
         Return False
     End Function
 End Class
@@ -706,11 +704,11 @@ Imports System.Collections.Generic
 Imports System.Linq
 
 Public Class C
-    Public Shared Function IsChildPath(ByVal parentPath As String, ByVal childPath As String, ByVal obj As IEnumerable(Of String)) As Boolean
-        Return IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)) OrElse 0.Equals(CUInt(obj.Count()))
+    Public Shared Function IsChildPath(parentPath As String, childPath As String, obj As IEnumerable(Of String)) As Boolean
+        Return IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)))
     End Function
 
-    Public Shared Function IsDirectorySeparator(ByVal c As Char) As Boolean
+    Public Shared Function IsDirectorySeparator(c As Char) As Boolean
         Return False
     End Function
 End Class
