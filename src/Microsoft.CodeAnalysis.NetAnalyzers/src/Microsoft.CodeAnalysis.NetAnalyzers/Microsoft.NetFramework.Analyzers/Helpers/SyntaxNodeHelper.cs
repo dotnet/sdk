@@ -123,7 +123,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             return GetDeclaredSymbol(node, semanticModel) ?? GetReferencedSymbol(node, semanticModel);
         }
 
-        public static ISymbol? GetDeclaredSymbol(SyntaxNode? node, SemanticModel semanticModel) // TODO: Should I add an optional CancellationToken argument here to this public method?
+        public static ISymbol? GetDeclaredSymbol(SyntaxNode? node, SemanticModel semanticModel)
         {
             if (node == null)
             {
