@@ -17,7 +17,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
         private CSharpSyntaxNodeHelper()
         { }
 
-        public override ITypeSymbol? GetClassDeclarationTypeSymbol(SyntaxNode? node, SemanticModel semanticModel) // TODO: Should I add optional CancellationToken?
+        public override ITypeSymbol? GetClassDeclarationTypeSymbol(SyntaxNode? node, SemanticModel semanticModel)
         {
             if (node == null)
             {
