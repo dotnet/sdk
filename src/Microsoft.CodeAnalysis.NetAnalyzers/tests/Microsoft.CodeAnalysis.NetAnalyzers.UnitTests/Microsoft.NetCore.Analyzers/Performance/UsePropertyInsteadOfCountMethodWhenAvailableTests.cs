@@ -659,7 +659,7 @@ using System.Linq;
 
 public class C
 {
-    public static bool IsChildPath(string parentPath, string childPath, IEnumerable<string> obj)
+    public static bool IsChildPath(string parentPath, string childPath)
     {
         return (IsDirectorySeparator(childPath[parentPath.Length]) ||
             IsDirectorySeparator(childPath[{|CA1829:parentPath.Count()|}]));
@@ -673,7 +673,7 @@ using System.Linq;
 
 public class C
 {
-    public static bool IsChildPath(string parentPath, string childPath, IEnumerable<string> obj)
+    public static bool IsChildPath(string parentPath, string childPath)
     {
         return (IsDirectorySeparator(childPath[parentPath.Length]) ||
             IsDirectorySeparator(childPath[parentPath.Length]));
@@ -690,7 +690,7 @@ Imports System.Collections.Generic
 Imports System.Linq
 
 Public Class C
-    Public Shared Function IsChildPath(parentPath As String, childPath As String, obj As IEnumerable(Of String)) As Boolean
+    Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
         Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath({|CA1829:parentPath.Count()|})))
     End Function
 
@@ -704,7 +704,7 @@ Imports System.Collections.Generic
 Imports System.Linq
 
 Public Class C
-    Public Shared Function IsChildPath(parentPath As String, childPath As String, obj As IEnumerable(Of String)) As Boolean
+    Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
         Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)))
     End Function
 
