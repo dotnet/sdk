@@ -646,5 +646,73 @@ public class SomeClass
                     .WithLocation(8, 23)
                     .WithArguments(nameof(IReadOnlyCollection<int>.Count)));
         }
+
+        [Fact, WorkItem(3724, "https://github.com/dotnet/roslyn-analyzers/issues/3724")]
+        public static async Task PropertyAccessParentIsNotAlwaysDirectlyTheInvocation()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public static bool IsChildPath(string parentPath, string childPath)
+    {
+        return (IsDirectorySeparator(childPath[parentPath.Length]) ||
+            IsDirectorySeparator(childPath[{|CA1829:parentPath.Count()|}]));
+    }
+
+    public static bool IsDirectorySeparator(char c) => false;
+}",
+                FixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public static bool IsChildPath(string parentPath, string childPath)
+    {
+        return (IsDirectorySeparator(childPath[parentPath.Length]) ||
+            IsDirectorySeparator(childPath[parentPath.Length]));
+    }
+
+    public static bool IsDirectorySeparator(char c) => false;
+}",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
+        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath({|CA1829:parentPath.Count()|})))
+    End Function
+
+    Public Shared Function IsDirectorySeparator(c As Char) As Boolean
+        Return False
+    End Function
+End Class
+",
+                FixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
+        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)))
+    End Function
+
+    Public Shared Function IsDirectorySeparator(c As Char) As Boolean
+        Return False
+    End Function
+End Class
+",
+            }.RunAsync();
+        }
     }
 }
