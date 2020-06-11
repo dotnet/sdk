@@ -206,7 +206,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         {
                             var semanticModel = argument.SemanticModel;
 
-                            var symbol = semanticModel.GetSymbolInfo(argument.Value.Syntax, oaContext.CancellationToken).Symbol; // Does it matter here to use csaContext.CancellationToken or oaContext.CancellationToken?
+                            var symbol = semanticModel.GetSymbolInfo(argument.Value.Syntax, oaContext.CancellationToken).Symbol;
 
                             if (symbol != null &&
                                 (symbol.Equals(currentUICultureProperty) ||
