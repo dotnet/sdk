@@ -1832,6 +1832,16 @@
         <target state="translated">Gereksiz veri kopyaları oluşturmamak için '{2}' üzerinde '{0}' yerine '{1}' tabanlı dizin oluşturucu kullanın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on a string</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on a string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on an array</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on an array</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
         <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
         <target state="translated">Uygun olduğunda Aralık tabanlı dizin oluşturucular yerine AsSpan veya AsMemory kullanın</target>

@@ -25,17 +25,17 @@
 	- Do not separate analyzer tests from code fix tests. If the analyzer has a code fix, then write all your tests as code fix tests.
 		- Calling `VerifyCodeFixAsync(source, source)` verifies that the analyzer either does not produce diagnostics, or produces diagnostics where no code fix is offered.
 		- Calling `VerifyCodeFixAsync(source, fixedSource)` verifies the diagnostics (analyzer testing) and verifies that the code fix on source produces the expected output.
-- Run the analyzer locally against `dotnet/runtime` [instructions](#Testing-against-the-Runtime-repo). 
-	- Use the failures to discover nuance and guide the implementation details. 
-	- Run the analyzer against `dotnet/roslyn` [instruction](#Testing-against-the-Roslyn-repo), and with `dotnet/aspnetcore` if feasable. 
-	- Review each of the failures in those repositories and determine the course of action for each. 
+- Run the analyzer locally against `dotnet/runtime` and `dotnet/roslyn-analyzers` [instructions](#Testing-against-the-Runtime-and-Roslyn-analyzers-repo).
+	- Review each of the failures in those repositories and determine the course of action for each.
+	- Use the failures to discover nuance and guide the implementation details.
+	- Run the analyzer against `dotnet/roslyn` [instruction](#Testing-against-the-Roslyn-repo), and if feasable with `dotnet/aspnetcore` repos.
+	- Document for review: matching and non-matching scenarios, including any discovered nuance.
+	- Failures in all `dotnet` repos are addressed.
 - Document for review: severity, default, categorization, numbering, titles, messages, and descriptions.
-- Document for review: matching and non-matching scenarios, including any discovered nuance. 
 - Create the appropriate documentation for [docs.microsoft.com](https://github.com/MicrosoftDocs/visualstudio-docs-pr/tree/master/docs/code-quality) within **ONE WEEK**, instructions available on OneNote. External contributors should create an issue at https://github.com/microsoftDocs/visualstudio-docs/issues with a subject `Add documentation for analyzer rule [Your Rule ID]`. 
 - PR merged into `dotnet/roslyn-analyzers`. 
-- Failures in `dotnet/runtime` addressed. 
 
-## Testing against the Runtime repo 
+## Testing against the Runtime and Roslyn-analyzers repo 
 
 1. Navigate to the root of the Roslyn-analyzers repo and run these commands: 
 	- `cd roslyn-analyzers` 
@@ -43,11 +43,16 @@
 	- `build.cmd -ci /p:AssemblyVersion=%RUNTIMEPACKAGEVERSION% /p:AutoGenerateAssemblyVersion=false /p:OfficialBuild=true`
 	- `cd artifacts\bin\Microsoft.NetCore.CSharp.Analyzers\Debug\netstandard2.0` 
 2. Copy the two DLLs and replace the NuGet cache entries used by `dotnet/runtime`. They might be in `"runtime/.packages/..."` or `"%USERPROFILE%/.nuget/packages/... "`. You can check the exact path by building something in runtime with /bl and checking the binlog file. Example: 
-	- `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.NetCore.Analyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs` 
-3.    Switch to the runtime project. 
-4.    Introduce an error somewhere to prove that the rule ran. 
-	- Be careful about in which project you are producing an error, choose an API not having reference from other APIs, else all dependent API's will fail. 
-5. Build the runtime repo, either do a complete build or build each repo separately (coreclr, libraries, mono). 
+	- `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.NetCore.Analyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs`
+3. Build the rolsyn-analyzers with `build.cmd`, now new analyzers will be used from updated nuget packages and you would see the warnings if diagnostics found.
+4. If failures found, review each of the failures and determine the course of action for each. 
+	- Improve analyzer to reduce false positives, fix valid warnings, in a very rare edge cases suppress them.
+5. Make sure all failures addressed and corresponding PR(s) merged.	
+6. Switch to the runtime repo. 
+7. Build the runtime repo, either do a complete build or build each repo separately (coreclr, libraries, mono). 
+8. In case no any failure introduce an error somewhere to prove that the rule ran. 
+	- Be careful about in which project you are producing an error, choose an API not having reference from other APIs, else all dependent API's will fail.
+9. If failures found, repeat step 4-5 to evaluate and address all warnings. 
 
 ## Testing against the Roslyn repo 
 
