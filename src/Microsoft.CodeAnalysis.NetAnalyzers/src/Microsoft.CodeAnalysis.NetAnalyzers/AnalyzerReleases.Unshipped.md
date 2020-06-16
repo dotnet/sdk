@@ -9,6 +9,7 @@ CA1046 | Design | Disabled | DoNotOverloadOperatorEqualsOnReferenceTypes, [Docum
 CA1047 | Design | Info | DoNotDeclareProtectedMembersInSealedTypes, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1047)
 CA1069 | Design | Info | EnumShouldNotHaveDuplicatedValues, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1069)
 CA1070 | Design | Info | DoNotDeclareEventFieldsAsVirtual, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1070)
+CA1416 | Interoperability | Info | RuntimePlatformCheckAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
 CA1700 | Naming | Disabled | DoNotNameEnumValuesReserved, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1700)
 CA1713 | Naming | Disabled | EventsShouldNotHaveBeforeOrAfterPrefix, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1713)
 CA1830 | Performance | Info | PreferTypedStringBuilderAppendOverloads, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1830)

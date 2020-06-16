@@ -1667,6 +1667,21 @@
         <target state="translated">Zkontrolujte dotazy SQL pro chyby zabezpečení</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimePlatformCheckDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimePlatformCheckMessage">
+        <source>TODO Platform checks:'{0}'</source>
+        <target state="new">TODO Platform checks:'{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimePlatformCheckTitle">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">Nastavit HttpOnly na hodnotu true pro HttpCookie</target>
