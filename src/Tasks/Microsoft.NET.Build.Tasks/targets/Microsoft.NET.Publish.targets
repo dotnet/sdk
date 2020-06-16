@@ -479,7 +479,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ComputeResolvedFilesToPublishList"
           DependsOnTargets="_ComputeResolvedCopyLocalPublishAssets;
                             _ComputeCopyToPublishDirectoryItems;
-                            ComputeRefAssembliesToPublish">
+                            ComputeRefAssembliesToPublish;
+                            _FilterDuplicateCopyLocalPublishAssets">
     <ItemGroup>
       <!-- Copy the build product (.dll or .exe). -->
       <ResolvedFileToPublish Include="@(IntermediateAssembly)"
@@ -528,7 +529,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RelativePath>@(ReferenceComWrappersToCopyLocal->'%(Filename)%(Extension)')</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
-
+      
       <!-- Copy the resolved copy local publish assets. -->
       <ResolvedFileToPublish Include="@(_ResolvedCopyLocalPublishAssets)">
         <RelativePath>%(_ResolvedCopyLocalPublishAssets.DestinationSubDirectory)%(Filename)%(Extension)</RelativePath>
@@ -543,7 +544,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ResolvedFileToPublish>
 
       <!-- Copy all PackAsTool shims (if any) -->
-      <ResolvedFileToPublish Include="@(_EmbeddedApphostPaths)">
+      <ResolvedFileToPublish Include="@(_EmbeddedApphostPaths->Distinct())">
         <RelativePath>shims/%(_EmbeddedApphostPaths.ShimRuntimeIdentifier)/%(_EmbeddedApphostPaths.Filename)%(_EmbeddedApphostPaths.Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
@@ -661,11 +662,23 @@ Copyright (c) .NET Foundation. All rights reserved.
                             _FilterSatelliteResourcesForPublish">
 
     <ItemGroup>
-      <_ResolvedCopyLocalPublishAssets Include="@(ReferenceCopyLocalPaths)"
+      
+      <_AdditionalResolvedCopyLocalPublishAssets Include="@(ReferenceCopyLocalPaths)"
                                        Exclude="@(_ResolvedCopyLocalBuildAssets);@(RuntimePackAsset)"
                                        Condition="'$(PublishReferencesDocumentationFiles)' == 'true' or '%(ReferenceCopyLocalPaths.Extension)' != '.xml'">
         <DestinationSubPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</DestinationSubPath>
-      </_ResolvedCopyLocalPublishAssets>
+      </_AdditionalResolvedCopyLocalPublishAssets>
+      
+    </ItemGroup>
+
+    <CheckForDuplicateItemMetadata
+      Items="@(_ResolvedCopyLocalPublishAssets);@(_AdditionalResolvedCopyLocalPublishAssets)"
+      MetadataName="DestinationSubPath" >
+      <Output TaskParameter="DuplicateItems" ItemName="_ResolvedCopyLocalPublishAssetsDuplicateItems" />
+    </CheckForDuplicateItemMetadata>
+
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Include="@(_AdditionalResolvedCopyLocalPublishAssets)" Exclude="@(_ResolvedCopyLocalPublishAssetsDuplicateItems)"/>
     </ItemGroup>
 
   </Target>

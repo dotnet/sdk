@@ -12,7 +12,10 @@ namespace Microsoft.NET.Build.Tasks
         public string MetadataName { get; set; }
 
         [Output]
-        public ITaskItem[] DeduplicatedItems { get; set; }
+        public ITaskItem[] DuplicateItems { get; set; }
+
+        [Output]
+        public string[] DuplicatedMetadata { get; set; }
 
         [Output]
         public bool DuplicatesExist { get; set; }
@@ -21,9 +24,13 @@ namespace Microsoft.NET.Build.Tasks
         {
             var groupings = Items.GroupBy(item => item.GetMetadata(MetadataName));
             DuplicatesExist = groupings.Where(g => g.Count() > 1).Any();
-            DeduplicatedItems = groupings
-                .Where(g => g.Count() == 1)
-                .Select(g => g.FirstOrDefault())
+            DuplicatedMetadata = groupings
+                .Where(g => g.Count() > 1)
+                .Select(g=> g.Key)
+                .ToArray();
+            DuplicateItems = groupings
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g.ToArray())
                 .ToArray();
         }
     }

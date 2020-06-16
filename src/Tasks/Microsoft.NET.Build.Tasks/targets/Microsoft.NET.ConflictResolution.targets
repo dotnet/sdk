@@ -15,6 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.DefaultPackageConflictOverrides.targets" />
 
   <UsingTask TaskName="ResolvePackageFileConflicts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="CheckForDuplicateItemMetadata" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!--
     _HandlePackageFileConflicts
@@ -89,11 +90,38 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <UsingTask TaskName="CheckForDuplicateItemMetadata" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <!--
+    _FilterDuplicateCopyLocalPublishAssets
+    Remove CopyLocalPublishAssets items that could overwrite resolved files to publish.
+    -->
+  <Target Name="_FilterDuplicateCopyLocalPublishAssets">
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssetsWithMetadata Include="@(_ResolvedCopyLocalPublishAssets)">
+        <RelativePath>%(_ResolvedCopyLocalPublishAssets.DestinationSubDirectory)%(Filename)%(Extension)</RelativePath>
+      </_ResolvedCopyLocalPublishAssetsWithMetadata>
+    </ItemGroup>
+    
+    <CheckForDuplicateItemMetadata
+      Items="@(_ResolvedCopyLocalPublishAssetsWithMetadata);@(ResolvedFileToPublish)"
+      MetadataName="RelativePath" >
+      <Output TaskParameter="DuplicateItems" ItemName="_DuplicateResolvedCopyLocalPublishAssets" />
+    </CheckForDuplicateItemMetadata>
 
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Remove="@(_ResolvedCopyLocalPublishAssets)"/>
+      <_ResolvedCopyLocalPublishAssets Include="@(_ResolvedCopyLocalPublishAssetsWithMetadata)" Exclude="@(_DuplicateResolvedCopyLocalPublishAssets)"/>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+  _HandleFileConflictsForPublish
+  Ensures there are no duplicate files being written to the publish output.
+  -->
   <Target Name="_HandleFileConflictsForPublish"
           AfterTargets="ComputeFilesToPublish"
-          BeforeTargets="CopyFilesToPublishDirectory;_ComputeFilesToBundle" >
+          BeforeTargets="CopyFilesToPublishDirectory;_ComputeFilesToBundle"
+          Condition="'$(ErrorOnDuplicatePublishOutputFiles)' != 'false'">
 
     <CheckForDuplicateItemMetadata
       Items="@(ResolvedFileToPublish)"
