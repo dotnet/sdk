@@ -78,7 +78,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
-        public void AppleSource()
+        public void Given_KnownFrameworkReferences_with_TargetingPackCombinedAndEmbedRuntime_It_resolves_FrameworkReferences()
         {
             var task = new ProcessFrameworkReferences();
 
@@ -96,8 +96,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     new Dictionary<string, string>()
                     {
                         { "TargetFramework", "netcoreapp5.0" },
-                        { "DefaultRuntimeFrameworkVersion", "5.0.0-preview1" },
-                        { "LatestRuntimeFrameworkVersion", "5.0.0-preview1" },
+                        { "Version", "5.0.0-preview1" },
                         { "TargetingPackCombinedAndEmbedRuntime", "true" },
                     })
             };
@@ -109,8 +108,18 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks.Length.Should().Be(1);
             task.RuntimeFrameworks[0].ItemSpec.Should().Be("Microsoft.Windows.Ref");
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("5.0.0-preview1");
-            
-            // also assert targeting pack
+
+            task.TargetingPacks.Length.Should().Be(1);
+            task.TargetingPacks[0].ItemSpec.Should().Be("Microsoft.Windows.Ref");
+            task.TargetingPacks[0].GetMetadata(MetadataKeys.NuGetPackageId).Should().Be("Microsoft.Windows.Ref");
+            task.TargetingPacks[0].GetMetadata(MetadataKeys.NuGetPackageVersion).Should().Be("5.0.0-preview1");
+            task.TargetingPacks[0].GetMetadata(MetadataKeys.PackageConflictPreferredPackages).Should()
+                .Be("Microsoft.Windows.Ref;");
+            task.TargetingPacks[0].GetMetadata(MetadataKeys.RuntimeFrameworkName).Should()
+                .Be("Microsoft.Windows.Ref");
+            task.TargetingPacks[0].GetMetadata(MetadataKeys.RuntimeIdentifier).Should().Be("");
+            task.TargetingPacks[0].GetMetadata(MetadataKeys.TargetingPackFormat).Should()
+                .Be("TargetingPackCombinedAndEmbedRuntime");
         }
     }
 }
