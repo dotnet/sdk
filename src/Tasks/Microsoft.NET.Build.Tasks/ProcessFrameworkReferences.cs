@@ -512,8 +512,13 @@ namespace Microsoft.NET.Build.Tasks
                 ? Name
                 : _item.GetMetadata(MetadataKeys.RuntimeFrameworkName);
 
-            public string DefaultRuntimeFrameworkVersion => _item.GetMetadata("DefaultRuntimeFrameworkVersion");
-            public string LatestRuntimeFrameworkVersion => _item.GetMetadata("LatestRuntimeFrameworkVersion");
+            public string DefaultRuntimeFrameworkVersion => TargetingPackCombinedAndEmbedRuntime
+                ? _item.GetMetadata("Version")
+                : _item.GetMetadata("DefaultRuntimeFrameworkVersion");
+
+            public string LatestRuntimeFrameworkVersion => TargetingPackCombinedAndEmbedRuntime
+                ? _item.GetMetadata("Version")
+                : _item.GetMetadata("LatestRuntimeFrameworkVersion");
 
             //  The ID of the targeting pack NuGet package to reference
             public string TargetingPackName =>
