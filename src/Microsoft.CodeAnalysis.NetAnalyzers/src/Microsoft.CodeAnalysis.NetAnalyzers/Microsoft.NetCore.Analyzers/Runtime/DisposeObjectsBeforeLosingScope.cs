@@ -13,7 +13,6 @@ using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.DisposeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -138,13 +137,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                             if (!notDisposedDiagnostics.Any() && !mayBeNotDisposedDiagnostics.Any())
                             {
-                                return;
-                            }
-
-                            if (disposeAnalysisResult.ControlFlowGraph.OriginalOperation.HasAnyOperationDescendant(o => o.Kind == OperationKind.None && !(o.Parent is INameOfOperation)))
-                            {
-                                // Workaround for https://github.com/dotnet/roslyn/issues/32100
-                                // Bail out in presence of OperationKind.None - not implemented IOperation.
                                 return;
                             }
 
