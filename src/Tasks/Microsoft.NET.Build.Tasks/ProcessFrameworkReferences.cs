@@ -508,14 +508,24 @@ namespace Microsoft.NET.Build.Tasks
             public string Name => _item.ItemSpec;
 
             //  The framework name to write to the runtimeconfig file (and the name of the folder under dotnet/shared)
-            public string RuntimeFrameworkName => _item.GetMetadata(MetadataKeys.RuntimeFrameworkName);
+            public string RuntimeFrameworkName => TargetingPackCombinedAndEmbedRuntime
+                ? Name
+                : _item.GetMetadata(MetadataKeys.RuntimeFrameworkName);
+
             public string DefaultRuntimeFrameworkVersion => _item.GetMetadata("DefaultRuntimeFrameworkVersion");
             public string LatestRuntimeFrameworkVersion => _item.GetMetadata("LatestRuntimeFrameworkVersion");
 
             //  The ID of the targeting pack NuGet package to reference
-            public string TargetingPackName => _item.GetMetadata("TargetingPackName");
-            public string TargetingPackVersion => _item.GetMetadata("TargetingPackVersion");
-            public string TargetingPackFormat => _item.GetMetadata("TargetingPackFormat");
+            public string TargetingPackName =>
+                TargetingPackCombinedAndEmbedRuntime ? Name : _item.GetMetadata("TargetingPackName");
+
+            public string TargetingPackVersion => TargetingPackCombinedAndEmbedRuntime
+                ? _item.GetMetadata("Version")
+                : _item.GetMetadata("TargetingPackVersion");
+
+            public string TargetingPackFormat => TargetingPackCombinedAndEmbedRuntime
+                ? nameof(TargetingPackCombinedAndEmbedRuntime)
+                : _item.GetMetadata("TargetingPackFormat");
 
             public string RuntimePackNamePatterns => _item.GetMetadata("RuntimePackNamePatterns");
 
@@ -524,6 +534,9 @@ namespace Microsoft.NET.Build.Tasks
             public string IsTrimmable => _item.GetMetadata(MetadataKeys.IsTrimmable);
 
             public bool IsWindowsOnly => _item.HasMetadataValue("IsWindowsOnly", "true");
+
+            public bool TargetingPackCombinedAndEmbedRuntime =>
+                _item.HasMetadataValue("TargetingPackCombinedAndEmbedRuntime", "true");
 
             public string Profile => _item.GetMetadata("Profile");
 
