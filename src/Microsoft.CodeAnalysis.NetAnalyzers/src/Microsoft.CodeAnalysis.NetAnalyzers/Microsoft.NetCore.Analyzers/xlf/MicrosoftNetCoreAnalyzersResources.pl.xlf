@@ -1668,6 +1668,21 @@
         <target state="translated">Sprawdź zapytania SQL pod kątem luk w zabezpieczeniach</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimePlatformCheckDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimePlatformCheckMessage">
+        <source>TODO Platform checks:'{0}'</source>
+        <target state="new">TODO Platform checks:'{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimePlatformCheckTitle">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">Ustaw element HttpOnly na wartość true dla elementu HttpCookie</target>
