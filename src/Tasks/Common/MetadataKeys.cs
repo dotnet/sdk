@@ -79,6 +79,7 @@ namespace Microsoft.NET.Build.Tasks
 
         //  Targeting packs
         public const string PackageConflictPreferredPackages = "PackageConflictPreferredPackages";
+        public const string TargetingPackFormat = "TargetingPackFormat";
 
         //  Runtime packs
         public const string DropFromSingleFile = "DropFromSingleFile";

@@ -253,7 +253,7 @@ namespace Microsoft.NET.Build.Tasks
                 targetingPackVersion = knownFrameworkReference.TargetingPackVersion;
             }
             targetingPack.SetMetadata(MetadataKeys.NuGetPackageVersion, targetingPackVersion);
-            targetingPack.SetMetadata("TargetingPackFormat", knownFrameworkReference.TargetingPackFormat);
+            targetingPack.SetMetadata(MetadataKeys.TargetingPackFormat, knownFrameworkReference.TargetingPackFormat);
             targetingPack.SetMetadata("TargetFramework", knownFrameworkReference.TargetFramework.GetShortFolderName());
             targetingPack.SetMetadata(MetadataKeys.RuntimeFrameworkName, knownFrameworkReference.RuntimeFrameworkName);
             targetingPack.SetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers, knownFrameworkReference.RuntimePackRuntimeIdentifiers);
@@ -530,7 +530,7 @@ namespace Microsoft.NET.Build.Tasks
 
             public string TargetingPackFormat => TargetingPackCombinedAndEmbedRuntime
                 ? nameof(TargetingPackCombinedAndEmbedRuntime)
-                : _item.GetMetadata("TargetingPackFormat");
+                : _item.GetMetadata(MetadataKeys.TargetingPackFormat);
 
             public string RuntimePackNamePatterns => _item.GetMetadata("RuntimePackNamePatterns");
 
