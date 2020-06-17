@@ -132,61 +132,13 @@ namespace Microsoft.NET.Build.Tasks
                         preferredPackages.Add(runtimePackName);
                     }
                 }
-
-                //  Get the path of the targeting pack in the targeting pack root (e.g. dotnet/ref)
-                TaskItem targetingPack = new TaskItem(knownFrameworkReference.Name);
-                targetingPack.SetMetadata(MetadataKeys.NuGetPackageId, knownFrameworkReference.TargetingPackName);
-                targetingPack.SetMetadata(MetadataKeys.PackageConflictPreferredPackages, string.Join(";", preferredPackages));
-
-                string targetingPackVersion = null;
-                if (frameworkReference != null)
-                {
-                    //  Allow targeting pack version to be overridden via metadata on FrameworkReference
-                    targetingPackVersion = frameworkReference.GetMetadata("TargetingPackVersion");
-                }
-                if (string.IsNullOrEmpty(targetingPackVersion))
-                {
-                    targetingPackVersion = knownFrameworkReference.TargetingPackVersion;
-                }
-                targetingPack.SetMetadata(MetadataKeys.NuGetPackageVersion, targetingPackVersion);
-                targetingPack.SetMetadata("TargetingPackFormat", knownFrameworkReference.TargetingPackFormat);
-                targetingPack.SetMetadata("TargetFramework", knownFrameworkReference.TargetFramework.GetShortFolderName());
-                targetingPack.SetMetadata(MetadataKeys.RuntimeFrameworkName, knownFrameworkReference.RuntimeFrameworkName);
-                targetingPack.SetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers, knownFrameworkReference.RuntimePackRuntimeIdentifiers);
-
-                if (!string.IsNullOrEmpty(knownFrameworkReference.Profile))
-                {
-                    targetingPack.SetMetadata("Profile", knownFrameworkReference.Profile);
-                }
-
-                string targetingPackPath = null;
-                if (!string.IsNullOrEmpty(TargetingPackRoot))
-                {
-                    targetingPackPath = Path.Combine(TargetingPackRoot, knownFrameworkReference.TargetingPackName, targetingPackVersion);
-                }
-                if (targetingPackPath != null && Directory.Exists(targetingPackPath))
-                {
-                    // Use targeting pack from packs folder
-                    targetingPack.SetMetadata(MetadataKeys.PackageDirectory, targetingPackPath);
-                    targetingPack.SetMetadata(MetadataKeys.Path, targetingPackPath);
-                }
-                else
-                {
-                    if (EnableTargetingPackDownload)
-                    {
-                        //  Download targeting pack
-                        TaskItem packageToDownload = new TaskItem(knownFrameworkReference.TargetingPackName);
-                        packageToDownload.SetMetadata(MetadataKeys.Version, targetingPackVersion);
-
-                        packagesToDownload.Add(packageToDownload);
-                    }
-                }
-
+                
+                TaskItem targetingPack = FindTargetingPackAndAppendPackageToDownload(packagesToDownload, knownFrameworkReference, frameworkReference, preferredPackages);
                 targetingPacks.Add(targetingPack);
 
                 var runtimeFrameworkVersion = GetRuntimeFrameworkVersion(
-                    frameworkReference, 
-                    knownFrameworkReference, 
+                    frameworkReference,
+                    knownFrameworkReference,
                     out string runtimePackVersion);
 
                 string isTrimmable = null;
@@ -278,6 +230,63 @@ namespace Microsoft.NET.Build.Tasks
             {
                 UnavailableRuntimePacks = unavailableRuntimePacks.ToArray();
             }
+        }
+
+        private TaskItem FindTargetingPackAndAppendPackageToDownload(List<ITaskItem> packagesToDownload,
+                                                                     KnownFrameworkReference knownFrameworkReference,
+                                                                     ITaskItem frameworkReference,
+                                                                     List<string> preferredPackages)
+        {
+            //  Get the path of the targeting pack in the targeting pack root (e.g. dotnet/ref)
+            TaskItem targetingPack = new TaskItem(knownFrameworkReference.Name);
+            targetingPack.SetMetadata(MetadataKeys.NuGetPackageId, knownFrameworkReference.TargetingPackName);
+            targetingPack.SetMetadata(MetadataKeys.PackageConflictPreferredPackages, string.Join(";", preferredPackages));
+
+            string targetingPackVersion = null;
+            if (frameworkReference != null)
+            {
+                //  Allow targeting pack version to be overridden via metadata on FrameworkReference
+                targetingPackVersion = frameworkReference.GetMetadata("TargetingPackVersion");
+            }
+            if (string.IsNullOrEmpty(targetingPackVersion))
+            {
+                targetingPackVersion = knownFrameworkReference.TargetingPackVersion;
+            }
+            targetingPack.SetMetadata(MetadataKeys.NuGetPackageVersion, targetingPackVersion);
+            targetingPack.SetMetadata("TargetingPackFormat", knownFrameworkReference.TargetingPackFormat);
+            targetingPack.SetMetadata("TargetFramework", knownFrameworkReference.TargetFramework.GetShortFolderName());
+            targetingPack.SetMetadata(MetadataKeys.RuntimeFrameworkName, knownFrameworkReference.RuntimeFrameworkName);
+            targetingPack.SetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers, knownFrameworkReference.RuntimePackRuntimeIdentifiers);
+
+            if (!string.IsNullOrEmpty(knownFrameworkReference.Profile))
+            {
+                targetingPack.SetMetadata("Profile", knownFrameworkReference.Profile);
+            }
+
+            string targetingPackPath = null;
+            if (!string.IsNullOrEmpty(TargetingPackRoot))
+            {
+                targetingPackPath = Path.Combine(TargetingPackRoot, knownFrameworkReference.TargetingPackName, targetingPackVersion);
+            }
+            if (targetingPackPath != null && Directory.Exists(targetingPackPath))
+            {
+                // Use targeting pack from packs folder
+                targetingPack.SetMetadata(MetadataKeys.PackageDirectory, targetingPackPath);
+                targetingPack.SetMetadata(MetadataKeys.Path, targetingPackPath);
+            }
+            else
+            {
+                if (EnableTargetingPackDownload)
+                {
+                    //  Download targeting pack
+                    TaskItem packageToDownload = new TaskItem(knownFrameworkReference.TargetingPackName);
+                    packageToDownload.SetMetadata(MetadataKeys.Version, targetingPackVersion);
+
+                    packagesToDownload.Add(packageToDownload);
+                }
+            }
+
+            return targetingPack;
         }
 
         private void ProcessRuntimeIdentifier(

@@ -76,5 +76,41 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().BeNull();
             task.RuntimeFrameworks.Should().BeNull();
         }
+
+        [Fact]
+        public void AppleSource()
+        {
+            var task = new ProcessFrameworkReferences();
+
+            task.EnableTargetingPackDownload = true;
+            task.TargetFrameworkIdentifier = ".NETCoreApp";
+            task.TargetFrameworkVersion = "5.0";
+            task.FrameworkReferences = new[]
+            {
+                new MockTaskItem("Microsoft.Windows.Ref", new Dictionary<string, string>())
+            };
+
+            task.KnownFrameworkReferences = new[]
+            {
+                new MockTaskItem("Microsoft.Windows.Ref",
+                    new Dictionary<string, string>()
+                    {
+                        { "TargetFramework", "netcoreapp5.0" },
+                        { "DefaultRuntimeFrameworkVersion", "5.0.0-preview1" },
+                        { "LatestRuntimeFrameworkVersion", "5.0.0-preview1" },
+                        { "TargetingPackCombinedAndEmbedRuntime", "true" },
+                    })
+            };
+
+            task.Execute().Should().BeTrue();
+
+            task.PackagesToDownload.Length.Should().Be(1);
+
+            task.RuntimeFrameworks.Length.Should().Be(1);
+            task.RuntimeFrameworks[0].ItemSpec.Should().Be("Microsoft.Windows.Ref");
+            task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("5.0.0-preview1");
+            
+            // also assert targeting pack
+        }
     }
 }
