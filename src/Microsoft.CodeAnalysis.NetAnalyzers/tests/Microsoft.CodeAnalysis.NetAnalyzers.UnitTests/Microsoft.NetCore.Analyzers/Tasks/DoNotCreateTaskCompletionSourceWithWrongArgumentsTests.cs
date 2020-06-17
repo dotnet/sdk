@@ -115,6 +115,58 @@ class C
         }
 
         [Fact]
+        public async Task Diagnostics_FixApplies_CSharp_NonGeneric()
+        {
+            await VerifyCS.VerifyCodeFixAsync(
+@"
+using System.Threading.Tasks;
+
+namespace System.Threading.Tasks
+{
+    public class TaskCompletionSource // added in .NET 5
+    {
+        public TaskCompletionSource(TaskCreationOptions options) { }
+        public TaskCompletionSource(object state) { }
+    }
+}
+
+class C
+{
+    void M()
+    {
+        new TaskCompletionSource([|TaskContinuationOptions.None|]);
+        new TaskCompletionSource([|TaskContinuationOptions.RunContinuationsAsynchronously|]);
+        var tcs = new TaskCompletionSource([|TaskContinuationOptions.AttachedToParent|]);
+    }
+    TaskContinuationOptions MyProperty { get; set; }
+}
+",
+@"
+using System.Threading.Tasks;
+
+namespace System.Threading.Tasks
+{
+    public class TaskCompletionSource // added in .NET 5
+    {
+        public TaskCompletionSource(TaskCreationOptions options) { }
+        public TaskCompletionSource(object state) { }
+    }
+}
+
+class C
+{
+    void M()
+    {
+        new TaskCompletionSource(TaskCreationOptions.None);
+        new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.AttachedToParent);
+    }
+    TaskContinuationOptions MyProperty { get; set; }
+}
+");
+        }
+
+        [Fact]
         public async Task Diagnostics_FixApplies_Basic()
         {
             await VerifyVB.VerifyCodeFixAsync(
