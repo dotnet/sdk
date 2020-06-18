@@ -193,13 +193,13 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                if (!string.IsNullOrEmpty(knownFrameworkReference.RuntimeFrameworkName))
+                if (!string.IsNullOrEmpty(knownFrameworkReference.RuntimeFrameworkName) &&
+                    !knownFrameworkReference.TargetingPackCombinedAndEmbedRuntime)
                 {
                     TaskItem runtimeFramework = new TaskItem(knownFrameworkReference.RuntimeFrameworkName);
 
                     runtimeFramework.SetMetadata(MetadataKeys.Version, runtimeFrameworkVersion);
                     runtimeFramework.SetMetadata(MetadataKeys.FrameworkName, knownFrameworkReference.Name);
-
                     runtimeFrameworks.Add(runtimeFramework);
                 }
             }

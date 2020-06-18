@@ -171,10 +171,14 @@ namespace Microsoft.NET.Build.Tasks
                 SingleProjectInfo.CreateProjectReferenceInfos(ReferencePaths, ReferenceSatellitePaths, isUserRuntimeAssembly);
 
             IEnumerable<RuntimePackAssetInfo> runtimePackAssets =
-                IsSelfContained ? 
-                    RuntimePackAssets.Where(item => !IsSingleFile || !item.GetMetadata(MetadataKeys.DropFromSingleFile).Equals("true"))
-                                     .Select(item => RuntimePackAssetInfo.FromItem(item)) :
-                    Enumerable.Empty<RuntimePackAssetInfo>();
+                IsSelfContained
+                    ? RuntimePackAssets.Where(item =>
+                            !IsSingleFile || !item.GetMetadata(MetadataKeys.DropFromSingleFile).Equals("true"))
+                        .Select(item => RuntimePackAssetInfo.FromItem(item))
+                    : RuntimePackAssets.Where(item =>
+                            (!IsSingleFile || !item.GetMetadata(MetadataKeys.DropFromSingleFile).Equals("true")) &&
+                            item.HasMetadataValue(MetadataKeys.TargetingPackCombinedAndEmbedRuntime, "true"))
+                        .Select(item => RuntimePackAssetInfo.FromItem(item));
 
             DependencyContextBuilder builder;
             if (projectContext != null)
