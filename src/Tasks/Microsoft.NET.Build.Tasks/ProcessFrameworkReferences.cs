@@ -152,6 +152,18 @@ namespace Microsoft.NET.Build.Tasks
                     isTrimmable = knownFrameworkReference.IsTrimmable;
                 }
 
+                if (knownFrameworkReference.TargetingPackCombinedAndEmbedRuntime)
+                {
+                    TaskItem runtimePackItem = new TaskItem(knownFrameworkReference.Name);
+                    runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageId, knownFrameworkReference.Name);
+                    runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageVersion,
+                        knownFrameworkReference.TargetingPackVersion);
+                    runtimePackItem.SetMetadata(MetadataKeys.FrameworkName, knownFrameworkReference.Name);
+                    runtimePackItem.SetMetadata(MetadataKeys.IsTrimmable, knownFrameworkReference.IsTrimmable);
+                    runtimePackItem.SetMetadata(MetadataKeys.TargetingPackCombinedAndEmbedRuntime, "true");
+                    runtimePacks.Add(runtimePackItem);
+                }
+
                 bool processedPrimaryRuntimeIdentifier = false;
 
                 if ((SelfContained || ReadyToRunEnabled) &&
