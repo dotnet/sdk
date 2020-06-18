@@ -541,7 +541,7 @@ namespace Microsoft.NET.Build.Tasks
             public bool IsWindowsOnly => _item.HasMetadataValue("IsWindowsOnly", "true");
 
             public bool TargetingPackCombinedAndEmbedRuntime =>
-                _item.HasMetadataValue("TargetingPackCombinedAndEmbedRuntime", "true");
+                _item.HasMetadataValue(MetadataKeys.TargetingPackCombinedAndEmbedRuntime, "true");
 
             public string Profile => _item.GetMetadata("Profile");
 

@@ -37,13 +37,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         {MetadataKeys.PackageDirectory, mockPackageDirectory},
                         {MetadataKeys.Path, mockPackageDirectory},
                         {"TargetFramework", "net5.0"},
-                        {MetadataKeys.TargetingPackFormat, "TargetingPackCombinedAndEmbedRuntime"},
+                        {MetadataKeys.TargetingPackFormat, MetadataKeys.TargetingPackCombinedAndEmbedRuntime},
                     })
             };
 
             task.Execute().Should().BeTrue();
 
-            task.ReferencesToAdd.Should().Contain(Path.Combine(mockPackageDirectory, "lib/Microsoft.Windows.SDK.NET.dll"));
+            task.ReferencesToAdd[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "lib/Microsoft.Windows.SDK.NET.dll"));
             task.PlatformManifests.Should().Contain(Path.Combine(mockPackageDirectory, "data\\PlatformManifest.txt"));
         }
 

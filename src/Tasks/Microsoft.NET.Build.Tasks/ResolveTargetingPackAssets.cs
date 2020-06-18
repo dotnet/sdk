@@ -87,14 +87,22 @@ namespace Microsoft.NET.Build.Tasks
 
                         string targetingPackDataPath = Path.Combine(targetingPackRoot, "data");
 
-                        string targetingPackDllFolder = Path.Combine(targetingPackRoot, "ref", targetingPackTargetFramework);
-                        
-                        //  Fall back to netcoreapp5.0 folder if looking for net5.0 and it's not found
-                        if (!Directory.Exists(targetingPackDllFolder) &&
-                            targetingPackTargetFramework.Equals("net5.0", StringComparison.OrdinalIgnoreCase))
+                        string targetingPackDllFolder;
+                        if (targetingPackFormat.Equals(MetadataKeys.TargetingPackCombinedAndEmbedRuntime, StringComparison.OrdinalIgnoreCase))
                         {
-                            targetingPackTargetFramework = "netcoreapp5.0";
+                            targetingPackDllFolder = Path.Combine(targetingPackRoot);
+                        }
+                        else
+                        {
                             targetingPackDllFolder = Path.Combine(targetingPackRoot, "ref", targetingPackTargetFramework);
+
+                            //  Fall back to netcoreapp5.0 folder if looking for net5.0 and it's not found
+                            if (!Directory.Exists(targetingPackDllFolder) &&
+                                targetingPackTargetFramework.Equals("net5.0", StringComparison.OrdinalIgnoreCase))
+                            {
+                                targetingPackTargetFramework = "netcoreapp5.0";
+                                targetingPackDllFolder = Path.Combine(targetingPackRoot, "ref", targetingPackTargetFramework);
+                            }
                         }
 
                         string platformManifestPath = Path.Combine(targetingPackDataPath, "PlatformManifest.txt");
@@ -184,8 +192,6 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var fileElement in frameworkListDoc.Root.Elements("File"))
             {
-                string assemblyName = fileElement.Attribute("AssemblyName").Value;
-
                 if (!string.IsNullOrEmpty(profile))
                 {
                     var profileAttributeValue = fileElement.Attribute("Profile")?.Value;
@@ -212,7 +218,8 @@ namespace Microsoft.NET.Build.Tasks
                     continue;
                 }
 
-                var dllPath = Path.Combine(targetingPackDllFolder, assemblyName + ".dll");
+                string assemblyPath = fileElement.Attribute("Path").Value;
+                var dllPath = Path.Combine(targetingPackDllFolder, assemblyPath);
                 var referenceItem = CreateReferenceItem(dllPath, targetingPack);
 
                 referenceItem.SetMetadata("AssemblyVersion", fileElement.Attribute("AssemblyVersion").Value);

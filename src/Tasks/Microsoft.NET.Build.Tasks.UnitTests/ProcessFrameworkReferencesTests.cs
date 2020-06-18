@@ -97,7 +97,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     {
                         { "TargetFramework", "netcoreapp5.0" },
                         { "Version", "5.0.0-preview1" },
-                        { "TargetingPackCombinedAndEmbedRuntime", "true" },
+                        { MetadataKeys.TargetingPackCombinedAndEmbedRuntime, "true" },
                     })
             };
 
@@ -119,7 +119,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Be("Microsoft.Windows.Ref");
             task.TargetingPacks[0].GetMetadata(MetadataKeys.RuntimeIdentifier).Should().Be("");
             task.TargetingPacks[0].GetMetadata(MetadataKeys.TargetingPackFormat).Should()
-                .Be("TargetingPackCombinedAndEmbedRuntime");
+                .Be(MetadataKeys.TargetingPackCombinedAndEmbedRuntime);
         }
     }
 }
