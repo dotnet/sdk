@@ -153,6 +153,63 @@ namespace Microsoft.NET.Build.Tests
                 .NotHaveSubDirectories($"runtime.{Rid}.microsoft.windowsdesktop.app");
         }
 
+        [WindowsOnlyFact]
+        public void It_builds_on_windows_with_the_windows_desktop_sdk_5_0_with_ProjectSdk_set()
+        {
+            const string ProjectName = "WindowsDesktopSdkTest_50";
+
+            const string tfm = "net5.0";
+
+            var testProject = new TestProject()
+            {
+                Name = ProjectName,
+                TargetFrameworks = tfm,
+                IsSdkProject = true,
+                ProjectSdk = "Microsoft.NET.Sdk.WindowsDesktop",
+                IsWinExe = true,
+            };
+
+            testProject.SourceFiles.Add("App.xaml.cs", _fileUseWindowsType);
+            testProject.AdditionalProperties.Add("UseWPF", "true");
+
+            var asset = _testAssetsManager.CreateTestProject(testProject);
+
+            var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+
+            command
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
+        [WindowsOnlyFact]
+        public void It_builds_on_windows_with_the_windows_desktop_sdk_5_0_without_ProjectSdk_set()
+        {
+            const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";
+
+            const string tfm = "net5.0";
+
+            var testProject = new TestProject()
+            {
+                Name = ProjectName,
+                TargetFrameworks = tfm,
+                IsSdkProject = true,
+                IsWinExe = true,
+            };
+
+            testProject.SourceFiles.Add("App.xaml.cs", _fileUseWindowsType);
+            testProject.AdditionalProperties.Add("UseWPF", "true");
+
+            var asset = _testAssetsManager.CreateTestProject(testProject);
+
+            var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+
+            command
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
         private TestAsset CreateWindowsDesktopSdkTestAsset(string projectName, string uiFrameworkProperty)
         {
             const string tfm = "netcoreapp3.0";
@@ -187,5 +244,23 @@ namespace Microsoft.NET.Build.Tests
 
             return _testAssetsManager.CreateTestProject(testProject);
         }
+
+        private readonly string _fileUseWindowsType = @"
+using System.Windows;
+
+namespace wpf
+{
+    public partial class App : Application
+    {
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+    }
+}
+";
     }
 }
