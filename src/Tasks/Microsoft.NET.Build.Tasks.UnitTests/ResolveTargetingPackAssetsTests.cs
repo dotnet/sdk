@@ -18,6 +18,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             Directory.CreateDirectory(dataDir);
 
             File.WriteAllText(Path.Combine(dataDir, "FrameworkList.xml"), _frameworkList);
+            File.WriteAllText(Path.Combine(dataDir, "PlatformManifest.txt"), "");
 
             var task = new ResolveTargetingPackAssets();
 
@@ -44,7 +45,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeTrue();
 
             task.ReferencesToAdd[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "lib/Microsoft.Windows.SDK.NET.dll"));
-            task.PlatformManifests.Should().Contain(Path.Combine(mockPackageDirectory, "data\\PlatformManifest.txt"));
+            task.PlatformManifests[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "data\\PlatformManifest.txt"));
         }
 
         private readonly string _frameworkList =
