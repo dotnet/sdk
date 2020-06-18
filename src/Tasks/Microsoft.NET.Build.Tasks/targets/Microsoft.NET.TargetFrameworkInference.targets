@@ -88,6 +88,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_UnsupportedTargetFrameworkError>true</_UnsupportedTargetFrameworkError>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(ImportWindowsDesktopTargets)' == '' And ('$(UseWpf)' == 'true' Or '$(UseWindowsForms)' == 'true')">
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+  </PropertyGroup>
+
   <!--
     NOTE: We must not validate the TFM before restore target runs as it prevents adding additional TFM 
           support from being provided by a nuget package such as MSBuild.Sdk.Extras.
