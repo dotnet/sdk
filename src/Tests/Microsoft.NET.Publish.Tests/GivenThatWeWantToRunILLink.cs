@@ -74,7 +74,7 @@ namespace Microsoft.NET.Publish.Tests
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/v:d").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
@@ -98,6 +98,12 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeFalse();
             DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
         }
+
+        // PrepareForILLink can be used to set IsTrimmable
+
+        // PrepareForILLink can be used to set per-assembly TrimMode
+
+        // TrimMode can be used to control global defaults
 
         [Theory]
         [InlineData("netcoreapp3.0")]
@@ -306,7 +312,7 @@ namespace Microsoft.NET.Publish.Tests
             var linkSemaphore = Path.Combine(intermediateDirectory, "Link.semaphore");
 
             // Link, keeping classlib
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/v:d").Should().Pass();
             DateTime semaphoreFirstModifiedTime = File.GetLastWriteTimeUtc(linkSemaphore);
 
             var publishedDllKeptFirstTimeOnly = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");
@@ -505,19 +511,19 @@ namespace Microsoft.NET.Publish.Tests
             var ns = project.Root.Name.Namespace;
 
             var target = new XElement(ns + "Target",
-                                      new XAttribute("AfterTargets", "_SetILLinkDefaults"),
+                                      new XAttribute("AfterTargets", "PrepareForILLink"),
                                       new XAttribute("Name", "_EnableNonFrameworkTrimming"));
             project.Root.Add(target);
             target.Add(new XElement(ns + "PropertyGroup",
-                                     new XElement("_TrimmerDefaultAction", "link")));
+                                     new XElement("TrimMode", "link")));
             target.Add(new XElement(ns + "ItemGroup",
                                     new XElement("TrimmerRootAssembly",
                                                  new XAttribute("Remove", "@(TrimmerRootAssembly)")),
                                     new XElement("TrimmerRootAssembly",
                                                  new XAttribute("Include", "@(IntermediateAssembly->'%(FileName)')")),
-                                    new XElement("_ManagedAssembliesToLink",
-                                                 new XAttribute("Update", "@(_ManagedAssembliesToLink)"),
-                                                 new XElement("action"))));
+                                    new XElement("ManagedAssemblyToLink",
+                                                 new XAttribute("Update", "@(ManagedAssemblyToLink)"),
+                                                 new XElement("TrimMode"))));
         }
 
         static readonly string substitutionsFilename = "ILLink.Substitutions.xml";
