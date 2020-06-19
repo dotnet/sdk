@@ -11,6 +11,8 @@ param(
     [Parameter(Mandatory=$false)][string]$MmVersion
 )
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bOR [Net.SecurityProtocolType]::Tls12
+
 $NuGetDir = Join-Path $BinDir  "nuget"
 $NuGetExe = Join-Path $NuGetDir "nuget.exe"
 $OutputDirectory = [System.IO.Path]::GetDirectoryName($NupkgFile)
@@ -27,6 +29,11 @@ if (-not (Test-Path $NuGetExe)) {
     # Using 3.5.0 to workaround https://github.com/NuGet/Home/issues/5016
     Write-Output "Downloading nuget.exe to $NuGetExe"
     wget https://dist.nuget.org/win-x86-commandline/v3.5.0/nuget.exe -OutFile $NuGetExe
+}
+
+if (-not (Test-Path $NuGetExe)) {
+    Write-Error "Could not download nuget.exe"
+    Exit 1
 }
 
 if (Test-Path $NupkgFile) {
