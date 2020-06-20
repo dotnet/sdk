@@ -107,7 +107,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishDirName Condition="'$(PublishDirName)' == ''">publish</PublishDirName>
     <!-- ensure the PublishDir is RID specific-->
     <PublishDir Condition="'$(PublishDir)' == '' and
-                           '$(AppendRuntimeIdentifierToOutputPath)' == 'true' and
+                           '$(AppendRuntimeIdentifierToOutputPath)' != 'false' and
                            '$(RuntimeIdentifier)' != '' and
                            '$(_UsingDefaultRuntimeIdentifier)' != 'true'">$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\</PublishDir>
     <PublishDir Condition="'$(PublishDir)' == ''">$(OutputPath)$(PublishDirName)\</PublishDir>
