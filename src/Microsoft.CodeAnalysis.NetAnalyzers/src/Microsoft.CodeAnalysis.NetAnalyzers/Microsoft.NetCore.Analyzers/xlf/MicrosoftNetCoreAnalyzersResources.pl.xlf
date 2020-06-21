@@ -1668,6 +1668,21 @@
         <target state="translated">Sprawdź zapytania SQL pod kątem luk w zabezpieczeniach</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimePlatformCheckDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimePlatformCheckMessage">
+        <source>TODO Platform checks:'{0}'</source>
+        <target state="new">TODO Platform checks:'{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimePlatformCheckTitle">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">Ustaw element HttpOnly na wartość true dla elementu HttpCookie</target>
@@ -1831,6 +1846,16 @@
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
         <target state="translated">Użyj metody „{0}” zamiast indeksatora opartego na „{1}” w przypadku wartości „{2}”, aby uniknąć tworzenia niepotrzebnych kopii danych.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on a string</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on a string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on an array</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on an array</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">

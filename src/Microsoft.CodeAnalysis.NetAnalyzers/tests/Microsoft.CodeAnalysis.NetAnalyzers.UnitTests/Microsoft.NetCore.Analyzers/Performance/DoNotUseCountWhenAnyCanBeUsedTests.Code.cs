@@ -109,7 +109,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     builder
                         .Append("using ")
                         .Append(aditionalNamespace)
-                        .Append(";")
+                        .Append(';')
                         .AppendLine();
                 }
 
@@ -129,7 +129,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 {
                     builder
                         .Append(AsyncKeyword)
-                        .Append(" ");
+                        .Append(' ');
                 };
 
                 return builder
@@ -263,7 +263,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 {
                     builder
                         .Append(AsyncKeyword)
-                        .Append(" ");
+                        .Append(' ');
                 };
 
                 return builder

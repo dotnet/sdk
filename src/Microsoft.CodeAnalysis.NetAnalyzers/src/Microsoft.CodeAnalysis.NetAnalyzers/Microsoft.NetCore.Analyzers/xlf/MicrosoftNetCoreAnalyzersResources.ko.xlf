@@ -1667,6 +1667,21 @@
         <target state="translated">보안상 취약한 부분이 있는지 SQL 쿼리를 검토하십시오.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RuntimePlatformCheckDescription">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimePlatformCheckMessage">
+        <source>TODO Platform checks:'{0}'</source>
+        <target state="new">TODO Platform checks:'{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimePlatformCheckTitle">
+        <source>TODO</source>
+        <target state="new">TODO</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">HttpCookie에 대해 HttpOnly를 true로 설정</target>
@@ -1830,6 +1845,16 @@
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
         <target state="translated">불필요한 데이터 복사본이 만들어지지 않도록 하려면 '{2}'에서 '{1}' 기반 인덱서 대신 '{0}'을(를) 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on a string</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on a string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on an array</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on an array</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">

@@ -73,7 +73,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     var fieldInitializerOperation = (IFieldInitializerOperation)oc.Operation;
 
                     if (fieldInitializerOperation.InitializedFields.Length != 1 ||
-                        !fieldInitializerOperation.Value.ConstantValue.HasValue)
+                        !fieldInitializerOperation.Value.ConstantValue.HasValue ||
+                        fieldInitializerOperation.Value.ConstantValue.Value == null)
                     {
                         return;
                     }
@@ -109,7 +110,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     {
                         var fieldSyntax = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
 
-                        if (fieldSyntax != null)
+                        if (fieldSyntax != null && value != null)
                         {
                             membersByValue.AddOrUpdate(value,
                                 new ConcurrentBag<(SyntaxNode, string)> { (fieldSyntax, field.Name) },

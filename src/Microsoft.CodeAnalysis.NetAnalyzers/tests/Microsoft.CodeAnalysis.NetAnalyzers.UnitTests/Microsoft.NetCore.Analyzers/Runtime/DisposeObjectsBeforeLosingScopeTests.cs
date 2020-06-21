@@ -12218,5 +12218,40 @@ Class Test
 End Class",
                 GetBasicResultAt(12, 18, "New A()"));
         }
+
+        [Fact]
+        public async Task Dispose_UsingDeclaration_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.Diagnostics;
+
+public class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+public class Class1
+{
+    public void M()
+    {
+        using Process _ = new Process
+        {
+            StartInfo = new ProcessStartInfo()
+        };
+
+        using var a = GetA();
+    }
+
+    public A GetA()
+        => new A();
+}",
+                LanguageVersion = CSharpLanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }

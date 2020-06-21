@@ -1344,4 +1344,19 @@
   <data name="PreferIsEmptyOverCountTitle" xml:space="preserve">
     <value>Prefer IsEmpty over Count</value>
   </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
+    <value>Use `{0}` instead of Range-based indexers on a string</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle" xml:space="preserve">
+    <value>Use `{0}` instead of Range-based indexers on an array</value>
+  </data>
+  <data name="RuntimePlatformCheckTitle" xml:space="preserve">
+    <value>TODO</value>
+  </data>
+  <data name="RuntimePlatformCheckMessage" xml:space="preserve">
+    <value>TODO Platform checks:'{0}'</value>
+  </data>
+  <data name="RuntimePlatformCheckDescription" xml:space="preserve">
+    <value>TODO</value>
+  </data>
 </root>

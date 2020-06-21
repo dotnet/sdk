@@ -228,10 +228,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 operationKey = OperationEqualsInstance;
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count()).
-            else if (parentOperation is IArgumentOperation argumentOperation)
+            else if (parentOperation is IArgumentOperation argumentOperation &&
+                argumentOperation.Parent is IInvocationOperation argumentParentInvocationOperation)
             {
-                parentOperation = argumentOperation.Parent;
-                shouldReplaceParent = AnalyzeParentInvocationOperation((IInvocationOperation)parentOperation, isInstance: false);
+                parentOperation = argumentParentInvocationOperation;
+                shouldReplaceParent = AnalyzeParentInvocationOperation(argumentParentInvocationOperation, isInstance: false);
                 operationKey = OperationEqualsArgument;
             }
 
@@ -270,10 +271,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 shouldReplaceParent = AnalyzeParentInvocationOperation(parentInvocationOperation, isInstance: true);
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count).
-            else if (parentOperation is IArgumentOperation argumentOperation)
+            else if (parentOperation is IArgumentOperation argumentOperation &&
+                argumentOperation.Parent is IInvocationOperation argumentParentInvocationOperation)
             {
-                parentOperation = argumentOperation.Parent;
-                shouldReplaceParent = AnalyzeParentInvocationOperation((IInvocationOperation)parentOperation, isInstance: false);
+                parentOperation = argumentParentInvocationOperation;
+                shouldReplaceParent = AnalyzeParentInvocationOperation(argumentParentInvocationOperation, isInstance: false);
             }
 
             if (shouldReplaceParent)
@@ -319,10 +321,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
             ITypeSymbol? type = invocationOperation.GetInstanceType();
 
             string propertyName = Length;
-            if (type != null && !TypeContainsVisibileProperty(context, type, propertyName, SpecialType.System_Int32, SpecialType.System_UInt64))
+            if (type != null && !TypeContainsVisibleProperty(context, type, propertyName, SpecialType.System_Int32, SpecialType.System_UInt64))
             {
                 propertyName = Count;
-                if (!TypeContainsVisibileProperty(context, type, propertyName, SpecialType.System_Int32, SpecialType.System_UInt64))
+                if (!TypeContainsVisibleProperty(context, type, propertyName, SpecialType.System_Int32, SpecialType.System_UInt64))
                 {
                     return;
                 }
@@ -398,14 +400,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     properties: propertiesBuilder.ToImmutable()));
         }
 
-        private static void DetermineReportForInvocationAnalysis(OperationAnalysisContext context, IOperation operation, IOperation parent, bool shouldReplaceParent, bool isAsync, bool useRightSide, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey)
+        private static void DetermineReportForInvocationAnalysis(OperationAnalysisContext context, IInvocationOperation invocationOperation, IOperation parent, bool shouldReplaceParent, bool isAsync, bool useRightSide, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey)
         {
             if (!shouldReplaceParent)
             {
                 // Parent expression doesn't met the criteria to be replaced; fallback on analysis for standalone call to Count().
                 if (!isAsync && !hasPredicate)
                 {
-                    AnalyzeCountInvocationOperation(context, (IInvocationOperation)operation);
+                    AnalyzeCountInvocationOperation(context, invocationOperation);
                 }
             }
             else if (isAsync)
@@ -415,11 +417,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             else
             {
-                ITypeSymbol? type = operation.GetInstanceType();
+                ITypeSymbol? type = invocationOperation.GetInstanceType();
                 if (type != null)
                 {
-                    // If the invocation has a predicate we can only suggest CA1827; 
-                    // otherwise, we would loose the lambda if we suggest CA1829 or CA1836. 
+                    // If the invocation has a predicate we can only suggest CA1827;
+                    // otherwise, we would loose the lambda if we suggest CA1829 or CA1836.
                     if (hasPredicate)
                     {
                         bool shouldNegateAny = !shouldNegateIsEmpty;
@@ -427,17 +429,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                     else
                     {
-                        if (TypeContainsVisibileProperty(context, type, IsEmpty, SpecialType.System_Boolean))
+                        if (TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean))
                         {
                             ReportCA1836(context, useRightSide, shouldNegateIsEmpty, parent);
                         }
-                        else if (TypeContainsVisibileProperty(context, type, Length, SpecialType.System_Int32, SpecialType.System_UInt64))
+                        else if (TypeContainsVisibleProperty(context, type, Length, SpecialType.System_Int32, SpecialType.System_UInt64))
                         {
-                            ReportCA1829(context, Length, operation);
+                            ReportCA1829(context, Length, invocationOperation);
                         }
-                        else if (TypeContainsVisibileProperty(context, type, Count, SpecialType.System_Int32, SpecialType.System_UInt64))
+                        else if (TypeContainsVisibleProperty(context, type, Count, SpecialType.System_Int32, SpecialType.System_UInt64))
                         {
-                            ReportCA1829(context, Count, operation);
+                            ReportCA1829(context, Count, invocationOperation);
                         }
                         else
                         {
@@ -454,7 +456,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             ITypeSymbol? type = operation.GetInstanceType();
             if (type != null)
             {
-                if (TypeContainsVisibileProperty(context, type, IsEmpty, SpecialType.System_Boolean))
+                if (TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean))
                 {
                     ReportCA1836(context, useRightSide, shouldNegateIsEmpty, parent);
                 }
@@ -575,10 +577,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
             return true;
         }
 
-        private static bool TypeContainsVisibileProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType propertyType)
-            => TypeContainsVisibileProperty(context, type, propertyName, propertyType, propertyType);
+        private static bool TypeContainsVisibleProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType propertyType)
+            => TypeContainsVisibleProperty(context, type, propertyName, propertyType, propertyType);
 
-        private static bool TypeContainsVisibileProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound)
+        private static bool TypeContainsVisibleProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound)
         {
             if (TypeContainsMember(context, type, propertyName, lowerBound, upperBound, out bool isPropertyValidAndVisible))
             {
