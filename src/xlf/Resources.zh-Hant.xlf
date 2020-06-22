@@ -17,6 +17,16 @@
         <target state="new">Accepts a file path, which if provided, will produce a json report in the given directory.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Analysis_complete_in_0ms.">
+        <source>Analysis complete in {0}ms.</source>
+        <target state="new">Analysis complete in {0}ms.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Analyzer_Reference">
+        <source>Analyzer Reference</source>
+        <target state="new">Analyzer Reference</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_option">
         <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the --workspace option.</source>
         <target state="translated">在 '{0}' 中同時找到 MSBuild 專案檔和解決方案檔。請指定要搭配 --workspace 選項使用的檔案。</target>
@@ -37,6 +47,11 @@
         <target state="new">Cannot specify both project argument and workspace option.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Code_Style">
+        <source>Code Style</source>
+        <target state="new">Code Style</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Complete_in_0_ms">
         <source>Complete in {0}ms.</source>
         <target state="new">Complete in {0}ms.</target>
@@ -52,9 +67,19 @@
         <target state="translated">無法將 '{0}' 格式化。格式化目前只支援 C# 和 Visual Basic 專案。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Determining_diagnostics">
+        <source>Determining diagnostics...</source>
+        <target state="new">Determining diagnostics...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Determining_formattable_files">
         <source>Determining formattable files.</source>
         <target state="new">Determining formattable files.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Failed_to_apply_code_fix_0_for_1_2">
+        <source>Failed to apply code fix {0} for {1}: {2}</source>
+        <target state="new">Failed to apply code fix {0} for {1}: {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="Failed_to_save_formatting_changes">
@@ -85,6 +110,11 @@
       <trans-unit id="Fix_whitespace_formatting">
         <source>Fix whitespace formatting.</source>
         <target state="new">Fix whitespace formatting.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Fixing_diagnostics">
+        <source>Fixing diagnostics...</source>
+        <target state="new">Fixing diagnostics...</target>
         <note />
       </trans-unit>
       <trans-unit id="Format_complete_in_0_ms">
@@ -142,6 +172,11 @@
         <target state="new">Run code style analyzers and apply fixes.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Running_0_analysis">
+        <source>Running {0} analysis.</source>
+        <target state="new">Running {0} analysis.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Running_formatters">
         <source>Running formatters.</source>
         <target state="new">Running formatters.</target>
@@ -155,6 +190,11 @@
       <trans-unit id="Skipping_referenced_project_0">
         <source>Skipping referenced project '{0}'.</source>
         <target state="translated">跳過參考的專案 '{0}’。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Solution_0_has_ no_projects">
+        <source>Solution {0} has no projects</source>
+        <target state="new">Solution {0} has no projects</target>
         <note />
       </trans-unit>
       <trans-unit id="The_dotnet_CLI_version_is_0">
@@ -205,6 +245,11 @@
       <trans-unit id="The_workspace_option_is_deprecated_Use_the_project_argument_instead">
         <source>The `--workspace` option is deprecated. Use the `&lt;project&gt;` argument instead.</source>
         <target state="new">The `--workspace` option is deprecated. Use the `&lt;project&gt;` argument instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution">
+        <source>Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</source>
+        <target state="new">Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">

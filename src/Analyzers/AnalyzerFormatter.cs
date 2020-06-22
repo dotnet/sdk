@@ -48,12 +48,12 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
 
             var analysisStopwatch = Stopwatch.StartNew();
-            logger.LogTrace($"Running {_name} analysis.");
+            logger.LogTrace(Resources.Running_0_analysis, _name);
 
             var formattablePaths = formattableDocuments.Select(id => solution.GetDocument(id)!.FilePath)
                     .OfType<string>().ToImmutableHashSet();
 
-            logger.LogTrace("Determining diagnostics...");
+            logger.LogTrace(Resources.Determining_diagnostics);
 
             var allAnalyzers = analyzersAndFixers.Select(pair => pair.Analyzer).ToImmutableArray();
             var projectAnalyzers = await _finder.FilterBySeverityAsync(solution.Projects, allAnalyzers, formattablePaths, formatOptions, cancellationToken).ConfigureAwait(false);
@@ -63,14 +63,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var projectDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, projectDiagnosticsMS);
 
-            logger.LogTrace("Fixing diagnostics...");
+            logger.LogTrace(Resources.Fixing_diagnostics);
 
             solution = await FixDiagnosticsAsync(solution, analyzersAndFixers, projectDiagnostics, formattablePaths, logger, cancellationToken).ConfigureAwait(false);
 
             var fixDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds - projectDiagnosticsMS;
             logger.LogTrace(Resources.Complete_in_0_ms, fixDiagnosticsMS);
 
-            logger.LogTrace("Analysis complete in {0}ms.", analysisStopwatch.ElapsedMilliseconds);
+            logger.LogTrace(Resources.Analysis_complete_in_0ms_, analysisStopwatch.ElapsedMilliseconds);
 
             return solution;
         }
