@@ -24,6 +24,7 @@ CA2012 | Reliability | Hidden | UseValueTasksCorrectlyAnalyzer, [Documentation](
 CA2013 | Reliability | Warning | DoNotUseReferenceEqualsWithValueTypesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2013)
 CA2014 | Reliability | Warning | DoNotUseStackallocInLoopsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2014)
 CA2015 | Reliability | Warning | DoNotDefineFinalizersForTypesDerivedFromMemoryManager, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2015)
+CA2016 | Reliability | Info | ForwardCancellationTokenToInvocationsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2016)
 CA2247 | Usage | Warning | DoNotCreateTaskCompletionSourceWithWrongArguments, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2247)
 CA2248 | Usage | Info | DoNotCheckFlagFromDifferentEnum, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2248)
 CA2249 | Usage | Info | PreferStringContainsOverIndexOfAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2249)
