@@ -3669,7 +3669,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -3916,6 +3915,7 @@ public class C2
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithSystemWeb,
                 TestState =
                 {
                     Sources =
@@ -4083,7 +4083,6 @@ public class Class1
     }
 }"
                     },
-                    AdditionalReferences = { AdditionalMetadataReferences.SystemWeb }
                 },
                 ExpectedDiagnostics =
                 {
@@ -5422,6 +5421,7 @@ public enum Kind
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithSystemWeb,
                 TestState =
                 {
                     Sources =
@@ -5487,7 +5487,6 @@ namespace MyComments
 }
 "
                     },
-                    AdditionalReferences = { AdditionalMetadataReferences.SystemWeb }
                 }
             }.RunAsync();
         }

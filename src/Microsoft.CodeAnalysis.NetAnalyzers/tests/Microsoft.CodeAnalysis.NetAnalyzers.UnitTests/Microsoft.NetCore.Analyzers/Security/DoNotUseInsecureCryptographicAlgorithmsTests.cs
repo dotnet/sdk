@@ -1965,7 +1965,10 @@ End Namespace
         [Fact]
         public async Task CA5350RIPEMD160ManagedInMethodDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 
 namespace TestNamespace
@@ -1978,9 +1981,16 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 
 Module TestClass
@@ -1988,13 +1998,20 @@ Module TestClass
         Dim md1601alg As New RIPEMD160Managed
     End Sub
 End Module",
-                GetBasicResultAt(6, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(6, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350RIPEMD160ManagedInGetDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2006,9 +2023,16 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class TestClass1
@@ -2019,13 +2043,20 @@ Namespace TestNamespace
 		End Property
 	End Class
 End Namespace",
-                GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350RIPEMD160ManagedInFieldDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2034,9 +2065,16 @@ namespace TestNamespace
         RIPEMD160Managed privateRIPEMD160 = new RIPEMD160Managed();
     }
 }",
-                GetCSharpResultAt(7, 45, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(7, 45, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class TestClass
@@ -2044,13 +2082,20 @@ Namespace TestNamespace
 	End Class
 End Namespace
 ",
-                GetBasicResultAt(5, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(5, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
         //No VB
         [Fact]
         public async Task CA5350RIPEMD160ManagedInLambdaExpression()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 namespace TestNamespace
@@ -2063,13 +2108,20 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
         //No VB
         [Fact]
         public async Task CA5350RIPEMD160ManagedInAnonymousMethodExpression()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2079,13 +2131,20 @@ namespace TestNamespace
         Del d = delegate () { new RIPEMD160Managed(); };
     }
 }",
-                GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350RIPEMD160CreateInMethodDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 
 namespace TestNamespace
@@ -2098,9 +2157,16 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(10, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(10, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class TestClass
@@ -2109,13 +2175,20 @@ Namespace TestNamespace
 		End Sub
 	End Class
 End Namespace",
-                GetBasicResultAt(6, 29, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(6, 29, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350RIPEMD160CreateInGetDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2127,9 +2200,16 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class TestClass1
@@ -2140,13 +2220,20 @@ Namespace TestNamespace
 		End Property
 	End Class
 End Namespace",
-                GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350RIPEMD160CreateInFieldDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2155,22 +2242,36 @@ namespace TestNamespace
         RIPEMD160 privateRIPEMD160 = RIPEMD160.Create();
     }
 }",
-                GetCSharpResultAt(7, 38, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(7, 38, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class TestClass
 		Private privateRIPEMD160 As RIPEMD160 = RIPEMD160.Create()
 	End Class
 End Namespace",
-                GetBasicResultAt(5, 43, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(5, 43, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
         //No VB
         [Fact]
         public async Task CA5350RIPEMD160CreateInLambdaExpression()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 namespace TestNamespace
@@ -2183,13 +2284,20 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350RIPEMD160CreateInAnonymousMethodExpression()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2199,9 +2307,16 @@ namespace TestNamespace
         Del d = delegate () { RIPEMD160.Create(); };
     }
 }",
-                GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
     Class TestClass
@@ -2209,13 +2324,20 @@ Namespace TestNamespace
         Private d As Del = Sub() RIPEMD160.Create()
     End Class
 End Namespace",
-                GetBasicResultAt(6, 34, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(6, 34, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350HMACRIPEMD160InMethodDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 
 namespace TestNamespace
@@ -2228,9 +2350,16 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class TestClass
@@ -2239,13 +2368,20 @@ Namespace TestNamespace
 		End Sub
 	End Class
 End Namespace",
-                GetBasicResultAt(6, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(6, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350HMACRIPEMD160InGetDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2257,9 +2393,16 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMARIPEMD160", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMARIPEMD160", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class TestClass1
@@ -2270,13 +2413,20 @@ Namespace TestNamespace
 		End Property
 	End Class
 End Namespace",
-                GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMARIPEMD160", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMARIPEMD160", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA5350HMACRIPEMD160InFieldDeclaration()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2285,22 +2435,36 @@ namespace TestNamespace
         HMACRIPEMD160 privateHMARIPEMD160 = new HMACRIPEMD160();
     }
 }",
-                GetCSharpResultAt(7, 45, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateHMARIPEMD160", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(7, 45, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateHMARIPEMD160", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class TestClass
 		Private privateHMARIPEMD160 As New HMACRIPEMD160()
 	End Class
 End Namespace",
-                GetBasicResultAt(5, 34, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateHMARIPEMD160", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(5, 34, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateHMARIPEMD160", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
         }
         //No VB
         [Fact]
         public async Task CA5350HMACRIPEMD160InLambdaExpression()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 namespace TestNamespace
@@ -2313,13 +2477,20 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
         }
         //No VB
         [Fact]
         public async Task CA5350HMACRIPEMD160InAnonymousMethodExpression()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 namespace TestNamespace
 {
@@ -2329,7 +2500,11 @@ namespace TestNamespace
         Del d = delegate () { new HMACRIPEMD160(); };
     }
 }",
-                GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
@@ -2337,6 +2512,7 @@ namespace TestNamespace
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
                 TestState =
                 {
                     Sources =
@@ -2390,6 +2566,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
                 TestState =
                 {
                     Sources =
@@ -2439,6 +2616,7 @@ End Namespace"
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
                 TestState =
                 {
                     Sources =
@@ -2492,6 +2670,7 @@ namespace TestNamespace
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
                 TestState =
                 {
                     Sources =
@@ -2539,7 +2718,10 @@ End Namespace
         [Fact]
         public async Task CA5350CreateObjectFromHMACRIPEMD160DerivedClass()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.Security.Cryptography;
 
 namespace TestNamespace
@@ -2554,9 +2736,16 @@ namespace TestNamespace
         }
     }
 }",
-                GetCSharpResultAt(12, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(12, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System.Security.Cryptography
 Namespace TestNamespace
 	Class MyHMACRIPEMD160
@@ -2569,7 +2758,11 @@ Namespace TestNamespace
 		End Sub
 	End Class
 End Namespace",
-                GetBasicResultAt(10, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(10, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
+                },
+            }.RunAsync();
         }
 
         [Fact]

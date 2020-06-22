@@ -379,7 +379,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task CA2235WithArrayType()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
                 using System;
                 public class NonSerializableType { }
 
@@ -392,10 +395,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     public SerializableType[] s1;
                     internal NonSerializableType[] s2;
                 }",
-                // Test0.cs(12,52): warning CA2235: Field s2 is a member of type CA2235WithNonSerializableArray which is serializable but is of type NonSerializableType[] which is not serializable
-                GetCA2235CSharpResultAt(12, 52, "s2", "CA2235WithNonSerializableArray", "NonSerializableType[]"));
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(12,52): warning CA2235: Field s2 is a member of type CA2235WithNonSerializableArray which is serializable but is of type NonSerializableType[] which is not serializable
+                    GetCA2235CSharpResultAt(12, 52, "s2", "CA2235WithNonSerializableArray", "NonSerializableType[]"),
+                },
+            }.RunAsync();
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
                 Imports System
                 Public Class NonSerializableType
                 End Class
@@ -408,8 +418,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     Public s1 As SerializableType()
                     Friend Property s2 As NonSerializableType()
                 End Class",
-                // Test0.vb(12,37): warning CA2235: Field s2 is a member of type CA2235WithNonSerializableArray which is serializable but is of type NonSerializableType() which is not serializable
-                GetCA2235BasicResultAt(12, 37, "s2", "CA2235WithNonSerializableArray", "NonSerializableType()"));
+                ExpectedDiagnostics =
+                {
+                    // Test0.vb(12,37): warning CA2235: Field s2 is a member of type CA2235WithNonSerializableArray which is serializable but is of type NonSerializableType() which is not serializable
+                    GetCA2235BasicResultAt(12, 37, "s2", "CA2235WithNonSerializableArray", "NonSerializableType()"),
+                },
+            }.RunAsync();
         }
 
         [Fact]

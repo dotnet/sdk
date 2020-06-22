@@ -14,7 +14,10 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [Fact]
         public async Task UnsafeDeserialize_Diagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -29,13 +32,20 @@ namespace Blah
         }
     }
 }",
-                GetCSharpResultAt(12, 20, "object BinaryFormatter.UnsafeDeserialize(Stream serializationStream, HeaderHandler handler)"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(12, 20, "object BinaryFormatter.UnsafeDeserialize(Stream serializationStream, HeaderHandler handler)"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task UnsafeDeserializeMethodResponse_Diagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -50,7 +60,11 @@ namespace Blah
         }
     }
 }",
-                GetCSharpResultAt(12, 20, "object BinaryFormatter.UnsafeDeserializeMethodResponse(Stream serializationStream, HeaderHandler handler, IMethodCallMessage methodCallMessage)"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(12, 20, "object BinaryFormatter.UnsafeDeserializeMethodResponse(Stream serializationStream, HeaderHandler handler, IMethodCallMessage methodCallMessage)"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
@@ -77,7 +91,10 @@ namespace Blah
         [Fact]
         public async Task Deserialize_HeaderHandler_Diagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -92,13 +109,20 @@ namespace Blah
         }
     }
 }",
-                GetCSharpResultAt(12, 20, "object BinaryFormatter.Deserialize(Stream serializationStream, HeaderHandler handler)"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(12, 20, "object BinaryFormatter.Deserialize(Stream serializationStream, HeaderHandler handler)"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
         public async Task DeserializeMethodResponse_Diagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -113,7 +137,11 @@ namespace Blah
         }
     }
 }",
-                GetCSharpResultAt(12, 20, "object BinaryFormatter.DeserializeMethodResponse(Stream serializationStream, HeaderHandler handler, IMethodCallMessage methodCallMessage)"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(12, 20, "object BinaryFormatter.DeserializeMethodResponse(Stream serializationStream, HeaderHandler handler, IMethodCallMessage methodCallMessage)"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
