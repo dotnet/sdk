@@ -16,6 +16,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string IsTopLevelDependency = "IsTopLevelDependency";
         public const string AllowExplicitVersion = "AllowExplicitVersion";
         public const string RelativePath = "RelativePath";
+        public const string DiagnosticLevel = "DiagnosticLevel";
 
         // Target Metadata
         public const string RuntimeIdentifier = "RuntimeIdentifier";
@@ -81,7 +82,9 @@ namespace Microsoft.NET.Build.Tasks
         public const string PackageConflictPreferredPackages = "PackageConflictPreferredPackages";
 
         //  Runtime packs
-        public const string DropFromSingleFile = "DropFromSingleFile";
+		public const string DropFromSingleFile = "DropFromSingleFile";
+        public const string RuntimePackLabels = "RuntimePackLabels";
+        public const string AdditionalFrameworkReferences = "AdditionalFrameworkReferences";
 
         // Content files
         public const string PPOutputPath = "PPOutputPath";

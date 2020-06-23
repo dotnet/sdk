@@ -40,9 +40,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithSource()
                 .WithTargetFramework(targetFramework, "TestLibrary");
 
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
-
-            var buildCommand = new BuildCommand(Log, libraryProjectDirectory);
+            var buildCommand = new BuildCommand(testAsset, "TestLibrary");
             buildCommand
                 .Execute()
                 .Should()
@@ -64,9 +62,7 @@ namespace Microsoft.NET.Build.Tests
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
 
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
-
-            var buildCommand = new BuildCommand(Log, libraryProjectDirectory);
+            var buildCommand = new BuildCommand(testAsset, "TestLibrary");
             buildCommand
                 .Execute()
                 .Should()
@@ -164,7 +160,7 @@ namespace Microsoft.NET.Build.Tests
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
-            var buildCommand = new BuildCommand(Log, libraryProjectDirectory);
+            var buildCommand = new BuildCommand(testAsset, "TestLibrary");
 
             buildCommand
                 .Execute()
@@ -198,7 +194,7 @@ namespace Microsoft.NET.Build.Tests
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
-            var buildCommand = new BuildCommand(Log, libraryProjectDirectory);
+            var buildCommand = new BuildCommand(testAsset, "TestLibrary");
 
             buildCommand
                 .Execute()
@@ -241,7 +237,7 @@ namespace Microsoft.NET.Build.Tests
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
-            var buildCommand = new BuildCommand(Log, libraryProjectDirectory);
+            var buildCommand = new BuildCommand(testAsset, "TestLibrary");
 
             buildCommand
                 .Execute()
@@ -394,7 +390,7 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
         [InlineData("net5.0", new[] { "NETCOREAPP3_1", "NET5_0" })]
         [InlineData("net6.0", new[] { "NETCOREAPP3_1", "NET5_0", "NET6_0" })]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework_with_backwards_compatibility(string targetFramework, string[] expectedDefines)
@@ -421,7 +417,7 @@ namespace Microsoft.NET.Build.Tests
                     itemGroup.Add(supportedFramework);
                 });
 
-            AssertDefinedConstantsOutput(testAsset, targetFramework, new[] { "NETCOREAPP", "NET", "WINDOWS", "WINDOWS7_0" }.Concat(expectedDefines).ToArray());
+            AssertDefinedConstantsOutput(testAsset, targetFramework, new[] { "NETCOREAPP", "NET" }.Concat(expectedDefines).ToArray());
         }
 
         [Theory]
@@ -502,6 +498,38 @@ namespace Microsoft.NET.Build.Tests
                 $"The TargetFramework value '{targetFramework}' is not valid. To multi-target, use the 'TargetFrameworks' property instead");
         }
 
+        [RequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
+        [InlineData("net5.0", false)]
+        [InlineData("netcoreapp3.1", true)]
+        public void It_defines_target_platform_defaults_correctly(string targetFramework, bool defaultsDefined)
+        {
+            TestProject testProject = new TestProject()
+            {
+                Name = "TargetPlatformDefaults",
+                IsSdkProject = true,
+                TargetFrameworks = targetFramework
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, "TargetPlatformIdentifier");
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var values = getValuesCommand.GetValues();
+            if (defaultsDefined)
+            {
+                values.Count().Should().Be(1);
+                values.FirstOrDefault().Should().Be("Windows");
+            }
+            else
+            {
+                values.Count().Should().Be(0);
+            }
+        }
+
         private void TestInvalidTargetFramework(string testName, string targetFramework, bool useSolution, string expectedOutput)
         {
             var testProject = new TestProject()
@@ -551,12 +579,12 @@ namespace Microsoft.NET.Build.Tests
                 var relativePathToSln = Path.GetFileName(testAsset.Path) + ".sln";
 
                 restoreCommand = testAsset.GetRestoreCommand(Log, relativePathToSln);
-                buildCommand = new BuildCommand(Log, testAsset.TestRoot, relativePathToSln);
+                buildCommand = new BuildCommand(testAsset, relativePathToSln);
             }
             else
             {
                 restoreCommand = testAsset.GetRestoreCommand(Log, testProject.Name);
-                buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                buildCommand = new BuildCommand(testAsset);
             }
 
             //  Set RestoreContinueOnError=ErrorAndContinue to force failure on error
@@ -607,7 +635,7 @@ namespace Microsoft.NET.Build.Tests
                 .Fail()
                 .And.HaveStdOutContaining("The current .NET SDK does not support targeting");
 
-            var buildCommand = new BuildCommand(Log, testAsset.TestRoot, testProject.Name);
+            var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                 .Execute()
@@ -640,7 +668,7 @@ namespace Microsoft.NET.Build.Tests
                 })
                 .Restore(Log, testProject.Name);
 
-            var buildCommand = new BuildCommand(Log, testAsset.TestRoot, testProject.Name);
+            var buildCommand = new BuildCommand(testAsset);
 
             //  Test that compilation doesn't depend on any rid-specific assets by removing them from the assets file after it's been restored
             var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");
@@ -670,7 +698,7 @@ namespace Microsoft.NET.Build.Tests
                 .CopyTestAsset("UwpUsingSdkExtras")
                 .WithSource();
 
-            var buildCommand = new BuildCommand(Log, testAsset.TestRoot);
+            var buildCommand = new BuildCommand(testAsset);
             buildCommand
                 .Execute()
                 .Should()
@@ -756,7 +784,7 @@ namespace Microsoft.NET.Build.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(Log, testAsset.TestRoot, testProject.Name);
+            var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                 .Execute()
