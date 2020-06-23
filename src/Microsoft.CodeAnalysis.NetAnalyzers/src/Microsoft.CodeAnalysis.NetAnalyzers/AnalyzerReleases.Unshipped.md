@@ -12,6 +12,7 @@ CA1070 | Design | Info | DoNotDeclareEventFieldsAsVirtual, [Documentation](https
 CA1416 | Interoperability | Info | RuntimePlatformCheckAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
 CA1700 | Naming | Disabled | DoNotNameEnumValuesReserved, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1700)
 CA1713 | Naming | Disabled | EventsShouldNotHaveBeforeOrAfterPrefix, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1713)
+CA1805 | Performance | Info | DoNotInitializeUnnecessarilyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1805)
 CA1830 | Performance | Info | PreferTypedStringBuilderAppendOverloads, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1830)
 CA1831 | Performance | Warning | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1831)
 CA1832 | Performance | Info | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1832)

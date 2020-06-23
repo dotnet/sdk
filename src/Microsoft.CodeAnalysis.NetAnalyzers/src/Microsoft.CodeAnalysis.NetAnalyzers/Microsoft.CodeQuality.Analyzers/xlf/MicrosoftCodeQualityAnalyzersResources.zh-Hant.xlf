@@ -137,6 +137,11 @@
         <target state="translated">'{0}' 呼叫了 '{1}'，但並未使用方法所傳回的值。此方法定義為使用者選項。請使用條件陳述式中的結果，再將結果指派給變數，或是將其以引數方式傳遞到另一個方法。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="new">Remove the unnecessary assignment.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">此規則假設名稱包含 "reserved" 的列舉成員目前並未使用，而是要在未來版本中重新命名或移除的預留位置。重新命名或移除成員為中斷性變更。</target>
@@ -2043,13 +2048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">Common Language Runtime 會先將所有欄位初始化成其預設值，然後再執行建構函式。在大多數的情況下，在建構函式中將欄位初始化成其預設值並非必要，如此會降低效能並增加維護成本。不至於畫蛇添足的一個情況是，當建構函式呼叫相同類別的另一個建構函式或基底類別建構函式時，該建構函式會將欄位初始化為非預設值。在此情況下，很適合將欄位值變更回其預設值。</target>
+        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which adds to maintenance costs and may degrade performance (such as with increased assembly size). One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
+        <target state="needs-review-translation">Common Language Runtime 會先將所有欄位初始化成其預設值，然後再執行建構函式。在大多數的情況下，在建構函式中將欄位初始化成其預設值並非必要，如此會降低效能並增加維護成本。不至於畫蛇添足的一個情況是，當建構函式呼叫相同類別的另一個建構函式或基底類別建構函式時，該建構函式會將欄位初始化為非預設值。在此情況下，很適合將欄位值變更回其預設值。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">請勿進行非必要的初始化</target>
+        <source>Member '{0}' is explicitly initialized to its default value.</source>
+        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
