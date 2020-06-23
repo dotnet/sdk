@@ -101,7 +101,7 @@ namespace Microsoft.NetCore.Analyzers.Resources
                 return false;
             }
 
-            Optional<object> constValue = model.GetConstantValue(argument);
+            Optional<object> constValue = model.GetConstantValue(argument, cancellationToken);
             if (!constValue.HasValue)
             {
                 return false;
