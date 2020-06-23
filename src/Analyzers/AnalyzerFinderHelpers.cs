@@ -6,17 +6,15 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal static class AnalyzerFinderHelpers
     {
-        public static ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> LoadAnalyzersAndFixers(
-            IEnumerable<Assembly> assemblies,
-            ILogger logger)
+        public static ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> LoadAnalyzersAndFixers(IEnumerable<Assembly> assemblies)
         {
             var types = assemblies
                 .SelectMany(assembly => assembly.GetTypes()
