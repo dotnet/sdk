@@ -637,4 +637,8 @@ The following are names of parameters or literal values and should not be transl
 {1}</value>
     <comment>{StrBegin="NETSDK1133: "}</comment>
   </data>
+  <data name="UnsupportedTargetPlatformIdentifier" xml:space="preserve">
+    <value>NETSDK1134: The TargetPlatformIdentifier {0} is not supported.</value>
+    <comment>{StrBegin="NETSDK1134: "}</comment>
+  </data>
 </root>

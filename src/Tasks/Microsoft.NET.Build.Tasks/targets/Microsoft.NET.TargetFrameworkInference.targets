@@ -78,7 +78,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                           $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))">.NETCoreApp</TargetFrameworkIdentifier>
   </PropertyGroup>
 
-  <!-- 
+  <!--
     Trigger an error if we're unable to infer the framework identifier and version. 
 
     We have to evaluate this here and not in the target because by the time the target runs,
@@ -107,6 +107,19 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="$(TargetFramework.Contains(';'))"
                  ResourceName="TargetFrameworkWithSemicolon"
                  FormatArguments="$([MSBuild]::Escape('$(TargetFramework)'))" />
+  </Target>
+
+  <Target Name="_CheckForUnsupportedTargetPlatformIdentifier"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;RunResolvePackageDependencies;GetFrameworkPaths;GetReferenceAssemblyPaths"
+          Condition="'$(_InferredTargetPlatform)' == 'true'" >
+    
+    <ItemGroup>
+      <_MatchingSupportedTargetPlatforms Include="@(SupportedTargetPlatform)" Condition="$([System.String]::Copy('%(Identity)').ToUpper().Contains($(TargetPlatformIdentifier.ToUpper())))" />
+    </ItemGroup>
+
+    <NETSdkError Condition=" '@(_MatchingSupportedTargetPlatforms)' == '' "
+                 ResourceName="UnsupportedTargetPlatformIdentifier"
+                 FormatArguments="$([MSBuild]::Escape('$(TargetPlatformIdentifier)'))" />
   </Target>
 
   <UsingTask TaskName="AllowEmptyTelemetry" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
