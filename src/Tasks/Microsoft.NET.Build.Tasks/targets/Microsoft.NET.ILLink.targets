@@ -81,6 +81,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_DotNetHostFileName Condition=" '$(OS)' == 'Windows_NT' ">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
 
+    <!-- Temporary workaround until the naming is finalized. Translate from TrimMode to Action metadata. -->
+    <ItemGroup>
+      <ManagedAssemblyToLink Condition=" '%(ManagedAssemblyToLink.TrimMode)' != '' ">
+        <Action>%(ManagedAssemblyToLink.TrimMode)</Action>
+      </ManagedAssemblyToLink>
+    </ItemGroup>
+
     <Delete Files="@(_LinkedResolvedFileToPublishCandidate)" />
     <ILLink AssemblyPaths="@(ManagedAssemblyToLink)"
             ReferenceAssemblyPaths="@(ReferencePath)"
@@ -141,13 +148,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TrimmerRootAssembly Include="@(ManagedAssemblyToLink)" Condition=" '%(ManagedAssemblyToLink.IsTrimmable)' != 'true' " />
       <ManagedAssemblyToLink Condition=" '%(ManagedAssemblyToLink.IsTrimmable)' != 'true' ">
         <TrimMode>copy</TrimMode>
-      </ManagedAssemblyToLink>
-    </ItemGroup>
-
-    <!-- Temporary workaround until the naming is finalized. Translate from TrimMode to Action metadata. -->
-    <ItemGroup>
-      <ManagedAssemblyToLink Condition=" '%(ManagedAssemblyToLink.TrimMode)' != '' ">
-        <Action>%(ManagedAssemblyToLink.TrimMode)</Action>
       </ManagedAssemblyToLink>
     </ItemGroup>
 
