@@ -122,8 +122,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                      PrepareForILLink
 
     Set up the default options and inputs to ILLink. Other targets are expected to hook into
-    this extension point via BeforeTargets/AfterTargets to opt assemblies into or out of trimming,
-    and to set ILLink global or per-assembly options.
+    this extension point via BeforeTargets/AfterTargets to opt assemblies into or out of trimming
+    using global ILLink options, or per-assembly IsTrimmable and TrimMode metadata.
+
+    Note that adding items to or removing items from ManagedAssemblyToLink is unsupported. To change
+    the set of inputs to the linker, instead use a different extension point to
+    set PostprocessAssembly metadata on ResolvedFileToPublish.
    -->
    <Target Name="PrepareForILLink"
            DependsOnTargets="_ComputeManagedAssemblyToLink">
