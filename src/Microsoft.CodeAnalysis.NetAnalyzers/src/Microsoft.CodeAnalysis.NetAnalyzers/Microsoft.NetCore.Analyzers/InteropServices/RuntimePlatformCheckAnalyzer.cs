@@ -2,9 +2,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -16,7 +14,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
 #pragma warning disable RS1001 // Missing diagnostic analyzer attribute - TODO: fix and enable analyzer.
-    public sealed class RuntimePlatformCheckAnalyzer : DiagnosticAnalyzer
+    public sealed partial class RuntimePlatformCheckAnalyzer : DiagnosticAnalyzer
 #pragma warning restore RS1001 // Missing diagnostic analyzer attribute.
     {
         internal const string RuleId = "CA1416";
@@ -117,7 +115,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                     var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
                     var analysisResult = FlightEnabledAnalysis.TryGetOrComputeResult(
-                        cfg, context.OwningSymbol, platformCheckMethods, c => GetValueForFlightEnablingMethodInvocation(c, osPlatformType),
+                        cfg, context.OwningSymbol, CreateOperationVisitor,
                         wellKnownTypeProvider, context.Options, Rule, performPointsToAnalysis: needsValueContentAnalysis,
                         performValueContentAnalysis: needsValueContentAnalysis, context.CancellationToken,
                         out var pointsToAnalysisResult, out var valueContentAnalysisResult);
@@ -150,97 +148,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 return;
 
-                // local functions
-                static FlightEnabledAbstractValue GetValueForFlightEnablingMethodInvocation(FlightEnabledAnalysisCallbackContext context, INamedTypeSymbol osPlatformType)
-                {
-                    Debug.Assert(context.Arguments.Length > 0);
-
-                    if (!TryDecodeOSPlatform(context.Arguments, osPlatformType, out var osPlatformProperty) ||
-                        !TryDecodeOSVersion(context, out var osVersion))
-                    {
-                        // Bail out
-                        return FlightEnabledAbstractValue.Unknown;
-                    }
-
-                    var enabledFlight = $"{context.InvokedMethod.Name};{osPlatformProperty.Name};{osVersion}";
-                    return new FlightEnabledAbstractValue(enabledFlight);
-                }
+                OperationVisitor CreateOperationVisitor(FlightEnabledAnalysisContext context)
+                    => new OperationVisitor(platformCheckMethods, osPlatformType, context);
             });
-        }
-
-        private static bool TryDecodeOSPlatform(
-            ImmutableArray<IArgumentOperation> arguments,
-            INamedTypeSymbol osPlatformType,
-            [NotNullWhen(returnValue: true)] out IPropertySymbol? osPlatformProperty)
-        {
-            Debug.Assert(!arguments.IsEmpty);
-            return TryDecodeOSPlatform(arguments[0].Value, osPlatformType, out osPlatformProperty);
-        }
-
-        private static bool TryDecodeOSPlatform(
-            IOperation argumentValue,
-            INamedTypeSymbol osPlatformType,
-            [NotNullWhen(returnValue: true)] out IPropertySymbol? osPlatformProperty)
-        {
-            if ((argumentValue is IPropertyReferenceOperation propertyReference) &&
-                propertyReference.Property.ContainingType.Equals(osPlatformType))
-            {
-                osPlatformProperty = propertyReference.Property;
-                return true;
-            }
-
-            osPlatformProperty = null;
-            return false;
-        }
-
-        private static bool TryDecodeOSVersion(FlightEnabledAnalysisCallbackContext context, [NotNullWhen(returnValue: true)] out string? osVersion)
-        {
-            var builder = new StringBuilder();
-            var first = true;
-            foreach (var argument in context.Arguments.Skip(1))
-            {
-                if (!TryDecodeOSVersionPart(argument, context, out var osVersionPart))
-                {
-                    osVersion = null;
-                    return false;
-                }
-
-                if (!first)
-                {
-                    builder.Append(".");
-                }
-
-                builder.Append(osVersionPart);
-                first = false;
-            }
-
-            osVersion = builder.ToString();
-            return osVersion.Length > 0;
-
-            static bool TryDecodeOSVersionPart(IArgumentOperation argument, FlightEnabledAnalysisCallbackContext context, out int osVersionPart)
-            {
-                if (argument.Value.ConstantValue.HasValue &&
-                    argument.Value.ConstantValue.Value is int versionPart)
-                {
-                    osVersionPart = versionPart;
-                    return true;
-                }
-
-                if (context.ValueContentAnalysisResult != null)
-                {
-                    var valueContentValue = context.ValueContentAnalysisResult[argument.Value];
-                    if (valueContentValue.IsLiteralState &&
-                        valueContentValue.LiteralValues.Count == 1 &&
-                        valueContentValue.LiteralValues.Single() is int part)
-                    {
-                        osVersionPart = part;
-                        return true;
-                    }
-                }
-
-                osVersionPart = default;
-                return false;
-            }
         }
 
         private static bool ComputeNeedsValueContentAnalysis(IInvocationOperation invocation)
