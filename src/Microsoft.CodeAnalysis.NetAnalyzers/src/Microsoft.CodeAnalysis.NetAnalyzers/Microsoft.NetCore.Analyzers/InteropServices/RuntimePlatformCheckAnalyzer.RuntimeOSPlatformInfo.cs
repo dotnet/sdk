@@ -9,7 +9,7 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.FlightEnabledAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
     public sealed partial class RuntimePlatformCheckAnalyzer
     {
-        private struct RuntimeOSPlatformInfo : IGlobalAbstractValue, IEquatable<RuntimeOSPlatformInfo>
+        private struct RuntimeOSPlatformInfo : IAbstractAnalysisValue, IEquatable<RuntimeOSPlatformInfo>
         {
             private RuntimeOSPlatformInfo(string invokedPlatformCheckMethodName, string platformPropertyName, Version version, bool negated)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             public Version Version { get; }
             public bool Negated { get; }
 
-            public IGlobalAbstractValue GetNegatedValue()
+            public IAbstractAnalysisValue GetNegatedValue()
                 => new RuntimeOSPlatformInfo(InvokedPlatformCheckMethodName, PlatformPropertyName, Version, !Negated);
 
             public static bool TryDecode(
@@ -172,7 +172,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             public override int GetHashCode()
                 => HashUtilities.Combine(InvokedPlatformCheckMethodName.GetHashCode(), PlatformPropertyName.GetHashCode(), Version.GetHashCode(), Negated.GetHashCode());
 
-            bool IEquatable<IGlobalAbstractValue>.Equals(IGlobalAbstractValue other)
+            bool IEquatable<IAbstractAnalysisValue>.Equals(IAbstractAnalysisValue other)
                 => other is RuntimeOSPlatformInfo otherInfo && Equals(otherInfo);
 
             public static bool operator ==(RuntimeOSPlatformInfo left, RuntimeOSPlatformInfo right)

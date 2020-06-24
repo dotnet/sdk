@@ -2,14 +2,14 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.FlightEnabledAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     public sealed partial class RuntimePlatformCheckAnalyzer
     {
-        private sealed class OperationVisitor : FlightEnabledDataFlowOperationVisitor
+        private sealed class OperationVisitor : GlobalFlowStateDataFlowOperationVisitor
         {
             private readonly ImmutableArray<IMethodSymbol> _platformCheckMethods;
             private readonly INamedTypeSymbol _osPlatformType;
@@ -17,20 +17,20 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             public OperationVisitor(
                 ImmutableArray<IMethodSymbol> platformCheckMethods,
                 INamedTypeSymbol osPlatformType,
-                FlightEnabledAnalysisContext analysisContext)
+                GlobalFlowStateAnalysisContext analysisContext)
                 : base(analysisContext, hasPredicatedGlobalState: true)
             {
                 _platformCheckMethods = platformCheckMethods;
                 _osPlatformType = osPlatformType;
             }
 
-            public override FlightEnabledAbstractValue VisitInvocation_NonLambdaOrDelegateOrLocalFunction(
+            public override GlobalFlowStateAnalysisValueSet VisitInvocation_NonLambdaOrDelegateOrLocalFunction(
                 IMethodSymbol method,
                 IOperation? visitedInstance,
                 ImmutableArray<IArgumentOperation> visitedArguments,
                 bool invokedAsDelegate,
                 IOperation originalOperation,
-                FlightEnabledAbstractValue defaultValue)
+                GlobalFlowStateAnalysisValueSet defaultValue)
             {
                 var value = base.VisitInvocation_NonLambdaOrDelegateOrLocalFunction(method, visitedInstance, visitedArguments, invokedAsDelegate, originalOperation, defaultValue);
 
@@ -38,8 +38,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     visitedArguments.Length > 0)
                 {
                     return RuntimeOSPlatformInfo.TryDecode(method, visitedArguments, DataFlowAnalysisContext.ValueContentAnalysisResultOpt, _osPlatformType, out var platformInfo) ?
-                        new FlightEnabledAbstractValue(platformInfo) :
-                        FlightEnabledAbstractValue.Unknown;
+                        new GlobalFlowStateAnalysisValueSet(platformInfo) :
+                        GlobalFlowStateAnalysisValueSet.Unknown;
                 }
 
                 return GetValueOrDefault(value);

@@ -8,7 +8,7 @@ using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.FlightEnabledAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
@@ -114,7 +114,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     }
 
                     var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
-                    var analysisResult = FlightEnabledAnalysis.TryGetOrComputeResult(
+                    var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
                         cfg, context.OwningSymbol, CreateOperationVisitor,
                         wellKnownTypeProvider, context.Options, Rule, performPointsToAnalysis: needsValueContentAnalysis,
                         performValueContentAnalysis: needsValueContentAnalysis, context.CancellationToken,
@@ -130,7 +130,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     foreach (var platformSpecificOperation in platformSpecificOperations)
                     {
                         var value = analysisResult[platformSpecificOperation.Kind, platformSpecificOperation.Syntax];
-                        if (value.Kind == FlightEnabledAbstractValueKind.Unknown)
+                        if (value.Kind == GlobalFlowStateAnalysisValueSetKind.Unknown)
                         {
                             continue;
                         }
@@ -148,7 +148,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 return;
 
-                OperationVisitor CreateOperationVisitor(FlightEnabledAnalysisContext context)
+                OperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context)
                     => new OperationVisitor(platformCheckMethods, osPlatformType, context);
             });
         }
