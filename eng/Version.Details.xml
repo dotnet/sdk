@@ -85,13 +85,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d6b8109177d0ba0eeafc8f7570c63cbc0b2f2562</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-preview.7.20323.9">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-preview.7.20324.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>4b17d4de59b1cecf72feeb6614ae5f94dd8d53d6</Sha>
+      <Sha>88fc3e713a9fb79b7b7db96a98ca78ac51fd3805</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.7.20323.5" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-preview.7.20323.9" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>20428549dca826c6fe75f26dc589c6e52f60f13c</Sha>
+      <Sha>7cfa8e9a8b61db63bb13af8e59cd4bcecafd904c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzers" Version="5.0.0-preview.7.20311.11">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
