@@ -117,13 +117,25 @@ End Class
             {
                 TestCode = @"
 #nullable enable
+using System;
+using System.Diagnostics.CodeAnalysis;
+
 public class C
 {
     private static object s_obj1 = null!;
+    [AllowNull] private object _obj2 = null;
 }
+
 public class G<T>
 {
-    private T _value = default!;
+    private T _value1 = default!;
+    [AllowNull] private T _value2 = default;
+}
+
+namespace System.Diagnostics.CodeAnalysis
+{
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
+    internal sealed class AllowNullAttribute : Attribute { }
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,

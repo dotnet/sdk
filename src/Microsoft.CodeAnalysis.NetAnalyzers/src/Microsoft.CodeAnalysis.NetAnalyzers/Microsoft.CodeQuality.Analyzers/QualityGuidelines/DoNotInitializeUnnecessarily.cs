@@ -37,7 +37,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 var init = (IFieldInitializerOperation)context.Operation;
                 IFieldSymbol? field = init.InitializedFields.FirstOrDefault();
-                if (field != null && !field.IsConst && init.Value != null && UsesKnownDefaultValue(init.Value, field.Type))
+                if (field != null &&
+                    !field.IsConst &&
+                    init.Value != null &&
+                    field.GetAttributes().Length == 0 && // in case of attributes that impact nullability analysis
+                    UsesKnownDefaultValue(init.Value, field.Type))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, field.Name));
                 }
@@ -47,7 +51,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 var init = (IPropertyInitializerOperation)context.Operation;
                 IPropertySymbol? prop = init.InitializedProperties.FirstOrDefault();
-                if (prop != null && init.Value != null && UsesKnownDefaultValue(init.Value, prop.Type))
+                if (prop != null &&
+                    init.Value != null &&
+                    prop.GetAttributes().Length == 0 && // in case of attributes that impact nullability analysis
+                    UsesKnownDefaultValue(init.Value, prop.Type))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, prop.Name));
                 }
