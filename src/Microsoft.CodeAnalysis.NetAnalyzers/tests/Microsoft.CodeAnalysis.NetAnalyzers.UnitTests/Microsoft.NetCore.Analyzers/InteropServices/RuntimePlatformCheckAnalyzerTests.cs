@@ -507,11 +507,11 @@ class Test
 
             if (RuntimeInformationHelper.IsOSPlatformOrLater(OSPlatform.Linux, 2, 0))
             {
-                {|#2:M2()|};    // Platform checks:'IsOSPlatformOrLater;Linux;1 && IsOSPlatformOrLater;Linux;2.0'
+                {|#2:M2()|};    // Platform checks:'IsOSPlatformOrLater;Linux;1 && IsOSPlatformOrLater;Linux;2'
             }
             else if (!RuntimeInformationHelper.IsOSPlatformEarlierThan(OSPlatform.Windows, 3, 1, 1))
             {
-                {|#3:M2()|};    // Platform checks:'!IsOSPlatformEarlierThan;Windows;3.1.1 && !IsOSPlatformOrLater;Linux;2.0 && IsOSPlatformOrLater;Linux;1'
+                {|#3:M2()|};    // Platform checks:'!IsOSPlatformEarlierThan;Windows;3.1.1 && !IsOSPlatformOrLater;Linux;2 && IsOSPlatformOrLater;Linux;1'
             }
 
             {|#4:M2()|};    // Platform checks:'IsOSPlatformOrLater;Linux;1'
@@ -544,8 +544,8 @@ class Test
             await VerifyCS.VerifyAnalyzerAsync(source,
                 VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(0).WithArguments(""),
                 VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(1).WithArguments("IsOSPlatformOrLater;Linux;1"),
-                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(2).WithArguments("IsOSPlatformOrLater;Linux;1 && IsOSPlatformOrLater;Linux;2.0"),
-                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(3).WithArguments("!IsOSPlatformEarlierThan;Windows;3.1.1 && !IsOSPlatformOrLater;Linux;2.0 && IsOSPlatformOrLater;Linux;1"),
+                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(2).WithArguments("IsOSPlatformOrLater;Linux;1 && IsOSPlatformOrLater;Linux;2"),
+                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(3).WithArguments("!IsOSPlatformEarlierThan;Windows;3.1.1 && !IsOSPlatformOrLater;Linux;2 && IsOSPlatformOrLater;Linux;1"),
                 VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(4).WithArguments("IsOSPlatformOrLater;Linux;1"),
                 VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(5).WithArguments("!IsOSPlatformOrLater;Linux;1"),
                 VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(6).WithArguments(""),
@@ -567,9 +567,9 @@ class Test
     {
         {|#0:M2()|};    // Platform checks:''
 
-        {|#1:Debug.Assert(RuntimeInformationHelper.IsOSPlatformOrLater(OSPlatform.Windows, 3, 0, 0, 0))|};  // Platform checks:'IsOSPlatformOrLater;Windows;3.0.0.0'
+        {|#1:Debug.Assert(RuntimeInformationHelper.IsOSPlatformOrLater(OSPlatform.Windows, 3, 0, 0, 0))|};  // Platform checks:'IsOSPlatformOrLater;Windows;3'
 
-        {|#2:M2()|};        // Platform checks:'IsOSPlatformOrLater;Windows;3.0.0.0'
+        {|#2:M2()|};        // Platform checks:'IsOSPlatformOrLater;Windows;3'
     }
 
     void M2()
@@ -579,8 +579,8 @@ class Test
 
             await VerifyCS.VerifyAnalyzerAsync(source,
                 VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(0).WithArguments(""),
-                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(1).WithArguments("IsOSPlatformOrLater;Windows;3.0.0.0"),
-                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(2).WithArguments("IsOSPlatformOrLater;Windows;3.0.0.0"));
+                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(1).WithArguments("IsOSPlatformOrLater;Windows;3"),
+                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(2).WithArguments("IsOSPlatformOrLater;Windows;3"));
         }
 
         [Fact]
@@ -745,7 +745,7 @@ class Test
 
         if ({|#1:IsWindows3OrLater()|})    // Platform checks:''
         {
-            {|#2:M2()|};    // Platform checks:'IsOSPlatformOrLater;Windows;3.0.0.0'
+            {|#2:M2()|};    // Platform checks:'IsOSPlatformOrLater;Windows;3'
         }
 
         {|#3:M2()|};        // Platform checks:''
@@ -770,7 +770,7 @@ class Test
                 }
             };
 
-            var argForInterprocDiagnostics = editorconfig.Length == 0 ? "" : "IsOSPlatformOrLater;Windows;3.0.0.0";
+            var argForInterprocDiagnostics = editorconfig.Length == 0 ? "" : "IsOSPlatformOrLater;Windows;3";
             test.ExpectedDiagnostics.AddRange(new[]
             {
                 VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(0).WithArguments(""),
