@@ -418,7 +418,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData("netcoreapp3.0")]
-        public void ILLink_trims_pdbs_by_default(string targetFramework)
+        public void ILLink_keeps_symbols_by_default(string targetFramework)
         {
             var projectName = "HelloWorld";
             var referenceProjectName = "ClassLibForILLink";
@@ -439,14 +439,19 @@ namespace Microsoft.NET.Publish.Tests
             var linkedPdb = Path.Combine(linkedDirectory, $"{projectName}.pdb");
             var publishedPdb = Path.Combine(publishDirectory, $"{projectName}.pdb");
 
-            File.Exists(intermediatePdb).Should().BeTrue();
-            File.Exists(linkedPdb).Should().BeFalse();
-            File.Exists(publishedPdb).Should().BeFalse();
+            File.Exists(linkedPdb).Should().BeTrue();
+
+            var intermediatePdbSize = new FileInfo(intermediatePdb).Length;
+            var linkedPdbSize = new FileInfo(linkedPdb).Length;
+            var publishPdbSize = new FileInfo(publishedPdb).Length;
+
+            linkedPdbSize.Should().BeLessThan(intermediatePdbSize);
+            publishPdbSize.Should().Be(linkedPdbSize);
         }
 
         [Theory]
         [InlineData("netcoreapp3.0")]
-        public void ILLink_accepts_option_to_link_pdbs(string targetFramework)
+        public void ILLink_removes_symbols_when_debugger_support_is_disabled(string targetFramework)
         {
             var projectName = "HelloWorld";
             var referenceProjectName = "ClassLibForILLink";
@@ -457,7 +462,7 @@ namespace Microsoft.NET.Publish.Tests
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project));
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:TrimSymbols=false").Should().Pass();
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:DebuggerSupport=false").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
@@ -467,14 +472,9 @@ namespace Microsoft.NET.Publish.Tests
             var linkedPdb = Path.Combine(linkedDirectory, $"{projectName}.pdb");
             var publishedPdb = Path.Combine(publishDirectory, $"{projectName}.pdb");
 
-            File.Exists(linkedPdb).Should().BeTrue();
-
-            var intermediatePdbSize = new FileInfo(intermediatePdb).Length;
-            var linkedPdbSize = new FileInfo(linkedPdb).Length;
-            var publishPdbSize = new FileInfo(publishedPdb).Length;
-
-            linkedPdbSize.Should().BeLessThan(intermediatePdbSize);
-            publishPdbSize.Should().Be(linkedPdbSize);
+            File.Exists(intermediatePdb).Should().BeTrue();
+            File.Exists(linkedPdb).Should().BeFalse();
+            File.Exists(publishedPdb).Should().BeFalse();
         }
 
         [Theory]

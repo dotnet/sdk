@@ -89,11 +89,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ManagedAssemblyToLink>
     </ItemGroup>
 
-    <!-- Temporary: translate to the old linker options. -->
-    <PropertyGroup>
-      <_TrimmerLinkSymbols Condition="! '$(TrimSymbols)'">true</_TrimmerLinkSymbols>
-    </PropertyGroup>
-
     <Delete Files="@(_LinkedResolvedFileToPublishCandidate)" />
     <ILLink AssemblyPaths="@(ManagedAssemblyToLink)"
             ReferenceAssemblyPaths="@(ReferencePath)"
@@ -147,7 +142,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <TrimMode Condition=" '$(TrimMode)' == '' ">copyused</TrimMode>
-      <TrimSymbols Condition=" '$(TrimSymbols)' == '' ">true</TrimSymbols>
+      <_TrimmerLinkSymbols>$(DebuggerSupport)</_TrimmerLinkSymbols>
+      <_TrimmerLinkSymbols Condition=" '$(_TrimmerLinkSymbols)' == '' ">true</_TrimmerLinkSymbols>
     </PropertyGroup>
 
     <ItemGroup>
@@ -186,14 +182,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <!-- The linker implicitly picks up PDBs next to input assemblies. We will filter these out of the publish set. -->
-      <__PDBToLink Include="@(ResolvedFileToPublish)" Exclude="@(_ManagedAssembliesToLink->'%(RelativeDir)%(Filename).pdb')" />
+      <__PDBToLink Include="@(ResolvedFileToPublish)" Exclude="@(ManagedAssemblyToLink->'%(RelativeDir)%(Filename).pdb')" />
       <_PDBToLink Include="@(ResolvedFileToPublish)" Exclude="@(__PDBToLink)" />
     </ItemGroup>
 
     <ItemGroup>
       <_LinkedResolvedFileToPublishCandidate Include="@(ManagedAssemblyToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
       <_LinkedResolvedFileToPublishCandidate Include="@(_PDBToLink->'$(IntermediateLinkDir)%(Filename)%(Extension)')" />
-    <ItemGroup>
+    </ItemGroup>
   </Target>
 
 </Project>
