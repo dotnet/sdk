@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 .Distinct()
                 .Select(path => Assembly.LoadFrom(path));
 
-            return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies, logger);
+            return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
         }
 
         public Task<ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>>> FilterBySeverityAsync(

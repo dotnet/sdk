@@ -26,14 +26,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var fixAllProvider = codeFix.GetFixAllProvider();
             if (fixAllProvider?.GetSupportedFixAllScopes()?.Contains(FixAllScope.Solution) != true)
             {
-                logger.LogWarning($"Unable to fix {diagnosticId}. Code fix {codeFix.GetType().Name} doesn't support Fix All in Solution.");
+                logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution, diagnosticId, codeFix.GetType().Name);
                 return solution;
             }
 
             var project = solution.Projects.FirstOrDefault();
             if (project == null)
             {
-                throw new InvalidOperationException($"Solution {solution} has no projects");
+                throw new InvalidOperationException(string.Format(Resources.Solution_0_has__no_projects, solution));
             }
 
             var fixAllContext = new FixAllContext(
@@ -56,7 +56,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
             catch (Exception ex)
             {
-                logger.LogWarning($"Failed to apply code fix {codeFix?.GetType().Name} for {diagnosticId}: {ex.Message}");
+                logger.LogWarning(Resources.Failed_to_apply_code_fix_0_for_1_2, codeFix?.GetType().Name, diagnosticId, ex.Message);
                 return solution;
             }
         }
