@@ -5,7 +5,6 @@ using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -68,6 +67,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     value = conversion.Operand;
                 }
 
+                // If this might box, don't warn, as we don't want to warn for something like `object o = default(int);`.
+                if (value.Type != null && value.Type.IsReferenceType != type.IsReferenceType)
+                {
+                    return false;
+                }
+
                 // If this is default(T) or new ValueType(), it's the default.
                 if (value is IDefaultValueOperation ||
                     (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.Length == 0 && oco.Initializer is null))
@@ -109,8 +114,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 // Special-case `null!`/`default!` to not warn about it, as it's often used to suppress nullable warnings on fields.
                 static bool IsNullSuppressed(IOperation op) =>
-                    op.Syntax?.Parent is PostfixUnaryExpressionSyntax parent &&
-                    parent.Kind() == CodeAnalysis.CSharp.SyntaxKind.SuppressNullableWarningExpression;
+                    op.Syntax?.Parent?.RawKind == (int)CodeAnalysis.CSharp.SyntaxKind.SuppressNullableWarningExpression;
             }
         }
     }

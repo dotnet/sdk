@@ -62,6 +62,9 @@ public class C
 
     public int SomeIntProp { get; } = 42;
     public System.ValueTuple<int, int> SomeTuple = new System.ValueTuple<int, int>() { Item1 = 42, Item2 = 84 };
+
+    public static readonly object BoxedInt32Default = default(int);
+    public static readonly object BoxedInt32Value = 0;
 }");
         }
 
