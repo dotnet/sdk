@@ -70,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 // If this is default(T) or new ValueType(), it's the default.
                 if (value is IDefaultValueOperation ||
-                    (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.Length == 0))
+                    (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.Length == 0 && oco.Initializer is null))
                 {
                     return !IsNullSuppressed(value);
                 }

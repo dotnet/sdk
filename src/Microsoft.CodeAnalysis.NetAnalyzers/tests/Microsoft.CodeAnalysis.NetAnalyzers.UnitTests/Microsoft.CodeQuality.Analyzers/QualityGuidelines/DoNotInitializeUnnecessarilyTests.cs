@@ -61,6 +61,7 @@ public class C
     public System.DayOfWeek Week2 = System.DayOfWeek.Sunday;
 
     public int SomeIntProp { get; } = 42;
+    public System.ValueTuple<int, int> SomeTuple = new System.ValueTuple<int, int>() { Item1 = 42, Item2 = 84 };
 }");
         }
 
