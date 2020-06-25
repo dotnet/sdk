@@ -6079,6 +6079,89 @@ public class Class1
 }");
         }
 
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
+        public async Task IsPatternInConditionalExpression_03_NoDiagnostic(bool discardPattern)
+        {
+            var local = discardPattern ? "_" : "c";
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class Class1
+{{
+    public static void M1(object input)
+    {{
+        if (input is Class1 {local})
+        {{
+            input.ToString();
+        }}
+    }}
+}}");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
+        public async Task IsPatternInConditionalExpression_04_NoDiagnostic(bool discardPattern)
+        {
+            var local1 = discardPattern ? "_" : "c";
+            var local2 = discardPattern ? "_" : "d";
+
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class Class1
+{{
+    public static void M1(object input)
+    {{
+        if (input is Class1 {local1})
+        {{
+            input.ToString();
+        }}
+        else if (input is Class2 {local2})
+        {{
+            input.ToString();
+        }}
+    }}
+}}
+
+public class Class2 {{ }}");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
+        public async Task IsPatternInConditionalExpression_05_NoDiagnostic(bool discardPattern)
+        {
+            var local = discardPattern ? "_" : "c";
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class Class1
+{{
+    public static void M1(object input)
+    {{
+        if (!(input is Class1 {local}) || input.ToString() == """")
+        {{
+        }}
+    }}
+}}");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
+        public async Task RecursivePatternInConditionalExpression_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Class1
+{
+    public int X { get; }
+    public static void M1(object input)
+    {
+        if (input is Class1 { X: 0 })
+        {
+            input.ToString();
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
