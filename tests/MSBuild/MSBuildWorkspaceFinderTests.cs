@@ -22,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         {
             var workspacePath = "tests/projects/for_workspace_finder/no_project_or_solution/";
             var exceptionMessageStart = string.Format(
-                Resources.Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_option,
+                Resources.Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_argument,
                 Path.Combine(SolutionPath, workspacePath)).Replace('/', Path.DirectorySeparatorChar);
             var exception = Assert.Throws<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(SolutionPath, workspacePath));
             Assert.StartsWith(exceptionMessageStart, exception.Message);
@@ -33,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         {
             var workspacePath = "tests/projects/for_workspace_finder/multiple_projects/";
             var exceptionMessageStart = string.Format(
-                Resources.Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_option,
+                Resources.Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument,
                 Path.Combine(SolutionPath, workspacePath)).Replace('/', Path.DirectorySeparatorChar);
             var exception = Assert.Throws<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(SolutionPath, workspacePath));
             Assert.Equal(exceptionMessageStart, exception.Message);
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         {
             var workspacePath = "tests/projects/for_workspace_finder/multiple_solutions/";
             var exceptionMessageStart = string.Format(
-                Resources.Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_option,
+                Resources.Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument,
                 Path.Combine(SolutionPath, workspacePath)).Replace('/', Path.DirectorySeparatorChar);
             var exception = Assert.Throws<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(SolutionPath, workspacePath));
             Assert.Equal(exceptionMessageStart, exception.Message);
@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         {
             var workspacePath = "tests/projects/for_workspace_finder/project_and_solution/";
             var exceptionMessageStart = string.Format(
-                Resources.Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_option,
+                Resources.Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument,
                 Path.Combine(SolutionPath, workspacePath)).Replace('/', Path.DirectorySeparatorChar);
             var exception = Assert.Throws<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(SolutionPath, workspacePath));
             Assert.Equal(exceptionMessageStart, exception.Message);

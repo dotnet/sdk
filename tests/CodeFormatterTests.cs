@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
@@ -32,10 +33,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
         private Regex FindFormattingLogLine => new Regex(@"((.*)\(\d+,\d+\): (.*))\r|((.*)\(\d+,\d+\): (.*))");
 
-        public CodeFormatterTests(MSBuildFixture msBuildFixture, SolutionPathFixture solutionPathFixture)
+        private readonly ITestOutputHelper _output;
+
+
+        public CodeFormatterTests(ITestOutputHelper output, MSBuildFixture msBuildFixture, SolutionPathFixture solutionPathFixture)
         {
-            msBuildFixture.RegisterInstance();
+            _output = output;
+
             solutionPathFixture.SetCurrentDirectory();
+            msBuildFixture.RegisterInstance(_output);
         }
 
         [Fact]
@@ -406,6 +412,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
 
             var log = logger.GetLog();
+
+            _output.WriteLine(log);
 
             Assert.Equal(expectedExitCode, formatResult.ExitCode);
             Assert.Equal(expectedFilesFormatted, formatResult.FilesFormatted);
