@@ -33,7 +33,7 @@
       <SharedHostPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SharedHostComponentId).pkg</SharedHostPkgIntermediatePath>
       <HostFxrPkgIntermediatePath>$(PkgIntermediateDirectory)/$(HostFxrComponentId).pkg</HostFxrPkgIntermediatePath>
 
-      <SdkPKGInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkPKGInstallerFile>
+      <SdkPKGInstallerFile>$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkPKGInstallerFile>
       <CombinedFrameworkSdkHostPKGInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostPKGInstallerFile>
     </PropertyGroup>
   </Target>

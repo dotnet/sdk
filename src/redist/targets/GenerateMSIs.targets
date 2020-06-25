@@ -37,13 +37,13 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <SdkMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
+      <SdkMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFile>
       <SdkDependencyKeyName>Dotnet_CLI</SdkDependencyKeyName>
-      <Templates50MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-50templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates50MSIInstallerFile>
-      <Templates31MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-31templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates31MSIInstallerFile>
-      <Templates30MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-30templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
-      <Templates21MSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-21templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
-      <SdkPlaceholderMSIInstallerFile>$(ArtifactsShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
+      <Templates50MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-50templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates50MSIInstallerFile>
+      <Templates31MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-31templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates31MSIInstallerFile>
+      <Templates30MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-30templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates30MSIInstallerFile>
+      <Templates21MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-21templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</Templates21MSIInstallerFile>
+      <SdkPlaceholderMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
       <SdkPlaceholderDependencyKeyName>NetCore_SdkPlaceholder</SdkPlaceholderDependencyKeyName>
       <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
       <SdkBundleInstallerOutputGuidString>$(ProductBandCombinedHostHostFxrFrameworkSdkName)</SdkBundleInstallerOutputGuidString>

@@ -17,7 +17,7 @@
 
     <ZipFileCreateFromDirectory
         SourceDirectory="$(SdkInternalLayoutPath)"
-        DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk).zip"
+        DestinationArchive="$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk).zip"
         OverwriteDestination="true" />
 
     <TarGzFileCreateFromDirectory
@@ -30,7 +30,7 @@
     <TarGzFileCreateFromDirectory
         Condition=" '$(OSName)' != 'win' "
         SourceDirectory="$(SdkInternalLayoutPath)"
-        DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
+        DestinationArchive="$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
         OverwriteDestination="true"
         IgnoreExitCode="$(IgnoreTarExitCode)"/>
     
