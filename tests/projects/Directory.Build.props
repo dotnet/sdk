@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- Empty props files to stop test projects from inheriting the root props file. -->
+</Project>

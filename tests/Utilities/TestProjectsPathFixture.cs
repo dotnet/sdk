@@ -7,9 +7,9 @@ using System.Threading;
 namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
     /// <summary>
-    /// This test fixture sets the <see cref="Environment.CurrentDirectory" /> to the dotnet-format solution's path.
+    /// This test fixture sets the <see cref="Environment.CurrentDirectory" /> to the dotnet-format test projects folder path.
     /// </summary>
-    public class SolutionPathFixture : IDisposable
+    public class TestProjectsPathFixture : IDisposable
     {
         private static int s_registered = 0;
         private static string s_currentDirectory;
@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
             {
                 s_currentDirectory = Environment.CurrentDirectory;
                 var solutionPath = Directory.GetParent(s_currentDirectory).Parent.Parent.Parent.Parent.FullName;
-                Environment.CurrentDirectory = solutionPath;
+                Environment.CurrentDirectory = Path.Combine(solutionPath, "tests", "projects");
             }
         }
 
