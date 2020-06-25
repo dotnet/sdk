@@ -11,8 +11,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
     public class ProgramTests
     {
         // Should be kept in sync with Program.Run
-        private delegate void TestCommandHandlerDelegate(string project, string folder, string workspace, string verbosity, bool check,
-            string[] include, string[] exclude, string report, bool includeGenerated);
+        private delegate void TestCommandHandlerDelegate(
+            string workspace,
+            bool folder,
+            string verbosity,
+            bool check,
+            string[] include,
+            string[] exclude,
+            string report,
+            bool includeGenerated);
 
         [Fact]
         public void ExitCodeIsOneWithCheckAndAnyFilesFormatted()
@@ -49,21 +56,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Act
             var result = sut.Parse(new[] {
-                "--folder", "folder",
-                "--workspace", "workspace",
+                "--folder",
                 "--include", "include1", "include2",
                 "--exclude", "exclude1", "exclude2",
                 "--check",
                 "--report", "report",
-                "--verbosity", "verbosity",
+                "--verbosity", "detailed",
                 "--include-generated"});
 
             // Assert
-            Assert.Equal(1, result.Errors.Count); // folder and workspace can not be combined
+            Assert.Equal(0, result.Errors.Count);
             Assert.Equal(0, result.UnmatchedTokens.Count);
             Assert.Equal(0, result.UnparsedTokens.Count);
-            Assert.Equal("folder", result.ValueForOption("folder"));
-            Assert.Equal("workspace", result.ValueForOption("workspace"));
+            Assert.True(result.ValueForOption<bool>("folder"));
             Assert.Collection(result.ValueForOption<IEnumerable<string>>("include"),
                 i0 => Assert.Equal("include1", i0),
                 i1 => Assert.Equal("include2", i1));
@@ -72,7 +77,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 i1 => Assert.Equal("exclude2", i1));
             Assert.True(result.ValueForOption<bool>("check"));
             Assert.Equal("report", result.ValueForOption("report"));
-            Assert.Equal("verbosity", result.ValueForOption("verbosity"));
+            Assert.Equal("detailed", result.ValueForOption("verbosity"));
             Assert.True(result.ValueForOption<bool>("include-generated"));
         }
 
@@ -83,11 +88,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
-            var result = sut.Parse(new[] { "projectValue" });
+            var result = sut.Parse(new[] { "workspaceValue" });
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("projectValue", result.CommandResult.GetArgumentValueOrDefault("project"));
+            Assert.Equal("workspaceValue", result.CommandResult.GetArgumentValueOrDefault("workspace"));
         }
 
         [Fact]
@@ -97,12 +102,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
-            var result = sut.Parse(new[] { "projectValue", "--verbosity", "verbosity" });
+            var result = sut.Parse(new[] { "workspaceValue", "--verbosity", "detailed" });
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("projectValue", result.CommandResult.GetArgumentValueOrDefault("project"));
-            Assert.Equal("verbosity", result.ValueForOption("verbosity"));
+            Assert.Equal("workspaceValue", result.CommandResult.GetArgumentValueOrDefault("workspace"));
+            Assert.Equal("detailed", result.ValueForOption("verbosity"));
         }
 
         [Fact]
@@ -112,12 +117,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
-            var result = sut.Parse(new[] { "--verbosity", "verbosity", "projectValue" });
+            var result = sut.Parse(new[] { "--verbosity", "detailed", "workspaceValue" });
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("projectValue", result.CommandResult.GetArgumentValueOrDefault("project"));
-            Assert.Equal("verbosity", result.ValueForOption("verbosity"));
+            Assert.Equal("workspaceValue", result.CommandResult.GetArgumentValueOrDefault("workspace"));
+            Assert.Equal("detailed", result.ValueForOption("verbosity"));
         }
 
         [Fact]
@@ -128,16 +133,23 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var handlerWasCalled = false;
             sut.Handler = CommandHandler.Create(new TestCommandHandlerDelegate(TestCommandHandler));
 
-            void TestCommandHandler(string project, string folder, string workspace, string verbosity, bool check,
-                string[] include, string[] exclude, string report, bool includeGenerated)
+            void TestCommandHandler(
+                string workspace,
+                bool folder,
+                string verbosity,
+                bool check,
+                string[] include,
+                string[] exclude,
+                string report,
+                bool includeGenerated)
             {
                 handlerWasCalled = true;
-                Assert.Equal("projectValue", project);
-                Assert.Equal("verbosity", verbosity);
+                Assert.Equal("workspaceValue", workspace);
+                Assert.Equal("detailed", verbosity);
             };
 
             // Act
-            var result = sut.Invoke(new[] { "--verbosity", "verbosity", "projectValue" });
+            var result = sut.Invoke(new[] { "--verbosity", "detailed", "workspace" });
 
             // Assert
             Assert.True(handlerWasCalled);
@@ -150,59 +162,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var sut = FormatCommand.CreateCommandLineOptions();
 
             // Act
-            var result = sut.Parse(new[] { "projectValue1", "projectValue2" });
-
-            // Assert
-            Assert.Equal(1, result.Errors.Count);
-        }
-
-        [Fact]
-        public void CommandLine_ProjectArgumentAndWorkspaceCanNotBeCombined()
-        {
-            // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
-
-            // Act
-            var result = sut.Parse(new[] { "projectValue", "--workspace", "workspace" });
-
-            // Assert
-            Assert.Equal(1, result.Errors.Count);
-        }
-
-        [Fact]
-        public void CommandLine_ProjectArgumentAndFolderCanNotBeCombined1()
-        {
-            // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
-
-            // Act
-            var result = sut.Parse(new[] { "projectValue", "--folder", "folder" });
-
-            // Assert
-            Assert.Equal(1, result.Errors.Count);
-        }
-
-        [Fact]
-        public void CommandLine_ProjectWorkspaceAndFolderCanNotBeCombined2()
-        {
-            // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
-
-            // Act
-            var result = sut.Parse(new[] { "--workspace", "workspace", "--folder", "folder" });
-
-            // Assert
-            Assert.Equal(1, result.Errors.Count);
-        }
-
-        [Fact]
-        public void CommandLine_InvalidArgumentsDontCrashTheValidators()
-        {
-            // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
-
-            // Act
-            var result = sut.Parse(new[] { "--workspace", "workspace1", "--workspace", "workspace2" });
+            var result = sut.Parse(new[] { "workspaceValue1", "workspaceValue2" });
 
             // Assert
             Assert.Equal(1, result.Errors.Count);

@@ -11,31 +11,36 @@ using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
-    public class CodeFormatterTests : IClassFixture<MSBuildFixture>, IClassFixture<SolutionPathFixture>
+    public class CodeFormatterTests : IClassFixture<MSBuildFixture>, IClassFixture<TestProjectsPathFixture>
     {
-        private const string FormattedProjectPath = "tests/projects/for_code_formatter/formatted_project/";
+        private const string FormattedProjectPath = "for_code_formatter/formatted_project/";
         private const string FormattedProjectFilePath = FormattedProjectPath + "formatted_project.csproj";
-        private const string FormattedSolutionFilePath = "tests/projects/for_code_formatter/formatted_solution/formatted_solution.sln";
+        private const string FormattedSolutionFilePath = "for_code_formatter/formatted_solution/formatted_solution.sln";
 
-        private const string UnformattedProjectPath = "tests/projects/for_code_formatter/unformatted_project/";
+        private const string UnformattedProjectPath = "for_code_formatter/unformatted_project/";
         private const string UnformattedProjectFilePath = UnformattedProjectPath + "unformatted_project.csproj";
         private const string UnformattedProgramFilePath = UnformattedProjectPath + "program.cs";
-        private const string UnformattedSolutionFilePath = "tests/projects/for_code_formatter/unformatted_solution/unformatted_solution.sln";
+        private const string UnformattedSolutionFilePath = "for_code_formatter/unformatted_solution/unformatted_solution.sln";
 
-        private const string FSharpProjectPath = "tests/projects/for_code_formatter/fsharp_project/";
+        private const string FSharpProjectPath = "for_code_formatter/fsharp_project/";
         private const string FSharpProjectFilePath = FSharpProjectPath + "fsharp_project.fsproj";
 
         private static IEnumerable<string> EmptyFilesList => Array.Empty<string>();
 
         private Regex FindFormattingLogLine => new Regex(@"((.*)\(\d+,\d+\): (.*))\r|((.*)\(\d+,\d+\): (.*))");
 
-        public CodeFormatterTests(MSBuildFixture msBuildFixture, SolutionPathFixture solutionPathFixture)
+        private readonly ITestOutputHelper _output;
+
+        public CodeFormatterTests(ITestOutputHelper output, MSBuildFixture msBuildFixture, TestProjectsPathFixture testProjectsPathFixture)
         {
-            msBuildFixture.RegisterInstance();
-            solutionPathFixture.SetCurrentDirectory();
+            _output = output;
+
+            testProjectsPathFixture.SetCurrentDirectory();
+            msBuildFixture.RegisterInstance(_output);
         }
 
         [Fact]
@@ -90,8 +95,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 5);
 
             var logLines = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-            Assert.Contains(logLines, line => line.Contains("unformatted_project.AssemblyInfo.cs(1,1): Fix file encoding."));
-            Assert.Contains(logLines, line => line.Contains("NETCoreApp,Version=v3.0.AssemblyAttributes.cs(1,1): Fix file encoding."));
+            Assert.Contains(logLines, line => line.Contains("unformatted_project.AssemblyInfo.cs"));
+            Assert.Contains(logLines, line => line.Contains("NETCoreApp,Version=v3.0.AssemblyAttributes.cs"));
         }
 
         [Fact]
@@ -118,7 +123,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
-                expectedFileCount: 3);
+                expectedFileCount: 5);
         }
 
         [Fact]
@@ -406,6 +411,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
 
             var log = logger.GetLog();
+
+            _output.WriteLine(log);
 
             Assert.Equal(expectedExitCode, formatResult.ExitCode);
             Assert.Equal(expectedFilesFormatted, formatResult.FilesFormatted);

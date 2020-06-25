@@ -36,12 +36,12 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
                     : FindFile(workspacePath!); // IsNullOrEmpty is not annotated on .NET Core 2.1
             }
 
-            var foundSolution = FindMatchingFile(searchDirectory, FindSolutionFiles, Resources.Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_option);
-            var foundProject = FindMatchingFile(searchDirectory, FindProjectFiles, Resources.Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_option);
+            var foundSolution = FindMatchingFile(searchDirectory, FindSolutionFiles, Resources.Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument);
+            var foundProject = FindMatchingFile(searchDirectory, FindProjectFiles, Resources.Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument);
 
             if (!string.IsNullOrEmpty(foundSolution) && !string.IsNullOrEmpty(foundProject))
             {
-                throw new FileNotFoundException(string.Format(Resources.Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_option, searchDirectory));
+                throw new FileNotFoundException(string.Format(Resources.Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument, searchDirectory));
             }
 
             if (!string.IsNullOrEmpty(foundSolution))
@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
                 return (false, foundProject!); // IsNullOrEmpty is not annotated on .NET Core 2.1
             }
 
-            throw new FileNotFoundException(string.Format(Resources.Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_option, searchDirectory));
+            throw new FileNotFoundException(string.Format(Resources.Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_argument, searchDirectory));
         }
 
         private static (bool isSolution, string workspacePath) FindFile(string workspacePath)
