@@ -142,7 +142,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <TrimMode Condition=" '$(TrimMode)' == '' ">copyused</TrimMode>
-      <_TrimmerLinkSymbols>$(DebuggerSupport)</_TrimmerLinkSymbols>
+      <_TrimmerLinkSymbols Condition=" '$(_TrimmerLinkSymbols)' == '' ">$(DebuggerSupport)</_TrimmerLinkSymbols>
       <_TrimmerLinkSymbols Condition=" '$(_TrimmerLinkSymbols)' == '' ">true</_TrimmerLinkSymbols>
     </PropertyGroup>
 
