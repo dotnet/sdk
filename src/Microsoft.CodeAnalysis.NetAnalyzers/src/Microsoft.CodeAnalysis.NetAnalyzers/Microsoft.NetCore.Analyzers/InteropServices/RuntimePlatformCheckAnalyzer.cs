@@ -116,16 +116,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
                     var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
                         cfg, context.OwningSymbol, CreateOperationVisitor,
-                        wellKnownTypeProvider, context.Options, Rule, performPointsToAnalysis: needsValueContentAnalysis,
+                        wellKnownTypeProvider, context.Options, Rule,
                         performValueContentAnalysis: needsValueContentAnalysis, context.CancellationToken,
-                        out var pointsToAnalysisResult, out var valueContentAnalysisResult);
+                        out var valueContentAnalysisResult);
                     if (analysisResult == null)
                     {
                         return;
                     }
 
                     Debug.Assert(valueContentAnalysisResult == null || needsValueContentAnalysis);
-                    Debug.Assert(pointsToAnalysisResult == null || needsValueContentAnalysis);
 
                     foreach (var platformSpecificOperation in platformSpecificOperations)
                     {
