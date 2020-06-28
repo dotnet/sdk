@@ -65,6 +65,8 @@ public class C
 
     public static readonly object BoxedInt32Default = default(int);
     public static readonly object BoxedInt32Value = 0;
+    public static int? NullableInt32Default = default(int);
+    public static int? NullableInt32Value = 0;
 }");
         }
 

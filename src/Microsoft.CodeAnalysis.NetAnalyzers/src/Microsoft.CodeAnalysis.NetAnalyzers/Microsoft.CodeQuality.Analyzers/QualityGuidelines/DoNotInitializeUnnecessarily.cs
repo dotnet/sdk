@@ -67,8 +67,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     value = conversion.Operand;
                 }
 
-                // If this might box, don't warn, as we don't want to warn for something like `object o = default(int);`.
-                if (value.Type != null && value.Type.IsReferenceType != type.IsReferenceType)
+                // If this might box or assign a value to a nullable, don't warn, as we don't want to warn for
+                // something like `object o = default(int);` or `int? i = 0;`.
+                if (value.Type != null && value.Type.IsReferenceTypeOrNullableValueType() != type.IsReferenceTypeOrNullableValueType())
                 {
                     return false;
                 }
