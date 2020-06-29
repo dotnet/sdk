@@ -97,6 +97,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                 owningSymbol,
                                                                 options,
                                                                 wellKnownTypeProvider,
+                                                                PointsToAnalysisKind.Complete,
                                                                 interproceduralAnalysisConfiguration,
                                                                 interproceduralAnalysisPredicateOpt: null);
                                 });
@@ -113,6 +114,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                     owningSymbol,
                                                                     options,
                                                                     wellKnownTypeProvider,
+                                                                    PointsToAnalysisKind.Complete,
                                                                     interproceduralAnalysisConfiguration,
                                                                     out _,
                                                                     out PointsToAnalysisResult? p);

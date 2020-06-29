@@ -152,6 +152,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                         owningSymbol,
                                                                         operationBlockStartContext.Options,
                                                                         wellKnownTypeProvider,
+                                                                        PointsToAnalysisKind.Complete,
                                                                         interproceduralAnalysisConfig,
                                                                         interproceduralAnalysisPredicateOpt: null,
                                                                         false);
