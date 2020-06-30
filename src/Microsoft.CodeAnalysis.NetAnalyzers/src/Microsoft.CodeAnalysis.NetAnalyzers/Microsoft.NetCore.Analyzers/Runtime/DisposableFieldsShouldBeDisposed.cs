@@ -53,6 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     Debug.Assert(!field.IsStatic);
                     Debug.Assert(disposeAnalysisHelper!.IsDisposable(field.Type));
+                    RoslynDebug.Assert(fieldDisposeValueMap != null);
 
                     fieldDisposeValueMap.AddOrUpdate(field,
                         addValue: disposed,
@@ -62,7 +63,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var hasErrors = false;
                 compilationContext.RegisterOperationAction(_ => hasErrors = true, OperationKind.Invalid);
 
-                var compilation = compilationContext.Compilation;
+                Compilation compilation = compilationContext.Compilation;
 
                 // Disposable fields with initializer at declaration must be disposed.
                 compilationContext.RegisterOperationAction(operationContext =>

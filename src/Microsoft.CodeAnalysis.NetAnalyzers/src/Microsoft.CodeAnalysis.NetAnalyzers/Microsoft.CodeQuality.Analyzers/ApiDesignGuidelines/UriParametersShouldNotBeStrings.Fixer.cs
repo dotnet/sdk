@@ -78,7 +78,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var generator = editor.Generator;
 
             var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            var methodSymbol = (IMethodSymbol)model.GetDeclaredSymbol(methodNode);
+            var methodSymbol = (IMethodSymbol)model.GetDeclaredSymbol(methodNode, cancellationToken);
 
             var parameterIndex = GetParameterIndex(methodSymbol, model.SyntaxTree, span);
             if (parameterIndex < 0)
