@@ -123,7 +123,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             ValueContentAbstractValue stringContentValue = lazyValueContentResult.Value[operation.Kind, operation.Syntax];
                             if (stringContentValue.IsLiteralState)
                             {
-                                Debug.Assert(stringContentValue.LiteralValues.Count > 0);
+                                Debug.Assert(!stringContentValue.LiteralValues.IsEmpty);
 
                                 if (stringContentValue.LiteralValues.Any(l => !(l is string)))
                                 {
