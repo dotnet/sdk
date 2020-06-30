@@ -89,6 +89,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ManagedAssemblyToLink>
     </ItemGroup>
 
+    <!-- Map public properties to the task options -->
+    <PropertyGroup>
+      <_TrimmerLinkSymbols Condition=" '$(TrimmerRemoveSymbols)' == 'true' ">false</_TrimmerLinkSymbols>
+      <_TrimmerLinkSymbols Condition=" '$(TrimmerRemoveSymbols)' != 'true' ">true</_TrimmerLinkSymbols>
+    </PropertyGroup>
+
     <Delete Files="@(_LinkedResolvedFileToPublishCandidate)" />
     <ILLink AssemblyPaths="@(ManagedAssemblyToLink)"
             ReferenceAssemblyPaths="@(ReferencePath)"
@@ -142,8 +148,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <TrimMode Condition=" '$(TrimMode)' == '' ">copyused</TrimMode>
-      <_TrimmerLinkSymbols Condition=" '$(_TrimmerLinkSymbols)' == '' ">$(DebuggerSupport)</_TrimmerLinkSymbols>
-      <_TrimmerLinkSymbols Condition=" '$(_TrimmerLinkSymbols)' == '' ">true</_TrimmerLinkSymbols>
+    </PropertyGroup>
+
+    <!-- Set a default value for TrimmerRemoveSymbols unless set explicitly. -->
+    <PropertyGroup Condition=" '$(TrimmerRemoveSymbols)' == '' ">
+      <!-- The default is to remove symbols when debugger support is disabled, and keep them otherwise. -->
+      <TrimmerRemoveSymbols Condition=" '$(DebuggerSupport)' == 'false' ">true</TrimmerRemoveSymbols>
+      <TrimmerRemoveSymbols Condition=" '$(DebuggerSupport)' != 'false' ">false</TrimmerRemoveSymbols>
     </PropertyGroup>
 
     <ItemGroup>
