@@ -23,8 +23,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             SyntaxNode root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode binaryExpression = root.FindNode(context.Span);
-            if (binaryExpression == null)
+            SyntaxNode node = root.FindNode(context.Span, getInnermostNodeForTie: true);
+            if (node == null)
             {
                 return;
             }
@@ -35,8 +35,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
-            // Indicates whether the Count property is on the Right or Left side.
-            bool useRightSideExpression = properties.ContainsKey(UseCountProperlyAnalyzer.UseRightSideExpressionKey);
+            // Indicates whether the Count method or property is on the Right or Left side of a binary expression 
+            // OR if it is the argument or the instance of an Equals invocation.
+            string operationKey = properties[UseCountProperlyAnalyzer.OperationKey];
+
             // Indicates if the replacing IsEmpty node should be negated. (!IsEmpty). 
             bool shouldNegate = properties.ContainsKey(UseCountProperlyAnalyzer.ShouldNegateKey);
 
@@ -47,11 +49,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
                     SyntaxGenerator generator = editor.Generator;
 
-                    // The Count property within the binary expression.
-                    SyntaxNode countAccessor = GetMemberAccessorFromBinary(binaryExpression, useRightSideExpression);
-
                     // The object that the Count property belongs to OR null if countAccessor is not a MemberAccessExpressionSyntax.
-                    SyntaxNode? objectExpression = GetExpressionFromMemberAccessor(countAccessor);
+                    SyntaxNode? objectExpression = GetObjectExpressionFromOperation(node, operationKey);
 
                     // The IsEmpty property meant to replace the binary expression.
                     SyntaxNode isEmptyNode = objectExpression is null ?
@@ -63,17 +62,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         isEmptyNode = generator.LogicalNotExpression(isEmptyNode);
                     }
 
-                    editor.ReplaceNode(binaryExpression, isEmptyNode);
+                    editor.ReplaceNode(node, isEmptyNode.WithTriviaFrom(node));
                     return editor.GetChangedDocument();
                 },
                 equivalenceKey: MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountMessage),
             context.Diagnostics);
         }
 
-        // Returns the Expression of node when node is a MemberAccessExpressionSyntax; otherwise, returns null.
-        // If this method returns null we assume that node is a IdentifierNameSyntax.
-        protected abstract SyntaxNode? GetExpressionFromMemberAccessor(SyntaxNode node);
-
-        protected abstract SyntaxNode GetMemberAccessorFromBinary(SyntaxNode binaryExpression, bool useRightSide);
+        /// <summary>
+        /// The object that the Count method or property belongs to OR null if the Count method or property is not a MemberAccessExpressionSyntax.
+        /// </summary>
+        protected abstract SyntaxNode? GetObjectExpressionFromOperation(SyntaxNode node, string operationKey);
     }
 }

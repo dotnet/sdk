@@ -523,6 +523,23 @@ class Test
 }
 ```
 
+#### Points to analysis kind for DFA rules based on PointsToAnalysis
+Option Name: `points_to_analysis_kind`
+
+Configurable Rules: All DFA rules
+
+Option Values:
+
+| Option Value | Summary |
+| --- | --- |
+| `None` | PointsToAnalysis is disabled. |
+| `PartialWithoutTrackingFieldsAndProperties` | Partial analysis that does not track PointsToData for fields and properties for improved performance. |
+| `Complete` | Complete analysis that also tracks PointsToData for fields and properties. |
+
+Default Value: Depends on each rule.
+
+Example: `dotnet_code_quality.points_to_analysis_kind = Complete`
+
 #### Configure execution of Copy analysis (tracks value and reference copies)
 
 Option Name: `copy_analysis`
@@ -706,3 +723,12 @@ Examples:
 |`dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod1\|MyMethod2` | Matches all methods named either 'MyMethod1' or 'MyMethod2' in the compilation
 |`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS.MyType.MyMethod(ParamType)` | Matches specific method 'MyMethod' with given fully qualified signature
 |`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS1.MyType1.MyMethod1(ParamType)\|M:NS2.MyType2.MyMethod2(ParamType)` | Matches specific methods 'MyMethod1' and 'MyMethod2' with respective fully qualified signature
+
+### Allowed suffixes
+Option Name: `allowed_suffixes`
+
+Configurable Rules: [CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711)
+
+Option Values: List (separated by '|') of allowed suffixes
+
+Example: `dotnet_code_quality.CA1711.allowed_suffixes = Flag|Flags`

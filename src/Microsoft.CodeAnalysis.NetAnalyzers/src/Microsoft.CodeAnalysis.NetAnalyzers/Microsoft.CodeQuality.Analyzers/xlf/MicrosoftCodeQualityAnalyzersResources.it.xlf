@@ -137,6 +137,11 @@
         <target state="translated">'{0}' chiama '{1}' ma non usa il valore restituito dal metodo. Questo metodo è definito come opzione dell'utente. Usare il risultato in un'istruzione condizionale, assegnare il risultato a una variabile o passarlo come argomento a un altro metodo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="new">Remove the unnecessary assignment.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">Questa regola presuppone che un membro di enumerazione il cui nome contiene la parola "reserved" non sia attualmente usato, ma che sia un segnaposto da rinominare o rimuovere in una versione futura. La ridenominazione o la rimozione di un membro è una modifica che causa un'interruzione.</target>
@@ -2043,13 +2048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">Common Language Runtime inizializza tutti i campi in base ai relativi valori predefiniti prima di eseguire il costruttore. Nella maggior parte dei casi l'inizializzazione di un campo in base al valore predefinito in un costruttore è un'operazione ridondante e implica un calo delle prestazioni oltre a un aumento dei costi di manutenzione. Questa operazione non è ridondante quando il costruttore chiama un altro costruttore della stessa classe o un costruttore della classe di base e tale costruttore inizializza il campo in base a un valore non predefinito. In questo caso può essere appropriato ripristinare il valore predefinito del campo.</target>
+        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which adds to maintenance costs and may degrade performance (such as with increased assembly size). One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
+        <target state="needs-review-translation">Common Language Runtime inizializza tutti i campi in base ai relativi valori predefiniti prima di eseguire il costruttore. Nella maggior parte dei casi l'inizializzazione di un campo in base al valore predefinito in un costruttore è un'operazione ridondante e implica un calo delle prestazioni oltre a un aumento dei costi di manutenzione. Questa operazione non è ridondante quando il costruttore chiama un altro costruttore della stessa classe o un costruttore della classe di base e tale costruttore inizializza il campo in base a un valore non predefinito. In questo caso può essere appropriato ripristinare il valore predefinito del campo.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">Non eseguire inutilmente l'inizializzazione</target>
+        <source>Member '{0}' is explicitly initialized to its default value.</source>
+        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">

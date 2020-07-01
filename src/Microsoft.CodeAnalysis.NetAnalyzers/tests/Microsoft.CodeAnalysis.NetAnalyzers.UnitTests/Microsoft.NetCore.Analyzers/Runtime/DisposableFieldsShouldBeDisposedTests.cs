@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -960,6 +961,174 @@ Class B
     Public Sub Dispose() Implements IDisposable.Dispose
     End Sub
 End Class");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task DisposableAllocation_AssignedThroughField_Disposed_NoDiagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
+        {
+            var editorConfig = pointsToAnalysisKind.HasValue ?
+                $"dotnet_code_quality.CA2213.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                string.Empty;
+
+            var csCode = @"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class B : IDisposable
+{
+    private A a;
+    public void SomeMethod(C c)
+    {
+        c.Field = new A();
+        a = c.Field;
+    }
+
+    public void Dispose()
+    {
+        a.Dispose();
+    }
+}
+
+class C
+{
+    public A Field;
+}
+";
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csCode,
+                AnalyzerConfigDocument = editorConfig
+            };
+
+            await csTest.RunAsync();
+
+            var vbCode = @"
+Imports System
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class B
+    Implements IDisposable
+
+    Private a As A
+    Sub SomeMethod(c As C)
+        c.Field = New A()
+        a = c.Field
+    End Sub
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+        a.Dispose()
+    End Sub
+End Class
+
+Class C
+    Public Field As A
+End Class
+";
+            var vbTest = new VerifyVB.Test()
+            {
+                TestCode = vbCode,
+                AnalyzerConfigDocument = editorConfig
+            };
+
+            await vbTest.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task DisposableAllocation_AssignedThroughField_NotDisposed_Diagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
+        {
+            var editorConfig = pointsToAnalysisKind.HasValue ?
+                $"dotnet_code_quality.CA2213.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                string.Empty;
+
+            var csCode = @"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class B : IDisposable
+{
+    private A a;
+    public void SomeMethod(C c)
+    {
+        c.Field = new A();
+        a = c.Field;
+    }
+
+    public void Dispose()
+    {
+    }
+}
+
+class C
+{
+    public A Field;
+}
+";
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csCode,
+                AnalyzerConfigDocument = editorConfig
+            };
+
+            await csTest.RunAsync();
+
+            var vbCode = @"
+Imports System
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class B
+    Implements IDisposable
+
+    Private a As A
+    Sub SomeMethod(c As C)
+        c.Field = New A()
+        a = c.Field
+    End Sub
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class C
+    Public Field As A
+End Class
+";
+            var vbTest = new VerifyVB.Test()
+            {
+                TestCode = vbCode,
+                AnalyzerConfigDocument = editorConfig
+            };
+
+            await vbTest.RunAsync();
         }
 
         [Fact]

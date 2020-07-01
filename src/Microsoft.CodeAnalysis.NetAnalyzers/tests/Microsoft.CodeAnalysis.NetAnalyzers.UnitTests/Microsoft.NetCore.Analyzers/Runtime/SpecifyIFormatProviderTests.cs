@@ -800,7 +800,10 @@ End Class",
         [Fact]
         public async Task CA1305_NonStringReturningComputerInfoInstalledUICultureIFormatProvider_VisualBasic()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 Imports System
 Imports System.Globalization
 Imports System.Threading
@@ -821,9 +824,13 @@ Friend NotInheritable Class IFormatProviderOverloads
     Public Shared Sub IFormatProviderReturningNonString(format As String, provider As IFormatProvider)
     End Sub
 End Class",
-GetIFormatProviderUICultureRuleBasicResultAt(12, 9, "UICultureAsIFormatProviderReturningNonStringTest.TestMethod()",
+                ExpectedDiagnostics =
+                {
+                    GetIFormatProviderUICultureRuleBasicResultAt(12, 9, "UICultureAsIFormatProviderReturningNonStringTest.TestMethod()",
                                                     "ComputerInfo.InstalledUICulture",
-                                                    "IFormatProviderOverloads.IFormatProviderReturningNonString(String, IFormatProvider)"));
+                                                    "IFormatProviderOverloads.IFormatProviderReturningNonString(String, IFormatProvider)"),
+                },
+            }.RunAsync();
         }
 
         [Fact]

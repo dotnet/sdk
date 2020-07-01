@@ -53,7 +53,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             editor.AddInterfaceType(declaration, interfaceType);
 
             // Find a Dispose method. If one exists make that implement IDisposable, else generate a new method.
-            var typeSymbol = model.GetDeclaredSymbol(declaration) as INamedTypeSymbol;
+            var typeSymbol = model.GetDeclaredSymbol(declaration, cancellationToken) as INamedTypeSymbol;
             IMethodSymbol? disposeMethod = (typeSymbol?.GetMembers("Dispose"))?.OfType<IMethodSymbol>()?.Where(m => m.Parameters.Length == 0).FirstOrDefault();
             if (disposeMethod != null && disposeMethod.DeclaringSyntaxReferences.Length == 1)
             {
