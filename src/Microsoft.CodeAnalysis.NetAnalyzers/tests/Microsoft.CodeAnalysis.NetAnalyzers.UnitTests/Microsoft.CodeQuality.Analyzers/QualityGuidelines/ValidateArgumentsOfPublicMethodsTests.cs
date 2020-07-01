@@ -4613,7 +4613,7 @@ public class C<T> where T : class
     {
         o = o ?? new object();
         AllocateSlow(s);
-        var x = s.Length;
+        var x = [|s|].Length;
     }
 
     private T AllocateSlow(string s)
@@ -5501,7 +5501,7 @@ namespace MyComments
                             new
                             {
                                 id = id,
-                                returnUrl = httpContext.Request.Url
+                                returnUrl = [|httpContext|].Request.Url
                             });
                 }
 
@@ -5518,7 +5518,7 @@ namespace MyComments
                 }
             }
 
-            Output.Write(text);
+            [|Output|].Write(text);
         }
     }
 }
@@ -6340,6 +6340,44 @@ End Module"
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);
             await vbTest.RunAsync();
+        }
+
+        [Fact, WorkItem(2919, "https://github.com/dotnet/roslyn-analyzers/issues/2919")]
+        public async Task Interprocedural_DelegateInvocation_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+namespace ReproCA1062
+{
+    public static class Repro
+    {
+        public static void Test(string foo)
+        {
+            NotNull(foo, nameof(foo));
+            int x = foo.Length; // no warning
+            Bar();
+            x = foo.Length; // CA1062 on foo
+        }
+
+        public static void Bar()
+        {
+            Action<int> a = x => { };
+            a(0);
+        }
+
+        public static void NotNull([ValidatedNotNull] object param, string paramName)
+        {
+            if (param == null)
+            {
+                throw new ArgumentNullException(paramName);
+            }
+        }
+    }
+
+    [System.AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+    public sealed class ValidatedNotNullAttribute : Attribute { }
+}");
         }
     }
 }
