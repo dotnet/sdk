@@ -3,9 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Operations;
+using Microsoft.NetCore.CSharp.Analyzers.Performance;
+using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
 using Test.Utilities;
 using Xunit;
+using Xunit.Abstractions;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>;
@@ -714,5 +719,143 @@ End Class
 ",
             }.RunAsync();
         }
+    }
+
+    public abstract class UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
+        : DoNotUseCountWhenAnyCanBeUsedTestsBase
+    {
+        protected UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests(TestsSourceCodeProvider sourceProvider, VerifierBase verifier)
+            : base(sourceProvider, verifier) { }
+
+        [Fact]
+        public Task CountEqualsNonZero_WithoutPredicate_Fixed()
+            => VerifyAsync(
+                methodName: SourceProvider.MemberName,
+                testSource: SourceProvider.GetCodeWithExpression(
+                    SourceProvider.GetTargetExpressionEqualsInvocationCode(1, withPredicate: false, "Count"),
+                    SourceProvider.ExtensionsNamespace),
+                fixedSource: SourceProvider.GetCodeWithExpression(
+                    SourceProvider.GetTargetPropertyEqualsInvocationCode(1, SourceProvider.MemberName),
+                    SourceProvider.ExtensionsNamespace),
+                extensionsSource: null);
+
+        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3700"), WorkItem(3700, "https://github.com/dotnet/roslyn-analyzers/issues/3700")]
+        public Task NonZeroEqualsCount_WithoutPredicate_Fixed()
+            => VerifyAsync(
+                methodName: SourceProvider.MemberName,
+                testSource: SourceProvider.GetCodeWithExpression(
+                    SourceProvider.GetEqualsTargetExpressionInvocationCode(1, withPredicate: false, "Count"),
+                    SourceProvider.ExtensionsNamespace),
+                fixedSource: SourceProvider.GetCodeWithExpression(
+                    SourceProvider.GetEqualsTargetPropertyInvocationCode(1, SourceProvider.MemberName),
+                    SourceProvider.ExtensionsNamespace),
+                extensionsSource: null,
+                line: 10, column: 30);
+
+        public static readonly IEnumerable<object[]> NoDiagnosisOnlyTestData = new BinaryExpressionTestData()
+            .Where(x => (bool)x[0] == true)
+            .Select(x => new object[] { x[1], x[2], x[3] });
+
+        [Theory]
+        // Scenarios that are not diagnosed with CA1836 should fallback in CA1829.
+        [MemberData(nameof(NoDiagnosisOnlyTestData))]
+        public Task PropertyOnBinaryOperation(int literal, BinaryOperatorKind @operator, bool isRightSideExpression)
+        {
+            string testSource;
+            string fixedSource;
+            if (isRightSideExpression)
+            {
+                testSource = SourceProvider.GetTargetExpressionBinaryExpressionCode(literal, @operator, withPredicate: false, "Count");
+                fixedSource = SourceProvider.GetTargetPropertyBinaryExpressionCode(literal, @operator, SourceProvider.MemberName);
+            }
+            else
+            {
+                testSource = SourceProvider.GetTargetExpressionBinaryExpressionCode(@operator, literal, withPredicate: false, "Count");
+                fixedSource = SourceProvider.GetTargetPropertyBinaryExpressionCode(@operator, literal, SourceProvider.MemberName);
+            }
+
+            testSource = SourceProvider.GetCodeWithExpression(
+                testSource, additionalNamspaces: SourceProvider.ExtensionsNamespace);
+
+            fixedSource = SourceProvider.GetCodeWithExpression(
+                fixedSource, additionalNamspaces: SourceProvider.ExtensionsNamespace);
+
+            int line = VerifierBase.GetNumberOfLines(testSource) - 3;
+            int column = isRightSideExpression ?
+                21 + 3 + GetOperatorLength(SourceProvider, @operator) :
+                21;
+
+            return VerifyAsync(SourceProvider.MemberName, testSource, fixedSource, extensionsSource: null, line, column);
+        }
+
+        private static int GetOperatorLength(TestsSourceCodeProvider sourceProvider, BinaryOperatorKind @operator)
+        {
+            switch (@operator)
+            {
+                case BinaryOperatorKind.GreaterThan:
+                case BinaryOperatorKind.LessThan:
+                    return 1;
+                case BinaryOperatorKind.NotEquals:
+                case BinaryOperatorKind.GreaterThanOrEqual:
+                case BinaryOperatorKind.LessThanOrEqual:
+                    return 2;
+                case BinaryOperatorKind.Equals:
+                    if (sourceProvider is CSharpTestsSourceCodeProvider)
+                    {
+                        return 2;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                default:
+                    return 0;
+            }
+        }
+    }
+
+    public class CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Concurrent
+        : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
+    {
+        public CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Concurrent()
+            : base(
+                  new CSharpTestsSourceCodeProvider(
+                      "Count",
+                      "global::System.Collections.Concurrent.ConcurrentBag<int>",
+                      "System.Linq",
+                      "Enumerable",
+                      false),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>(UseCountProperlyAnalyzer.CA1829))
+        { }
+    }
+
+    public class CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable
+        : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
+    {
+        public CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable()
+            : base(
+                  new CSharpTestsSourceCodeProvider(
+                      "Length",
+                      "global::System.Collections.Immutable.ImmutableArray<int>",
+                      "System.Linq",
+                      "Enumerable",
+                      false),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>(UseCountProperlyAnalyzer.CA1829))
+        { }
+    }
+
+    public class BasicUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable
+        : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
+    {
+        public BasicUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable()
+            : base(
+                  new BasicTestsSourceCodeProvider(
+                      "Length",
+                      "Global.System.Collections.Immutable.ImmutableArray(Of Integer)",
+                      "System.Linq",
+                      "Enumerable",
+                      false),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicUsePropertyInsteadOfCountMethodWhenAvailableFixer>(UseCountProperlyAnalyzer.CA1829))
+        { }
     }
 }
