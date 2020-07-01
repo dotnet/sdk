@@ -2015,6 +2015,79 @@ End Class",
                     "MyFieldEx"));
         }
 
+        [Fact]
+        public async Task CA1711_EnumFlagSuffix_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum SomeEnumFlag
+{
+    X,
+}",
+                GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlag", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagSuffix));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum SomeEnumFlag
+    X
+End Enum",
+                GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlag", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagSuffix));
+        }
+
+        [Fact]
+        public async Task CA1711_EnumFlagsSuffix_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public enum SomeEnumFlags
+{
+    X,
+}",
+                GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlags", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagsSuffix));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Enum SomeEnumFlags
+    X
+End Enum",
+                GetCSharpResultAt(2, 13, IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.TypeNoAlternateRule, "SomeEnumFlags", IdentifiersShouldNotHaveIncorrectSuffixAnalyzer.FlagsSuffix));
+        }
+
+        [Fact]
+        public async Task CA1711_AllowedSuffixes_NoDiagnostic()
+        {
+            const string editorConfigText = "dotnet_code_quality.CA1711.allowed_suffixes = Attribute|Flag";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public enum MyFlag {}
+
+public class MyAttribute {}",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Enum MyFlag
+    A
+End Enum
+
+Public Class MyAttribute
+End Class",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                },
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
