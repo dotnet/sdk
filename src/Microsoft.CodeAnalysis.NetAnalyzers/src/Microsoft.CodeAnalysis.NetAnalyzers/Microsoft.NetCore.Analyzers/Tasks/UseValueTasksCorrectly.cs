@@ -447,7 +447,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                         stmt.Operation is IInvocationOperation assert &&
                         assert.TargetMethod?.Name == nameof(Debug.Assert) &&
                         assert.TargetMethod.ContainingType.Equals(debugType) &&
-                        assert.Arguments.Length >= 1 &&
+                        !assert.Arguments.IsEmpty &&
                         OperationImpliesCompletion(valueTaskSymbol, assert.Arguments[0].Value) == true)
                     {
                         return i;

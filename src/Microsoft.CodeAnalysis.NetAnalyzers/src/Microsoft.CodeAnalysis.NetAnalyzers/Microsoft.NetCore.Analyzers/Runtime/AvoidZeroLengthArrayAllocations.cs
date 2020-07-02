@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (typeSymbol != null && typeSymbol.DeclaredAccessibility == Accessibility.Public)
                 {
                     if (typeSymbol.GetMembers(ArrayEmptyMethodName).FirstOrDefault() is IMethodSymbol methodSymbol && methodSymbol.DeclaredAccessibility == Accessibility.Public &&
-    methodSymbol.IsStatic && methodSymbol.Arity == 1 && methodSymbol.Parameters.Length == 0)
+    methodSymbol.IsStatic && methodSymbol.Arity == 1 && methodSymbol.Parameters.IsEmpty)
                     {
                         ctx.RegisterOperationAction(AnalyzeOperation, OperationKind.ArrayCreation);
                     }
@@ -157,7 +157,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             var parameters = targetSymbol.GetParameters();
-            if (parameters.Length == 0 || !parameters[^1].IsParams)
+            if (parameters.IsEmpty || !parameters[^1].IsParams)
             {
                 return false;
             }

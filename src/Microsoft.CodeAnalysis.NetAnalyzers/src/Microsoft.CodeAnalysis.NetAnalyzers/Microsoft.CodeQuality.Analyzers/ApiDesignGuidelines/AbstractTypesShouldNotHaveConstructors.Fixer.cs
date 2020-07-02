@@ -37,7 +37,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static SyntaxNode? GetDeclaration(ISymbol symbol, CancellationToken cancellationToken)
         {
-            return (symbol.DeclaringSyntaxReferences.Length > 0) ? symbol.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) : null;
+            return (!symbol.DeclaringSyntaxReferences.IsEmpty) ? symbol.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) : null;
         }
 
         private static async Task<Document> ChangeAccessibilityCodeFix(Document document, SyntaxNode root, SyntaxNode nodeToFix, CancellationToken cancellationToken)

@@ -66,7 +66,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     foreach (var method in methods)
                     {
                         if (s_platformCheckMethods.Contains(method.Name) &&
-                            method.Parameters.Length >= 1 &&
+                            !method.Parameters.IsEmpty &&
                             method.Parameters[0].Type.Equals(osPlatformType) &&
                             method.Parameters.Skip(1).All(p => p.Type.SpecialType == SpecialType.System_Int32))
                         {
@@ -154,7 +154,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static bool ComputeNeedsValueContentAnalysis(IInvocationOperation invocation)
         {
-            Debug.Assert(invocation.Arguments.Length > 0);
+            Debug.Assert(!invocation.Arguments.IsEmpty);
             foreach (var argument in invocation.Arguments.Skip(1))
             {
                 if (!argument.Value.ConstantValue.HasValue)

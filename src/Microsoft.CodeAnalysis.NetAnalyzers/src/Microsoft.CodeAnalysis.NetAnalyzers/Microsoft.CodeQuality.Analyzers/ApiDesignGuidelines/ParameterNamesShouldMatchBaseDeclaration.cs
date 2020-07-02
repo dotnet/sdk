@@ -63,7 +63,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             ImmutableArray<IMethodSymbol> originalDefinitions = GetOriginalDefinitions(methodSymbol);
-            if (originalDefinitions.Length == 0)
+            if (originalDefinitions.IsEmpty)
             {
                 // We did not find any original definitions so we don't have to do anything.
                 // This can happen when the method has an override modifier,
@@ -136,7 +136,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 originalDefinitionsBuilder.Add(methodSymbol.OverriddenMethod);
             }
 
-            if (methodSymbol.ExplicitInterfaceImplementations.Length > 0)
+            if (!methodSymbol.ExplicitInterfaceImplementations.IsEmpty)
             {
                 originalDefinitionsBuilder.AddRange(methodSymbol.ExplicitInterfaceImplementations);
             }
