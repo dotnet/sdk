@@ -23,7 +23,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             {
                 var projectId = ProjectId.CreateNewId(debugName: folderPath);
 
-                var documents = await LoadDocumentInfosAsync(projectId, folderPath, FileExtension, fileMatcher);
+                var documents = await LoadDocumentInfosAsync(projectId, folderPath, FileExtension, fileMatcher).ConfigureAwait(false);
                 if (documents.IsDefaultOrEmpty)
                 {
                     return null;

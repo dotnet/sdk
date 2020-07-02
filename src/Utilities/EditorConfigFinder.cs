@@ -25,7 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
                 .Select(file => file.FullName)
                 .ToList();
 
-            while (directory.Parent is object)
+            while (directory.Parent != null)
             {
                 directory = directory.Parent;
 

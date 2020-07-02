@@ -60,7 +60,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         public static bool TryGetEndOfLine(AnalyzerConfigOptions analyzerConfigOptions, [NotNullWhen(true)] out string? endOfLine)
         {
-            if (analyzerConfigOptions.TryGetValue("end_of_line", out var endOfLineOption))
+            if (analyzerConfigOptions != null &&
+                analyzerConfigOptions.TryGetValue("end_of_line", out var endOfLineOption))
             {
                 endOfLine = GetEndOfLine(endOfLineOption);
                 return true;

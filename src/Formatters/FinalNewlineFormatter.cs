@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             if (!analyzerConfigOptions.TryGetValue("insert_final_newline", out var insertFinalNewlineValue) ||
                 !bool.TryParse(insertFinalNewlineValue, out var insertFinalNewline))
             {
-                return await document.GetTextAsync(cancellationToken);
+                return await document.GetTextAsync(cancellationToken).ConfigureAwait(false);
             }
 
             if (!EndOfLineFormatter.TryGetEndOfLine(analyzerConfigOptions, out var endOfLine))

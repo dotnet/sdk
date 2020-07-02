@@ -20,7 +20,6 @@ namespace Microsoft.CodeAnalysis.Tools
 {
     internal class Program
     {
-        private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
         internal const int UnhandledExceptionExitCode = 1;
         internal const int CheckFailedExitCode = 2;
         internal const int UnableToLocateMSBuildExitCode = 3;
@@ -40,9 +39,10 @@ namespace Microsoft.CodeAnalysis.Tools
         }
 
         public static async Task<int> Run(
-            string? project,
-            string? folder,
             string? workspace,
+            bool folder,
+            string? fixStyle,
+            string? fixAnalyzers,
             string? verbosity,
             bool check,
             string[] include,
@@ -74,44 +74,22 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 currentDirectory = Environment.CurrentDirectory;
 
-                // Check for deprecated options and assign package if specified via `-w | -f` options.
-                if (!string.IsNullOrEmpty(workspace) && string.IsNullOrEmpty(project))
-                {
-                    logger.LogWarning(Resources.The_workspace_option_is_deprecated_Use_the_project_argument_instead);
-                    project = workspace;
-                }
-                else if (!string.IsNullOrEmpty(folder) && string.IsNullOrEmpty(project))
-                {
-                    logger.LogWarning(Resources.The_folder_option_is_deprecated_for_specifying_the_path_Pass_the_folder_option_but_specify_the_path_with_the_project_argument_instead);
-                    project = folder;
-                }
-
-                if (s_parseResult.WasOptionUsed("--files"))
-                {
-                    logger.LogWarning(Resources.The_files_option_is_deprecated_Use_the_include_option_instead);
-                }
-
-                if (s_parseResult.WasOptionUsed("--dry-run"))
-                {
-                    logger.LogWarning(Resources.The_dry_run_option_is_deprecated_Use_the_check_option_instead);
-                }
 
                 string workspaceDirectory;
                 string workspacePath;
                 WorkspaceType workspaceType;
 
-                // The presence of the folder token means we should treat the project path as a folder path.
-                // This will change in the following version so that the folder option is a bool flag.
-                if (s_parseResult.WasOptionUsed("-f", "--folder"))
+                // The folder option means we should treat the project path as a folder path.
+                if (folder)
                 {
                     // If folder isn't populated, then use the current directory
-                    workspacePath = Path.GetFullPath(project ?? ".", Environment.CurrentDirectory);
+                    workspacePath = Path.GetFullPath(workspace ?? ".", Environment.CurrentDirectory);
                     workspaceDirectory = workspacePath;
                     workspaceType = WorkspaceType.Folder;
                 }
                 else
                 {
-                    var (isSolution, workspaceFilePath) = MSBuildWorkspaceFinder.FindWorkspace(currentDirectory, project);
+                    var (isSolution, workspaceFilePath) = MSBuildWorkspaceFinder.FindWorkspace(currentDirectory, workspace);
 
                     workspacePath = workspaceFilePath;
                     workspaceType = isSolution
@@ -153,6 +131,10 @@ namespace Microsoft.CodeAnalysis.Tools
                     workspacePath,
                     workspaceType,
                     logLevel,
+                    fixCodeStyle: s_parseResult.WasOptionUsed("--fix-style", "-fs"),
+                    codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
+                    fixAnalyzers: s_parseResult.WasOptionUsed("--fix-analyzers", "-fa"),
+                    analyerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
                     fileMatcher,
@@ -217,6 +199,17 @@ namespace Microsoft.CodeAnalysis.Tools
                 default:
                     return LogLevel.Information;
             }
+        }
+
+        internal static DiagnosticSeverity GetSeverity(string? severity)
+        {
+            return severity?.ToLowerInvariant() switch
+            {
+                FixSeverity.Error => DiagnosticSeverity.Error,
+                FixSeverity.Warn => DiagnosticSeverity.Warning,
+                FixSeverity.Info => DiagnosticSeverity.Info,
+                _ => throw new ArgumentOutOfRangeException(nameof(severity)),
+            };
         }
 
         private static ILogger<Program> SetupLogging(IConsole console, LogLevel logLevel)
