@@ -9,15 +9,15 @@
   <PropertyGroup>
     <MicrosoftBuildVersion>15.3.409</MicrosoftBuildVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNETCoreCompilersPackageVersion>3.7.0-3.20271.4</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftNETCoreCompilersPackageVersion>3.7.0-3.20312.3</MicrosoftNETCoreCompilersPackageVersion>
     <MicrosoftExtensionsVersion>3.1.1</MicrosoftExtensionsVersion>
   </PropertyGroup>
   <!--
     Other Dependency versions
   -->
   <PropertyGroup>
-    <SystemCommandLineVersion>2.0.0-beta1.20104.2</SystemCommandLineVersion>
-    <SystemCommandLineRenderingVersion>0.3.0-alpha.20104.2</SystemCommandLineRenderingVersion>
+    <SystemCommandLineVersion>2.0.0-beta1.20303.1</SystemCommandLineVersion>
+    <SystemCommandLineRenderingVersion>0.3.0-alpha.20303.1</SystemCommandLineRenderingVersion>
     <MicrosoftBuildFrameworkVersion>$(MicrosoftBuildVersion)</MicrosoftBuildFrameworkVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.0.1-beta1.20114.4</MicrosoftCodeAnalysisAnalyzerTestingVersion>
@@ -27,7 +27,6 @@
     <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftCodeAnalysisVersion>$(MicrosoftNETCoreCompilersPackageVersion)</MicrosoftCodeAnalysisVersion>
     <SystemTextJsonVersion>4.7.0</SystemTextJsonVersion>
-
     <!--
       Workaround for the inability to load the NugetSdkResolver from the .NET 5 SDK
       https://github.com/microsoft/MSBuildLocator/issues/88

@@ -24,14 +24,21 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             Document document,
             SourceText sourceText,
             OptionSet optionSet,
-            AnalyzerConfigOptions? analyzerConfigOptions,
+            AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             try
             {
-                var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken).ConfigureAwait(false);
+                // Only run formatter if the user has specifically configured one of the driving properties.
+                if (!analyzerConfigOptions.TryGetValue("dotnet_sort_system_directives_first", out _) &&
+                    !analyzerConfigOptions.TryGetValue("dotnet_separate_import_directive_groups", out _))
+                {
+                    return sourceText;
+                }
+
+                var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken);
 
                 var isSameVersion = await IsSameDocumentAndVersionAsync(document, organizedDocument, cancellationToken).ConfigureAwait(false);
                 if (isSameVersion)

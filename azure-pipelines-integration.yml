@@ -23,7 +23,7 @@ jobs:
       roslyn:
         _repo: "https://github.com/dotnet/roslyn"
         _repoName: "dotnet/roslyn"
-        _sha: "686fc1efbe07d0a2d47147e36677ffcb09a74edc"
+        _sha: "da02b3ea3c539df05d82b362e57bbe085fc1abf7"
       sdk:
         _repo: "https://github.com/dotnet/sdk"
         _repoName: "dotnet/sdk"

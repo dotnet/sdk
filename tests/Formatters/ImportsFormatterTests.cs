@@ -137,5 +137,25 @@ class C
 
             await TestAsync(testCode, expectedCode, editorConfig);
         }
+
+        [Fact]
+        public async Task WhenNeitherOptionIsConfigured_AndImportsNotSortedOrSeparated_NoChange()
+        {
+            var code = @"
+using Microsoft.CodeAnalysis;
+using System.Linq;
+using System;
+
+class C
+{
+}";
+
+            var editorConfig = new Dictionary<string, string>()
+            {
+                ["end_of_line"] = EndOfLineFormatter.GetEndOfLineOption(Environment.NewLine)
+            };
+
+            await TestAsync(code, code, editorConfig);
+        }
     }
 }
