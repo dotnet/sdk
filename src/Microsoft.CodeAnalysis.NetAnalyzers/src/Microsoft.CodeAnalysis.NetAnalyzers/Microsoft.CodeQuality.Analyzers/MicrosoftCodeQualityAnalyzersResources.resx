@@ -1215,7 +1215,7 @@
     <value>Do not initialize unnecessarily</value>
   </data>
   <data name="DoNotInitializeUnnecessarilyDescription" xml:space="preserve">
-    <value>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which adds to maintenance costs and may degrade performance (such as with increased assembly size). One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</value>
+    <value>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</value>
   </data>
   <data name="DoNotInitializeUnnecessarilyMessage" xml:space="preserve">
     <value>Member '{0}' is explicitly initialized to its default value.</value>

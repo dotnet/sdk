@@ -2048,7 +2048,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which adds to maintenance costs and may degrade performance (such as with increased assembly size). One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
+        <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
         <target state="needs-review-translation">공용 언어 런타임은 생성자를 실행하기 전에 모든 필드를 기본값으로 초기화합니다. 대부분의 경우 생성자에서 필드를 기본값으로 초기화하는 것은 중복되는 작업이며 이로 인해 성능이 저하되고 유지 관리 비용이 추가로 발생합니다. 생성자가 동일한 클래스의 다른 생성자 또는 기본 클래스 생성자를 호출하고 해당 생성자가 필드를 기본값이 아닌 값으로 초기화하는 경우는 중복되는 작업이 아닙니다. 이 경우 필드 값을 기본값으로 초기화하는 작업이 적합할 수 있습니다.</target>
         <note />
       </trans-unit>
