@@ -156,7 +156,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
-        public void CommandLine_ProjectArgument_FailesIfSpecifiedTwice()
+        public void CommandLine_ProjectArgument_FailsIfSpecifiedTwice()
         {
             // Arrange
             var sut = FormatCommand.CreateCommandLineOptions();
@@ -165,7 +165,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "workspaceValue1", "workspaceValue2" });
 
             // Assert
-            Assert.Equal(2, result.Errors.Count);
+            Assert.Equal(1, result.Errors.Count);
         }
     }
 }
