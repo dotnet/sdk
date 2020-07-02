@@ -137,6 +137,11 @@
         <target state="translated">“{0}”调用“{1}”，但不使用方法返回的值。此方法被定义为用户选项。请使用条件语句中的结果，并将结果赋给变量或将其作为自变量传递给另一个方法。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="new">Remove the unnecessary assignment.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">此规则假设当前未使用名称中包含 "reserved" 的枚举成员，且该成员是要在未来版本中重命名或删除的占位符。重命名或删除成员是一个中断性变更。</target>
@@ -2043,13 +2048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">在运行构造函数前，公共语言运行时将所有字段都初始化为其默认值。在大多数情况下，在构造函数中将字段初始化为其默认值是多余的行为，这会降低性能并且增加维护成本。但在构造函数调用相同类的另一构造函数或基类构造函数(此构造函数将字段初始化为非默认值)时，不存在多余的情况。在这种情况下，将字段值更改回其默认值是恰当的行为。</target>
+        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which adds to maintenance costs and may degrade performance (such as with increased assembly size). One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
+        <target state="needs-review-translation">在运行构造函数前，公共语言运行时将所有字段都初始化为其默认值。在大多数情况下，在构造函数中将字段初始化为其默认值是多余的行为，这会降低性能并且增加维护成本。但在构造函数调用相同类的另一构造函数或基类构造函数(此构造函数将字段初始化为非默认值)时，不存在多余的情况。在这种情况下，将字段值更改回其默认值是恰当的行为。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">避免进行不必要的初始化</target>
+        <source>Member '{0}' is explicitly initialized to its default value.</source>
+        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">

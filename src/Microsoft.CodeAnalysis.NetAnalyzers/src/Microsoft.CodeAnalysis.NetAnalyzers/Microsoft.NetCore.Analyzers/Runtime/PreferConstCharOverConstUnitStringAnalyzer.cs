@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 compilationContext.RegisterOperationAction(context =>
                 {
                     var invocationOperation = (IInvocationOperation)context.Operation;
-                    if (invocationOperation.Arguments.Length < 1)
+                    if (invocationOperation.Arguments.IsEmpty)
                     {
                         return;
                     }

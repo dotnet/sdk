@@ -24,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [Fact]
         public async Task XmlDocumentDerivedTypeNoCtorSetUrlResolverToXmlResolverMethodShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -46,7 +46,7 @@ namespace TestNamespace
                 GetCA3077InsecureMethodCSharpResultAt(16, 13, "method")
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -67,7 +67,7 @@ End Namespace",
         [Fact]
         public async Task XmlDocumentDerivedTypeSetUrlResolverToXmlResolverMethodShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -89,7 +89,7 @@ namespace TestNamespace
                 GetCA3077InsecureMethodCSharpResultAt(16, 13, "method")
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -111,7 +111,7 @@ End Namespace",
         [Fact]
         public async Task XmlDocumentDerivedTypeSetNullToXmlResolverMethodShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -132,7 +132,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -152,7 +152,7 @@ End Namespace");
         [Fact]
         public async Task XmlDocumentDerivedTypeSetUrlResolverToThisXmlResolverMethodShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -174,7 +174,7 @@ namespace TestNamespace
                 GetCA3077InsecureMethodCSharpResultAt(16, 13, "method")
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -196,7 +196,7 @@ End Namespace",
         [Fact]
         public async Task XmlDocumentDerivedTypeSetNullToThisXmlResolverMethodShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -217,7 +217,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -237,7 +237,7 @@ End Namespace");
         [Fact]
         public async Task XmlDocumentDerivedTypeSetUrlResolverToBaseXmlResolverMethodShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -259,7 +259,7 @@ namespace TestNamespace
                 GetCA3077InsecureMethodCSharpResultAt(16, 13, "method")
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -281,7 +281,7 @@ End Namespace",
         [Fact]
         public async Task XmlDocumentDerivedTypeSetNullToBaseXmlResolverMethodShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -302,7 +302,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -322,7 +322,7 @@ End Namespace");
         [Fact]
         public async Task XmlDocumentDerivedTypeSetUrlResolverToVariableMethodShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -343,7 +343,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -363,7 +363,7 @@ End Namespace");
         [Fact]
         public async Task XmlDocumentDerivedTypeSetUrlResolverToHidingXmlResolverFieldInMethodShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -386,7 +386,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace

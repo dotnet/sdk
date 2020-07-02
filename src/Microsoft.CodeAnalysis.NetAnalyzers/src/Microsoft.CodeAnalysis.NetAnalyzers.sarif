@@ -1675,6 +1675,26 @@
             ]
           }
         },
+        "CA1805": {
+          "id": "CA1805",
+          "shortDescription": "Do not initialize unnecessarily",
+          "fullDescription": "The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which adds to maintenance costs and may degrade performance (such as with increased assembly size). One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1805",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotInitializeUnnecessarilyAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
         "CA1806": {
           "id": "CA1806",
           "shortDescription": "Do not ignore method results",

@@ -31,10 +31,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 AwaitKeyword = awaitKeyword;
                 CommentPrefix = commentPrefix;
                 MethodSuffix = IsAsync ? "Async" : string.Empty;
-                MethodName = operationName + MethodSuffix;
+                MemberName = operationName + MethodSuffix;
             }
 
-            public string MethodName { get; }
+            public string MemberName { get; }
             public string MethodSuffix { get; }
             public string AsyncKeyword { get; }
             public string AwaitKeyword { get; }
@@ -57,6 +57,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             internal string GetFixedExpressionCode(bool withPredicate, bool negate)
                 => $@"{GetLogicalNotText(negate)}{GetTargetExpressionCode(withPredicate, "Any" + this.MethodSuffix)}";
 
+            internal string GetFixedIsEmptyPropertyCode(bool negate)
+                => $@"{GetLogicalNotText(negate)}{GetTargetPropertyCode("IsEmpty")}";
+
             internal string GetTargetExpressionBinaryExpressionCode(int value, BinaryOperatorKind @operator, bool withPredicate, string methodName)
                 => $@"{value} {GetOperatorCode(@operator)} {GetTargetExpressionCode(withPredicate, methodName)}";
 
@@ -71,6 +74,21 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             public string GetTargetExpressionCode(bool withPredicate, string methodName)
                 => $@"{GetTargetCode(methodName)}({(withPredicate ? GetPredicateCode() : string.Empty)})";
+
+            internal string GetTargetPropertyBinaryExpressionCode(int value, BinaryOperatorKind @operator, string propertyName)
+                => $@"{value} {GetOperatorCode(@operator)} {GetTargetPropertyCode(propertyName)}";
+
+            internal string GetTargetPropertyBinaryExpressionCode(BinaryOperatorKind @operator, int value, string propertyName)
+                => $@"{GetTargetPropertyCode(propertyName)} {GetOperatorCode(@operator)} {value}";
+
+            public string GetTargetPropertyEqualsInvocationCode(int value, string propertyName)
+                => $@"{GetTargetPropertyCode(propertyName)}.Equals({value})";
+
+            internal string GetEqualsTargetPropertyInvocationCode(int value, string propertyName)
+                => $@"{value}.Equals({GetTargetPropertyCode(propertyName)})";
+
+            public string GetTargetPropertyCode(string propertyName)
+                => $@"{GetTargetCode(propertyName)}";
 
             public abstract string GetSymbolInvocationCode(string methodName, params string[] arguments);
             public abstract string GetPredicateCode();
@@ -181,8 +199,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     {{
         public static {boolReturnType} Any{this.MethodSuffix}(this {targetType} q) => {boolReturnValue};
         public static {boolReturnType} Any{this.MethodSuffix}<TSource>(this {targetTypeOfSource} q, {predicate} predicate) => {boolReturnValue};
-        public static {intReturnType} {this.MethodName}(this {targetType} q) => {intReturnValue};
-        public static {intReturnType} {this.MethodName}<TSource>(this {targetTypeOfSource} q, {predicate} predicate) => {intReturnValue};
+        public static {intReturnType} {this.MemberName}(this {targetType} q) => {intReturnValue};
+        public static {intReturnType} {this.MemberName}<TSource>(this {targetTypeOfSource} q, {predicate} predicate) => {intReturnValue};
         public static {intReturnType} Sum{this.MethodSuffix}(this {targetType} q) => {intReturnValue};
     }}
 }}
@@ -320,11 +338,11 @@ End Namespace")
             Return {boolReturnValue}
         End Function
         <System.Runtime.CompilerServices.Extension>
-        Public Function {this.MethodName}(q As {targetType}) As {intReturnType}
+        Public Function {this.MemberName}(q As {targetType}) As {intReturnType}
             Return {intReturnValue}
         End Function
         <System.Runtime.CompilerServices.Extension>
-        Public Function {this.MethodName}(Of TSource)(q As {targetTypeOfSource}, predicate As {predicate}) As {intReturnType}
+        Public Function {this.MemberName}(Of TSource)(q As {targetTypeOfSource}, predicate As {predicate}) As {intReturnType}
             Return {intReturnValue}
         End Function
         <System.Runtime.CompilerServices.Extension>
@@ -371,9 +389,9 @@ End Namespace
             public string DiagnosticId { get; }
 
             internal abstract Task VerifyAsync(string[] testSources);
-            internal abstract Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources);
+            internal abstract Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources, int line, int column);
 
-            protected static int GetNumberOfLines(string source)
+            public static int GetNumberOfLines(string source)
             {
                 var numberOfLines = 0;
                 var index = -Environment.NewLine.Length;
@@ -407,7 +425,7 @@ End Namespace
                 return test.RunAsync();
             }
 
-            internal override Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources)
+            internal override Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources, int line, int column)
             {
                 var test = new Test.Utilities.CSharpCodeFixVerifier<TAnalyzer, TCodeFix>.Test();
 
@@ -421,7 +439,7 @@ End Namespace
 
                 test.TestState.ExpectedDiagnostics.Add(
                     Test.Utilities.CSharpCodeFixVerifier<TAnalyzer, TCodeFix>.Diagnostic(this.DiagnosticId)
-                        .WithLocation(GetNumberOfLines(testSources[0]) - 3, 21)
+                        .WithLocation(line, column)
                         .WithArguments(methodName));
 
                 foreach (var fixedSource in fixedSources)
@@ -461,7 +479,7 @@ End Namespace
                 return test.RunAsync();
             }
 
-            internal override Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources)
+            internal override Task VerifyAsync(string methodName, string[] testSources, string[] fixedSources, int line, int column)
             {
                 var test = new Test.Utilities.VisualBasicCodeFixVerifier<TAnalyzer, TCodeFix>.Test();
 
@@ -475,7 +493,7 @@ End Namespace
 
                 test.TestState.ExpectedDiagnostics.Add(
                     Test.Utilities.VisualBasicCodeFixVerifier<TAnalyzer, TCodeFix>.Diagnostic(this.DiagnosticId)
-                        .WithLocation(GetNumberOfLines(testSources[0]) - 3, 21)
+                        .WithLocation(line, column)
                         .WithArguments(methodName));
 
                 foreach (var fixedSource in fixedSources)

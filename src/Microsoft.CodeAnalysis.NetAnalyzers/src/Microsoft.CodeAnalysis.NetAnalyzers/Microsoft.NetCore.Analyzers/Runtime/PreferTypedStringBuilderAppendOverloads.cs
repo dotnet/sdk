@@ -98,7 +98,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         !(argument.Value is IInvocationOperation toStringInvoke) ||
                         toStringInvoke.TargetMethod.Name != "ToString" ||
                         toStringInvoke.Type.SpecialType != SpecialType.System_String ||
-                        toStringInvoke.TargetMethod.Parameters.Length != 0)
+                        !toStringInvoke.TargetMethod.Parameters.IsEmpty)
                     {
                         return;
                     }

@@ -162,7 +162,10 @@ public class C
         public async Task CA2241CSharpVarArgsNotSupported()
         {
             // currently not supported due to "https://github.com/dotnet/roslyn/issues/7346"
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System;
 
 public class C
@@ -173,7 +176,8 @@ public class C
         Console.WriteLine(""{0} {1} {2} {3} {4}"", 1, 2, 3, 4, __arglist(5));
     }
 }
-");
+",
+            }.RunAsync();
         }
 
         [Fact]
@@ -232,6 +236,9 @@ End Class
             GetBasicResultAt(6, 9),
             GetBasicResultAt(7, 9),
             GetBasicResultAt(8, 9),
+#if NETCOREAPP
+            GetBasicResultAt(9, 9),
+#endif
             GetBasicResultAt(10, 9));
         }
 
@@ -259,6 +266,9 @@ End Class
             GetBasicResultAt(6, 9),
             GetBasicResultAt(7, 9),
             GetBasicResultAt(8, 9),
+#if NETCOREAPP
+            GetBasicResultAt(9, 9),
+#endif
             GetBasicResultAt(10, 9));
         }
 

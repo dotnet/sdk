@@ -82,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         methodSymbol.IsOverrideOrVirtualMethodOf(xmlSchemaTypeSymbol))
                     {
                         if (xmlReaderTypeSymbol != null &&
-                            methodSymbol.Parameters.Length > 0 &&
+                            !methodSymbol.Parameters.IsEmpty &&
                             methodSymbol.Parameters[0].Type.Equals(xmlReaderTypeSymbol))
                         {
                             return;

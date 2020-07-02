@@ -102,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    if (overloadMap.Count != 0 && overloadMap.ContainsKey(targetMethod))
+                    if (!overloadMap.IsEmpty && overloadMap.ContainsKey(targetMethod))
                     {
                         ReportDiagnostic(
                             oaContext,
