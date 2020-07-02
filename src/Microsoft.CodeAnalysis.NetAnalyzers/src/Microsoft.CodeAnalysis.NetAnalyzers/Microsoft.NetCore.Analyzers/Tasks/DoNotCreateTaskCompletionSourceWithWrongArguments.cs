@@ -41,11 +41,14 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 
                     compilationContext.RegisterOperationAction(operationContext =>
                     {
-                        // Warn if this is `new TCS(object ...)` with an expression of type `TaskContinuationOptions` as the argument.
+                        // Warn if this is `new TCS(object)` with an expression of type `TaskContinuationOptions` as the argument.
                         var objectCreation = (IObjectCreationOperation)operationContext.Operation;
                         if ((objectCreation.Type.OriginalDefinition.Equals(tcsGenericType) || (tcsType != null && objectCreation.Type.OriginalDefinition.Equals(tcsType))) &&
-                            !objectCreation.Constructor.Parameters.IsEmpty && objectCreation.Constructor.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
-                            !objectCreation.Arguments.IsEmpty && objectCreation.Arguments[0].Value is IConversionOperation conversionOperation &&
+                            objectCreation.Constructor.Parameters.Length == 1 &&
+                            objectCreation.Constructor.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
+                            objectCreation.Arguments.Length == 1 &&
+                            objectCreation.Arguments[0].Value is IConversionOperation conversionOperation &&
+                            conversionOperation.Operand.Type != null &&
                             conversionOperation.Operand.Type.Equals(taskContinutationOptionsType))
                         {
                             operationContext.ReportDiagnostic(conversionOperation.CreateDiagnostic(Rule));

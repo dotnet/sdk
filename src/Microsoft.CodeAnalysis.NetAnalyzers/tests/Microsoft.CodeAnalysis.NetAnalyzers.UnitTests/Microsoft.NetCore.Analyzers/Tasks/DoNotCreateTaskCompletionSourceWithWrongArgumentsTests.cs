@@ -23,11 +23,23 @@ class C
 {
     void M()
     {
+        // Use TCS correctly without options
+        new TaskCompletionSource<int>(null);
+        new TaskCompletionSource<int>(""hello"");
+        new TaskCompletionSource<int>(new object());
+        new TaskCompletionSource<int>(42);
+
         // Uses TaskCreationOptions correctly
-        new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         var validEnum = TaskCreationOptions.RunContinuationsAsynchronously;
         new TaskCompletionSource<int>(validEnum);
+        new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         new TaskCompletionSource<int>(this.MyProperty);
+        new TaskCompletionSource<int>(new object(), validEnum);
+        new TaskCompletionSource<int>(new object(), TaskCreationOptions.RunContinuationsAsynchronously);
+        new TaskCompletionSource<int>(new object(), this.MyProperty);
+        new TaskCompletionSource<int>(null, validEnum);
+        new TaskCompletionSource<int>(null, TaskCreationOptions.RunContinuationsAsynchronously);
+        new TaskCompletionSource<int>(null, this.MyProperty);
 
         // We only pay attention to things of type TaskContinuationOptions
         new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously.ToString());
