@@ -14,12 +14,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <_NugetFallbackFolder>$(MSBuildThisFileDirectory)..\..\..\..\NuGetFallbackFolder</_NugetFallbackFolder>
     <_IsNETCore1x Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' &lt; '2.0' ">true</_IsNETCore1x>
+
+    <_WorkloadLibraryPacksFolder>$(MSBuildThisFileDirectory)..\..\..\..\..\library-packs</_WorkloadLibraryPacksFolder>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(DisableImplicitNuGetFallbackFolder)' != 'true' and Exists($(_NugetFallbackFolder)) ">
     <RestoreAdditionalProjectSources Condition=" '$(_IsNETCore1x)' == 'true' and '$(DisableImplicit1xNuGetFallbackFolder)' != 'true' ">$(RestoreAdditionalProjectSources);$(_NugetFallbackFolder)</RestoreAdditionalProjectSources>
     <RestoreAdditionalProjectFallbackFoldersExcludes Condition=" '$(_IsNETCore1x)' == 'true' ">$(RestoreAdditionalProjectFallbackFoldersExcludes);$(_NugetFallbackFolder)</RestoreAdditionalProjectFallbackFoldersExcludes>
+  </PropertyGroup>
 
-    <RestoreAdditionalProjectFallbackFolders Condition=" '$(_IsNETCore1x)' != 'true' ">$(RestoreAdditionalProjectFallbackFolders);$(_NugetFallbackFolder)</RestoreAdditionalProjectFallbackFolders>
+  <PropertyGroup Condition=" '$(DisableImplicitLibraryPacksFolder)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '5.0')) ">
+    <RestoreAdditionalProjectSources Condition="Exists('$(_WorkloadLibraryPacksFolder)')">$(RestoreAdditionalProjectFallbackFolders);$(_WorkloadLibraryPacksFolder)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 </Project>
