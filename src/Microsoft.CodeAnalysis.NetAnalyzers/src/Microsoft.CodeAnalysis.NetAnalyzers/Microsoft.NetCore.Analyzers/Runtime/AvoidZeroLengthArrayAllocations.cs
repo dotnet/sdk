@@ -157,7 +157,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             var parameters = targetSymbol.GetParameters();
-            if (parameters.Length == 0 || !parameters[^1].IsParams)
+<<<<<<< HEAD
+            if (parameters.IsEmpty || !parameters[^1].IsParams)
+=======
+            if (parameters.IsEmpty || !parameters[parameters.Length - 1].IsParams)
+>>>>>>> upstream/2.9.x
             {
                 return false;
             }

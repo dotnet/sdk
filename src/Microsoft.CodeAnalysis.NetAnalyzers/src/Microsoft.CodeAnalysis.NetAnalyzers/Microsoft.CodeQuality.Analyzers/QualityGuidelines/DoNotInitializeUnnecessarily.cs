@@ -39,7 +39,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 if (field != null &&
                     !field.IsConst &&
                     init.Value != null &&
-                    field.GetAttributes().Length == 0 && // in case of attributes that impact nullability analysis
+                    field.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
                     UsesKnownDefaultValue(init.Value, field.Type))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, field.Name));
@@ -52,7 +52,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 IPropertySymbol? prop = init.InitializedProperties.FirstOrDefault();
                 if (prop != null &&
                     init.Value != null &&
-                    prop.GetAttributes().Length == 0 && // in case of attributes that impact nullability analysis
+                    prop.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
                     UsesKnownDefaultValue(init.Value, prop.Type))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, prop.Name));
@@ -76,7 +76,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 // If this is default(T) or new ValueType(), it's the default.
                 if (value is IDefaultValueOperation ||
-                    (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.Length == 0 && oco.Initializer is null))
+                    (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null))
                 {
                     return !IsNullSuppressed(value);
                 }

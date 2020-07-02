@@ -48,8 +48,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 if (!(context.OwningSymbol is IMethodSymbol methodSymbol) ||
                     methodSymbol.ReturnsVoid ||
                     methodSymbol.ReturnType.Kind == SymbolKind.ArrayType ||
-                    methodSymbol.Parameters.Length > 0 ||
+<<<<<<< HEAD
+                    !
+<<<<<<< HEAD
+                    methodSymbol.Parameters.IsEmpty ||
                     !methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken) ||
+=======
+                    !methodSymbol.Parameters.IsEmpty ||
+                    !methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken) ||
+>>>>>>> upstream/2.9.x
                     methodSymbol.IsAccessorMethod() ||
                     !IsPropertyLikeName(methodSymbol.Name))
                 {
