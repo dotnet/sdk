@@ -280,6 +280,45 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
                               />
 
+    <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
+                              TargetFramework="net5.0-windows10.0.17763"
+                              RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
+                              TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
+                              TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
+                              RuntimePackAlwaysCopyLocal="true"
+                              RuntimePackNamePatterns="Microsoft.Windows.SDK.NET.Ref"
+                              RuntimePackRuntimeIdentifiers="any"
+                              IsWindowsOnly="true"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
+                              TargetFramework="net5.0-windows10.0.18362"
+                              RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
+                              TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
+                              TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
+                              RuntimePackAlwaysCopyLocal="true"
+                              RuntimePackNamePatterns="Microsoft.Windows.SDK.NET.Ref"
+                              RuntimePackRuntimeIdentifiers="any"
+                              IsWindowsOnly="true"
+                              />
+
+    <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
+                              TargetFramework="net5.0-windows10.0.19041"
+                              RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
+                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
+                              TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
+                              TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
+                              RuntimePackAlwaysCopyLocal="true"
+                              RuntimePackNamePatterns="Microsoft.Windows.SDK.NET.Ref"
+                              RuntimePackRuntimeIdentifiers="any"
+                              IsWindowsOnly="true"
+                              />
+
     <!-- .NET Core 3.1  -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="netcoreapp3.1"
