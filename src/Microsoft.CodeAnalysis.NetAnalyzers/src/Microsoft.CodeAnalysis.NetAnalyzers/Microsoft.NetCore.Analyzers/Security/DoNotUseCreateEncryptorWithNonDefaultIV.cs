@@ -63,7 +63,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     // The passed rgbIV can't be null cause CreateEncryptor method has an ANE exception.
                     // It definitely uses a non-default IV and will be flagged a diagnostic directly without PropertySetAnalysis.
                     // So, it returns Unflagged to avoid repeated diagnostic.
-                    if (methodSymbol.Parameters.Length != 0)
+                    if (!methodSymbol.Parameters.IsEmpty)
                     {
                         return HazardousUsageEvaluationResult.Unflagged;
                     }
@@ -116,7 +116,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     if (methodSymbol.ContainingType.GetBaseTypesAndThis().Contains(symmetricAlgorithmTypeSymbol) &&
                                         methodSymbol.Name == "CreateEncryptor")
                                     {
-                                        if (methodSymbol.Parameters.Length == 0)
+                                        if (methodSymbol.Parameters.IsEmpty)
                                         {
                                             lock (rootOperationsNeedingAnalysis)
                                             {

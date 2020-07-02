@@ -57,7 +57,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
             Dim local = TryCast(semanticModel.GetSymbolInfo(throwExpression).Symbol, ILocalSymbol)
             Dim catchBlock = DirectCast(catchStatement.Parent, CatchBlockSyntax)
             If local Is Nothing _
-                    OrElse local.Locations.Length = 0 _
+                    OrElse local.Locations.IsEmpty _
                     OrElse catchBlock Is Nothing _
                     OrElse catchBlock.Statements.Count = 0 _
                     OrElse semanticModel.AnalyzeDataFlow(catchBlock.Statements.First, catchBlock.Statements.Last).WrittenInside.Contains(local) Then

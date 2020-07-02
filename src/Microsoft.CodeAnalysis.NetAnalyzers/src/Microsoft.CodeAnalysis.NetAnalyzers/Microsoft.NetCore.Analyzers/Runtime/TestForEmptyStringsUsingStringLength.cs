@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// </summary>
         private static void AnalyzeInvocationExpression(IInvocationOperation invocationOperation, Action<Diagnostic> reportDiagnostic)
         {
-            if (invocationOperation.Arguments.Length > 0)
+            if (!invocationOperation.Arguments.IsEmpty)
             {
                 IMethodSymbol methodSymbol = invocationOperation.TargetMethod;
                 if (methodSymbol != null &&
