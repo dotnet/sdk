@@ -56,7 +56,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     return;
                 }
 
-                if (operationTarget.Arguments.Length > 0)
+                if (!operationTarget.Arguments.IsEmpty)
                 {
                     // Indexers - compare if all the arguments are identical.
                     for (int i = 0; i < operationTarget.Arguments.Length; i++)

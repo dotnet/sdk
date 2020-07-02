@@ -120,7 +120,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                     if (methodName == "Create" &&
                         typeSymbol.Equals(asymmetricAlgorithmTypeSymbol) &&
-                        arguments.Length == 0)
+                        arguments.IsEmpty)
                     {
                         // Use AsymmetricAlgorithm.Create() to create RSA and the default key size is 1024.
                         operationAnalysisContext.ReportDiagnostic(
@@ -130,7 +130,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     }
                     else if (methodName == "Create" &&
                             typeSymbol.Equals(asymmetricAlgorithmTypeSymbol) &&
-                            arguments.Length > 0 &&
+                            !arguments.IsEmpty &&
                             arguments[0].Parameter.Type.SpecialType == SpecialType.System_String &&
                             arguments[0].Value.ConstantValue.HasValue)
                     {
@@ -147,7 +147,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     }
                     else if (methodName == "CreateFromName" &&
                             typeSymbol.Equals(cryptoConfigTypeSymbol) &&
-                            arguments.Length > 0 &&
+                            !arguments.IsEmpty &&
                             arguments[0].Parameter.Type.SpecialType == SpecialType.System_String &&
                             arguments[0].Value.ConstantValue.HasValue)
                     {

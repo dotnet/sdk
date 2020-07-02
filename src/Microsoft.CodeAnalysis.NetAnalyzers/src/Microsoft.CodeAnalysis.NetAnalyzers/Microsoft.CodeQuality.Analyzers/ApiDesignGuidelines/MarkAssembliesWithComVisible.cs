@@ -63,7 +63,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 if (attributeInstance != null)
                 {
-                    if (attributeInstance.ConstructorArguments.Length > 0 &&
+                    if (!attributeInstance.ConstructorArguments.IsEmpty &&
                         attributeInstance.ConstructorArguments[0].Kind == TypedConstantKind.Primitive &&
                         attributeInstance.ConstructorArguments[0].Value != null &
                         attributeInstance.ConstructorArguments[0].Value.Equals(true))

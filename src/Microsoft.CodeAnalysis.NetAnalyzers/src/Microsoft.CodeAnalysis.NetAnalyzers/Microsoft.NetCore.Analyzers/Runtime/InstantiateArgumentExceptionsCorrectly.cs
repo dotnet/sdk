@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            if (creation.Arguments.Length == 0)
+            if (creation.Arguments.IsEmpty)
             {
                 if (HasMessageOrParameterNameConstructor(creation.Type))
                 {

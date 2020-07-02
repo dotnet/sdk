@@ -54,7 +54,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 if (objectInitializer.Initializer.Initializers[i] is ISimpleAssignmentOperation assignment &&
                     assignment.Target is IPropertyReferenceOperation propertyReference &&
-                    propertyReference.Arguments.Length != 0)
+                    !propertyReference.Arguments.IsEmpty)
                 {
                     var values = GetConstantArgumentValues(propertyReference.Arguments);
                     if (!values.IsEmpty && !initializedElementIndexes.Add(values))

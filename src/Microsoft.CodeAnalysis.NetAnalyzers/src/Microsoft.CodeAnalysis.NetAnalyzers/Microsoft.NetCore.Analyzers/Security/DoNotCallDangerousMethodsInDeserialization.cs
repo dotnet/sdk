@@ -206,7 +206,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 // This includes methods with OnDeserializing attribute, method with OnDeserialized attribute, deserialization callbacks as well as cleanup/dispose calls.
                                 var flagSerializable = methodSymbol.ContainingType.HasAttribute(serializableAttributeTypeSymbol);
                                 var parameters = methodSymbol.GetParameters();
-                                var flagHasDeserializeAttributes = attributeTypeSymbols.Length != 0
+                                var flagHasDeserializeAttributes = !attributeTypeSymbols.IsEmpty
                                     && attributeTypeSymbols.Any(s => methodSymbol.HasAttribute(s))
                                     && parameters.Length == 1
                                     && parameters[0].Type.Equals(streamingContextTypeSymbol);
