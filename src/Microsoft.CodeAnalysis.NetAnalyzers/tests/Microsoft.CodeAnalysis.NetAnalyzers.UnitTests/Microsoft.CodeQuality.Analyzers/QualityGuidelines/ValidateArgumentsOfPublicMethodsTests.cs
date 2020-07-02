@@ -6198,6 +6198,51 @@ public class Class1
             }.RunAsync();
         }
 
+        [Fact, WorkItem(3049, "https://github.com/dotnet/roslyn-analyzers/issues/3049")]
+        public async Task SwitchStatement_PatternMatchingNullCheck()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class Test
+{
+    public static string M(Test test)
+    {
+        switch (test)
+        {
+            case null:
+                throw new ArgumentNullException(nameof(test));
+            default:
+                return test.ToString();
+        }
+    }
+}");
+        }
+
+        [Fact, WorkItem(3049, "https://github.com/dotnet/roslyn-analyzers/issues/3049")]
+        public async Task SwitchExpression_PatternMatchingNullCheck()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+public class Test
+{
+    public static string M(Test test)
+    {
+        return test switch
+        {
+            null => throw new ArgumentNullException(nameof(test)),
+            _ => test.ToString()
+        };
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
