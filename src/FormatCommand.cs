@@ -54,8 +54,28 @@ namespace Microsoft.CodeAnalysis.Tools
             };
 
             rootCommand.Description = "dotnet-format";
+            rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenFixingStyle);
+            rootCommand.AddValidator(EnsureFolderNotSpecifiedWhenFixingAnalyzers);
 
             return rootCommand;
+        }
+
+        internal static string? EnsureFolderNotSpecifiedWhenFixingAnalyzers(CommandResult symbolResult)
+        {
+            var folder = symbolResult.ValueForOption<bool>("--folder");
+            var fixAnalyzers = symbolResult.OptionResult("--fix-analyzers");
+            return folder && fixAnalyzers != null
+                ? "Cannot specify the '--folder' option when running analyzers."
+                : null;
+        }
+
+        internal static string? EnsureFolderNotSpecifiedWhenFixingStyle(CommandResult symbolResult)
+        {
+            var folder = symbolResult.ValueForOption<bool>("--folder");
+            var fixStyle = symbolResult.OptionResult("--fix-style");
+            return folder && fixStyle != null
+                ? "Cannot specify the '--folder' option when fixing style."
+                : null;
         }
 
         internal static bool WasOptionUsed(this ParseResult result, params string[] aliases)
