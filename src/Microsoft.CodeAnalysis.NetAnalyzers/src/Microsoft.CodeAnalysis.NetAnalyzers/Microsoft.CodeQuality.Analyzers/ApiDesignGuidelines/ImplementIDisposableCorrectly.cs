@@ -304,7 +304,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             /// </summary>
             private void CheckDisposeOverrideRule(IMethodSymbol method, INamedTypeSymbol type, SymbolAnalysisContext context)
             {
-                if (method.MethodKind == MethodKind.Ordinary && method.IsOverride && method.ReturnsVoid && method.Parameters.Length == 0)
+                if (method.MethodKind == MethodKind.Ordinary && method.IsOverride && method.ReturnsVoid && method.Parameters.IsEmpty)
                 {
                     bool isDisposeOverride = false;
                     for (IMethodSymbol m = method.OverriddenMethod; m != null; m = m.OverriddenMethod)

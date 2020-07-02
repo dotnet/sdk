@@ -91,7 +91,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            if (creation.Arguments.Length == 0)
+            if (creation.Arguments.IsEmpty)
             {
                 if (HasParameters(owningSymbol))
                 {

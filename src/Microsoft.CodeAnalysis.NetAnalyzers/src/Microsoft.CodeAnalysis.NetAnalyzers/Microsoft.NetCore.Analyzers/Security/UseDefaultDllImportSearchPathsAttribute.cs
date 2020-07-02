@@ -88,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     {
                         var constructorArguments = dllImportAttribute.ConstructorArguments;
 
-                        if (constructorArguments.Length == 0)
+                        if (constructorArguments.IsEmpty)
                         {
                             return;
                         }

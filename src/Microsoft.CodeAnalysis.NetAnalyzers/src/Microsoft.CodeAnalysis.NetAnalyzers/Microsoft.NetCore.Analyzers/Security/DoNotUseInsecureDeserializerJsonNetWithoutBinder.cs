@@ -62,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(
             (IMethodSymbol constructorMethod, IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
             {
-                if (constructorMethod.Parameters.Length == 0)
+                if (constructorMethod.Parameters.IsEmpty)
                 {
                     return PropertySetAbstractValue.GetInstance(
                         PropertySetAbstractValueKind.Unflagged,   // TypeNameHandling defaults to None.
