@@ -167,5 +167,31 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Assert
             Assert.Equal(1, result.Errors.Count);
         }
+
+        [Fact]
+        public void CommandLine_FolderValidation_FailsIfFixAnalyzersSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--folder", "--fix-analyzers" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
+
+        [Fact]
+        public void CommandLine_FolderValidation_FailsIfFixStyleSpecified()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--folder", "--fix-style" });
+
+            // Assert
+            Assert.Equal(1, result.Errors.Count);
+        }
     }
 }
