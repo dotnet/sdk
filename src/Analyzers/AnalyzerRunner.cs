@@ -16,15 +16,17 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             DiagnosticAnalyzer analyzers,
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
+            DiagnosticSeverity severity,
             ILogger logger,
             CancellationToken cancellationToken)
-            => RunCodeAnalysisAsync(result, ImmutableArray.Create(analyzers), project, formattableDocumentPaths, logger, cancellationToken);
+            => RunCodeAnalysisAsync(result, ImmutableArray.Create(analyzers), project, formattableDocumentPaths, severity, logger, cancellationToken);
 
         public async Task RunCodeAnalysisAsync(
             CodeAnalysisResult result,
             ImmutableArray<DiagnosticAnalyzer> analyzers,
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
+            DiagnosticSeverity severity,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -47,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             foreach (var diagnostic in diagnostics)
             {
                 if (!diagnostic.IsSuppressed &&
-                    diagnostic.Severity >= DiagnosticSeverity.Warning &&
+                    diagnostic.Severity >= severity &&
                     diagnostic.Location.IsInSource &&
                     diagnostic.Location.SourceTree != null &&
                     formattableDocumentPaths.Contains(diagnostic.Location.SourceTree.FilePath))

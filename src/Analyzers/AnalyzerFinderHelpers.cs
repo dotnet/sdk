@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -49,33 +47,6 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
 
             return builder.ToImmutableArray();
-        }
-
-        public static async Task<ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>>> FilterBySeverityAsync(
-            IEnumerable<Project> projects,
-            ImmutableArray<DiagnosticAnalyzer> allAnalyzers,
-            ImmutableHashSet<string> formattablePaths,
-            DiagnosticSeverity minimumSeverity,
-            CancellationToken cancellationToken)
-        {
-            var projectAnalyzers = ImmutableDictionary.CreateBuilder<Project, ImmutableArray<DiagnosticAnalyzer>>();
-            foreach (var project in projects)
-            {
-                var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
-
-                foreach (var analyzer in allAnalyzers)
-                {
-                    var severity = await analyzer.GetSeverityAsync(project, formattablePaths, cancellationToken).ConfigureAwait(false);
-                    if (severity >= minimumSeverity)
-                    {
-                        analyzers.Add(analyzer);
-                    }
-                }
-
-                projectAnalyzers.Add(project, analyzers.ToImmutableArray());
-            }
-
-            return projectAnalyzers.ToImmutableDictionary();
         }
     }
 }

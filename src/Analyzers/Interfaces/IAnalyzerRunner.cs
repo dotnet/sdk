@@ -15,6 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             DiagnosticAnalyzer analyzers,
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
+            DiagnosticSeverity severity,
             ILogger logger,
             CancellationToken cancellationToken);
 
@@ -23,6 +24,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ImmutableArray<DiagnosticAnalyzer> analyzers,
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
+            DiagnosticSeverity severity,
             ILogger logger,
             CancellationToken cancellationToken);
     }

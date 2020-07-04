@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var allAnalyzers = await GetAnalyzersAsync();
             var formattablePaths = ImmutableHashSet.Create(projects.First().Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Warning;
-            var result = await AnalyzerFinderHelpers.FilterBySeverityAsync(projects,
+            var result = await AnalyzerFormatter.FilterBySeverityAsync(projects,
                                                                            allAnalyzers,
                                                                            formattablePaths,
                                                                            minimumSeverity,
@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var allAnalyzers = await GetAnalyzersAsync();
             var formattablePaths = ImmutableHashSet.Create(projects.First().Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Error;
-            var result = await AnalyzerFinderHelpers.FilterBySeverityAsync(projects,
+            var result = await AnalyzerFormatter.FilterBySeverityAsync(projects,
                                                                            allAnalyzers,
                                                                            formattablePaths,
                                                                            minimumSeverity,
