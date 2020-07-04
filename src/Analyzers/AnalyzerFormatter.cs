@@ -23,12 +23,12 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         public AnalyzerFormatter(
             string name,
-            IAnalyzerInformationProvider finder,
+            IAnalyzerInformationProvider informationProvider,
             IAnalyzerRunner runner,
             ICodeFixApplier applier)
         {
             _name = name;
-            _informationProvider = finder;
+            _informationProvider = informationProvider;
             _runner = runner;
             _applier = applier;
         }
