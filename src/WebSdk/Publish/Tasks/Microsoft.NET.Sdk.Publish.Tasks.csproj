@@ -13,7 +13,6 @@
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>$(NoWarn);NU1603</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
