@@ -7,12 +7,13 @@
 
 |Branch| Windows (Debug)| Windows (Release)| Linux (Debug) | Linux (Release) | Localization (Debug) | Localization (Release) |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|
-[master](https://github.com/dotnet/format/tree/master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows_Spanish&configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows_Spanish&configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|
+[master](https://github.com/dotnet/format/tree/master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Linux&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows_Spanish&_configuration=debug&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/dotnet/format/dotnet.format?branchName=master&jobName=Windows_Spanish&_configuration=release&label=build)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=347&branchName=master)|
 
 
 `dotnet-format` is a code formatter for `dotnet` that applies style preferences to a project or solution. Preferences will be read from an `.editorconfig` file, if present, otherwise a default set of preferences will be used. At this time `dotnet-format` is able to format C# and Visual Basic projects with a subset of [supported .editorconfig options](./docs/Supported-.editorconfig-options.md).
 
 ### New in v4.0.130203
+
 #### Breaking Changes:
 - Added an imports formatter for sorting imports.
 - Format now runs on the latest installed Runtime.
@@ -38,7 +39,6 @@
 - [Support loading commandline options from response files (552)](https://github.com/dotnet/format/pull/552)
 - [Support file globbing in --include and --exclude options (555)](https://github.com/dotnet/format/pull/555)
 
-
 ### How To Install
 
 The `dotnet-format` nuget package is [published to nuget.org](https://www.nuget.org/packages/dotnet-format/).
@@ -56,25 +56,30 @@ Development builds of `dotnet-format` are being hosted on myget. You can visit t
 You can install the tool using the following command.
 
 ```console
-dotnet tool install -g dotnet-format --version 4.0.111308 --add-source https://dotnet.myget.org/F/format/api/v3/index.json
+dotnet tool install -g dotnet-format --version 5.0.135301 --add-source https://dotnet.myget.org/F/format/api/v3/index.json
 ```
 
 ### How To Use
 
 By default `dotnet-format` will look in the current directory for a project or solution file and use that as the workspace to format. If more than one project or solution file is present in the current directory you will need to specify the workspace to format using the `-w` or `-f` options. You can control how verbose the output will be by using the `-v` option.
 
-```sh
+```console
 Usage:
-  dotnet-format <project> [options]
+  dotnet-format [options] [<workspace>]
+
+Arguments:
+  <workspace>    A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.
 
 Options:
-  --folder, -f                    Whether to treat the `<project>` path as a folder of files.
-  --include <INCLUDE>             A list of relative file or folder paths to include in formatting. All files are formatted if empty.
-  --exclude <EXCLUDE>             A list of relative file or folder paths to exclude from formatting.
-  --check <CHECK>                 Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
-  --report <REPORT>               Accepts a file path, which if provided, will produce a json report in the given directory.
-  --verbosity, -v <VERBOSITY>     Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-  --version                       Display version information
+  --folder, -f                        Whether to treat the `<workspace>` argument as a simple folder of files.
+  --fix-style, -fs <severity>         Run code style analyzers and apply fixes.
+  --fix-analyzers, -fa <severity>     Run 3rd party analyzers and apply fixes.
+  --include <include>                 A list of relative file or folder paths to include in formatting. All files are formatted if empty.
+  --exclude <exclude>                 A list of relative file or folder paths to exclude from formatting.
+  --check                             Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
+  --report <report>                   Accepts a file path, which if provided, will produce a json report in the given directory.
+  --verbosity, -v <verbosity>         Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+  --version                           Show version information
 ```
 
 Add `format` after `dotnet` and before the command arguments that you want to run:
@@ -83,7 +88,9 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | ---------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
 | dotnet **format**                                          | Formats the project or solution in the current directory.                                     |
 | dotnet **format** &lt;workspace&gt;                        | Formats a specific project or solution.                                                       |
-| dotnet **format** &lt;folder&gt; -f                        | Formats a particular folder and subfolders.                                                   |
+| dotnet **format** &lt;workspace&gt; -f                     | Formats a particular folder and subfolders.                                                   |
+| dotnet **format** &lt;workspace&gt; --fix-style warn       | Formats and fixes codestyle analyzer warnings.                                                |
+| dotnet **format** &lt;workspace&gt; --fix-analyzers        | Formats and fixes 3rd party analyzer errors.                                                  |
 | dotnet **format** -v diag                                  | Formats with very verbose logging.                                                            |
 | dotnet **format** --include Programs.cs Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
 | dotnet **format** --check                                  | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
@@ -104,8 +111,8 @@ You can build and package the tool using the following commands. The instruction
 ```console
 build -pack
 # The final line from the build will read something like
-# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.4.0.0-dev.nupkg'.
-# Use the value that is in the form `4.0.0-dev` as the version in the next command.
+# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.5.0.0-dev.nupkg'.
+# Use the value that is in the form `5.0.0-dev` as the version in the next command.
 dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```

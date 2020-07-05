@@ -152,7 +152,12 @@
         <target state="new">Multiple MSBuild solution files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Run_code_style_analyzer_and_apply_fixes">
+      <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
+        <source>Run 3rd party analyzers and apply fixes.</source>
+        <target state="new">Run 3rd party analyzers and apply fixes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Run_code_style_analyzers_and_apply_fixes">
         <source>Run code style analyzers and apply fixes.</source>
         <target state="new">Run code style analyzers and apply fixes.</target>
         <note />
