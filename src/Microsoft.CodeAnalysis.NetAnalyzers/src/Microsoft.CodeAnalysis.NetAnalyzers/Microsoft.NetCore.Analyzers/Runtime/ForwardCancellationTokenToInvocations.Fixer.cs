@@ -63,8 +63,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             ImmutableDictionary<string, string>? properties = context.Diagnostics[0].Properties;
 
+            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ShouldFix, out string shouldFix) ||
+                string.IsNullOrEmpty(shouldFix) ||
+                shouldFix.Equals("0", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return;
+            }
+
             // The name that identifies the object that is to be passed
-            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ArgumentName, out string argumentName) || string.IsNullOrEmpty(argumentName))
+            if (!properties.TryGetValue(ForwardCancellationTokenToInvocationsAnalyzer.ArgumentName, out string argumentName) ||
+                string.IsNullOrEmpty(argumentName))
             {
                 return;
             }
