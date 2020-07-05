@@ -25,6 +25,7 @@
   "extensions": [
     "ms-dotnettools.csharp",
     "editorconfig.editorconfig",
+    "formulahendry.dotnet-test-explorer",
     "tintoy.msbuild-project-tools",
     "ms-vscode.powershell"
   ],
