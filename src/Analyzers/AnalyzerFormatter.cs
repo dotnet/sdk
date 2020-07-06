@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal class AnalyzerFormatter : ICodeFormatter
     {
-        private static readonly ImmutableArray<string> _supportedLanguages = ImmutableArray.Create(LanguageNames.CSharp, LanguageNames.VisualBasic);
+        private static readonly ImmutableArray<string> s_supportedLanguages = ImmutableArray.Create(LanguageNames.CSharp, LanguageNames.VisualBasic);
 
         private readonly string _name;
         private readonly IAnalyzerInformationProvider _informationProvider;
@@ -188,11 +188,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 {
                     foreach (var codefix in codefixes)
                     {
-                        var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
+                        var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, diagnosticId, logger, cancellationToken).ConfigureAwait(false);
                         if (changedSolution.GetChanges(solution).Any())
                         {
                             solution = changedSolution;
-                            break;
                         }
                     }
                 }
@@ -206,7 +205,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             {
                 return diagnosticIds.ToImmutableDictionary(
                     id => id,
-                    id => _supportedLanguages.ToImmutableDictionary(
+                    id => s_supportedLanguages.ToImmutableDictionary(
                         language => language,
                         language => analyzers
                             .Where(analyzer => DoesAnalyzerSupportLanguage(analyzer, language))
@@ -220,7 +219,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             {
                 return diagnosticIds.ToImmutableDictionary(
                     id => id,
-                    id => fixers.Where(fixer => fixer.FixableDiagnosticIds.Contains(id)).ToImmutableArray());
+                    id => fixers
+                        .Where(fixer => fixer.FixableDiagnosticIds.Contains(id))
+                        .ToImmutableArray());
             }
         }
 

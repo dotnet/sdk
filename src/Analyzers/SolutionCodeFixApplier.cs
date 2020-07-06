@@ -18,11 +18,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             Solution solution,
             CodeAnalysisResult result,
             CodeFixProvider codeFix,
+            string diagnosticId,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var diagnosticId = result.Diagnostics.FirstOrDefault().Value.FirstOrDefault()?.Id;
-
             var fixAllProvider = codeFix.GetFixAllProvider();
             if (fixAllProvider?.GetSupportedFixAllScopes()?.Contains(FixAllScope.Solution) != true)
             {

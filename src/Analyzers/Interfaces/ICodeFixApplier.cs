@@ -13,6 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             Solution solution,
             CodeAnalysisResult result,
             CodeFixProvider codefixes,
+            string diagnosticId,
             ILogger logger,
             CancellationToken cancellationToken);
     }
