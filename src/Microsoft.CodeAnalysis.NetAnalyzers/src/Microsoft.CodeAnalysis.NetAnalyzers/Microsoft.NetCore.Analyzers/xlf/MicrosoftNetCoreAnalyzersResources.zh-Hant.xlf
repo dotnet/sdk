@@ -1682,21 +1682,6 @@
         <target state="translated">必須檢閱 SQL 查詢中是否有安全性弱點</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimePlatformCheckDescription">
-        <source>TODO</source>
-        <target state="new">TODO</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimePlatformCheckMessage">
-        <source>TODO Platform checks:'{0}'</source>
-        <target state="new">TODO Platform checks:'{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimePlatformCheckTitle">
-        <source>TODO</source>
-        <target state="new">TODO</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">針對 HttpCookie 將 HttpOnly 設為 true</target>

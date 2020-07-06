@@ -1682,21 +1682,6 @@
         <target state="translated">Revisar consultas SQL para comprobar si tienen vulnerabilidades de seguridad</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimePlatformCheckDescription">
-        <source>TODO</source>
-        <target state="new">TODO</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimePlatformCheckMessage">
-        <source>TODO Platform checks:'{0}'</source>
-        <target state="new">TODO Platform checks:'{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimePlatformCheckTitle">
-        <source>TODO</source>
-        <target state="new">TODO</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">Establecer HttpOnly en true para HttpCookie</target>
