@@ -41,15 +41,16 @@
       "stopAtEntry": false
     },
     {
-      "name": "format format.sln --fix-style --check",
+      "name": "format format.sln --fix-style warn --check",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "publish",
+      "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/publish/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
       "args": [
         "format.sln",
         "--fix-style",
+        "warn",
         "-v",
         "diag",
         "--check"
@@ -63,9 +64,9 @@
       "name": "format format.sln --fix-analyzers warn --check",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "publish",
+      "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/publish/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp2.1/dotnet-format.dll",
       "args": [
         "format.sln",
         "--fix-analyzers",

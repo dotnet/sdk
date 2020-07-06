@@ -66,7 +66,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
             return NullScope.Instance;
         }
 
-        void LogToTerminal(string message, LogLevel logLevel)
+        private void LogToTerminal(string message, LogLevel logLevel)
         {
             var messageColor = LogLevelColorMap[logLevel];
             _terminal.ForegroundColor = messageColor;
@@ -74,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
             _terminal.ResetColor();
         }
 
-        void LogToConsole(string message)
+        private void LogToConsole(string message)
         {
             _console.Out.Write($"  {message}{Environment.NewLine}");
         }

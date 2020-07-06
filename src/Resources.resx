@@ -267,4 +267,7 @@
   <data name="Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution" xml:space="preserve">
     <value>Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</value>
   </data>
+  <data name="Unable_to_fix_0_No_associated_code_fix_found" xml:space="preserve">
+    <value>Unable to fix {0}. No associated code fix found.</value>
+  </data>
 </root>

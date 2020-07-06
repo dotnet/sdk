@@ -17,18 +17,18 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
     internal class AnalyzerFormatter : ICodeFormatter
     {
         private readonly string _name;
-        private readonly IAnalyzerFinder _finder;
+        private readonly IAnalyzerInformationProvider _informationProvider;
         private readonly IAnalyzerRunner _runner;
         private readonly ICodeFixApplier _applier;
 
         public AnalyzerFormatter(
             string name,
-            IAnalyzerFinder finder,
+            IAnalyzerInformationProvider informationProvider,
             IAnalyzerRunner runner,
             ICodeFixApplier applier)
         {
             _name = name;
-            _finder = finder;
+            _informationProvider = informationProvider;
             _runner = runner;
             _applier = applier;
         }
@@ -41,11 +41,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
         {
-            var analyzersAndFixers = _finder.GetAnalyzersAndFixers(solution, formatOptions, logger);
-            if (analyzersAndFixers.Length == 0)
-            {
-                return solution;
-            }
+            var (analyzers, fixers) = _informationProvider.GetAnalyzersAndFixers(solution, formatOptions, logger);
 
             var analysisStopwatch = Stopwatch.StartNew();
             logger.LogTrace(Resources.Running_0_analysis, _name);
@@ -55,17 +51,21 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             logger.LogTrace(Resources.Determining_diagnostics);
 
-            var allAnalyzers = analyzersAndFixers.Select(pair => pair.Analyzer).ToImmutableArray();
-            var projectAnalyzers = await _finder.FilterBySeverityAsync(solution.Projects, allAnalyzers, formattablePaths, formatOptions, cancellationToken).ConfigureAwait(false);
+            var severity = _informationProvider.GetSeverity(formatOptions);
 
-            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+            // Filter to analyzers that report diagnostics with equal or greater severity.
+            var projectAnalyzers = await FilterBySeverityAsync(solution.Projects, analyzers, formattablePaths, severity, cancellationToken).ConfigureAwait(false);
+
+            // Determine which diagnostics are being reported for each project.
+            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
 
             var projectDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, projectDiagnosticsMS);
 
             logger.LogTrace(Resources.Fixing_diagnostics);
 
-            solution = await FixDiagnosticsAsync(solution, analyzersAndFixers, projectDiagnostics, formattablePaths, logger, cancellationToken).ConfigureAwait(false);
+            // Run each analyzer individually and apply fixes if possible.
+            solution = await FixDiagnosticsAsync(solution, analyzers, fixers, projectDiagnostics, formattablePaths, severity, logger, cancellationToken).ConfigureAwait(false);
 
             var fixDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds - projectDiagnosticsMS;
             logger.LogTrace(Resources.Complete_in_0_ms, fixDiagnosticsMS);
@@ -80,6 +80,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>> projectAnalyzers,
             ImmutableHashSet<string> formattablePaths,
             FormatOptions options,
+            DiagnosticSeverity severity,
             ILogger logger,
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
@@ -93,7 +94,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     continue;
                 }
 
-                await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, logger, cancellationToken).ConfigureAwait(false);
+                // Run all the filtered analyzers to determine which are reporting diagnostic.
+                await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, logger, cancellationToken).ConfigureAwait(false);
             }
 
             LogDiagnosticLocations(solution, result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger, formattedFiles);
@@ -106,7 +108,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
                 foreach (var diagnostic in diagnostics)
                 {
-                    var message = diagnostic.GetMessage();
+                    var message = $"{diagnostic.GetMessage()} ({diagnostic.Id})";
                     var filePath = diagnostic.Location.SourceTree?.FilePath;
                     var document = solution.GetDocument(diagnostic.Location.SourceTree);
 
@@ -130,40 +132,121 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         private async Task<Solution> FixDiagnosticsAsync(
             Solution solution,
-            ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> analyzersAndFixers,
+            ImmutableArray<DiagnosticAnalyzer> allAnalyzers,
+            ImmutableArray<CodeFixProvider> allCodefixes,
             ImmutableDictionary<ProjectId, ImmutableHashSet<string>> projectDiagnostics,
             ImmutableHashSet<string> formattablePaths,
+            DiagnosticSeverity severity,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            // we need to run each codefix iteratively so ensure that all diagnostics are found and fixed
-            foreach (var (analyzer, codefix) in analyzersAndFixers)
+            // Determine the reported diagnostic ids
+            var reportedDiagnostics = projectDiagnostics.SelectMany(kvp => kvp.Value).Distinct().ToImmutableArray();
+            if (reportedDiagnostics.IsEmpty)
             {
+                return solution;
+            }
+
+            // Build maps between diagnostic id and the associated analyzers and codefixes
+            var analyzersById = CreateAnalyzerMap(reportedDiagnostics, allAnalyzers);
+            var fixersById = CreateFixerMap(reportedDiagnostics, allCodefixes);
+
+            // We need to run each codefix iteratively so ensure that all diagnostics are found and fixed.
+            foreach (var diagnosticId in reportedDiagnostics)
+            {
+                var analyzers = analyzersById[diagnosticId];
+                var codefixes = fixersById[diagnosticId];
+
+                // If there is no codefix, there is no reason to run analysis again.
+                if (codefixes.IsEmpty)
+                {
+                    logger.LogWarning(Resources.Unable_to_fix_0_No_associated_code_fix_found, diagnosticId);
+                    continue;
+                }
+
                 var result = new CodeAnalysisResult();
                 foreach (var project in solution.Projects)
                 {
-                    if (!projectDiagnostics.TryGetValue(project.Id, out var diagnosticIds) ||
-                        !analyzer.SupportedDiagnostics.Any(diagnostic => diagnosticIds.Contains(diagnostic.Id)))
+                    // Only run analysis on projects that had previously reported the diagnostic
+                    if (!projectDiagnostics.TryGetValue(project.Id, out var diagnosticIds))
                     {
                         continue;
                     }
 
-                    await _runner.RunCodeAnalysisAsync(result, analyzer, project, formattablePaths, logger, cancellationToken).ConfigureAwait(false);
+                    await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, logger, cancellationToken).ConfigureAwait(false);
                 }
 
                 var hasDiagnostics = result.Diagnostics.Any(kvp => kvp.Value.Count > 0);
-                if (hasDiagnostics && codefix != null)
+                if (hasDiagnostics)
                 {
-                    solution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
-                    var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
-                    if (changedSolution.GetChanges(solution).Any())
+                    foreach (var codefix in codefixes)
                     {
-                        solution = changedSolution;
+                        var changedSolution = await _applier.ApplyCodeFixesAsync(solution, result, codefix, logger, cancellationToken).ConfigureAwait(false);
+                        if (changedSolution.GetChanges(solution).Any())
+                        {
+                            solution = changedSolution;
+                            break;
+                        }
                     }
                 }
             }
 
             return solution;
+
+            static ImmutableDictionary<string, ImmutableArray<DiagnosticAnalyzer>> CreateAnalyzerMap(
+                ImmutableArray<string> diagnosticIds,
+                ImmutableArray<DiagnosticAnalyzer> analyzers)
+            {
+                return diagnosticIds.ToImmutableDictionary(
+                    id => id,
+                    id => analyzers.Where(analyzer => analyzer.SupportedDiagnostics.Any(diagnostic => diagnostic.Id == id)).ToImmutableArray());
+            }
+
+            static ImmutableDictionary<string, ImmutableArray<CodeFixProvider>> CreateFixerMap(
+                ImmutableArray<string> diagnosticIds,
+                ImmutableArray<CodeFixProvider> fixers)
+            {
+                return diagnosticIds.ToImmutableDictionary(
+                    id => id,
+                    id => fixers.Where(fixer => fixer.FixableDiagnosticIds.Contains(id)).ToImmutableArray());
+            }
+        }
+
+        internal static async Task<ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>>> FilterBySeverityAsync(
+            IEnumerable<Project> projects,
+            ImmutableArray<DiagnosticAnalyzer> allAnalyzers,
+            ImmutableHashSet<string> formattablePaths,
+            DiagnosticSeverity minimumSeverity,
+            CancellationToken cancellationToken)
+        {
+            // We only want to run analyzers for each project that have the potential for reporting a diagnostic with
+            // a severity equal to or greater than specified.
+            var projectAnalyzers = ImmutableDictionary.CreateBuilder<Project, ImmutableArray<DiagnosticAnalyzer>>();
+            foreach (var project in projects)
+            {
+                var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
+
+                foreach (var analyzer in allAnalyzers)
+                {
+                    // Always run naming style analyzers because we cannot determine potential severity.
+                    // The reported diagnostics will be filtered by severity when they are run.
+                    if (analyzer.GetType().FullName.EndsWith("NamingStyleDiagnosticAnalyzer"))
+                    {
+                        analyzers.Add(analyzer);
+                        continue;
+                    }
+
+                    var severity = await analyzer.GetSeverityAsync(project, formattablePaths, cancellationToken).ConfigureAwait(false);
+                    if (severity >= minimumSeverity)
+                    {
+                        analyzers.Add(analyzer);
+                    }
+                }
+
+                projectAnalyzers.Add(project, analyzers.ToImmutableArray());
+            }
+
+            return projectAnalyzers.ToImmutableDictionary();
         }
     }
 }

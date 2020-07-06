@@ -29,8 +29,8 @@ namespace Microsoft.CodeAnalysis.Tools
             new EndOfLineFormatter(),
             new CharsetFormatter(),
             new ImportsFormatter(),
-            new AnalyzerFormatter(Resources.Code_Style, new RoslynCodeStyleAnalyzerFinder(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
-            new AnalyzerFormatter(Resources.Analyzer_Reference, new AnalyzerReferenceAnalyzerFinder(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
+            new AnalyzerFormatter(Resources.Code_Style, new CodeStyleInformationProvider(), new AnalyzerRunner(includeCompilerDiagnostics: true), new SolutionCodeFixApplier()),
+            new AnalyzerFormatter(Resources.Analyzer_Reference, new AnalyzerReferenceInformationProvider(), new AnalyzerRunner(includeCompilerDiagnostics: true), new SolutionCodeFixApplier()),
         }.ToImmutableArray();
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
