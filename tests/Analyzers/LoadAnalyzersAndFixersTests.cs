@@ -131,7 +131,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
             var (analyzers, fixers) = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
             Assert.Equal(2, analyzers.Length);
-            Assert.Equal(1, fixers.Length);
+            Assert.Single(fixers);
         }
     }
 }

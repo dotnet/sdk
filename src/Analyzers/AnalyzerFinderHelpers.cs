@@ -12,11 +12,6 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal static class AnalyzerFinderHelpers
     {
-        public static DiagnosticAnalyzer? GetAnalyzer(string name)
-        {
-            return null;
-        }
-
         public static (ImmutableArray<DiagnosticAnalyzer> Analyzers, ImmutableArray<CodeFixProvider> Fixers) LoadAnalyzersAndFixers(IEnumerable<Assembly> assemblies)
         {
             var types = assemblies
