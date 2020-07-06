@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    interface ICodeFixApplier
+    internal interface ICodeFixApplier
     {
         Task<Solution> ApplyCodeFixesAsync(
             Solution solution,

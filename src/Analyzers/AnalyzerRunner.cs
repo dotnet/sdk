@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal partial class AnalyzerRunner : IAnalyzerRunner
     {
-        private bool _includeComplilerDiagnostics;
+        private readonly bool _includeComplilerDiagnostics;
 
         public AnalyzerRunner(bool includeCompilerDiagnostics)
         {

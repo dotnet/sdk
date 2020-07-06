@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    interface IAnalyzerRunner
+    internal interface IAnalyzerRunner
     {
         Task RunCodeAnalysisAsync(
             CodeAnalysisResult result,

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    interface IAnalyzerInformationProvider
+    internal interface IAnalyzerInformationProvider
     {
         DiagnosticSeverity GetSeverity(FormatOptions formatOptions);
 
