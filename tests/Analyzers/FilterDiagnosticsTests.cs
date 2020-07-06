@@ -30,11 +30,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var allAnalyzers = await GetAnalyzersAsync();
             var formattablePaths = ImmutableHashSet.Create(projects.First().Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Warning;
-            var result = await AnalyzerFormatter.FilterBySeverityAsync(projects,
-                                                                           allAnalyzers,
-                                                                           formattablePaths,
-                                                                           minimumSeverity,
-                                                                           CancellationToken.None);
+            var result = await AnalyzerFormatter.FilterBySeverityAsync(
+                projects,
+                allAnalyzers,
+                formattablePaths,
+                minimumSeverity,
+                CancellationToken.None);
             var (_, analyzers) = Assert.Single(result);
             Assert.Single(analyzers);
         }
@@ -46,11 +47,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var allAnalyzers = await GetAnalyzersAsync();
             var formattablePaths = ImmutableHashSet.Create(projects.First().Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Error;
-            var result = await AnalyzerFormatter.FilterBySeverityAsync(projects,
-                                                                           allAnalyzers,
-                                                                           formattablePaths,
-                                                                           minimumSeverity,
-                                                                           CancellationToken.None);
+            var result = await AnalyzerFormatter.FilterBySeverityAsync(
+                projects,
+                allAnalyzers,
+                formattablePaths,
+                minimumSeverity,
+                CancellationToken.None);
             var (_, analyzers) = Assert.Single(result);
             Assert.Empty(analyzers);
         }
