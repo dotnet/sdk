@@ -22,11 +22,11 @@ namespace Microsoft.CodeAnalysis.Tools
                     Description = Resources.A_path_to_a_solution_file_a_project_file_or_a_folder_containing_a_solution_or_project_file_If_a_path_is_not_specified_then_the_current_directory_is_used
                 }.LegalFilePathsOnly(),
                 new Option(new[] { "--folder", "-f" }, Resources.Whether_to_treat_the_workspace_argument_as_a_simple_folder_of_files),
-                new Option(new[] { "--fix-style", "-fs" }, Resources.Run_code_style_analyzer_and_apply_fixes)
+                new Option(new[] { "--fix-style", "-fs" }, Resources.Run_code_style_analyzers_and_apply_fixes)
                 {
                     Argument = new Argument<string?>("severity") { Arity = ArgumentArity.ZeroOrOne }.FromAmong(SeverityLevels)
                 },
-                new Option(new[] { "--fix-analyzers", "-fa" }, Resources.Run_code_style_analyzer_and_apply_fixes)
+                new Option(new[] { "--fix-analyzers", "-fa" }, Resources.Run_3rd_party_analyzers_and_apply_fixes)
                 {
                     Argument = new Argument<string?>("severity") { Arity = ArgumentArity.ZeroOrOne }.FromAmong(SeverityLevels)
                 },
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 new Option(new[] { "--check" }, Resources.Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted),
                 new Option(new[] { "--report" }, Resources.Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory)
                 {
-                    Argument = new Argument<string?>(() => null).LegalFilePathsOnly()
+                    Argument = new Argument<string?>(() => null) { Name = "report-path" }.LegalFilePathsOnly()
                 },
                 new Option(new[] { "--verbosity", "-v" }, Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic)
                 {
