@@ -20,7 +20,8 @@
       "cwd": "${workspaceFolder}/src",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
-      "stopAtEntry": false
+      "stopAtEntry": false,
+      "justMyCode": false
     },
     {
       "name": "format format.sln --check",
@@ -38,7 +39,8 @@
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
-      "stopAtEntry": false
+      "stopAtEntry": false,
+      "justMyCode": false
     },
     {
       "name": "format format.sln --fix-style warn --check",
@@ -58,7 +60,8 @@
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
-      "stopAtEntry": false
+      "stopAtEntry": false,
+      "justMyCode": false
     },
     {
       "name": "format format.sln --fix-analyzers warn --check",
@@ -78,7 +81,8 @@
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
-      "stopAtEntry": false
+      "stopAtEntry": false,
+      "justMyCode": false
     },
     {
       "name": ".NET Core Attach",
