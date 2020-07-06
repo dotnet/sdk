@@ -24,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [Fact]
         public async Task NonXmlDocumentDerivedTypeWithNoConstructorShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -40,7 +40,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System
 Imports System.Xml
 
@@ -57,7 +57,7 @@ End Namespace");
         [Fact]
         public async Task NonXmlDocumentDerivedTypeWithConstructorShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -75,7 +75,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System
 Imports System.Xml
 
@@ -95,7 +95,7 @@ End Namespace");
         [Fact]
         public async Task XmlDocumentDerivedTypeWithNoConstructorShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -106,7 +106,7 @@ namespace TestNamespace
                 GetCA3077NoConstructorCSharpResultAt(7, 11, "TestClass")
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace

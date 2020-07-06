@@ -13,7 +13,6 @@ using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.DisposeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -103,7 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         null;
 
                     if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockContext.OperationBlocks, containingMethod,
-                        operationBlockContext.Options, NotDisposedRule, trackInstanceFields: false, trackExceptionPaths,
+                        operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, trackInstanceFields: false, trackExceptionPaths,
                         operationBlockContext.CancellationToken, out var disposeAnalysisResult, out var pointsToAnalysisResult,
                         interproceduralAnalysisPredicateOpt))
                     {
@@ -138,13 +137,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                             if (!notDisposedDiagnostics.Any() && !mayBeNotDisposedDiagnostics.Any())
                             {
-                                return;
-                            }
-
-                            if (disposeAnalysisResult.ControlFlowGraph.OriginalOperation.HasAnyOperationDescendant(o => o.Kind == OperationKind.None && !(o.Parent is INameOfOperation)))
-                            {
-                                // Workaround for https://github.com/dotnet/roslyn/issues/32100
-                                // Bail out in presence of OperationKind.None - not implemented IOperation.
                                 return;
                             }
 
@@ -221,7 +213,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 var isNotDisposed = disposeValue.Kind == DisposeAbstractValueKind.NotDisposed ||
-                    (disposeValue.DisposingOrEscapingOperations.Count > 0 &&
+                    (!disposeValue.DisposingOrEscapingOperations.IsEmpty &&
                      disposeValue.DisposingOrEscapingOperations.All(d => d.IsInsideCatchRegion(disposeAnalysisResult.ControlFlowGraph) && !location.GetTopOfCreationCallStackOrCreation().IsInsideCatchRegion(disposeAnalysisResult.ControlFlowGraph)));
                 var isMayBeNotDisposed = !isNotDisposed && (disposeValue.Kind == DisposeAbstractValueKind.MaybeDisposed || disposeValue.Kind == DisposeAbstractValueKind.NotDisposedOrEscaped);
 

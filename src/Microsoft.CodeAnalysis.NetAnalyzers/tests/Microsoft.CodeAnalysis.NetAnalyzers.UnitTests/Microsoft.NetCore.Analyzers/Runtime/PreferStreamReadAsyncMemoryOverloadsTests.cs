@@ -940,13 +940,13 @@ End Class
         private DiagnosticResult GetCSharpResult(int startLine, int startColumn, int endLine, int endColumn)
             => GetCSResultForRule(startLine, startColumn, endLine, endColumn,
                 PreferStreamAsyncMemoryOverloads.PreferStreamReadAsyncMemoryOverloadsRule,
-                "ReadAsync", "System.IO.Stream.ReadAsync(System.Memory<byte>, System.Threading.CancellationToken)");
+                "ReadAsync", "Stream.ReadAsync(Memory<byte>, CancellationToken)");
 
         // Returns a VB diagnostic result using the specified rule, lines, columns and preferred method signature for the ReadAsync method.
         private DiagnosticResult GetVisualBasicResult(int startLine, int startColumn, int endLine, int endColumn)
             => GetVBResultForRule(startLine, startColumn, endLine, endColumn,
                 PreferStreamAsyncMemoryOverloads.PreferStreamReadAsyncMemoryOverloadsRule,
-                "ReadAsync", "System.IO.Stream.ReadAsync(System.Memory(Of Byte), System.Threading.CancellationToken)");
+                "ReadAsync", "Stream.ReadAsync(Memory(Of Byte), CancellationToken)");
 
         #endregion
     }

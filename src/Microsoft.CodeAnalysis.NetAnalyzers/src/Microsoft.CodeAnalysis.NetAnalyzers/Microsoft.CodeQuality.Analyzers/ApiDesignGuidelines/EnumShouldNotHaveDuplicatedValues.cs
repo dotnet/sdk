@@ -73,7 +73,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     var fieldInitializerOperation = (IFieldInitializerOperation)oc.Operation;
 
                     if (fieldInitializerOperation.InitializedFields.Length != 1 ||
-                        !fieldInitializerOperation.Value.ConstantValue.HasValue)
+                        !fieldInitializerOperation.Value.ConstantValue.HasValue ||
+                        fieldInitializerOperation.Value.ConstantValue.Value == null)
                     {
                         return;
                     }
@@ -107,9 +108,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Handle all enum fields without an explicit initializer
                     foreach ((var field, var value) in enumFieldsWithImplicitValue)
                     {
-                        var fieldSyntax = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+                        var fieldSyntax = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(sac.CancellationToken);
 
-                        if (fieldSyntax != null)
+                        if (fieldSyntax != null && value != null)
                         {
                             membersByValue.AddOrUpdate(value,
                                 new ConcurrentBag<(SyntaxNode, string)> { (fieldSyntax, field.Name) },

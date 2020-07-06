@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -60,6 +61,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         private string GetEditorConfigContent(DisposeAnalysisKind disposeAnalysisKind)
             => $@"dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
+
+        private string GetEditorConfigContent(PointsToAnalysisKind? pointsToAnalysisKind)
+            => pointsToAnalysisKind.HasValue ?
+                $"dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                string.Empty;
 
         [Fact]
         public async Task LocalWithDisposableInitializer_DisposeCall_NoDiagnostic()
@@ -8693,10 +8699,14 @@ public class Test
             }.RunAsync();
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public async Task DisposableAllocation_AssignedToTuple_NotDisposed_SpecialCases_Diagnostic()
+        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task DisposableAllocation_AssignedToTuple_NotDisposed_SpecialCases_Diagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            var source = @"
 using System;
 
 class A : IDisposable
@@ -8761,19 +8771,33 @@ public class Test
         return b;
     }
 }
-",
-            // Test0.cs(19,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
-            GetCSharpResultAt(19, 15, "new A(1)"),
-            // Test0.cs(28,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
-            GetCSharpResultAt(28, 15, "new A(3)"),
-            // Test0.cs(36,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
-            GetCSharpResultAt(36, 15, "new A(4)"),
-            // Test0.cs(44,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(5)' before all references to it are out of scope.
-            GetCSharpResultAt(44, 15, "new A(5)"),
-            // Test0.cs(52,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(6)' before all references to it are out of scope.
-            GetCSharpResultAt(52, 15, "new A(6)"),
-            // Test0.cs(60,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(7)' before all references to it are out of scope.
-            GetCSharpResultAt(60, 15, "new A(7)"));
+";
+            var test = new VerifyCS.Test()
+            {
+                TestCode = source,
+                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+            };
+
+            if (pointsToAnalysisKind != PointsToAnalysisKind.None)
+            {
+                test.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.cs(19,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
+                    GetCSharpResultAt(19, 15, "new A(1)"),
+                    // Test0.cs(28,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
+                    GetCSharpResultAt(28, 15, "new A(3)"),
+                    // Test0.cs(36,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
+                    GetCSharpResultAt(36, 15, "new A(4)"),
+                    // Test0.cs(44,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(5)' before all references to it are out of scope.
+                    GetCSharpResultAt(44, 15, "new A(5)"),
+                    // Test0.cs(52,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(6)' before all references to it are out of scope.
+                    GetCSharpResultAt(52, 15, "new A(6)"),
+                    // Test0.cs(60,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(7)' before all references to it are out of scope.
+                    GetCSharpResultAt(60, 15, "new A(7)")
+                });
+            }
+
+            await test.RunAsync();
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -8832,10 +8856,14 @@ public class Test
 ");
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public async Task DisposableAllocation_AddedToTupleLiteral_SpecialCases_Diagnostic()
+        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task DisposableAllocation_AddedToTupleLiteral_SpecialCases_Diagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            var csCode = @"
 using System;
 
 class A : IDisposable
@@ -8880,27 +8908,46 @@ public class Test
         arg = default((A, A));
     }
 }
-",
-            // Test0.cs(18,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
-            GetCSharpResultAt(18, 15, "new A(1)"),
-            // Test0.cs(24,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
-            GetCSharpResultAt(24, 15, "new A(2)"),
-            // Test0.cs(25,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
-            GetCSharpResultAt(25, 16, "new A(3)"),
-            // Test0.cs(31,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
-            GetCSharpResultAt(31, 15, "new A(4)"),
-            // Test0.cs(32,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(5)' before all references to it are out of scope.
-            GetCSharpResultAt(32, 16, "new A(5)"),
-            // Test0.cs(39,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(6)' before all references to it are out of scope.
-            GetCSharpResultAt(39, 15, "new A(6)"),
-            // Test0.cs(40,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(7)' before all references to it are out of scope.
-            GetCSharpResultAt(40, 16, "new A(7)"));
+";
+
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csCode,
+                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+            };
+
+            if (pointsToAnalysisKind != PointsToAnalysisKind.None)
+            {
+                csTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.cs(18,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
+                    GetCSharpResultAt(18, 15, "new A(1)"),
+                    // Test0.cs(24,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
+                    GetCSharpResultAt(24, 15, "new A(2)"),
+                    // Test0.cs(25,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
+                    GetCSharpResultAt(25, 16, "new A(3)"),
+                    // Test0.cs(31,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
+                    GetCSharpResultAt(31, 15, "new A(4)"),
+                    // Test0.cs(32,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(5)' before all references to it are out of scope.
+                    GetCSharpResultAt(32, 16, "new A(5)"),
+                    // Test0.cs(39,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(6)' before all references to it are out of scope.
+                    GetCSharpResultAt(39, 15, "new A(6)"),
+                    // Test0.cs(40,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(7)' before all references to it are out of scope.
+                    GetCSharpResultAt(40, 16, "new A(7)")
+                });
+            }
+
+            await csTest.RunAsync();
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public async Task DisposableAllocation_AssignedToTuple_NotDisposed_Diagnostic()
+        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task DisposableAllocation_AssignedToTuple_NotDisposed_Diagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            var csCode = @"
 using System;
 
 class A : IDisposable
@@ -8924,13 +8971,27 @@ public class Test
         A a = new A();
         (A, int) b = (a, 0);
     }
-}",
-            // Test0.cs(16,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
-            GetCSharpResultAt(16, 15, "new A()"),
-            // Test0.cs(22,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
-            GetCSharpResultAt(22, 15, "new A()"));
+}";
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csCode,
+                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+            };
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            if (pointsToAnalysisKind != PointsToAnalysisKind.None)
+            {
+                csTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.cs(16,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                    GetCSharpResultAt(16, 15, "new A()"),
+                    // Test0.cs(22,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                    GetCSharpResultAt(22, 15, "new A()")
+                });
+            }
+
+            await csTest.RunAsync();
+
+            var vbCode = @"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -8953,11 +9014,25 @@ Public Class Test
         Dim b As (a As A, i As Integer) = (a, 0)
     End Sub
 End Class
-",
-            // Test0.vb(15,22): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
-            GetBasicResultAt(15, 22, "New A()"),
-            // Test0.vb(20,22): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
-            GetBasicResultAt(20, 22, "New A()"));
+";
+            var vbTest = new VerifyVB.Test()
+            {
+                TestCode = vbCode,
+                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+            };
+
+            if (pointsToAnalysisKind != PointsToAnalysisKind.None)
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.vb(15,22): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
+                    GetBasicResultAt(15, 22, "New A()"),
+                    // Test0.vb(20,22): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
+                    GetBasicResultAt(20, 22, "New A()")
+                });
+            }
+
+            await vbTest.RunAsync();
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
@@ -12217,6 +12292,41 @@ Class Test
     End Sub
 End Class",
                 GetBasicResultAt(12, 18, "New A()"));
+        }
+
+        [Fact]
+        public async Task Dispose_UsingDeclaration_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.Diagnostics;
+
+public class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+public class Class1
+{
+    public void M()
+    {
+        using Process _ = new Process
+        {
+            StartInfo = new ProcessStartInfo()
+        };
+
+        using var a = GetA();
+    }
+
+    public A GetA()
+        => new A();
+}",
+                LanguageVersion = CSharpLanguageVersion.CSharp8,
+            }.RunAsync();
         }
     }
 }

@@ -118,7 +118,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             SyntaxNode declarationNode = GetParameterDeclarationNode(diagnosticNode);
 
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            ISymbol parameterSymbol = editor.SemanticModel.GetDeclaredSymbol(declarationNode);
+            ISymbol parameterSymbol = editor.SemanticModel.GetDeclaredSymbol(declarationNode, cancellationToken);
             ISymbol methodDeclarationSymbol = parameterSymbol.ContainingSymbol;
 
             if (!IsSafeMethodToRemoveParameter(methodDeclarationSymbol))
@@ -138,7 +138,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     foreach (var referenceLocation in referencedSymbol.Locations)
                     {
                         Location location = referenceLocation.Location;
-                        var referenceRoot = location.SourceTree.GetRoot();
+                        var referenceRoot = location.SourceTree.GetRoot(cancellationToken);
                         var referencedSymbolNode = referenceRoot.FindNode(location.SourceSpan);
                         DocumentEditor localEditor = await DocumentEditor.CreateAsync(referenceLocation.Document, cancellationToken).ConfigureAwait(false);
                         var arguments = GetOperationArguments(referencedSymbolNode, localEditor.SemanticModel, cancellationToken);

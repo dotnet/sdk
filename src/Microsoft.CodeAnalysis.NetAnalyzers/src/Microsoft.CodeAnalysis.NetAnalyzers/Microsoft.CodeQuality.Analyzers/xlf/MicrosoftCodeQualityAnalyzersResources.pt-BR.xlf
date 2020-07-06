@@ -137,6 +137,11 @@
         <target state="translated">'{0}' chama '{1}', mas não usa o valor retornado pelo método. Esse método é definido como uma opção do usuário. Use o resultado em uma instrução condicional, atribua o resultado a uma variável ou passe-o como argumento para outro método.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="new">Remove the unnecessary assignment.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">Esta regra considera que um membro de enumeração com um nome contendo "reservado" não está sendo usado no momento, mas é um espaço reservado a ser renomeado ou removido em uma versão futura. A renomeação ou a remoção de um membro é uma alteração da falha.</target>
@@ -2043,13 +2048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">O Common Language Runtime inicializa todos os campos para seus valores padrão antes de executar o construtor. Na maioria dos casos, inicializar um campo para seu valor padrão em um construtor é redundante, o que prejudica o desempenho e aumenta os custos de manutenção. Um caso em que isso não é redundante ocorre quando o construtor chama outro construtor da mesma classe ou um construtor de classe base e esse construtor inicializa o campo para um valor não padrão. Nesse caso, alterar o valor do campo de volta para seu valor padrão pode ser apropriado.</target>
+        <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
+        <target state="needs-review-translation">O Common Language Runtime inicializa todos os campos para seus valores padrão antes de executar o construtor. Na maioria dos casos, inicializar um campo para seu valor padrão em um construtor é redundante, o que prejudica o desempenho e aumenta os custos de manutenção. Um caso em que isso não é redundante ocorre quando o construtor chama outro construtor da mesma classe ou um construtor de classe base e esse construtor inicializa o campo para um valor não padrão. Nesse caso, alterar o valor do campo de volta para seu valor padrão pode ser apropriado.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">Não inicializar desnecessariamente</target>
+        <source>Member '{0}' is explicitly initialized to its default value.</source>
+        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">

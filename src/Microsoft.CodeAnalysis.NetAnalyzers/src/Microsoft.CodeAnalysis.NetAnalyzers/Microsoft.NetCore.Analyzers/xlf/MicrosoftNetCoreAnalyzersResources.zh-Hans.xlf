@@ -877,6 +877,21 @@
         <target state="translated">终结器应调用基类的终结器</target>
         <note />
       </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
+        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="new">Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
+        <source>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</source>
+        <target state="new">Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
+        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
+        <target state="new">Forward the 'CancellationToken' parameter to methods that take one</target>
+        <note />
+      </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
         <source>Avoid hardcoding SecurityProtocolType {0}, and instead use SecurityProtocolType.SystemDefault to allow the operating system to choose the best Transport Layer Security protocol to use.</source>
         <target state="translated">避免 hardcoding SecurityProtocolType {0}, 转而使用 SecurityProtocolType. SystemDefault 允许操作系统选择要使用的最佳传输层安全性协议。</target>
@@ -1398,13 +1413,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
-        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="translated">将“{0}”方法调用更改为接收“{1}”的重载。</target>
+        <source>Change the '{0}' method call to use the '{1}' overload</source>
+        <target state="needs-review-translation">将“{0}”方法调用更改为接收“{1}”的重载。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
-        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</source>
-        <target state="translated">对于 "ReadAsync" 和 "WriteAsync"，首选基于内存的重载。</target>
+        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
+        <target state="needs-review-translation">对于 "ReadAsync" 和 "WriteAsync"，首选基于内存的重载。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
@@ -1830,6 +1845,16 @@
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
         <target state="translated">请使用 "{0}" 代替 "{2}" 上的基于 "{1}" 的索引器，以避免创建不必要的数据副本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on a string</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on a string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on an array</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on an array</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">

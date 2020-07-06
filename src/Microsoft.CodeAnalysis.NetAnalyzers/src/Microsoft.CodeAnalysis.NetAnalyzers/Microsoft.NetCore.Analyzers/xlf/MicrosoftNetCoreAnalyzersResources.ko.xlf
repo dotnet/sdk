@@ -877,6 +877,21 @@
         <target state="translated">종료자가 기본 클래스 종료자를 호출해야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
+        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="new">Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
+        <source>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</source>
+        <target state="new">Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
+        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
+        <target state="new">Forward the 'CancellationToken' parameter to methods that take one</target>
+        <note />
+      </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
         <source>Avoid hardcoding SecurityProtocolType {0}, and instead use SecurityProtocolType.SystemDefault to allow the operating system to choose the best Transport Layer Security protocol to use.</source>
         <target state="translated">운영 체제에서 사용할 최상의 전송 계층 보안 프로토콜을 선택할 수 있게 하려면 SecurityProtocolType {0}을(를) 하드 코딩하지 말고 대신 SecurityProtocolType.SystemDefault를 사용하세요.</target>
@@ -1398,13 +1413,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
-        <source>Change the '{0}' method call to the overload that receives a '{1}'.</source>
-        <target state="translated">'{0}' 메서드 호출을 '{1}'을(를) 수신하는 오버로드로 변경합니다.</target>
+        <source>Change the '{0}' method call to use the '{1}' overload</source>
+        <target state="needs-review-translation">'{0}' 메서드 호출을 '{1}'을(를) 수신하는 오버로드로 변경합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
-        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</source>
-        <target state="new">Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</target>
+        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
+        <target state="new">Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
@@ -1830,6 +1845,16 @@
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
         <target state="translated">불필요한 데이터 복사본이 만들어지지 않도록 하려면 '{2}'에서 '{1}' 기반 인덱서 대신 '{0}'을(를) 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on a string</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on a string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on an array</source>
+        <target state="new">Use `{0}` instead of Range-based indexers on an array</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">

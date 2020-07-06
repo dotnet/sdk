@@ -94,7 +94,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             var kind = PropertySetAbstractValueKind.Unflagged;
 
-                            if (constructorMethod.Parameters.Length > 0)
+                            if (!constructorMethod.Parameters.IsEmpty)
                             {
                                 if (constructorMethod.Parameters[0].Type.Equals(storeNameTypeSymbol))
                                 {

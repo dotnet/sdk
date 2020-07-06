@@ -872,13 +872,13 @@ End Class
         protected DiagnosticResult GetCSharpResult(int startLine, int startColumn, int endLine, int endColumn)
             => GetCSResultForRule(startLine, startColumn, endLine, endColumn,
                 PreferStreamAsyncMemoryOverloads.PreferStreamWriteAsyncMemoryOverloadsRule,
-                "WriteAsync", "System.IO.Stream.WriteAsync(System.ReadOnlyMemory<byte>, System.Threading.CancellationToken)");
+                "WriteAsync", "Stream.WriteAsync(ReadOnlyMemory<byte>, CancellationToken)");
 
         // Returns a VB diagnostic result using the specified rule, lines, columns and preferred method signature for the WriteAsync method.
         protected DiagnosticResult GetVisualBasicResult(int startLine, int startColumn, int endLine, int endColumn)
             => GetVBResultForRule(startLine, startColumn, endLine, endColumn,
                 PreferStreamAsyncMemoryOverloads.PreferStreamWriteAsyncMemoryOverloadsRule,
-                "WriteAsync", "System.IO.Stream.WriteAsync(System.ReadOnlyMemory(Of Byte), System.Threading.CancellationToken)");
+                "WriteAsync", "Stream.WriteAsync(ReadOnlyMemory(Of Byte), CancellationToken)");
 
         #endregion
     }

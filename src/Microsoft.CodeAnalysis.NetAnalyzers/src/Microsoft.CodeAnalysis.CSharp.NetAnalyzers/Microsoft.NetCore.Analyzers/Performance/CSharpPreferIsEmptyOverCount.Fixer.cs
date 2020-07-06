@@ -15,26 +15,77 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpPreferIsEmptyOverCountFixer : PreferIsEmptyOverCountFixer
     {
-        protected override SyntaxNode? GetExpressionFromMemberAccessor(SyntaxNode node)
+        protected override SyntaxNode? GetObjectExpressionFromOperation(SyntaxNode node, string operationKey)
         {
-            while (node is ParenthesizedExpressionSyntax parenthesizedExpression)
+            SyntaxNode? countNode = null;
+            switch (operationKey)
             {
-                node = parenthesizedExpression.Expression;
+                case UseCountProperlyAnalyzer.OperationBinaryLeft:
+                    if (node is BinaryExpressionSyntax binaryExpression)
+                    {
+                        countNode = binaryExpression.Left;
+                    }
+                    break;
+                case UseCountProperlyAnalyzer.OperationBinaryRight:
+                    if (node is BinaryExpressionSyntax binaryExpression2)
+                    {
+                        countNode = binaryExpression2.Right;
+                    }
+                    break;
+                case UseCountProperlyAnalyzer.OperationEqualsArgument:
+                    if (node is InvocationExpressionSyntax invocationExpression)
+                    {
+                        countNode = invocationExpression.ArgumentList.Arguments[0].Expression;
+                    }
+                    break;
+                case UseCountProperlyAnalyzer.OperationEqualsInstance:
+                    if (node is InvocationExpressionSyntax invocationExpression2)
+                    {
+                        SyntaxNode equalsMemberAccess = invocationExpression2.Expression;
+                        if (equalsMemberAccess is MemberAccessExpressionSyntax memberAccess)
+                        {
+                            countNode = memberAccess.Expression;
+                        }
+                    }
+                    break;
             }
 
-            if (node is MemberAccessExpressionSyntax ma)
+            RoslynDebug.Assert(countNode != null);
+
+            bool isParenthesizedOrCastExpression;
+            do
             {
-                return ma.Expression;
+                isParenthesizedOrCastExpression = true;
+
+                switch (countNode)
+                {
+                    case ParenthesizedExpressionSyntax parenthesizedExpression:
+                        countNode = parenthesizedExpression.Expression;
+                        break;
+                    case CastExpressionSyntax castExpression:
+                        countNode = castExpression.Expression;
+                        break;
+                    default:
+                        isParenthesizedOrCastExpression = false;
+                        break;
+                }
+            }
+            while (isParenthesizedOrCastExpression);
+
+            if (countNode is InvocationExpressionSyntax invocationExpression3)
+            {
+                countNode = invocationExpression3.Expression;
             }
 
-            RoslynDebug.Assert(node is IdentifierNameSyntax);
-            return null;
-        }
+            SyntaxNode? objectNode = null;
 
-        protected override SyntaxNode GetMemberAccessorFromBinary(SyntaxNode binaryExpression, bool useRightSide)
-        {
-            var csharpBinaryExpression = (BinaryExpressionSyntax)binaryExpression;
-            return useRightSide ? csharpBinaryExpression.Right : csharpBinaryExpression.Left;
+            if (countNode is MemberAccessExpressionSyntax memberAccess2)
+            {
+                objectNode = memberAccess2.Expression;
+            }
+
+            RoslynDebug.Assert(objectNode != null || countNode is IdentifierNameSyntax);
+            return objectNode;
         }
     }
 }

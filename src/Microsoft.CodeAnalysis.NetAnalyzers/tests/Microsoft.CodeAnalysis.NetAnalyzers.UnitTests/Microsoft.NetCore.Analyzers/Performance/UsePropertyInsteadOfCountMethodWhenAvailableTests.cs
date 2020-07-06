@@ -3,9 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Operations;
+using Microsoft.NetCore.CSharp.Analyzers.Performance;
+using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
 using Test.Utilities;
 using Xunit;
+using Xunit.Abstractions;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>;
@@ -17,6 +22,94 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     public static partial class UsePropertyInsteadOfCountMethodWhenAvailableTests
     {
+        [Fact]
+        public static Task CSharp_AsMethodArgument_Tests()
+            => new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources=
+                    {
+                $@"using System;
+using System.Linq;
+public static class C
+{{
+    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+    public static void M()
+    {{
+        var a = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}});
+        var b = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:(GetData()).Count()|}});
+        var c = 1.Equals(({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}));
+    }}
+}}
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources=
+                    {
+                $@"using System;
+using System.Linq;
+public static class C
+{{
+    public static System.Collections.Immutable.ImmutableArray<int> GetData() => default;
+    public static void M()
+    {{
+        var a = 1.Equals(GetData().Length);
+        var b = 1.Equals((GetData()).Length);
+        var c = 1.Equals((GetData().Length));
+    }}
+}}
+" ,
+                    },
+                },
+            }.RunAsync();
+
+        [Fact]
+        public static Task Basic_AsMethodArgument_Tests()
+            => new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources=
+                    {
+                $@"Imports System
+Imports System.Linq
+Public Class Program
+    Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
+        Return Nothing
+    End Function
+    Public Sub M()
+        Dim a = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}})
+        Dim b = 1.Equals({{|{UseCountProperlyAnalyzer.CA1829}:(GetData()).Count()|}})
+        Dim c = 1.Equals(({{|{UseCountProperlyAnalyzer.CA1829}:GetData().Count()|}}))
+    End Sub
+End Class
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources=
+                    {
+                $@"Imports System
+Imports System.Linq
+Public Class Program
+    Public Function GetData() As System.Collections.Immutable.ImmutableArray(Of Integer)
+        Return Nothing
+    End Function
+    Public Sub M()
+        Dim a = 1.Equals(GetData().Length)
+        Dim b = 1.Equals((GetData()).Length)
+        Dim c = 1.Equals((GetData().Length))
+    End Sub
+End Class
+" ,
+                    },
+                },
+            }.RunAsync();
+
         [Fact]
         public static Task CSharp_ImmutableArray_Tests()
             => new VerifyCS.Test
@@ -558,5 +651,211 @@ public class SomeClass
                     .WithLocation(8, 23)
                     .WithArguments(nameof(IReadOnlyCollection<int>.Count)));
         }
+
+        [Fact, WorkItem(3724, "https://github.com/dotnet/roslyn-analyzers/issues/3724")]
+        public static async Task PropertyAccessParentIsNotAlwaysDirectlyTheInvocation()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public static bool IsChildPath(string parentPath, string childPath)
+    {
+        return (IsDirectorySeparator(childPath[parentPath.Length]) ||
+            IsDirectorySeparator(childPath[{|CA1829:parentPath.Count()|}]));
+    }
+
+    public static bool IsDirectorySeparator(char c) => false;
+}",
+                FixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public static bool IsChildPath(string parentPath, string childPath)
+    {
+        return (IsDirectorySeparator(childPath[parentPath.Length]) ||
+            IsDirectorySeparator(childPath[parentPath.Length]));
+    }
+
+    public static bool IsDirectorySeparator(char c) => false;
+}",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
+        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath({|CA1829:parentPath.Count()|})))
+    End Function
+
+    Public Shared Function IsDirectorySeparator(c As Char) As Boolean
+        Return False
+    End Function
+End Class
+",
+                FixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Shared Function IsChildPath(parentPath As String, childPath As String) As Boolean
+        Return (IsDirectorySeparator(childPath(parentPath.Length)) OrElse IsDirectorySeparator(childPath(parentPath.Length)))
+    End Function
+
+    Public Shared Function IsDirectorySeparator(c As Char) As Boolean
+        Return False
+    End Function
+End Class
+",
+            }.RunAsync();
+        }
+    }
+
+    public abstract class UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
+        : DoNotUseCountWhenAnyCanBeUsedTestsBase
+    {
+        protected UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests(TestsSourceCodeProvider sourceProvider, VerifierBase verifier)
+            : base(sourceProvider, verifier) { }
+
+        [Fact]
+        public Task CountEqualsNonZero_WithoutPredicate_Fixed()
+            => VerifyAsync(
+                methodName: SourceProvider.MemberName,
+                testSource: SourceProvider.GetCodeWithExpression(
+                    SourceProvider.GetTargetExpressionEqualsInvocationCode(1, withPredicate: false, "Count"),
+                    SourceProvider.ExtensionsNamespace),
+                fixedSource: SourceProvider.GetCodeWithExpression(
+                    SourceProvider.GetTargetPropertyEqualsInvocationCode(1, SourceProvider.MemberName),
+                    SourceProvider.ExtensionsNamespace),
+                extensionsSource: null);
+
+        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3700"), WorkItem(3700, "https://github.com/dotnet/roslyn-analyzers/issues/3700")]
+        public Task NonZeroEqualsCount_WithoutPredicate_Fixed()
+            => VerifyAsync(
+                methodName: SourceProvider.MemberName,
+                testSource: SourceProvider.GetCodeWithExpression(
+                    SourceProvider.GetEqualsTargetExpressionInvocationCode(1, withPredicate: false, "Count"),
+                    SourceProvider.ExtensionsNamespace),
+                fixedSource: SourceProvider.GetCodeWithExpression(
+                    SourceProvider.GetEqualsTargetPropertyInvocationCode(1, SourceProvider.MemberName),
+                    SourceProvider.ExtensionsNamespace),
+                extensionsSource: null,
+                line: 10, column: 30);
+
+        public static readonly IEnumerable<object[]> NoDiagnosisOnlyTestData = new BinaryExpressionTestData()
+            .Where(x => (bool)x[0] == true)
+            .Select(x => new object[] { x[1], x[2], x[3] });
+
+        [Theory]
+        // Scenarios that are not diagnosed with CA1836 should fallback in CA1829.
+        [MemberData(nameof(NoDiagnosisOnlyTestData))]
+        public Task PropertyOnBinaryOperation(int literal, BinaryOperatorKind @operator, bool isRightSideExpression)
+        {
+            string testSource;
+            string fixedSource;
+            if (isRightSideExpression)
+            {
+                testSource = SourceProvider.GetTargetExpressionBinaryExpressionCode(literal, @operator, withPredicate: false, "Count");
+                fixedSource = SourceProvider.GetTargetPropertyBinaryExpressionCode(literal, @operator, SourceProvider.MemberName);
+            }
+            else
+            {
+                testSource = SourceProvider.GetTargetExpressionBinaryExpressionCode(@operator, literal, withPredicate: false, "Count");
+                fixedSource = SourceProvider.GetTargetPropertyBinaryExpressionCode(@operator, literal, SourceProvider.MemberName);
+            }
+
+            testSource = SourceProvider.GetCodeWithExpression(
+                testSource, additionalNamspaces: SourceProvider.ExtensionsNamespace);
+
+            fixedSource = SourceProvider.GetCodeWithExpression(
+                fixedSource, additionalNamspaces: SourceProvider.ExtensionsNamespace);
+
+            int line = VerifierBase.GetNumberOfLines(testSource) - 3;
+            int column = isRightSideExpression ?
+                21 + 3 + GetOperatorLength(SourceProvider, @operator) :
+                21;
+
+            return VerifyAsync(SourceProvider.MemberName, testSource, fixedSource, extensionsSource: null, line, column);
+        }
+
+        private static int GetOperatorLength(TestsSourceCodeProvider sourceProvider, BinaryOperatorKind @operator)
+        {
+            switch (@operator)
+            {
+                case BinaryOperatorKind.GreaterThan:
+                case BinaryOperatorKind.LessThan:
+                    return 1;
+                case BinaryOperatorKind.NotEquals:
+                case BinaryOperatorKind.GreaterThanOrEqual:
+                case BinaryOperatorKind.LessThanOrEqual:
+                    return 2;
+                case BinaryOperatorKind.Equals:
+                    if (sourceProvider is CSharpTestsSourceCodeProvider)
+                    {
+                        return 2;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
+                default:
+                    return 0;
+            }
+        }
+    }
+
+    public class CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Concurrent
+        : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
+    {
+        public CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Concurrent()
+            : base(
+                  new CSharpTestsSourceCodeProvider(
+                      "Count",
+                      "global::System.Collections.Concurrent.ConcurrentBag<int>",
+                      "System.Linq",
+                      "Enumerable",
+                      false),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>(UseCountProperlyAnalyzer.CA1829))
+        { }
+    }
+
+    public class CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable
+        : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
+    {
+        public CSharpUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable()
+            : base(
+                  new CSharpTestsSourceCodeProvider(
+                      "Length",
+                      "global::System.Collections.Immutable.ImmutableArray<int>",
+                      "System.Linq",
+                      "Enumerable",
+                      false),
+                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>(UseCountProperlyAnalyzer.CA1829))
+        { }
+    }
+
+    public class BasicUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable
+        : UsePropertyInsteadOfCountMethodWhenAvailableOverlapTests
+    {
+        public BasicUsePropertyInsteadOfCountMethodWhenAvailableOverlapTests_Immutable()
+            : base(
+                  new BasicTestsSourceCodeProvider(
+                      "Length",
+                      "Global.System.Collections.Immutable.ImmutableArray(Of Integer)",
+                      "System.Linq",
+                      "Enumerable",
+                      false),
+                  new BasicVerifier<UseCountProperlyAnalyzer, BasicUsePropertyInsteadOfCountMethodWhenAvailableFixer>(UseCountProperlyAnalyzer.CA1829))
+        { }
     }
 }

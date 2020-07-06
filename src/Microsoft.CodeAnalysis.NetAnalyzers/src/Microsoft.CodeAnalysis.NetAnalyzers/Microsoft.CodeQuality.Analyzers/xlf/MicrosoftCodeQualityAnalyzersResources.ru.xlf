@@ -137,6 +137,11 @@
         <target state="translated">"{0}" вызывает "{1}", но не использует значение, возвращаемое методом. Этот метод определен как пользовательский. Используйте результат в условном операторе, присвойте его переменной или передайте его в качестве аргумента другому методу.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="new">Remove the unnecessary assignment.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">Это правило предполагает, что элемент перечисления, имя которого содержит "reserved", сейчас не используется, но является заполнителем, который будет переименован или удален в будущей версии. Переименование или удаление элемента является критическим изменением.</target>
@@ -2043,13 +2048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">Перед запуском конструктора среда CLR инициализирует все поля с их значениями по умолчанию. В большинстве случаев инициализация поля со значением по умолчанию в конструкторе является избыточной, снижает производительность и повышает расходы на обслуживание. Эта операция не является избыточной лишь тогда, когда конструктор вызывает другой конструктор того же класса или конструктор базового класса, инициализирующий поле с нестандартным значением. В этом случае восстановление значения по умолчанию для поля может быть уместным.</target>
+        <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
+        <target state="needs-review-translation">Перед запуском конструктора среда CLR инициализирует все поля с их значениями по умолчанию. В большинстве случаев инициализация поля со значением по умолчанию в конструкторе является избыточной, снижает производительность и повышает расходы на обслуживание. Эта операция не является избыточной лишь тогда, когда конструктор вызывает другой конструктор того же класса или конструктор базового класса, инициализирующий поле с нестандартным значением. В этом случае восстановление значения по умолчанию для поля может быть уместным.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">Не делайте лишних инициализаций</target>
+        <source>Member '{0}' is explicitly initialized to its default value.</source>
+        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">

@@ -69,7 +69,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
 
                 var explicitOperations = block.Operations.WithoutFullyImplicitOperations();
-                if (explicitOperations.Length == 0)
+                if (explicitOperations.IsEmpty)
                 {
                     // Empty body.
                     return true;
@@ -100,7 +100,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var method = (IMethodSymbol)context.OwningSymbol;
 
             // We are only interested in private explicit interface implementations within a public non-sealed type.
-            if (method.ExplicitInterfaceImplementations.Length == 0 ||
+            if (method.ExplicitInterfaceImplementations.IsEmpty ||
                 method.GetResultantVisibility() != SymbolVisibility.Private ||
                 method.ContainingType.IsSealed ||
                 !method.ContainingType.IsExternallyVisible())

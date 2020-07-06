@@ -137,6 +137,11 @@
         <target state="translated">Element „{0}” wywołuje element „{1}”, ale nie używa wartości zwracanej przez metodę. Ta metoda jest zdefiniowana jako opcja użytkownika. Użyj wyniku w instrukcji warunkowej, przypisz wynik do zmiennej lub przekaż go jako argument do innej metody.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="new">Remove the unnecessary assignment.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
         <target state="translated">W tej regule przyjęto założenie, że element członkowski wyliczenia, który ma nazwę zawierającą wyraz „reserved”, nie jest obecnie używany, ale jest symbolem zastępczym, którego nazwa może zostać zmieniona lub usunięta w przyszłej wersji. Zmiana nazwy lub usunięcie elementu członkowskiego jest zmianą powodującą niezgodność.</target>
@@ -2043,13 +2048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">Środowisko uruchomieniowe CLR inicjuje wszystkie pola do ich domyślnych wartości przed uruchomieniem konstruktora. W większości przypadków zainicjowanie pola do jego domyślnej wartości jest zbędne, ponieważ zmniejsza wydajność i zwiększa koszty utrzymania. Jedyny przypadek, gdy nie jest to zbędne, występuje, gdy konstruktor wywołuje inny konstruktor tej samej klasy lub konstruktor klasy podstawowej, a ten konstruktor inicjuje pole do wartości innej niż domyślna. W tym przypadku zmiana wartości pola z powrotem na wartość domyślną może być odpowiednia.</target>
+        <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
+        <target state="needs-review-translation">Środowisko uruchomieniowe CLR inicjuje wszystkie pola do ich domyślnych wartości przed uruchomieniem konstruktora. W większości przypadków zainicjowanie pola do jego domyślnej wartości jest zbędne, ponieważ zmniejsza wydajność i zwiększa koszty utrzymania. Jedyny przypadek, gdy nie jest to zbędne, występuje, gdy konstruktor wywołuje inny konstruktor tej samej klasy lub konstruktor klasy podstawowej, a ten konstruktor inicjuje pole do wartości innej niż domyślna. W tym przypadku zmiana wartości pola z powrotem na wartość domyślną może być odpowiednia.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">Nie inicjuj niepotrzebnie</target>
+        <source>Member '{0}' is explicitly initialized to its default value.</source>
+        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">

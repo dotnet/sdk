@@ -1279,13 +1279,22 @@
     <value>Potential stack overflow. Move the stackalloc out of the loop.</value>
   </data>
   <data name="PreferStreamAsyncMemoryOverloadsTitle" xml:space="preserve">
-    <value>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'.</value>
+    <value>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</value>
   </data>
   <data name="PreferStreamAsyncMemoryOverloadsDescription" xml:space="preserve">
     <value>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</value>
   </data>
   <data name="PreferStreamAsyncMemoryOverloadsMessage" xml:space="preserve">
-    <value>Change the '{0}' method call to the overload that receives a '{1}'.</value>
+    <value>Change the '{0}' method call to use the '{1}' overload</value>
+  </data>
+  <data name="ForwardCancellationTokenToInvocationsDescription" xml:space="preserve">
+    <value>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</value>
+  </data>
+  <data name="ForwardCancellationTokenToInvocationsMessage" xml:space="preserve">
+    <value>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</value>
+  </data>
+  <data name="ForwardCancellationTokenToInvocationsTitle" xml:space="preserve">
+    <value>Forward the 'CancellationToken' parameter to methods that take one</value>
   </data>
   <data name="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle" xml:space="preserve">
     <value>Change to call the two argument constructor, pass null for the message.</value>
@@ -1343,5 +1352,11 @@
   </data>
   <data name="PreferIsEmptyOverCountTitle" xml:space="preserve">
     <value>Prefer IsEmpty over Count</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
+    <value>Use `{0}` instead of Range-based indexers on a string</value>
+  </data>
+  <data name="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle" xml:space="preserve">
+    <value>Use `{0}` instead of Range-based indexers on an array</value>
   </data>
 </root>

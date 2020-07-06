@@ -61,7 +61,7 @@ namespace Microsoft.NetFramework.Analyzers
                                 .WhereNotNull()
                                 .ToImmutableHashSet();
 
-            if (badBaseTypes.Count > 0)
+            if (!badBaseTypes.IsEmpty)
             {
                 context.RegisterSymbolAction((saContext) =>
                     {

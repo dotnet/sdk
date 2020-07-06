@@ -420,7 +420,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                         else
                         {
                             // Remove the trailing ')'
-                            var symbolKindStr = keyParts[1].Substring(0, keyParts[1].Length - 1);
+                            var symbolKindStr = keyParts[1][0..^1];
                             switch (symbolKindStr)
                             {
                                 case "Assembly":

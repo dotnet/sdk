@@ -163,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             private UnmanagedType? GetParameterMarshaling(AttributeData attributeData)
             {
-                if (attributeData.ConstructorArguments.Length > 0)
+                if (!attributeData.ConstructorArguments.IsEmpty)
                 {
                     TypedConstant argument = attributeData.ConstructorArguments.First();
                     if (argument.Type.Equals(_unmanagedType))

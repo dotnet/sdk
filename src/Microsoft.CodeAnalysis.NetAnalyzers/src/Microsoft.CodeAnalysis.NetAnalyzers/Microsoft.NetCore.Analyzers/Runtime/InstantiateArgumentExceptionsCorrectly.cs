@@ -91,7 +91,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            if (creation.Arguments.Length == 0)
+            if (creation.Arguments.IsEmpty)
             {
                 if (HasParameters(owningSymbol))
                 {
@@ -135,7 +135,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
              owningSymbol.MatchesConfiguredVisibility(context.Options, RuleIncorrectParameterName, context.Compilation,
                  context.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.All);
 
-        private static bool HasParameters(ISymbol owningSymbol) => owningSymbol.GetParameters().Length > 0;
+        private static bool HasParameters(ISymbol owningSymbol) => !owningSymbol.GetParameters().IsEmpty;
 
         private static Diagnostic? CheckArgument(
             ISymbol targetSymbol,

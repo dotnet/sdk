@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -1756,7 +1757,7 @@ public class SomeSubSubClass : SomeSubClass {}"
                 }
             };
 
-            if (editorConfigText.Contains("exclude_indirect_base_types = false"))
+            if (editorConfigText.Contains("exclude_indirect_base_types = false", StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -1827,7 +1828,7 @@ End Class"
                 }
             };
 
-            if (editorConfigText.Contains("exclude_indirect_base_types = false"))
+            if (editorConfigText.Contains("exclude_indirect_base_types = false", StringComparison.Ordinal))
             {
                 vbTest.ExpectedDiagnostics.AddRange(new[]
                 {

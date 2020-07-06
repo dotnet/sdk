@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -657,10 +658,18 @@ Public Class Test
 End Class");
         }
 
-        [Fact]
-        public async Task AssignedToFieldAndNotValidated_BeforeHazardousUsages_Diagnostic()
+        [Theory]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task AssignedToFieldAndNotValidated_BeforeHazardousUsages_Diagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            var editorConfig = pointsToAnalysisKind.HasValue ?
+                $"dotnet_code_quality.CA1062.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                string.Empty;
+
+            var csCode = @"
 using System;
 
 public class C
@@ -692,14 +701,27 @@ public class Test
             throw new ArgumentNullException(nameof(c));
         }
     }
-}
-",
-            // Test0.cs(16,17): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(16, 17, "void Test.M1(C c)", "c"),
-            // Test0.cs(27,17): warning CA1062: In externally visible method 'void Test.M2(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetCSharpResultAt(27, 17, "void Test.M2(C c)", "c"));
+}";
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csCode,
+                AnalyzerConfigDocument = editorConfig
+            };
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            if (pointsToAnalysisKind == PointsToAnalysisKind.Complete)
+            {
+                csTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.cs(16,17): warning CA1062: In externally visible method 'void Test.M1(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetCSharpResultAt(16, 17, "void Test.M1(C c)", "c"),
+                    // Test0.cs(27,17): warning CA1062: In externally visible method 'void Test.M2(C c)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetCSharpResultAt(27, 17, "void Test.M2(C c)", "c")
+                });
+            }
+
+            await csTest.RunAsync();
+
+            var vbCode = @"
 Imports System
 
 Public Class C
@@ -725,11 +747,26 @@ Public Class Test
             Throw New ArgumentNullException(NameOf(c))
         End If
     End Sub
-End Class",
-            // Test0.vb(13,17): warning CA1062: In externally visible method 'Sub Test.M1(c As C)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetBasicResultAt(13, 17, "Sub Test.M1(c As C)", "c"),
-            // Test0.vb(22,17): warning CA1062: In externally visible method 'Sub Test.M2(c As C)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
-            GetBasicResultAt(22, 17, "Sub Test.M2(c As C)", "c"));
+End Class";
+
+            var vbTest = new VerifyVB.Test()
+            {
+                TestCode = vbCode,
+                AnalyzerConfigDocument = editorConfig
+            };
+
+            if (pointsToAnalysisKind == PointsToAnalysisKind.Complete)
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.vb(13,17): warning CA1062: In externally visible method 'Sub Test.M1(c As C)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetBasicResultAt(13, 17, "Sub Test.M1(c As C)", "c"),
+                    // Test0.vb(22,17): warning CA1062: In externally visible method 'Sub Test.M2(c As C)', validate parameter 'c' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.
+                    GetBasicResultAt(22, 17, "Sub Test.M2(c As C)", "c")
+                });
+            }
+
+            await vbTest.RunAsync();
         }
 
         [Fact]
@@ -3669,7 +3706,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -3916,6 +3952,7 @@ public class C2
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithSystemWeb,
                 TestState =
                 {
                     Sources =
@@ -4083,7 +4120,6 @@ public class Class1
     }
 }"
                     },
-                    AdditionalReferences = { AdditionalMetadataReferences.SystemWeb }
                 },
                 ExpectedDiagnostics =
                 {
@@ -4577,7 +4613,7 @@ public class C<T> where T : class
     {
         o = o ?? new object();
         AllocateSlow(s);
-        var x = s.Length;
+        var x = [|s|].Length;
     }
 
     private T AllocateSlow(string s)
@@ -5422,6 +5458,7 @@ public enum Kind
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithSystemWeb,
                 TestState =
                 {
                     Sources =
@@ -5464,7 +5501,7 @@ namespace MyComments
                             new
                             {
                                 id = id,
-                                returnUrl = httpContext.Request.Url
+                                returnUrl = [|httpContext|].Request.Url
                             });
                 }
 
@@ -5481,13 +5518,12 @@ namespace MyComments
                 }
             }
 
-            Output.Write(text);
+            [|Output|].Write(text);
         }
     }
 }
 "
                     },
-                    AdditionalReferences = { AdditionalMetadataReferences.SystemWeb }
                 }
             }.RunAsync();
         }
@@ -6079,6 +6115,134 @@ public class Class1
 }");
         }
 
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
+        public async Task IsPatternInConditionalExpression_03_NoDiagnostic(bool discardPattern)
+        {
+            var local = discardPattern ? "_" : "c";
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class Class1
+{{
+    public static void M1(object input)
+    {{
+        if (input is Class1 {local})
+        {{
+            input.ToString();
+        }}
+    }}
+}}");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
+        public async Task IsPatternInConditionalExpression_04_NoDiagnostic(bool discardPattern)
+        {
+            var local1 = discardPattern ? "_" : "c";
+            var local2 = discardPattern ? "_" : "d";
+
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class Class1
+{{
+    public static void M1(object input)
+    {{
+        if (input is Class1 {local1})
+        {{
+            input.ToString();
+        }}
+        else if (input is Class2 {local2})
+        {{
+            input.ToString();
+        }}
+    }}
+}}
+
+public class Class2 {{ }}");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
+        public async Task IsPatternInConditionalExpression_05_NoDiagnostic(bool discardPattern)
+        {
+            var local = discardPattern ? "_" : "c";
+            await VerifyCS.VerifyAnalyzerAsync($@"
+public class Class1
+{{
+    public static void M1(object input)
+    {{
+        if (!(input is Class1 {local}) || input.ToString() == """")
+        {{
+        }}
+    }}
+}}");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
+        public async Task RecursivePatternInConditionalExpression_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Class1
+{
+    public int X { get; }
+    public static void M1(object input)
+    {
+        if (input is Class1 { X: 0 })
+        {
+            input.ToString();
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3049, "https://github.com/dotnet/roslyn-analyzers/issues/3049")]
+        public async Task SwitchStatement_PatternMatchingNullCheck()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class Test
+{
+    public static string M(Test test)
+    {
+        switch (test)
+        {
+            case null:
+                throw new ArgumentNullException(nameof(test));
+            default:
+                return test.ToString();
+        }
+    }
+}");
+        }
+
+        [Fact, WorkItem(3049, "https://github.com/dotnet/roslyn-analyzers/issues/3049")]
+        public async Task SwitchExpression_PatternMatchingNullCheck()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+public class Test
+{
+    public static string M(Test test)
+    {
+        return test switch
+        {
+            null => throw new ArgumentNullException(nameof(test)),
+            _ => test.ToString()
+        };
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
@@ -6221,6 +6385,44 @@ End Module"
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);
             await vbTest.RunAsync();
+        }
+
+        [Fact, WorkItem(2919, "https://github.com/dotnet/roslyn-analyzers/issues/2919")]
+        public async Task Interprocedural_DelegateInvocation_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+namespace ReproCA1062
+{
+    public static class Repro
+    {
+        public static void Test(string foo)
+        {
+            NotNull(foo, nameof(foo));
+            int x = foo.Length; // no warning
+            Bar();
+            x = foo.Length; // CA1062 on foo
+        }
+
+        public static void Bar()
+        {
+            Action<int> a = x => { };
+            a(0);
+        }
+
+        public static void NotNull([ValidatedNotNull] object param, string paramName)
+        {
+            if (param == null)
+            {
+                throw new ArgumentNullException(paramName);
+            }
+        }
+    }
+
+    [System.AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+    public sealed class ValidatedNotNullAttribute : Attribute { }
+}");
         }
 
         [Fact, WorkItem(3437, "https://github.com/dotnet/roslyn-analyzers/issues/3437")]

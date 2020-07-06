@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var method = invocationOperation.TargetMethod;
 
                     if ((method.Name != "Enter" && method.Name != "TryEnter") ||
-                        invocationOperation.Arguments.Length == 0)
+                        invocationOperation.Arguments.IsEmpty)
                     {
                         return;
                     }

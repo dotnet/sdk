@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -148,6 +149,42 @@ End Class",
             }.RunAsync();
         }
 
+        [Fact]
+        public async Task CA1501_AlwaysExcludesErrorTypes()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { "public class MyUC : System.{|#0:NonExistentType|} {}", },
+                    ExpectedDiagnostics =
+                    {
+                        // /0/Test0.cs(1,28): error CS0234: The type or namespace name 'NonExistentType' does not exist in the namespace 'System' (are you missing an assembly reference?)
+                        DiagnosticResult.CompilerError("CS0234").WithLocation(0).WithArguments("NonExistentType", "System"),
+                    },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class MyUC
+    Inherits {|#0:System.NonExistentType|}
+End Class",
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        // /0/Test0.vb(3) : error BC30002: Type 'System.NonExistentType' is not defined.
+                        DiagnosticResult.CompilerError("BC30002").WithLocation(0).WithArguments("System.NonExistentType"),
+                    },
+                },
+            }.RunAsync();
+        }
+
         [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass*")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:MyCompany.MyProduct.MyFunction.SomeClass*")]
@@ -192,7 +229,7 @@ public class C2 : SomeClass2 {}"
                 },
             };
 
-            if (editorConfigText.Contains("T:SomeClass"))
+            if (editorConfigText.Contains("T:SomeClass", StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -266,7 +303,7 @@ End Class"
                 },
             };
 
-            if (editorConfigText.Contains("T:SomeClass"))
+            if (editorConfigText.Contains("T:SomeClass", StringComparison.Ordinal))
             {
                 vbnetTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -338,7 +375,7 @@ public class C1 : SomeClass {}
                 },
             };
 
-            if (!editorConfigText.Contains("N:MyCompany*"))
+            if (!editorConfigText.Contains("N:MyCompany*", StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 1, 1, "SomeClass"));
             }
@@ -389,7 +426,7 @@ End Class"
                 },
             };
 
-            if (!editorConfigText.Contains("N:MyCompany*"))
+            if (!editorConfigText.Contains("N:MyCompany*", StringComparison.Ordinal))
             {
                 vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 1, 1, "SomeClass"));
             }

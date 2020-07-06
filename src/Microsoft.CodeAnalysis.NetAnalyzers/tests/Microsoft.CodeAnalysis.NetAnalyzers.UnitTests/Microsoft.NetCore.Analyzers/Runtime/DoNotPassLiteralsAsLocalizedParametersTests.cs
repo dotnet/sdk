@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -1758,6 +1759,85 @@ public class Test
             }
 
             await csharpTest.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task TestPointsToAnalysisKind(PointsToAnalysisKind? pointsToAnalysisKind)
+        {
+            var editorConfig = pointsToAnalysisKind.HasValue ?
+                $"dotnet_code_quality.CA1303.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                string.Empty;
+
+            var csCode = @"
+using System.ComponentModel;
+
+public class C
+{
+    public void M([LocalizableAttribute(true)] string param)
+    {
+    }
+}
+
+public class Test
+{
+    private string str;
+    public void M1(C c)
+    {
+        str = ""a\na"";
+        c.M(str);
+    }
+}
+";
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csCode,
+                AnalyzerConfigDocument = editorConfig
+            };
+
+            if (pointsToAnalysisKind == PointsToAnalysisKind.Complete)
+            {
+                csTest.ExpectedDiagnostics.Add(
+                    // Test0.cs(17,13): warning CA1303: Method 'void Test.M1(C c)' passes a literal string as parameter 'param' of a call to 'void C.M(string param)'. Retrieve the following string(s) from a resource table instead: "a a".
+                    GetCSharpResultAt(17, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a a"));
+            }
+
+            await csTest.RunAsync();
+
+            var vbCode = @"
+Imports Microsoft.VisualBasic
+Imports System.ComponentModel
+
+Public Class C
+    Public Sub M(<LocalizableAttribute(True)> param As String)
+    End Sub
+End Class
+
+Public Class Test
+    Dim str As String
+    Public Sub M1(c As C)
+        str = ""a"" & vbCrLf & ""a""
+        c.M(str)
+    End Sub
+End Class
+";
+            var vbTest = new VerifyVB.Test()
+            {
+                TestCode = vbCode,
+                AnalyzerConfigDocument = editorConfig
+            };
+
+            if (pointsToAnalysisKind == PointsToAnalysisKind.Complete)
+            {
+                vbTest.ExpectedDiagnostics.Add(
+                    // Test0.vb(14,13): warning CA1303: Method 'Sub Test.M1(c As C)' passes a literal string as parameter 'param' of a call to 'Sub C.M(param As String)'. Retrieve the following string(s) from a resource table instead: "a a".
+                    GetBasicResultAt(14, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a a"));
+            }
+
+            await vbTest.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

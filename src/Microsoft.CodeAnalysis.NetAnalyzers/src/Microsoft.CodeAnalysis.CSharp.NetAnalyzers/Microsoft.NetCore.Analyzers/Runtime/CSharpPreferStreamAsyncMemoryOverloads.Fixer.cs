@@ -11,7 +11,7 @@ using Microsoft.NetCore.Analyzers.Runtime;
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
     [ExportCodeFixProvider(LanguageNames.CSharp)]
-    public sealed class PreferStreamAsyncMemoryOverloadsCSharpFixer : PreferStreamAsyncMemoryOverloadsFixer
+    public sealed class CSharpPreferStreamAsyncMemoryOverloadsFixer : PreferStreamAsyncMemoryOverloadsFixer
     {
         protected override IArgumentOperation? GetArgumentByPositionOrName(ImmutableArray<IArgumentOperation> args, int index, string name, out bool isNamed)
         {
