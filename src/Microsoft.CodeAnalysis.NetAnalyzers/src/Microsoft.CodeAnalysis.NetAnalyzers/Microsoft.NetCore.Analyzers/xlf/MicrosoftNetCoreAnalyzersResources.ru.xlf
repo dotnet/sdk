@@ -1682,21 +1682,6 @@
         <target state="translated">Проверка запросов SQL на уязвимости безопасности</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimePlatformCheckDescription">
-        <source>TODO</source>
-        <target state="new">TODO</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimePlatformCheckMessage">
-        <source>TODO Platform checks:'{0}'</source>
-        <target state="new">TODO Platform checks:'{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimePlatformCheckTitle">
-        <source>TODO</source>
-        <target state="new">TODO</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">Установите для параметра HttpOnly объекта HttpCookie значение true</target>

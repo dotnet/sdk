@@ -1682,21 +1682,6 @@
         <target state="translated">보안상 취약한 부분이 있는지 SQL 쿼리를 검토하십시오.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimePlatformCheckDescription">
-        <source>TODO</source>
-        <target state="new">TODO</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimePlatformCheckMessage">
-        <source>TODO Platform checks:'{0}'</source>
-        <target state="new">TODO Platform checks:'{0}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimePlatformCheckTitle">
-        <source>TODO</source>
-        <target state="new">TODO</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">HttpCookie에 대해 HttpOnly를 true로 설정</target>
