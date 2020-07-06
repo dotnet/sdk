@@ -7,12 +7,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Xunit;
 using System.Collections.Generic;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.InstallationScript.Tests
@@ -23,11 +21,14 @@ namespace Microsoft.DotNet.InstallationScript.Tests
         {
         }
 
-        [Fact]
-        public void WhenJsonFileIsPassedToInstallScripts()
+        [Theory]
+        [InlineData("InstallationScriptTests.json")]
+        [InlineData("InstallationScriptTestsWithMultipleSdkFields.json")]
+        [InlineData("InstallationScriptTestsWithVersionFieldInTheMiddle.json")]
+        public void WhenJsonFileIsPassedToInstallScripts(string filename)
         {
             var installationScriptTestsJsonFile = Path.Combine(_testAssetsManager.TestAssetsRoot,
-                "InstallationScriptTests", "InstallationScriptTests.json");
+                "InstallationScriptTests", filename);
 
             var args = new List<string> { "-dryrun", "-jsonfile", installationScriptTestsJsonFile };
 
@@ -40,7 +41,7 @@ namespace Microsoft.DotNet.InstallationScript.Tests
             commandResult.Should().NotHaveStdOutContaining("dryrun");
             commandResult.Should().NotHaveStdOutContaining("jsonfile");
             commandResult.Should().HaveStdOutContaining("Repeatable invocation:");
-            commandResult.Should().HaveStdOutContaining("1.0.0-beta.19463.3");
+            commandResult.Should().HaveStdOutContaining("\"1.0.0-beta.19463.3\"");
         }
 
         [Theory]

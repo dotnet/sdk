@@ -468,7 +468,6 @@ parse_jsonfile_for_version() {
     sdk_list=$(echo $sdk_section | awk -F"[{}]" '{print $2}')
     sdk_list=${sdk_list//[\" ]/}
     sdk_list=${sdk_list//,/$'\n'}
-    sdk_list="$(echo -e "${sdk_list}" | tr -d '[[:space:]]')"
 
     local version_info=""
     while read -r line; do
