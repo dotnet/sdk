@@ -62,8 +62,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                     GenerateCodeFix("CodeFixProvider1", "DiagnosticAnalyzerId"))
             };
 
-            var analyzersAndFixers = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
-            return ImmutableArray.Create(analyzersAndFixers[0].Analyzer);
+            var (analyzers, _) = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            return analyzers;
         }
 
         private IEnumerable<Project> GetProjects()

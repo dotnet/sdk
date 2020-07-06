@@ -212,6 +212,11 @@
         <target state="new">Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_fix_0_No_associated_code_fix_found">
+        <source>Unable to fix {0}. No associated code fix found.</source>
+        <target state="new">Unable to fix {0}. No associated code fix found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
         <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
         <target state="new">Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</target>

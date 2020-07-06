@@ -11,6 +11,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal partial class AnalyzerRunner : IAnalyzerRunner
     {
+        private bool _includeComplilerDiagnostics;
+
+        public AnalyzerRunner(bool includeCompilerDiagnostics)
+        {
+            _includeComplilerDiagnostics = includeCompilerDiagnostics;
+        }
+
         public Task RunCodeAnalysisAsync(
             CodeAnalysisResult result,
             DiagnosticAnalyzer analyzers,
@@ -36,14 +43,31 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return;
             }
 
-            var analyzerOptions = new CompilationWithAnalyzersOptions(
-                project.AnalyzerOptions,
-                onAnalyzerException: null,
-                concurrentAnalysis: true,
-                logAnalyzerExecutionTime: false,
-                reportSuppressedDiagnostics: false);
-            var analyzerCompilation = compilation.WithAnalyzers(analyzers, analyzerOptions);
-            var diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
+            // If are not running any analyzers and are not reporting compiler diagnostics, then there is
+            // nothing to report.
+            if (analyzers.IsEmpty && !_includeComplilerDiagnostics)
+            {
+                return;
+            }
+
+            ImmutableArray<Diagnostic> diagnostics;
+            if (analyzers.IsEmpty)
+            {
+                diagnostics = compilation.GetDiagnostics(cancellationToken);
+            }
+            else
+            {
+                var analyzerOptions = new CompilationWithAnalyzersOptions(
+                    project.AnalyzerOptions,
+                    onAnalyzerException: null,
+                    concurrentAnalysis: true,
+                    logAnalyzerExecutionTime: false,
+                    reportSuppressedDiagnostics: false);
+                var analyzerCompilation = compilation.WithAnalyzers(analyzers, analyzerOptions);
+                diagnostics = _includeComplilerDiagnostics
+                    ? await analyzerCompilation.GetAllDiagnosticsAsync(cancellationToken).ConfigureAwait(false)
+                    : await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
+            }
 
             // filter diagnostics
             foreach (var diagnostic in diagnostics)

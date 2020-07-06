@@ -12,7 +12,12 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal static class AnalyzerFinderHelpers
     {
-        public static ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> LoadAnalyzersAndFixers(IEnumerable<Assembly> assemblies)
+        public static DiagnosticAnalyzer? GetAnalyzer(string name)
+        {
+            return null;
+        }
+
+        public static (ImmutableArray<DiagnosticAnalyzer> Analyzers, ImmutableArray<CodeFixProvider> Fixers) LoadAnalyzersAndFixers(IEnumerable<Assembly> assemblies)
         {
             var types = assemblies
                 .SelectMany(assembly => assembly.GetTypes()
@@ -32,21 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 .OfType<DiagnosticAnalyzer>()
                 .ToImmutableArray();
 
-            var builder = ImmutableArray.CreateBuilder<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)>();
-            foreach (var diagnosticAnalyzer in diagnosticAnalyzers)
-            {
-                var diagnosticIds = diagnosticAnalyzer.SupportedDiagnostics.Select(diagnostic => diagnostic.Id).ToImmutableHashSet();
-                var codeFixProvider = codeFixProviders.FirstOrDefault(codeFixProvider => codeFixProvider.FixableDiagnosticIds.Any(id => diagnosticIds.Contains(id)));
-
-                if (codeFixProvider is null)
-                {
-                    continue;
-                }
-
-                builder.Add((diagnosticAnalyzer, codeFixProvider));
-            }
-
-            return builder.ToImmutableArray();
+            return (diagnosticAnalyzers, codeFixProviders);
         }
     }
 }

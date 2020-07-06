@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
     {
         DiagnosticSeverity GetSeverity(FormatOptions formatOptions);
 
-        ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> GetAnalyzersAndFixers(
+        (ImmutableArray<DiagnosticAnalyzer> Analyzers, ImmutableArray<CodeFixProvider> Fixers) GetAnalyzersAndFixers(
             Solution solution,
             FormatOptions formatOptions,
             ILogger logger);

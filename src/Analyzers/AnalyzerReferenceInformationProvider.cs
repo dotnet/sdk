@@ -12,14 +12,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal class AnalyzerReferenceInformationProvider : IAnalyzerInformationProvider
     {
-        public ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)> GetAnalyzersAndFixers(
+        public (ImmutableArray<DiagnosticAnalyzer> Analyzers, ImmutableArray<CodeFixProvider> Fixers) GetAnalyzersAndFixers(
             Solution solution,
             FormatOptions formatOptions,
             ILogger logger)
         {
             if (!formatOptions.FixAnalyzers)
             {
-                return ImmutableArray<(DiagnosticAnalyzer Analyzer, CodeFixProvider? Fixer)>.Empty;
+                return (ImmutableArray<DiagnosticAnalyzer>.Empty, ImmutableArray<CodeFixProvider>.Empty);
             }
 
             var assemblies = solution.Projects
