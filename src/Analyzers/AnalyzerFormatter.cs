@@ -16,6 +16,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal class AnalyzerFormatter : ICodeFormatter
     {
+        private static readonly ImmutableArray<string> _supportedLanguages = ImmutableArray.Create(LanguageNames.CSharp, LanguageNames.VisualBasic);
+
         private readonly string _name;
         private readonly IAnalyzerInformationProvider _informationProvider;
         private readonly IAnalyzerRunner _runner;
@@ -42,6 +44,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             CancellationToken cancellationToken)
         {
             var (analyzers, fixers) = _informationProvider.GetAnalyzersAndFixers(solution, formatOptions, logger);
+            if (analyzers.IsEmpty && fixers.IsEmpty)
+            {
+                return solution;
+            }
 
             var analysisStopwatch = Stopwatch.StartNew();
             logger.LogTrace(Resources.Running_0_analysis, _name);
@@ -148,13 +154,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
 
             // Build maps between diagnostic id and the associated analyzers and codefixes
-            var analyzersById = CreateAnalyzerMap(reportedDiagnostics, allAnalyzers);
+            var analyzersByIdAndLanguage = CreateAnalyzerMap(reportedDiagnostics, allAnalyzers);
             var fixersById = CreateFixerMap(reportedDiagnostics, allCodefixes);
 
             // We need to run each codefix iteratively so ensure that all diagnostics are found and fixed.
             foreach (var diagnosticId in reportedDiagnostics)
             {
-                var analyzers = analyzersById[diagnosticId];
+                var analyzersByLanguage = analyzersByIdAndLanguage[diagnosticId];
                 var codefixes = fixersById[diagnosticId];
 
                 // If there is no codefix, there is no reason to run analysis again.
@@ -173,6 +179,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         continue;
                     }
 
+                    var analyzers = analyzersByLanguage[project.Language];
                     await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, logger, cancellationToken).ConfigureAwait(false);
                 }
 
@@ -193,13 +200,18 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             return solution;
 
-            static ImmutableDictionary<string, ImmutableArray<DiagnosticAnalyzer>> CreateAnalyzerMap(
+            static ImmutableDictionary<string, ImmutableDictionary<string, ImmutableArray<DiagnosticAnalyzer>>> CreateAnalyzerMap(
                 ImmutableArray<string> diagnosticIds,
                 ImmutableArray<DiagnosticAnalyzer> analyzers)
             {
                 return diagnosticIds.ToImmutableDictionary(
                     id => id,
-                    id => analyzers.Where(analyzer => analyzer.SupportedDiagnostics.Any(diagnostic => diagnostic.Id == id)).ToImmutableArray());
+                    id => _supportedLanguages.ToImmutableDictionary(
+                        language => language,
+                        language => analyzers
+                            .Where(analyzer => DoesAnalyzerSupportLanguage(analyzer, language))
+                            .Where(analyzer => analyzer.SupportedDiagnostics.Any(diagnostic => diagnostic.Id == id))
+                            .ToImmutableArray()));
             }
 
             static ImmutableDictionary<string, ImmutableArray<CodeFixProvider>> CreateFixerMap(
@@ -226,7 +238,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             {
                 var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
 
-                foreach (var analyzer in allAnalyzers)
+                // Filter analyzers by project's language
+                var filteredAnalyzer = allAnalyzers.Where(analyzer => DoesAnalyzerSupportLanguage(analyzer, project.Language));
+                foreach (var analyzer in filteredAnalyzer)
                 {
                     // Always run naming style analyzers because we cannot determine potential severity.
                     // The reported diagnostics will be filtered by severity when they are run.
@@ -247,6 +261,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
 
             return projectAnalyzers.ToImmutableDictionary();
+        }
+
+        private static bool DoesAnalyzerSupportLanguage(DiagnosticAnalyzer analyzer, string language)
+        {
+            return analyzer.GetType()
+                .GetCustomAttributes(typeof(DiagnosticAnalyzerAttribute), true)
+                .OfType<DiagnosticAnalyzerAttribute>()
+                .Any(attribute => attribute.Languages.Contains(language));
         }
     }
 }
