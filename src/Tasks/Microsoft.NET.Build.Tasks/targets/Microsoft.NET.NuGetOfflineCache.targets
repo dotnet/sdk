@@ -24,6 +24,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(DisableImplicitLibraryPacksFolder)' != 'true' ">
-    <RestoreAdditionalProjectSources Condition="Exists('$(_WorkloadLibraryPacksFolder)')">$(RestoreAdditionalProjectFallbackFolders);$(_WorkloadLibraryPacksFolder)</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources Condition="Exists('$(_WorkloadLibraryPacksFolder)')">$(RestoreAdditionalProjectSources);$(_WorkloadLibraryPacksFolder)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 </Project>
