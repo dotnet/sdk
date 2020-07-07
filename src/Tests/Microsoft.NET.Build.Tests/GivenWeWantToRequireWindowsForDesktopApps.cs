@@ -12,6 +12,7 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
+using System.Linq;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -30,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
 
             var asset = CreateWindowsDesktopSdkTestAsset(ProjectName, uiFrameworkProperty);
 
-            var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+            var command = new BuildCommand(asset);
 
             command
                 .Execute()
@@ -47,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
 
             var asset = CreateWindowsDesktopSdkTestAsset(ProjectName, uiFrameworkProperty);
 
-            var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+            var command = new BuildCommand(asset);
 
             command
                 .Execute()
@@ -67,7 +68,7 @@ namespace Microsoft.NET.Build.Tests
 
             var asset = CreateWindowsDesktopReferenceTestAsset(ProjectName, desktopFramework);
 
-            var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+            var command = new BuildCommand(asset);
 
             command
                 .Execute()
@@ -85,7 +86,7 @@ namespace Microsoft.NET.Build.Tests
 
             var asset = CreateWindowsDesktopReferenceTestAsset(ProjectName, desktopFramework);
 
-            var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+            var command = new BuildCommand(asset);
 
             command
                 .Execute()
@@ -112,7 +113,7 @@ namespace Microsoft.NET.Build.Tests
 
             var asset = _testAssetsManager.CreateTestProject(testProject);
 
-            var command = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+            var command = new BuildCommand(asset);
 
             command
                 .Execute()
@@ -186,6 +187,36 @@ namespace Microsoft.NET.Build.Tests
             testProject.FrameworkReferences.Add(desktopFramework);
 
             return _testAssetsManager.CreateTestProject(testProject);
+        }
+
+        [Theory]
+        [InlineData("net5.0", "TargetPlatformIdentifier", "Windows", "WinExe")]
+        [InlineData("netcoreapp3.1", "UseWindowsForms", "true", "WinExe")]
+        [InlineData("netcoreapp3.1", "UseWPF", "true", "WinExe")]
+        [InlineData("netcoreapp3.1", "UseWPF", "false", "Exe")]
+        public void It_infers_WinExe_output_type(string targetFramework, string propName, string propValue, string expectedOutputType)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "WinExeOutput",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties[propName] = propValue;
+            testProject.AdditionalProperties["TargetPlatformVersion"] = "7.0"; // Ensure TargetPlatformVersion is set so we can build with a TargetPlatformIdentifier
+
+            var asset = _testAssetsManager.CreateTestProject(testProject);
+
+            var getValuesCommand = new GetValuesCommand(asset, "OutputType");
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var values = getValuesCommand.GetValues();
+            values.Count.Should().Be(1);
+            values.First().Should().Be(expectedOutputType);
         }
     }
 }

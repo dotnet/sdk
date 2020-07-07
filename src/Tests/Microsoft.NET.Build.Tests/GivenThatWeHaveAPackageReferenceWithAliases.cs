@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("16.7.0")]
         public void CanBuildProjectWithPackageReferencesWithConflictingTypes()
         {
-            var targetFramework = "netcoreapp5.0";
+            var targetFramework = "net5.0";
             var packageReferences = GetPackageReferencesWithConflictingTypes(targetFramework, "A", "B");
 
             TestProject testProject = new TestProject()
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ConflictingClassLibUsage;
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
                 .Should()
                 .Pass();
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("16.7.0")]
         public void CanBuildProjectWithMultiplePackageReferencesWithAliases()
         {
-            var targetFramework = "netcoreapp5.0";
+            var targetFramework = "net5.0";
 
             var packageReferenceA = GetPackageReference(targetFramework, "A", ClassLibClassA);
             var packageReferenceB = GetPackageReference(targetFramework, "B", ClassLibClassB);
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ClassLibAandBUsage;
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
                 .Should()
                 .Pass();
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionFact("16.7.0")]
         public void CanBuildProjectWithAPackageReferenceWithMultipleAliases()
         {
-            var targetFramework = "netcoreapp5.0";
+            var targetFramework = "net5.0";
 
             var packageReferenceA = GetPackageReference(targetFramework, "A", ClassLibMultipleClasses);
 
@@ -135,7 +135,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ClassLibAandBUsage;
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()
                 .Should()
                 .Pass();

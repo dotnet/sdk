@@ -346,6 +346,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Diagnostics.Tracing.EventSource.IsSupported"
+                                    Condition="'$(EventSourceSupport)' != ''"
+                                    Value="$(EventSourceSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.GC.Concurrent"
                                     Condition="'$(ConcurrentGarbageCollection)' != ''"
                                     Value="$(ConcurrentGarbageCollection)" />
@@ -357,6 +362,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.GC.RetainVM"
                                     Condition="'$(RetainVMGarbageCollection)' != ''"
                                     Value="$(RetainVMGarbageCollection)" />
+
+    <RuntimeHostConfigurationOption Include="System.Resources.UseSystemResourceKeys"
+                                    Condition="'$(UseSystemResourceKeys)' != ''"
+                                    Value="$(UseSystemResourceKeys)"
+                                    Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation"
                                     Condition="'$(TieredCompilation)' != ''"
@@ -370,6 +380,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(TieredCompilationQuickJitForLoops)' != ''"
                                     Value="$(TieredCompilationQuickJitForLoops)" />
 
+    <RuntimeHostConfigurationOption Include="System.Text.Encoding.EnableUnsafeUTF7Encoding"
+                                    Condition="'$(EnableUnsafeUTF7Encoding)' != ''"
+                                    Value="$(EnableUnsafeUTF7Encoding)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MinThreads"
                                     Condition="'$(ThreadPoolMinThreads)' != ''"
                                     Value="$(ThreadPoolMinThreads)" />
@@ -380,7 +395,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant"
                                     Condition="'$(InvariantGlobalization)' != ''"
-                                    Value="$(InvariantGlobalization)" />
+                                    Value="$(InvariantGlobalization)"
+                                    Trim="true" />
+
   </ItemGroup>
 
   <!--
@@ -760,9 +777,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </When>
 
     <When Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(_IsExecutable)' == 'true'">
-      <PropertyGroup>
+      <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
         <RunCommand Condition="'$(RunCommand)' == ''">$(TargetPath)</RunCommand>
         <RunArguments Condition="'$(RunArguments)' == ''">$(StartArguments)</RunArguments>
+      </PropertyGroup>
+      <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+        <RunCommand Condition="'$(RunCommand)' == ''">mono</RunCommand>
+        <RunArguments Condition="'$(RunArguments)' == ''">&quot;$(TargetPath)&quot; $(StartArguments)</RunArguments>
       </PropertyGroup>
     </When>
   </Choose>
@@ -891,7 +912,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   ============================================================
   -->
   <Target Name="_BlockWinMDsOnUnsupportedTFMs"
-          BeforeTargets="CoreCompile"
+          AfterTargets="PreBuildEvent"
           DependsOnTargets="ResolveReferences"
           Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))">
     <NETSdkError Condition="'%(ReferencePath.Extension)' == '.winmd'"
@@ -955,4 +976,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.VisualBasic.targets" Condition="'$(Language)' == 'VB'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.FSharp.targets" Condition="'$(Language)' == 'F#'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ILLink.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Analyzers.targets" Condition="'$(Language)' == 'C#' or '$(Language)' == 'VB'" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Windows.targets" Condition="'$(TargetPlatformIdentifier)' == 'Windows'" />
 </Project>
