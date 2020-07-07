@@ -6751,5 +6751,34 @@ public class Class1
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3685")]
+        [InlineData("IsNullOrWhiteSpace")]
+        [InlineData("IsNullOrEmpty")]
+        public async Task StringNullCheckApis(string apiName)
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = $@"
+using System;
+using System.IO;
+
+public class Class1
+{{
+    public void M1(object value)
+    {{
+        if (value is string stringValue)
+        {{
+            if (string.{apiName}(stringValue))
+            {{
+            }}
+        }}
+    }}
+}}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }
