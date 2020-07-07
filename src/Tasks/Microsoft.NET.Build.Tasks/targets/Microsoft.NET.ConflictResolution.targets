@@ -125,13 +125,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <CheckForDuplicateItemMetadata
       Items="@(ResolvedFileToPublish)"
-      MetadataName="RelativePath"
-      ContinueOnError="false">
+      MetadataName="RelativePath">
       <Output TaskParameter="DuplicatesExist" PropertyName="_ResolvedFileToPublishContainsDuplicates" />
+      <Output TaskParameter="DuplicateItems" ItemName="_ResolvedFileToPublishDuplicatedItems" />
     </CheckForDuplicateItemMetadata>
 
     <NETSdkError Condition="'$(_ResolvedFileToPublishContainsDuplicates)' == 'true'"
-             ResourceName="DuplicatePublishOutputFiles"/>
+                 ResourceName="DuplicatePublishOutputFiles"
+                 FormatArguments="@(_ResolvedFileToPublishDuplicatedItems, ', ')" />
 
   </Target>
 

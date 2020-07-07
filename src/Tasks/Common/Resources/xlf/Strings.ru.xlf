@@ -258,8 +258,8 @@
         <note>{StrBegin="NETSDK1015: "}</note>
       </trans-unit>
       <trans-unit id="DuplicatePublishOutputFiles">
-        <source>NETSDK1132: Found multiple publish output files with the same relative path.</source>
-        <target state="new">NETSDK1132: Found multiple publish output files with the same relative path.</target>
+        <source>NETSDK1132: Found multiple publish output files with the same relative path: {0}.</source>
+        <target state="new">NETSDK1132: Found multiple publish output files with the same relative path: {0}.</target>
         <note>{StrBegin="NETSDK1132: "}</note>
       </trans-unit>
       <trans-unit id="DuplicateRuntimePackAsset">

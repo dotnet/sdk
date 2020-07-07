@@ -22,15 +22,15 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            var groupings = Items.GroupBy(item => item.GetMetadata(MetadataName));
-            DuplicatesExist = groupings.Where(g => g.Count() > 1).Any();
-            DuplicatedMetadata = groupings
+            var groupings = Items.GroupBy(item => item.GetMetadata(MetadataName))
                 .Where(g => g.Count() > 1)
+                .ToList();
+            DuplicatesExist = groupings.Any();
+            DuplicatedMetadata = groupings
                 .Select(g=> g.Key)
                 .ToArray();
             DuplicateItems = groupings
-                .Where(g => g.Count() > 1)
-                .SelectMany(g => g.ToArray())
+                .SelectMany(g => g)
                 .ToArray();
         }
     }

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -21,13 +20,16 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Fact]
-        public void It_publishes_with_package_reference()
+        public void It_solves_conflicts_between_package_and_implicit_references()
         {
+            // Test case from https://github.com/dotnet/sdk/issues/3904.
+            // This dll is included in both the explicit package reference and Microsoft.NET.Build.Extensions. We prevent a double write in 
+            // _ComputeResolvedCopyLocalPublishAssets by removing dlls duplicated between package references and implicitly expanded .NET references.
             var reference = "System.Runtime.InteropServices.RuntimeInformation";
             var targetFramework = "net461";
             var testProject = new TestProject()
             {
-                Name = "ConflitingFilePublish",
+                Name = "ConflictingFilePublish",
                 IsSdkProject = true,
                 TargetFrameworks = targetFramework
             };
@@ -53,7 +55,7 @@ namespace Microsoft.NET.Publish.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void It_publishes_single_file(bool shouldPublishSingleFile)
+        public void It_has_consistent_behavior_when_publishing_single_file(bool shouldPublishSingleFile)
         {
             var targetFramework = "netcoreapp3.1";
             var testProject = new TestProject()
@@ -64,6 +66,8 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x64"
             };
+            // The Microsoft.TestPlatform.CLI package contains System.Runtime.CompilerServices.Unsafe.dll as content, which could cause a double write with the same dll originating from the 
+            // runtime package. Without _HandleFileConflictsForPublish this would be caught when by the bundler when publishing single file, but a normal publish would succeed with double writes.
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.TestPlatform.CLI", "16.5.0"));
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);

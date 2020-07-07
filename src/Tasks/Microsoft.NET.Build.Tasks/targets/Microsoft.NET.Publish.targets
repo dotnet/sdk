@@ -662,13 +662,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                             _FilterSatelliteResourcesForPublish">
 
     <ItemGroup>
-      
       <_AdditionalResolvedCopyLocalPublishAssets Include="@(ReferenceCopyLocalPaths)"
                                        Exclude="@(_ResolvedCopyLocalBuildAssets);@(RuntimePackAsset)"
                                        Condition="'$(PublishReferencesDocumentationFiles)' == 'true' or '%(ReferenceCopyLocalPaths.Extension)' != '.xml'">
         <DestinationSubPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</DestinationSubPath>
       </_AdditionalResolvedCopyLocalPublishAssets>
-      
     </ItemGroup>
 
     <CheckForDuplicateItemMetadata
