@@ -378,8 +378,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
-        <source>Abstract types should not have constructors</source>
-        <target state="translated">抽象型はコンストラクターを含むことはできません</target>
+        <source>Abstract types should not have public constructors</source>
+        <target state="needs-review-translation">抽象型はコンストラクターを含むことはできません</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -388,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
-        <source>Abstract type {0} should not have constructors</source>
-        <target state="translated">抽象型 {0} はコンストラクターを含むことはできません</target>
+        <source>Abstract type '{0}' should not have public constructors</source>
+        <target state="needs-review-translation">抽象型 {0} はコンストラクターを含むことはできません</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">

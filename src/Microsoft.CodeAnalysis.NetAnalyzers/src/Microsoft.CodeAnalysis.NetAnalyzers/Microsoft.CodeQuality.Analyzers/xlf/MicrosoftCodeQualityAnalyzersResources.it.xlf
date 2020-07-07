@@ -378,8 +378,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
-        <source>Abstract types should not have constructors</source>
-        <target state="translated">I tipi astratti non devono includere costruttori</target>
+        <source>Abstract types should not have public constructors</source>
+        <target state="needs-review-translation">I tipi astratti non devono includere costruttori</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -388,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
-        <source>Abstract type {0} should not have constructors</source>
-        <target state="translated">Il tipo astratto {0} non deve avere costruttori</target>
+        <source>Abstract type '{0}' should not have public constructors</source>
+        <target state="needs-review-translation">Il tipo astratto {0} non deve avere costruttori</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">

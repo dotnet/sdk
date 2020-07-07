@@ -378,8 +378,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
-        <source>Abstract types should not have constructors</source>
-        <target state="translated">抽象类型不应具有构造函数</target>
+        <source>Abstract types should not have public constructors</source>
+        <target state="needs-review-translation">抽象类型不应具有构造函数</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -388,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
-        <source>Abstract type {0} should not have constructors</source>
-        <target state="translated">抽象类型 {0} 不应具有构造函数</target>
+        <source>Abstract type '{0}' should not have public constructors</source>
+        <target state="needs-review-translation">抽象类型 {0} 不应具有构造函数</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
