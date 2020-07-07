@@ -49,7 +49,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isDataflowRule: true,
                                                                              isEnabledByDefaultInFxCopAnalyzers: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AlwaysTrueFalseOrNullRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AlwaysTrueFalseOrNullRule, NeverNullRule);
 
         public override void Initialize(AnalysisContext context)
         {
