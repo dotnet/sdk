@@ -6751,5 +6751,59 @@ public class Class1
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3685")]
+        public async Task StringIsNullOrWhiteSpace_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.IO;
+
+public class Class1
+{
+    public void M1(object value)
+    {
+        if (value is string stringValue)
+        {
+            if (string.IsNullOrWhiteSpace(stringValue))
+            {
+            }
+        }
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3685")]
+        public async Task StringIsNullOrEmpty_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.IO;
+
+public class Class1
+{
+    public void M1(object value)
+    {
+        if (value is string stringValue)
+        {
+            if (string.IsNullOrEmpty(stringValue))
+            {
+            }
+        }
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }
