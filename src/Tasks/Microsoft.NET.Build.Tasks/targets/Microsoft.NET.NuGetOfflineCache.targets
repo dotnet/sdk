@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_NugetFallbackFolder>$(MSBuildThisFileDirectory)..\..\..\..\NuGetFallbackFolder</_NugetFallbackFolder>
     <_IsNETCore1x Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' &lt; '2.0' ">true</_IsNETCore1x>
 
-    <_WorkloadLibraryPacksFolder>$(MSBuildThisFileDirectory)..\..\..\..\..\library-packs</_WorkloadLibraryPacksFolder>
+    <_WorkloadLibraryPacksFolder Condition="'$(_WorkloadLibraryPacksFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(NetCoreRoot)'))library-packs</_WorkloadLibraryPacksFolder>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(DisableImplicitNuGetFallbackFolder)' != 'true' and Exists($(_NugetFallbackFolder)) ">
