@@ -378,8 +378,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
-        <source>Abstract types should not have constructors</source>
-        <target state="translated">Soyut türlerin oluşturucuları olmamalıdır</target>
+        <source>Abstract types should not have public constructors</source>
+        <target state="needs-review-translation">Soyut türlerin oluşturucuları olmamalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -388,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
-        <source>Abstract type {0} should not have constructors</source>
-        <target state="translated">{0} soyut türünün oluşturucuları olmamalıdır</target>
+        <source>Abstract type '{0}' should not have public constructors</source>
+        <target state="needs-review-translation">{0} soyut türünün oluşturucuları olmamalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
