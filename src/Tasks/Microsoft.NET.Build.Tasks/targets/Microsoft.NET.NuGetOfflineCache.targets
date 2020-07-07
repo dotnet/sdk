@@ -23,7 +23,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RestoreAdditionalProjectFallbackFoldersExcludes Condition=" '$(_IsNETCore1x)' == 'true' ">$(RestoreAdditionalProjectFallbackFoldersExcludes);$(_NugetFallbackFolder)</RestoreAdditionalProjectFallbackFoldersExcludes>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(DisableImplicitLibraryPacksFolder)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '5.0')) ">
+  <PropertyGroup Condition=" '$(DisableImplicitLibraryPacksFolder)' != 'true' ">
     <RestoreAdditionalProjectSources Condition="Exists('$(_WorkloadLibraryPacksFolder)')">$(RestoreAdditionalProjectFallbackFolders);$(_WorkloadLibraryPacksFolder)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 </Project>
