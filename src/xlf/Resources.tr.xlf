@@ -1,241 +1,256 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" original="../Resources.resx" target-language="tr">
+  <file datatype="xml" source-language="en" target-language="tr">
     <body>
       <trans-unit id="A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting">
         <source>A list of relative file or folder paths to exclude from formatting.</source>
-        <note />
         <target state="translated">Biçimlendirmeden hariç tutulacak göreli dosya veya klasör yollarının listesi.</target>
+        <note />
       </trans-unit>
       <trans-unit id="A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty">
         <source>A list of relative file or folder paths to include in formatting. All files are formatted if empty.</source>
-        <note />
         <target state="translated">Biçimlendirmeye dahil edilecek göreli dosya veya klasör yollarının listesi. Boşsa, tüm dosyalar biçimlendirilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="A_path_to_a_solution_file_a_project_file_or_a_folder_containing_a_solution_or_project_file_If_a_path_is_not_specified_then_the_current_directory_is_used">
+        <source>A path to a solution file, a project file, or a folder containing a solution or project file. If a path is not specified then the current directory is used.</source>
+        <target state="translated">Çözüm dosyasının, proje dosyasının veya çözüm ya da proje dosyasını içeren klasörün yolu. Yol belirtilmezse geçerli dizin kullanılır.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Accepts_a_file_path_which_if_provided_will_produce_a_format_report_json_file_in_the_given_directory">
         <source>Accepts a file path, which if provided, will produce a json report in the given directory.</source>
-        <note />
         <target state="translated">Sağlanırsa, verilen dizinde json raporu oluşturacak bir dosya yolunu kabul eder.</target>
-      </trans-unit>
-      <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_option">
-        <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the --workspace option.</source>
         <note />
-        <target state="translated">Hem bir MSBuild proje dosyası ve çözüm dosyası '{0}' içinde bulundu. Hangi--çalışma alanı seçeneği ile kullanmak için belirtin.</target>
       </trans-unit>
-      <trans-unit id="Cannot_specify_both_folder_and_workspace_options">
-        <source>Cannot specify both folder and workspace options.</source>
+      <trans-unit id="Analysis_complete_in_0ms.">
+        <source>Analysis complete in {0}ms.</source>
+        <target state="translated">Analiz {0} ms içinde tamamlandı.</target>
         <note />
-        <target state="translated">Hem klasör hem de çalışma alanı seçenekleri belirtilemez.</target>
       </trans-unit>
-      <trans-unit id="Cannot_specify_both_project_argument_and_folder_options">
-        <source>Cannot specify both project argument and folder options.</source>
+      <trans-unit id="Analyzer_Reference">
+        <source>Analyzer Reference</source>
+        <target state="translated">Çözümleyici Başvurusu</target>
         <note />
-        <target state="translated">Hem proje bağımsız değişkeni hem de klasör seçenekleri belirtilemez.</target>
       </trans-unit>
-      <trans-unit id="Cannot_specify_both_project_argument_and_workspace_option">
-        <source>Cannot specify both project argument and workspace option.</source>
+      <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument">
+        <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; agrument.</source>
+        <target state="translated">'{0}' içinde hem MSBuild proje dosyası hem de çözüm dosyası bulundu. Hangisinin &lt;çalışma alanı&gt; bağımsız değişkeni ile kullanılacağını belirtin.</target>
         <note />
-        <target state="translated">Hem proje bağımsız değişkeni hem de çalışma alanı seçeneği belirtilemez.</target>
+      </trans-unit>
+      <trans-unit id="Code_Style">
+        <source>Code Style</source>
+        <target state="translated">Kod Stili</target>
+        <note />
       </trans-unit>
       <trans-unit id="Complete_in_0_ms">
         <source>Complete in {0}ms.</source>
-        <note />
         <target state="translated">{0} ms içinde tamamlayın.</target>
-      </trans-unit>
-      <trans-unit id="Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_option">
-        <source>Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the --workspace option.</source>
         <note />
-        <target state="translated">Bir MSBuild proje dosyası veya çözüm dosyası '{0}' içinde bulunamadı. Hangi--çalışma alanı seçeneği ile kullanmak için belirtin.</target>
+      </trans-unit>
+      <trans-unit id="Could_not_find_a_MSBuild_project_or_solution_file_in_0_Specify_which_to_use_with_the_workspace_argument">
+        <source>Could not find a MSBuild project file or solution file in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
+        <target state="translated">'{0}' içinde MSBuild proje dosyası veya çözüm dosyası bulunamadı. Hangisinin &lt;çalışma alanı&gt; bağımsız değişkeni ile kullanılacağını belirtin.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects">
         <source>Could not format '{0}'. Format currently supports only C# and Visual Basic projects.</source>
-        <note />
         <target state="translated">'{0}' biçiminde değil. Biçimi şu anda yalnızca C# ve Visual Basic projeleri desteklemektedir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Determining_diagnostics">
+        <source>Determining diagnostics...</source>
+        <target state="translated">Tanılama belirleniyor...</target>
+        <note />
       </trans-unit>
       <trans-unit id="Determining_formattable_files">
         <source>Determining formattable files.</source>
-        <note />
         <target state="translated">Biçimlendirilebilir dosyalar belirleniyor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Failed_to_apply_code_fix_0_for_1_2">
+        <source>Failed to apply code fix {0} for {1}: {2}</source>
+        <target state="translated">{1} için {0} kod düzeltmesi uygulanamadı: {2}</target>
+        <note />
       </trans-unit>
       <trans-unit id="Failed_to_save_formatting_changes">
         <source>Failed to save formatting changes.</source>
-        <note />
         <target state="translated">Biçimlendirme değişiklikleri kaydedilemedi.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Fix_end_of_line_marker">
         <source>Fix end of line marker.</source>
-        <note />
         <target state="translated">Satır sonu işaretçisini düzeltin.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Fix_file_encoding">
         <source>Fix file encoding.</source>
-        <note />
         <target state="translated">Dosya kodlamasını düzeltin.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Fix_final_newline">
         <source>Fix final newline.</source>
-        <note />
         <target state="translated">Son yeni satırı düzeltin.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Fix_imports_ordering">
         <source>Fix imports ordering.</source>
-        <note />
         <target state="translated">İçeri aktarma sıralamasını düzeltin.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Fix_whitespace_formatting">
         <source>Fix whitespace formatting.</source>
-        <note />
         <target state="translated">Boşluk biçimlendirmesini düzeltin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Fixing_diagnostics">
+        <source>Fixing diagnostics...</source>
+        <target state="translated">Tanılama düzeltiliyor...</target>
+        <note />
       </trans-unit>
       <trans-unit id="Format_complete_in_0_ms">
         <source>Format complete in {0}ms.</source>
-        <note />
         <target state="translated">Biçimlendirme {0} ms içinde tamamlandı.</target>
-      </trans-unit>
-      <trans-unit id="Format_files_but_do_not_save_changes_to_disk">
-        <source>Format files, but do not save changes to disk.</source>
         <note />
-        <target state="translated">Dosyaları biçimlendir, ancak değişiklikleri diske kaydetme.</target>
       </trans-unit>
       <trans-unit id="Formats_files_without_saving_changes_to_disk_Terminates_with_a_non_zero_exit_code_if_any_files_were_formatted">
         <source>Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.</source>
-        <note />
         <target state="translated">Değişiklikleri diske kaydetmeden dosyaları biçimlendirir. Herhangi bir dosya biçimlendirildiyse sıfır olmayan bir çıkış koduyla sonlandırılır.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Formatted_0_of_1_files">
         <source>Formatted {0} of {1} files.</source>
-        <note />
         <target state="translated">{1} dosya içinden {0} dosya biçimlendirildi.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Formatting_code_file_0">
         <source>Formatting code file '{0}'.</source>
-        <note />
         <target state="translated">Biçimlendirme kod dosyası '{0}'.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Formatting_code_files_in_workspace_0">
         <source>Formatting code files in workspace '{0}'.</source>
-        <note />
         <target state="translated">Çalışma alanı '{0}' kod dosyalarında biçimlendirme.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Include_generated_code_files_in_formatting_operations">
         <source>Include generated code files in formatting operations.</source>
-        <note />
         <target state="translated">Biçimlendirme işlemlerinde oluşturulan kod dosyalarını ekleyin.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Loading_workspace">
         <source>Loading workspace.</source>
-        <note />
         <target state="translated">Çalışma alanı yükleniyor.</target>
-      </trans-unit>
-      <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_option">
-        <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --workspace option.</source>
         <note />
-        <target state="translated">Birden fazla MSBuild proje dosyası '{0}' içinde bulundu. Hangi--çalışma alanı seçeneği ile kullanmak için belirtin.</target>
       </trans-unit>
-      <trans-unit id="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_option">
-        <source>Multiple MSBuild solution files found in '{0}'. Specify which to use with the --workspace option.</source>
+      <trans-unit id="Multiple_MSBuild_project_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
+        <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
+        <target state="translated">'{0}' içinde birden fazla MSBuild proje dosyası bulundu. Hangisinin &lt;çalışma alanı&gt; bağımsız değişkeni ile kullanılacağını belirtin.</target>
         <note />
-        <target state="translated">Birden fazla MSBuild çözüm dosyası '{0}' içinde bulundu. Hangi--çalışma alanı seçeneği ile kullanmak için belirtin.</target>
+      </trans-unit>
+      <trans-unit id="Multiple_MSBuild_solution_files_found_in_0_Specify_which_to_use_with_the_workspace_argument">
+        <source>Multiple MSBuild solution files found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
+        <target state="translated">'{0}' içinde birden fazla MSBuild çözüm dosyası bulundu. Hangisinin &lt;çalışma alanı&gt; bağımsız değişkeni ile kullanılacağını belirtin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
+        <source>Run 3rd party analyzers and apply fixes.</source>
+        <target state="translated">3. taraf çözümleyicileri çalıştırıp düzeltmeleri uygulayın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Run_code_style_analyzers_and_apply_fixes">
+        <source>Run code style analyzers and apply fixes.</source>
+        <target state="translated">Kod stili çözümleyicilerini çalıştırıp düzeltmeleri uygulayın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Running_0_analysis">
+        <source>Running {0} analysis.</source>
+        <target state="translated">{0} analizi çalıştırılıyor.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Running_formatters">
         <source>Running formatters.</source>
-        <note />
         <target state="translated">Biçimlendiriciler çalıştırılıyor.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic">
         <source>Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]</source>
-        <note />
         <target state="translated">Ayrıntı düzeyini ayarlayın. İzin verilen değerler şunlardır: q [uiet], [inimal] m, n [nizamî], d [ayrıntılı] ve diag [nostic]</target>
+        <note />
       </trans-unit>
       <trans-unit id="Skipping_referenced_project_0">
         <source>Skipping referenced project '{0}'.</source>
-        <note />
         <target state="translated">Atlama projesi '{0}' başvuru.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Solution_0_has_ no_projects">
+        <source>Solution {0} has no projects</source>
+        <target state="translated">{0} çözümünde proje yok</target>
+        <note />
       </trans-unit>
       <trans-unit id="The_dotnet_CLI_version_is_0">
         <source>The dotnet CLI version is '{0}'.</source>
-        <note />
         <target state="translated">dotnet CLI sürümü: '{0}'.</target>
-      </trans-unit>
-      <trans-unit id="The_dry_run_option_is_deprecated_Use_the_check_option_instead">
-        <source>The `--dry-run` option is deprecated. Use the `--check` option instead.</source>
         <note />
-        <target state="translated">`--dry-run` seçeneği kullanım dışı bırakıldı. Bunun yerine `--check` seçeneğini kullanın.</target>
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
         <source>The file '{0}' does not appear to be a valid project or solution file.</source>
-        <note />
         <target state="translated">'{0}' dosyası geçerli proje veya çözüm dosyası gibi görünmüyor.</target>
-      </trans-unit>
-      <trans-unit id="The_files_option_is_deprecated_Use_the_include_option_instead">
-        <source>The `--files` option is deprecated. Use the `--include` option instead.</source>
         <note />
-        <target state="translated">`--files` seçeneği kullanım dışı bırakıldı. Bunun yerine `--include` seçeneğini kullanın.</target>
-      </trans-unit>
-      <trans-unit id="The_folder_option_is_deprecated_for_specifying_the_path_Pass_the_folder_option_but_specify_the_path_with_the_project_argument_instead">
-        <source>The `--folder` option is deprecated for specifying the path. Pass the `--folder` option but specify the path with the project argument instead.</source>
-        <note />
-        <target state="translated">Yolu belirtmek için `--folder` seçeneği kullanım dışı bırakıldı. `--folder` seçeneğini geçirin ancak bunun yerine yolu, proje bağımsız değişkeniyle belirtin.</target>
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
         <source>The project file '{0}' does not exist.</source>
-        <note />
         <target state="translated">Proje dosyası '{0}' yok.</target>
+        <note />
       </trans-unit>
       <trans-unit id="The_solution_file_0_does_not_exist">
         <source>The solution file '{0}' does not exist.</source>
-        <note />
         <target state="translated">Çözüm dosyası '{0}' yok.</target>
-      </trans-unit>
-      <trans-unit id="The_solution_or_project_file_to_operate_on_If_a_file_is_not_specified_the_command_will_search_the_current_directory_for_one">
-        <source>The solution or project file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <note />
-        <target state="translated">Ameliyat için çözüm ya da proje dosyasını. Bir dosya belirtilmezse, komut için bir geçerli dizini arar.</target>
       </trans-unit>
       <trans-unit id="Formatted_code_file_0">
         <source>Formatted code file '{0}'.</source>
-        <note />
         <target state="translated">'{0}' kod dosyası biçimlendirildi.</target>
-      </trans-unit>
-      <trans-unit id="The_workspace_option_is_deprecated_Use_the_project_argument_instead">
-        <source>The `--workspace` option is deprecated. Use the `&lt;project&gt;` argument instead.</source>
         <note />
-        <target state="translated">`--workspace` seçeneği kullanım dışı bırakıldı. Bunun yerine `&lt;project&gt;` bağımsız değişkenini kullanın.</target>
+      </trans-unit>
+      <trans-unit id="Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution">
+        <source>Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</source>
+        <target state="translated">{0} düzeltilemiyor. {1} kod düzeltmesi Çözümdeki Tümünü Onar seçeneğini desteklemiyor.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
         <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
-        <note />
         <target state="translated">MSBuild bulunamıyor. .NET SDK'nın resmi yükleyici kullanılarak yüklendiğinden emin olun.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
         <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
-        <note />
         <target state="translated">dotnet CLI bulunamıyor. dotnet CLI'nin PATH üzerinde olduğundan emin olun.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Unable_to_organize_imports_for_0_The_document_is_too_complex">
         <source>Unable to organize imports for '{0}'. The document is too complex.</source>
-        <note />
         <target state="translated">'{0}' için içeri aktarmalar düzenlenemiyor. Belge çok karmaşık.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Using_msbuildexe_located_in_0">
         <source>Using MSBuild.exe located in '{0}'.</source>
-        <note />
         <target state="translated">'{0}' içinde bulunan MSBuild.exe kullanılıyor.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings">
         <source>Warnings were encountered while loading the workspace. Set the verbosity option to the 'diagnostic' level to log warnings.</source>
-        <note />
         <target state="translated">Çalışma alanı yüklenirken uyarılarla karşılaşıldı. Uyarıları günlüğe kaydetmek için ayrıntı düzeyi seçeneğini 'tanılama' düzeyine ayarlayın.</target>
-      </trans-unit>
-      <trans-unit id="Whether_to_treat_the_project_path_as_a_folder_of_files">
-        <source>Whether to treat the `&lt;project&gt;` path as a folder of files.</source>
         <note />
-        <target state="translated">`&lt;project&gt;` yolunun dosya klasörü olarak değerlendirilip değerlendirilmeyeceğini belirtir.</target>
+      </trans-unit>
+      <trans-unit id="Whether_to_treat_the_workspace_argument_as_a_simple_folder_of_files">
+        <source>Whether to treat the `&lt;workspace&gt;` argument as a simple folder of files.</source>
+        <target state="translated">`&lt;çalışma alanı&gt;` bağımsız değişkeninin basit bir dosya klasörü olarak değerlendirilip değerlendirilmeyeceğini belirtir.</target>
+        <note />
       </trans-unit>
       <trans-unit id="Writing_formatting_report_to_0">
         <source>Writing formatting report to: '{0}'.</source>
-        <note />
         <target state="translated">Biçimlendirme raporu '{0}' konumuna yazılıyor.</target>
+        <note />
       </trans-unit>
     </body>
   </file>
