@@ -90,6 +90,7 @@ Copyright (c) .NET Foundation. All rights reserved.
             RemoveSymbols="$(TrimmerRemoveSymbols)"
             FeatureSettings="@(_TrimmerFeatureSettings)"
             CustomData="@(_TrimmerCustomData)"
+            NoWarn="$(NoWarn)"
 
             BeforeFieldInit="$(_TrimmerBeforeFieldInit)"
             OverrideRemoval="$(_TrimmerOverrideRemoval)"
@@ -134,6 +135,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <TrimMode Condition=" '$(TrimMode)' == '' ">copyused</TrimMode>
+      <NoWarn Condition=" '$(TrimAnalysis)' != 'true' ">$(NoWarn);IL2006;IL2026;IL2043</NoWarn>
     </PropertyGroup>
 
     <!-- Set a default value for TrimmerRemoveSymbols unless set explicitly. -->
