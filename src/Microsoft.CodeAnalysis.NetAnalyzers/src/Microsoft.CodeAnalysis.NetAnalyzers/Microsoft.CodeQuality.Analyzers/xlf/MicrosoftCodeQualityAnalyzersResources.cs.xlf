@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyFix">
         <source>Remove the unnecessary assignment.</source>
-        <target state="new">Remove the unnecessary assignment.</target>
+        <target state="translated">Odeberte nepotřebné přiřazení.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="needs-review-translation">Nedeklaruje virtuální události v základní třídě a přepíše je v odvozené třídě. Kompilátor jazyka C# tyto hodnoty správně nezpracovává a je nepředvídatelné, jestli se odběratel odvozené událostí skutečně přihlásí k odběru události základní třídy.</target>
+        <target state="translated">Nedeklarujte virtuální události v základní třídě. Přepsané události v odvozené třídě mají nedefinované chování. Kompilátor jazyka C# tuto situaci nezpracovává správně a je nepředvídatelné, jestli se odběratel odvozené událostí skutečně přihlásí k odběru události základní třídy.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual</source>
-        <target state="needs-review-translation">Událost {0} by se neměla deklarovat jako virtuální.</target>
+        <target state="translated">Událost {0} by se neměla deklarovat jako virtuální.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
@@ -189,17 +189,17 @@
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
         <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
-        <target state="new">For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</target>
+        <target state="translated">Pro odkazové typy je výchozí implementace operátoru rovnosti téměř vždy správná. Ve výchozím nastavení jsou dva odkazy stejné jenom v případě, že odkazují na stejný objekt. Pokud operátor poskytuje smysluplnou rovnost hodnot, měl by typ implementovat obecné rozhraní System.IEquatable.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
         <source>'{0}' should not overload the equality operator.</source>
-        <target state="new">'{0}' should not overload the equality operator.</target>
+        <target state="translated">{0} by neměl přetížit operátor rovnosti.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
         <source>Do not overload equality operator on reference types</source>
-        <target state="new">Do not overload equality operator on reference types</target>
+        <target state="translated">Nepřetěžujte operátor rovnosti na odkazových typech</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -379,7 +379,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
         <source>Abstract types should not have public constructors</source>
-        <target state="needs-review-translation">Abstraktní typy nemají mít konstruktory.</target>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
         <source>Abstract type '{0}' should not have public constructors</source>
-        <target state="needs-review-translation">Abstraktní typ {0} nemá mít konstruktory.</target>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -2049,12 +2049,12 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
         <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
-        <target state="needs-review-translation">Před spuštění konstruktoru modul CLR (Common Language Runtime) iniciuje u všech polí nastavení výchozích hodnot. Ve většině případů je nastavení pole na výchozí hodnotu v konstruktoru nadbytečné, snižuje výkon a navyšuje náklady na údržbu. Jediným případem, kdy nadbytečné není, je tehdy, když konstruktor volá jiný konstruktor stejné třídy nebo konstruktor základní třídy a ten u pole nastaví nevýchozí hodnotu. V této situaci je změna hodnoty pole zpět na výchozí hodnotu vhodná.</target>
+        <target state="translated">Před spuštěním konstruktoru modul runtime .NET inicializuje všechna pole typů odkazů na výchozí hodnoty. Ve většině případů je explicitní inicializace pole na výchozí hodnotu v konstruktoru redundantní, zvyšuje náklady na údržbu, může snižovat výkon (například kvůli většímu sestavení) a dá se odebrat. V některých případech, například u statických polí určených jen pro čtení, která trvale uchovávají svou výchozí hodnotu, zvažte možnost je změnit na konstanty nebo vlastnosti.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
         <source>Member '{0}' is explicitly initialized to its default value.</source>
-        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
+        <target state="translated">Člen {0} je explicitně inicializovaný na svou výchozí hodnotu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2109,7 +2109,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="new">Consider making '{0}' not externally visible</target>
+        <target state="translated">Nastavte metodu {0} tak, aby nebyla externě viditelná.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">

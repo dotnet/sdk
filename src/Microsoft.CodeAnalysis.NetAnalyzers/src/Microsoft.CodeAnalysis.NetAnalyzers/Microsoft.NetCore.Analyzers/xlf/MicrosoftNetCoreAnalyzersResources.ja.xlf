@@ -879,17 +879,17 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="new">Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</target>
+        <target state="translated">'CancellationToken' パラメーターを、それを受け取るメソッドに転送して操作のキャンセル通知が適切に伝達されるようにするか、または 'CancellationToken.None' を明示的に渡して意図的にトークンを伝達しないことを指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
         <source>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</source>
-        <target state="new">Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</target>
+        <target state="translated">'{0}' パラメーターを '{1}' メソッドに転送するか、または 'CancellationToken.None' を明示的に渡して、意図的にトークンを伝達しないことを明示的に指定します</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods that take one</source>
-        <target state="new">Forward the 'CancellationToken' parameter to methods that take one</target>
+        <target state="translated">'CancellationToken' パラメーターを、それを受け取るメソッドに転送する</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1379,62 +1379,62 @@
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
         <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>
-        <target state="new">Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</target>
+        <target state="translated">信頼されていない逆シリアル化データを処理するコードで、予期しない参照サイクルの処理を確認してください。予期しない参照サイクルが原因でコードが無限ループに入ることのないようにしてください。そうしないと、信頼されていないデータを逆シリアル化するときに、予期しない参照サイクルのせいで攻撃者が DoS 攻撃をしたり、プロセスのメモリを使い果たしたりできるようになりかねません。</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphMessage">
         <source>{0} participates in a potential reference cycle</source>
-        <target state="new">{0} participates in a potential reference cycle</target>
+        <target state="translated">{0} で潜在的な参照サイクルが生じています</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphTitle">
         <source>Potential reference cycle in deserialized object graph</source>
-        <target state="new">Potential reference cycle in deserialized object graph</target>
+        <target state="translated">逆シリアル化されたオブジェクト グラフ内の参照サイクルの可能性</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
-        <target state="new">'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</target>
+        <target state="translated">'Stream' には、最初の引数として 'Memory&lt;Byte&gt;' を取る 'ReadAsync' オーバーロードと、最初の引数として 'ReadOnlyMemory&lt;Byte&gt;' を取る 'WriteAsync' オーバーロードがあります。より効率的なメモリ ベースのオーバーロードを呼び出すことをお勧めします。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountDescription">
         <source>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</source>
-        <target state="new">For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</target>
+        <target state="translated">オブジェクトにアイテムが含まれているかどうかを判断するには、'Count' プロパティからアイテム数を取得し、それを 0 または 1 と比較する代わりに、'IsEmpty' プロパティを使用することをお勧めします。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
-        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</target>
+        <target state="translated">オブジェクトにアイテムが含まれているかどうかを判断するには、'Count' より 'IsEmpty' を優先してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
         <source>Prefer IsEmpty over Count</source>
-        <target state="new">Prefer IsEmpty over Count</target>
+        <target state="translated">Count より IsEmpty を優先する</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to use the '{1}' overload</source>
-        <target state="needs-review-translation">'{0}' メソッド呼び出しを '{1}' を受け取るオーバーロードに変更します。</target>
+        <target state="translated">'{0}' メソッド呼び出しを変更し、'{1}' オーバーロードを使用します</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
         <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
-        <target state="new">Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</target>
+        <target state="translated">'ReadAsync' および 'WriteAsync' で 'Memory' ベースのオーバーロードを優先的に使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</source>
-        <target state="new">Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</target>
+        <target state="translated">部分文字列が存在するかどうかを確認するために結果を使用する 'string.IndexOf' の呼び出しは、'string.Contains' で置き換えることができます</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
         <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
-        <target state="new">Use 'string.Contains' instead of 'string.IndexOf' to improve readability</target>
+        <target state="translated">読みやすくするために 'string.IndexOf' の代わりに 'string.Contains' を使用します</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfTitle">
         <source>Consider using 'string.Contains' instead of 'string.IndexOf'</source>
-        <target state="new">Consider using 'string.Contains' instead of 'string.IndexOf'</target>
+        <target state="translated">'string.IndexOf' の代わりに 'string.Contains' を使用することを検討する</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
@@ -1474,22 +1474,22 @@
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
         <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
-        <target state="new">'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</target>
+        <target state="translated">'Enum.HasFlag' メソッドでは、'enum' 引数が、メソッドが呼び出されたインスタンスと同じ 'enum' 型である必要があり、この 'enum' は、'System.FlagsAttribute' でマークされている必要があります。これらが異なる 'enum' 型の場合は、ハンドルされない例外が実行時にスローされます。'enum' 型が 'System.FlagsAttribute' でマークされていない場合、呼び出しは実行時に常に 'false' を返します。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
         <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
-        <target state="new">The argument type, '{0}', must be the same as the enum type '{1}'</target>
+        <target state="translated">引数の型 '{0}' は、列挙型 '{1}' と同じでなければなりません</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
         <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="new">This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</target>
+        <target state="translated">列挙型 '{0}' が 'FlagsAttribute' でマークされていないため、この呼び出しは常に 'false' を返します</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
-        <target state="new">Provide correct 'enum' argument to 'Enum.HasFlag'</target>
+        <target state="translated">'Enum.HasFlag' に正しい 'enum' 引数を指定する</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
         <source>Use `{0}` instead of Range-based indexers on a string</source>
-        <target state="new">Use `{0}` instead of Range-based indexers on a string</target>
+        <target state="translated">文字列で範囲ベースのインデクサーの代わりに '{0}' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
         <source>Use `{0}` instead of Range-based indexers on an array</source>
-        <target state="new">Use `{0}` instead of Range-based indexers on an array</target>
+        <target state="translated">配列で範囲ベースのインデクサーの代わりに '{0}' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
