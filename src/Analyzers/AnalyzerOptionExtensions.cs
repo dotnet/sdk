@@ -1,6 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
@@ -44,14 +42,17 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                 return false;
             }
 
-            // If user has explicitly configured severity for this diagnostic ID, that should be respected and
-            // bulk configuration should not be applied.
-            // For example, 'dotnet_diagnostic.CA1000.severity = error'
-            if (compilation.Options.SpecificDiagnosticOptions.ContainsKey(descriptor.Id) ||
-                tree.DiagnosticOptions.ContainsKey(descriptor.Id))
+            // If user has explicitly configured severity for this diagnostic ID, that should be respected.
+            if (compilation.Options.SpecificDiagnosticOptions.TryGetValue(descriptor.Id, out severity))
             {
-                severity = default;
-                return false;
+                return true;
+            }
+
+            // If user has explicitly configured severity for this diagnostic ID, that should be respected.
+            // For example, 'dotnet_diagnostic.CA1000.severity = error'
+            if (tree.DiagnosticOptions.TryGetValue(descriptor.Id, out severity))
+            {
+                return true;
             }
 
             var analyzerConfigOptions = analyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(tree);

@@ -234,8 +234,11 @@
   <data name="Unable_to_organize_imports_for_0_The_document_is_too_complex" xml:space="preserve">
     <value>Unable to organize imports for '{0}'. The document is too complex.</value>
   </data>
-  <data name="Run_code_style_analyzer_and_apply_fixes" xml:space="preserve">
+  <data name="Run_code_style_analyzers_and_apply_fixes" xml:space="preserve">
     <value>Run code style analyzers and apply fixes.</value>
+  </data>
+  <data name="Run_3rd_party_analyzers_and_apply_fixes" xml:space="preserve">
+    <value>Run 3rd party analyzers and apply fixes.</value>
   </data>
   <data name="Analyzer_Reference" xml:space="preserve">
     <value>Analyzer Reference</value>
@@ -263,5 +266,8 @@
   </data>
   <data name="Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution" xml:space="preserve">
     <value>Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</value>
+  </data>
+  <data name="Unable_to_fix_0_No_associated_code_fix_found" xml:space="preserve">
+    <value>Unable to fix {0}. No associated code fix found.</value>
   </data>
 </root>

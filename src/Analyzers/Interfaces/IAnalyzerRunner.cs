@@ -8,13 +8,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    interface IAnalyzerRunner
+    internal interface IAnalyzerRunner
     {
         Task RunCodeAnalysisAsync(
             CodeAnalysisResult result,
             DiagnosticAnalyzer analyzers,
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
+            DiagnosticSeverity severity,
             ILogger logger,
             CancellationToken cancellationToken);
 
@@ -23,6 +24,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ImmutableArray<DiagnosticAnalyzer> analyzers,
             Project project,
             ImmutableHashSet<string> formattableDocumentPaths,
+            DiagnosticSeverity severity,
             ILogger logger,
             CancellationToken cancellationToken);
     }

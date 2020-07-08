@@ -217,6 +217,11 @@
         <target state="translated">無法修正 {0}。程式碼修正 {1} 不支援 [在解決方案中全部修正]。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_fix_0_No_associated_code_fix_found">
+        <source>Unable to fix {0}. No associated code fix found.</source>
+        <target state="new">Unable to fix {0}. No associated code fix found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
         <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
         <target state="translated">找不到 MSBuild。請確認已使用正式安裝程式安裝了 .NET SDK。</target>

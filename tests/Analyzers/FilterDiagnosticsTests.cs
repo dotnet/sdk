@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -28,11 +30,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var allAnalyzers = await GetAnalyzersAsync();
             var formattablePaths = ImmutableHashSet.Create(projects.First().Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Warning;
-            var result = await AnalyzerFinderHelpers.FilterBySeverityAsync(projects,
-                                                                           allAnalyzers,
-                                                                           formattablePaths,
-                                                                           minimumSeverity,
-                                                                           CancellationToken.None);
+            var result = await AnalyzerFormatter.FilterBySeverityAsync(
+                projects,
+                allAnalyzers,
+                formattablePaths,
+                minimumSeverity,
+                CancellationToken.None);
             var (_, analyzers) = Assert.Single(result);
             Assert.Single(analyzers);
         }
@@ -44,11 +47,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var allAnalyzers = await GetAnalyzersAsync();
             var formattablePaths = ImmutableHashSet.Create(projects.First().Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Error;
-            var result = await AnalyzerFinderHelpers.FilterBySeverityAsync(projects,
-                                                                           allAnalyzers,
-                                                                           formattablePaths,
-                                                                           minimumSeverity,
-                                                                           CancellationToken.None);
+            var result = await AnalyzerFormatter.FilterBySeverityAsync(
+                projects,
+                allAnalyzers,
+                formattablePaths,
+                minimumSeverity,
+                CancellationToken.None);
             var (_, analyzers) = Assert.Single(result);
             Assert.Empty(analyzers);
         }
@@ -62,8 +66,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                     GenerateCodeFix("CodeFixProvider1", "DiagnosticAnalyzerId"))
             };
 
-            var analyzersAndFixers = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
-            return ImmutableArray.Create(analyzersAndFixers[0].Analyzer);
+            var (analyzers, _) = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            return analyzers;
         }
 
         private IEnumerable<Project> GetProjects()

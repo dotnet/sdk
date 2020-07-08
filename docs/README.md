@@ -2,16 +2,69 @@
 
 ## .editorconfig options
 - [Supported .editorconfig options](./Supported-.editorconfig-options.md)
-- [Unsupported Code Style options](./Unsupported-Code-Style-options.md)
 
 ## CLI options
 
 ### Specify a workspace (Required)
 
-A project path is needed when running dotnet-format. By default, the current folder will be used as the project path. The project path and type of project determines which code files are considered for formatting.
+A workspace path is needed when running dotnet-format. By default, the current folder will be used as the workspace path. The workspace path and type of workspace determines which code files are considered for formatting.
 
-- Solutions and Projects - By default dotnet-format will open the project path as a MSBuild solution or project.
-- `--folder` - When the folder options is specified the project path will be treated as a folder of code files.
+- Solutions and Projects - By default dotnet-format will open the workspace path as a MSBuild solution or project.
+- `--folder` - When the folder options is specified the workspace path will be treated as a folder of code files.
+
+*Example:*
+
+Format the code files used in the format solution.
+
+```console
+dotnet-format ./format.sln
+```
+
+Format the code files used in the dotnet-format project.
+
+```console
+dotnet-format ./src/dotnet-format.csproj
+```
+
+Format the code files from the  `./src` folder.
+
+```console
+dotnet-format ./src --folder
+```
+
+### Running analysis
+
+#### CodeStyle analysis
+
+Running codestyle analysis requires the use of a MSBuild solution or project file as the workspace. Enforces the .NET [Language conventions](https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-language-conventions?view=vs-2019) and [Naming conventions](https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-naming-conventions?view=vs-2019).
+
+- `--fix-style <severity>` - Runs analysis and attempts to fix issues with severity equal or greater than specified. If severity is not specified then severity defaults to error.
+
+*Example:*
+
+Run analysis against the format solution and fix errors.
+
+```console
+dotnet-format ./format.sln --fix-style
+```
+
+Run analysis against the dotnet-format project and fix warnings and errors.
+
+```console
+dotnet-format ./src/dotnet-format.csproj --fix-style warn
+```
+
+Errors when used with the `--folder` option. Analysis requires a MSBuild solution or project.
+
+```console
+dotnet-format ./src --folder --fix-style
+```
+
+#### 3rd party analysis
+
+Running 3rd party analysis requires the use of a MSBuild solution or project file as the workspace. 3rd party analyzers are discovered from the `<PackageReferences>` specified in the workspace project files.
+
+- `--fix-analyzers <severity>` - Runs analysis and attempts to fix issues with severity equal or greater than specified. If no severity is specified then this defaults to error.
 
 ### Filter files to format
 

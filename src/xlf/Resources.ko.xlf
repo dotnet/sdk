@@ -217,6 +217,11 @@
         <target state="translated">{0}을(를) 수정할 수 없습니다. 코드 수정 사항 {1}은(는) 솔루션에서 모두 수정을 지원하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_fix_0_No_associated_code_fix_found">
+        <source>Unable to fix {0}. No associated code fix found.</source>
+        <target state="new">Unable to fix {0}. No associated code fix found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
         <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
         <target state="translated">MSBuild를 찾을 수 없습니다. 공식 설치 관리자를 사용하여 .NET SDK를 설치했는지 확인하세요.</target>

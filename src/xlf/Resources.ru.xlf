@@ -217,6 +217,11 @@
         <target state="translated">Не удалось исправить {0}. Исправление кода {1} не поддерживает функцию "Исправить все в решении".</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_fix_0_No_associated_code_fix_found">
+        <source>Unable to fix {0}. No associated code fix found.</source>
+        <target state="new">Unable to fix {0}. No associated code fix found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer">
         <source>Unable to locate MSBuild. Ensure the .NET SDK was installed with the official installer.</source>
         <target state="translated">Не удается найти MSBuild. Убедитесь, что пакет SDK для .NET был установлен с официальным установщиком.</target>

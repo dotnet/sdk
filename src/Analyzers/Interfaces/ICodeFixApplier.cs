@@ -7,12 +7,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
-    interface ICodeFixApplier
+    internal interface ICodeFixApplier
     {
         Task<Solution> ApplyCodeFixesAsync(
             Solution solution,
             CodeAnalysisResult result,
             CodeFixProvider codefixes,
+            string diagnosticId,
             ILogger logger,
             CancellationToken cancellationToken);
     }
