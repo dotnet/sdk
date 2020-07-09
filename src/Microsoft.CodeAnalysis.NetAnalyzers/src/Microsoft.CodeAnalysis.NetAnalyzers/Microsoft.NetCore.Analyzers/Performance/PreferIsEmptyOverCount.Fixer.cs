@@ -13,7 +13,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
     /// <summary>
     /// CA1836: Prefer IsEmpty over Count when available.
     /// </summary>
-    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public abstract class PreferIsEmptyOverCountFixer : CodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseCountProperlyAnalyzer.CA1836);
