@@ -34,6 +34,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Deterministic Condition=" '$(Deterministic)' == '' ">true</Deterministic>
   </PropertyGroup>
 
+  <!-- These are the names that we copy between configurations -->
+  <!-- Helper to fix https://github.com/dotnet/project-system/issues/2828 -->
+  <PropertyGroup>
+    <CopyingConfigurationProperties>$(CopyingConfigurationProperties);Optimize;DebugSymbols</CopyingConfigurationProperties>
+  </PropertyGroup>
+
   <!-- User-facing configuration-specific defaults -->
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
