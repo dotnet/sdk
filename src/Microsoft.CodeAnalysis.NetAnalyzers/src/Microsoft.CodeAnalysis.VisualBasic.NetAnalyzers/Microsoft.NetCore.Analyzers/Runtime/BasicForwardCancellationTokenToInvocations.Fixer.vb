@@ -1,5 +1,6 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+Imports System.Collections.Immutable
 Imports System.Diagnostics.CodeAnalysis
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
@@ -45,20 +46,20 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
         End Function
 
-        Protected Overrides Function TryGetExpressionAndArguments(invocationNode As SyntaxNode, ByRef expression As SyntaxNode, ByRef arguments As List(Of SyntaxNode)) As Boolean
+        Protected Overrides Function TryGetExpressionAndArguments(invocationNode As SyntaxNode, ByRef expression As SyntaxNode, ByRef arguments As ImmutableArray(Of SyntaxNode)) As Boolean
 
             Dim invocationExpression As InvocationExpressionSyntax = TryCast(invocationNode, InvocationExpressionSyntax)
 
             If invocationExpression IsNot Nothing Then
 
                 expression = invocationExpression.Expression
-                arguments = invocationExpression.ArgumentList.Arguments.Cast(Of SyntaxNode)().ToList()
+                arguments = ImmutableArray.CreateRange(Of SyntaxNode)(invocationExpression.ArgumentList.Arguments)
                 Return True
 
             End If
 
             expression = Nothing
-            arguments = Nothing
+            arguments = ImmutableArray(Of SyntaxNode).Empty
             Return False
 
         End Function

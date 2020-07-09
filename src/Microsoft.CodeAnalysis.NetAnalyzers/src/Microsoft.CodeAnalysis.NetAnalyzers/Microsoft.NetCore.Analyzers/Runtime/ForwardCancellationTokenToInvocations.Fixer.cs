@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -28,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected abstract bool TryGetExpressionAndArguments(
             SyntaxNode invocationNode,
             [NotNullWhen(returnValue: true)] out SyntaxNode? expression,
-            [NotNullWhen(returnValue: true)] out List<SyntaxNode>? arguments);
+            out ImmutableArray<SyntaxNode> arguments);
 
         // Verifies if the specified argument was passed with an explicit name.
         protected abstract bool IsArgumentNamed(IArgumentOperation argumentOperation);
@@ -85,7 +84,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             string title = MicrosoftNetCoreAnalyzersResources.ForwardCancellationTokenToInvocationsTitle;
 
-            if (!TryGetExpressionAndArguments(invocation.Syntax, out SyntaxNode? expression, out List<SyntaxNode>? newArguments))
+            if (!TryGetExpressionAndArguments(invocation.Syntax, out SyntaxNode? expression, out ImmutableArray<SyntaxNode> newArguments))
             {
                 return;
             }
@@ -112,7 +111,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             string invocationTokenArgumentName,
             string ancestorTokenParameterName,
             SyntaxNode expression,
-            List<SyntaxNode> newArguments)
+            ImmutableArray<SyntaxNode> newArguments)
         {
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(doc);
 
@@ -127,7 +126,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 cancellationTokenArgument = generator.Argument(identifier);
             }
 
-            newArguments.Add(cancellationTokenArgument);
+            newArguments = newArguments.Add(cancellationTokenArgument);
 
             SyntaxNode newInstance;
             // The instance is null when calling a static method from another type

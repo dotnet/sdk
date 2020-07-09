@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -47,17 +46,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         protected override bool TryGetExpressionAndArguments(
             SyntaxNode invocationNode,
             [NotNullWhen(returnValue: true)] out SyntaxNode? expression,
-            [NotNullWhen(returnValue: true)] out List<SyntaxNode>? arguments)
+            out ImmutableArray<SyntaxNode> arguments)
         {
             if (invocationNode is InvocationExpressionSyntax invocationExpression)
             {
                 expression = invocationExpression.Expression;
-                arguments = invocationExpression.ArgumentList.Arguments.Cast<SyntaxNode>().ToList();
+                arguments = ImmutableArray.CreateRange<SyntaxNode>(invocationExpression.ArgumentList.Arguments);
                 return true;
             }
 
             expression = null;
-            arguments = null;
+            arguments = ImmutableArray<SyntaxNode>.Empty;
             return false;
         }
     }
