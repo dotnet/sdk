@@ -193,5 +193,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             // Assert
             Assert.Equal(1, result.Errors.Count);
         }
+
+        [Fact]
+        public void CommandLine_AnalyzerOptions_CanSpecifyBothWithDefaults()
+        {
+            // Arrange
+            var sut = FormatCommand.CreateCommandLineOptions();
+
+            // Act
+            var result = sut.Parse(new[] { "--fix-analyzers", "--fix-style" });
+
+            // Assert
+            Assert.Equal(0, result.Errors.Count);
+        }
     }
 }

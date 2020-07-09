@@ -4,6 +4,7 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -105,6 +106,10 @@ namespace Microsoft.CodeAnalysis.Tools
                         throw new Exception($"Unable to find folder at '{workspacePath}'");
                     }
                 }
+
+                var runtimeVersion = GetRuntimeVersion();
+
+                Debug.WriteLine($"The dotnet runtime version is '{runtimeVersion}'.");
 
                 // Load MSBuild
                 Environment.CurrentDirectory = workspaceDirectory;
@@ -264,6 +269,13 @@ namespace Microsoft.CodeAnalysis.Tools
                 msBuildPath = null;
                 return false;
             }
+        }
+
+        private static string GetRuntimeVersion()
+        {
+            var pathParts = typeof(string).Assembly.Location.Split('\\', '/');
+            var netCoreAppIndex = Array.IndexOf(pathParts, "Microsoft.NETCore.App");
+            return pathParts[netCoreAppIndex + 1];
         }
     }
 }

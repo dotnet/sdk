@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,15 +38,21 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-            if (compilation is null)
+            // If are not running any analyzers and are not reporting compiler diagnostics, then there is
+            // nothing to report.
+            if (analyzers.IsEmpty && !_includeComplilerDiagnostics)
             {
                 return;
             }
 
-            // If are not running any analyzers and are not reporting compiler diagnostics, then there is
-            // nothing to report.
-            if (analyzers.IsEmpty && !_includeComplilerDiagnostics)
+            if (!AllReferencedProjectsLoaded(project))
+            {
+                Debug.WriteLine($"Required references did not load for {project.Name} or referenced project.");
+                return;
+            }
+
+            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            if (compilation is null)
             {
                 return;
             }
@@ -57,6 +64,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
             else
             {
+                Debug.WriteLine($"Running {analyzers.Length} analyzers on {project.Name}.");
+
                 var analyzerOptions = new CompilationWithAnalyzersOptions(
                     project.AnalyzerOptions,
                     onAnalyzerException: null,
@@ -80,6 +89,20 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 {
                     result.AddDiagnostic(project, diagnostic);
                 }
+            }
+
+            return;
+
+            static bool AllReferencedProjectsLoaded(Project project)
+            {
+                if (!project.MetadataReferences.Any(reference => reference.Display?.EndsWith("mscorlib.dll") == true))
+                {
+                    return false;
+                }
+
+                return project.ProjectReferences
+                    .Select(projectReference => project.Solution.GetProject(projectReference.ProjectId))
+                    .All(referencedProject => referencedProject != null && AllReferencedProjectsLoaded(referencedProject));
             }
         }
     }
