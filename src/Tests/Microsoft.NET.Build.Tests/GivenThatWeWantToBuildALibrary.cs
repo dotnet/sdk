@@ -602,9 +602,11 @@ class Program
         }
 
         [RequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
-        [InlineData("net5.0", false)]
-        [InlineData("netcoreapp3.1", true)]
-        public void It_defines_target_platform_defaults_correctly(string targetFramework, bool defaultsDefined)
+        [InlineData("net5.0", "", false)]
+        [InlineData("net5.0", "UseWPF", true)]
+        [InlineData("net5.0", "UseWindowsForms", true)]
+        [InlineData("netcoreapp3.1", "", true)]
+        public void It_defines_target_platform_defaults_correctly(string targetFramework, string propertyName, bool defaultsDefined)
         {
             TestProject testProject = new TestProject()
             {
@@ -612,7 +614,10 @@ class Program
                 IsSdkProject = true,
                 TargetFrameworks = targetFramework
             };
-
+            if (!propertyName.Equals(string.Empty))
+            {
+                testProject.AdditionalProperties[propertyName] = "true";
+            }
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name), targetFramework, "TargetPlatformIdentifier");
