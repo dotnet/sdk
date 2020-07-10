@@ -67,6 +67,41 @@ class Test
         }
 
         [Fact]
+        public async Task SimpleIfTest_02()
+        {
+            var source = @"
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1()
+    {
+        if(RuntimeInformationHelper.IsOSPlatformOrLater(OSPlatform.Windows, 1))
+        {
+            {|#0:M2()|};        // Platform checks:'IsOSPlatformOrLater;Windows;1'
+        }
+
+        if(RuntimeInformationHelper.IsOSPlatformEarlierThan(OSPlatform.Windows, 1, 1))
+        {
+            {|#1:M2()|};        // Platform checks:'IsOSPlatformEarlierThan;Windows;1.1'
+        }
+
+        {|#2:M2()|};        // Platform checks:''
+    }
+
+    void M2()
+    {
+    }
+}" + PlatformCheckApiSource;
+
+            await VerifyCS.VerifyAnalyzerAsync(source,
+                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(0).WithArguments("IsOSPlatformOrLater;Windows;1"),
+                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(1).WithArguments("IsOSPlatformEarlierThan;Windows;1.1"),
+                VerifyCS.Diagnostic(RuntimePlatformCheckAnalyzer.Rule).WithLocation(2).WithArguments(""));
+        }
+
+        [Fact]
         public async Task SimpleIfElseTest()
         {
             var source = @"
