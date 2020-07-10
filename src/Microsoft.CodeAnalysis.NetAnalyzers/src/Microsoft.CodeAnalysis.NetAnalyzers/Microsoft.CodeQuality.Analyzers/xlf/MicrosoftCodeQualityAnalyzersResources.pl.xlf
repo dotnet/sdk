@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyFix">
         <source>Remove the unnecessary assignment.</source>
-        <target state="new">Remove the unnecessary assignment.</target>
+        <target state="translated">Usuń niepotrzebne przypisanie.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="needs-review-translation">Nie przesłaniaj w klasie pochodnej zdarzeń wirtualnych zadeklarowanych w klasie bazowej. Kompilator języka C# nie obsługuje takich zdarzeń poprawnie i nie da się przewidzieć, czy subskrybent zdarzenia pochodnego w rzeczywistości będzie subskrybował zdarzenie klasy bazowej.</target>
+        <target state="translated">Nie deklaruj zdarzeń wirtualnych w klasie bazowej. Przesłonięte zdarzenia w klasie pochodnej mają niezdefiniowane zachowanie. Kompilator języka C# nie obsługuje takiej sytuacji poprawnie i nie da się przewidzieć, czy subskrybent zdarzenia pochodnego w rzeczywistości będzie subskrybował zdarzenie klasy bazowej.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual</source>
-        <target state="needs-review-translation">Zdarzenie „{0}” nie powinno być zadeklarowane jako wirtualne.</target>
+        <target state="translated">Zdarzenie „{0}” nie powinno być zadeklarowane jako wirtualne</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
@@ -189,17 +189,17 @@
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
         <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
-        <target state="new">For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</target>
+        <target state="translated">W przypadku typów referencyjnych domyślna implementacja operatora równości jest prawie zawsze prawidłowa. Domyślnie dwa odwołania są równe tylko wtedy, gdy wskazują ten sam obiekt. Jeśli operator zapewnia istotną równość wartość, typ powinien implementować ogólny interfejs „System.IEquatable”.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
         <source>'{0}' should not overload the equality operator.</source>
-        <target state="new">'{0}' should not overload the equality operator.</target>
+        <target state="translated">Element „{0}” nie powinien przeciążać operatora równości.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
         <source>Do not overload equality operator on reference types</source>
-        <target state="new">Do not overload equality operator on reference types</target>
+        <target state="translated">Nie przeciążaj operatora równości w typach referencyjnych</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -379,7 +379,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
         <source>Abstract types should not have public constructors</source>
-        <target state="needs-review-translation">Typy abstrakcyjne nie powinny mieć konstruktorów</target>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
         <source>Abstract type '{0}' should not have public constructors</source>
-        <target state="needs-review-translation">Typ abstrakcyjny {0} nie powinien mieć konstruktorów</target>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -2049,12 +2049,12 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
         <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
-        <target state="needs-review-translation">Środowisko uruchomieniowe CLR inicjuje wszystkie pola do ich domyślnych wartości przed uruchomieniem konstruktora. W większości przypadków zainicjowanie pola do jego domyślnej wartości jest zbędne, ponieważ zmniejsza wydajność i zwiększa koszty utrzymania. Jedyny przypadek, gdy nie jest to zbędne, występuje, gdy konstruktor wywołuje inny konstruktor tej samej klasy lub konstruktor klasy podstawowej, a ten konstruktor inicjuje pole do wartości innej niż domyślna. W tym przypadku zmiana wartości pola z powrotem na wartość domyślną może być odpowiednia.</target>
+        <target state="translated">Środowisko uruchomieniowe platformy .NET inicjuje wszystkie pola typów referencyjnych wartościami domyślnymi przed uruchomieniem konstruktora. W większości przypadków jawne zainicjowanie pola jego wartością domyślną w konstruktorze jest zbędne, powoduje dodanie kosztu związanego z konserwacją i potencjalnie obniża wydajność (np. zwiększa rozmiar zestawu), dlatego jawne inicjowanie można usunąć. W niektórych przypadkach, takich jak statyczne pola tylko do odczytu, które trwale zachowują swoje wartości domyślne, warto rozważyć ich zmianę na stałe lub właściwości.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
         <source>Member '{0}' is explicitly initialized to its default value.</source>
-        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
+        <target state="translated">Składowa „{0}” jest jawnie inicjowana do wartości domyślnej.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2109,7 +2109,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="new">Consider making '{0}' not externally visible</target>
+        <target state="translated">Rozważ przekształcenie elementu „{0}” w zewnętrznie niewidoczny</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">

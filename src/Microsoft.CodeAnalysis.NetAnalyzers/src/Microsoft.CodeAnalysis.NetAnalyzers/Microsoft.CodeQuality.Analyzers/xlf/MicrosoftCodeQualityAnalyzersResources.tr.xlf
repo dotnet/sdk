@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyFix">
         <source>Remove the unnecessary assignment.</source>
-        <target state="new">Remove the unnecessary assignment.</target>
+        <target state="translated">Gereksiz atamayı kaldırın.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="needs-review-translation">Bir temel sınıfta sanal olayları bildirip bunları türetilmiş bir sınıfta geçersiz kılmayın. C# derleyicisi bunları doğru işlemez ve türetilen olaya abone olan bir kişinin gerçekte temel sınıf olayına abone olup olmayacağı öngörülemez.</target>
+        <target state="translated">Bir temel sınıfta sanal olayları bildirmeyin. Türetilmiş bir sınıfta geçersiz kılınan olaylar tanımlanmamış davranışa sahiptir. C# derleyicisi bunları doğru işlemez ve türetilen olayın abonesinin gerçekte temel sınıf olayına abone olup olmayacağı öngörülemez.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual</source>
-        <target state="needs-review-translation">'{0}' olayı sanal olarak bildirilmemelidir.</target>
+        <target state="translated">'{0}' olayı sanal olarak bildirilmemelidir</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
@@ -189,17 +189,17 @@
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
         <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
-        <target state="new">For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</target>
+        <target state="translated">Başvuru türleri için, eşitlik işlecinin varsayılan uygulaması neredeyse her zaman doğrudur. Varsayılan olarak, iki başvuru yalnızca aynı nesneye işaret ettiklerinde eşittir. İşleç anlamlı bir değer eşitliği sağlıyorsa tür genel 'System.IEquatable' arabirimini uygulamalıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
         <source>'{0}' should not overload the equality operator.</source>
-        <target state="new">'{0}' should not overload the equality operator.</target>
+        <target state="translated">'{0}' eşitlik işlecini aşırı yüklememelidir.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
         <source>Do not overload equality operator on reference types</source>
-        <target state="new">Do not overload equality operator on reference types</target>
+        <target state="translated">Eşitlik işlecini başvuru türlerinde aşırı yüklemeyin</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -329,7 +329,7 @@
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
         <source>Remove redundant element initializer</source>
-        <target state="new">Remove redundant element initializer</target>
+        <target state="translated">Gereksiz öğe başlatıcısını kaldır</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
@@ -379,7 +379,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
         <source>Abstract types should not have public constructors</source>
-        <target state="needs-review-translation">Soyut türlerin oluşturucuları olmamalıdır</target>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
         <source>Abstract type '{0}' should not have public constructors</source>
-        <target state="needs-review-translation">{0} soyut türünün oluşturucuları olmamalıdır</target>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -2049,12 +2049,12 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
         <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
-        <target state="needs-review-translation">Ortak dil çalışma zamanı, oluşturucuyu çalıştırmadan önce tüm alanları varsayılan değerlerinde başlatır. Çoğu durumda, oluşturucuda bir alanın varsayılan değerinde başlatılması gereksizdir ve performansı düşürmesinin yanı sıra ek bakım maliyetleri doğurur. Bunun gereksiz olmadığı bir durum, oluşturucunun aynı sınıftan başka bir oluşturucuyu veya temel sınıf oluşturucusunu çağırdığı ve bu oluşturucunun alanı varsayılan olmayan bir değerde başlattığı durumdur. Bu durumda, alanın değerinin varsayılan değerine döndürülmesi uygun olabilir.</target>
+        <target state="translated">.NET çalışma zamanı, oluşturucuyu çalıştırmadan önce başvuru türlerinin tüm alanlarını varsayılan değerlerine başlatır. Çoğu durumda, bir kurucu içindeki bir alanı açık bir şekilde varsayılan değerine başlatmak gereksizdir, bakım maliyetleri ekler ve performansı düşürebilir (örneğin, derleme boyutunu artırarak) ve açık başlatma işlemleri kaldırılabilir. Varsayılan değerlerini kalıcı olarak koruyan statik salt okunur alanlar gibi bazı durumlarda, bunları sabit veya özellik olarak değiştirmeniz önerilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
         <source>Member '{0}' is explicitly initialized to its default value.</source>
-        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
+        <target state="translated">'{0}' üyesi, varsayılan değeriyle açıkça başlatılmış.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2109,7 +2109,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="new">Consider making '{0}' not externally visible</target>
+        <target state="translated">'{0}' öğesini dışarıdan görünmez yapmayı deneyin</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2199,7 +2199,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
         <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
-        <target state="new">Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</target>
+        <target state="translated">'{0}' dizininde gereksiz öğe başlatma. Nesne başlatıcısının bu değerin üzerine yazan aynı dizine sahip başka bir öğe başlatıcısı var.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

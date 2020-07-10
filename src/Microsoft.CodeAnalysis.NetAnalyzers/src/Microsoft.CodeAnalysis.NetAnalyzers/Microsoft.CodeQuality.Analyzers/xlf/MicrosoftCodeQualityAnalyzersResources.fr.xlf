@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyFix">
         <source>Remove the unnecessary assignment.</source>
-        <target state="new">Remove the unnecessary assignment.</target>
+        <target state="translated">Supprimez l'affectation inutile.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="needs-review-translation">Ne déclarez pas les événements virtuels dans une classe de base et ne les remplacez pas dans une classe dérivée. Le compilateur C# ne les gère pas correctement et il n'est pas possible de prévoir si un abonné à l'événement dérivé s'abonne réellement à l'événement de classe de base.</target>
+        <target state="translated">Ne déclarez pas d'événements virtuels dans une classe de base. Les événements substitués dans une classe dérivée ont un comportement non défini. Le compilateur C# ne gère pas cela correctement. Il n'est pas possible de prévoir si un abonné à l'événement dérivé va s'abonner réellement à l'événement de classe de base.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual</source>
-        <target state="needs-review-translation">L'événement '{0}' ne doit pas être déclaré virtuel.</target>
+        <target state="translated">L'événement '{0}' ne doit pas être déclaré en tant qu'événement virtuel</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
@@ -189,17 +189,17 @@
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
         <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
-        <target state="new">For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</target>
+        <target state="translated">Pour les types référence, l'implémentation par défaut de l'opérateur d'égalité est presque toujours correcte. Par défaut, deux références sont égales uniquement si elles pointent vers le même objet. Si l'opérateur fournit une égalité de valeur significative, le type doit implémenter l'interface générique 'System.IEquatable'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
         <source>'{0}' should not overload the equality operator.</source>
-        <target state="new">'{0}' should not overload the equality operator.</target>
+        <target state="translated">'{0}' ne doit pas surcharger l'opérateur d'égalité.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
         <source>Do not overload equality operator on reference types</source>
-        <target state="new">Do not overload equality operator on reference types</target>
+        <target state="translated">Ne pas surcharger l'opérateur d'égalité sur les types référence</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -379,7 +379,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
         <source>Abstract types should not have public constructors</source>
-        <target state="needs-review-translation">Les types abstract ne doivent pas avoir de constructeurs</target>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
         <source>Abstract type '{0}' should not have public constructors</source>
-        <target state="needs-review-translation">Le type abstract {0} ne doit pas avoir de constructeurs</target>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -2049,12 +2049,12 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
         <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
-        <target state="needs-review-translation">Le Common Language Runtime initialise tous les champs en fonction de leurs valeurs par défaut avant d'exécuter le constructeur. Dans la plupart des cas, l'initialisation d'un champ en fonction de sa valeur par défaut dans un constructeur est redondante, ce qui entraîne une dégradation des performances et une augmentation des coûts de maintenance. Il n'existe pas de redondance quand le constructeur appelle un autre constructeur de même classe ou un constructeur de classe de base, et que le constructeur initialise le champ en fonction d'une autre valeur que la valeur par défaut. Dans ce cas, il peut s'avérer approprié de changer la valeur du champ en le remplaçant par sa valeur par défaut.</target>
+        <target state="translated">Le runtime .NET initialise tous les champs des types référence à leurs valeurs par défaut avant d'exécuter le constructeur. Dans la plupart des cas, l'initialisation explicite d'un champ à sa valeur par défaut dans un constructeur est redondante, l'ajout des coûts de maintenance, la dégradation potentielle des performances (comme avec l'augmentation de la taille d'assembly) et l'initialisation explicite peuvent être supprimés. Dans certains cas, tels que les champs en lecture seule statiques qui conservent définitivement leur valeur par défaut, envisagez de les remplacer par des constantes ou des propriétés.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
         <source>Member '{0}' is explicitly initialized to its default value.</source>
-        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
+        <target state="translated">Le membre '{0}' est explicitement initialisé en fonction de sa valeur par défaut.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2109,7 +2109,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="new">Consider making '{0}' not externally visible</target>
+        <target state="translated">Rendre '{0}' non visible de manière externe</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">

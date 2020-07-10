@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyFix">
         <source>Remove the unnecessary assignment.</source>
-        <target state="new">Remove the unnecessary assignment.</target>
+        <target state="translated">移除不必要的指派。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="needs-review-translation">請勿在基底類別中宣告虛擬事件，然後在衍生類別中加以覆寫。C# 編譯器無法正確地處理這些事件，而且無法預期衍生事件的訂閱者是否會實際訂閱基底類別事件。</target>
+        <target state="translated">請勿在基底類別中宣告虛擬事件。在有未定義行為的衍生類別中覆寫事件。C# 編譯器無法正確地處理此事件，而且無法預期衍生事件的訂閱者是否會實際訂閱基底類別事件。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual</source>
-        <target state="needs-review-translation">事件 '{0}' 不應宣告為虛擬。</target>
+        <target state="translated">事件 '{0}' 不應宣告為虛擬</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
@@ -189,17 +189,17 @@
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
         <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
-        <target state="new">For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</target>
+        <target state="translated">對參考型別而言，等號比較運算子的預設實作幾乎永遠正確。根據預設，只有當兩項參考都指向相同物件時才會相等。如果運算子提供有意義的值相等，則型別應實作泛型 'System.IEquatable' 介面。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
         <source>'{0}' should not overload the equality operator.</source>
-        <target state="new">'{0}' should not overload the equality operator.</target>
+        <target state="translated">'{0}' 不應該多載等號比較運算子。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
         <source>Do not overload equality operator on reference types</source>
-        <target state="new">Do not overload equality operator on reference types</target>
+        <target state="translated">請勿多載參考型別上的等號比較運算子</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -329,7 +329,7 @@
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
         <source>Remove redundant element initializer</source>
-        <target state="new">Remove redundant element initializer</target>
+        <target state="translated">移除多餘的項目初始設定式</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
@@ -379,7 +379,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
         <source>Abstract types should not have public constructors</source>
-        <target state="needs-review-translation">抽象類型不應有建構函式</target>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
         <source>Abstract type '{0}' should not have public constructors</source>
-        <target state="needs-review-translation">抽象類型 {0} 不應有建構函式</target>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -2049,12 +2049,12 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
         <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
-        <target state="needs-review-translation">Common Language Runtime 會先將所有欄位初始化成其預設值，然後再執行建構函式。在大多數的情況下，在建構函式中將欄位初始化成其預設值並非必要，如此會降低效能並增加維護成本。不至於畫蛇添足的一個情況是，當建構函式呼叫相同類別的另一個建構函式或基底類別建構函式時，該建構函式會將欄位初始化為非預設值。在此情況下，很適合將欄位值變更回其預設值。</target>
+        <target state="translated">.NET 執行階段在執行建構函式之前，會先將所有參考型別欄位初始化為其預設值。在多數情況下，將建構函式中的欄位明確地初始化為其預設值是多餘的動作，不僅增加維護成本，而且可能會降低效能 (例如增加了組件大小)，因此可以將明確初始化移除。在某些情況 (例如會永久保留預設值的靜態唯讀欄位) 下，應考慮將其變更為常數或屬性。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
         <source>Member '{0}' is explicitly initialized to its default value.</source>
-        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
+        <target state="translated">已明確將成員 '{0}' 初始化為其預設值。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2109,7 +2109,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="new">Consider making '{0}' not externally visible</target>
+        <target state="translated">請考慮讓 '{0}' 並非外部可見</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2199,7 +2199,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
         <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
-        <target state="new">Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</target>
+        <target state="translated">索引 '{0}' 有多餘的項目初始設定。物件初始設定式有另一個項目初始設定式具備相同的索引，該索引會覆寫此值。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

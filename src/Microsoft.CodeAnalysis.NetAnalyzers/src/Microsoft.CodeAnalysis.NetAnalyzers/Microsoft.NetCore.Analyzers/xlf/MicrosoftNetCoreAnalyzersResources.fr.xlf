@@ -879,17 +879,17 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="new">Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</target>
+        <target state="translated">Transférez le paramètre 'CancellationToken' aux méthodes qui l'acceptent pour garantir que les notifications d'annulation d'opération sont correctement propagées, ou passez explicitement 'CancellationToken.None' pour indiquer clairement de ne pas propager le jeton.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
         <source>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</source>
-        <target state="new">Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</target>
+        <target state="translated">Transférer le paramètre '{0}' à la méthode '{1}' ou passer explicitement 'CancellationToken.None' pour indiquer clairement de ne pas propager le jeton</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods that take one</source>
-        <target state="new">Forward the 'CancellationToken' parameter to methods that take one</target>
+        <target state="translated">Transférer le paramètre 'CancellationToken' aux méthodes qui l'acceptent</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1379,17 +1379,17 @@
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
         <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>
-        <target state="new">Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</target>
+        <target state="translated">Passez en revue le code qui traite les données désérialisées non approuvées pour gérer les cycles de référence inattendus. Un cycle de référence inattendu ne doit pas entraîner l'entrée du code dans une boucle infinie. Sinon, le cycle de référence inattendu risque de permettre à une personne de lancer une attaque DoS ou de saturer la mémoire du processus pendant la désérialisation des données non approuvées.</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphMessage">
         <source>{0} participates in a potential reference cycle</source>
-        <target state="new">{0} participates in a potential reference cycle</target>
+        <target state="translated">{0} participe à un cycle de référence potentiel</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphTitle">
         <source>Potential reference cycle in deserialized object graph</source>
-        <target state="new">Potential reference cycle in deserialized object graph</target>
+        <target state="translated">Cycle de référence potentiel dans un graphe d'objet désérialisé</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -1399,42 +1399,42 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountDescription">
         <source>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</source>
-        <target state="new">For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</target>
+        <target state="translated">Pour déterminer si l'objet contient ou non des éléments, utilisez de préférence la propriété 'IsEmpty' au lieu de récupérer le nombre d'éléments à partir de la propriété 'Count' et de le comparer à 0 ou 1.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
-        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</target>
+        <target state="translated">Préférez 'IsEmpty' à 'Count' pour déterminer si l'objet contient ou non des éléments.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
         <source>Prefer IsEmpty over Count</source>
-        <target state="new">Prefer IsEmpty over Count</target>
+        <target state="translated">Préférer IsEmpty à Count</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
         <source>Change the '{0}' method call to use the '{1}' overload</source>
-        <target state="needs-review-translation">Remplacez l'appel de méthode '{0}' par la surcharge qui reçoit '{1}'.</target>
+        <target state="translated">Changer l'appel de méthode '{0}' pour utiliser la surcharge '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
         <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
-        <target state="needs-review-translation">Préférez les surcharges de type ’Memory' pour ’ReadAsync’ et ’WriteAsync'.</target>
+        <target state="translated">Préférer les surcharges basées sur 'Memory' pour 'ReadAsync' et 'WriteAsync'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</source>
-        <target state="new">Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</target>
+        <target state="translated">Les appels à 'string.IndexOf' où le résultat est utilisé pour vérifier la présence/l'absence d'une sous-chaîne peuvent être remplacés par 'string.Contains'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
         <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
-        <target state="new">Use 'string.Contains' instead of 'string.IndexOf' to improve readability</target>
+        <target state="translated">Utiliser 'string.Contains' à la place de 'string.IndexOf' pour améliorer la lisibilité</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfTitle">
         <source>Consider using 'string.Contains' instead of 'string.IndexOf'</source>
-        <target state="new">Consider using 'string.Contains' instead of 'string.IndexOf'</target>
+        <target state="translated">Utiliser de préférence 'string.Contains' à la place de 'string.IndexOf'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
@@ -1474,22 +1474,22 @@
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
         <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
-        <target state="new">'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</target>
+        <target state="translated">La méthode 'Enum.HasFlag' s'attend à ce que l'argument 'enum' soit du même type 'enum' que l'instance sur laquelle la méthode est appelée, et que cet 'enum' soit marqué avec 'System.FlagsAttribute'. S'il s'agit de types 'enum' distincts, une exception non prise en charge est levée au moment de l'exécution. Si le type 'enum' n'est pas marqué avec 'System.FlagsAttribute', l'appel retourne toujours 'false' au moment de l'exécution.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
         <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
-        <target state="new">The argument type, '{0}', must be the same as the enum type '{1}'</target>
+        <target state="translated">Le type d'argument, '{0}', doit être le même que le type enum '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
         <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="new">This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</target>
+        <target state="translated">Cet appel retourne toujours 'false', car le type enum '{0}' n'est pas marqué avec 'FlagsAttribute'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
-        <target state="new">Provide correct 'enum' argument to 'Enum.HasFlag'</target>
+        <target state="translated">Fournir l'argument 'enum' approprié à 'Enum.HasFlag'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1849,12 +1849,12 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
         <source>Use `{0}` instead of Range-based indexers on a string</source>
-        <target state="new">Use `{0}` instead of Range-based indexers on a string</target>
+        <target state="translated">Utiliser '{0}' à la place des indexeurs basés sur une plage dans une chaîne</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
         <source>Use `{0}` instead of Range-based indexers on an array</source>
-        <target state="new">Use `{0}` instead of Range-based indexers on an array</target>
+        <target state="translated">Utiliser '{0}' à la place des indexeurs basés sur une plage dans un tableau</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">

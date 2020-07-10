@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyFix">
         <source>Remove the unnecessary assignment.</source>
-        <target state="new">Remove the unnecessary assignment.</target>
+        <target state="translated">Quite la asignación innecesaria.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="needs-review-translation">No debe declarar eventos virtuales en una clase base e invalidarlos en una clase derivada. El compilador de C# no los controla correctamente y no se puede predecir si un suscriptor del evento derivado se estará suscribiendo en realidad al evento de clase base.</target>
+        <target state="translated">No debe declarar eventos virtuales en una clase base. Los eventos invalidados en una clase derivada tienen un comportamiento no definido. El compilador de C# no los controla correctamente y no se puede predecir si un suscriptor del evento derivado se estará suscribiendo en realidad al evento de clase base.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual</source>
-        <target state="needs-review-translation">No debe declararse como virtual el evento "{0}".</target>
+        <target state="translated">No debe declararse como virtual el evento "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
@@ -189,17 +189,17 @@
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
         <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
-        <target state="new">For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</target>
+        <target state="translated">Para los tipos de referencia, la implementación predeterminada del operador de igualdad es casi siempre correcta. De forma predeterminada, dos referencias solo son iguales si apuntan al mismo objeto. Si el operador proporciona una igualdad de valores significativa, el tipo debe implementar la interfaz "System. IEquatable" genérica.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
         <source>'{0}' should not overload the equality operator.</source>
-        <target state="new">'{0}' should not overload the equality operator.</target>
+        <target state="translated">"{0}" no debe sobrecargar el operador de igualdad.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
         <source>Do not overload equality operator on reference types</source>
-        <target state="new">Do not overload equality operator on reference types</target>
+        <target state="translated">No sobrecargar el operador de igualdad en los tipos de referencia</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -329,7 +329,7 @@
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
         <source>Remove redundant element initializer</source>
-        <target state="new">Remove redundant element initializer</target>
+        <target state="translated">Quitar el inicializador del elemento redundante</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
@@ -379,7 +379,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
         <source>Abstract types should not have public constructors</source>
-        <target state="needs-review-translation">Los tipos abstractos no deben tener constructores</target>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
         <source>Abstract type '{0}' should not have public constructors</source>
-        <target state="needs-review-translation">El tipo abstracto {0} no debe tener constructores</target>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -2049,12 +2049,12 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
         <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
-        <target state="needs-review-translation">El Common Language Runtime inicializa todos los campos en sus valores predeterminados antes de ejecutar el constructor. En la mayoría de los casos, inicializar un campo a su valor predeterminado en un constructor es redundante, lo que disminuye el rendimiento y agrega costos de mantenimiento. Un caso en el que no es redundante se produce cuando el constructor llama a otro constructor de la misma clase o a un constructor de clase base, y este inicializa el campo a un valor que no es el predeterminado. En este caso, volver a establecer el valor del campo en su valor predeterminado puede ser adecuado.</target>
+        <target state="translated">El entorno de ejecución .NET inicializa todos los campos de tipos de referencia en sus valores predeterminados antes de ejecutar el constructor. En la mayoría de los casos, la inicialización explícita de un campo en su valor predeterminado en un constructor es redundante, lo cual agrega costos de mantenimiento y puede degradar el rendimiento (por ejemplo, con un tamaño de ensamblado incrementado), por lo que la inicialización explícita puede eliminarse. En algunos casos, como el de los campos estáticos de solo lectura que mantienen su valor predeterminado de forma permanente, considere la posibilidad de cambiarlos para que sean constantes o propiedades.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
         <source>Member '{0}' is explicitly initialized to its default value.</source>
-        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
+        <target state="translated">El miembro "{0}" se inicializa explícitamente en el valor predeterminado.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2109,7 +2109,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="new">Consider making '{0}' not externally visible</target>
+        <target state="translated">Podría hacer que "{0}" no fuera externamente visible.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2199,7 +2199,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
         <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
-        <target state="new">Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</target>
+        <target state="translated">Inicialización de un elemento redundante en el índice "{0}". El inicializador de objeto tiene otro inicializador de elemento con el mismo índice que sobrescribe este valor.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

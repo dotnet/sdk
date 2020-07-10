@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyFix">
         <source>Remove the unnecessary assignment.</source>
-        <target state="new">Remove the unnecessary assignment.</target>
+        <target state="translated">不要な代入を削除してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
         <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
-        <target state="needs-review-translation">仮想イベントを基底クラスで宣言しないで、派生クラスでオーバーライドしてください。C# コンパイラはこれらを正しく処理しないため、派生イベントのサブスクライバーが実際に基底クラスのイベントをサブスクライブしているかどうかを予測できません。</target>
+        <target state="translated">仮想イベントを基底クラスで宣言しないでください。派生クラスでオーバーライドされたイベントでは、動作が未定義になります。C# コンパイラはこれを正しく処理しないため、派生イベントのサブスクライバーが実際に基底クラスのイベントをサブスクライブするかどうかを予測できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
         <source>Event '{0}' should not be declared virtual</source>
-        <target state="needs-review-translation">イベント '{0}' を virtual として宣言することはできません。</target>
+        <target state="translated">イベント '{0}' を virtual として宣言することはできません</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
@@ -189,17 +189,17 @@
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
         <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
-        <target state="new">For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</target>
+        <target state="translated">参照型の場合、等値演算子の既定の実装はほとんどの場合正確です。既定では、2 つの参照は、同じオブジェクトを指している場合にのみ等しくなります。演算子の値が意味を持つ等価を示している場合は、その型によって 'System.IEquatable' ジェネリック インターフェイスを実装する必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
         <source>'{0}' should not overload the equality operator.</source>
-        <target state="new">'{0}' should not overload the equality operator.</target>
+        <target state="translated">'{0}' は等値演算子をオーバーロードすることはできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
         <source>Do not overload equality operator on reference types</source>
-        <target state="new">Do not overload equality operator on reference types</target>
+        <target state="translated">参照型で、等値演算子をオーバーロードしないでください</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -329,7 +329,7 @@
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
         <source>Remove redundant element initializer</source>
-        <target state="new">Remove redundant element initializer</target>
+        <target state="translated">要素の冗長な初期化子の削除</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
@@ -379,7 +379,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
         <source>Abstract types should not have public constructors</source>
-        <target state="needs-review-translation">抽象型はコンストラクターを含むことはできません</target>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
         <source>Abstract type '{0}' should not have public constructors</source>
-        <target state="needs-review-translation">抽象型 {0} はコンストラクターを含むことはできません</target>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -2049,12 +2049,12 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
         <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
-        <target state="needs-review-translation">共通言語ランタイムは、コンストラクターを実行する前にすべてのフィールドを既定値に初期化します。ほとんどの場合、コンストラクターでフィールドを既定値に初期化する処理は冗長です。これにより、パフォーマンスが低下し、保守コストが増加します。冗長でない 1 つの例として、コンストラクターが、同じクラスの別コンストラクターまたは基底クラスのコンストラクターを呼び出し、そのコンストラクターがフィールドを既定以外の値に初期化する場合があります。この場合、フィールドの値を変更して既定値に戻すのが適切なこともあります。</target>
+        <target state="translated">.NET ランタイムは、コンストラクターを実行する前に、参照型のすべてのフィールドを既定値に初期化します。ほとんどの場合、フィールドを明示的にコンストラクター内の既定値に初期化することは冗長であり、保守コストが増加し、パフォーマンスが低下 (アセンブリのサイズの増加など) する可能性があるため、明示的な初期化は除外できます。既定値を永続的に保持する静的な読み取り専用フィールドなどの場合には、定数またはプロパティに変更することをご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
         <source>Member '{0}' is explicitly initialized to its default value.</source>
-        <target state="new">Member '{0}' is explicitly initialized to its default value.</target>
+        <target state="translated">メンバー '{0}' が明示的に既定値に初期化されています。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2109,7 +2109,7 @@
       </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
         <source>Consider making '{0}' not externally visible</source>
-        <target state="new">Consider making '{0}' not externally visible</target>
+        <target state="translated">'{0}' の外部からの参照を不可能に設定することを検討してください</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2199,7 +2199,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
         <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
-        <target state="new">Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</target>
+        <target state="translated">インデックス '{0}' に要素の冗長な初期化があります。オブジェクト初期化子に、同じインデックスを持つ別の要素の初期化子が指定されており、この値を上書きしています。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">
