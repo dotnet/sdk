@@ -230,6 +230,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.SourceFiles.Add("App.xaml.cs", _fileUseWindowsType);
             testProject.AdditionalProperties.Add("UseWPF", "true");
+            testProject.AdditionalProperties.Add("TargetPlatformIdentifier", "Windows");
 
             var asset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -239,6 +240,53 @@ namespace Microsoft.NET.Build.Tests
                 .Execute()
                 .Should()
                 .Pass();
+        }
+
+        [WindowsOnlyFact]
+        public void When_TargetPlatformVersion_is_set_higher_than_10_It_can_reference_cswinrt_api()
+        {
+            const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";
+
+            const string tfm = "net5.0";
+
+            var testProject = new TestProject()
+            {
+                Name = ProjectName,
+                TargetFrameworks = tfm,
+                IsSdkProject = true,
+                IsWinExe = true,
+            };
+
+            testProject.SourceFiles.Add("Program.cs", _useCsWinrtApi);
+            testProject.AdditionalProperties.Add("TargetPlatformIdentifier", "Windows");
+            testProject.AdditionalProperties.Add("TargetPlatformVersion", "10.0.17763");
+
+            var asset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            void Assert(DirectoryInfo outputDir)
+            {
+                outputDir.File("Microsoft.Windows.SDK.NET.dll").Exists.Should().BeTrue("The output has cswinrt dll");
+                outputDir.File("WinRT.Runtime.dll").Exists.Should().BeTrue("The output has cswinrt dll");
+                var runtimeconfigjson = File.ReadAllText(outputDir.File(ProjectName + ".runtimeconfig.json").FullName);
+                runtimeconfigjson.Contains(@"""name"": ""Microsoft.NETCore.App""").Should().BeTrue("runtimeconfig.json only reference Microsoft.NETCore.App");
+                runtimeconfigjson.Contains("Microsoft.Windows.SDK.NET").Should().BeFalse("runtimeconfig.json does not reference windows SDK");
+            }
+
+            Assert(buildCommand.GetOutputDirectory(tfm));
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(asset.Path, ProjectName));
+            var runtimeIdentifier = "win-x64";
+            publishCommand.Execute("-p:SelfContained=true", $"-p:RuntimeIdentifier={runtimeIdentifier}")
+                .Should()
+                .Pass();
+
+            Assert(publishCommand.GetOutputDirectory(tfm, runtimeIdentifier: runtimeIdentifier));
         }
 
         private TestAsset CreateWindowsDesktopSdkTestAsset(string projectName, string uiFrameworkProperty)
@@ -289,6 +337,23 @@ namespace wpf
     {
         static void Main(string[] args)
         {
+        }
+    }
+}
+";
+
+        private readonly string _useCsWinrtApi = @"
+using System;
+using Windows.Data.Json;
+
+namespace consolecswinrt
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var rootObject = JsonObject.Parse(""{\""greet\"": \""Hello\""}"");
+            Console.WriteLine(rootObject[""greet""]);
         }
     }
 }
