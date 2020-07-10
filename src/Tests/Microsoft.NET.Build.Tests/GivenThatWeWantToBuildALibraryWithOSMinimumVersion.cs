@@ -9,7 +9,6 @@ using Xunit;
 using FluentAssertions;
 using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Runtime.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -40,6 +39,7 @@ namespace Microsoft.NET.Build.Tests
             var targetPlatformIdentifier = "iOS";
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = targetPlatformIdentifier;
             testProject.AdditionalProperties["MinimumOSPlatform"] = "13.2";
+            testProject.AdditionalProperties["TargetPlatformVersion"] = "14.0";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -47,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
             runCommand.WorkingDirectory = Path.Combine(testAsset.TestRoot, testProject.Name);
             runCommand.Execute()
                 .Should()
-                .Pass().And.HaveStdOutContaining("PlatformName:ios13.2");
+                .Pass().And.HaveStdOutContaining("PlatformName:iOS13.2");
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
             runCommand.WorkingDirectory = Path.Combine(testAsset.TestRoot, testProject.Name);
             runCommand.Execute()
                 .Should()
-                .Pass().And.HaveStdOutContaining("PlatformName:ios13.2");
+                .Pass().And.HaveStdOutContaining("PlatformName:iOS13.2");
         }
 
         private static TestProject SetUpProject()
@@ -79,7 +79,6 @@ namespace Microsoft.NET.Build.Tests
             };
 
             testProject.SourceFiles["PrintAttribute.cs"] = _printAttribute;
-            testProject.SourceFiles[$"AttributeIsNotDefinedYetWorkaround.cs"] = _attributeIsNotDefinedYetWorkaround;
             return testProject;
         }
 
@@ -108,35 +107,6 @@ namespace CustomAttributesTestApp
     }
 }
 ";
-
-        private static readonly string _attributeIsNotDefinedYetWorkaround = @"
-namespace System.Runtime.Versioning
-{
-    [AttributeUsage(AttributeTargets.Assembly |
-                AttributeTargets.Class |
-                AttributeTargets.Constructor |
-                AttributeTargets.Event |
-                AttributeTargets.Method |
-                AttributeTargets.Module |
-                AttributeTargets.Property |
-                AttributeTargets.Struct,
-                AllowMultiple = true, Inherited = false)]
-    public sealed class MinimumOSPlatformAttribute : OSPlatformAttribute
-    {
-        public MinimumOSPlatformAttribute(string platformName) : base(platformName)
-        {
-        }
-    }
-
-    public abstract class OSPlatformAttribute : Attribute
-    {
-        private protected OSPlatformAttribute(string platformName)
-        {
-            PlatformName = platformName;
-        }
-        public string PlatformName { get; }
-    }
-}";
 
     }
 }
