@@ -135,7 +135,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_ExtraTrimmerArgs>--skip-unresolved true $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
       <TrimMode Condition=" '$(TrimMode)' == '' ">copyused</TrimMode>
-      <NoWarn Condition=" '$(TrimAnalysis)' != 'true' ">$(NoWarn);IL2006;IL2026;IL2043</NoWarn>
+      <NoWarn Condition=" '$(TrimAnalysis)' != 'true' ">$(NoWarn);IL2006;IL2026;IL2043;IL2046;IL2047</NoWarn>
     </PropertyGroup>
 
     <!-- Set a default value for TrimmerRemoveSymbols unless set explicitly. -->

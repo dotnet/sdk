@@ -194,7 +194,9 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("IL2006")
                 .And.NotHaveStdOutContaining("IL2026")
-                .And.NotHaveStdOutContaining("IL2043");
+                .And.NotHaveStdOutContaining("IL2043")
+                .And.NotHaveStdOutContaining("IL2046")
+                .And.NotHaveStdOutContaining("IL2047");
         }
 
         [Theory]
@@ -212,7 +214,9 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass()
                 .And.HaveStdOutContaining(stdout => new Regex("IL2006.*Program.IL_2006").IsMatch(stdout), "IL2006")
                 .And.HaveStdOutContaining(stdout => new Regex("IL2026.*Program.IL_2026.*Testing analysis warning IL2026").IsMatch(stdout), "IL2026")
-                .And.HaveStdOutContaining(stdout => new Regex("IL2043.*Program.get_IL_2043").IsMatch(stdout), "IL2043");
+                .And.HaveStdOutContaining(stdout => new Regex("IL2043.*Program.get_IL_2043").IsMatch(stdout), "IL2043")
+                .And.HaveStdOutContaining(stdout => new Regex("IL2046.*Program.Derived.IL_2046").IsMatch(stdout), "IL2046")
+                .And.HaveStdOutContaining(stdout => new Regex("IL2047.*Program.Derived.IL_2047").IsMatch(stdout), "IL2047");
         }
 
         [Theory]
@@ -850,6 +854,8 @@ public class Program
         IL_2006();
         IL_2026();
         _ = IL_2043;
+        new Derived().IL_2046();
+        new Derived().IL_2047();
     }
 
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
@@ -869,6 +875,22 @@ public class Program
     public static string IL_2043 {
         [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
         get => null;
+    }
+
+    public class Base
+    {
+        [RequiresUnreferencedCode(""Testing analysis warning IL2046"")]
+        public virtual void IL_2046() {}
+
+        public virtual string IL_2047() => null;
+    }
+
+    public class Derived : Base
+    {
+        public override void IL_2046() {}
+
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]
+        public override string IL_2047() => null;
     }
 }
 ";
