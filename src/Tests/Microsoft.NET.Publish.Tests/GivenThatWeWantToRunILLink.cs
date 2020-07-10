@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
@@ -178,6 +179,41 @@ namespace Microsoft.NET.Publish.Tests
             DoesImageHaveMethod(isTrimmableDll, "UnusedMethod").Should().BeFalse();
         }
 
+        [Theory]
+        [InlineData("net5.0")]
+        public void ILLink_analysis_warnings_are_disabled_by_default(string targetFramework)
+        {
+            var projectName = "AnalysisWarnings";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:_ExtraTrimmerArgs=--verbose")
+                .Should().Pass()
+                .And.NotHaveStdOutContaining("IL2006")
+                .And.NotHaveStdOutContaining("IL2026")
+                .And.NotHaveStdOutContaining("IL2043");
+        }
+
+        [Theory]
+        [InlineData("net5.0")]
+        public void ILLink_accepts_option_to_enable_analysis_warnings(string targetFramework)
+        {
+            var projectName = "AnalysisWarnings";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:TrimAnalysis=true", "/p:_ExtraTrimmerArgs=--verbose")
+                .Should().Pass()
+                .And.HaveStdOutContaining(stdout => new Regex("IL2006.*Program.IL_2006").IsMatch(stdout), "IL2006")
+                .And.HaveStdOutContaining(stdout => new Regex("IL2026.*Program.IL_2026.*Testing analysis warning IL2026").IsMatch(stdout), "IL2026")
+                .And.HaveStdOutContaining(stdout => new Regex("IL2043.*Program.get_IL_2043").IsMatch(stdout), "IL2043");
+        }
 
         [Theory]
         [InlineData("netcoreapp3.0")]
@@ -792,6 +828,52 @@ namespace Microsoft.NET.Publish.Tests
                                     new XAttribute("Include", "DisableFeature"),
                                     new XAttribute("Value", "true"),
                                     new XAttribute("Trim", trim.ToString ()))));
+        }
+
+        private TestProject CreateTestProjectWithAnalysisWarnings(string targetFramework, string projectName)
+        {
+            var testProject = new TestProject()
+            {
+                Name = projectName,
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+            };
+
+            testProject.SourceFiles[$"{projectName}.cs"] = @"
+using System;
+using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
+public class Program
+{
+    public static void Main()
+    {
+        IL_2006();
+        IL_2026();
+        _ = IL_2043;
+    }
+
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
+    public static string typeName;
+
+    public static void IL_2006()
+    {
+        _ = Type.GetType(typeName).GetMethod(""SomeMethod"");
+    }
+
+    [RequiresUnreferencedCode(""Testing analysis warning IL2026"")]
+    public static void IL_2026()
+    {
+    }
+
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
+    public static string IL_2043 {
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)]
+        get => null;
+    }
+}
+";
+
+            return testProject;
         }
 
         private TestProject CreateTestProjectForILLinkTesting(
