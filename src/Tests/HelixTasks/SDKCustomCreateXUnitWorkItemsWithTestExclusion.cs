@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 {
@@ -118,7 +119,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             xunitProject.TryGetMetadata("Arguments", out string arguments);
 
             string assemblyName = Path.GetFileName(targetPath);
-            if (!runtimeTargetFramework.Contains("core"))
+
+            var runtimeTargetFrameworkParsed = NuGetFramework.Parse(runtimeTargetFramework);
+            if (runtimeTargetFrameworkParsed.Framework != ".NETCoreApp")
             {
                 throw new NotImplementedException("does not support non core runtime target");
             }
