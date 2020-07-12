@@ -35,6 +35,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="AspNetCoreInProcessHosting" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!--
+      Unless the project explicitly set the property value to 'true' (case-insensitive),
+      default it to 'false'. Not specifying a value at all (or specifying an empty value)
+      will also default to 'false'. In .NET 5.0 this functionality is explicitly disabled
+      by default for web project types, and in future .NET releases the "disable by default"
+      logic will roll out to other project types.
+    -->
+    <EnableUnsafeBinaryFormatterSerialization Condition="'$(EnableUnsafeBinaryFormatterSerialization)' != 'true'">false</EnableUnsafeBinaryFormatterSerialization>
+  </PropertyGroup>
+
   <!--
     Newer versions of Visual Studio ship the designtime related properties in a targets file and all future design time only elements should be added there. If that file does not
     exist, it falls back to the default set of values defined here.

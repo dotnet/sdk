@@ -398,6 +398,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(InvariantGlobalization)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization"
+                                    Condition="'$(EnableUnsafeBinaryFormatterSerialization)' != ''"
+                                    Value="$(EnableUnsafeBinaryFormatterSerialization)"
+                                    Trim="true" />
   </ItemGroup>
 
   <!--
