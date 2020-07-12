@@ -169,7 +169,6 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true,
             };
             testProject.AdditionalProperties[propName] = propValue;
-            testProject.AdditionalProperties["TargetPlatformVersion"] = "7.0"; // Ensure TargetPlatformVersion is set so we can build with a TargetPlatformIdentifier
 
             var asset = _testAssetsManager.CreateTestProject(testProject);
 
