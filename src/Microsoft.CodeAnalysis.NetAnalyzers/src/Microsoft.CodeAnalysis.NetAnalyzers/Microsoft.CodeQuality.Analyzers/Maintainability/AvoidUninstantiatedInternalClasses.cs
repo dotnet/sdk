@@ -43,7 +43,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             analysisContext.RegisterCompilationStartAction(startContext =>
             {
-                var instantiatedTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
+                ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
                 var internalTypes = new ConcurrentDictionary<INamedTypeSymbol, object?>();
 
                 var compilation = startContext.Compilation;

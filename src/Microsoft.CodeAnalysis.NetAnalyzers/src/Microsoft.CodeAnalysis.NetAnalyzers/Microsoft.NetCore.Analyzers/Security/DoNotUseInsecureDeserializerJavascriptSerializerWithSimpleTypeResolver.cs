@@ -89,7 +89,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         (IMethodSymbol constructorMethod, IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
                         {
                             PropertySetAbstractValueKind kind;
-                            if (constructorMethod.Parameters.Length == 0)
+                            if (constructorMethod.Parameters.IsEmpty)
                             {
                                 kind = PropertySetAbstractValueKind.Unflagged;
                             }

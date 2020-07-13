@@ -157,7 +157,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void CheckNonFlags(INamedTypeSymbol namedType, ImmutableArray<IFieldSymbol> zeroValuedFields, Action<Diagnostic> addDiagnostic)
         {
-            if (zeroValuedFields.Length == 0)
+            if (zeroValuedFields.IsEmpty)
             {
                 // Add a member to {0} that has a value of zero with a suggested name of 'None'.
                 addDiagnostic(namedType.CreateDiagnostic(RuleNoZero, namedType.Name));

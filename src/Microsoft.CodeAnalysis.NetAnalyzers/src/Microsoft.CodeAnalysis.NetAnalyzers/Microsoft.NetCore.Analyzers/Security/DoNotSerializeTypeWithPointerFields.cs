@@ -59,8 +59,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                     }
 
                     var nonSerializedAttribute = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNonSerializedAttribute);
-                    var visitedType = new ConcurrentDictionary<ITypeSymbol, bool>();
-                    var pointerFields = new ConcurrentDictionary<IFieldSymbol, bool>();
+                    ConcurrentDictionary<ITypeSymbol, bool> visitedType = new ConcurrentDictionary<ITypeSymbol, bool>();
+                    ConcurrentDictionary<IFieldSymbol, bool> pointerFields = new ConcurrentDictionary<IFieldSymbol, bool>();
 
                     compilationStartAnalysisContext.RegisterSymbolAction(
                         (SymbolAnalysisContext symbolAnalysisContext) =>

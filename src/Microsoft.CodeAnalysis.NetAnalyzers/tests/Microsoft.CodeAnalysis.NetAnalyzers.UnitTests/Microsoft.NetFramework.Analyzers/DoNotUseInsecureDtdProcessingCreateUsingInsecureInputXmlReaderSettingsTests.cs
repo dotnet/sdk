@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
@@ -455,9 +456,11 @@ End Namespace");
         }
 
         [Fact]
-        public async Task RealCodeSnippitFromCustomerShouldGenerateDiagnostic()
+        public async Task RealCodeSnippetFromCustomerPre452ShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 using System;
 using System.IO;
 using System.Xml;
@@ -506,7 +509,9 @@ namespace TestNamespace
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(15, 38)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net451.Default,
+                @"
 Imports System
 Imports System.IO
 Imports System.Xml
@@ -545,6 +550,102 @@ Namespace TestNamespace
     End Class
 End Namespace",
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(11, 31)
+            );
+        }
+
+        [Fact]
+        public async Task RealCodeSnippetFromCustomerPost452ShouldNotGenerateDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
+using System;
+using System.IO;
+using System.Xml;
+
+namespace TestNamespace
+{
+    class TestClass
+    {         
+        public static string TestMethod(string inputRule)
+        {
+            string outputRule;
+            try
+            {
+                XmlDocument xmlDoc = new XmlDocument();         // ok
+                StringReader stringReader = new StringReader(inputRule);
+                XmlTextReader textReader = new XmlTextReader(stringReader)
+                {
+                    DtdProcessing = DtdProcessing.Ignore,
+                    XmlResolver = null
+                };
+                XmlReaderSettings settings = new XmlReaderSettings
+                {
+                    ConformanceLevel = ConformanceLevel.Auto,
+                    IgnoreComments = true,
+                    DtdProcessing = DtdProcessing.Ignore,
+                    XmlResolver = null
+                };
+                XmlReader reader = XmlReader.Create(textReader, settings);
+                xmlDoc.Load(reader);
+                XmlAttribute enabledAttribute = xmlDoc.CreateAttribute(""enabled"");
+                XmlAttributeCollection ruleAttrColl = xmlDoc.DocumentElement.Attributes;
+                XmlAttribute nameAttribute = (XmlAttribute)ruleAttrColl.GetNamedItem(""name"");
+                ruleAttrColl.Remove(ruleAttrColl[""enabled""]);
+                ruleAttrColl.InsertAfter(enabledAttribute, nameAttribute);
+                outputRule = xmlDoc.OuterXml;
+            }
+            catch (XmlException e)
+            {
+                throw new Exception(""Compliance policy parsing error"", e);
+            }
+            return outputRule;
+        }
+    }
+}
+"
+            );
+
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
+Imports System
+Imports System.IO
+Imports System.Xml
+
+Namespace TestNamespace
+    Class TestClass
+        Public Shared Function TestMethod(inputRule As String) As String
+            Dim outputRule As String
+            Try
+                Dim xmlDoc As New XmlDocument()
+                ' ok
+                Dim stringReader As New StringReader(inputRule)
+                Dim textReader As New XmlTextReader(stringReader) With { _
+                    .DtdProcessing = DtdProcessing.Ignore, _
+                    .XmlResolver = Nothing _
+                }
+                Dim settings As New XmlReaderSettings() With { _
+                    .ConformanceLevel = ConformanceLevel.Auto, _
+                    .IgnoreComments = True, _
+                    .DtdProcessing = DtdProcessing.Ignore, _
+                    .XmlResolver = Nothing _
+                }
+                Dim reader As XmlReader = XmlReader.Create(textReader, settings)
+                xmlDoc.Load(reader)
+                Dim enabledAttribute As XmlAttribute = xmlDoc.CreateAttribute(""enabled"")
+                Dim ruleAttrColl As XmlAttributeCollection = xmlDoc.DocumentElement.Attributes
+                Dim nameAttribute As XmlAttribute = DirectCast(ruleAttrColl.GetNamedItem(""name""), XmlAttribute)
+                ruleAttrColl.Remove(ruleAttrColl(""enabled""))
+                ruleAttrColl.InsertAfter(enabledAttribute, nameAttribute)
+                outputRule = xmlDoc.OuterXml
+            Catch e As XmlException
+                Throw New Exception(""Compliance policy parsing error"", e)
+            End Try
+            Return outputRule
+        End Function
+    End Class
+End Namespace"
             );
         }
     }

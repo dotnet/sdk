@@ -1283,7 +1283,9 @@ End Namespace",
         [Fact]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingProhibitTargetFx46ShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net46.Default,
+                @"
 using System;
 using System.Reflection;               
 using System.Xml;   
@@ -1304,7 +1306,9 @@ namespace TestNamespace
 "
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net46.Default,
+                @"
 Imports System.Reflection
 Imports System.Xml
 
@@ -1323,7 +1327,9 @@ End Namespace");
         [Fact]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingProhibitTargetFx452ShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 using System;
 using System.Reflection;               
 using System.Xml;   
@@ -1344,7 +1350,9 @@ namespace TestNamespace
 "
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net452.Default,
+                @"
 Imports System.Reflection
 Imports System.Xml
 

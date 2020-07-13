@@ -88,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     ImmutableHashSet<INamedTypeSymbol> tooGenericExceptionSymbols = CreateSymbolSet(compilationStartContext.Compilation, s_tooGenericExceptions);
                     ImmutableHashSet<INamedTypeSymbol> reservedExceptionSymbols = CreateSymbolSet(compilationStartContext.Compilation, s_reservedExceptions); ;
 
-                    if (tooGenericExceptionSymbols.Count == 0 && reservedExceptionSymbols.Count == 0)
+                    if (tooGenericExceptionSymbols.IsEmpty && reservedExceptionSymbols.IsEmpty)
                     {
                         return;
                     }

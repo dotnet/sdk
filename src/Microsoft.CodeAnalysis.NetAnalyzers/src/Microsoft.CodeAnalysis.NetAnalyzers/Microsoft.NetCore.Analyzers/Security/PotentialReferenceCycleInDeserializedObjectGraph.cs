@@ -12,19 +12,19 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.NetCore.Analyzers.Security
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class DoNotReferSelfInSerializableClass : DiagnosticAnalyzer
+    public sealed class PotentialReferenceCycleInDeserializedObjectGraph : DiagnosticAnalyzer
     {
         internal const string DiagnosticId = "CA5362";
         private static readonly LocalizableString s_Title = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotReferSelfInSerializableClass),
+            nameof(MicrosoftNetCoreAnalyzersResources.PotentialReferenceCycleInDeserializedObjectGraphTitle),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_Message = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotReferSelfInSerializableClassMessage),
+            nameof(MicrosoftNetCoreAnalyzersResources.PotentialReferenceCycleInDeserializedObjectGraphMessage),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_Description = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotReferSelfInSerializableClassDescription),
+            nameof(MicrosoftNetCoreAnalyzersResources.PotentialReferenceCycleInDeserializedObjectGraphDescription),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
 
@@ -66,14 +66,14 @@ namespace Microsoft.NetCore.Analyzers.Security
                         return;
                     }
 
-                    var forwardGraph = new ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>>();
-                    var invertedGraph = new ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>>();
+                    ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>> forwardGraph = new ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>>();
+                    ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>> invertedGraph = new ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>>();
 
                     // It keeps the out Degree of every vertex in the invertedGraph, which is corresponding to the in Degree of the vertex in forwardGraph.
-                    var inDegree = new ConcurrentDictionary<ISymbol, int>();
+                    ConcurrentDictionary<ISymbol, int> inDegree = new ConcurrentDictionary<ISymbol, int>();
 
                     // It Keeps the out degree of every vertex in the forwardGraph, which is corresponding to the in Degree of the vertex in invertedGraph.
-                    var outDegree = new ConcurrentDictionary<ISymbol, int>();
+                    ConcurrentDictionary<ISymbol, int> outDegree = new ConcurrentDictionary<ISymbol, int>();
 
                     compilationStartAnalysisContext.RegisterSymbolAction(
                         (SymbolAnalysisContext symbolAnalysisContext) =>

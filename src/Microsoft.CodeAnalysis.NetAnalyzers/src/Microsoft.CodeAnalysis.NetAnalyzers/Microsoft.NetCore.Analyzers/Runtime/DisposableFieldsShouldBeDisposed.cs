@@ -53,6 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     Debug.Assert(!field.IsStatic);
                     Debug.Assert(disposeAnalysisHelper!.IsDisposable(field.Type));
+                    RoslynDebug.Assert(fieldDisposeValueMap != null);
 
                     fieldDisposeValueMap.AddOrUpdate(field,
                         addValue: disposed,
@@ -62,7 +63,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var hasErrors = false;
                 compilationContext.RegisterOperationAction(_ => hasErrors = true, OperationKind.Invalid);
 
-                var compilation = compilationContext.Compilation;
+                Compilation compilation = compilationContext.Compilation;
 
                 // Disposable fields with initializer at declaration must be disposed.
                 compilationContext.RegisterOperationAction(operationContext =>
@@ -133,7 +134,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                     var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
                                         operationBlockStartContext.Options, Rule, InterproceduralAnalysisKind.None, operationBlockStartContext.CancellationToken);
                                     var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(cfg,
-                                        containingMethod, operationBlockStartContext.Options, wellKnownTypeProvider, interproceduralAnalysisConfig,
+                                        containingMethod, operationBlockStartContext.Options, wellKnownTypeProvider,
+                                        PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties,
+                                        interproceduralAnalysisConfig,
                                         interproceduralAnalysisPredicateOpt: null,
                                         pessimisticAnalysis: false, performCopyAnalysis: false);
                                     if (pointsToAnalysisResult == null)
@@ -166,7 +169,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (!disposableFields.IsEmpty)
                         {
                             if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockStartContext.OperationBlocks, containingMethod,
-                                operationBlockStartContext.Options, Rule, trackInstanceFields: true, trackExceptionPaths: false, cancellationToken: operationBlockStartContext.CancellationToken,
+                                operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, trackInstanceFields: true, trackExceptionPaths: false, cancellationToken: operationBlockStartContext.CancellationToken,
                                 disposeAnalysisResult: out var disposeAnalysisResult, pointsToAnalysisResult: out var pointsToAnalysisResult))
                             {
                                 RoslynDebug.Assert(disposeAnalysisResult.TrackedInstanceFieldPointsToMap != null);

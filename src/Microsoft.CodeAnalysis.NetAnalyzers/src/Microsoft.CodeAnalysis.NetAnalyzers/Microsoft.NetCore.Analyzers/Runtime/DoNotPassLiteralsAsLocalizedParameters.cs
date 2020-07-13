@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis;
 using Analyzer.Utilities.PooledObjects;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -66,7 +67,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    var lazyValueContentResult = new Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?>(
+                    Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?> lazyValueContentResult = new Lazy<DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>?>(
                         valueFactory: ComputeValueContentAnalysisResult, isThreadSafe: false);
 
                     operationBlockStartContext.RegisterOperationAction(operationContext =>
@@ -118,7 +119,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             ValueContentAbstractValue stringContentValue = lazyValueContentResult.Value[operation.Kind, operation.Syntax];
                             if (stringContentValue.IsLiteralState)
                             {
-                                Debug.Assert(stringContentValue.LiteralValues.Count > 0);
+                                Debug.Assert(!stringContentValue.LiteralValues.IsEmpty);
 
                                 if (stringContentValue.LiteralValues.Any(l => !(l is string)))
                                 {
@@ -165,7 +166,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         {
                             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartContext.Compilation);
                             return ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,
-                                operationBlockStartContext.Options, Rule, operationBlockStartContext.CancellationToken);
+                                operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, operationBlockStartContext.CancellationToken);
                         }
 
                         return null;

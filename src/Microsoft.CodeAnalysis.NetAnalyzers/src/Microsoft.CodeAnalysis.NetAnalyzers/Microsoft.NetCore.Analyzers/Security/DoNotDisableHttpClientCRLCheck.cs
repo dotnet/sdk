@@ -158,7 +158,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                     if (objectCreationOperation.Type.GetBaseTypesAndThis().Contains(httpClientTypeSymbol))
                                     {
-                                        if (objectCreationOperation.Arguments.Length != 0)
+                                        if (!objectCreationOperation.Arguments.IsEmpty)
                                         {
                                             lock (rootOperationsNeedingAnalysis)
                                             {

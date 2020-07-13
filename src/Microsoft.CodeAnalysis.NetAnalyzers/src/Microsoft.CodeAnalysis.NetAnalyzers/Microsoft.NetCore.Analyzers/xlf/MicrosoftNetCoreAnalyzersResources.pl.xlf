@@ -587,21 +587,6 @@
         <target state="translated">Nie zgłaszaj wyjątków zastrzeżonych typów</target>
         <note />
       </trans-unit>
-      <trans-unit id="DoNotReferSelfInSerializableClass">
-        <source>Do Not Refer Self In Serializable Class</source>
-        <target state="translated">Nie przywołuj klasy możliwej do serializacji w niej samej</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotReferSelfInSerializableClassDescription">
-        <source>This can allow an attacker to DOS or exhaust the memory of the process.</source>
-        <target state="translated">Może to umożliwić atakującemu przeprowadzenie ataku DoS lub wyczerpanie pamięci procesu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DoNotReferSelfInSerializableClassMessage">
-        <source>{0} participates in a potential reference cycle</source>
-        <target state="translated">Element {0} należy do potencjalnego cyklu odwołań</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFields">
         <source>Do Not Serialize Types With Pointer Fields</source>
         <target state="translated">Nie serializuj typów z polami wskaźników</target>
@@ -1341,6 +1326,21 @@
       <trans-unit id="PInvokesShouldNotBeVisibleTitle">
         <source>P/Invokes should not be visible</source>
         <target state="translated">Elementy P/Invoke nie powinny być widoczne</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
+        <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>
+        <target state="new">Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphMessage">
+        <source>{0} participates in a potential reference cycle</source>
+        <target state="new">{0} participates in a potential reference cycle</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphTitle">
+        <source>Potential reference cycle in deserialized object graph</source>
+        <target state="new">Potential reference cycle in deserialized object graph</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">

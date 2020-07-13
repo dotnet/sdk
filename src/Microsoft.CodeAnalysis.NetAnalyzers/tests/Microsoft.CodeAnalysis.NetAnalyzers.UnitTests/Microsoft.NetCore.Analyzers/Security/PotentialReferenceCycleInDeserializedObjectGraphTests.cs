@@ -4,15 +4,15 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Security.DoNotReferSelfInSerializableClass,
+    Microsoft.NetCore.Analyzers.Security.PotentialReferenceCycleInDeserializedObjectGraph,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Security.DoNotReferSelfInSerializableClass,
+    Microsoft.NetCore.Analyzers.Security.PotentialReferenceCycleInDeserializedObjectGraph,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    public class DoNotReferSelfInSerializableClassTests
+    public class PotentialReferenceCycleInDeserializedObjectGraphTests
     {
         [Fact]
         public async Task TestSelfReferDirectlyDiagnostic()

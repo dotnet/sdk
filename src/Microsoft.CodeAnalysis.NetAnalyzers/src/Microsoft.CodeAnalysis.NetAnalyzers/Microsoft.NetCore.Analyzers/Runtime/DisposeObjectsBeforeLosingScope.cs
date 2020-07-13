@@ -101,7 +101,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         null;
 
                     if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockContext.OperationBlocks, containingMethod,
-                        operationBlockContext.Options, NotDisposedRule, trackInstanceFields: false, trackExceptionPaths,
+                        operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.Complete, trackInstanceFields: false, trackExceptionPaths,
                         operationBlockContext.CancellationToken, out var disposeAnalysisResult, out var pointsToAnalysisResult,
                         interproceduralAnalysisPredicateOpt))
                     {
@@ -219,7 +219,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 var isNotDisposed = disposeValue.Kind == DisposeAbstractValueKind.NotDisposed ||
-                    (disposeValue.DisposingOrEscapingOperations.Count > 0 &&
+                    (!disposeValue.DisposingOrEscapingOperations.IsEmpty &&
                      disposeValue.DisposingOrEscapingOperations.All(d => d.IsInsideCatchRegion(disposeAnalysisResult.ControlFlowGraph) && !location.GetTopOfCreationCallStackOrCreation().IsInsideCatchRegion(disposeAnalysisResult.ControlFlowGraph)));
                 var isMayBeNotDisposed = !isNotDisposed && (disposeValue.Kind == DisposeAbstractValueKind.MaybeDisposed || disposeValue.Kind == DisposeAbstractValueKind.NotDisposedOrEscaped);
 
