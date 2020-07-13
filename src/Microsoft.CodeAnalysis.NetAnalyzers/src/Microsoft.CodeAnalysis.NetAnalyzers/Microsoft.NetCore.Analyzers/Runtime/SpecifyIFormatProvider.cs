@@ -60,6 +60,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
+        private static readonly ImmutableArray<string> s_dateInvariantFormats = ImmutableArray.Create("o", "O", "r", "R", "s", "u");
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(IFormatProviderAlternateStringRule, IFormatProviderAlternateRule, UICultureStringRule, UICultureRule);
 
         public override void Initialize(AnalysisContext analysisContext)
@@ -283,7 +285,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if ((dateTimeType != null && targetMethod.ContainingType.Equals(dateTimeType)) ||
                 (dateTimeOffsetType != null && targetMethod.ContainingType.Equals(dateTimeOffsetType)))
             {
-                return format == "o" || format == "O" || format == "r" || format == "R" || format == "s" || format == "u";
+                return s_dateInvariantFormats.Contains(format);
             }
 
             if (timeSpanType != null && targetMethod.ContainingType.Equals(timeSpanType))
