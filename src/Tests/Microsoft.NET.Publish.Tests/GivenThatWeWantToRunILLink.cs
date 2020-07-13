@@ -10,6 +10,7 @@ using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
@@ -98,6 +99,30 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, projectName).Should().BeTrue();
             DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeFalse();
             DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
+        }
+
+        [RequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("net5.0")]
+        public void ILLink_links_simple_app_without_warnings_and_it_runs(string targetFramework)
+        {
+            var projectName = "HelloWorld";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:PublishTrimmed=true")
+                .Should().Pass()
+                .And.NotHaveStdOutMatching(@"IL\d\d\d\d");
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
+            var exe = Path.Combine(publishDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            var command = new RunExeCommand(Log, exe)
+                .Execute().Should().Pass()
+                .And.HaveStdOutContaining("Hello world");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -212,11 +237,11 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:TrimAnalysis=true", "/p:_ExtraTrimmerArgs=--verbose")
                 .Should().Pass()
-                .And.HaveStdOutContaining(stdout => new Regex("IL2006.*Program.IL_2006").IsMatch(stdout), "IL2006")
-                .And.HaveStdOutContaining(stdout => new Regex("IL2026.*Program.IL_2026.*Testing analysis warning IL2026").IsMatch(stdout), "IL2026")
-                .And.HaveStdOutContaining(stdout => new Regex("IL2043.*Program.get_IL_2043").IsMatch(stdout), "IL2043")
-                .And.HaveStdOutContaining(stdout => new Regex("IL2046.*Program.Derived.IL_2046").IsMatch(stdout), "IL2046")
-                .And.HaveStdOutContaining(stdout => new Regex("IL2047.*Program.Derived.IL_2047").IsMatch(stdout), "IL2047");
+                .And.HaveStdOutMatching("IL2006.*Program.IL_2006")
+                .And.HaveStdOutMatching("IL2026.*Program.IL_2026.*Testing analysis warning IL2026")
+                .And.HaveStdOutMatching("IL2043.*Program.get_IL_2043")
+                .And.HaveStdOutMatching("IL2046.*Program.Derived.IL_2046")
+                .And.HaveStdOutMatching("IL2047.*Program.Derived.IL_2047");
         }
 
         [Theory]
@@ -911,6 +936,7 @@ public class Program
                 Name = mainProjectName,
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true,
+                IsExe = true
             };
 
             testProject.SourceFiles[$"{mainProjectName}.cs"] = @"
