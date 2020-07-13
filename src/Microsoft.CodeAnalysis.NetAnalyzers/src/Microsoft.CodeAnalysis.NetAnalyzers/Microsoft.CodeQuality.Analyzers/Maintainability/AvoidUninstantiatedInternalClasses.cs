@@ -16,8 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// <summary>
     /// CA1812: Avoid uninstantiated internal classes
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class AvoidUninstantiatedInternalClassesAnalyzer : DiagnosticAnalyzer
+    public abstract class AvoidUninstantiatedInternalClassesAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1812";
 
@@ -35,9 +34,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public abstract void RegisterLanguageSpecificChecks(CompilationStartAnalysisContext startContext, ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes);
+
+        public sealed override void Initialize(AnalysisContext analysisContext)
         {
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
@@ -73,6 +74,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 var mef2ExportAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCompositionExportAttribute);
                 var coClassAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesCoClassAttribute);
                 var designerAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelDesignerAttribute);
+
+                RegisterLanguageSpecificChecks(startContext, instantiatedTypes);
 
                 startContext.RegisterOperationAction(context =>
                 {
