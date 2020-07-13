@@ -14,12 +14,12 @@ foreach($line in ([System.IO.File]::ReadLines($testsProjectCannotRunOnHelixListP
     {
         if ($testProject.FullName.Contains($line.Trim())) {
             $passInArgs = @("-test") + $args + @("-projects", $testProject.FullName)
-            $anyError = false
+            $anyError = $false
             try {
                 Invoke-Expression "& $buildshScriptPath $passInArgs"
             }
             catch {
-                anyError = true
+                anyError = $true
             }
 
             if ($anyError)
