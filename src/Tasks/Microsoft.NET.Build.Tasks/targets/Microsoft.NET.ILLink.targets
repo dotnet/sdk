@@ -38,6 +38,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkInformation ResourceName="ILLink_Info" />
 
+    <NETSdkError Condition="'$(_ILLinkExitCode)' != '' And '$(_ILLinkExitCode)' != '0'" ResourceName="ILLinkFailed" />
+
     <ItemGroup>
       <_LinkedResolvedFileToPublish Include="@(_LinkedResolvedFileToPublishCandidate)" Condition="Exists('%(Identity)')" />
       <ResolvedFileToPublish Remove="@(ManagedAssemblyToLink)" />
@@ -105,9 +107,12 @@ Copyright (c) .NET Foundation. All rights reserved.
             DumpDependencies="$(_TrimmerDumpDependencies)"
             ExtraArgs="$(_ExtraTrimmerArgs)"
             ToolExe="$(_DotNetHostFileName)"
-            ToolPath="$(_DotNetHostDirectory)" />
+            ToolPath="$(_DotNetHostDirectory)"
+            ContinueOnError="ErrorAndContinue">
+        <Output TaskParameter="ExitCode" PropertyName="_ILLinkExitCode" />
+      </ILLink>
 
-     <Touch Files="$(_LinkSemaphore)" AlwaysCreate="true" />
+     <Touch Files="$(_LinkSemaphore)" AlwaysCreate="true" Condition=" '$(_ILLinkExitCode)' == '0' " />
 
   </Target>
 
