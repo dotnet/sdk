@@ -1495,12 +1495,14 @@ namespace SomeNamespace
 }",
                         @"
 using MyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.C>;
+using MyAliasOfMyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.MyAliasType<SomeNamespace.C>>;
 
 public class CC
 {
     public void M()
     {
         MyAliasOfC.DoSomething();
+        MyAliasOfMyAliasOfC.DoSomething();
     }
 }
 ",

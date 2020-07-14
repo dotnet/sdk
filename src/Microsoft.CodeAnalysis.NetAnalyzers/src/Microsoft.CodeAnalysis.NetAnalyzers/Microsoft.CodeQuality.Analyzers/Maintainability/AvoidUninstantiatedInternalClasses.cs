@@ -371,11 +371,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             return false;
         }
 
-
-
-        // If a type is passed a generic argument to another type or a method that specifies that the type must have a constructor,
-        // we presume that the method will be constructing the type, and add it to the list of instantiated types.
-
+        /// <summary>
+        /// If a type is passed a generic argument to another type or a method that specifies that the type must have a constructor,
+        /// we presume that the method will be constructing the type, and add it to the list of instantiated types.
+        /// </summary>
         protected void ProcessGenericTypes(IEnumerable<(ITypeParameterSymbol param, ITypeSymbol arg)> generics, ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes)
         {
             foreach (var (typeParam, typeArg) in generics)
