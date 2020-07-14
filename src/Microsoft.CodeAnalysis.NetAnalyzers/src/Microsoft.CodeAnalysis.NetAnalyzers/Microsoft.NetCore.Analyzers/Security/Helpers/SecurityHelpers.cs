@@ -112,6 +112,24 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 "Deserialize",
                 "DeserializeObject");
 
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Web.UI.ObjectStateFormatter"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> ObjectStateFormatterDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Deserialize");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Runtime.Serialization.Formatters.Soap.SoapFormatter"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> SoapFormatterDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Deserialize");
+
         private static readonly ImmutableDictionary<Type, ResourceManager> ResourceManagerMapping =
             ImmutableDictionary.CreateRange<Type, ResourceManager>(
                 new[]
@@ -150,6 +168,24 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 StringComparer.Ordinal,
                 "Deserialize",
                 "Populate");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Data.DataTable"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> DataTableDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "ReadXml");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Data.DataSet"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> DataSetDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "ReadXml");
 
         /// <summary>
         /// Gets a <see cref="LocalizableResourceString"/> from <see cref="MicrosoftNetCoreAnalyzersResources"/>.
