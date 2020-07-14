@@ -175,7 +175,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         WellKnownTypeNames.MicrosoftAspNetCoreHttpCookieOptions,
                                         constructorMapper,
                                         PropertyMappers,
-                                        InvocationMapperCollection.Empty,
                                         hazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,

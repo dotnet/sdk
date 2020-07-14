@@ -180,7 +180,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         WellKnownTypeNames.SystemSecurityCryptographyX509CertificatesX509Store,
                                         constructorMapper,
                                         PropertyMappers,
-                                        InvocationMapperCollection.Empty,
                                         hazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,

@@ -1281,6 +1281,31 @@ End Namespace",
         }
 
         [Fact]
+        public async Task ConstructXmlTextReaderOnlySetDtdProcessingProhibitTargetFx451ShouldNotGenerateDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Reflection;               
+using System.Xml;   
+
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute("".NETFramework,Version=v4.5.1"", FrameworkDisplayName = "".NET Framework 4.5.1"")]
+
+namespace TestNamespace
+{
+    public class TestClass
+    {
+        public void TestMethod(string path)
+        {
+            XmlTextReader reader = new XmlTextReader(path);
+            reader.DtdProcessing = DtdProcessing.Prohibit;
+        }
+    }
+}
+"
+            );
+        }
+
+        [Fact]
         public async Task ConstructXmlTextReaderOnlySetDtdProcessingProhibitTargetFx46ShouldNotGenerateDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(

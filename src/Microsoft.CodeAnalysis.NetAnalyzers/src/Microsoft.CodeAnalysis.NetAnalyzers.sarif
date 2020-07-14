@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Humanizer",
-        "version": "2.9.9",
+        "version": "2.9.10",
         "language": "en-US"
       },
       "rules": {
@@ -14,7 +14,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "2.9.9",
+        "version": "2.9.10",
         "language": "en-US"
       },
       "rules": {
@@ -377,7 +377,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "2.9.9",
+        "version": "2.9.10",
         "language": "en-US"
       },
       "rules": {
@@ -424,8 +424,8 @@
         },
         "CA1010": {
           "id": "CA1010",
-          "shortDescription": "Collections should implement generic interface",
-          "fullDescription": "To broaden the usability of a collection, implement one of the generic collection interfaces. Then the collection can be used to populate generic collection types.",
+          "shortDescription": "Generic interface should also be implemented",
+          "fullDescription": "To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1010",
           "properties": {
@@ -1782,7 +1782,7 @@
         "CA1822": {
           "id": "CA1822",
           "shortDescription": "Mark members as static",
-          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static (Shared in Visual Basic). After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
+          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1822",
           "properties": {
@@ -2765,6 +2765,122 @@
             ]
           }
         },
+        "CA2350": {
+          "id": "CA2350",
+          "shortDescription": "Do not use insecure deserialization with DataTable.ReadXml()",
+          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2350",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotUseDataTableReadXml",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2351": {
+          "id": "CA2351",
+          "shortDescription": "Do not use insecure deserialization with DataSet.ReadXml()",
+          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2351",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotUseDataSetReadXml",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2352": {
+          "id": "CA2352",
+          "shortDescription": "Do not use DataSet.ReadXml() without ReadXmlSchema() on untrusted data",
+          "fullDescription": "When deserializing untrusted input, DataSet.ReadXml() without first calling DataSet.ReadXmlSchema() is insecure.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2352",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotUseDataSetReadXmlWithoutReadXmlSchema",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Dataflow",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2353": {
+          "id": "CA2353",
+          "shortDescription": "Ensure DataSet.ReadXmlSchema() is called before ReadXml() on untrusted data",
+          "fullDescription": "When deserializing untrusted input, DataSet.ReadXml() without first calling DataSet.ReadXmlSchema() is insecure.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2353",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotUseDataSetReadXmlWithoutReadXmlSchema",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Dataflow",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2354": {
+          "id": "CA2354",
+          "shortDescription": "Unsafe DataSet/DataTable object declared in serializable type",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2354",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "DataSetDataTableInSerializableTypeAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2355": {
+          "id": "CA2355",
+          "shortDescription": "Unsafe DataSet/DataTable type in deserializable object graph",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2355",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "DataSetDataTableInSerializableObjectGraphAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
         "CA3001": {
           "id": "CA3001",
           "shortDescription": "Review code for SQL injection vulnerabilities",
@@ -3102,8 +3218,8 @@
         },
         "CA5358": {
           "id": "CA5358",
-          "shortDescription": "Do Not Use Unsafe Cipher Modes",
-          "fullDescription": "These modes are vulnerable to attacks. Use only approved modes (CBC, CTS).",
+          "shortDescription": "Review cipher mode usage with cryptography experts",
+          "fullDescription": "These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5358",
           "properties": {
@@ -3997,7 +4113,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "2.9.9",
+        "version": "2.9.10",
         "language": "en-US"
       },
       "rules": {

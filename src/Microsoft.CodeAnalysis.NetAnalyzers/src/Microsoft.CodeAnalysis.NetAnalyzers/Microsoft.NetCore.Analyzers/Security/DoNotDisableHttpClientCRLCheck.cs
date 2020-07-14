@@ -192,7 +192,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         typeToTrackMetadataNames,
                                         ConstructorMapper,
                                         PropertyMappers,
-                                        InvocationMapperCollection.Empty,
                                         HazardousUsageEvaluators,
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,
