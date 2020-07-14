@@ -13,24 +13,20 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpAvoidUninstantiatedInternalClasses : AvoidUninstantiatedInternalClassesAnalyzer
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisPerformance", "RS1012:Start action has no registered actions.", Justification = "End action is registered in parent class.")]
-        public override void RegisterLanguageSpecificChecks(CompilationStartAnalysisContext startContext, ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes)
+        public override void RegisterLanguageSpecificChecks(CompilationStartAnalysisContext context, ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes)
         {
-            startContext.RegisterSyntaxNodeAction(context =>
+            context.RegisterSyntaxNodeAction(context =>
             {
                 var usingDirective = (UsingDirectiveSyntax)context.Node;
 
                 if (usingDirective.Alias != null &&
+                    usingDirective.DescendantNodes().OfType<GenericNameSyntax>().Any() &&
                     context.SemanticModel.GetDeclaredSymbol(usingDirective) is IAliasSymbol aliasSymbol &&
                     aliasSymbol.Target is INamedTypeSymbol namedTypeSymbol &&
                     namedTypeSymbol.IsGenericType)
                 {
-                    var genericTypesWithNewConstraint = namedTypeSymbol.TypeParameters.Zip(namedTypeSymbol.TypeArguments, (parameter, argument) => (parameter, argument))
-                        .Where(tuple => tuple.parameter.HasConstructorConstraint && tuple.argument is INamedTypeSymbol);
-                    foreach ((var _, var argument) in genericTypesWithNewConstraint)
-                    {
-                        instantiatedTypes.TryAdd((INamedTypeSymbol)argument, null);
-                    }
+                    var generics = namedTypeSymbol.TypeParameters.Zip(namedTypeSymbol.TypeArguments, (parameter, argument) => (parameter, argument));
+                    ProcessGenericTypes(generics, instantiatedTypes);
                 }
             }, SyntaxKind.UsingDirective);
         }
