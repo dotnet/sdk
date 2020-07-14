@@ -37,13 +37,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <!--
-      Unless the project explicitly set the property value to 'true' (case-insensitive),
-      default it to 'false'. Not specifying a value at all (or specifying an empty value)
-      will also default to 'false'. In .NET 5.0 this functionality is explicitly disabled
-      by default for web project types, and in future .NET releases the "disable by default"
-      logic will roll out to other project types.
+      ASP.NET 5.0 explicitly disables this functionality by default, requiring the app author
+      to opt-in to re-enabling the feature. The way to opt back in is to specify the below
+      element with the value "true". It is anticipated that future releases of .NET will
+      disable this functionality by default across all project types, at which point this logic
+      can be removed from the ASP.NET-specific SDK.
     -->
-    <EnableUnsafeBinaryFormatterSerialization Condition="'$(EnableUnsafeBinaryFormatterSerialization)' != 'true'">false</EnableUnsafeBinaryFormatterSerialization>
+    <EnableUnsafeBinaryFormatterSerialization Condition="'$(EnableUnsafeBinaryFormatterSerialization)' == ''">false</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <!--
