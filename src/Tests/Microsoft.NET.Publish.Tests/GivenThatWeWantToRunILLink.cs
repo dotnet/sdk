@@ -245,6 +245,42 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
+        [InlineData("net5.0")]
+        public void ILLink_errors_fail_the_build(string targetFramework)
+        {
+            var projectName = "AnalysisWarnings";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            // Set up a project with an invalid feature substitution, just to produce an error.
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
+            testProject.SourceFiles[$"{projectName}.xml"] = $@"
+<linker>
+  <assembly fullname=""{projectName}"">
+    <type fullname=""Program"" feature=""featuremissingvalue"" />
+  </assembly>
+</linker>
+";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project => AddRootDescriptor(project, $"{projectName}.xml"));
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
+                "/p:TrimAnalysis=true", "/p:_ExtraTrimmerArgs=--verbose")
+                .Should().Fail()
+                .And.HaveStdOutMatching("error IL1001")
+                .And.HaveStdOutMatching("NETSDK1136");
+
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+
+            var linkSemaphore = Path.Combine(intermediateDirectory, "Link.semaphore");
+            var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
+
+            File.Exists(linkSemaphore).Should().BeFalse();
+            File.Exists(publishedDll).Should().BeFalse();
+        }
+
+        [Theory]
         [InlineData("netcoreapp3.0")]
         public void ILLink_accepts_root_descriptor(string targetFramework)
         {
