@@ -67,7 +67,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             IInvocationOperation invocationOperation =
                                 (IInvocationOperation)operationAnalysisContext.Operation;
-                            if (Equals(invocationOperation.Instance?.Type, deserializerTypeSymbol)
+                            if (invocationOperation.Instance?.Type?.DerivesFrom(deserializerTypeSymbol) == true
                                 && cachedDeserializationMethodNames.Contains(invocationOperation.TargetMethod.MetadataName))
                             {
                                 operationAnalysisContext.ReportDiagnostic(
@@ -85,7 +85,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             IMethodReferenceOperation methodReferenceOperation =
                                 (IMethodReferenceOperation)operationAnalysisContext.Operation;
-                            if (Equals(methodReferenceOperation.Instance?.Type, deserializerTypeSymbol)
+                            if (methodReferenceOperation.Instance?.Type?.DerivesFrom(deserializerTypeSymbol) == true
                                 && cachedDeserializationMethodNames.Contains(methodReferenceOperation.Method.MetadataName))
                             {
                                 operationAnalysisContext.ReportDiagnostic(
