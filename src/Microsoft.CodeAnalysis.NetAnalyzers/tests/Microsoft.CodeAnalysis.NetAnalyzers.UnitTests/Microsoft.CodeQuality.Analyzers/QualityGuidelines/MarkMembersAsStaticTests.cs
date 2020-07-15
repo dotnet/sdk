@@ -1182,6 +1182,64 @@ public class C
     public event EventHandler<EventArgs> E1 { add {} remove {} }
 }",
             }.RunAsync();
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    <Obsolete>
+    Public Sub M1()
+    End Sub
+
+    <Obsolete(""Some reason"")>
+    Public Sub M2()
+    End Sub
+
+    <Obsolete(""Some reason"", False)>
+    Public Sub M3()
+    End Sub
+
+    <Obsolete>
+    Public Property P1 As Integer
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Property P2 As Integer
+        <Obsolete>
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Property P3 As Integer
+        Get
+            Return 10
+        End Get
+        <Obsolete>
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    <Obsolete>
+    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+        AddHandler(value As EventHandler(Of EventArgs))
+        End AddHandler
+        RemoveHandler(value As EventHandler(Of EventArgs))
+        End RemoveHandler
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
+    End Event
+End Class
+");
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
