@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -126,7 +127,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             }
                             else if (methodSymbol.IsExternallyVisible())
                             {
-                                blockEndContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.Name));
+                                if (!IsOnObsoleteMemberChain(methodSymbol, wellKnownTypeProvider))
+                                {
+                                    blockEndContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.Name));
+                                }
                             }
                             else
                             {
@@ -145,7 +149,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             continue;
                         }
 
-                        symbolEndContext.ReportDiagnostic(candidate.CreateDiagnostic(Rule, candidate.Name));
+                        if (!IsOnObsoleteMemberChain(candidate, wellKnownTypeProvider))
+                        {
+                            symbolEndContext.ReportDiagnostic(candidate.CreateDiagnostic(Rule, candidate.Name));
+                        }
                     }
 
                     foreach (var candidatePropertyOrEvent in propertyOrEventCandidates)
@@ -153,7 +160,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         var allAccessorsAreCandidates = true;
                         foreach (var accessor in candidatePropertyOrEvent.GetAccessors())
                         {
-                            if (!accessorCandidates.Contains(accessor))
+                            if (!accessorCandidates.Contains(accessor) ||
+                                IsOnObsoleteMemberChain(accessor, wellKnownTypeProvider))
                             {
                                 allAccessorsAreCandidates = false;
                                 break;
@@ -259,9 +267,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
             }
 
-            // General attributes
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute));
-
             // Web attributes
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebServicesWebMethodAttribute));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpGetAttribute));
@@ -319,6 +324,27 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             return false;
+        }
+
+        private static bool IsOnObsoleteMemberChain(ISymbol symbol, WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            var obsoleteAttributeType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+            if (obsoleteAttributeType is null)
+            {
+                return false;
+            }
+
+            var allAttributes = new List<AttributeData>();
+
+            while (symbol != null)
+            {
+                allAttributes.AddRange(symbol.GetAttributes());
+                symbol = symbol is IMethodSymbol method && method.AssociatedSymbol != null
+                    ? method.AssociatedSymbol :
+                    symbol.ContainingSymbol;
+            }
+
+            return allAttributes.Any(attribute => attribute.AttributeClass.Equals(obsoleteAttributeType));
         }
     }
 }

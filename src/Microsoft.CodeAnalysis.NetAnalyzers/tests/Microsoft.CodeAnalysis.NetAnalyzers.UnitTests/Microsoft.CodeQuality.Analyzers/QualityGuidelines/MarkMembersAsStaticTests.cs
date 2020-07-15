@@ -1180,6 +1180,37 @@ public class C
 
     [Obsolete]
     public event EventHandler<EventArgs> E1 { add {} remove {} }
+}
+
+[Obsolete]
+public class C2
+{
+    public void M1() {}
+
+    public int P1
+    {
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public event EventHandler<EventArgs> E1 { add {} remove {} }
+}
+
+[Obsolete]
+public class C3
+{
+    public class C4
+    {
+        public void M1() {}
+
+        public int P1
+        {
+            get { return 10; }
+            set { Console.WriteLine(""""); }
+        }
+
+        public event EventHandler<EventArgs> E1 { add {} remove {} }
+    }
 }",
             }.RunAsync();
 
@@ -1238,6 +1269,56 @@ Public Class C
         RaiseEvent(sender As Object, e As EventArgs)
         End RaiseEvent
     End Event
+End Class
+
+<Obsolete>
+Public Class C2
+    Public Sub M1()
+    End Sub
+
+    Public Property P1 As Integer
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+        AddHandler(value As EventHandler(Of EventArgs))
+        End AddHandler
+        RemoveHandler(value As EventHandler(Of EventArgs))
+        End RemoveHandler
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
+    End Event
+End Class
+
+<Obsolete>
+Public Class C3
+    Public Class C4
+        Public Sub M1()
+        End Sub
+
+        Public Property P1 As Integer
+            Get
+                Return 10
+            End Get
+            Set(ByVal value As Integer)
+                Console.WriteLine("""")
+            End Set
+        End Property
+
+        Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+            AddHandler(value As EventHandler(Of EventArgs))
+            End AddHandler
+            RemoveHandler(value As EventHandler(Of EventArgs))
+            End RemoveHandler
+            RaiseEvent(sender As Object, e As EventArgs)
+            End RaiseEvent
+        End Event
+    End Class
 End Class
 ");
         }
