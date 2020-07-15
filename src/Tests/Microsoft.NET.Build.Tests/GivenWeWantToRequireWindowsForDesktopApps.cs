@@ -288,6 +288,60 @@ namespace Microsoft.NET.Build.Tests
             Assert(publishCommand.GetOutputDirectory(tfm, runtimeIdentifier: runtimeIdentifier));
         }
 
+        [WindowsOnlyFact]
+        public void When_TargetPlatformVersion_is_not_recognized_It_should_error()
+        {
+            const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";
+
+            const string tfm = "net5.0";
+
+            var testProject = new TestProject()
+            {
+                Name = ProjectName,
+                TargetFrameworks = tfm,
+                IsSdkProject = true,
+                IsWinExe = true,
+            };
+
+            testProject.AdditionalProperties.Add("TargetPlatformIdentifier", "Windows");
+            testProject.AdditionalProperties.Add("TargetPlatformVersion", "10.0.9999");
+
+            var asset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+
+            buildCommand.Execute()
+                .Should()
+                .Fail().And.HaveStdOutContaining("NETSDK1138");
+        }
+
+        [WindowsOnlyFact]
+        public void When_TargetPlatformVersion_is_default_It_should_pass()
+        {
+            const string ProjectName = "WindowsDesktopSdkTest_without_ProjectSdk_set";
+
+            const string tfm = "net5.0";
+
+            var testProject = new TestProject()
+            {
+                Name = ProjectName,
+                TargetFrameworks = tfm,
+                IsSdkProject = true,
+                IsWinExe = true,
+            };
+
+            testProject.AdditionalProperties.Add("TargetPlatformIdentifier", "Windows");
+            testProject.AdditionalProperties.Add("TargetPlatformVersion", "7.0");
+
+            var asset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(Log, Path.Combine(asset.Path, ProjectName));
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+        }
+
         private TestAsset CreateWindowsDesktopSdkTestAsset(string projectName, string uiFrameworkProperty)
         {
             const string tfm = "netcoreapp3.0";

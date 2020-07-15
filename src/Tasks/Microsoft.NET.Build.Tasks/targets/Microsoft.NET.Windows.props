@@ -11,8 +11,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_WinRTApisPackageName>Microsoft.Windows.SDK.NET.Ref</_WinRTApisPackageName>
+  </PropertyGroup>
   <ItemGroup Condition=" '$(_IncludeWindowsSDKRefFrameworkReferences)' == 'true' ">
-    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+    <FrameworkReference Include="$(_WinRTApisPackageName)" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
   </ItemGroup>
 
   <!--https://github.com/dotnet/sdk/issues/12403-->

@@ -24,4 +24,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'windows' and '$(TargetPlatformVersion)' == ''" >
     <TargetPlatformVersion>7.0</TargetPlatformVersion>
   </PropertyGroup>
+
+  <UsingTask TaskName="CheckForUnsupportedWindowsTargetPlatformVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="_CheckForUnsupportedTargetPlatformVersion" BeforeTargets="ResolveFrameworkReferences"
+         Condition="'$(_IncludeWindowsSDKRefFrameworkReferences)' == 'true'">
+
+    <CheckForUnsupportedWindowsTargetPlatformVersion
+                            KnownFrameworkReferences="@(KnownFrameworkReference)"
+                            TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
+                            TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
+                            TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
+                            TargetPlatformVersion="$(TargetPlatformVersion)"
+                            WinRTApisPackageName="$(_WinRTApisPackageName)"/>
+  </Target>
 </Project>
