@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -1134,6 +1135,53 @@ Friend Class C
     End Function
 End Class
 ");
+        }
+
+        [Fact, WorkItem(3857, "https://github.com/dotnet/roslyn-analyzers/issues/3857")]
+        public async Task CA1822_ObsoleteAttribute_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+using System;
+
+public class C
+{
+    [Obsolete]
+    public void M1() {}
+
+    [Obsolete(""Some reason"")]
+    public void M2() {}
+
+    [Obsolete(""Some reason"", false)]
+    public void M3() {}
+
+    [Obsolete]
+    public int P1
+    {
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public int P2
+    {
+        [Obsolete]
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public int P3
+    {
+        get { return 10; }
+        [Obsolete]
+        set { Console.WriteLine(""""); }
+    }
+
+    [Obsolete]
+    public event EventHandler<EventArgs> E1 { add {} remove {} }
+}",
+            }.RunAsync();
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)

@@ -194,8 +194,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
+            var attributes = methodSymbol.GetAttributes();
+            if (methodSymbol.AssociatedSymbol != null)
+            {
+                // For accessors we want to also check the attributes of the associated symbol
+                attributes = attributes.AddRange(methodSymbol.AssociatedSymbol.GetAttributes());
+            }
+
             // FxCop doesn't check for the fully qualified name for these attributes - so we'll do the same.
-            if (methodSymbol.GetAttributes().Any(attribute => skippedAttributes.Any(attr => attribute.AttributeClass.Inherits(attr))))
+            if (attributes.Any(attribute => skippedAttributes.Any(attr => attribute.AttributeClass.Inherits(attr))))
             {
                 return false;
             }
@@ -252,6 +259,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
             }
 
+            // General attributes
+            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute));
+
             // Web attributes
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebServicesWebMethodAttribute));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpGetAttribute));
@@ -270,7 +280,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpPatchAttribute));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpOptionsAttribute));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcRouteAttribute));
-
 
             // MSTest attributes
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualStudioTestToolsUnitTestingTestInitializeAttribute));
