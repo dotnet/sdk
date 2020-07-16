@@ -98,7 +98,11 @@ namespace Microsoft.NET.Build.Tasks
             var knownFrameworkReferencesForTargetFramework =
                 KnownFrameworkReferences
                     .Select(item => new KnownFrameworkReference(item))
-                    .Where(KnownFrameworkReferenceAppliesToTargetFramework)
+                    .Where(kfr => KnownFrameworkReferenceAppliesToTargetFramework(
+                        kfr,
+                        TargetFrameworkIdentifier,
+                        TargetFrameworkVersion,
+                        TargetPlatformVersion))
                     .ToList();
 
             //  Get known runtime packs from known framework references.
@@ -360,9 +364,14 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private bool KnownFrameworkReferenceAppliesToTargetFramework(KnownFrameworkReference kfr)
+        private bool KnownFrameworkReferenceAppliesToTargetFramework(
+            KnownFrameworkReference kfr,
+            string targetFrameworkIdentifier,
+            string targetFrameworkVersion,
+            string targetPlatformVersion)
         {
-            if (!kfr.TargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
+            var _normalizedTargetFrameworkVersion = NormalizeVersion(new Version(targetFrameworkVersion));
+            if (!kfr.TargetFramework.Framework.Equals(targetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
                 || NormalizeVersion(kfr.TargetFramework.Version) != _normalizedTargetFrameworkVersion)
             {
                 return false;
@@ -371,7 +380,8 @@ namespace Microsoft.NET.Build.Tasks
             if (!string.IsNullOrEmpty(kfr.TargetFramework.Platform)
                 && !string.IsNullOrEmpty(kfr.TargetFramework.PlatformVersion))
             {
-                if (!kfr.TargetFramework.PlatformVersion.Equals(TargetPlatformVersion, StringComparison.OrdinalIgnoreCase)
+                if (!kfr.TargetFramework.PlatformVersion.Equals(targetPlatformVersion,
+                        StringComparison.OrdinalIgnoreCase)
                     || NormalizeVersion(kfr.TargetFramework.Version) != _normalizedTargetFrameworkVersion)
                 {
                     return false;
