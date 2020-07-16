@@ -1019,13 +1019,11 @@ public class C : System.Web.HttpApplication
 }";
 
             const string editorConfigText = "build_property.UsingMicrosoftNETSdkWeb = true";
-            var csTest = new VerifyCS.Test()
+            await new VerifyCS.Test()
             {
                 TestCode = csSource,
-                AnalyzerConfigDocument = editorConfigText
-            };
-
-            await csTest.RunAsync();
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
 
             var vbSource = @"
 Imports System
@@ -1072,13 +1070,11 @@ Public Class C
     End Sub
 End Class
 ";
-            var vbTest = new VerifyVB.Test()
+            await new VerifyVB.Test()
             {
                 TestCode = vbSource,
-                AnalyzerConfigDocument = editorConfigText
-            };
-
-            await vbTest.RunAsync();
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
         }
 
         [Fact]
@@ -1316,13 +1312,11 @@ public class Test
     internal int [|InternalMethod|]() => 0;
     private int [|PrivateMethod|]() => 0;
 }";
-            var csTest = new VerifyCS.Test()
+            await new VerifyCS.Test()
             {
                 TestCode = csSource,
-                AnalyzerConfigDocument = editorConfigText
-            };
-
-            await csTest.RunAsync();
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
 
             var vbSource = @"
 Public Class Test
@@ -1342,13 +1336,11 @@ Public Class Test
         Return 0
     End Function
 End Class";
-            var vbTest = new VerifyVB.Test()
+            await new VerifyVB.Test()
             {
                 TestCode = vbSource,
-                AnalyzerConfigDocument = editorConfigText
-            };
-
-            await vbTest.RunAsync();
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
