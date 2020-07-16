@@ -38,9 +38,9 @@ namespace Microsoft.NET.Build.Tasks
 
         public ProcessFrameworkReferences.NuGetFrameworkTemp TargetFramework { get; }
 
-        public ProcessFrameworkReferences.KnownRuntimePack ToKnownRuntimePack()
+        public KnownRuntimePack ToKnownRuntimePack()
         {
-            return new ProcessFrameworkReferences.KnownRuntimePack(_item);
+            return new KnownRuntimePack(_item);
         }
 
         public bool KnownFrameworkReferenceAppliesToTargetFramework(
