@@ -98,8 +98,7 @@ namespace Microsoft.NET.Build.Tasks
             var knownFrameworkReferencesForTargetFramework =
                 KnownFrameworkReferences
                     .Select(item => new KnownFrameworkReference(item))
-                    .Where(kfr => KnownFrameworkReferenceAppliesToTargetFramework(
-                        kfr,
+                    .Where(kfr => kfr.KnownFrameworkReferenceAppliesToTargetFramework(
                         TargetFrameworkIdentifier,
                         TargetFrameworkVersion,
                         TargetPlatformVersion))
@@ -362,33 +361,6 @@ namespace Microsoft.NET.Build.Tasks
             {
                 UnavailableRuntimePacks = unavailableRuntimePacks.ToArray();
             }
-        }
-
-        private bool KnownFrameworkReferenceAppliesToTargetFramework(
-            KnownFrameworkReference kfr,
-            string targetFrameworkIdentifier,
-            string targetFrameworkVersion,
-            string targetPlatformVersion)
-        {
-            var _normalizedTargetFrameworkVersion = NormalizeVersion(new Version(targetFrameworkVersion));
-            if (!kfr.TargetFramework.Framework.Equals(targetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
-                || NormalizeVersion(kfr.TargetFramework.Version) != _normalizedTargetFrameworkVersion)
-            {
-                return false;
-            }
-
-            if (!string.IsNullOrEmpty(kfr.TargetFramework.Platform)
-                && !string.IsNullOrEmpty(kfr.TargetFramework.PlatformVersion))
-            {
-                if (!kfr.TargetFramework.PlatformVersion.Equals(targetPlatformVersion,
-                        StringComparison.OrdinalIgnoreCase)
-                    || NormalizeVersion(kfr.TargetFramework.Version) != _normalizedTargetFrameworkVersion)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         private KnownRuntimePack? SelectRuntimePack(ITaskItem frameworkReference, KnownFrameworkReference knownFrameworkReference, List<KnownRuntimePack> knownRuntimePacks)
@@ -732,6 +704,32 @@ namespace Microsoft.NET.Build.Tasks
             public KnownRuntimePack ToKnownRuntimePack()
             {
                 return new KnownRuntimePack(_item);
+            }
+
+            public bool KnownFrameworkReferenceAppliesToTargetFramework(
+                string targetFrameworkIdentifier,
+                string targetFrameworkVersion,
+                string targetPlatformVersion)
+            {
+                var normalizedTargetFrameworkVersion = NormalizeVersion(new Version(targetFrameworkVersion));
+                if (!TargetFramework.Framework.Equals(targetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
+                    || NormalizeVersion(this.TargetFramework.Version) != normalizedTargetFrameworkVersion)
+                {
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(TargetFramework.Platform)
+                    && !string.IsNullOrEmpty(TargetFramework.PlatformVersion))
+                {
+                    if (!TargetFramework.PlatformVersion.Equals(targetPlatformVersion,
+                            StringComparison.OrdinalIgnoreCase)
+                        || NormalizeVersion(TargetFramework.Version) != normalizedTargetFrameworkVersion)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         }
 
