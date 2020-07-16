@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -1132,6 +1133,192 @@ Friend Class C
     Public Function [|M2|](Optional y As Integer = 0) As Integer
         Return 0
     End Function
+End Class
+");
+        }
+
+        [Fact, WorkItem(3857, "https://github.com/dotnet/roslyn-analyzers/issues/3857")]
+        public async Task CA1822_ObsoleteAttribute_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+using System;
+
+public class C
+{
+    [Obsolete]
+    public void M1() {}
+
+    [Obsolete(""Some reason"")]
+    public void M2() {}
+
+    [Obsolete(""Some reason"", false)]
+    public void M3() {}
+
+    [Obsolete]
+    public int P1
+    {
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public int P2
+    {
+        [Obsolete]
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public int P3
+    {
+        get { return 10; }
+        [Obsolete]
+        set { Console.WriteLine(""""); }
+    }
+
+    [Obsolete]
+    public event EventHandler<EventArgs> E1 { add {} remove {} }
+}
+
+[Obsolete]
+public class C2
+{
+    public void M1() {}
+
+    public int P1
+    {
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public event EventHandler<EventArgs> E1 { add {} remove {} }
+}
+
+[Obsolete]
+public class C3
+{
+    public class C4
+    {
+        public void M1() {}
+
+        public int P1
+        {
+            get { return 10; }
+            set { Console.WriteLine(""""); }
+        }
+
+        public event EventHandler<EventArgs> E1 { add {} remove {} }
+    }
+}",
+            }.RunAsync();
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    <Obsolete>
+    Public Sub M1()
+    End Sub
+
+    <Obsolete(""Some reason"")>
+    Public Sub M2()
+    End Sub
+
+    <Obsolete(""Some reason"", False)>
+    Public Sub M3()
+    End Sub
+
+    <Obsolete>
+    Public Property P1 As Integer
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Property P2 As Integer
+        <Obsolete>
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Property P3 As Integer
+        Get
+            Return 10
+        End Get
+        <Obsolete>
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    <Obsolete>
+    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+        AddHandler(value As EventHandler(Of EventArgs))
+        End AddHandler
+        RemoveHandler(value As EventHandler(Of EventArgs))
+        End RemoveHandler
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
+    End Event
+End Class
+
+<Obsolete>
+Public Class C2
+    Public Sub M1()
+    End Sub
+
+    Public Property P1 As Integer
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+        AddHandler(value As EventHandler(Of EventArgs))
+        End AddHandler
+        RemoveHandler(value As EventHandler(Of EventArgs))
+        End RemoveHandler
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
+    End Event
+End Class
+
+<Obsolete>
+Public Class C3
+    Public Class C4
+        Public Sub M1()
+        End Sub
+
+        Public Property P1 As Integer
+            Get
+                Return 10
+            End Get
+            Set(ByVal value As Integer)
+                Console.WriteLine("""")
+            End Set
+        End Property
+
+        Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+            AddHandler(value As EventHandler(Of EventArgs))
+            End AddHandler
+            RemoveHandler(value As EventHandler(Of EventArgs))
+            End RemoveHandler
+            RaiseEvent(sender As Object, e As EventArgs)
+            End RaiseEvent
+        End Event
+    End Class
 End Class
 ");
         }
