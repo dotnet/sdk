@@ -711,12 +711,21 @@ End Class"
         // Check with wildcard method signature
         [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M:SomeNamespace.Test.M*")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M:SomeNamespace.Test.M*")]
+        // Check with exact type signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = T:SomeNamespace.Test")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = T:SomeNamespace.Test")]
         // Check with wildcard type signature
         [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = T:SomeNamespace.Tes*")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = T:SomeNamespace.Tes*")]
+        // Check with exact namespace signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = N:SomeNamespace")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = N:SomeNamespace")]
         // Check with wildcard namespace signature
         [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = N:Some*")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = N:Some*")]
+        // Check with match all signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = Test")]
         // Check with wildcard signature
         [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M1*")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = Tes*")]
@@ -728,18 +737,18 @@ End Class"
                 {
                     Sources =
                     {
-                        $@"
+                        @"
 namespace SomeNamespace
-{{
+{
     class Test
-    {{
+    {
         void M1(string param)
-        {{
-            try {{ }}
-            {(editorConfigText.Length == 0 ? "[|catch|]" : "catch")} (System.Exception ex) {{ }}
-        }}
-    }}
-}}"
+        {
+            try { }"
+            + (editorConfigText.Length == 0 ? "[|catch|]" : "catch") + @" (System.Exception ex) { }
+        }
+    }
+}"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText) }
                 },
