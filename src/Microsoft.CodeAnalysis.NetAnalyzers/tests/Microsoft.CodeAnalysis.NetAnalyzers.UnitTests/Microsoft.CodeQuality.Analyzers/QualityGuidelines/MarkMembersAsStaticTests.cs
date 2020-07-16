@@ -988,10 +988,10 @@ End Namespace"
             }.RunAsync();
         }
 
-        [Fact]
+        [Fact, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
         public async Task WebSpecificControllerMethods_NoDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            var csSource = @"
 using System;
 
 namespace System.Web
@@ -1016,9 +1016,18 @@ public class C : System.Web.HttpApplication
     // The following controller methods can't be made static
     protected void Application_Start() { }
     protected void Application_End() { }
-}");
+}";
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            const string editorConfigText = "build_property.UsingMicrosoftNETSdkWeb = true";
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csSource,
+                AnalyzerConfigDocument = editorConfigText
+            };
+
+            await csTest.RunAsync();
+
+            var vbSource = @"
 Imports System
 
 Namespace System.Web
@@ -1062,43 +1071,14 @@ Public Class C
     Protected Sub Application_End()
     End Sub
 End Class
-");
-        }
+";
+            var vbTest = new VerifyVB.Test()
+            {
+                TestCode = vbSource,
+                AnalyzerConfigDocument = editorConfigText
+            };
 
-        [Fact]
-        public async Task WebSpecificControllerMethods_WrongEnclosingType_Diagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-
-public class SomeClass {}
-
-public class C : SomeClass
-{
-    protected void Application_Start() { }
-    protected void Application_End() { }
-}",
-                GetCSharpResultAt(8, 20, "Application_Start"),
-                GetCSharpResultAt(9, 20, "Application_End"));
-
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-
-Public Class SomeClass
-End Class
-
-Public Class C
-    Inherits SomeClass
-
-    Protected Sub Application_Start()
-    End Sub
-
-    Protected Sub Application_End()
-    End Sub
-End Class
-",
-                GetBasicResultAt(10, 19, "Application_Start"),
-                GetBasicResultAt(13, 19, "Application_End"));
+            await vbTest.RunAsync();
         }
 
         [Fact]
@@ -1321,6 +1301,54 @@ Public Class C3
     End Class
 End Class
 ");
+        }
+
+        [Fact, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        public async Task TestWebProject()
+        {
+            const string editorConfigText = "build_property.UsingMicrosoftNETSdkWeb = true";
+
+            var csSource = @"
+public class Test
+{
+    public int PublicMethod() => 0;
+    protected int ProtectedMethod() => 0;
+    internal int [|InternalMethod|]() => 0;
+    private int [|PrivateMethod|]() => 0;
+}";
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csSource,
+                AnalyzerConfigDocument = editorConfigText
+            };
+
+            await csTest.RunAsync();
+
+            var vbSource = @"
+Public Class Test
+    Public Function PublicMethod() As Integer
+        Return 0
+    End Function
+
+    Protected Function ProtectedMethod() As Integer
+        Return 0
+    End Function
+
+    Friend Function [|FriendMethod|]() As Integer
+        Return 0
+    End Function
+
+    Private Function [|PrivateMethod|]() As Integer
+        Return 0
+    End Function
+End Class";
+            var vbTest = new VerifyVB.Test()
+            {
+                TestCode = vbSource,
+                AnalyzerConfigDocument = editorConfigText
+            };
+
+            await vbTest.RunAsync();
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)

@@ -50,8 +50,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 // Get the list of all method' attributes for which the rule shall not be triggered.
                 ImmutableArray<INamedTypeSymbol> skippedAttributes = GetSkippedAttributes(wellKnownTypeProvider);
 
+                var isWebProject = compilationContext.Compilation.IsWebProject(compilationContext.Options, compilationContext.CancellationToken);
+
                 compilationContext.RegisterSymbolStartAction(
-                    symbolStartContext => OnSymbolStart(symbolStartContext, wellKnownTypeProvider, skippedAttributes),
+                    symbolStartContext => OnSymbolStart(symbolStartContext, wellKnownTypeProvider, skippedAttributes, isWebProject),
                     SymbolKind.NamedType);
             });
 
@@ -60,7 +62,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             static void OnSymbolStart(
                 SymbolStartAnalysisContext symbolStartContext,
                 WellKnownTypeProvider wellKnownTypeProvider,
-                ImmutableArray<INamedTypeSymbol> skippedAttributes)
+                ImmutableArray<INamedTypeSymbol> skippedAttributes,
+                bool isWebProject)
             {
                 // Since property/event accessors cannot be marked static themselves and the associated symbol (property/event)
                 // has to be marked static, we want to report the diagnostic on the property/event.
@@ -94,7 +97,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     // Don't run any other check for this method if it isn't a valid analysis context
-                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes))
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes, isWebProject))
                     {
                         return;
                     }
@@ -182,7 +185,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
         }
 
-        private static bool ShouldAnalyze(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<INamedTypeSymbol> skippedAttributes)
+        private static bool ShouldAnalyze(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<INamedTypeSymbol> skippedAttributes, bool isWebProject)
         {
             // Modifiers that we don't care about
             if (methodSymbol.IsStatic || methodSymbol.IsOverride || methodSymbol.IsVirtual ||
@@ -191,7 +194,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            if (IsSkippedMethod(methodSymbol, wellKnownTypeProvider))
+            // Do not analyze constructors and finalizers.
+            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer())
+            {
+                return false;
+            }
+
+            // Do not analyze public APIs for web projects
+            // See https://github.com/dotnet/roslyn-analyzers/issues/3835 for details.
+            if (isWebProject && methodSymbol.IsExternallyVisible())
             {
                 return false;
             }
@@ -306,24 +317,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkTearDownAttribute));
 
             return builder?.ToImmutable() ?? ImmutableArray<INamedTypeSymbol>.Empty;
-        }
-
-        private static bool IsSkippedMethod(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
-        {
-            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer())
-            {
-                return true;
-            }
-
-            if (methodSymbol.ReturnsVoid &&
-                methodSymbol.Parameters.IsEmpty &&
-                (methodSymbol.Name == "Application_Start" || methodSymbol.Name == "Application_End") &&
-                methodSymbol.ContainingType.Inherits(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebHttpApplication)))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private static bool IsOnObsoleteMemberChain(ISymbol symbol, WellKnownTypeProvider wellKnownTypeProvider)
