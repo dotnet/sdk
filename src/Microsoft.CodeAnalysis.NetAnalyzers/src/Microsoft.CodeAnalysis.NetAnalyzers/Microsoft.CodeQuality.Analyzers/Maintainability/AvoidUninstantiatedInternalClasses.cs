@@ -307,7 +307,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             var taskSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask);
-            var genericTaskSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTask);
+            var genericTaskSymbol = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTasks);
 
             // TODO: Handle the case where Compilation.Options.MainTypeName matches this type.
             // TODO: Test: can't have type parameters.

@@ -99,7 +99,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 Compilation = compilation;
                 EnumerableType = enumerableType;
-                _immutableArrayType = new Lazy<INamedTypeSymbol?>(() => Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableImmutableArray), true);
+                _immutableArrayType = new Lazy<INamedTypeSymbol?>(() => Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableImmutableArray1), true);
                 _iCollectionCountProperty = new Lazy<IPropertySymbol?>(ResolveICollectionCountProperty, true);
                 _iCollectionOfType = new Lazy<INamedTypeSymbol?>(() => Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1), true);
             }
