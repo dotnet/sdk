@@ -669,70 +669,6 @@ namespace Microsoft.NET.Build.Tasks
             return version;
         }
 
-        private struct KnownFrameworkReference
-        {
-            ITaskItem _item;
-            public KnownFrameworkReference(ITaskItem item)
-            {
-                _item = item;
-                TargetFramework = new NuGetFrameworkTemp(item.GetMetadata("TargetFramework"));
-            }
-
-            //  The name / itemspec of the FrameworkReference used in the project
-            public string Name => _item.ItemSpec;
-
-            //  The framework name to write to the runtimeconfig file (and the name of the folder under dotnet/shared)
-            public string RuntimeFrameworkName => _item.GetMetadata(MetadataKeys.RuntimeFrameworkName);
-            public string DefaultRuntimeFrameworkVersion => _item.GetMetadata("DefaultRuntimeFrameworkVersion");
-
-            //  The ID of the targeting pack NuGet package to reference
-            public string TargetingPackName => _item.GetMetadata("TargetingPackName");
-            public string TargetingPackVersion => _item.GetMetadata("TargetingPackVersion");
-            public string TargetingPackFormat => _item.GetMetadata("TargetingPackFormat");
-
-            public string RuntimePackRuntimeIdentifiers => _item.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers);
-
-            public bool IsWindowsOnly => _item.HasMetadataValue("IsWindowsOnly", "true");
-            
-            public bool RuntimePackAlwaysCopyLocal =>
-                _item.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
-
-            public string Profile => _item.GetMetadata("Profile");
-
-            public NuGetFrameworkTemp TargetFramework { get; }
-
-            public KnownRuntimePack ToKnownRuntimePack()
-            {
-                return new KnownRuntimePack(_item);
-            }
-
-            public bool KnownFrameworkReferenceAppliesToTargetFramework(
-                string targetFrameworkIdentifier,
-                string targetFrameworkVersion,
-                string targetPlatformVersion)
-            {
-                var normalizedTargetFrameworkVersion = NormalizeVersion(new Version(targetFrameworkVersion));
-                if (!TargetFramework.Framework.Equals(targetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
-                    || NormalizeVersion(this.TargetFramework.Version) != normalizedTargetFrameworkVersion)
-                {
-                    return false;
-                }
-
-                if (!string.IsNullOrEmpty(TargetFramework.Platform)
-                    && !string.IsNullOrEmpty(TargetFramework.PlatformVersion))
-                {
-                    if (!TargetFramework.PlatformVersion.Equals(targetPlatformVersion,
-                            StringComparison.OrdinalIgnoreCase)
-                        || NormalizeVersion(TargetFramework.Version) != normalizedTargetFrameworkVersion)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-        }
-
         // TODO replace with the proper impl from nuget
         internal class NuGetFrameworkTemp
         {
@@ -769,7 +705,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private struct KnownRuntimePack
+        internal struct KnownRuntimePack
         {
             ITaskItem _item;
 
