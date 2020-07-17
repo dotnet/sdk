@@ -101,5 +101,26 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1137");
         }
+
+        [WindowsOnlyFact]
+        public void It_fails_if_windows_target_platform_version_is_invalid()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "InvalidWindowsVersion",
+                IsSdkProject = true,
+                TargetFrameworks = "net5.0"
+            };
+            testProject.AdditionalProperties["TargetPlatformIdentifier"] = "Windows";
+            testProject.AdditionalProperties["TargetPlatformVersion"] = "1.0";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1138");
+        }
     }
 }

@@ -653,4 +653,8 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1137: It is no longer necessary to use the Microsoft.NET.Sdk.WindowsDesktop SDK. Microsoft.NET.Sdk can be used instead.</value>
     <comment>{StrBegin="NETSDK1137: "}</comment>
   </data>
+  <data name="InvalidWindowsTargetPlatformVersion" xml:space="preserve">
+    <value>NETSDK1138: {0} is not a valid Windows TargetPlatformVersion.</value>
+    <comment>{StrBegin="NETSDK1138: "}</comment>
+  </data>
 </root>
