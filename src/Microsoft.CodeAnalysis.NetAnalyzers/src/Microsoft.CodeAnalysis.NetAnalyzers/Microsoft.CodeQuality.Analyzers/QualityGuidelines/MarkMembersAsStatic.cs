@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -97,7 +98,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     // Don't run any other check for this method if it isn't a valid analysis context
-                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes, isWebProject))
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes,
+                            blockStartContext.Options, isWebProject, blockStartContext.CancellationToken))
                     {
                         return;
                     }
@@ -185,7 +187,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
         }
 
-        private static bool ShouldAnalyze(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<INamedTypeSymbol> skippedAttributes, bool isWebProject)
+        private static bool ShouldAnalyze(
+            IMethodSymbol methodSymbol,
+            WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<INamedTypeSymbol> skippedAttributes,
+            AnalyzerOptions options,
+            bool isWebProject,
+            CancellationToken cancellationToken)
         {
             // Modifiers that we don't care about
             if (methodSymbol.IsStatic || methodSymbol.IsOverride || methodSymbol.IsVirtual ||
@@ -236,6 +244,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             if (IsExplicitlyVisibleFromCom(methodSymbol, wellKnownTypeProvider))
+            {
+                return false;
+            }
+
+            if (!methodSymbol.MatchesConfiguredVisibility(options, Rule, wellKnownTypeProvider.Compilation, cancellationToken,
+                    defaultRequiredVisibility: SymbolVisibilityGroup.All))
             {
                 return false;
             }

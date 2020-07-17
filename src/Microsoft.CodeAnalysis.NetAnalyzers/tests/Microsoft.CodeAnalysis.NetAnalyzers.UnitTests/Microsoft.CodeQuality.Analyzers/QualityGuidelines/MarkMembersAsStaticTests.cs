@@ -988,8 +988,14 @@ End Namespace"
             }.RunAsync();
         }
 
-        [Fact, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
-        public async Task WebSpecificControllerMethods_NoDiagnostic()
+        [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        [InlineData("build_property.UsingMicrosoftNETSdkWeb = true")]
+        [InlineData("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
+        [InlineData("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("dotnet_code_quality.api_surface = private, internal")]
+        public async Task WebSpecificControllerMethods_NoDiagnostic(string editorConfigText)
         {
             var csSource = @"
 using System;
@@ -1018,7 +1024,6 @@ public class C : System.Web.HttpApplication
     protected void Application_End() { }
 }";
 
-            const string editorConfigText = "build_property.UsingMicrosoftNETSdkWeb = true";
             await new VerifyCS.Test()
             {
                 TestCode = csSource,
@@ -1299,11 +1304,15 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
-        public async Task TestWebProject()
+        [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        [InlineData("build_property.UsingMicrosoftNETSdkWeb = true")]
+        [InlineData("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
+        [InlineData("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("dotnet_code_quality.api_surface = private, internal")]
+        public async Task TestWebProject(string editorConfigText)
         {
-            const string editorConfigText = "build_property.UsingMicrosoftNETSdkWeb = true";
-
             var csSource = @"
 public class Test
 {
