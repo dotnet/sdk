@@ -1402,12 +1402,12 @@
     <value>Use `{0}` instead of Range-based indexers on an array</value>
   </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersDescription" xml:space="preserve">
-    <value>String parameters passed by value with the '[Out]' attribute can destabilize the runtime if the string is an interned string.</value>
+    <value>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</value>
   </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersMessage" xml:space="preserve">
-    <value>Do not use the [Out] attribute for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</value>
+    <value>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</value>
   </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersTitle" xml:space="preserve">
-    <value>Do not use [Out] string parameters for P/Invokes</value>
+    <value>Do not use 'OutAttribute' on string parameters for P/Invokes</value>
   </data>
 </root>
