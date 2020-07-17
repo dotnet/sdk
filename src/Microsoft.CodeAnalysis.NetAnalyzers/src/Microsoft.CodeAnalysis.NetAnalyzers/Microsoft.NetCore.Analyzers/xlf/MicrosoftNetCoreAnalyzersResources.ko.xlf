@@ -812,6 +812,21 @@
         <target state="translated">사용되지 않는 키 파생 함수 {0}.{1}에 대한 호출</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersDescription">
+        <source>String parameters passed by value with the [Out] attribute can destabilize the runtime if the string is an interned string</source>
+        <target state="new">String parameters passed by value with the [Out] attribute can destabilize the runtime if the string is an interned string</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
+        <source>The [Out] attribute should not be used for string parameter '{0}'</source>
+        <target state="new">The [Out] attribute should not be used for string parameter '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
+        <source>Do not use [Out] string parameters for P/Invokes</source>
+        <target state="new">Do not use [Out] string parameters for P/Invokes</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
         <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
         <target state="translated">값 형식이 '{0}'인 인수를 'ReferenceEqualityComparer'의 'Equals' 메서드에 전달하지 마세요. 값 boxing으로 인해 이 'Equals' 호출은 항상 'false'를 반환합니다.</target>
