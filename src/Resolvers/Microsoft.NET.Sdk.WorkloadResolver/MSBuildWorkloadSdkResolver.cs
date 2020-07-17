@@ -5,6 +5,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
+#if NET
+using Microsoft.DotNet.Cli;
+#endif
+
 namespace Microsoft.NET.Sdk.WorkloadResolver
 {
     public class MSBuildWorkloadSdkResolver : SdkResolver
@@ -96,11 +100,7 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
 
             if (string.IsNullOrEmpty(workloadManifestRoot))
             {
-
-                string workloadManifestsFolder = @"C:\git\msbuild-sdk-resolver-test\testresolver\workloadmanifests";
-                string sdkVersionBand = "5.0.100";
-
-                workloadManifestRoot = Path.Combine(workloadManifestsFolder, sdkVersionBand);
+                workloadManifestRoot = GetWorkloadManifestRoot();
             }
 
             foreach (var workloadManifestFolder in Directory.GetDirectories(workloadManifestRoot))
@@ -111,10 +111,53 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
             _manifests = WorkloadManifest.Merge(manifests);
         }
 
+        private string GetSdkDirectory()
+        {
+#if NET
+            var sdkDirectory = Path.GetDirectoryName(typeof(DotnetFiles).Assembly.Location);
+            return sdkDirectory;
+
+#else
+            //  TODO: Implement for .NET Framework
+            throw new NotImplementedException();
+#endif
+
+        }
+
+        private string GetDotNetRoot()
+        {
+            var sdkDirectory = GetSdkDirectory();
+            var dotnetRoot = Directory.GetParent(sdkDirectory).Parent.FullName;
+            return dotnetRoot;
+        }
+
         private string GetWorkloadPackPath(string packId, string packVersion)
         {
-            string workloadPackBase = @"C:\git\msbuild-sdk-resolver-test\testresolver\packs";
-            return Path.Combine(workloadPackBase, packId, packVersion);
+            var dotnetRoot = GetDotNetRoot();
+            return Path.Combine(dotnetRoot, "packs", packId, packVersion);
+        }
+
+        private static readonly char[] dashOrPlus = new[] { '-', '+' };
+
+        private string GetWorkloadManifestRoot()
+        {
+            var dotnetRoot = GetDotNetRoot();
+            var sdkDirectory = GetSdkDirectory();
+            //  TODO: Is the directory name OK, or should we read the .version file (we don't want to use the Cli.Utils library to read it on .NET Framework)
+            var sdkVersion = Path.GetFileName(sdkDirectory);
+
+            int indexOfDashOrPlus = sdkVersion.IndexOfAny(dashOrPlus);
+            if (indexOfDashOrPlus >= 0)
+            {
+                sdkVersion = sdkVersion.Substring(0, indexOfDashOrPlus);
+            }
+
+            //  TODO: Add logging for what versions it's looking for
+
+            var version = Version.Parse(sdkVersion);
+            var versionBand = new Version(version.Major, version.Minor, (version.Build / 100) * 100);
+
+            return Path.Combine(dotnetRoot, "workloadmanifests", versionBand.ToString());
         }
     }
 }
