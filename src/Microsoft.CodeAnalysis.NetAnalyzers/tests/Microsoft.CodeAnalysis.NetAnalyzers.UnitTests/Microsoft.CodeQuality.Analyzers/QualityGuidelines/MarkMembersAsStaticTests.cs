@@ -462,22 +462,14 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnostic_NonTestAttributes()
+        public async Task CSharpNoDiagnostic_ComVisibleAttribute()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Runtime.InteropServices;
 
-namespace System.Web.Services
-{
-    public class WebMethodAttribute : Attribute { }
-}
-
 public class Test
 {
-    [System.Web.Services.WebMethod]
-    public void Method1() { }
-
     [ComVisible(true)]
     public void Method2() { }
 }
@@ -491,23 +483,13 @@ public class ComVisibleClass
         }
 
         [Fact]
-        public async Task BasicNoDiagnostic_NonTestAttributes()
+        public async Task BasicNoDiagnostic_ComVisibleAttribute()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Runtime.InteropServices
 
-Namespace System.Web.Services
-    Public Class WebMethodAttribute
-        Inherits Attribute
-    End Class
-End Namespace
-
 Public Class Test
-    <System.Web.Services.WebMethod>
-    Public Sub Method1()
-    End Sub
-
     <ComVisible(True)>
     Public Sub Method2()
     End Sub
@@ -830,162 +812,6 @@ namespace SomeNamespace
         }
     }
 }");
-        }
-
-        [Theory, WorkItem(3123, "https://github.com/dotnet/roslyn-analyzers/issues/3123")]
-        [InlineData("System.Web.Mvc.HttpGetAttribute")]
-        [InlineData("System.Web.Mvc.HttpPostAttribute")]
-        [InlineData("System.Web.Mvc.HttpPutAttribute")]
-        [InlineData("System.Web.Mvc.HttpDeleteAttribute")]
-        [InlineData("System.Web.Mvc.HttpPatchAttribute")]
-        [InlineData("System.Web.Mvc.HttpHeadAttribute")]
-        [InlineData("System.Web.Mvc.HttpOptionsAttribute")]
-        [InlineData("System.Web.Http.RouteAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpGetAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpPostAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpPutAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpDeleteAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpPatchAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpHeadAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpOptionsAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.RouteAttribute")]
-        public async Task NoDiagnostic_WebAttributes(string webAttribute)
-        {
-            await new VerifyCS.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        $@"
-public class C
-{{
-    [{webAttribute}]
-    public void Method1()
-    {{
-    }}
-}}",
-                        @"
-using System;
-
-namespace System.Web.Mvc
-{
-    public class HttpGetAttribute : Attribute {}
-    public class HttpPostAttribute : Attribute {}
-    public class HttpPutAttribute : Attribute {}
-    public class HttpDeleteAttribute : Attribute {}
-    public class HttpPatchAttribute : Attribute {}
-    public class HttpHeadAttribute : Attribute {}
-    public class HttpOptionsAttribute : Attribute {}
-}
-
-namespace System.Web.Http
-{
-    public class RouteAttribute : Attribute {}
-}
-
-namespace Microsoft.AspNetCore.Mvc
-{
-    public class HttpGetAttribute : Attribute {}
-    public class HttpPostAttribute : Attribute {}
-    public class HttpPutAttribute : Attribute {}
-    public class HttpDeleteAttribute : Attribute {}
-    public class HttpPatchAttribute : Attribute {}
-    public class HttpHeadAttribute : Attribute {}
-    public class HttpOptionsAttribute : Attribute {}
-    public class RouteAttribute : Attribute {}
-}"
-                    }
-                }
-            }.RunAsync();
-
-            await new VerifyVB.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        $@"
-Public Class C
-    <{webAttribute}>
-    Public Sub Method1()
-    End Sub
-End Class",
-                        @"
-Imports System
-
-Namespace System.Web.Mvc
-    Public Class HttpGetAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPostAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPutAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpDeleteAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPatchAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpHeadAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpOptionsAttribute
-        Inherits Attribute
-    End Class
-End Namespace
-
-Namespace System.Web.Http
-    Public Class RouteAttribute
-        Inherits Attribute
-    End Class
-End Namespace
-
-Namespace Microsoft.AspNetCore.Mvc
-    Public Class HttpGetAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPostAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPutAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpDeleteAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPatchAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpHeadAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpOptionsAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class RouteAttribute
-        Inherits Attribute
-    End Class
-End Namespace"
-                    }
-                }
-            }.RunAsync();
         }
 
         [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
