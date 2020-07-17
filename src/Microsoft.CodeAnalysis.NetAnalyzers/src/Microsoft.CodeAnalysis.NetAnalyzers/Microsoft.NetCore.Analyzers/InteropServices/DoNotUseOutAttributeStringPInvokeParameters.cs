@@ -51,10 +51,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static void AnalyzeSymbol(SymbolAnalysisContext context, INamedTypeSymbol outAttributeType)
         {
             var methodSymbol = (IMethodSymbol)context.Symbol;
-            if (methodSymbol == null)
-            {
-                return;
-            }
 
             // Only check P/Invokes
             DllImportData dllImportData = methodSymbol.GetDllImportData();

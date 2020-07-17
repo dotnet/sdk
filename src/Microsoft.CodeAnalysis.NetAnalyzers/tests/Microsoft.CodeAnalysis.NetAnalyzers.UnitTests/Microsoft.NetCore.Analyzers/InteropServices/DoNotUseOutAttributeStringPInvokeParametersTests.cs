@@ -36,6 +36,20 @@ public class C
         }
 
         [Fact]
+        public async Task NotPInvoke_NoDiagnostics_Diagnostics_CS()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+public class C
+{
+    private static extern void Method1([Out] string s);
+}
+";
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
         public async Task OutAttributeStringByValue_Diagnostics_CS()
         {
             string source = @"
@@ -66,6 +80,20 @@ Imports System.Runtime.InteropServices
 Class C
     <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
     Private Shared Sub Method1(<Out()> ByRef s As String) ' OK
+    End Sub
+End Class
+";
+            await VerifyVB.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task NotPInvoke_NoDiagnostics_VB()
+        {
+            string source = @"
+Imports System.Runtime.InteropServices
+
+Class C
+    Private Shared Sub Method1(<Out()> s As String)
     End Sub
 End Class
 ";

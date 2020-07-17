@@ -1405,7 +1405,7 @@
     <value>String parameters passed by value with the [Out] attribute can destabilize the runtime if the string is an interned string</value>
   </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersMessage" xml:space="preserve">
-    <value>The [Out] attribute should not be used for string parameter '{0}'</value>
+    <value>Do not use the [Out] attribute for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead. Otherwise, remove the [Out] attribute.</value>
   </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersTitle" xml:space="preserve">
     <value>Do not use [Out] string parameters for P/Invokes</value>

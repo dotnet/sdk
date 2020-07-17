@@ -819,8 +819,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
-        <source>The [Out] attribute should not be used for string parameter '{0}'</source>
-        <target state="new">The [Out] attribute should not be used for string parameter '{0}'</target>
+        <source>Do not use the [Out] attribute for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead. Otherwise, remove the [Out] attribute.</source>
+        <target state="new">Do not use the [Out] attribute for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead. Otherwise, remove the [Out] attribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
