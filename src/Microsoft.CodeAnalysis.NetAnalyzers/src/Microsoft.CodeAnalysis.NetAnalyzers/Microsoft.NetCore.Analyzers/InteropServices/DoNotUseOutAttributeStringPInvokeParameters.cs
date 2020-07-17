@@ -38,13 +38,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             context.RegisterCompilationStartAction(
                 compilationContext =>
                 {
-                    INamedTypeSymbol? outAttributeType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOutAttribute);
-                    if (outAttributeType == null)
+                    if (compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOutAttribute, out var outAttributeType)
                     {
-                        return;
+                    	compilationContext.RegisterSymbolAction(symbolContext => AnalyzeSymbol(symbolContext, outAttributeType), SymbolKind.Method);
                     }
-
-                    compilationContext.RegisterSymbolAction(symbolContext => AnalyzeSymbol(symbolContext, outAttributeType), SymbolKind.Method);
                 });
         }
 
