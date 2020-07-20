@@ -1511,6 +1511,87 @@ public class CC
             }.RunAsync();
         }
 
+        [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
+        public async Task CA1812_VisualBasic_StaticLikeClass_NoDiagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Friend NotInheritable Class C1
+
+    Private Sub New()
+    End Sub
+
+    Public Shared Function GetSomething(o As Object) As String
+        Return o.ToString()
+    End Function
+End Class
+
+Public Class Helpers
+    Private NotInheritable Class C2
+
+        Private Sub New()
+        End Sub
+
+        Public Shared Function GetSomething(o As Object) As String
+            Return o.ToString()
+        End Function
+    End Class
+End Class
+
+Friend NotInheritable Class C3
+
+    Private Const SomeConstant As String = ""Value""
+    Private Shared f As Integer
+
+    Private Sub New()
+    End Sub
+
+    Public Shared Sub M()
+    End Sub
+
+    Public Shared Property P As Integer
+
+    Public Shared Event ThresholdReached As EventHandler
+End Class
+
+Friend Class C4
+
+    Private Sub New()
+    End Sub
+
+    Public Shared Function GetSomething(o As Object) As String
+        Return o.ToString()
+    End Function
+End Class
+
+Friend NotInheritable Class C5
+
+    Public Sub New()
+    End Sub
+
+    Public Shared Function GetSomething(o As Object) As String
+        Return o.ToString()
+    End Function
+End Class");
+        }
+
+        [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
+        public async Task CA1812_VisualBasic_NotStaticLikeClass_Diagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Friend NotInheritable Class [|C1|]
+
+    Private Sub New()
+    End Sub
+
+    Public Function GetSomething(o As Object) As String
+        Return o.ToString()
+    End Function
+End Class");
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
