@@ -1213,10 +1213,10 @@
     <value>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</value>
   </data>
   <data name="DataTableReadXmlMessage" xml:space="preserve">
-    <value>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</value>
+    <value>The method '{0}' is insecure when deserializing untrusted data.</value>
   </data>
   <data name="DataTableReadXmlTitle" xml:space="preserve">
-    <value>Do not use insecure deserialization with DataTable.ReadXml()</value>
+    <value>Do not use insecure deserialization with DataTable.ReadXml() with untrusted data</value>
   </data>
   <data name="DataSetDataTableInSerializableTypeMessage" xml:space="preserve">
     <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</value>
@@ -1231,10 +1231,10 @@
     <value>Unsafe DataSet or DataTable type in web deserializable object graph</value>
   </data>
   <data name="DataSetReadXmlMessage" xml:space="preserve">
-    <value>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</value>
+    <value>The method '{0}' is insecure when deserializing untrusted data.</value>
   </data>
   <data name="DataSetReadXmlTitle" xml:space="preserve">
-    <value>Do not use insecure deserialization with DataSet.ReadXml()</value>
+    <value>Do not use insecure deserialization with DataSet.ReadXml() with untrusted data</value>
   </data>
   <data name="DataSetDataTableInRceSerializableTypeMessage" xml:space="preserve">
     <value>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</value>

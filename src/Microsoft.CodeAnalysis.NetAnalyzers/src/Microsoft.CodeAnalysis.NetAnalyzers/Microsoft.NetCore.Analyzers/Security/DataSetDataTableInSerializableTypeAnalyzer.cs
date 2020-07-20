@@ -122,6 +122,16 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 return;
                             }
 
+                            if (hasGeneratedCodeAttribute
+                                && !hasDataContractAttribute
+                                && !hasKnownTypeAttribute
+                                && !hasAnyIgnoreDataMemberAttribute)
+                            {
+                                // If we're here only because it's binary-serializable or XML-serializable, and it has
+                                // GeneratedCode, then ignore.
+                                return;
+                            }
+
                             ObjectGraphOptions options = new ObjectGraphOptions(
                                 recurse: false,
                                 binarySerialization: hasSerializableAttribute,

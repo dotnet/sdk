@@ -208,23 +208,23 @@
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlMessage">
-        <source>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</target>
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="new">The method '{0}' is insecure when deserializing untrusted data.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlTitle">
-        <source>Do not use insecure deserialization with DataSet.ReadXml()</source>
-        <target state="new">Do not use insecure deserialization with DataSet.ReadXml()</target>
+        <source>Do not use insecure deserialization with DataSet.ReadXml() with untrusted data</source>
+        <target state="new">Do not use insecure deserialization with DataSet.ReadXml() with untrusted data</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlMessage">
-        <source>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</target>
+        <source>The method '{0}' is insecure when deserializing untrusted data.</source>
+        <target state="new">The method '{0}' is insecure when deserializing untrusted data.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlTitle">
-        <source>Do not use insecure deserialization with DataTable.ReadXml()</source>
-        <target state="new">Do not use insecure deserialization with DataTable.ReadXml()</target>
+        <source>Do not use insecure deserialization with DataTable.ReadXml() with untrusted data</source>
+        <target state="new">Do not use insecure deserialization with DataTable.ReadXml() with untrusted data</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">

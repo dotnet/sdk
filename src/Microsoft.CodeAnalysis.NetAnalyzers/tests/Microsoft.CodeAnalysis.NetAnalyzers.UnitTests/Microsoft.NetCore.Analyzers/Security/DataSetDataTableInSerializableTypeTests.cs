@@ -376,6 +376,49 @@ namespace Blah
 }");
         }
 
+        [Fact]
+        public async Task GeneratedCode_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System.Data;
+using System.Xml.Serialization;
+
+namespace Blah
+{
+    [global::System.CodeDom.Compiler.GeneratedCode(""System.Data.Design.TypedDataSetGenerator"", ""2.0.0.0"")]
+    [global::System.Serializable()]
+    [global::System.ComponentModel.DesignerCategoryAttribute(""code"")]
+    [global::System.ComponentModel.ToolboxItem(true)]
+    [global::System.Xml.Serialization.XmlSchemaProviderAttribute(""GetTypedDataSetSchema"")]
+    [global::System.Xml.Serialization.XmlRootAttribute(""Package"")]
+    [global::System.ComponentModel.Design.HelpKeywordAttribute(""vs.data.DataSet"")]
+    public class BlahClass : global::System.Data.DataSet {
+        private DataTable table;
+    }
+}");
+        }
+
+        [Fact(Skip = "Figure out what we want")]
+        public async Task OtherGeneratedCode_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System.Data;
+using System.Xml.Serialization;
+
+namespace Blah
+{
+    [global::System.Serializable()]
+    [global::System.ComponentModel.DesignerCategoryAttribute(""code"")]
+    [global::System.ComponentModel.ToolboxItem(true)]
+    [global::System.Xml.Serialization.XmlSchemaProviderAttribute(""GetTypedDataSetSchema"")]
+    [global::System.Xml.Serialization.XmlRootAttribute(""Package"")]
+    [global::System.ComponentModel.Design.HelpKeywordAttribute(""vs.data.DataSet"")]
+    public class BlahClass : global::System.Data.DataSet {
+        private DataTable table;
+    }
+}");
+        }
+
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
         {
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
