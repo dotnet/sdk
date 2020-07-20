@@ -98,7 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     // Don't run any other check for this method if it isn't a valid analysis context
-                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes,
+                    if (!ShouldAnalyze(methodSymbol, blockStartContext.OperationBlocks, wellKnownTypeProvider, skippedAttributes,
                             blockStartContext.Options, isWebProject, blockStartContext.CancellationToken))
                     {
                         return;
@@ -189,6 +189,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         private static bool ShouldAnalyze(
             IMethodSymbol methodSymbol,
+            ImmutableArray<IOperation> blockOperations,
             WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<INamedTypeSymbol> skippedAttributes,
             AnalyzerOptions options,
@@ -250,6 +251,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             if (!methodSymbol.MatchesConfiguredVisibility(options, Rule, wellKnownTypeProvider.Compilation, cancellationToken,
                     defaultRequiredVisibility: SymbolVisibilityGroup.All))
+            {
+                return false;
+            }
+
+            // Auto-properties (readonly, get, set) marked with an attribute have a block context callback while they don't
+            // if there is no attribute (see https://github.com/dotnet/roslyn/issues/46132).
+            // We consider that auto-property have the intent to always be instance members so we want to workaround this issue
+            // by bailing-out if this is an accessor, there are some operations in the block but they are all "none" operations.
+            if (methodSymbol.IsAccessorMethod()
+                && !blockOperations.IsEmpty
+                && !blockOperations.Where(op => op.Kind != OperationKind.None).Any())
             {
                 return false;
             }

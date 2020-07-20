@@ -1178,6 +1178,48 @@ End Class";
             }.RunAsync();
         }
 
+        [Fact]
+        public async Task Properties_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+public class C1
+{
+    private int field;
+
+    public int P1
+    {
+        get { return field; }
+        set { field = value; }
+    }
+
+    public string P2 { get; set; }
+
+    public string P3 { get; }
+
+    public string P4
+    {
+        [DebuggerStepThrough]
+        get;
+    }
+
+    public string P5
+    {
+        [DebuggerStepThrough]
+        {|CS8051:set|};
+    }
+
+    public string P6
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        get;
+    }
+}");
+        }
+
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
