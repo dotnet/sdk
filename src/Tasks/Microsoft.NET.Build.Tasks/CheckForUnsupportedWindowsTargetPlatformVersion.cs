@@ -48,7 +48,7 @@ namespace Microsoft.NET.Build.Tasks
             if (!knownFrameworkReferencesForTargetFramework.Any())
             {
                 var availableVersions = winRtApisKnownFrameworkReferences
-                    .Select(item => item.TargetFramework.PlatformVersion);
+                    .Select(item => ProcessFrameworkReferences.NormalizeVersion(item.TargetFramework.PlatformVersion));
 
                 Log.LogError(string.Format(Strings.InvalidTargetPlatformVersion, TargetPlatformVersion,
                     TargetPlatformIdentifier, string.Join(" ", availableVersions)));

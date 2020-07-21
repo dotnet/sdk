@@ -3,16 +3,18 @@
 
 using System;
 using Microsoft.Build.Framework;
+using NuGet.Frameworks;
 
 namespace Microsoft.NET.Build.Tasks
 {
     internal struct KnownFrameworkReference
     {
         ITaskItem _item;
+
         public KnownFrameworkReference(ITaskItem item)
         {
             _item = item;
-            TargetFramework = new ProcessFrameworkReferences.NuGetFrameworkTemp(item.GetMetadata("TargetFramework"));
+            TargetFramework = NuGetFramework.Parse(item.GetMetadata("TargetFramework"));
         }
 
         //  The name / itemspec of the FrameworkReference used in the project
@@ -30,13 +32,13 @@ namespace Microsoft.NET.Build.Tasks
         public string RuntimePackRuntimeIdentifiers => _item.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers);
 
         public bool IsWindowsOnly => _item.HasMetadataValue("IsWindowsOnly", "true");
-            
+
         public bool RuntimePackAlwaysCopyLocal =>
             _item.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
         public string Profile => _item.GetMetadata("Profile");
 
-        public ProcessFrameworkReferences.NuGetFrameworkTemp TargetFramework { get; }
+        public NuGetFramework TargetFramework { get; }
 
         public KnownRuntimePack ToKnownRuntimePack()
         {
@@ -48,19 +50,28 @@ namespace Microsoft.NET.Build.Tasks
             string targetFrameworkVersion,
             string targetPlatformVersion)
         {
-            var normalizedTargetFrameworkVersion = ProcessFrameworkReferences.NormalizeVersion(new Version(targetFrameworkVersion));
+            var normalizedTargetFrameworkVersion =
+                ProcessFrameworkReferences.NormalizeVersion(new Version(targetFrameworkVersion));
+
             if (!TargetFramework.Framework.Equals(targetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
-                || ProcessFrameworkReferences.NormalizeVersion(TargetFramework.Version) != normalizedTargetFrameworkVersion)
+                || ProcessFrameworkReferences.NormalizeVersion(TargetFramework.Version) !=
+                normalizedTargetFrameworkVersion)
             {
                 return false;
             }
 
             if (!string.IsNullOrEmpty(TargetFramework.Platform)
-                && !string.IsNullOrEmpty(TargetFramework.PlatformVersion))
+                && TargetFramework.PlatformVersion != null)
             {
-                if (!TargetFramework.PlatformVersion.Equals(targetPlatformVersion,
-                        StringComparison.OrdinalIgnoreCase)
-                    || ProcessFrameworkReferences.NormalizeVersion(TargetFramework.Version) != normalizedTargetFrameworkVersion)
+                if (!Version.TryParse(targetPlatformVersion, out var targetPlatformVersionParsed))
+                {
+                    return false;
+                }
+
+                if (ProcessFrameworkReferences.NormalizeVersion(TargetFramework.PlatformVersion) !=
+                    ProcessFrameworkReferences.NormalizeVersion(targetPlatformVersionParsed)
+                    || ProcessFrameworkReferences.NormalizeVersion(TargetFramework.Version) !=
+                    normalizedTargetFrameworkVersion)
                 {
                     return false;
                 }

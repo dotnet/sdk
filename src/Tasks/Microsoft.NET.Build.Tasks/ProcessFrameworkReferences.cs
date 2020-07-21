@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
@@ -667,42 +666,6 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             return version;
-        }
-
-        // TODO replace with the proper impl from nuget
-        internal class NuGetFrameworkTemp
-        {
-            public NuGetFrameworkTemp(string targetFramework)
-            {
-                Match match = Regex.Match(targetFramework, "([^-]+)");
-                var beforeDash = match.Value;
-
-                var nuGetFramework = NuGetFramework.Parse(beforeDash);
-                Framework = nuGetFramework.Framework;
-                Version = nuGetFramework.Version;
-                ShortFolderName = nuGetFramework.GetShortFolderName();
-
-                if (beforeDash != targetFramework)
-                {
-                    var afterDash = targetFramework.Substring(match.Length + 1);
-                    Match matchPlatform = Regex.Match(afterDash, "^[A-Za-z]+");
-                    Platform = matchPlatform.Value;
-                    PlatformVersion = afterDash.Substring(matchPlatform.Length);
-                }
-            }
-
-            public string Framework { get; }
-            public Version Version { get; }
-            public string Platform { get; }
-
-            public string PlatformVersion { get; }
-
-            private string ShortFolderName { get; }
-
-            public string GetShortFolderName()
-            {
-                return ShortFolderName;
-            }
         }
     }
 }
