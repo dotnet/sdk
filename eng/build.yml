@@ -36,7 +36,7 @@ jobs:
       - _OfficialBuildIdArgs: ''
       - _PublishArgs: ''
       - _SignArgs: ''
-      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - group: DotNet-Symbol-Server-PATs
         - group: DotNet-HelixApi-Access
         - group: dotnet-benchview
@@ -52,6 +52,8 @@ jobs:
                     /p:PublishToAzure=$(_PublishToAzure)
         - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
         - _PerfIterations: 25
+
+      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
         - group: DotNet-MSRC-Storage
         - name: _InternalRuntimeDownloadArgs
           value: /p:DotNetRuntimeSourceFeed=https://dotnetclimsrc.blob.core.windows.net/dotnet
