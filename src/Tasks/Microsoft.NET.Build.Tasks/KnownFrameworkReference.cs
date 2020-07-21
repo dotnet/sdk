@@ -50,13 +50,13 @@ namespace Microsoft.NET.Build.Tasks
         {
             var normalizedTargetFrameworkVersion = ProcessFrameworkReferences.NormalizeVersion(new Version(targetFrameworkVersion));
             if (!TargetFramework.Framework.Equals(targetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase)
-                || ProcessFrameworkReferences.NormalizeVersion(this.TargetFramework.Version) != normalizedTargetFrameworkVersion)
+                || ProcessFrameworkReferences.NormalizeVersion(TargetFramework.Version) != normalizedTargetFrameworkVersion)
             {
                 return false;
             }
 
-            if (!String.IsNullOrEmpty(TargetFramework.Platform)
-                && !String.IsNullOrEmpty(TargetFramework.PlatformVersion))
+            if (!string.IsNullOrEmpty(TargetFramework.Platform)
+                && !string.IsNullOrEmpty(TargetFramework.PlatformVersion))
             {
                 if (!TargetFramework.PlatformVersion.Equals(targetPlatformVersion,
                         StringComparison.OrdinalIgnoreCase)
