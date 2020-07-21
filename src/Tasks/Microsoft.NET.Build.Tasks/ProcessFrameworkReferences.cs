@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tasks
             var knownFrameworkReferencesForTargetFramework =
                 KnownFrameworkReferences
                     .Select(item => new KnownFrameworkReference(item))
-                    .Where(kfr => kfr.KnownFrameworkReferenceAppliesToTargetFramework(
+                    .Where(kfr => kfr.AppliesTo(
                         TargetFrameworkIdentifier,
                         TargetFrameworkVersion,
                         TargetPlatformVersion))

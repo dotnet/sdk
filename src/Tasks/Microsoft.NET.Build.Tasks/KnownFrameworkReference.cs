@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tasks
             return new KnownRuntimePack(_item);
         }
 
-        public bool KnownFrameworkReferenceAppliesToTargetFramework(
+        public bool AppliesTo(
             string targetFrameworkIdentifier,
             string targetFrameworkVersion,
             string targetPlatformVersion)

@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tasks
 
             var knownFrameworkReferencesForTargetFramework =
                 winRtApisKnownFrameworkReferences
-                    .Where(kfr => kfr.KnownFrameworkReferenceAppliesToTargetFramework(
+                    .Where(kfr => kfr.AppliesTo(
                         TargetFrameworkIdentifier,
                         TargetFrameworkVersion,
                         TargetPlatformVersion));
