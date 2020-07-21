@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [MemberData(nameof(AddPkg_PackageVersionsLatestPrereleaseSucessData))]
         public void WhenPrereleaseOptionIsPassed(string[] inputVersions, string expectedVersion)
         {
-            var targetFramework = "net5.0";
+            var targetFramework = "netcoreapp5.0";
             TestProject testProject = new TestProject()
             {
                 Name = "Project",
