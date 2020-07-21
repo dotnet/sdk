@@ -264,6 +264,31 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Pass();
             return packCommand.GetNuGetPackage(packageName, packageVersion: version);
         }
+
+
+        private static TestProject GetProject(string targetFramework, string referenceProjectName, string version)
+        {
+            var project = new TestProject()
+            {
+                Name = referenceProjectName,
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+            };
+            project.AdditionalProperties.Add("Version", version);
+            return project;
+        }
+
+        private string GetPackagePath(string targetFramework, string packageName, string version)
+        {
+            var project = GetProject(targetFramework, packageName, version);
+            var packCommand = new PackCommand(Log, _testAssetsManager.CreateTestProject(project).TestRoot, packageName);
+
+            packCommand
+                .Execute()
+                .Should()
+                .Pass();
+            return packCommand.GetNuGetPackage(packageName, packageVersion: version);
+        }
     }
 }
 
