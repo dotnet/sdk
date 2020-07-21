@@ -24,16 +24,4 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'windows' and '$(TargetPlatformVersion)' == ''" >
     <TargetPlatformVersion>7.0</TargetPlatformVersion>
   </PropertyGroup>
-
-  <Target Name="_CheckForInvalidWindowsTargetPlatformVersion"
-        BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-        Condition="'$(TargetPlatformIdentifier)' == 'Windows' and '$(TargetPlatformVersion)' != '' and '@(SupportedTargetPlatform)' != ''">
-    <ItemGroup>
-      <ValidWindowsTargetPlatformVersion Include="@(SupportedTargetPlatform)" Condition="'%(Identity)' == '$(TargetPlatformVersion)'" />
-    </ItemGroup>
-    
-    <NetSdkError Condition="'@(ValidWindowsTargetPlatformVersion)' == ''"
-                 ResourceName="InvalidWindowsTargetPlatformVersion"
-                 FormatArguments="$(TargetPlatformVersion)" />
-  </Target>
 </Project>

@@ -40,6 +40,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = targetPlatformIdentifier;
             testProject.AdditionalProperties["MinimumOSPlatform"] = "13.2";
             testProject.AdditionalProperties["TargetPlatformVersion"] = "14.0";
+            testProject.AdditionalProperties["TargetPlatformVersionSupported"] = "true";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -58,6 +59,7 @@ namespace Microsoft.NET.Build.Tests
             var targetPlatformIdentifier = "iOS";
             testProject.AdditionalProperties["TargetPlatformIdentifier"] = targetPlatformIdentifier;
             testProject.AdditionalProperties["TargetPlatformVersion"] = "13.2";
+            testProject.AdditionalProperties["TargetPlatformVersionSupported"] = "true";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
