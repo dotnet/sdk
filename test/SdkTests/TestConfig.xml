@@ -141,11 +141,5 @@
             Skip="true"
             Issue=""
             Reason="Need all .NET core runtime"/>
-
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_generates_a_single_file_for_self_contained_apps"
-        Skip="true"
-        Issue="https://github.com/dotnet/sdk/issues/12391"
-        Reason="Recent changes need the test adjustments."/>
-    
   </SkippedTests>
 </Tests>
