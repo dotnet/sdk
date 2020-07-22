@@ -2,6 +2,7 @@
 Param(
     [string]$repo,
     [string]$sha,
+    [string]$targetSolution,
     [string]$testPath,
     [string]$stage  # Valid values are "prepare", "format-workspace", "format-folder"
 )
@@ -46,6 +47,10 @@ try {
         foreach ($solution in $solutions) {
             $solutionPath = Split-Path $solution
             $solutionFile = Split-Path $solution -leaf
+
+            if ($solutionFile -ne $targetSolution) {
+                continue
+            }
 
             Set-Location $solutionPath
 

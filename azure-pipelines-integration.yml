@@ -19,42 +19,50 @@ jobs:
       format:
         _repo: "https://github.com/dotnet/format"
         _repoName: "dotnet/format"
-        _sha: "686fc1efbe07d0a2d47147e36677ffcb09a74edc"
+        _targetSolution: "format.sln"
+        _sha: "36d343a6fb81806bff265f1180c0e3193edbbeec"
       roslyn:
         _repo: "https://github.com/dotnet/roslyn"
         _repoName: "dotnet/roslyn"
-        _sha: "da02b3ea3c539df05d82b362e57bbe085fc1abf7"
+        _targetSolution: "Compilers.sln"
+        _sha: "f4a14672ea85096f9c101961fd5ac96fe5482ad8"
       sdk:
         _repo: "https://github.com/dotnet/sdk"
         _repoName: "dotnet/sdk"
-        _sha: "d03f6695c294a7c0dd4d46a292e650b7a6f6b667"
+        _targetSolution: "sdk.sln"
+        _sha: "4f3a8d1e5800173b32e795319236e81b6b9f55a0"
       project-system:
         _repo: "https://github.com/dotnet/project-system"
         _repoName: "dotnet/project-system"
-        _sha: "e7baa11d85b75c1871e866c240ca4aa4240d7818"
+        _targetSolution: "ProjectSystem.sln"
+        _sha: "385943552a5dc219635551c1c0e6318ff35ffa38"
       msbuild:
         _repo: "https://github.com/Microsoft/msbuild"
         _repoName: "Microsoft/msbuild"
-        _sha: "a936b97e30679dcea4d99c362efa6f732c9d3587"
+        _targetSolution: "MSBuild.sln"
+        _sha: "f6739274e179fd1ecb7317b8fdc6a3e2c09b4ee0"
       blazor:
         _repo: "https://github.com/aspnet/blazor"
         _repoName: "aspnet/blazor"
-        _sha: "cc449601d638ffaab58ae9487f0fd010bb178a12"
+        _targetSolution: "Blazor.sln"
+        _sha: "4fa24e8de3d97555e2026fec286829457f6686da"
       efcore:
         _repo: "https://github.com/dotnet/efcore"
         _repoName: "dotnet/efcore"
-        _sha: "0afeb9279ca72d0a5aa6738adf902fe6a30ba5c4"
+        _targetSolution: "All.sln"
+        _sha: "7f78ddfadb6318d1605b38c5b3a1569957bf5c89"
       ef6:
         _repo: "https://github.com/dotnet/ef6"
         _repoName: "dotnet/ef6"
-        _sha: "603c30382a5aec6677b4d90043694ac412cbb426"
-  timeoutInMinutes: 20
+        _targetSolution: "EntityFramework.sln"
+        _sha: "efd56d44977632d1915a569046be6a23cb39da16"
+  timeoutInMinutes: 30
   steps:
-    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
       displayName: Prepare $(_repoName) for formatting
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-workspace'
-      displayName: Run dotnet-format on $(_repoName) solution files
+    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-workspace'
+      displayName: Run dotnet-format on $(_repoName) $(_targetSolution)
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-folder'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-folder'
       displayName: Run dotnet-format on $(_repoName) repo folder
