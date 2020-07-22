@@ -27,13 +27,13 @@
 - Added warning to use `--check` instead of `--dry-run` alias.
 
 #### Changes:
-- [Add Imports Formatter (693)](https://www.github.com/dotnet/roslyn/pull/693)
-- [Always run on the latest Runtime (694)](https://www.github.com/dotnet/roslyn/pull/694)
-- [Move to Roslyn's editorconfig support (590)](https://www.github.com/dotnet/roslyn/pull/590)
-- [Command line argument for solution/project as positional argument (681)](https://www.github.com/dotnet/roslyn/pull/681)
-- [Add option to format generated code files. (673)](https://www.github.com/dotnet/roslyn/pull/673)
-- [Produce a binlog when verbosity is set to detailed (605)](https://www.github.com/dotnet/roslyn/pull/605)
-- [Fix #581 - Add final newline false positive (633)](https://www.github.com/dotnet/roslyn/pull/633)
+- [Add Imports Formatter (693)](https://www.github.com/dotnet/format/pull/693)
+- [Always run on the latest Runtime (694)](https://www.github.com/dotnet/format/pull/694)
+- [Move to Roslyn's editorconfig support (590)](https://www.github.com/dotnet/format/pull/590)
+- [Command line argument for solution/project as positional argument (681)](https://www.github.com/dotnet/format/pull/681)
+- [Add option to format generated code files. (673)](https://www.github.com/dotnet/format/pull/673)
+- [Produce a binlog when verbosity is set to detailed (605)](https://www.github.com/dotnet/format/pull/605)
+- [Fix #581 - Add final newline false positive (633)](https://www.github.com/dotnet/format/pull/633)
 - [Combine --check and --dry-run into a single option. (541)](https://github.com/dotnet/format/pull/541)
 - [Use space-separated paths instead of comma-separated for --include and --exclude (551)](https://github.com/dotnet/format/pull/551)
 - [Support loading commandline options from response files (552)](https://github.com/dotnet/format/pull/552)
