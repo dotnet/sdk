@@ -1,7 +1,7 @@
 ﻿Guidelines for contributing a new Code Analysis (CA) rule to the repo
 =================================================================
 
-1. File an [issue](https://github.com/dotnet/roslyn-analyzers/issues/new) describing your proposed rule prior to working on a PR. This will ensure that the rule gets triaged and there is no duplicate work involved from an existing rule OR another contributor working on a similar rule.
+1. File an issue describing your proposed rule prior to working on a PR. This will ensure that the rule gets triaged and there is no duplicate work involved from an existing rule OR another contributor working on a similar rule. Issue shall be opened at [dotnet/runtime/issues](https://github.com/dotnet/runtime/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) with [code-analyzer](https://github.com/dotnet/runtime/issues?q=is%3Aopen+is%3Aissue+label%3Acode-analyzer+sort%3Aupdated-desc) label for .NET API related suggestions, or [here](https://github.com/dotnet/roslyn-analyzers/issues/new) for other suggestions.
 
 2. Newly proposed rule would be tagged with [Needs-Review](https://github.com/dotnet/roslyn-analyzers/labels/Needs-Review) label. An [Approved-Rule](https://github.com/dotnet/roslyn-analyzers/labels/Approved-Rule) label indicates that the proposal has been reviewed and a PR to implement the rule would be accepted.
 
