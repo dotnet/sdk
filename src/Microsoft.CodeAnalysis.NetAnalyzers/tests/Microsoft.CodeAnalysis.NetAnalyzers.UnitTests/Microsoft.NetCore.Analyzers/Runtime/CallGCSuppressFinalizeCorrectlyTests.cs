@@ -185,13 +185,15 @@ Imports System.Runtime.InteropServices
 Imports System.Threading.Tasks
 
 Class MyAsyncDisposable
-    Inherits IAsyncDisposable
+    Implements IAsyncDisposable
 
     <DllImport(""example.dll"")>
     Private Shared Function GetHandle() As Integer
+    End Function
 
     <DllImport(""example.dll"")>
     Private Shared Sub FreeHandle(handle As Integer)
+    End Sub
 
     Private ReadOnly handle As Integer
 
@@ -214,7 +216,7 @@ End Class";
                 TestCode = code
             }.RunAsync();
         }
-        
+
         [Fact]
         public async Task SealedDisposableWithoutFinalizer_CSharp_NoDiagnostic()
         {
