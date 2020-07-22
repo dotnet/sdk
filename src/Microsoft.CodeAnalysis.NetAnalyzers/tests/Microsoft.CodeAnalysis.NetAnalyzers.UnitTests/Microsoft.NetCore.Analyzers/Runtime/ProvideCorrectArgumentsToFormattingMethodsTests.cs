@@ -379,7 +379,6 @@ class Test
                 }
             };
 
-
             if (editorConfig == true)
             {
                 csharpTest.ExpectedDiagnostics.Add(
@@ -409,7 +408,6 @@ End Class"
                     AdditionalFiles = { (".editorconfig", editorConfigText) }
                 }
             };
-
 
             if (editorConfig == true)
             {
@@ -456,7 +454,6 @@ class Test
                 }
             };
 
-
             if (editorConfigText.Length > 0)
             {
                 csharpTest.ExpectedDiagnostics.Add(
@@ -486,7 +483,6 @@ End Class"
                     AdditionalFiles = { (".editorconfig", editorConfigText) }
                 }
             };
-
 
             if (editorConfigText.Length > 0)
             {

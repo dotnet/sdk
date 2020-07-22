@@ -7631,7 +7631,6 @@ class Test
             csharpTest.ExpectedDiagnostics.AddRange(builder);
             await csharpTest.RunAsync();
 
-
             source = @"
 Imports System
 

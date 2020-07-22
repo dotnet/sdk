@@ -400,7 +400,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             var newGenerics = namedTypeArg.TypeParameters.Zip(namedTypeArg.TypeArguments, (parameter, argument) => (parameter, argument));
                             ProcessGenericTypes(newGenerics, instantiatedTypes);
                         }
-                    };
+                    }
 
                     if (typeArg is INamedTypeSymbol namedType)
                     {
@@ -414,7 +414,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             var inheritedConstraints = t.ConstraintTypes.OfType<ITypeParameterSymbol>()
                                 .SelectMany(constraintT => GetAllNamedTypeConstraints(constraintT));
                             return directConstraints.Concat(inheritedConstraints);
-                        };
+                        }
 
                         var constraints = GetAllNamedTypeConstraints(typeParameterArg);
                         foreach (INamedTypeSymbol constraint in constraints)

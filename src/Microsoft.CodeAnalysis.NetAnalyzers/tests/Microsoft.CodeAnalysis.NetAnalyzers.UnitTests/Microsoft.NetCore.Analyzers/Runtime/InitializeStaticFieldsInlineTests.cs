@@ -445,8 +445,6 @@ End Structure",
     GetCA2207BasicDefaultResultAt(4, 13, "Struct1"));
         }
 
-
-
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
         public async Task CA1810_LocalFunc_Diagnostic()
         {

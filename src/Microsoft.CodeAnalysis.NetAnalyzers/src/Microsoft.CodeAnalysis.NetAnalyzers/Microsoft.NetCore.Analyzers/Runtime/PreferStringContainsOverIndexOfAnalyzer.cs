@@ -203,7 +203,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                          || targetMethod.Equals(stringAndComparisonTypeArgumentIndexOfMethod)
                          || targetMethod.Equals(charAndComparisonTypeArgumentIndexOfMethod);
                 }
-
             });
         }
     }

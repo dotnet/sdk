@@ -201,7 +201,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                     if (predicateKind != PredicateValueKind.Unknown)
                                     {
                                         return predicateKind;
-                                    };
+                                    }
                                 }
 
                                 return PredicateValueKind.Unknown;
