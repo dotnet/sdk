@@ -67,6 +67,15 @@ namespace Microsoft.DotNet.Tools.Run
                     foreach (var entry in launchSettings.EnvironmentVariables)
                     {
                         string value = Environment.ExpandEnvironmentVariables(entry.Value);
+                        if (entry.Key == "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES")
+                        {
+                            var existingValue = Environment.GetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES");
+                            if (!string.IsNullOrEmpty(existingValue))
+                            {
+                                value = existingValue + ";" + value;
+                            }
+                        }
+
                         //NOTE: MSBuild variables are not expanded like they are in VS
                         targetCommand.EnvironmentVariable(entry.Key, value);
                     }

@@ -4,7 +4,8 @@
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "environmentVariables": {
-        "MyCoolEnvironmentVariableKey": "MyCoolEnvironmentVariableValue"
+        "MyCoolEnvironmentVariableKey": "MyCoolEnvironmentVariableValue",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "HostingStartupInLaunchSettings"
       }
     }
   }

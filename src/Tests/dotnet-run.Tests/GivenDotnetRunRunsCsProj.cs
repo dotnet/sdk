@@ -608,6 +608,24 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
+        public void ItConcatenatesHostingStartups()
+        {
+            var expectedValue = "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=HostingStartupAmbient;HostingStartupInLaunchSettings";
+            var testAppName = "TestAppWithLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+               .WithWorkingDirectory(testInstance.Path)
+               .WithEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "HostingStartupAmbient")
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining(expectedValue);
+        }
+
+        [Fact]
         public void ItIncludesEnvironmentVariablesSpecifiedInLaunchSettings()
         {
             var expectedValue = "MyCoolEnvironmentVariableKey=MyCoolEnvironmentVariableValue";

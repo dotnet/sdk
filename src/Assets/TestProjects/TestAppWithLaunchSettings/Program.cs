@@ -11,6 +11,7 @@ namespace ConsoleApplication
         {
             Console.WriteLine("Hello world");
             Console.WriteLine($"MyCoolEnvironmentVariableKey={Environment.GetEnvironmentVariable("MyCoolEnvironmentVariableKey")}");
+            Console.WriteLine($"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES={Environment.GetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES")}");
         }
     }
 }
