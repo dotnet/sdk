@@ -76,8 +76,8 @@ public class C
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fixedCode } },
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue,
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue,
             }.RunAsync();
         }
 
@@ -137,8 +137,8 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fixedCode } },
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue,
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue,
             }.RunAsync();
         }
 

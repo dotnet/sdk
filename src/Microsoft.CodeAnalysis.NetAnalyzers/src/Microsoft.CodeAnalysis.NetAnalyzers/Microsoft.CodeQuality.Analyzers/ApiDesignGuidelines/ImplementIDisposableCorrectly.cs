@@ -176,7 +176,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // will always have identical configured visibility.
                 if (context.Symbol is INamedTypeSymbol type &&
                     type.TypeKind == TypeKind.Class &&
-                    type.MatchesConfiguredVisibility(context.Options, IDisposableReimplementationRule, context.CancellationToken))
+                    type.MatchesConfiguredVisibility(context.Options, IDisposableReimplementationRule, context.Compilation, context.CancellationToken))
                 {
                     bool implementsDisposableInBaseType = ImplementsDisposableInBaseType(type);
 
@@ -237,7 +237,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // will always have identical configured visibility.
                     INamedTypeSymbol type = method.ContainingType;
                     if (type != null && type.TypeKind == TypeKind.Class &&
-                        !type.IsSealed && type.MatchesConfiguredVisibility(context.Options, IDisposableReimplementationRule, context.CancellationToken))
+                        !type.IsSealed && type.MatchesConfiguredVisibility(context.Options, IDisposableReimplementationRule, context.Compilation, context.CancellationToken))
                     {
                         if (ImplementsDisposableDirectly(type))
                         {

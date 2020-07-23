@@ -1,6 +1,35 @@
 ### New Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+CA1002 | Design | Disabled | DoNotExposeGenericLists, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1002)
+CA1005 | Design | Disabled | AvoidExcessiveParametersOnGenericTypes, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1005)
+CA1021 | Design | Disabled | AvoidOutParameters, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1021)
+CA1045 | Design | Disabled | DoNotPassTypesByReference, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1045)
+CA1046 | Design | Disabled | DoNotOverloadOperatorEqualsOnReferenceTypes, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1046)
+CA1047 | Design | Info | DoNotDeclareProtectedMembersInSealedTypes, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1047)
+CA1069 | Design | Info | EnumShouldNotHaveDuplicatedValues, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1069)
+CA1070 | Design | Info | DoNotDeclareEventFieldsAsVirtual, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1070)
+CA1416 | Interoperability | Info | RuntimePlatformCheckAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
+CA1417 | Interoperability | Warning | DoNotUseOutAttributeStringPinvokeParametersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1417)
+CA1700 | Naming | Disabled | DoNotNameEnumValuesReserved, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1700)
+CA1713 | Naming | Disabled | EventsShouldNotHaveBeforeOrAfterPrefix, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1713)
+CA1805 | Performance | Info | DoNotInitializeUnnecessarilyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1805)
+CA1830 | Performance | Info | PreferTypedStringBuilderAppendOverloads, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1830)
+CA1831 | Performance | Warning | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1831)
+CA1832 | Performance | Info | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1832)
+CA1833 | Performance | Info | UseAsSpanInsteadOfRangeIndexerAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1833)
+CA1834 | Performance | Info | PreferConstCharOverConstUnitStringAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1834)
+CA1835 | Performance | Info | PreferStreamAsyncMemoryOverloads, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1835)
+CA1836 | Performance | Info | PreferIsEmptyOverCountAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1836)
+CA2011 | Reliability | Info | AvoidInfiniteRecursion, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2011)
+CA2012 | Reliability | Hidden | UseValueTasksCorrectlyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2012)
+CA2013 | Reliability | Warning | DoNotUseReferenceEqualsWithValueTypesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2013)
+CA2014 | Reliability | Warning | DoNotUseStackallocInLoopsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2014)
+CA2015 | Reliability | Warning | DoNotDefineFinalizersForTypesDerivedFromMemoryManager, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2015)
+CA2016 | Reliability | Info | ForwardCancellationTokenToInvocationsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2016)
+CA2247 | Usage | Warning | DoNotCreateTaskCompletionSourceWithWrongArguments, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2247)
+CA2248 | Usage | Info | DoNotCheckFlagFromDifferentEnum, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2248)
+CA2249 | Usage | Info | PreferStringContainsOverIndexOfAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2249)
 CA2350 | Security | Disabled | DoNotUseDataTableReadXml, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2350)
 CA2351 | Security | Disabled | DoNotUseDataSetReadXml, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2351)
 CA2352 | Security | Disabled | DataSetDataTableInSerializableTypeAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2352)
@@ -8,3 +37,8 @@ CA2353 | Security | Disabled | DataSetDataTableInSerializableTypeAnalyzer, [Docu
 CA2354 | Security | Disabled | DataSetDataTableInIFormatterSerializableObjectGraphAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2354)
 CA2355 | Security | Disabled | DataSetDataTableInSerializableObjectGraphAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2355)
 CA2356 | Security | Disabled | DataSetDataTableInWebSerializableObjectGraphAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2356)
+
+### Changed Rules
+Rule ID | New Category | New Severity | Old Category | Old Severity | Notes
+--------|--------------|--------------|--------------|--------------|-------
+CA2208 | Usage | Info | Usage | Hidden | InstantiateArgumentExceptionsCorrectlyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2208)

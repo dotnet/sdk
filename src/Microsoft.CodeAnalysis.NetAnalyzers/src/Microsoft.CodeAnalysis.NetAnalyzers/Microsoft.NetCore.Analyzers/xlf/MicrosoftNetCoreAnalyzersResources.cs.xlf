@@ -12,21 +12,6 @@
         <target state="translated">Přidat atribut Serializable</target>
         <note />
       </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">Atribute PreserveSigAttribute naznačuje, že metoda vrátí HRESULT místo vyvolání výjimky. Z tohoto důvodu je důležité využít hodnotu HRESULT vrácenou metodou, aby bylo možné detekovat chyby. Obecně se to provádí voláním Marshal.ThrowExceptionForHR.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">Využijte hodnotu hresult vrácenou metodou {0} a zavolejte Marshal.ThrowExceptionForHR.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">Vždy využijte hodnotu vrácenou metodami a označenou atributem PreserveSigAttribute</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">Zkontrolovat využití režimu šifrování s odborníky na kryptografii</target>
@@ -452,6 +437,26 @@
         <target state="translated">Nezachytávejte v obecných obslužných rutinách výjimky poškozující stav procesu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
+        <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
+        <target state="translated">TaskCompletionSource má konstruktory, které přijímají možnosti TaskCreationOptions určující příslušnou úlohu, a konstruktory, které přijímají stav objektu uložený v úloze. Když se místo TaskCreationOptions omylem předá TaskContinuationOptions, způsobí to, že volání bude možnosti považovat za stav.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
+        <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
+        <target state="translated">Nahraďte TaskContinuationOptions za TaskCreationOptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
+        <target state="translated">Argument obsahuje výčet TaskContinuationsOptions místo výčtu TaskCreationOptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
+        <target state="translated">Argument předaný konstruktoru TaskCompletionSource by měl být výčet TaskCreationOptions, nikoli výčet TaskContinuationOptions</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
         <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
         <target state="translated">Nevytvářejte úlohy, pokud nepoužíváte jedno z přetížení, která využívají Plánovač úloh. Výchozí chování je nastavení plánu u TaskScheduler.Current, což by vedlo ke vzájemnému zablokování. Buď použijte TaskScheduler.Default pro nastavení plánu u fondu vláken, nebo explicitně předejte TaskScheduler.Current, aby bylo zcela jasné, co máte v úmyslu.</target>
@@ -465,6 +470,21 @@
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
         <source>Do not create tasks without passing a TaskScheduler</source>
         <target state="translated">Nevytvářejte úlohy bez předání Plánovače úloh</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="translated">Když se do typu odvozeného z MemoryManager&lt;T&gt; přidá finalizační metoda, může to umožnit, aby se paměť uvolnila i přesto, že ji stále používá typ Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="translated">Když se do typu odvozeného z MemoryManager&lt;T&gt; přidá finalizační metoda, může to umožnit, aby se paměť uvolnila i přesto, že ji stále používá typ Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="translated">Pro typy odvozené z MemoryManager&lt;T&gt; nedefinujte finalizační metody</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -792,6 +812,41 @@
         <target state="translated">Volání zastaralé funkce pro odvození klíče {0}.{1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersDescription">
+        <source>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</source>
+        <target state="new">String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
+        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</source>
+        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
+        <source>Do not use 'OutAttribute' on string parameters for P/Invokes</source>
+        <target state="new">Do not use 'OutAttribute' on string parameters for P/Invokes</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">Do metody Equals v ReferenceEqualityComparer nepředávejte argument s typem hodnoty {0}. Kvůli balení hodnot toto volání metody Equals vždy vrátí false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">Typové argumenty s typy hodnot se jedinečně balí pro každé volání této metody, proto bude výsledek vždy false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">Do metody ReferenceEquals nepředávejte argument s typem hodnoty {0}. Kvůli balení hodnot toto volání metody ReferenceEquals vždy vrátí false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">Nepoužívejte ReferenceEquals s typy hodnot</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">Nepoužívejte nezabezpečený kryptografický algoritmus SHA1</target>
@@ -800,6 +855,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">Tento typ implementuje SHA1, což je kryptograficky nezabezpečená hashovací funkce. Kolize hashovací funkce jsou výpočetně schůdné u algoritmů SHA-1 a SHA-0. Nahraďte toto použití hashovacím algoritmem z řady SHA-2 (SHA512, SHA384, SHA256).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="translated">Prostor zásobníku přidělený operací stackalloc se uvolní jen na konci volání aktuální metody. Když se použije ve smyčce, může to způsobit neomezený růst zásobníku a nakonec i jeho přetečení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="translated">Možné přetečení zásobníku. Přesuňte stackalloc mimo smyčku.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops.</source>
+        <target state="translated">Nepoužívat stackalloc ve smyčkách</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -890,6 +960,21 @@
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
         <source>Finalizers should call base class finalizer</source>
         <target state="translated">Finalizační metody by měly volat finalizační metodu základní třídy</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
+        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="translated">Přepošlete parametr CancellationToken na metody, které ho přijmou, abyste měli jistotu, že se správně rozšíří oznámení o zrušení operací. Nebo můžete předat explicitně CancellationToken.None a označit tak, že se token záměrně nebude šířit.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
+        <source>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</source>
+        <target state="translated">Přepošlete parametr {0} metodě {1}, nebo předejte explicitně CancellationToken.None a označte tak, že se token záměrně nebude šířit.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
+        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
+        <target state="translated">Přeposlat parametr CancellationToken metodám, které ho přijmou</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1032,9 +1117,19 @@
         <target state="translated">Inicializujte statická pole typu hodnot jako vložená</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="translated">Změňte volání tak, aby se volal konstruktor se dvěma parametry, a jako zprávu předejte null.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">Zavolal se výchozí konstruktor (bez parametrů) typu výjimky, který je třídou ArgumentException nebo je z ní odvozený, nebo se do jeho konstruktoru s parametry předal nesprávný argument řetězce.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="translated">Prohodit pořadí argumentů</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1369,17 +1464,117 @@
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
         <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>
-        <target state="new">Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</target>
+        <target state="translated">Zkontrolujte kód, který zpracovává nedůvěryhodná deserializovaná data pro zpracování neočekávaných cyklů odkazů. Neočekávaný cyklus odkazů by neměl způsobit, aby se kód zasekl do nekonečné smyčky. V opačném případě může neočekávaný cyklus odkazů při deserializaci nedůvěryhodných dat umožnit útočníkovi útok typu odepření služby (DOS) nebo vyčerpání paměti procesu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphMessage">
         <source>{0} participates in a potential reference cycle</source>
-        <target state="new">{0} participates in a potential reference cycle</target>
+        <target state="translated">{0} se účastní potenciálního cyklu odkazů.</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphTitle">
         <source>Potential reference cycle in deserialized object graph</source>
-        <target state="new">Potential reference cycle in deserialized object graph</target>
+        <target state="translated">Potenciální cyklus odkazů v deserializovaném grafu objektů</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
+        <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
+        <target state="translated">Stream má přetížení ReadAsync, které jako první argument přijímá Memory&lt;Byte&gt;, a přetížení WriteAsync, které jako první argument přijímá ReadOnlyMemory&lt;Byte&gt;. Upřednostňujte volání přetížení založených na paměti, která jsou efektivnější.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountDescription">
+        <source>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</source>
+        <target state="translated">Pokud chcete určit, jestli objekt obsahuje nějaké položky, nebo ne, namísto načtení počtu položek z vlastnosti Count a porovnání s hodnotami 0 nebo 1 používejte raději vlastnost IsEmpty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountMessage">
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
+        <target state="translated">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountTitle">
+        <source>Prefer IsEmpty over Count</source>
+        <target state="translated">Upřednostňovat IsEmpty před Count</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>Change the '{0}' method call to use the '{1}' overload</source>
+        <target state="translated">Změňte volání metody {0} tak, aby se použilo přetížení {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
+        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
+        <target state="translated">Pro ReadAsync a WriteAsync upřednostňovat přetížení založená na Memory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfDescription">
+        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</source>
+        <target state="translated">Volání metody string.IndexOf, kde se pomocí výsledku kontroluje přítomnost nebo nepřítomnost podřetězce, se dá nahradit metodou string.Contains.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfMessage">
+        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
+        <target state="translated">Pro lepší čitelnost použijte místo string.IndexOf metodu string.Contains.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfTitle">
+        <source>Consider using 'string.Contains' instead of 'string.IndexOf'</source>
+        <target state="translated">Zvážit možnost místo string.IndexOf použít string.Contains</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
+        <target state="translated">StringBuilder.Append a StringBuilder.Insert nabízejí přetížení kromě System.String i několika dalším typům. Kdykoli je to možné, upřednostňujte před metodou ToString() přetížení silného typu a přetížení založené na řetězcích.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
+        <target state="translated">Odeberte volání ToString, aby se používalo přetížení StringBuilder silného typu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
+        <source>Remove the ToString call</source>
+        <target state="translated">Odeberte volání ToString.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
+        <target state="translated">Upřednostňovat pro StringBuilder přetížení metod Append a Insert silného typu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
+        <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
+        <target state="translated">Když je string jen jeden znak, je StringBuilder.Append(char) efektivnější než StringBuilder.Append(string). Při volání Append s konstantou dávejte přednost možnosti použít konstantní typ char namísto konstantního typu string, který bude obsahovat jen jeden znak.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
+        <target state="translated">Když je vstup konstantní jednotkový řetězec, použijte místo StringBuilder.Append(string) metodu StringBuilder.Append(char).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
+        <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
+        <target state="translated">Zvažte možnost použít metodu StringBuilder.Append(char) tam, kde je to možné.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
+        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
+        <target state="translated">Metoda Enum.HasFlag očekává, že argument enum bude mít stejný typ enum jako instance, ve které se metoda zavolala, a že tento výčet enum bude označený jako System.FlagsAttribute. Pokud existuje více různých typů enum, vyvolá se za běhu neošetřená výjimka. Pokud se typ enum neoznačí jako System.FlagsAttribute, volání vždy vrátí false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
+        <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
+        <target state="translated">Typ argumentu {0} musí být stejný jako typ výčtu {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
+        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
+        <target state="translated">Toto volání vždy vrátí false, protože typ výčtu {0} není označený jako FlagsAttribute.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
+        <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
+        <target state="translated">Poskytněte prosím do Enum.HasFlag správný argument enum</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1727,6 +1922,41 @@
         <target state="translated">Použijte Array.Empty</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
+        <target state="translated">Indexer hodnot pole založený na rozsahu vytváří kopii požadované části pole. Když se implicitně používá jako hodnota Span nebo Memory, je tato kopie často nežádoucí. Pokud se jí chcete vyhnout, použijte metodu AsSpan.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
+        <target state="translated">V {2} místo indexeru založeného na {1} použijte {0}, nebudou se tak vytvářet nepotřebné kopie dat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on a string</source>
+        <target state="translated">Použít {0} namísto indexerů založených na rozsahu na řetězci</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on an array</source>
+        <target state="translated">Použít {0} namísto indexerů založených na rozsahu na poli</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
+        <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
+        <target state="translated">Tam, kde je to možné, používat místo indexerů založených na rozsahu metody AsSpan nebo AsMemory</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
+        <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="translated">Indexer hodnot řetězců založený na rozsahu vytváří kopii požadované části řetězce. Když se implicitně používá jako hodnota ReadOnlySpan nebo ReadOnlyMemory, je tato kopie obvykle zbytečná. Pokud se jí chcete vyhnout, použijte metodu AsSpan.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="translated">Indexer hodnot pole založený na rozsahu vytváří kopii požadované části pole. Když se implicitně používá jako hodnota ReadOnlySpan nebo ReadOnlyMemory, je tato kopie obvykle zbytečná. Pokud se jí chcete vyhnout, použijte metodu AsSpan.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">Používat tokeny proti padělkům v kontrolerech MVC ASP.NET Core</target>
@@ -1860,6 +2090,36 @@
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
         <target state="translated">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, zadejte SharedAccessProtocol.HttpsOnly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="translated">Hodnoty ValueTask vrácené z vyvolání členů jsou určené k tomu, aby byly přímo očekávané. Pokusy o vícenásobné využití ValueTask nebo o přímý přístup k výsledku úkolu před tím, než je známo, že je dokončený, můžou způsobit výjimku nebo poškození. Ignorování takové hodnoty ValueTask je pravděpodobně indikací funkční chyby a může snížit výkon.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="translated">S výsledky instancí ValueTask by se nemělo pracovat přímo, pokud instance ještě nebyla dokončena. Na rozdíl od hodnoty Tasks není u volání metody Result nebo GetAwaiter().GetResult() u hodnoty ValueTask zaručeno zablokování, dokud se operace nedokončí. Pokud jednoduše nemůžete očekávat instanci, zvažte, jestli nejprve nezkontrolujete její vlastnost IsCompleted (nebo se nepřesvědčíte, že je to pravda, pokud víte, že jde o tento případ).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="translated">Instance ValueTask by se měly využít jenom jednou, například přes očekávání. Vícenásobné využití stejné instance ValueTask může způsobit výjimky nebo poškození dat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="translated">Instance ValueTask vrácené z volání metod by měly být přímo očekávány, vráceny nebo předány jako argument jinému volání metody. Další použití, například uložení instance do místního úložiště nebo pole, pravděpodobně znamená chybu, protože instance ValueTask musí být vždy využity jenom jednou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="translated">Instance ValueTask vrácené z volání metod by měly být vždy využity, obvykle pomocí očekávání. Pokud k tomu nedochází, často to představuje funkční chybu, ale i v případě, že ne, může to způsobit snížení výkonu, pokud cílová metoda vytváří fondy objektů pro použití s hodnotami ValueTask.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="translated">Správně použít hodnot ValueTask</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

@@ -49,6 +49,7 @@ namespace Blah
 
             var csharpTest = new VerifyCS.Test
             {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
                 TestState =
                 {
                     Sources = { source, myBinderCSharpSourceCode }
@@ -918,7 +919,10 @@ namespace Blah
         [Fact]
         public async Task Deserialize_BranchInvokedAsDelegate_Diagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -942,8 +946,12 @@ namespace Blah
         }
     }
 }",
-                GetCSharpResultAt(21, 20, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream, HeaderHandler handler)"),
-                GetCSharpResultAt(21, 20, BinderNotSetRule, "object BinaryFormatter.UnsafeDeserialize(Stream serializationStream, HeaderHandler handler)"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(21, 20, BinderNotSetRule, "object BinaryFormatter.Deserialize(Stream serializationStream, HeaderHandler handler)"),
+                    GetCSharpResultAt(21, 20, BinderNotSetRule, "object BinaryFormatter.UnsafeDeserialize(Stream serializationStream, HeaderHandler handler)"),
+                },
+            }.RunAsync();
         }
 
         [Fact]
@@ -1104,7 +1112,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -1132,7 +1139,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -1157,7 +1163,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -1186,7 +1191,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -1270,7 +1274,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -1327,7 +1330,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -1386,7 +1388,7 @@ namespace Blah
         [InlineData(@"dotnet_code_quality.CA2301.excluded_symbol_names = DeserializeBookRecord
                       dotnet_code_quality.CA2302.excluded_symbol_names = DeserializeBookRecord")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = DeserializeBookRecord")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -1447,7 +1449,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {
@@ -1473,7 +1474,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Remoting.Messaging;
 
 namespace Blah
 {

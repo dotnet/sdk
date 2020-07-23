@@ -1,30 +1,24 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Testing;
+using System.Threading.Tasks;
 using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotCatchGeneralExceptionTypesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotCatchGeneralExceptionTypesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
 {
-    public class DoNotCatchGeneralExceptionTypesTests : DiagnosticAnalyzerTestBase
+    public class DoNotCatchGeneralExceptionTypesTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotCatchGeneralExceptionTypesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotCatchGeneralExceptionTypesAnalyzer();
-        }
-
         [Fact]
-        public void CSharp_Diagnostic_GeneralCatch()
+        public async Task CSharp_Diagnostic_GeneralCatch()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -41,19 +35,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         catch (IOException e)
                         {
                         }
-                        catch
+                        [|catch|]
                         {
                         }
                     }
                 }
-            }",
-            GetCA1031CSharpResultAt(18, 25, "TestMethod"));
+            }");
         }
 
         [Fact]
-        public void Basic_Diagnostic_GeneralCatch()
+        public async Task Basic_Diagnostic_GeneralCatch()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
 
             Namespace TestNamespace
@@ -62,19 +55,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         Try
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
                         Catch e As IOException
-                        Catch
+                        [|Catch|]
                         End Try
                     End Sub
                 End Class
             End Namespace
-            ",
-            GetCA1031BasicResultAt(10, 25, "TestMethod"));
+            ");
         }
 
         [Fact]
-        public void CSharp_Diagnostic_GeneralCatchInGetAccessor()
+        public async Task CSharp_Diagnostic_GeneralCatchInGetAccessor()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -93,21 +85,20 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                             catch (IOException e)
                             {
                             }
-                            catch
+                            [|catch|]
                             {
                             }
                             return 0;
                         }
                     }
                 }
-            }",
-            GetCA1031CSharpResultAt(20, 29, "get_TestProperty"));
+            }");
         }
 
         [Fact]
-        public void Basic_Diagnostic_GeneralCatchInGetAccessor()
+        public async Task Basic_Diagnostic_GeneralCatchInGetAccessor()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
 
             Namespace TestNamespace
@@ -117,21 +108,20 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                             Try
                                 Dim fileStream As New FileStream(""name"", FileMode.Create)
                             Catch e As IOException
-                            Catch
+                            [|Catch|]
                             End Try
                             Return 0
                         End Get
                     End Property
                 End Class
             End Namespace
-            ",
-            GetCA1031BasicResultAt(11, 29, "get_X"));
+            ");
         }
 
         [Fact]
-        public void CSharp_NoDiagnostic_GeneralCatchRethrow()
+        public async Task CSharp_NoDiagnostic_GeneralCatchRethrow()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -158,9 +148,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void Basic_NoDiagnostic_GeneralCatchRethrow()
+        public async Task Basic_NoDiagnostic_GeneralCatchRethrow()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
 
             Namespace TestNamespace
@@ -179,9 +169,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void CSharp_NoDiagnostic_GeneralCatchThrowNew()
+        public async Task CSharp_NoDiagnostic_GeneralCatchThrowNew()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -208,9 +198,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void Basic_NoDiagnostic_GeneralCatchThrowNew()
+        public async Task Basic_NoDiagnostic_GeneralCatchThrowNew()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
 
             Namespace TestNamespace
@@ -229,9 +219,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void CSharp_Diagnostic_GeneralCatchWithRethrowFromSpecificCatch()
+        public async Task CSharp_Diagnostic_GeneralCatchWithRethrowFromSpecificCatch()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -249,19 +239,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         {
                             throw;
                         }
-                        catch
+                        [|catch|]
                         {
                         }
                     }
                 }
-            }",
-            GetCA1031CSharpResultAt(19, 25, "TestMethod"));
+            }");
         }
 
         [Fact]
-        public void Basic_Diagnostic_GeneralCatchWithRethrowFromSpecificCatch()
+        public async Task Basic_Diagnostic_GeneralCatchWithRethrowFromSpecificCatch()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
 
             Namespace TestNamespace
@@ -271,19 +260,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
                         Catch e As IOException
                             Throw
-                        Catch
+                        [|Catch|]
                         End Try
                     End Sub
                 End Class
             End Namespace
-            ",
-            GetCA1031BasicResultAt(11, 25, "TestMethod"));
+            ");
         }
 
         [Fact]
-        public void CSharp_Diagnostic_GenericException()
+        public async Task CSharp_Diagnostic_GenericException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -297,19 +285,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         {
                             FileStream fileStream = new FileStream(""name"", FileMode.Create);
                         }
-                        catch (Exception e)
+                        [|catch|] (Exception e)
                         {
                         }
                     }
                 }
-            }",
-            GetCA1031CSharpResultAt(15, 25, "TestMethod"));
+            }");
         }
 
         [Fact]
-        public void Basic_Diagnostic_GenericException()
+        public async Task Basic_Diagnostic_GenericException()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Imports System.IO
 
@@ -318,19 +305,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                     Public Shared Sub TestMethod()
                         Try
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
-                        Catch e As Exception
+                        [|Catch|] e As Exception
                         End Try
                     End Sub
                 End Class
             End Namespace
-            ",
-            GetCA1031BasicResultAt(10, 25, "TestMethod"));
+            ");
         }
 
         [Fact]
-        public void CSharp_NoDiagnostic_GenericExceptionRethrown()
+        public async Task CSharp_NoDiagnostic_GenericExceptionRethrown()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -354,9 +340,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void Basic_NoDiagnostic_GenericExceptionRethrown()
+        public async Task Basic_NoDiagnostic_GenericExceptionRethrown()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Imports System.IO
 
@@ -375,9 +361,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void CSharp_NoDiagnostic_ThrowNewWrapped()
+        public async Task CSharp_NoDiagnostic_ThrowNewWrapped()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -401,9 +387,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void Basic_NoDiagnostic_ThrowNewWrapped()
+        public async Task Basic_NoDiagnostic_ThrowNewWrapped()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Imports System.IO
 
@@ -422,9 +408,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void CSharp_Diagnostic_SystemException()
+        public async Task CSharp_Diagnostic_SystemException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -438,19 +424,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         {
                             FileStream fileStream = new FileStream(""name"", FileMode.Create);
                         }
-                        catch (SystemException e)
+                        [|catch|] (SystemException e)
                         {
                         }
                     }
                 }
-            }",
-            GetCA1031CSharpResultAt(15, 25, "TestMethod"));
+            }");
         }
 
         [Fact]
-        public void Basic_Diagnostic_SystemException()
+        public async Task Basic_Diagnostic_SystemException()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
 
             Namespace TestNamespace
@@ -458,19 +443,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                     Public Shared Sub TestMethod()
                         Try
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
-                        Catch e As System.Exception
+                        [|Catch|] e As System.Exception
                         End Try
                     End Sub
                 End Class
             End Namespace
-            ",
-            GetCA1031BasicResultAt(9, 25, "TestMethod"));
+            ");
         }
 
         [Fact]
-        public void CSharp_Diagnostic_GeneralCatchWithFilter()
+        public async Task CSharp_Diagnostic_GeneralCatchWithFilter()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
             namespace TestNamespace
@@ -483,38 +467,36 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         {
                             FileStream fileStream = new FileStream(""name"", FileMode.Create);
                         }
-                        catch when (true)
+                        [|catch|] when (true)
                         {
                         }
                     }
                 }
-            }",
-            GetCA1031CSharpResultAt(14, 25, "TestMethod"));
+            }");
         }
 
         [Fact]
-        public void Basic_Diagnostic_GeneralCatchWithFilter()
+        public async Task Basic_Diagnostic_GeneralCatchWithFilter()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
             Namespace TestNamespace
                 Class TestClass
                     Public Shared Sub TestMethod()
                         Try
                             Dim fileStream As New FileStream(""name"", FileMode.Create)
-                        Catch When True
+                        [|Catch|] When True
                         End Try
                     End Sub
                 End Class
             End Namespace
-            ",
-            GetCA1031BasicResultAt(8, 25, "TestMethod"));
+            ");
         }
 
         [Fact]
-        public void CSharp_Diagnostic_GenericExceptionWithoutVariableWithFilter()
+        public async Task CSharp_Diagnostic_GenericExceptionWithoutVariableWithFilter()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
             namespace TestNamespace
@@ -527,19 +509,18 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         {
                             FileStream fileStream = new FileStream(""name"", FileMode.Create);
                         }
-                        catch (Exception) when (true)
+                        [|catch|] (Exception) when (true)
                         {
                         }
                     }
                 }
-            }",
-            GetCA1031CSharpResultAt(14, 25, "TestMethod"));
+            }");
         }
 
         [Fact]
-        public void CSharp_NoDiagnostic_GenericExceptionWithVariableWithFilter()
+        public async Task CSharp_NoDiagnostic_GenericExceptionWithVariableWithFilter()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
             namespace TestNamespace
@@ -561,9 +542,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void Basic_NoDiagnostic_GenericExceptionWithVariableWithFilter()
+        public async Task Basic_NoDiagnostic_GenericExceptionWithVariableWithFilter()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Imports System.IO
             Namespace TestNamespace
@@ -580,9 +561,9 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public void CSharp_Diagnostic_GeneralCatchInLambdaExpression()
+        public async Task CSharp_Diagnostic_GeneralCatchInLambdaExpression()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
             using System.IO;
 
@@ -598,20 +579,19 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                             {
                                 FileStream fileStream = new FileStream(""name"", FileMode.Create);
                             }
-                            catch
+                            [|catch|]
                             {
                             }
                         };
                     }
                 }
-            }",
-            GetCA1031CSharpResultAt(17, 29, "TestMethod"));
+            }");
         }
 
         [Fact]
-        public void Basic_Diagnostic_GeneralCatchInLambdaExpression()
+        public async Task Basic_Diagnostic_GeneralCatchInLambdaExpression()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Imports System.IO
 
@@ -621,16 +601,15 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         Dim action As Action = Function() 
                             Try
                                 Dim fileStream As New FileStream(""name"", FileMode.Create)
-                            Catch
+                            [|Catch|]
                             End Try
                         End Function
                     End Sub
                 End Class
             End Namespace
-            ",
-            GetCA1031BasicResultAt(11, 29, "TestMethod"));
+            ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
             Imports System.IO
 
@@ -640,21 +619,20 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
                         Dim action As Action = Function() 
                             Try
                                 Dim fileStream As New FileStream(""name"", FileMode.Create)
-                            Catch
+                            [|Catch|]
                             End Try
                             Return 0
                         End Function
                     End Function
                 End Class
             End Namespace
-            ",
-            GetCA1031BasicResultAt(11, 29, "TestMethod"));
+            ");
         }
 
         [Fact, WorkItem(2518, "https://github.com/dotnet/roslyn-analyzers/issues/2518")]
-        public void CSharp_NoDiagnostic_SpecificExceptionWithoutVariable()
+        public async Task CSharp_NoDiagnostic_SpecificExceptionWithoutVariable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
 
             public class Class1
@@ -682,55 +660,46 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         [InlineData("dotnet_code_quality." + DoNotCatchGeneralExceptionTypesAnalyzer.RuleId + ".disallowed_symbol_names = NullReferenceException")]
         // Match by type documentation ID
         [InlineData(@"dotnet_code_quality.disallowed_symbol_names = T:System.NullReferenceException")]
-        public void EditorConfigConfiguration_DisallowedExceptionTypes(string editorConfigText)
+        public async Task EditorConfigConfiguration_DisallowedExceptionTypes(string editorConfigText)
         {
-            var expected = Array.Empty<DiagnosticResult>();
-            if (editorConfigText.Length > 0)
+            await new VerifyCS.Test
             {
-                expected = new DiagnosticResult[]
+                TestState =
                 {
-                    GetCA1031CSharpResultAt(7, 9, "M1")
-                };
-            }
-
-            VerifyCSharp(@"
+                    Sources =
+                    {
+                        $@"
 class Test
-{
+{{
     void M1(string param)
-    {
-        try { }
-        catch (System.NullReferenceException ex) { }
-    }
-}", GetEditorConfigAdditionalFile(editorConfigText), expected);
+    {{
+        try {{ }}
+        {(editorConfigText.Length > 0 ? "[|catch|]" : "catch")} (System.NullReferenceException ex) {{ }}
+    }}
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            }.RunAsync();
 
-            expected = Array.Empty<DiagnosticResult>();
-            if (editorConfigText.Length > 0)
+            await new VerifyVB.Test
             {
-                expected = new DiagnosticResult[]
+                TestState =
                 {
-                    GetCA1031BasicResultAt(5, 9, "M1")
-
-                };
-            }
-
-            VerifyBasic(@"
+                    Sources =
+                    {
+                        $@"
 Class Test
     Private Sub M1(param As String)
         Try
-        Catch ex As System.NullReferenceException
+        {(editorConfigText.Length > 0 ? "[|Catch|]" : "Catch")} ex As System.NullReferenceException
         End Try
     End Sub
-End Class", GetEditorConfigAdditionalFile(editorConfigText), expected);
-        }
-
-        private static DiagnosticResult GetCA1031CSharpResultAt(int line, int column, string signature)
-        {
-            return GetCSharpResultAt(line, column, DoNotCatchGeneralExceptionTypesAnalyzer.Rule, signature);
-        }
-
-        private static DiagnosticResult GetCA1031BasicResultAt(int line, int column, string signature)
-        {
-            return GetBasicResultAt(line, column, DoNotCatchGeneralExceptionTypesAnalyzer.Rule, signature);
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
         }
     }
 }

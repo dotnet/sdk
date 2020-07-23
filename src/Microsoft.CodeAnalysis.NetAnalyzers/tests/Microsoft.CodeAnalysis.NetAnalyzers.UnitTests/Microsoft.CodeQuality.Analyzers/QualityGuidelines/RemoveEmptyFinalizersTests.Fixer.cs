@@ -3,10 +3,10 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpRemoveEmptyFinalizersAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicRemoveEmptyFinalizersAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests

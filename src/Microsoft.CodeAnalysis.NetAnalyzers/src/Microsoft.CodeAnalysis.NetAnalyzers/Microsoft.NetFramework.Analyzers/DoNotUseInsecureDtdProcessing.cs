@@ -722,7 +722,7 @@ namespace Microsoft.NetFramework.Analyzers
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            RuleLevel.BuildWarning,
+                                            RuleLevel.IdeHidden_BulkConfigurable,
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
                                             isPortedFxCopRule: false,
                                             isDataflowRule: false);

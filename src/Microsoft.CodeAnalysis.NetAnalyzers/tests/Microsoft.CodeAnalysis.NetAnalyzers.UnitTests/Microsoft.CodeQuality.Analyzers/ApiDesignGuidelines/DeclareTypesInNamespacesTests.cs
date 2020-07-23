@@ -1,40 +1,45 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DeclareTypesInNamespacesAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDeclareTypesInNamespacesFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DeclareTypesInNamespacesAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicDeclareTypesInNamespacesFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class DeclareTypesInNamespacesTests : DiagnosticAnalyzerTestBase
+    public class DeclareTypesInNamespacesTests
     {
         [Fact]
-        public void OuterTypeInGlobalNamespace_Warns()
+        public async Task OuterTypeInGlobalNamespace_Warns()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
                 {
                 }",
                 GetCSharpExpectedResult(2, 30));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
                 End Class",
                 GetBasicExpectedResult(2, 30));
         }
 
         [Fact]
-        public void NestedTypeInGlobalNamespace_WarnsOnlyOnce()
+        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnce()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
                 {
                     public class Nested {}
                 }",
                 GetCSharpExpectedResult(2, 30));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                 Public Class [MyClass]
                     Public Class Nested
                     End Class
@@ -43,15 +48,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void InternalClassInGlobalNamespace_DoesNotWarn()
+        public async Task InternalClassInGlobalNamespace_DoesNotWarn()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
                 internal class Class
                 {
                     public class Nested {}
                 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                 Friend Class [MyClass]
                     Public Class Nested
                     End Class
@@ -59,9 +64,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void PublicClassInNonGlobalNamespace_DoesNotWarn()
+        public async Task PublicClassInNonGlobalNamespace_DoesNotWarn()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
                 namespace NS
                 {
                     public class Class
@@ -70,7 +75,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                     }
                 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                 Namespace NS
                     Public Class [MyClass]
                         Public Class Nested
@@ -79,24 +84,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 End Namespace");
         }
 
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DeclareTypesInNamespacesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DeclareTypesInNamespacesAnalyzer();
-        }
-
         private static DiagnosticResult GetCSharpExpectedResult(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, DeclareTypesInNamespacesAnalyzer.Rule);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicExpectedResult(int line, int column)
-        {
-            return GetBasicResultAt(line, column, DeclareTypesInNamespacesAnalyzer.Rule);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

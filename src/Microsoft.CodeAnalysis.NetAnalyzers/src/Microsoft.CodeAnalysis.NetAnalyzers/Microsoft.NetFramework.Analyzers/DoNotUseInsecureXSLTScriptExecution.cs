@@ -54,7 +54,7 @@ namespace Microsoft.NetFramework.Analyzers
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXsltScriptProcessingMessage)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            RuleLevel.BuildWarning,
+                                            RuleLevel.IdeHidden_BulkConfigurable,
                                             description,
                                             isPortedFxCopRule: false,
                                             isDataflowRule: false);
