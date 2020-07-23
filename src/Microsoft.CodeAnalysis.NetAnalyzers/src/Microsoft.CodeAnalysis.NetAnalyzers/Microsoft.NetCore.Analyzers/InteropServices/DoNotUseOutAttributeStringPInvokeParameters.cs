@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     /// CA1417: Do not use [Out] string parameters for P/Invokes
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class DoNotUseOutAttributeStringPinvokeParametersAnalyzer : DiagnosticAnalyzer
+    public sealed class DoNotUseOutAttributeStringPInvokeParametersAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1417";
 
