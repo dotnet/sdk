@@ -16,8 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// <summary>
     /// CA1812: Avoid uninstantiated internal classes
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class AvoidUninstantiatedInternalClassesAnalyzer : DiagnosticAnalyzer
+    public abstract class AvoidUninstantiatedInternalClassesAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1812";
 
@@ -35,9 +34,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public abstract void RegisterLanguageSpecificChecks(CompilationStartAnalysisContext context, ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes);
+
+        public sealed override void Initialize(AnalysisContext analysisContext)
         {
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
@@ -73,6 +74,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 var mef2ExportAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCompositionExportAttribute);
                 var coClassAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesCoClassAttribute);
                 var designerAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelDesignerAttribute);
+
+                RegisterLanguageSpecificChecks(startContext, instantiatedTypes);
 
                 startContext.RegisterOperationAction(context =>
                 {
@@ -154,60 +157,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     }
                 }, SymbolKind.NamedType);
 
-                // If a type is passed a generic argument to another type or a method that specifies that the type must have a constructor,
-                // we presume that the method will be constructing the type, and add it to the list of instantiated types.
-
-                void ProcessGenericTypes(IEnumerable<(ITypeParameterSymbol param, ITypeSymbol arg)> generics)
-                {
-                    foreach (var (typeParam, typeArg) in generics)
-                    {
-                        if (typeParam.HasConstructorConstraint)
-                        {
-                            void ProcessNamedTypeParamConstraint(INamedTypeSymbol namedTypeArg)
-                            {
-                                if (!instantiatedTypes.TryAdd(namedTypeArg, null))
-                                {
-                                    // Already processed.
-                                    return;
-                                }
-
-                                // We need to handle if this type param also has type params that have a generic constraint. Take the following example:
-                                // new Factory1<Factory2<InstantiatedType>>();
-                                // In this example, Factory1 and Factory2 have type params with constructor constraints. Therefore, we need to add all 3
-                                // types to the list of types that have actually been instantiated. However, in the following example:
-                                // new List<Factory<InstantiatedType>>();
-                                // List does not have a constructor constraint, so we can't reasonably infer anything about its type parameters.
-                                if (namedTypeArg.IsGenericType)
-                                {
-                                    var newGenerics = namedTypeArg.TypeParameters.Zip(namedTypeArg.TypeArguments, (parameter, argument) => (parameter, argument));
-                                    ProcessGenericTypes(newGenerics);
-                                }
-                            };
-
-                            if (typeArg is INamedTypeSymbol namedType)
-                            {
-                                ProcessNamedTypeParamConstraint(namedType);
-                            }
-                            else if (typeArg is ITypeParameterSymbol typeParameterArg && !typeParameterArg.ConstraintTypes.IsEmpty)
-                            {
-                                static IEnumerable<INamedTypeSymbol> GetAllNamedTypeConstraints(ITypeParameterSymbol t)
-                                {
-                                    var directConstraints = t.ConstraintTypes.OfType<INamedTypeSymbol>();
-                                    var inheritedConstraints = t.ConstraintTypes.OfType<ITypeParameterSymbol>()
-                                        .SelectMany(constraintT => GetAllNamedTypeConstraints(constraintT));
-                                    return directConstraints.Concat(inheritedConstraints);
-                                };
-
-                                var constraints = GetAllNamedTypeConstraints(typeParameterArg);
-                                foreach (INamedTypeSymbol constraint in constraints)
-                                {
-                                    ProcessNamedTypeParamConstraint(constraint);
-                                }
-                            }
-                        }
-                    }
-                }
-
                 startContext.RegisterOperationAction(context =>
                 {
                     var expr = (IObjectCreationOperation)context.Operation;
@@ -219,7 +168,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     }
 
                     var generics = constructedClass.TypeParameters.Zip(constructedClass.TypeArguments, (parameter, argument) => (parameter, argument));
-                    ProcessGenericTypes(generics);
+                    ProcessGenericTypes(generics, instantiatedTypes);
                 }, OperationKind.ObjectCreation);
 
                 startContext.RegisterOperationAction(context =>
@@ -233,7 +182,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     }
 
                     var generics = methodType.TypeParameters.Zip(methodType.TypeArguments, (parameter, argument) => (parameter, argument));
-                    ProcessGenericTypes(generics);
+                    ProcessGenericTypes(generics, instantiatedTypes);
                 }, OperationKind.Invocation);
 
                 startContext.RegisterCompilationEndAction(context =>
@@ -420,6 +369,61 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// If a type is passed a generic argument to another type or a method that specifies that the type must have a constructor,
+        /// we presume that the method will be constructing the type, and add it to the list of instantiated types.
+        /// </summary>
+        protected void ProcessGenericTypes(IEnumerable<(ITypeParameterSymbol param, ITypeSymbol arg)> generics, ConcurrentDictionary<INamedTypeSymbol, object?> instantiatedTypes)
+        {
+            foreach (var (typeParam, typeArg) in generics)
+            {
+                if (typeParam.HasConstructorConstraint)
+                {
+                    void ProcessNamedTypeParamConstraint(INamedTypeSymbol namedTypeArg)
+                    {
+                        if (!instantiatedTypes.TryAdd(namedTypeArg, null))
+                        {
+                            // Already processed.
+                            return;
+                        }
+
+                        // We need to handle if this type param also has type params that have a generic constraint. Take the following example:
+                        // new Factory1<Factory2<InstantiatedType>>();
+                        // In this example, Factory1 and Factory2 have type params with constructor constraints. Therefore, we need to add all 3
+                        // types to the list of types that have actually been instantiated. However, in the following example:
+                        // new List<Factory<InstantiatedType>>();
+                        // List does not have a constructor constraint, so we can't reasonably infer anything about its type parameters.
+                        if (namedTypeArg.IsGenericType)
+                        {
+                            var newGenerics = namedTypeArg.TypeParameters.Zip(namedTypeArg.TypeArguments, (parameter, argument) => (parameter, argument));
+                            ProcessGenericTypes(newGenerics, instantiatedTypes);
+                        }
+                    };
+
+                    if (typeArg is INamedTypeSymbol namedType)
+                    {
+                        ProcessNamedTypeParamConstraint(namedType);
+                    }
+                    else if (typeArg is ITypeParameterSymbol typeParameterArg && !typeParameterArg.ConstraintTypes.IsEmpty)
+                    {
+                        static IEnumerable<INamedTypeSymbol> GetAllNamedTypeConstraints(ITypeParameterSymbol t)
+                        {
+                            var directConstraints = t.ConstraintTypes.OfType<INamedTypeSymbol>();
+                            var inheritedConstraints = t.ConstraintTypes.OfType<ITypeParameterSymbol>()
+                                .SelectMany(constraintT => GetAllNamedTypeConstraints(constraintT));
+                            return directConstraints.Concat(inheritedConstraints);
+                        };
+
+                        var constraints = GetAllNamedTypeConstraints(typeParameterArg);
+                        foreach (INamedTypeSymbol constraint in constraints)
+                        {
+                            ProcessNamedTypeParamConstraint(constraint);
+                        }
+                    }
+                }
+            }
         }
     }
 }

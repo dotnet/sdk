@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -49,8 +51,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 // Get the list of all method' attributes for which the rule shall not be triggered.
                 ImmutableArray<INamedTypeSymbol> skippedAttributes = GetSkippedAttributes(wellKnownTypeProvider);
 
+                var isWebProject = compilationContext.Compilation.IsWebProject(compilationContext.Options, compilationContext.CancellationToken);
+
                 compilationContext.RegisterSymbolStartAction(
-                    symbolStartContext => OnSymbolStart(symbolStartContext, wellKnownTypeProvider, skippedAttributes),
+                    symbolStartContext => OnSymbolStart(symbolStartContext, wellKnownTypeProvider, skippedAttributes, isWebProject),
                     SymbolKind.NamedType);
             });
 
@@ -59,7 +63,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             static void OnSymbolStart(
                 SymbolStartAnalysisContext symbolStartContext,
                 WellKnownTypeProvider wellKnownTypeProvider,
-                ImmutableArray<INamedTypeSymbol> skippedAttributes)
+                ImmutableArray<INamedTypeSymbol> skippedAttributes,
+                bool isWebProject)
             {
                 // Since property/event accessors cannot be marked static themselves and the associated symbol (property/event)
                 // has to be marked static, we want to report the diagnostic on the property/event.
@@ -93,7 +98,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     // Don't run any other check for this method if it isn't a valid analysis context
-                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes))
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes,
+                            blockStartContext.Options, isWebProject, blockStartContext.CancellationToken))
                     {
                         return;
                     }
@@ -126,7 +132,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             }
                             else if (methodSymbol.IsExternallyVisible())
                             {
-                                blockEndContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.Name));
+                                if (!IsOnObsoleteMemberChain(methodSymbol, wellKnownTypeProvider))
+                                {
+                                    blockEndContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.Name));
+                                }
                             }
                             else
                             {
@@ -145,7 +154,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             continue;
                         }
 
-                        symbolEndContext.ReportDiagnostic(candidate.CreateDiagnostic(Rule, candidate.Name));
+                        if (!IsOnObsoleteMemberChain(candidate, wellKnownTypeProvider))
+                        {
+                            symbolEndContext.ReportDiagnostic(candidate.CreateDiagnostic(Rule, candidate.Name));
+                        }
                     }
 
                     foreach (var candidatePropertyOrEvent in propertyOrEventCandidates)
@@ -153,7 +165,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         var allAccessorsAreCandidates = true;
                         foreach (var accessor in candidatePropertyOrEvent.GetAccessors())
                         {
-                            if (!accessorCandidates.Contains(accessor))
+                            if (!accessorCandidates.Contains(accessor) ||
+                                IsOnObsoleteMemberChain(accessor, wellKnownTypeProvider))
                             {
                                 allAccessorsAreCandidates = false;
                                 break;
@@ -174,7 +187,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
         }
 
-        private static bool ShouldAnalyze(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<INamedTypeSymbol> skippedAttributes)
+        private static bool ShouldAnalyze(
+            IMethodSymbol methodSymbol,
+            WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<INamedTypeSymbol> skippedAttributes,
+            AnalyzerOptions options,
+            bool isWebProject,
+            CancellationToken cancellationToken)
         {
             // Modifiers that we don't care about
             if (methodSymbol.IsStatic || methodSymbol.IsOverride || methodSymbol.IsVirtual ||
@@ -183,7 +202,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            if (IsSkippedMethod(methodSymbol, wellKnownTypeProvider))
+            // Do not analyze constructors and finalizers.
+            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer())
+            {
+                return false;
+            }
+
+            // Do not analyze public APIs for web projects
+            // See https://github.com/dotnet/roslyn-analyzers/issues/3835 for details.
+            if (isWebProject && methodSymbol.IsExternallyVisible())
             {
                 return false;
             }
@@ -194,8 +221,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
+            var attributes = methodSymbol.GetAttributes();
+            if (methodSymbol.AssociatedSymbol != null)
+            {
+                // For accessors we want to also check the attributes of the associated symbol
+                attributes = attributes.AddRange(methodSymbol.AssociatedSymbol.GetAttributes());
+            }
+
             // FxCop doesn't check for the fully qualified name for these attributes - so we'll do the same.
-            if (methodSymbol.GetAttributes().Any(attribute => skippedAttributes.Any(attr => attribute.AttributeClass.Inherits(attr))))
+            if (attributes.Any(attribute => skippedAttributes.Any(attr => attribute.AttributeClass.Inherits(attr))))
             {
                 return false;
             }
@@ -210,6 +244,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             if (IsExplicitlyVisibleFromCom(methodSymbol, wellKnownTypeProvider))
+            {
+                return false;
+            }
+
+            if (!methodSymbol.MatchesConfiguredVisibility(options, Rule, wellKnownTypeProvider.Compilation, cancellationToken,
+                    defaultRequiredVisibility: SymbolVisibilityGroup.All))
             {
                 return false;
             }
@@ -252,26 +292,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
             }
 
-            // Web attributes
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebServicesWebMethodAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpGetAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPostAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPutAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpDeleteAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpPatchAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpHeadAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebMvcHttpOptionsAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebHttpRouteAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpDeleteAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpGetAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpPostAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpPutAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpHeadAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpPatchAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcHttpOptionsAttribute));
-            Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftAspNetCoreMvcRouteAttribute));
-
-
             // MSTest attributes
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualStudioTestToolsUnitTestingTestInitializeAttribute));
             Add(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftVisualStudioTestToolsUnitTestingTestMethodAttribute));
@@ -294,22 +314,25 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             return builder?.ToImmutable() ?? ImmutableArray<INamedTypeSymbol>.Empty;
         }
 
-        private static bool IsSkippedMethod(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
+        private static bool IsOnObsoleteMemberChain(ISymbol symbol, WellKnownTypeProvider wellKnownTypeProvider)
         {
-            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer())
+            var obsoleteAttributeType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+            if (obsoleteAttributeType is null)
             {
-                return true;
+                return false;
             }
 
-            if (methodSymbol.ReturnsVoid &&
-                methodSymbol.Parameters.IsEmpty &&
-                (methodSymbol.Name == "Application_Start" || methodSymbol.Name == "Application_End") &&
-                methodSymbol.ContainingType.Inherits(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemWebHttpApplication)))
+            var allAttributes = new List<AttributeData>();
+
+            while (symbol != null)
             {
-                return true;
+                allAttributes.AddRange(symbol.GetAttributes());
+                symbol = symbol is IMethodSymbol method && method.AssociatedSymbol != null
+                    ? method.AssociatedSymbol :
+                    symbol.ContainingSymbol;
             }
 
-            return false;
+            return allAttributes.Any(attribute => attribute.AttributeClass.Equals(obsoleteAttributeType));
         }
     }
 }

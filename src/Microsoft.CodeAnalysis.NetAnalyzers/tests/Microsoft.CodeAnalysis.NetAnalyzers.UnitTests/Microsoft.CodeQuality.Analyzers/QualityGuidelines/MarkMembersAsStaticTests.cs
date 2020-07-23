@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
@@ -461,22 +462,14 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnostic_NonTestAttributes()
+        public async Task CSharpNoDiagnostic_ComVisibleAttribute()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Runtime.InteropServices;
 
-namespace System.Web.Services
-{
-    public class WebMethodAttribute : Attribute { }
-}
-
 public class Test
 {
-    [System.Web.Services.WebMethod]
-    public void Method1() { }
-
     [ComVisible(true)]
     public void Method2() { }
 }
@@ -490,23 +483,13 @@ public class ComVisibleClass
         }
 
         [Fact]
-        public async Task BasicNoDiagnostic_NonTestAttributes()
+        public async Task BasicNoDiagnostic_ComVisibleAttribute()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Runtime.InteropServices
 
-Namespace System.Web.Services
-    Public Class WebMethodAttribute
-        Inherits Attribute
-    End Class
-End Namespace
-
 Public Class Test
-    <System.Web.Services.WebMethod>
-    Public Sub Method1()
-    End Sub
-
     <ComVisible(True)>
     Public Sub Method2()
     End Sub
@@ -831,166 +814,16 @@ namespace SomeNamespace
 }");
         }
 
-        [Theory, WorkItem(3123, "https://github.com/dotnet/roslyn-analyzers/issues/3123")]
-        [InlineData("System.Web.Mvc.HttpGetAttribute")]
-        [InlineData("System.Web.Mvc.HttpPostAttribute")]
-        [InlineData("System.Web.Mvc.HttpPutAttribute")]
-        [InlineData("System.Web.Mvc.HttpDeleteAttribute")]
-        [InlineData("System.Web.Mvc.HttpPatchAttribute")]
-        [InlineData("System.Web.Mvc.HttpHeadAttribute")]
-        [InlineData("System.Web.Mvc.HttpOptionsAttribute")]
-        [InlineData("System.Web.Http.RouteAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpGetAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpPostAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpPutAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpDeleteAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpPatchAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpHeadAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.HttpOptionsAttribute")]
-        [InlineData("Microsoft.AspNetCore.Mvc.RouteAttribute")]
-        public async Task NoDiagnostic_WebAttributes(string webAttribute)
+        [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        [InlineData("build_property.UsingMicrosoftNETSdkWeb = true")]
+        [InlineData("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
+        [InlineData("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("dotnet_code_quality.api_surface = private, internal")]
+        public async Task WebSpecificControllerMethods_NoDiagnostic(string editorConfigText)
         {
-            await new VerifyCS.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        $@"
-public class C
-{{
-    [{webAttribute}]
-    public void Method1()
-    {{
-    }}
-}}",
-                        @"
-using System;
-
-namespace System.Web.Mvc
-{
-    public class HttpGetAttribute : Attribute {}
-    public class HttpPostAttribute : Attribute {}
-    public class HttpPutAttribute : Attribute {}
-    public class HttpDeleteAttribute : Attribute {}
-    public class HttpPatchAttribute : Attribute {}
-    public class HttpHeadAttribute : Attribute {}
-    public class HttpOptionsAttribute : Attribute {}
-}
-
-namespace System.Web.Http
-{
-    public class RouteAttribute : Attribute {}
-}
-
-namespace Microsoft.AspNetCore.Mvc
-{
-    public class HttpGetAttribute : Attribute {}
-    public class HttpPostAttribute : Attribute {}
-    public class HttpPutAttribute : Attribute {}
-    public class HttpDeleteAttribute : Attribute {}
-    public class HttpPatchAttribute : Attribute {}
-    public class HttpHeadAttribute : Attribute {}
-    public class HttpOptionsAttribute : Attribute {}
-    public class RouteAttribute : Attribute {}
-}"
-                    }
-                }
-            }.RunAsync();
-
-            await new VerifyVB.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        $@"
-Public Class C
-    <{webAttribute}>
-    Public Sub Method1()
-    End Sub
-End Class",
-                        @"
-Imports System
-
-Namespace System.Web.Mvc
-    Public Class HttpGetAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPostAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPutAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpDeleteAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPatchAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpHeadAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpOptionsAttribute
-        Inherits Attribute
-    End Class
-End Namespace
-
-Namespace System.Web.Http
-    Public Class RouteAttribute
-        Inherits Attribute
-    End Class
-End Namespace
-
-Namespace Microsoft.AspNetCore.Mvc
-    Public Class HttpGetAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPostAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPutAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpDeleteAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpPatchAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpHeadAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class HttpOptionsAttribute
-        Inherits Attribute
-    End Class
-
-    Public Class RouteAttribute
-        Inherits Attribute
-    End Class
-End Namespace"
-                    }
-                }
-            }.RunAsync();
-        }
-
-        [Fact]
-        public async Task WebSpecificControllerMethods_NoDiagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            var csSource = @"
 using System;
 
 namespace System.Web
@@ -1015,9 +848,15 @@ public class C : System.Web.HttpApplication
     // The following controller methods can't be made static
     protected void Application_Start() { }
     protected void Application_End() { }
-}");
+}";
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test()
+            {
+                TestCode = csSource,
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
+
+            var vbSource = @"
 Imports System
 
 Namespace System.Web
@@ -1061,43 +900,12 @@ Public Class C
     Protected Sub Application_End()
     End Sub
 End Class
-");
-        }
-
-        [Fact]
-        public async Task WebSpecificControllerMethods_WrongEnclosingType_Diagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-
-public class SomeClass {}
-
-public class C : SomeClass
-{
-    protected void Application_Start() { }
-    protected void Application_End() { }
-}",
-                GetCSharpResultAt(8, 20, "Application_Start"),
-                GetCSharpResultAt(9, 20, "Application_End"));
-
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-
-Public Class SomeClass
-End Class
-
-Public Class C
-    Inherits SomeClass
-
-    Protected Sub Application_Start()
-    End Sub
-
-    Protected Sub Application_End()
-    End Sub
-End Class
-",
-                GetBasicResultAt(10, 19, "Application_Start"),
-                GetBasicResultAt(13, 19, "Application_End"));
+";
+            await new VerifyVB.Test()
+            {
+                TestCode = vbSource,
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
         }
 
         [Fact]
@@ -1134,6 +942,240 @@ Friend Class C
     End Function
 End Class
 ");
+        }
+
+        [Fact, WorkItem(3857, "https://github.com/dotnet/roslyn-analyzers/issues/3857")]
+        public async Task CA1822_ObsoleteAttribute_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+using System;
+
+public class C
+{
+    [Obsolete]
+    public void M1() {}
+
+    [Obsolete(""Some reason"")]
+    public void M2() {}
+
+    [Obsolete(""Some reason"", false)]
+    public void M3() {}
+
+    [Obsolete]
+    public int P1
+    {
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public int P2
+    {
+        [Obsolete]
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public int P3
+    {
+        get { return 10; }
+        [Obsolete]
+        set { Console.WriteLine(""""); }
+    }
+
+    [Obsolete]
+    public event EventHandler<EventArgs> E1 { add {} remove {} }
+}
+
+[Obsolete]
+public class C2
+{
+    public void M1() {}
+
+    public int P1
+    {
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public event EventHandler<EventArgs> E1 { add {} remove {} }
+}
+
+[Obsolete]
+public class C3
+{
+    public class C4
+    {
+        public void M1() {}
+
+        public int P1
+        {
+            get { return 10; }
+            set { Console.WriteLine(""""); }
+        }
+
+        public event EventHandler<EventArgs> E1 { add {} remove {} }
+    }
+}",
+            }.RunAsync();
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    <Obsolete>
+    Public Sub M1()
+    End Sub
+
+    <Obsolete(""Some reason"")>
+    Public Sub M2()
+    End Sub
+
+    <Obsolete(""Some reason"", False)>
+    Public Sub M3()
+    End Sub
+
+    <Obsolete>
+    Public Property P1 As Integer
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Property P2 As Integer
+        <Obsolete>
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Property P3 As Integer
+        Get
+            Return 10
+        End Get
+        <Obsolete>
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    <Obsolete>
+    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+        AddHandler(value As EventHandler(Of EventArgs))
+        End AddHandler
+        RemoveHandler(value As EventHandler(Of EventArgs))
+        End RemoveHandler
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
+    End Event
+End Class
+
+<Obsolete>
+Public Class C2
+    Public Sub M1()
+    End Sub
+
+    Public Property P1 As Integer
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+        AddHandler(value As EventHandler(Of EventArgs))
+        End AddHandler
+        RemoveHandler(value As EventHandler(Of EventArgs))
+        End RemoveHandler
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
+    End Event
+End Class
+
+<Obsolete>
+Public Class C3
+    Public Class C4
+        Public Sub M1()
+        End Sub
+
+        Public Property P1 As Integer
+            Get
+                Return 10
+            End Get
+            Set(ByVal value As Integer)
+                Console.WriteLine("""")
+            End Set
+        End Property
+
+        Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+            AddHandler(value As EventHandler(Of EventArgs))
+            End AddHandler
+            RemoveHandler(value As EventHandler(Of EventArgs))
+            End RemoveHandler
+            RaiseEvent(sender As Object, e As EventArgs)
+            End RaiseEvent
+        End Event
+    End Class
+End Class
+");
+        }
+
+        [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        [InlineData("build_property.UsingMicrosoftNETSdkWeb = true")]
+        [InlineData("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
+        [InlineData("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("dotnet_code_quality.api_surface = private, internal")]
+        public async Task TestWebProject(string editorConfigText)
+        {
+            var csSource = @"
+public class Test
+{
+    public int PublicMethod() => 0;
+    protected int ProtectedMethod() => 0;
+    internal int [|InternalMethod|]() => 0;
+    private int [|PrivateMethod|]() => 0;
+}";
+            await new VerifyCS.Test()
+            {
+                TestCode = csSource,
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
+
+            var vbSource = @"
+Public Class Test
+    Public Function PublicMethod() As Integer
+        Return 0
+    End Function
+
+    Protected Function ProtectedMethod() As Integer
+        Return 0
+    End Function
+
+    Friend Function [|FriendMethod|]() As Integer
+        Return 0
+    End Function
+
+    Private Function [|PrivateMethod|]() As Integer
+        Return 0
+    End Function
+End Class";
+            await new VerifyVB.Test()
+            {
+                TestCode = vbSource,
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
         }
 
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)

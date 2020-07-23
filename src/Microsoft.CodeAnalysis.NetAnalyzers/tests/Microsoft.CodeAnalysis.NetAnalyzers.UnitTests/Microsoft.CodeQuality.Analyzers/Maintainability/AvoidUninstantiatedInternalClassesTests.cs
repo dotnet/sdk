@@ -7,10 +7,10 @@ using Test.Utilities;
 
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUninstantiatedInternalClassesAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidUninstantiatedInternalClasses,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidUninstantiatedInternalClassesFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUninstantiatedInternalClassesAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidUninstantiatedInternalClasses,
     Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidUninstantiatedInternalClassesFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
@@ -1469,6 +1469,46 @@ namespace SomeNamespace
         internal class MyTextBoxDesigner { }
     }
 }");
+        }
+
+        [Fact, WorkItem(3199, "https://github.com/dotnet/roslyn-analyzers/issues/3199")]
+        public async Task CA1812_AliasingTypeNewConstraint_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+
+namespace SomeNamespace
+{
+    public class MyAliasType<T>
+        where T : class, new()
+    {
+        public static void DoSomething() {}
+    }
+
+    internal class C {}
+}",
+                        @"
+using MyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.C>;
+using MyAliasOfMyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.MyAliasType<SomeNamespace.C>>;
+
+public class CC
+{
+    public void M()
+    {
+        MyAliasOfC.DoSomething();
+        MyAliasOfMyAliasOfC.DoSomething();
+    }
+}
+",
+                    },
+                },
+            }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)
