@@ -173,7 +173,6 @@ public class SometOtherClass : SomeClass
             GetCA1721CSharpResultAt(line: 14, column: 21, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-
         [Fact]
         public async Task CSharp_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_Diagnostic()
         {
@@ -290,7 +289,6 @@ Public Class SometOtherClass
 End Class",
             GetCA1721BasicResultAt(line: 12, column: 30, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
-
 
         [Fact]
         public async Task Basic_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_Diagnostic()

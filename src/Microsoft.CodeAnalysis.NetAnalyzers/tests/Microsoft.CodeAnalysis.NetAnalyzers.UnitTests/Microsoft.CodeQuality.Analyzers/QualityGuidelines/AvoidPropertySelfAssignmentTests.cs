@@ -46,7 +46,6 @@ class C
             GetCSharpResultAt(7, 18, "P"));
         }
 
-
         [Fact]
         public async Task CSharpAssignmentInConstructorWithSimilarArgument()
         {
@@ -280,7 +279,6 @@ End Class
 ",
             GetBasicResultAt(6, 18, "P"));
         }
-
 
         [Fact]
         public async Task VbAssignmentInConstructorWithSimilarArgument()

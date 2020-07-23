@@ -215,7 +215,6 @@ class C
 ");
         }
 
-
         [Fact]
         [WorkItem(8884, "https://github.com/dotnet/roslyn/issues/8884")]
         public async Task NoDiagnosticLinqTest_VB()
@@ -1318,7 +1317,6 @@ public class C
 }",
                 GetCSharpUnusedParameterResultAt(9, 32, "x", "LocalFunction"));
         }
-
 
         [Fact]
         public async Task DiagnosticForMethodsInNestedTypes()
