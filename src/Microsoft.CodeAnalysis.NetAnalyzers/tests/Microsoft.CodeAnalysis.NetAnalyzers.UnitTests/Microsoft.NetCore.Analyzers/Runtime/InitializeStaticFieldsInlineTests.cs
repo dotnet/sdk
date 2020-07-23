@@ -331,6 +331,45 @@ Class C
 End Class");
         }
 
+        [Fact, WorkItem(3852, "https://github.com/dotnet/roslyn-analyzers/issues/3852")]
+        public async Task CA1810_EventSubscriptionInStaticCtorPreventsDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+                TestCode = @"
+using System;
+using System.Windows.Forms;
+
+public class C1
+{
+    private static readonly int field;
+
+    static C1()
+    {
+        Application.ThreadExit += new EventHandler(OnThreadExit);
+        field = 42;
+    }
+
+    private static void OnThreadExit(object sender, EventArgs e) {}
+}
+
+public class C2
+{
+    private static readonly int field;
+
+    static C2()
+    {
+        Application.ThreadExit -= new EventHandler(OnThreadExit);
+        field = 42;
+    }
+
+    private static void OnThreadExit(object sender, EventArgs e) {}
+}
+",
+            }.RunAsync();
+        }
+
         #endregion
 
         #region Unit tests for analyzer diagnostic(s)
