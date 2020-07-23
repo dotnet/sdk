@@ -10,7 +10,7 @@ CA1047 | Design | Info | DoNotDeclareProtectedMembersInSealedTypes, [Documentati
 CA1069 | Design | Info | EnumShouldNotHaveDuplicatedValues, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1069)
 CA1070 | Design | Info | DoNotDeclareEventFieldsAsVirtual, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1070)
 CA1416 | Interoperability | Info | RuntimePlatformCheckAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
-CA1417 | Interoperability | Warning | DoNotUseOutAttributeStringPinvokeParametersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1417)
+CA1417 | Interoperability | Warning | DoNotUseOutAttributeStringPInvokeParametersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1417)
 CA1700 | Naming | Disabled | DoNotNameEnumValuesReserved, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1700)
 CA1713 | Naming | Disabled | EventsShouldNotHaveBeforeOrAfterPrefix, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1713)
 CA1805 | Performance | Info | DoNotInitializeUnnecessarilyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1805)
