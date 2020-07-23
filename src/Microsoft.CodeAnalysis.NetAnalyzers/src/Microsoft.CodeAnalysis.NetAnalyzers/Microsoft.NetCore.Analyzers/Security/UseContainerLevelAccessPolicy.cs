@@ -155,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                         wellKnownTypeProvider,
                                                                         PointsToAnalysisKind.Complete,
                                                                         interproceduralAnalysisConfig,
-                                                                        interproceduralAnalysisPredicateOpt: null,
+                                                                        interproceduralAnalysisPredicate: null,
                                                                         false);
                                         if (pointsToAnalysisResult == null)
                                         {

@@ -172,7 +172,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                     containingMethod, operationBlockStartContext.Options, wellKnownTypeProvider,
                                     PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties,
                                     interproceduralAnalysisConfig,
-                                    interproceduralAnalysisPredicateOpt: null,
+                                    interproceduralAnalysisPredicate: null,
                                     pessimisticAnalysis: false, performCopyAnalysis: false);
                                 if (pointsToAnalysisResult == null)
                                 {

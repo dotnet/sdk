@@ -87,7 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         if (ShouldAnalyze(targetMethod))
                         {
-                            AnalyzeArgument(argument.Parameter, containingPropertySymbolOpt: null, operation: argument, reportDiagnostic: operationContext.ReportDiagnostic, GetUseNamingHeuristicOption(operationContext));
+                            AnalyzeArgument(argument.Parameter, containingPropertySymbol: null, operation: argument, reportDiagnostic: operationContext.ReportDiagnostic, GetUseNamingHeuristicOption(operationContext));
                         }
                     }, OperationKind.Argument);
 
@@ -115,9 +115,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         => operationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule,
                             operationContext.Operation.Syntax.SyntaxTree, operationContext.Compilation, defaultValue: false, operationContext.CancellationToken);
 
-                    void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbolOpt, IOperation operation, Action<Diagnostic> reportDiagnostic, bool useNamingHeuristic)
+                    void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbol, IOperation operation, Action<Diagnostic> reportDiagnostic, bool useNamingHeuristic)
                     {
-                        if (ShouldBeLocalized(parameter.OriginalDefinition, containingPropertySymbolOpt?.OriginalDefinition, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore, useNamingHeuristic) &&
+                        if (ShouldBeLocalized(parameter.OriginalDefinition, containingPropertySymbol?.OriginalDefinition, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore, useNamingHeuristic) &&
                             lazyValueContentResult.Value != null)
                         {
                             ValueContentAbstractValue stringContentValue = lazyValueContentResult.Value[operation.Kind, operation.Syntax];
@@ -218,7 +218,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool ShouldBeLocalized(
             IParameterSymbol parameterSymbol,
-            IPropertySymbol? containingPropertySymbolOpt,
+            IPropertySymbol? containingPropertySymbol,
             INamedTypeSymbol? localizableStateAttributeSymbol,
             INamedTypeSymbol? conditionalAttributeSymbol,
             INamedTypeSymbol? systemConsoleSymbol,
@@ -265,14 +265,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IParameterSymbol overridenParameter = method.OverriddenMethod.Parameters[parameterIndex];
                 if (Equals(overridenParameter.Type, parameterSymbol.Type))
                 {
-                    return ShouldBeLocalized(overridenParameter, containingPropertySymbolOpt, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore, useNamingHeuristic);
+                    return ShouldBeLocalized(overridenParameter, containingPropertySymbol, localizableStateAttributeSymbol, conditionalAttributeSymbol, systemConsoleSymbol, typesToIgnore, useNamingHeuristic);
                 }
             }
 
             if (useNamingHeuristic)
             {
                 if (IsLocalizableByNameHeuristic(parameterSymbol) ||
-                    containingPropertySymbolOpt != null && IsLocalizableByNameHeuristic(containingPropertySymbolOpt))
+                    containingPropertySymbol != null && IsLocalizableByNameHeuristic(containingPropertySymbol))
                 {
                     return true;
                 }

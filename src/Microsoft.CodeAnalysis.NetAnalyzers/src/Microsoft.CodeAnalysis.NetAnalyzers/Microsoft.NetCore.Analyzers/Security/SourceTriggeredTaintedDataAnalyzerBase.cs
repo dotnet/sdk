@@ -101,7 +101,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                 wellKnownTypeProvider,
                                                                 PointsToAnalysisKind.Complete,
                                                                 interproceduralAnalysisConfiguration,
-                                                                interproceduralAnalysisPredicateOpt: null);
+                                                                interproceduralAnalysisPredicate: null);
                                 });
                             Lazy<(PointsToAnalysisResult?, ValueContentAnalysisResult?)> valueContentFactory = new Lazy<(PointsToAnalysisResult?, ValueContentAnalysisResult?)>(
                                 () =>

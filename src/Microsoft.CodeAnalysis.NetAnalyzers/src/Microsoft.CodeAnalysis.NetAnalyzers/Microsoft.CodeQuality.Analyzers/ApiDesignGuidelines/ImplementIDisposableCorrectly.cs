@@ -331,10 +331,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 if (type.HasFinalizer())
                 {
                     // Flag the finalizer if there is any base type with a finalizer, this can cause duplicate Dispose(false) invocations.
-                    var baseTypeWithFinalizerOpt = GetFirstBaseTypeWithFinalizerOrDefault(type);
-                    if (baseTypeWithFinalizerOpt != null)
+                    var baseTypeWithFinalizer = GetFirstBaseTypeWithFinalizerOrDefault(type);
+                    if (baseTypeWithFinalizer != null)
                     {
-                        context.ReportDiagnostic(type.CreateDiagnostic(FinalizeOverrideRule, type.Name, baseTypeWithFinalizerOpt.Name));
+                        context.ReportDiagnostic(type.CreateDiagnostic(FinalizeOverrideRule, type.Name, baseTypeWithFinalizer.Name));
                     }
                 }
             }
