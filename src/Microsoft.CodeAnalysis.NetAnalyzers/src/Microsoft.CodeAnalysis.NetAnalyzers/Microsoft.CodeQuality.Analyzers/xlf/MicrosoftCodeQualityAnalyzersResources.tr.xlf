@@ -297,6 +297,11 @@
         <target state="translated">'{0}' türünden sonlandırıcıyı kaldırın, Dispose(bool disposing) metodunu geçersiz kılın ve sonlandırma mantığını 'disposing' değerinin false olduğu kod yoluna yerleştirin. Aksi takdirde, '{1}' Temel türü de bir sonlandırıcı sağladığından yinelenen Dispose çağrılarına yol açabilir.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply attribute 'AttributeUsageAttribute(AttributeTargets.All)'</source>
+        <target state="new">Apply attribute 'AttributeUsageAttribute(AttributeTargets.All)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Mümkün Olduğunda CancellationToken’ları Yay</target>

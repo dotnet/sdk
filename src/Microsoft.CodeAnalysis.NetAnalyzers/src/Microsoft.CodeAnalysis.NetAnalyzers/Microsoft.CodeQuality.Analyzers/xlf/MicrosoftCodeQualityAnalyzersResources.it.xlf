@@ -297,6 +297,11 @@
         <target state="translated">Rimuovere il finalizzatore dal tipo '{0}', eseguire l'override di Dispose(bool disposing) e inserire la logica di finalizzazione nel percorso del codice in cui 'disposing' è false. In caso contrario, potrebbero verificarsi chiamate duplicate a Dispose perché il tipo di base '{1}' fornisce anche un finalizzatore.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply attribute 'AttributeUsageAttribute(AttributeTargets.All)'</source>
+        <target state="new">Apply attribute 'AttributeUsageAttribute(AttributeTargets.All)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Propagare parametri CancellationToken quando possibile</target>

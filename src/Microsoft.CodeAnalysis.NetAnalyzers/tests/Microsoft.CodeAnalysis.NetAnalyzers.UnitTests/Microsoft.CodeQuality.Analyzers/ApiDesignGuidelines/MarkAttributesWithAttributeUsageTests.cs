@@ -6,10 +6,10 @@ using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
@@ -18,13 +18,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [Fact]
         public async Task TestCSSimpleAttributeClass()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 
 class C : Attribute
 {
 }
-", GetCA1018CSharpResultAt(4, 7, "C"));
+", GetCA1018CSharpResultAt(4, 7, "C"), @"
+using System;
+
+[AttributeUsage(AttributeTargets.All)]
+class C : Attribute
+{
+}
+");
         }
 
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
@@ -58,13 +65,20 @@ abstract class C : Attribute
         [Fact]
         public async Task TestVBSimpleAttributeClass()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
 
 Class C
     Inherits Attribute
 End Class
-", GetCA1018BasicResultAt(4, 7, "C"));
+", GetCA1018BasicResultAt(4, 7, "C"), @"
+Imports System
+
+<AttributeUsage(AttributeTargets.All)>
+Class C
+    Inherits Attribute
+End Class
+");
         }
 
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]

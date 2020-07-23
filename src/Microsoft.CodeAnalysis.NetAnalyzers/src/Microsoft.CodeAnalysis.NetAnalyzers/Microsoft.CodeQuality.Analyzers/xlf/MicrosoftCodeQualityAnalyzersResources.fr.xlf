@@ -297,6 +297,11 @@
         <target state="translated">Supprimez le finaliseur du type '{0}', remplacez Dispose(bool disposing) et placez la logique de finalisation dans le chemin de code où 'disposing' est false. Sinon, vous risquez d'avoir des invocations de Dispose en double, car le type de base '{1}' fournit aussi un finaliseur.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply attribute 'AttributeUsageAttribute(AttributeTargets.All)'</source>
+        <target state="new">Apply attribute 'AttributeUsageAttribute(AttributeTargets.All)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Propager CancellationTokens quand cela est possible</target>
