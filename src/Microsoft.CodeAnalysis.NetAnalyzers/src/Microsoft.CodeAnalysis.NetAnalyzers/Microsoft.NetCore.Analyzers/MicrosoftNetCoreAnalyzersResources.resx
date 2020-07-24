@@ -1395,6 +1395,18 @@
   <data name="PreferIsEmptyOverCountTitle" xml:space="preserve">
     <value>Prefer IsEmpty over Count</value>
   </data>
+  <data name="UseEnvironmentProcessIdDescription" xml:space="preserve">
+    <value>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'</value>
+  </data>
+  <data name="UseEnvironmentProcessIdMessage" xml:space="preserve">
+    <value>Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</value>
+  </data>
+  <data name="UseEnvironmentProcessIdTitle" xml:space="preserve">
+    <value>Use 'Environment.ProcessId'</value>
+  </data>
+  <data name="UseEnvironmentProcessIdFix" xml:space="preserve">
+    <value>Use 'Environment.ProcessId'</value>
+  </data>
   <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on a string</value>
   </data>
