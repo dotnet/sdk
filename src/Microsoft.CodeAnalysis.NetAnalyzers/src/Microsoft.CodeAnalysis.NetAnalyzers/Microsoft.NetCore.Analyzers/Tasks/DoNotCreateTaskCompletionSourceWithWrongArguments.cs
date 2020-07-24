@@ -33,7 +33,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             context.RegisterCompilationStartAction(compilationContext =>
             {
                 // Only analyze if we can find TCS<T> and TaskContinuationOptions
-                if (compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTaskCompletionSource1, out var tcsGenericType) &&
+                if (compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTaskCompletionSource1, out var tcsGenericType) &&
                     compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTaskContinuationOptions, out var taskContinutationOptionsType))
                 {
                     // Also optionally look for the non-generic TCS, but don't require it.
