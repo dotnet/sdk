@@ -93,9 +93,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 if (chosenDiagnostic != null)
                                 {
                                     operationAnalysisContext.ReportDiagnostic(
-                                        Diagnostic.Create(
+                                        invocationOperation.CreateDiagnostic(
                                             chosenDiagnostic,
-                                            invocationOperation.Syntax.GetLocation(),
                                             invocationOperation.TargetMethod.ToDisplayString(
                                                 SymbolDisplayFormat.MinimallyQualifiedFormat)));
                                 }
@@ -116,9 +115,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 if (chosenDiagnostic != null)
                                 {
                                     operationAnalysisContext.ReportDiagnostic(
-                                        Diagnostic.Create(
+                                        methodReferenceOperation.CreateDiagnostic(
                                             chosenDiagnostic,
-                                            methodReferenceOperation.Syntax.GetLocation(),
                                             methodReferenceOperation.Method.ToDisplayString(
                                                 SymbolDisplayFormat.MinimallyQualifiedFormat)));
                                 }
