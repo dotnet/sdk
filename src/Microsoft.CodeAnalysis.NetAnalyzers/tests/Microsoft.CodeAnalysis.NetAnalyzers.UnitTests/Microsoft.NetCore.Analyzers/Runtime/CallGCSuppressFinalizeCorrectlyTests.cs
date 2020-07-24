@@ -181,6 +181,7 @@ class MyAsyncDisposable : IAsyncDisposable
         public async Task AsyncDisposableWithFinalizer_Basic_NoDiagnostic()
         {
             var code = @"
+Imports System
 Imports System.Runtime.InteropServices
 Imports System.Threading.Tasks
 
