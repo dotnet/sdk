@@ -178,47 +178,6 @@ class MyAsyncDisposable : IAsyncDisposable
         }
 
         [Fact]
-        public async Task AsyncDisposableWithFinalizer_Basic_NoDiagnostic()
-        {
-            var code = @"
-Imports System
-Imports System.Runtime.InteropServices
-Imports System.Threading.Tasks
-
-Class MyAsyncDisposable
-    Implements IAsyncDisposable
-
-    <DllImport(""example.dll"")>
-    Private Shared Function GetHandle() As Integer
-    End Function
-
-    <DllImport(""example.dll"")>
-    Private Shared Sub FreeHandle(handle As Integer)
-    End Sub
-
-    Private ReadOnly handle As Integer
-
-    Public Sub New()
-        Me.handle = GetHandle()
-    End Sub
-
-    Protected Overrides Sub Finalize()
-        FreeHandle(Me.handle)
-    End Sub
-
-    Public Async Function DisposeAsync() As ValueTask
-        Await Task.Run(Sub() FreeHandle(Me.handle)).ConfigureAwait(False)
-        GC.SuppressFinalize(Me)
-    End Function
-End Class";
-            await new VerifyVB.Test
-            {
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
-                TestCode = code
-            }.RunAsync();
-        }
-
-        [Fact]
         public async Task SealedDisposableWithoutFinalizer_CSharp_NoDiagnostic()
         {
 
