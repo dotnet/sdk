@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
     public class GivenThatWeWantToBuildAWindowsDesktopProject : SdkTest
     {
         public GivenThatWeWantToBuildAWindowsDesktopProject(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
         [InlineData("UseWindowsForms")]
@@ -101,8 +101,8 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1137");
         }
-		
-		[WindowsOnlyFact]
+
+        [WindowsOnlyFact]
         public void It_fails_if_windows_target_platform_version_is_invalid()
         {
             var testProject = new TestProject()
