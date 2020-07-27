@@ -442,9 +442,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithSource()
                 .WithProjectChanges(projectChanges);
 
-            var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
-
-            var buildCommand = new BuildCommand(Log, libraryProjectDirectory);
+            var buildCommand = new BuildCommand(testAsset, "TestLibrary");
 
             WriteFile(Path.Combine(buildCommand.ProjectRootPath, "ProjectRoot.txt"), "ProjectRoot");
             WriteFile(Path.Combine(buildCommand.ProjectRootPath, "Subfolder", "ProjectSubfolder.txt"), "ProjectSubfolder");
@@ -469,9 +467,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
  
-        //  Disable this test on full framework, as generating strong named satellite assemblies with AL.exe requires Admin permissions
-        //  See https://github.com/dotnet/sdk/issues/732
-        [CoreMSBuildOnlyFact]
+        [Fact]
         public void Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used()
         {
             Action<XDocument> projectChanges = project =>
@@ -514,7 +510,7 @@ namespace Microsoft.NET.Build.Tests
                     itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", @"**\*.cs")));
                 });
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
 
             WriteFile(Path.Combine(buildCommand.ProjectRootPath, "Class1.cs"), "public class Class1 {}");
 
@@ -556,7 +552,7 @@ namespace Microsoft.NET.Build.Tests
                         new XAttribute("Include", "netstandard.Library"), new XAttribute("Version", "1.6.1")));
                 });
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                 .Execute()
@@ -588,7 +584,7 @@ namespace Microsoft.NET.Build.Tests
                         new XAttribute("Include", "Microsoft.NETCore.App")));
                 });
 
-            var restoreCommand = new RestoreCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var restoreCommand = new RestoreCommand(testAsset);
 
             restoreCommand
                 .Execute()
@@ -596,7 +592,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass()
                 .And.HaveStdOutContaining("NETSDK1086");
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                 .Execute()
@@ -633,7 +629,7 @@ namespace Microsoft.NET.Build.Tests
                         new XAttribute("Include", "Microsoft.NETCore.App")));
                 });
 
-            var restoreCommand = new RestoreCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var restoreCommand = new RestoreCommand(testAsset);
 
             restoreCommand
                 .Execute()
@@ -665,7 +661,7 @@ namespace Microsoft.NET.Build.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: disableImplicitFrameworkReferences.ToString());
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                 .Execute()
@@ -706,7 +702,7 @@ public class Class1
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                 .Execute()

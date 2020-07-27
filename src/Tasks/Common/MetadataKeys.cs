@@ -16,6 +16,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string IsTopLevelDependency = "IsTopLevelDependency";
         public const string AllowExplicitVersion = "AllowExplicitVersion";
         public const string RelativePath = "RelativePath";
+        public const string DiagnosticLevel = "DiagnosticLevel";
 
         // Target Metadata
         public const string RuntimeIdentifier = "RuntimeIdentifier";
@@ -31,6 +32,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string OriginalItemSpec = "OriginalItemSpec";
         public const string SDKRootFolder = "SDKRootFolder";
         public const string ShimRuntimeIdentifier = "ShimRuntimeIdentifier";
+        public const string RuntimePackAlwaysCopyLocal = "RuntimePackAlwaysCopyLocal";
 
         // Foreign Keys
         public const string ParentTarget = "ParentTarget";
@@ -80,6 +82,11 @@ namespace Microsoft.NET.Build.Tasks
         //  Targeting packs
         public const string PackageConflictPreferredPackages = "PackageConflictPreferredPackages";
 
+        //  Runtime packs
+		public const string DropFromSingleFile = "DropFromSingleFile";
+        public const string RuntimePackLabels = "RuntimePackLabels";
+        public const string AdditionalFrameworkReferences = "AdditionalFrameworkReferences";
+
         // Content files
         public const string PPOutputPath = "PPOutputPath";
         public const string CodeLanguage = "CodeLanguage";
@@ -99,6 +106,8 @@ namespace Microsoft.NET.Build.Tasks
         public const string DestinationSubPath = "DestinationSubPath";
         public const string AssetType = "AssetType";
 
-        public const string ReferenceOnly = "ReferenceOnly";  
+        public const string ReferenceOnly = "ReferenceOnly";
+
+        public const string Aliases = "Aliases";
     }
 }

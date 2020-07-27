@@ -61,8 +61,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [CoreMSBuildOnlyTheory]
-        [InlineData("net5.0")]
-        public void It_collects_crossgen2_publishing_properties(string targetFramework)
+        [InlineData("net5.0")] 
+        void It_collects_crossgen2_publishing_properties(string targetFramework)
         {
             // Crossgen2 only supported for Linux/Windows x64 scenarios for now
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.OSArchitecture != Architecture.X64)

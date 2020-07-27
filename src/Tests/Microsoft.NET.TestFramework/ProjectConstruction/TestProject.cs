@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
@@ -10,6 +11,14 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 {
     public class TestProject
     {
+        public TestProject([CallerMemberName] string name = null)
+        {
+            if (name != null)
+            {
+                Name = name;
+            }
+        }
+
         public string Name { get; set; }
 
         public bool IsSdkProject { get; set; }
@@ -153,6 +162,10 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 if (packageReference.PrivateAssets != null)
                 {
                     packageReferenceElement.Add(new XAttribute("PrivateAssets", packageReference.PrivateAssets));
+                }
+                if (packageReference.Aliases != null)
+                {
+                    packageReferenceElement.Add(new XAttribute("Aliases", packageReference.Aliases));
                 }
                 packageReferenceItemGroup.Add(packageReferenceElement);
             }

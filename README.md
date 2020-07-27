@@ -22,8 +22,13 @@ From that shell your SDK will be available in:
 - `dotnet build`
 - `msbuild`
 
+## Installing the SDK
+[Official builds](https://dotnet.microsoft.com/download/dotnet-core)
+
+[Latest builds](https://github.com/dotnet/installer#installers-and-binaries)
+
 ## How do I engage and contribute?
 
-We welcome you to try things out, [file issues](https://github.com/dotnet/sdk/issues), make feature requests and join us in design conversations. Also be sure to check out our [project documentation](toolset/Documentation) and [Developer Guide](toolset/Documentation/project-docs/developer-guide.md).
+We welcome you to try things out, [file issues](https://github.com/dotnet/sdk/issues), make feature requests and join us in design conversations. Also be sure to check out our [project documentation](documentation) and [Developer Guide](documentation/project-docs/developer-guide.md).
 
 This project has adopted a code of conduct adapted from the [Contributor Covenant](http://contributor-covenant.org/) to clarify expected behavior in our community. This code of conduct has been [adopted by many other projects](http://contributor-covenant.org/adopters/). For more information see [Contributors Code of conduct](https://github.com/dotnet/home/blob/master/guidance/be-nice.md).

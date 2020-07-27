@@ -46,14 +46,14 @@ namespace Microsoft.NET.Restore.Tests
                 .Should().Fail()
                 .And.HaveStdOutContaining("NU1605");
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.Path, testProjectName));
+            var buildCommand = new BuildCommand(testAsset);
             buildCommand
                 .Execute()
                 .Should().Fail()
                 .And.HaveStdOutContaining("NU1605");
         }
 
-        [CoreMSBuildOnlyFact]
+        [Fact]
         public void ItIsPossibleToTurnOffDowngradeWarningsAsErrors()
         {
             const string testProjectName = "ProjectWithDowngradeWarning";

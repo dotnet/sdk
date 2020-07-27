@@ -61,8 +61,7 @@ namespace Microsoft.NET.Build.Tests
             TestSkippingFile(testProject, filenameToSkip, "runtime");
         }
 
-        //  Core MSBuild only because CI machines don't have updated VS (with support for RuntimeIdentifierGraphPath)
-        [CoreMSBuildOnlyFact]
+        [Fact]
         public void NativeAssetFromPackageCanBeSkipped()
         {
             var testProject = new TestProject()
@@ -138,7 +137,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
                .WithProjectChanges(project => AddSkipTarget(project, filenameToSkip));
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                .Execute()
@@ -178,7 +177,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name)
                 .WithProjectChanges(project => AddSkipTarget(project, filenameToSkip));
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var buildCommand = new BuildCommand(testAsset);
 
             buildCommand
                .Execute()

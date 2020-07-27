@@ -22,9 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        //  Disable this test on full framework, as generating strong named satellite assemblies with AL.exe requires Admin permissions
-        //  See https://github.com/dotnet/sdk/issues/732
-        [CoreMSBuildOnlyFact]
+        [Fact]
         public void It_retrieves_strings_successfully()
         {
             TestSatelliteResources(Log, _testAssetsManager);
@@ -46,7 +44,7 @@ namespace Microsoft.NET.Build.Tests
                 testAsset = testAsset.WithProjectChanges(projectChanges);
             }
 
-            var buildCommand = new BuildCommand(log, testAsset.TestRoot);
+            var buildCommand = new BuildCommand(testAsset);
 
             if (setup != null)
             {
