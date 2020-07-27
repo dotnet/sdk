@@ -1,0 +1,9 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+     {
+       "placeholder": "password",
+       "_justification": "This is the placeholder used by the repo"
+     }
+    ]
+}
