@@ -525,7 +525,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("No code coverage data available. Code coverage is currently supported only on Windows.");
                 result.StdOut.Should().Contain("Total:     1");
                 result.StdOut.Should().Contain("Passed:     1");
-                result.StdOut.Should().Contain("Test Run Successful.");
+                result.StdOut.Should().NotContain("Failed!");
             }
 
             result.ExitCode.Should().Be(0);
