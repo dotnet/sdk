@@ -6,6 +6,7 @@ namespace Microsoft.DotNet.Cli
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using static BlameArgs;
 
     /// <summary>
     /// Converts the given arguments to vstest parsable arguments
@@ -50,15 +51,6 @@ namespace Microsoft.DotNet.Cli
             "--interactive"
         };
 
-        private readonly string _blame = "--blame";
-        private readonly string _blameCrash = "--blame-crash";
-        private readonly string _blameCrashDumpType = "--blame-crash-dump-type";
-        private readonly string _blameCrashCollectAlways = "--blame-crash-collect-always";
-        private readonly string _blameHang = "--blame-hang";
-        private readonly string _blameHangDumpType = "--blame-hang-dump-type";
-        private readonly string _blameHangTimeout = "--blame-hang-timeout";
-
-
         /// <summary>
         /// Converts the given arguments to vstest parsable arguments
         /// </summary>
@@ -71,16 +63,7 @@ namespace Microsoft.DotNet.Cli
             ignoredArgs = new List<string>();
 
             string activeArgument = null;
-
-            bool blame = false;
-
-            bool collectCrashDump = false;
-            string collectCrashDumpType = null;
-            bool collectCrashDumpAlways = false;
-
-            bool collectHangDump = false;
-            string collectHangDumpType = null;
-            string collectHangDumpTimeout = null;
+            BlameArgs blame = new BlameArgs();
 
             foreach (var arg in args)
             {
@@ -121,51 +104,10 @@ namespace Microsoft.DotNet.Cli
                             continue;
                         }
 
-                        if (Eq(argValues[0], _blame))
+                        if (blame.IsBlameArg(argValues[0]))
                         {
-                            blame = true;
-                        }
-
-                        // Any blame-crash param implies that we collect crash dump
-                        if (Eq(argValues[0], _blameCrash))
-                        {
-                            blame = true;
-                            collectCrashDump = true;
-                        }
-
-                        if (Eq(argValues[0], _blameCrashCollectAlways))
-                        {
-                            blame = true;
-                            collectCrashDump = true;
-                            collectCrashDumpAlways = true;
-                        }
-
-                        if (Eq(argValues[0], _blameCrashDumpType))
-                        {
-                            blame = true;
-                            collectCrashDump = true;
-                            collectCrashDumpType = argValues[1];
-                        }
-
-                        // Any blame-hang param implies that we collect hang dump
-                        if (Eq(argValues[0], _blameHang))
-                        {
-                            blame = true;
-                            collectHangDump = true;
-                        }
-
-                        if (Eq(argValues[0], _blameHangDumpType))
-                        {
-                            blame = true;
-                            collectHangDump = true;
-                            collectHangDumpType = argValues[1];
-                        }
-
-                        if (Eq(argValues[0], _blameHangTimeout))
-                        {
-                            blame = true;
-                            collectHangDump = true;
-                            collectHangDumpTimeout = argValues[1];
+                            blame.UpdateBlame(argValues[0], argValues[1]);
+                            continue;
                         }
 
                         // Check if the argument is shortname
@@ -178,25 +120,9 @@ namespace Microsoft.DotNet.Cli
                     }
                     else
                     {
-                        if (Eq(arg, _blame))
+                        if (blame.IsBlameSwitch(arg))
                         {
-                            blame = true;
-                        }
-                        else if (Eq(arg, _blameCrash))
-                        {
-                            blame = true;
-                            collectCrashDump = true;
-                        }
-                        else if (Eq(arg, _blameCrashCollectAlways))
-                        {
-                            blame = true;
-                            collectCrashDump = true;
-                            collectCrashDumpAlways = true;
-                        }
-                        else if (Eq(arg, _blameHang))
-                        {
-                            blame = true;
-                            collectHangDump = true;
+                            blame.UpdateBlame(arg, null);
                         }
                         else
                         {
@@ -219,43 +145,9 @@ namespace Microsoft.DotNet.Cli
                         ignoredArgs.Add(activeArgument);
                         ignoredArgs.Add(arg);
                     }
-                    else if (Eq(activeArgument, _blame))
+                    else if (blame.IsBlameArg(activeArgument))
                     {
-                        blame = true;
-                    }
-                    else if (Eq(activeArgument, _blameCrash))
-                    {
-                        blame = true;
-                        collectCrashDump = true;
-                    }
-                    else if (Eq(activeArgument, _blameCrashCollectAlways))
-                    {
-                        blame = true;
-                        collectCrashDump = true;
-                        collectCrashDumpAlways = true;
-                    }
-                    else if (Eq(activeArgument, _blameCrashDumpType))
-                    {
-                        blame = true;
-                        collectCrashDump = true;
-                        collectCrashDumpType = arg;
-                    }
-                    else if (Eq(activeArgument, _blameHang))
-                    {
-                        blame = true;
-                        collectHangDump = true;
-                    }
-                    else if (Eq(activeArgument, _blameHangDumpType))
-                    {
-                        blame = true;
-                        collectHangDump = true;
-                        collectHangDumpType = arg;
-                    }
-                    else if (Eq(activeArgument, _blameHangTimeout))
-                    {
-                        blame = true;
-                        collectHangDump = true;
-                        collectHangDumpTimeout = arg;
+                        blame.UpdateBlame(activeArgument, arg);
                     }
                     else
                     {
@@ -266,25 +158,9 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    if (Eq(arg, _blame))
+                    if (blame.IsBlameArg(arg))
                     {
-                        blame = true;
-                    }
-                    else if (Eq(arg, _blameCrash))
-                    {
-                        blame = true;
-                        collectCrashDump = true;
-                    }
-                    else if (Eq(arg, _blameCrashCollectAlways))
-                    {
-                        blame = true;
-                        collectCrashDump = true;
-                        collectCrashDumpAlways = true;
-                    }
-                    else if (Eq(arg, _blameHang))
-                    {
-                        blame = true;
-                        collectHangDump = true;
+                        blame.UpdateBlame(arg, null);
                     }
                     else
                     {
@@ -305,47 +181,9 @@ namespace Microsoft.DotNet.Cli
                 }
             }
 
-            if (blame)
+            if (blame.Blame)
             {
-                string crashDumpArgs = null;
-                string hangDumpArgs = null;
-
-                if (collectCrashDump)
-                {
-                    crashDumpArgs = "CollectDump";
-                    if (collectCrashDumpAlways)
-                    {
-                        crashDumpArgs += ";CollectAlways=true";
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(collectCrashDumpType))
-                    {
-                        crashDumpArgs += $";DumpType={collectCrashDumpType}";
-                    }
-                }
-
-                if (collectHangDump)
-                {
-                    hangDumpArgs = "CollectHangDump";
-                    if (!string.IsNullOrWhiteSpace(collectHangDumpType))
-                    {
-                        hangDumpArgs += $";DumpType={collectHangDumpType}";
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(collectHangDumpTimeout))
-                    {
-                        hangDumpArgs += $";TestTimeout={collectHangDumpTimeout}";
-                    }
-                }
-
-                if (collectCrashDump || collectHangDump)
-                {
-                    newArgList.Add($@"--blame:""{string.Join(";", crashDumpArgs, hangDumpArgs).Trim(';')}""");
-                }
-                else
-                {
-                    newArgList.Add("--blame");
-                }
+                blame.AddCombinedBlameArgs(newArgList);
             }
 
             return newArgList;
@@ -365,10 +203,157 @@ namespace Microsoft.DotNet.Cli
             }
             newArgList.Add(verbosityString + verbosity);
         }
+    }
+
+    class BlameArgs
+    {
+        public bool Blame = false;
+
+        public bool CollectCrashDump = false;
+        public string CollectCrashDumpType = null;
+        public bool CollectCrashDumpAlways = false;
+
+        public bool CollectHangDump = false;
+        public string CollectHangDumpType = null;
+        public string CollectHangDumpTimeout = null;
+
+        public static string BlameParam = "--blame";
+        public static string BlameCrashParam = "--blame-crash";
+        public static string BlameCrashDumpTypeParam = "--blame-crash-dump-type";
+        public static string BlameCrashCollectAlwaysParam = "--blame-crash-collect-always";
+        public static string BlameHangParam = "--blame-hang";
+        public static string BlameHangDumpTypeParam = "--blame-hang-dump-type";
+        public static string BlameHangTimeoutParam = "--blame-hang-timeout";
+
+        // parameters that expect arguments
+        private readonly string[] _blameArgList = new string[]{
+            BlameCrashDumpTypeParam,
+
+            BlameHangDumpTypeParam,
+            BlameHangTimeoutParam
+        };
+
+        // parameters that don't expect any arguments
+        private readonly string[] _blameSwitchList = new string[]{
+            BlameParam,
+
+            BlameCrashParam,
+            BlameCrashCollectAlwaysParam,
+
+            BlameHangParam,
+        };
+
+
+        internal bool IsBlameArg(string parameter)
+        {
+            return _blameArgList.Contains(parameter) || _blameSwitchList.Contains(parameter);
+        }
+
+        internal bool IsBlameSwitch(string parameter)
+        {
+            return _blameSwitchList.Contains(parameter);
+
+        }
+
+        internal void UpdateBlame(string parameter, string argument)
+        {
+            if (Eq(parameter, BlameParam))
+            {
+                Blame = true;
+            }
+
+            // Any blame-crash param implies that we collect crash dump
+            if (Eq(parameter, BlameCrashParam))
+            {
+                Blame = true;
+                CollectCrashDump = true;
+            }
+
+            if (Eq(parameter, BlameCrashCollectAlwaysParam))
+            {
+                Blame = true;
+                CollectCrashDump = true;
+                CollectCrashDumpAlways = true;
+            }
+
+            if (Eq(parameter, BlameCrashDumpTypeParam))
+            {
+                Blame = true;
+                CollectCrashDump = true;
+                CollectCrashDumpType = argument;
+            }
+
+            // Any Blame-hang param implies that we collect hang dump
+            if (Eq(parameter, BlameHangParam))
+            {
+                Blame = true;
+                CollectHangDump = true;
+            }
+
+            if (Eq(parameter, BlameHangDumpTypeParam))
+            {
+                Blame = true;
+                CollectHangDump = true;
+                CollectHangDumpType = argument;
+            }
+
+            if (Eq(parameter, BlameHangTimeoutParam))
+            {
+                Blame = true;
+                CollectHangDump = true;
+                CollectHangDumpTimeout = argument;
+            }
+        }
 
         private bool Eq(string left, string right)
         {
-            return string.Equals(left, right, System.StringComparison.OrdinalIgnoreCase);
+            return string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal void AddCombinedBlameArgs(List<string> newArgList)
+        {
+            if (!Blame)
+                return;
+
+            string crashDumpArgs = null;
+            string hangDumpArgs = null;
+
+            if (CollectCrashDump)
+            {
+                crashDumpArgs = "CollectDump";
+                if (CollectCrashDumpAlways)
+                {
+                    crashDumpArgs += ";CollectAlways=true";
+                }
+
+                if (!string.IsNullOrWhiteSpace(CollectCrashDumpType))
+                {
+                    crashDumpArgs += $";DumpType={CollectCrashDumpType}";
+                }
+            }
+
+            if (CollectHangDump)
+            {
+                hangDumpArgs = "CollectHangDump";
+                if (!string.IsNullOrWhiteSpace(CollectHangDumpType))
+                {
+                    hangDumpArgs += $";DumpType={CollectHangDumpType}";
+                }
+
+                if (!string.IsNullOrWhiteSpace(CollectHangDumpTimeout))
+                {
+                    hangDumpArgs += $";TestTimeout={CollectHangDumpTimeout}";
+                }
+            }
+
+            if (CollectCrashDump || CollectHangDump)
+            {
+                newArgList.Add($@"--blame:""{string.Join(";", crashDumpArgs, hangDumpArgs).Trim(';')}""");
+            }
+            else
+            {
+                newArgList.Add("--blame");
+            }
         }
     }
 }
