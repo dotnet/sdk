@@ -33,13 +33,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</source>
-        <target state="translated">'{0}'의 생성자에서 현재 "{2}"인 '{1}' 인수 값을 '{3}'(으)로 올바르게 구문 분석될 수 있는 다른 값으로 변경하세요.</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'</source>
+        <target state="needs-review-translation">'{0}'의 생성자에서 현재 "{2}"인 '{1}' 인수 값을 '{3}'(으)로 올바르게 구문 분석될 수 있는 다른 값으로 변경하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</source>
-        <target state="translated">'{0}'의 생성자에서 현재 빈 문자열("")인 '{1}' 인수 값을 '{2}'(으)로 올바르게 구문 분석될 수 있는 다른 값으로 변경하세요.</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'</source>
+        <target state="needs-review-translation">'{0}'의 생성자에서 현재 빈 문자열("")인 '{1}' 인수 값을 '{2}'(으)로 올바르게 구문 분석될 수 있는 다른 값으로 변경하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
@@ -68,8 +68,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
-        <source>Avoid zero-length array allocations.</source>
-        <target state="translated">길이가 0인 배열 할당을 사용하지 마세요.</target>
+        <source>Avoid zero-length array allocations</source>
+        <target state="needs-review-translation">길이가 0인 배열 할당을 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -313,8 +313,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
-        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</source>
-        <target state="translated">'{0}' 메서드가 모든 가능한 제어 흐름 경로에서 '{1}'을(를) 호출하도록 합니다.</target>
+        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths</source>
+        <target state="needs-review-translation">'{0}' 메서드가 모든 가능한 제어 흐름 경로에서 '{1}'을(를) 호출하도록 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
@@ -338,8 +338,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
-        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</source>
-        <target state="translated">'{0}'에서 생성된 개체에 대한 모든 참조가 범위를 벗어나기 전에 해당 개체에서 System.IDisposable.Dispose를 호출합니다.</target>
+        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope</source>
+        <target state="needs-review-translation">'{0}'에서 생성된 개체에 대한 모든 참조가 범위를 벗어나기 전에 해당 개체에서 System.IDisposable.Dispose를 호출합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
@@ -393,8 +393,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
-        <target state="translated">{0} 클래스의 인스턴스를 deserialize할 때 {1} 메서드가 위험한 {2} 메서드를 호출할 수 있습니다.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
+        <target state="needs-review-translation">{0} 클래스의 인스턴스를 deserialize할 때 {1} 메서드가 위험한 {2} 메서드를 호출할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -448,13 +448,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
-        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="translated">인수에 TaskCreationOptions 열거형이 아닌 TaskContinuationsOptions 열거형이 포함되어 있습니다.</target>
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum</source>
+        <target state="needs-review-translation">인수에 TaskCreationOptions 열거형이 아닌 TaskContinuationsOptions 열거형이 포함되어 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
-        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="translated">TaskCompletionSource 생성자로 전달된 인수는 TaskContinuationOptions 열거형이 아닌 TaskCreationOptions 열거형이어야 합니다.</target>
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</source>
+        <target state="needs-review-translation">TaskCompletionSource 생성자로 전달된 인수는 TaskContinuationOptions 열거형이 아닌 TaskCreationOptions 열거형이어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -478,8 +478,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
-        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="translated">MemoryManager&lt;T&gt;에서 파생된 형식에 종료자를 추가하면 Span&lt;T&gt;에서 여전히 메모리를 사용하는 동안 메모리 해제가 허용될 수 있습니다.</target>
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;</source>
+        <target state="needs-review-translation">MemoryManager&lt;T&gt;에서 파생된 형식에 종료자를 추가하면 Span&lt;T&gt;에서 여전히 메모리를 사용하는 동안 메모리 해제가 허용될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
@@ -633,13 +633,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
-        <source>Exception type {0} is reserved by the runtime.</source>
-        <target state="translated">{0} 예외 형식이 런타임에서 예약되었습니다.</target>
+        <source>Exception type {0} is reserved by the runtime</source>
+        <target state="needs-review-translation">{0} 예외 형식이 런타임에서 예약되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
-        <source>Exception type {0} is not sufficiently specific.</source>
-        <target state="translated">{0} 예외 형식이 충분히 구체적이지 않습니다.</target>
+        <source>Exception type {0} is not sufficiently specific</source>
+        <target state="needs-review-translation">{0} 예외 형식이 충분히 구체적이지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
@@ -658,8 +658,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
-        <source>Pointer field {0} on serializable type.</source>
-        <target state="translated">serializable 형식의 포인터 필드 {0}.</target>
+        <source>Pointer field {0} on serializable type</source>
+        <target state="needs-review-translation">serializable 형식의 포인터 필드 {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
@@ -698,8 +698,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
-        <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="translated">{0}()는 성능 개선을 위해 AnyAsync()를 대신 사용할 수 있는 경우에 사용됩니다.</target>
+        <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
+        <target state="needs-review-translation">{0}()는 성능 개선을 위해 AnyAsync()를 대신 사용할 수 있는 경우에 사용됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -713,8 +713,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
-        <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="translated">{0}()는 성능 개선을 위해 Any()를 대신 사용할 수 있는 경우에 사용됩니다.</target>
+        <source>{0}() is used where Any() could be used instead to improve performance</source>
+        <target state="needs-review-translation">{0}()는 성능 개선을 위해 Any()를 대신 사용할 수 있는 경우에 사용됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
@@ -753,8 +753,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDSAMessage">
-        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</source>
-        <target state="translated">비대칭 암호화 알고리즘 {0}은(는) 보호 수준이 낮습니다. 최소 2048 키 크기, ECDH 또는 ECDSA 알고리즘이 포함된 RSA로 전환하세요.</target>
+        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
+        <target state="needs-review-translation">비대칭 암호화 알고리즘 {0}은(는) 보호 수준이 낮습니다. 최소 2048 키 크기, ECDH 또는 ECDSA 알고리즘이 포함된 RSA로 전환하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -763,13 +763,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">인덱싱 가능한 Enumerable 메서드를 사용하지 마세요. 대신 컬렉션을 직접 사용하세요.</target>
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly.</source>
+        <target state="needs-review-translation">인덱싱 가능한 Enumerable 메서드를 사용하지 마세요. 대신 컬렉션을 직접 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">인덱싱 가능한 Enumerable 메서드를 사용하지 마세요. 대신 컬렉션을 직접 사용하세요.</target>
+        <source>Do not use Enumerable methods on indexable collections</source>
+        <target state="needs-review-translation">인덱싱 가능한 Enumerable 메서드를 사용하지 마세요. 대신 컬렉션을 직접 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomness">
@@ -783,8 +783,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
-        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</source>
-        <target state="translated">{0}은(는) 안전하지 않은 난수 생성기입니다. 보안을 위해 임의성이 필요한 경우 암호화된 보안 난수 생성기를 사용합니다.</target>
+        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
+        <target state="needs-review-translation">{0}은(는) 안전하지 않은 난수 생성기입니다. 보안을 위해 임의성이 필요한 경우 암호화된 보안 난수 생성기를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseMD5">
@@ -818,8 +818,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
-        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</source>
-        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</target>
+        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</source>
+        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
@@ -868,8 +868,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
-        <source>Do not use stackalloc in loops.</source>
-        <target state="translated">루프에서 stackalloc를 사용하면 안 됩니다.</target>
+        <source>Do not use stackalloc in loops</source>
+        <target state="needs-review-translation">루프에서 stackalloc를 사용하면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -928,8 +928,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
-        <target state="translated">{0}이(가) 취약한 해시 알고리즘으로 생성되었습니다. 암호에서 강력한 키를 만들려면 SHA256, SHA384 또는 SHA512를 사용하세요.</target>
+        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0}이(가) 취약한 해시 알고리즘으로 생성되었습니다. 암호에서 강력한 키를 만들려면 SHA256, SHA384 또는 SHA512를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
@@ -1008,18 +1008,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}.</source>
-        <target state="translated">{0} 형식에 GetObjectData 구현을 추가하십시오.</target>
+        <source>Add an implementation of GetObjectData to type {0}</source>
+        <target state="needs-review-translation">{0} 형식에 GetObjectData 구현을 추가하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable.</source>
-        <target state="translated">{0}.GetObjectData를 virtual 및 overridable로 표시하십시오.</target>
+        <source>Make {0}.GetObjectData virtual and overridable</source>
+        <target state="needs-review-translation">{0}.GetObjectData를 virtual 및 overridable로 표시하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</source>
-        <target state="translated">파생 형식에 표시되도록 {0}.GetObjectData의 액세스 가능성을 높이십시오.</target>
+        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
+        <target state="needs-review-translation">파생 형식에 표시되도록 {0}.GetObjectData의 액세스 가능성을 높이십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyTitle">
@@ -1063,28 +1063,28 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 제네릭 형식이 되지 않도록 시그니처를 변경하십시오.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
+        <target state="needs-review-translation">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 제네릭 형식이 되지 않도록 시그니처를 변경하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 'System.Runtime.Serialization.StreamingContext' 형식의 단일 매개 변수를 사용하도록 시그니처를 변경하십시오.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
+        <target state="needs-review-translation">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 'System.Runtime.Serialization.StreamingContext' 형식의 단일 매개 변수를 사용하도록 시그니처를 변경하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 반환 형식을 {1}에서 void(Visual Studio의 경우 Sub)로 변경하십시오.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
+        <target state="needs-review-translation">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 반환 형식을 {1}에서 void(Visual Studio의 경우 Sub)로 변경하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 static(Visual Basic의 경우 Shared)에서 인스턴스 메서드로 변경하십시오.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
+        <target state="needs-review-translation">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 static(Visual Basic의 경우 Shared)에서 인스턴스 메서드로 변경하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 액세스 가능성을 private으로 변경하십시오.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
+        <target state="needs-review-translation">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 액세스 가능성을 private으로 변경하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
@@ -1143,8 +1143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
-        <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">메시지 및/또는 paramName 매개 변수를 포함하는 {0} 생성자를 호출하세요.</target>
+        <source>Call the {0} constructor that contains a message and/or paramName parameter</source>
+        <target state="needs-review-translation">메시지 및/또는 paramName 매개 변수를 포함하는 {0} 생성자를 호출하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1408,8 +1408,8 @@
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
-        <source>In method '{0}', replace the call to '{1}' with '{2}'.</source>
-        <target state="translated">'{0}' 메서드에서 '{1}'에 대한 호출을 '{2}'(으)로 바꾸세요.</target>
+        <source>In method '{0}', replace the call to '{1}' with '{2}'</source>
+        <target state="needs-review-translation">'{0}' 메서드에서 '{1}'에 대한 호출을 '{2}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseTitle">
@@ -1488,8 +1488,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
-        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
-        <target state="translated">개체에 항목이 포함되어 있는지 확인하려면 'Count' 대신 'IsEmpty'를 사용하세요.</target>
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
+        <target state="needs-review-translation">개체에 항목이 포함되어 있는지 확인하려면 'Count' 대신 'IsEmpty'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
@@ -1508,8 +1508,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
-        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</source>
-        <target state="translated">결과가 하위 문자열의 존재 여부를 확인하는 데 사용되는 'string.IndexOf' 호출은 'string.Contains'로 바꿀 수 있습니다.</target>
+        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
+        <target state="needs-review-translation">결과가 하위 문자열의 존재 여부를 확인하는 데 사용되는 'string.IndexOf' 호출은 'string.Contains'로 바꿀 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
@@ -1528,8 +1528,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
-        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
-        <target state="translated">강력한 형식의 StringBuilder 오버로드를 사용하려면 ToString 호출을 제거하세요.</target>
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
+        <target state="needs-review-translation">강력한 형식의 StringBuilder 오버로드를 사용하려면 ToString 호출을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -1538,8 +1538,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
-        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
-        <target state="translated">StringBuilder 대신 강력한 형식의 Append 및 Insert 메서드 오버로드를 사용하세요.</target>
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder</source>
+        <target state="needs-review-translation">StringBuilder 대신 강력한 형식의 Append 및 Insert 메서드 오버로드를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
@@ -1548,13 +1548,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
-        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
-        <target state="translated">입력이 상수 단위 문자열인 경우 'StringBuilder.Append(string)' 대신 'StringBuilder.Append(char)'를 사용하세요.</target>
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string</source>
+        <target state="needs-review-translation">입력이 상수 단위 문자열인 경우 'StringBuilder.Append(string)' 대신 'StringBuilder.Append(char)'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
-        <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
-        <target state="translated">해당하는 경우 'StringBuilder.Append(char)' 사용을 고려하세요.</target>
+        <source>Consider using 'StringBuilder.Append(char)' when applicable</source>
+        <target state="needs-review-translation">해당하는 경우 'StringBuilder.Append(char)' 사용을 고려하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -1598,13 +1598,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</source>
-        <target state="translated">'private void OnDeserialized(StreamingContext)' 메서드를 {0} 형식에 추가하고 System.Runtime.Serialization.OnDeserializedAttribute 특성을 사용하십시오.</target>
+        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
+        <target state="needs-review-translation">'private void OnDeserialized(StreamingContext)' 메서드를 {0} 형식에 추가하고 System.Runtime.Serialization.OnDeserializedAttribute 특성을 사용하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</source>
-        <target state="translated">'private void OnDeserializing(StreamingContext)' 메서드를 {0} 형식에 추가하고 System.Runtime.Serialization.OnDeserializingAttribute 특성을 사용하십시오.</target>
+        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
+        <target state="needs-review-translation">'private void OnDeserializing(StreamingContext)' 메서드를 {0} 형식에 추가하고 System.Runtime.Serialization.OnDeserializingAttribute 특성을 사용하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
@@ -1758,8 +1758,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
-        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input.</source>
-        <target state="translated">'{1}'의 '{0}'에 전달되는 쿼리 문자열이 사용자 입력을 허용하는지 검토합니다.</target>
+        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input</source>
+        <target state="needs-review-translation">'{1}'의 '{0}'에 전달되는 쿼리 문자열이 사용자 입력을 허용하는지 검토합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
@@ -1813,8 +1813,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
-        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</source>
-        <target state="translated">메서드 또는 생성자는 System.IFormatProvider 매개 변수를 허용하는 오버로드가 있는 하나 이상의 멤버를 호출하며 IFormatProvider 매개 변수를 사용하는 오버로드를 호출하지 않습니다. System.Globalization.CultureInfo 또는 IFormatProvider 개체가 제공되지 않으면 오버로드된 멤버가 제공한 기본값을 사용하여 원하는 결과를 모든 로캘에서 얻지 못할 수 있습니다. 결과가 입력 또는 출력을 기반으로 사용자에게 표시되는 경우 'CultureInfo.CurrentCulture'를 'IFormatProvider'로 지정하세요. 반면 디스크 또는 데이터베이스에서 로드되고 저장될 때와 같이 결과가 저장되고, 소프트웨어에서 결과에 액세스하는 경우 'CultureInfo.InvariantCulture'를 지정하세요.</target>
+        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
+        <target state="needs-review-translation">메서드 또는 생성자는 System.IFormatProvider 매개 변수를 허용하는 오버로드가 있는 하나 이상의 멤버를 호출하며 IFormatProvider 매개 변수를 사용하는 오버로드를 호출하지 않습니다. System.Globalization.CultureInfo 또는 IFormatProvider 개체가 제공되지 않으면 오버로드된 멤버가 제공한 기본값을 사용하여 원하는 결과를 모든 로캘에서 얻지 못할 수 있습니다. 결과가 입력 또는 출력을 기반으로 사용자에게 표시되는 경우 'CultureInfo.CurrentCulture'를 'IFormatProvider'로 지정하세요. 반면 디스크 또는 데이터베이스에서 로드되고 저장될 때와 같이 결과가 저장되고, 소프트웨어에서 결과에 액세스하는 경우 'CultureInfo.InvariantCulture'를 지정하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -1893,8 +1893,8 @@
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
-        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</source>
-        <target state="translated">동등성 검사 대신 'string.Length' 속성 또는 'string.IsNullOrEmpty' 메서드를 사용하여 빈 문자열을 테스트하세요.</target>
+        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check</source>
+        <target state="needs-review-translation">동등성 검사 대신 'string.Length' 속성 또는 'string.IsNullOrEmpty' 메서드를 사용하여 빈 문자열을 테스트하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
@@ -1928,8 +1928,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
-        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
-        <target state="translated">불필요한 데이터 복사본이 만들어지지 않도록 하려면 '{2}'에서 '{1}' 기반 인덱서 대신 '{0}'을(를) 사용하세요.</target>
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copiesUse '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copiesUse '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
+        <target state="needs-review-translation">불필요한 데이터 복사본이 만들어지지 않도록 하려면 '{2}'에서 '{1}' 기반 인덱서 대신 '{0}'을(를) 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
@@ -1983,8 +1983,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</source>
-        <target state="translated">가능한 경우 SAS(공유 액세스 서명) 대신 Azure의 역할 기반 액세스 제어를 사용하세요. 계속 SAS를 사용해야 할 경우 SAS를 만들 때 컨테이너 수준 액세스 정책을 사용하세요.</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS.</source>
+        <target state="needs-review-translation">가능한 경우 SAS(공유 액세스 서명) 대신 Azure의 역할 기반 액세스 제어를 사용하세요. 계속 SAS를 사용해야 할 경우 SAS를 만들 때 컨테이너 수준 액세스 정책을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
@@ -2003,8 +2003,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
-        <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'</source>
-        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'</target>
+        <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
+        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdFix">
@@ -2068,8 +2068,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
-        <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="translated">Enumerable.Count() 대신 "{0}" 속성을 사용하세요.</target>
+        <source>Use the "{0}" property instead of Enumerable.Count()</source>
+        <target state="needs-review-translation">Enumerable.Count() 대신 "{0}" 속성을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
@@ -2108,8 +2108,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
-        <target state="translated">가능한 경우 SAS(공유 액세스 서명) 대신 Azure의 역할 기반 액세스 제어를 사용하세요. 계속 SAS를 사용해야 할 경우 SharedAccessProtocol.HttpsOnly를 지정하세요.</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
+        <target state="needs-review-translation">가능한 경우 SAS(공유 액세스 서명) 대신 Azure의 역할 기반 액세스 제어를 사용하세요. 계속 SAS를 사용해야 할 경우 SharedAccessProtocol.HttpsOnly를 지정하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">

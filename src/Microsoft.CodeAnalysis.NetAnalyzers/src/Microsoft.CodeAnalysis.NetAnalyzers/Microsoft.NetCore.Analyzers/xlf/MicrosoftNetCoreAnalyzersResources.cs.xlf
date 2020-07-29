@@ -33,13 +33,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</source>
-        <target state="translated">V konstruktoru {0} změňte hodnotu argumentu {1}, která je aktuálně {2}, na hodnotu, která se dá správně parsovat jako {3}.</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'</source>
+        <target state="needs-review-translation">V konstruktoru {0} změňte hodnotu argumentu {1}, která je aktuálně {2}, na hodnotu, která se dá správně parsovat jako {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</source>
-        <target state="translated">V konstruktoru {0} změňte hodnotu argumentu {1}, která je aktuálně prázdný řetězec (""), na hodnotu, která se dá správně parsovat jako {2}.</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'</source>
+        <target state="needs-review-translation">V konstruktoru {0} změňte hodnotu argumentu {1}, která je aktuálně prázdný řetězec (""), na hodnotu, která se dá správně parsovat jako {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
@@ -68,8 +68,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
-        <source>Avoid zero-length array allocations.</source>
-        <target state="translated">Vyhněte se alokacím polí s nulovou délkou</target>
+        <source>Avoid zero-length array allocations</source>
+        <target state="needs-review-translation">Vyhněte se alokacím polí s nulovou délkou</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -313,8 +313,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
-        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</source>
-        <target state="translated">Zajistěte, aby metoda {0} volala {1} na všech možných cestách toku řízení.</target>
+        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths</source>
+        <target state="needs-review-translation">Zajistěte, aby metoda {0} volala {1} na všech možných cestách toku řízení.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
@@ -338,8 +338,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
-        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</source>
-        <target state="translated">Zavolejte System.IDisposable.Dispose pro objekt vytvořený pomocí {0} dříve, než budou všechny odkazy na něj mimo obor.</target>
+        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope</source>
+        <target state="needs-review-translation">Zavolejte System.IDisposable.Dispose pro objekt vytvořený pomocí {0} dříve, než budou všechny odkazy na něj mimo obor.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
@@ -393,8 +393,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
-        <target state="translated">Při deserializaci instance třídy {0} může metoda {1} volat nebezpečnou metodu {2}.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
+        <target state="needs-review-translation">Při deserializaci instance třídy {0} může metoda {1} volat nebezpečnou metodu {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -448,13 +448,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
-        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="translated">Argument obsahuje výčet TaskContinuationsOptions místo výčtu TaskCreationOptions.</target>
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum</source>
+        <target state="needs-review-translation">Argument obsahuje výčet TaskContinuationsOptions místo výčtu TaskCreationOptions.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
-        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="translated">Argument předaný konstruktoru TaskCompletionSource by měl být výčet TaskCreationOptions, nikoli výčet TaskContinuationOptions</target>
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</source>
+        <target state="needs-review-translation">Argument předaný konstruktoru TaskCompletionSource by měl být výčet TaskCreationOptions, nikoli výčet TaskContinuationOptions</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -478,8 +478,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
-        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="translated">Když se do typu odvozeného z MemoryManager&lt;T&gt; přidá finalizační metoda, může to umožnit, aby se paměť uvolnila i přesto, že ji stále používá typ Span&lt;T&gt;.</target>
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;</source>
+        <target state="needs-review-translation">Když se do typu odvozeného z MemoryManager&lt;T&gt; přidá finalizační metoda, může to umožnit, aby se paměť uvolnila i přesto, že ji stále používá typ Span&lt;T&gt;.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
@@ -633,13 +633,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
-        <source>Exception type {0} is reserved by the runtime.</source>
-        <target state="translated">Výjimka typu {0} je rezervovaná modulem runtime.</target>
+        <source>Exception type {0} is reserved by the runtime</source>
+        <target state="needs-review-translation">Výjimka typu {0} je rezervovaná modulem runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
-        <source>Exception type {0} is not sufficiently specific.</source>
-        <target state="translated">Výjimka typu {0} není dost konkrétní.</target>
+        <source>Exception type {0} is not sufficiently specific</source>
+        <target state="needs-review-translation">Výjimka typu {0} není dost konkrétní.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
@@ -658,8 +658,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
-        <source>Pointer field {0} on serializable type.</source>
-        <target state="translated">Pole ukazatele {0} v serializovatelném typu</target>
+        <source>Pointer field {0} on serializable type</source>
+        <target state="needs-review-translation">Pole ukazatele {0} v serializovatelném typu</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
@@ -698,8 +698,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
-        <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="translated">{0}() se používá tam, kde se dá kvůli zvýšení výkonu použít AnyAsync().</target>
+        <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
+        <target state="needs-review-translation">{0}() se používá tam, kde se dá kvůli zvýšení výkonu použít AnyAsync().</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -713,8 +713,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
-        <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="translated">{0}() se používá tam, kde se dá kvůli zvýšení výkonu použít Any().</target>
+        <source>{0}() is used where Any() could be used instead to improve performance</source>
+        <target state="needs-review-translation">{0}() se používá tam, kde se dá kvůli zvýšení výkonu použít Any().</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
@@ -753,8 +753,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDSAMessage">
-        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</source>
-        <target state="translated">Algoritmus asymetrického šifrování {0} je slabý. Použijte radši algoritmus RSA s velikostí klíče alespoň 2048, ECDH nebo ECDSA.</target>
+        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
+        <target state="needs-review-translation">Algoritmus asymetrického šifrování {0} je slabý. Použijte radši algoritmus RSA s velikostí klíče alespoň 2048, ECDH nebo ECDSA.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -763,13 +763,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">Nepoužívejte metody Enumerable nebo indexovatelné kolekce. Použijte místo toho kolekci napřímo.</target>
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly.</source>
+        <target state="needs-review-translation">Nepoužívejte metody Enumerable nebo indexovatelné kolekce. Použijte místo toho kolekci napřímo.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">Nepoužívejte metody Enumerable nebo indexovatelné kolekce. Použijte místo toho kolekci napřímo.</target>
+        <source>Do not use Enumerable methods on indexable collections</source>
+        <target state="needs-review-translation">Nepoužívejte metody Enumerable nebo indexovatelné kolekce. Použijte místo toho kolekci napřímo.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomness">
@@ -783,8 +783,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
-        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</source>
-        <target state="translated">{0} je nezabezpečený generátor náhodných čísel. Pokud se pro zabezpečení vyžaduje náhodnost, používejte kryptograficky zabezpečené generátory náhodných čísel.</target>
+        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
+        <target state="needs-review-translation">{0} je nezabezpečený generátor náhodných čísel. Pokud se pro zabezpečení vyžaduje náhodnost, používejte kryptograficky zabezpečené generátory náhodných čísel.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseMD5">
@@ -818,8 +818,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
-        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</source>
-        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</target>
+        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</source>
+        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
@@ -868,8 +868,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
-        <source>Do not use stackalloc in loops.</source>
-        <target state="translated">Nepoužívat stackalloc ve smyčkách</target>
+        <source>Do not use stackalloc in loops</source>
+        <target state="needs-review-translation">Nepoužívat stackalloc ve smyčkách</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -928,8 +928,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
-        <target state="translated">{0} se vytvořilo pomocí slabého algoritmu hash. Jestli chcete vytvořit silný klíč z hesla, použijte SHA256, SHA384 nebo SHA512.</target>
+        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0} se vytvořilo pomocí slabého algoritmu hash. Jestli chcete vytvořit silný klíč z hesla, použijte SHA256, SHA384 nebo SHA512.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
@@ -1008,18 +1008,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}.</source>
-        <target state="translated">Přidejte implementaci GetObjectData k typu {0}.</target>
+        <source>Add an implementation of GetObjectData to type {0}</source>
+        <target state="needs-review-translation">Přidejte implementaci GetObjectData k typu {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable.</source>
-        <target state="translated">Učiňte {0}.GetObjectData virtuální a přepisovatelnou.</target>
+        <source>Make {0}.GetObjectData virtual and overridable</source>
+        <target state="needs-review-translation">Učiňte {0}.GetObjectData virtuální a přepisovatelnou.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</source>
-        <target state="translated">Zvýšit přístupnost {0}.GetObjectData tak, že je viditelná pro odvozené typy.</target>
+        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
+        <target state="needs-review-translation">Zvýšit přístupnost {0}.GetObjectData tak, že je viditelná pro odvozené typy.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyTitle">
@@ -1063,28 +1063,28 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</source>
-        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její signaturu tak, že již není nadále obecná.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
+        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její signaturu tak, že již není nadále obecná.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</source>
-        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její signaturu tak, že vyžaduje jeden parametr typu 'System.Runtime.Serialization.StreamingContext'.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
+        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její signaturu tak, že vyžaduje jeden parametr typu 'System.Runtime.Serialization.StreamingContext'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</source>
-        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její návratový typ z {1} na void (Sub v jazyce Visual Basic).</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
+        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její návratový typ z {1} na void (Sub v jazyce Visual Basic).</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
-        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte ji ze statické (sdílené v jazyce Visual Basic) na instanční metodu.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
+        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte ji ze statické (sdílené v jazyce Visual Basic) na instanční metodu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</source>
-        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její přístupnost na soukromou.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
+        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její přístupnost na soukromou.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
@@ -1143,8 +1143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
-        <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">Zavolejte konstruktor {0}, který obsahuje zprávu a/nebo parametr paramName.</target>
+        <source>Call the {0} constructor that contains a message and/or paramName parameter</source>
+        <target state="needs-review-translation">Zavolejte konstruktor {0}, který obsahuje zprávu a/nebo parametr paramName.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1408,8 +1408,8 @@
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
-        <source>In method '{0}', replace the call to '{1}' with '{2}'.</source>
-        <target state="translated">V metodě {0} nahraďte volání {1} voláním {2}.</target>
+        <source>In method '{0}', replace the call to '{1}' with '{2}'</source>
+        <target state="needs-review-translation">V metodě {0} nahraďte volání {1} voláním {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseTitle">
@@ -1488,8 +1488,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
-        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
-        <target state="translated">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
+        <target state="needs-review-translation">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
@@ -1508,8 +1508,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
-        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</source>
-        <target state="translated">Volání metody string.IndexOf, kde se pomocí výsledku kontroluje přítomnost nebo nepřítomnost podřetězce, se dá nahradit metodou string.Contains.</target>
+        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
+        <target state="needs-review-translation">Volání metody string.IndexOf, kde se pomocí výsledku kontroluje přítomnost nebo nepřítomnost podřetězce, se dá nahradit metodou string.Contains.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
@@ -1528,8 +1528,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
-        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
-        <target state="translated">Odeberte volání ToString, aby se používalo přetížení StringBuilder silného typu.</target>
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
+        <target state="needs-review-translation">Odeberte volání ToString, aby se používalo přetížení StringBuilder silného typu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -1538,8 +1538,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
-        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
-        <target state="translated">Upřednostňovat pro StringBuilder přetížení metod Append a Insert silného typu</target>
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder</source>
+        <target state="needs-review-translation">Upřednostňovat pro StringBuilder přetížení metod Append a Insert silného typu</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
@@ -1548,13 +1548,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
-        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
-        <target state="translated">Když je vstup konstantní jednotkový řetězec, použijte místo StringBuilder.Append(string) metodu StringBuilder.Append(char).</target>
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string</source>
+        <target state="needs-review-translation">Když je vstup konstantní jednotkový řetězec, použijte místo StringBuilder.Append(string) metodu StringBuilder.Append(char).</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
-        <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
-        <target state="translated">Zvažte možnost použít metodu StringBuilder.Append(char) tam, kde je to možné.</target>
+        <source>Consider using 'StringBuilder.Append(char)' when applicable</source>
+        <target state="needs-review-translation">Zvažte možnost použít metodu StringBuilder.Append(char) tam, kde je to možné.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -1598,13 +1598,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</source>
-        <target state="translated">Přidejte metodu 'private void OnDeserialized(StreamingContext)' k typu {0} a označte ji pomocí System.Runtime.Serialization.OnDeserializedAttribute.</target>
+        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
+        <target state="needs-review-translation">Přidejte metodu 'private void OnDeserialized(StreamingContext)' k typu {0} a označte ji pomocí System.Runtime.Serialization.OnDeserializedAttribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</source>
-        <target state="translated">Přidejte metodu 'private void OnDeserializing(StreamingContext)' k typu {0} a označte ji pomocí System.Runtime.Serialization.OnDeserializingAttribute.</target>
+        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
+        <target state="needs-review-translation">Přidejte metodu 'private void OnDeserializing(StreamingContext)' k typu {0} a označte ji pomocí System.Runtime.Serialization.OnDeserializingAttribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
@@ -1758,8 +1758,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
-        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input.</source>
-        <target state="translated">Zkontrolujte, jestli řetězec dotazu, který se předává do {0} v {1}, přijímá uživatelský vstup.</target>
+        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input</source>
+        <target state="needs-review-translation">Zkontrolujte, jestli řetězec dotazu, který se předává do {0} v {1}, přijímá uživatelský vstup.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
@@ -1813,8 +1813,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
-        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</source>
-        <target state="translated">Metoda nebo konstruktor volá nejméně jeden člen, který má přetížení přijímající parametr System.IFormatProvider, ale metoda nebo konstruktor nevolá přetížení, které přijímá parametr IFormatProvider. Když se nezadá System.Globalization.CultureInfo ani objekt IFormatProvider, výchozí hodnota, kterou poskytuje přetížený člen, nemusí mít ve všech národních prostředích požadovaný účinek. Pokud se výsledek zakládá na vstupu od uživatele nebo na výstupu, který se mu zobrazí, zadejte jako parametr IFormatProvider hodnotu CultureInfo.CurrentCulture. V opačném případě, pokud software výsledek uloží a přistupuje k němu, třeba při jeho trvalém uložení na disk nebo do databáze nebo při jeho načtení z nich, zadejte CultureInfo.InvariantCulture.</target>
+        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
+        <target state="needs-review-translation">Metoda nebo konstruktor volá nejméně jeden člen, který má přetížení přijímající parametr System.IFormatProvider, ale metoda nebo konstruktor nevolá přetížení, které přijímá parametr IFormatProvider. Když se nezadá System.Globalization.CultureInfo ani objekt IFormatProvider, výchozí hodnota, kterou poskytuje přetížený člen, nemusí mít ve všech národních prostředích požadovaný účinek. Pokud se výsledek zakládá na vstupu od uživatele nebo na výstupu, který se mu zobrazí, zadejte jako parametr IFormatProvider hodnotu CultureInfo.CurrentCulture. V opačném případě, pokud software výsledek uloží a přistupuje k němu, třeba při jeho trvalém uložení na disk nebo do databáze nebo při jeho načtení z nich, zadejte CultureInfo.InvariantCulture.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -1893,8 +1893,8 @@
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
-        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</source>
-        <target state="translated">Ke kontrole, jestli jsou řetězce prázdné, použijte namísto kontroly rovnosti vlastnost string.Length nebo metodu string.IsNullOrEmpty.</target>
+        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check</source>
+        <target state="needs-review-translation">Ke kontrole, jestli jsou řetězce prázdné, použijte namísto kontroly rovnosti vlastnost string.Length nebo metodu string.IsNullOrEmpty.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
@@ -1928,8 +1928,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
-        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
-        <target state="translated">V {2} místo indexeru založeného na {1} použijte {0}, nebudou se tak vytvářet nepotřebné kopie dat.</target>
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copiesUse '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copiesUse '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
+        <target state="needs-review-translation">V {2} místo indexeru založeného na {1} použijte {0}, nebudou se tak vytvářet nepotřebné kopie dat.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
@@ -1983,8 +1983,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</source>
-        <target state="translated">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, použijte při jeho vytváření zásady přístupu na úrovni kontejneru.</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS.</source>
+        <target state="needs-review-translation">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, použijte při jeho vytváření zásady přístupu na úrovni kontejneru.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
@@ -2003,8 +2003,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
-        <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'</source>
-        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'</target>
+        <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
+        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdFix">
@@ -2068,8 +2068,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
-        <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="translated">Použijte vlastnost {0} namísto Enumerable.Count().</target>
+        <source>Use the "{0}" property instead of Enumerable.Count()</source>
+        <target state="needs-review-translation">Použijte vlastnost {0} namísto Enumerable.Count().</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
@@ -2108,8 +2108,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
-        <target state="translated">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, zadejte SharedAccessProtocol.HttpsOnly.</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
+        <target state="needs-review-translation">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, zadejte SharedAccessProtocol.HttpsOnly.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">

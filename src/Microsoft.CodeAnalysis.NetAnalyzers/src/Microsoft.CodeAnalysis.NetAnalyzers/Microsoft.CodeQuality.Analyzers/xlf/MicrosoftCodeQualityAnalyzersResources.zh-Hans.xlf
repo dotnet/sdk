@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
-        <source>Assigning symbol and its member in the same statement.</source>
-        <target state="translated">在同一语句中分配符号及其成员。</target>
+        <source>Assigning symbol and its member in the same statement</source>
+        <target state="needs-review-translation">在同一语句中分配符号及其成员。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -58,8 +58,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
-        <source>Consider a design where '{0}' has no more than {1} type parameters.</source>
-        <target state="translated">考虑使用“{0}”所含类型参数不超过 {1} 个的设计。</target>
+        <source>Consider a design where '{0}' has no more than {1} type parameters</source>
+        <target state="needs-review-translation">考虑使用“{0}”所含类型参数不超过 {1} 个的设计。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
@@ -88,8 +88,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersMessage">
-        <source>Avoid 'out' parameters as they are not designed for general audience.</source>
-        <target state="translated">请避免使用 "out" 参数，因为它们不是针对一般受众设计的。</target>
+        <source>Avoid 'out' parameters as they are not designed for general audience</source>
+        <target state="needs-review-translation">请避免使用 "out" 参数，因为它们不是针对一般受众设计的。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersTitle">
@@ -103,8 +103,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
-        <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="translated">请修改“{0}”以捕获更具体的允许异常类型，或者重新抛出该异常。</target>
+        <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception</source>
+        <target state="needs-review-translation">请修改“{0}”以捕获更具体的允许异常类型，或者重新抛出该异常。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -118,8 +118,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
-        <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</source>
-        <target state="translated">“{0}” 是 NonInheritable 类 "{1}” 中新的受保护成员。</target>
+        <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'</source>
+        <target state="needs-review-translation">“{0}” 是 NonInheritable 类 "{1}” 中新的受保护成员。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
@@ -193,8 +193,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
-        <source>'{0}' should not overload the equality operator.</source>
-        <target state="translated">“{0}”不应重载相等运算符。</target>
+        <source>'{0}' should not overload the equality operator</source>
+        <target state="needs-review-translation">“{0}”不应重载相等运算符。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
@@ -223,8 +223,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceMessage">
-        <source>Consider a design that does not require that '{0}' be a reference parameter.</source>
-        <target state="translated">请考虑使用不要求将“{0}”用作引用参数的设计。</target>
+        <source>Consider a design that does not require that '{0}' be a reference parameter</source>
+        <target state="needs-review-translation">请考虑使用不要求将“{0}”用作引用参数的设计。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceTitle">
@@ -238,8 +238,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameMessage">
-        <source>Do not prefix enum values with the name of the enum type '{0}'. </source>
-        <target state="translated">不要将枚举类型为“{0}”的名称用作枚举值的前缀。</target>
+        <source>Do not prefix enum values with the name of the enum type '{0}'. .</source>
+        <target state="needs-review-translation">不要将枚举类型为“{0}”的名称用作枚举值的前缀。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameTitle">
@@ -263,13 +263,13 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
-        <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
-        <target state="translated">此按位初始化中的字段引用 "{0}" 重复。</target>
+        <source>The field reference '{0}' is duplicated in this bitwise initialization</source>
+        <target state="needs-review-translation">此按位初始化中的字段引用 "{0}" 重复。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
-        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
-        <target state="translated">枚举成员 "{0}" 具有与成员 "{2}" 相同的常量值 "{1}"。</target>
+        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'</source>
+        <target state="needs-review-translation">枚举成员 "{0}" 具有与成员 "{2}" 相同的常量值 "{1}"。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
@@ -363,18 +363,18 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsRename">
-        <source>In enum {0}, change the name of {1} to 'None'.</source>
-        <target state="translated">在枚举 {0} 中，将 {1} 的名称改为 "None"。</target>
+        <source>In enum {0}, change the name of {1} to 'None'</source>
+        <target state="needs-review-translation">在枚举 {0} 中，将 {1} 的名称改为 "None"。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsMultipleZeros">
-        <source>Remove all members that have the value zero from {0} except for one member that is named 'None'.</source>
-        <target state="translated">从 {0} 中删除所有值为零的成员(名为 "None" 的成员除外)。</target>
+        <source>Remove all members that have the value zero from {0} except for one member that is named 'None'</source>
+        <target state="needs-review-translation">从 {0} 中删除所有值为零的成员(名为 "None" 的成员除外)。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue">
-        <source>Add a member to {0} that has a value of zero with a suggested name of 'None'.</source>
-        <target state="translated">将一个值为零且建议名称为 "None" 的成员添加到 {0} 中。</target>
+        <source>Add a member to {0} that has a value of zero with a suggested name of 'None'</source>
+        <target state="needs-review-translation">将一个值为零且建议名称为 "None" 的成员添加到 {0} 中。</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
@@ -453,8 +453,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
-        <source>Specify AttributeUsage on {0}.</source>
-        <target state="translated">在 {0} 上指定 AttributeUsage。</target>
+        <source>Specify AttributeUsage on {0}</source>
+        <target state="needs-review-translation">在 {0} 上指定 AttributeUsage。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
@@ -473,18 +473,18 @@
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
-        <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}.</source>
-        <target state="translated">为特性 {1} 的位置参数 {0} 添加一个公共的只读属性访问器。</target>
+        <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
+        <target state="needs-review-translation">为特性 {1} 的位置参数 {0} 添加一个公共的只读属性访问器。</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageRemoveSetter">
-        <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}.</source>
-        <target state="translated">由于属性 setter 对应于位置参数 {1}，因此请将它从 {0} 中删除或者降低它的可访问性。</target>
+        <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}</source>
+        <target state="needs-review-translation">由于属性 setter 对应于位置参数 {1}，因此请将它从 {0} 中删除或者降低它的可访问性。</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility">
-        <source>If {0} is the property accessor for positional argument {1}, make it public.</source>
-        <target state="translated">如果 {0} 是位置参数 {1} 的属性访问器，请使它成为公共访问器。</target>
+        <source>If {0} is the property accessor for positional argument {1}, make it public</source>
+        <target state="needs-review-translation">如果 {0} 是位置参数 {1} 的属性访问器，请使它成为公共访问器。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertiesWhereAppropriateTitle">
@@ -528,8 +528,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesMessage">
-        <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes.</source>
-        <target state="translated">将“{0}”设置为密封(如果以前提供过此类，则属于重大更改)，非显式实现该方法，或实现一个公开“{1}”的功能且对派生类可见的新方法。</target>
+        <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes</source>
+        <target state="needs-review-translation">将“{0}”设置为密封(如果以前提供过此类，则属于重大更改)，非显式实现该方法，或实现一个公开“{1}”的功能且对派生类可见的新方法。</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesTitle">
@@ -543,13 +543,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageEquals">
-        <source>{0} should override Equals since it implements IComparable.</source>
-        <target state="translated">由于 {0} 实现 IComparable，因此，它应重写等于运算符。</target>
+        <source>{0} should override Equals since it implements IComparable</source>
+        <target state="needs-review-translation">由于 {0} 实现 IComparable，因此，它应重写等于运算符。</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageOperator">
-        <source>{0} should define operator(s) '{1}' since it implements IComparable.</source>
-        <target state="translated">由于 {0} 实现 IComparable，因此它应定义“{1}”运算符。</target>
+        <source>{0} should define operator(s) '{1}' since it implements IComparable</source>
+        <target state="needs-review-translation">由于 {0} 实现 IComparable，因此它应定义“{1}”运算符。</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
       <trans-unit id="MovePInvokesToNativeMethodsClassTitle">
@@ -578,13 +578,13 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldDifferByMoreThanCaseMessage">
-        <source>Names of '{0}' and '{1}' should differ by more than case.</source>
-        <target state="translated">“{0}”和“{1}”名称应以大小写之外的差别进行区分。</target>
+        <source>Names of '{0}' and '{1}' should differ by more than case</source>
+        <target state="needs-review-translation">“{0}”和“{1}”名称应以大小写之外的差别进行区分。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixTitle">
         <source>Identifiers should have correct prefix</source>
-        <target state="translated">标识符应具有正确的前缀</target>
+        <target state="needs-review-translation">标识符应具有正确的前缀</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixDescription">
@@ -593,13 +593,13 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageInterface">
-        <source>Prefix interface name {0} with 'I'.</source>
-        <target state="translated">为接口名称 {0} 加上前缀 "I"。</target>
+        <source>Prefix interface name {0} with 'I'</source>
+        <target state="needs-review-translation">为接口名称 {0} 加上前缀 "I"。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageTypeParameter">
-        <source>Prefix generic type parameter name {0} with 'T'.</source>
-        <target state="translated">为泛型类型参数名称 {0} 加上前缀 "T"。</target>
+        <source>Prefix generic type parameter name {0} with 'T'</source>
+        <target state="needs-review-translation">为泛型类型参数名称 {0} 加上前缀 "T"。</target>
         <note />
       </trans-unit>
       <trans-unit id="NonConstantFieldsShouldNotBeVisibleTitle">
@@ -643,23 +643,23 @@
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageDefault">
-        <source>Provide a method named '{0}' as a friendly alternate for operator {1}.</source>
-        <target state="translated">提供名为“{0}”的方法作为运算符 {1} 的友好备用项。</target>
+        <source>Provide a method named '{0}' as a friendly alternate for operator {1}</source>
+        <target state="needs-review-translation">提供名为“{0}”的方法作为运算符 {1} 的友好备用项。</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageProperty">
-        <source>Provide a property named '{0}' as a friendly alternate for operator {1}.</source>
-        <target state="translated">提供名为“{0}”的属性作为运算符 {1} 的友好备用项。</target>
+        <source>Provide a property named '{0}' as a friendly alternate for operator {1}</source>
+        <target state="needs-review-translation">提供名为“{0}”的属性作为运算符 {1} 的友好备用项。</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageMultiple">
-        <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}.</source>
-        <target state="translated">提供名为“{0}”或“{1}”的方法作为运算符 {2} 的备用项。</target>
+        <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}</source>
+        <target state="needs-review-translation">提供名为“{0}”或“{1}”的方法作为运算符 {2} 的备用项。</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageVisibility">
-        <source>Mark {0} as public because it is a friendly alternate for operator {1}.</source>
-        <target state="translated">将 {0} 标记为 public，因为它是运算符 {1} 的友好备用项。</target>
+        <source>Mark {0} as public because it is a friendly alternate for operator {1}</source>
+        <target state="needs-review-translation">将 {0} 标记为 public，因为它是运算符 {1} 的友好备用项。</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsTitle">
@@ -688,8 +688,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyMessage">
-        <source>Change '{0}' to be read-only by removing the property setter.</source>
-        <target state="translated">通过移除属性 setter 将“{0}”更改为只读。</target>
+        <source>Change '{0}' to be read-only by removing the property setter</source>
+        <target state="needs-review-translation">通过移除属性 setter 将“{0}”更改为只读。</target>
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle">
@@ -698,8 +698,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsDescription">
-        <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals</source>
-        <target state="translated">在大多数编程语言中，对于值类型并无相等运算符 (==) 的默认实现。如果编程语言支持运算符重载，则应考虑实现相等运算符。其行为应与 Equals 相同</target>
+        <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.</source>
+        <target state="needs-review-translation">在大多数编程语言中，对于值类型并无相等运算符 (==) 的默认实现。如果编程语言支持运算符重载，则应考虑实现相等运算符。其行为应与 Equals 相同</target>
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
@@ -718,8 +718,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsMessage">
-        <source>Modify '{0}' to call '{1}' instead of '{2}'.</source>
-        <target state="translated">修改“{0}”以调用“{1}”而非“{2}”。</target>
+        <source>Modify '{0}' to call '{1}' instead of '{2}'</source>
+        <target state="needs-review-translation">修改“{0}”以调用“{1}”而非“{2}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
@@ -788,13 +788,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AddAssemblyLevelComVisibleFalse">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">因为 {0} 公开外部可见的类型，请在程序集级别使用 ComVisible(false) 来标记它，然后使用 ComVisible(true) 来标记该程序集内应当向 COM 客户端公开的所有类型。</target>
+        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true)</source>
+        <target state="needs-review-translation">因为 {0} 公开外部可见的类型，请在程序集级别使用 ComVisible(false) 来标记它，然后使用 ComVisible(true) 来标记该程序集内应当向 COM 客户端公开的所有类型。</target>
         <note />
       </trans-unit>
       <trans-unit id="ChangeAssemblyLevelComVisibleToFalse">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">考虑将 {0} 的 ComVisible 属性改为 false，然后在类型级别进行选择。</target>
+        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level</source>
+        <target state="needs-review-translation">考虑将 {0} 的 ComVisible 属性改为 false，然后在类型级别进行选择。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementComparable">
@@ -883,8 +883,8 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Message">
-        <source>If possible, make the underlying type of {0} System.Int32 instead of {1}.</source>
-        <target state="translated">如有可能，请将 {0} 的基础类型设为 System.Int32，而不是 {1}。</target>
+        <source>If possible, make the underlying type of {0} System.Int32 instead of {1}</source>
+        <target state="needs-review-translation">如有可能，请将 {0} 的基础类型设为 System.Int32，而不是 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEventsWhereAppropriateTitle">
@@ -898,8 +898,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseEventsWhereAppropriateMessage">
-        <source>Consider making '{0}' an event.</source>
-        <target state="translated">考虑将“{0}”设置为事件。</target>
+        <source>Consider making '{0}' an event</source>
+        <target state="needs-review-translation">考虑将“{0}”设置为事件。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsTitle">
@@ -913,8 +913,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
-        <source>Add the following constructor to {0}: {1}.</source>
-        <target state="translated">将下列构造函数添加到 {0}: {1}。</target>
+        <source>Add the following constructor to {0}: {1}</source>
+        <target state="needs-review-translation">将下列构造函数添加到 {0}: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
@@ -983,13 +983,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageAddGetter">
-        <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method.</source>
-        <target state="translated">由于属性 {0} 是只写的，因此，要么添加一个可访问性高于或等于 setter 的 getter 属性，要么将该属性转换为方法。</target>
+        <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method</source>
+        <target state="needs-review-translation">由于属性 {0} 是只写的，因此，要么添加一个可访问性高于或等于 setter 的 getter 属性，要么将该属性转换为方法。</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible">
-        <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter.</source>
-        <target state="translated">由于 {0} 的属性 getter 的可见性低于 setter，因此，要么提高 getter 的可访问性，要么降低 getter 的可访问性。</target>
+        <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter</source>
+        <target state="needs-review-translation">由于 {0} 的属性 getter 的可见性低于 setter，因此，要么提高 getter 的可访问性，要么降低 getter 的可访问性。</target>
         <note />
       </trans-unit>
       <trans-unit id="DeclareTypesInNamespacesTitle">
@@ -1033,8 +1033,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsMessage">
-        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object.</source>
-        <target state="translated">将方法 {1} 的参数 {0} 的类型从字符串改为 System.Uri，或者提供 {1} 的重载，允许将 {0} 作为 System.Uri 对象来传递。</target>
+        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object</source>
+        <target state="needs-review-translation">将方法 {1} 的参数 {0} 的类型从字符串改为 System.Uri，或者提供 {1} 的重载，允许将 {0} 作为 System.Uri 对象来传递。</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
@@ -1048,8 +1048,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
-        <source>Change the return type of method {0} from string to System.Uri.</source>
-        <target state="translated">将方法 {0} 的返回类型从字符串更改为 System.Uri。</target>
+        <source>Change the return type of method {0} from string to System.Uri</source>
+        <target state="needs-review-translation">将方法 {0} 的返回类型从字符串更改为 System.Uri。</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
@@ -1063,8 +1063,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
-        <source>Change the type of property {0} from string to System.Uri.</source>
-        <target state="translated">将属性 {0} 的类型从字符串更改为 System.Uri。</target>
+        <source>Change the type of property {0} from string to System.Uri</source>
+        <target state="needs-review-translation">将属性 {0} 的类型从字符串更改为 System.Uri。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyTitle">
@@ -1078,38 +1078,38 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageIDisposableReimplementation">
-        <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'.</source>
-        <target state="translated">从“{0}”实现的接口列表中删除 IDisposable，因为它已由基类型“{1}”实现。</target>
+        <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'</source>
+        <target state="needs-review-translation">从“{0}”实现的接口列表中删除 IDisposable，因为它已由基类型“{1}”实现。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeOverride">
-        <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.</source>
-        <target state="translated">删除“{0}”，替代 Dispose(bool disposing)，并在 "disposing" 为 true 的代码路径中加入释放逻辑。</target>
+        <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true</source>
+        <target state="needs-review-translation">删除“{0}”，替代 Dispose(bool disposing)，并在 "disposing" 为 true 的代码路径中加入释放逻辑。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeSignature">
-        <source>Ensure that '{0}' is declared as public and sealed.</source>
-        <target state="translated">确保“{0}”声明为公开且已密封。</target>
+        <source>Ensure that '{0}' is declared as public and sealed</source>
+        <target state="needs-review-translation">确保“{0}”声明为公开且已密封。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageRenameDispose">
-        <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed.</source>
-        <target state="translated">将“{0}”重命名为 "Dispose"，并确保其声明为公共且已密封。</target>
+        <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed</source>
+        <target state="needs-review-translation">将“{0}”重命名为 "Dispose"，并确保其声明为公共且已密封。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeBoolSignature">
-        <source>Ensure that '{0}' is declared as protected, virtual, and unsealed.</source>
-        <target state="translated">确保将“{0}”声明为受保护、虚拟和未密封。</target>
+        <source>Ensure that '{0}' is declared as protected, virtual, and unsealed</source>
+        <target state="needs-review-translation">确保将“{0}”声明为受保护、虚拟和未密封。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeImplementation">
-        <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.</source>
-        <target state="translated">修改“{0}”，使其调用 Dispose(true)，再对当前对象实例调用 GC.SuppressFinalize (Visual Basic 中的“此项”或“我”)，然后返回。</target>
+        <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns</source>
+        <target state="needs-review-translation">修改“{0}”，使其调用 Dispose(true)，再对当前对象实例调用 GC.SuppressFinalize (Visual Basic 中的“此项”或“我”)，然后返回。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeImplementation">
-        <source>Modify '{0}' so that it calls Dispose(false) and then returns.</source>
-        <target state="translated">修改“{0}”，使其调用 Dispose(false)，然后再返回。</target>
+        <source>Modify '{0}' so that it calls Dispose(false) and then returns</source>
+        <target state="needs-review-translation">修改“{0}”，使其调用 Dispose(false)，然后再返回。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageProvideDisposeBool">
@@ -1168,43 +1168,43 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageAssembly">
-        <source>Remove the underscores from assembly name {0}.</source>
-        <target state="translated">从程序集名称 {0} 中删除下划线。</target>
+        <source>Remove the underscores from assembly name {0}</source>
+        <target state="needs-review-translation">从程序集名称 {0} 中删除下划线。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageNamespace">
-        <source>Remove the underscores from namespace name '{0}'.</source>
-        <target state="translated">从命名空间名称“{0}”中删除下划线。</target>
+        <source>Remove the underscores from namespace name '{0}'</source>
+        <target state="needs-review-translation">从命名空间名称“{0}”中删除下划线。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageType">
-        <source>Remove the underscores from type name {0}.</source>
-        <target state="translated">从类型名称 {0} 中删除下划线。</target>
+        <source>Remove the underscores from type name {0}</source>
+        <target state="needs-review-translation">从类型名称 {0} 中删除下划线。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMember">
-        <source>Remove the underscores from member name {0}.</source>
-        <target state="translated">从成员名称 {0} 中删除下划线。</target>
+        <source>Remove the underscores from member name {0}</source>
+        <target state="needs-review-translation">从成员名称 {0} 中删除下划线。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageTypeTypeParameter">
-        <source>On type {0}, remove the underscores from generic type parameter name {1}.</source>
-        <target state="translated">在类型 {0} 上，从泛型类型参数名称 {1} 中删除下划线。</target>
+        <source>On type {0}, remove the underscores from generic type parameter name {1}</source>
+        <target state="needs-review-translation">在类型 {0} 上，从泛型类型参数名称 {1} 中删除下划线。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMethodTypeParameter">
-        <source>On method {0}, remove the underscores from generic type parameter name {1}.</source>
-        <target state="translated">在方法 {0} 上，从泛型类型参数名称 {1} 中删除下划线。</target>
+        <source>On method {0}, remove the underscores from generic type parameter name {1}</source>
+        <target state="needs-review-translation">在方法 {0} 上，从泛型类型参数名称 {1} 中删除下划线。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMemberParameter">
-        <source>In member {0}, remove the underscores from parameter name {1}.</source>
-        <target state="translated">在成员 {0} 中，从参数名称 {1} 中删除下划线。</target>
+        <source>In member {0}, remove the underscores from parameter name {1}</source>
+        <target state="needs-review-translation">在成员 {0} 中，从参数名称 {1} 中删除下划线。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageDelegateParameter">
-        <source>In delegate {0}, remove the underscores from parameter name {1}.</source>
-        <target state="translated">在委托 {0} 中，从参数名称 {1} 中删除下划线。</target>
+        <source>In delegate {0}, remove the underscores from parameter name {1}</source>
+        <target state="needs-review-translation">在委托 {0} 中，从参数名称 {1} 中删除下划线。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixTitle">
@@ -1218,13 +1218,13 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
-        <source>Rename {0} to end in '{1}'.</source>
-        <target state="translated">重命名 {0}，使其以“{1}”结尾。</target>
+        <source>Rename {0} to end in '{1}'</source>
+        <target state="needs-review-translation">重命名 {0}，使其以“{1}”结尾。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
-        <source>Rename {0} to end in either 'Collection' or '{1}'.</source>
-        <target state="translated">重命名 {0}，使其以 "Collection" 或“{1}”结尾。</target>
+        <source>Rename {0} to end in either 'Collection' or '{1}'</source>
+        <target state="needs-review-translation">重命名 {0}，使其以 "Collection" 或“{1}”结尾。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">
@@ -1238,23 +1238,23 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNoAlternate">
-        <source>Rename type name {0} so that it does not end in '{1}'.</source>
-        <target state="translated">重命名类型名称 {0}，使其不以“{1}”结尾。</target>
+        <source>Rename type name {0} so that it does not end in '{1}'</source>
+        <target state="needs-review-translation">重命名类型名称 {0}，使其不以“{1}”结尾。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberNewerVersion">
-        <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces.</source>
-        <target state="translated">要么将成员名称 {1} 中的后缀“{0}”替换为所建议的数值“2”，要么提供一个更能体现其意义的后缀，将它与它所替换的成员区分开来。</target>
+        <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces</source>
+        <target state="needs-review-translation">要么将成员名称 {1} 中的后缀“{0}”替换为所建议的数值“2”，要么提供一个更能体现其意义的后缀，将它与它所替换的成员区分开来。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNewerVersion">
-        <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces.</source>
-        <target state="translated">要么将类型名称 {1} 中的后缀“{0}”替换为所建议的数值“2”，要么提供一个更能体现其意义的后缀，将它与它所替换的类型区分开来。</target>
+        <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces</source>
+        <target state="needs-review-translation">要么将类型名称 {1} 中的后缀“{0}”替换为所建议的数值“2”，要么提供一个更能体现其意义的后缀，将它与它所替换的类型区分开来。</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberWithAlternate">
-        <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely.</source>
-        <target state="translated">要么将成员名称“{1}”中的后缀“{0}”替换为所建议的数值“{2}”，要么完全删除后缀。</target>
+        <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely</source>
+        <target state="needs-review-translation">要么将成员名称“{1}”中的后缀“{0}”替换为所建议的数值“{2}”，要么完全删除后缀。</target>
         <note />
       </trans-unit>
       <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
@@ -1363,8 +1363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ParameterNamesShouldMatchBaseDeclarationMessage">
-        <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}.</source>
-        <target state="translated">在成员 {0} 中，将参数名 {1} 改为 {2}，使其与已在 {3} 中声明的标识符匹配。</target>
+        <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}</source>
+        <target state="needs-review-translation">在成员 {0} 中，将参数名 {1} 改为 {2}，使其与已在 {3} 中声明的标识符匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsTitle">
@@ -1378,83 +1378,83 @@
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageAssembly">
-        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">将程序集名称 {1} 中的词条“{0}”替换为首选替代项“{2}”。</target>
+        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</source>
+        <target state="needs-review-translation">将程序集名称 {1} 中的词条“{0}”替换为首选替代项“{2}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespace">
-        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'.</source>
-        <target state="translated">将命名空间名称“{1}”中的词条“{0}”替换为首选替代项“{2}”。</target>
+        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</source>
+        <target state="needs-review-translation">将命名空间名称“{1}”中的词条“{0}”替换为首选替代项“{2}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameter">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">在成员 {0} 中，将参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”。</target>
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="needs-review-translation">在成员 {0} 中，将参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageDelegateParameter">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">在委托 {0} 中，将参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”。</target>
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="needs-review-translation">在委托 {0} 中，将参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">在类型 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”。</target>
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="needs-review-translation">在类型 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">在方法 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”。</target>
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="needs-review-translation">在方法 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为首选替代项“{3}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageType">
-        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">将类型名称 {1} 中的词条“{0}”替换为首选替代项“{2}”。</target>
+        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</source>
+        <target state="needs-review-translation">将类型名称 {1} 中的词条“{0}”替换为首选替代项“{2}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMember">
-        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">将成员名称 {1} 中的词条“{0}”替换为首选替代项“{2}”。</target>
+        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</source>
+        <target state="needs-review-translation">将成员名称 {1} 中的词条“{0}”替换为首选替代项“{2}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
-        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">将程序集名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除。</target>
+        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">将程序集名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
-        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">将命名空间名称“{1}”中的词条“{0}”替换为相应的替代项或者完全删除。</target>
+        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">将命名空间名称“{1}”中的词条“{0}”替换为相应的替代项或者完全删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">在成员 {0} 中，将参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除。</target>
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">在成员 {0} 中，将参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">在委托 {0} 中，将参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除。</target>
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">在委托 {0} 中，将参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">在类型 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除。</target>
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">在类型 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">在方法 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除。</target>
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">在方法 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
-        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">将类型名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除。</target>
+        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">将类型名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
-        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">将成员名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除。</target>
+        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">将成员名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除。</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
@@ -1468,13 +1468,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageEquals">
-        <source>{0} should override Equals.</source>
-        <target state="translated">{0} 应重写 Equals。</target>
+        <source>{0} should override Equals</source>
+        <target state="needs-review-translation">{0} 应重写 Equals。</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageOpEquality">
-        <source>{0} should override the equality (==) and inequality (!=) operators.</source>
-        <target state="translated">{0} 应重写相等(==)和不相等(!=)运算符。</target>
+        <source>{0} should override the equality (==) and inequality (!=) operators</source>
+        <target state="needs-review-translation">{0} 应重写相等(==)和不相等(!=)运算符。</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotReturnArraysTitle">
@@ -1668,8 +1668,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotHideBaseClassMethodsMessage">
-        <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'.</source>
-        <target state="translated">更改或删除“{0}”，因为它会隐藏更具体的基类方法:“{1}”。</target>
+        <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'</source>
+        <target state="needs-review-translation">更改或删除“{0}”，因为它会隐藏更具体的基类方法:“{1}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHideBaseClassMethodsTitle">
@@ -1678,8 +1678,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
-        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
-        <target state="translated">删除“{0}”并将其用法替换为泛型的 EventHandler，例如 EventHandler&lt;T&gt;，其中 T 是有效的 EventArgs</target>
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <target state="needs-review-translation">删除“{0}”并将其用法替换为泛型的 EventHandler，例如 EventHandler&lt;T&gt;，其中 T 是有效的 EventArgs</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateDescription">
@@ -1688,8 +1688,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
-        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
-        <target state="translated">更改事件“{0}”以将类型“{1}”替换为泛型 EventHandler，例如，EventHandler&lt;T&gt;，其中 T 是有效的 EventArgs</target>
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <target state="needs-review-translation">更改事件“{0}”以将类型“{1}”替换为泛型 EventHandler，例如，EventHandler&lt;T&gt;，其中 T 是有效的 EventArgs</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventDescription">
@@ -1708,8 +1708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageBoth">
-        <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable.</source>
-        <target state="translated">由于 {0} 实现 IComparable，因此它应定义“{1}”运算符和等于运算符。</target>
+        <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable</source>
+        <target state="needs-review-translation">由于 {0} 实现 IComparable，因此它应定义“{1}”运算符和等于运算符。</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsTitle">
@@ -1753,23 +1753,23 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
-        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}.</source>
-        <target state="translated">从 {0} 中删除对 SafeHandle.DangerousGetHandle 的调用。</target>
+        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}</source>
+        <target state="needs-review-translation">从 {0} 中删除对 SafeHandle.DangerousGetHandle 的调用。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
-        <source>Remove the call to Assembly.LoadFrom from {0}.</source>
-        <target state="translated">从 {0} 中删除对 Assembly.LoadFrom 的调用。</target>
+        <source>Remove the call to Assembly.LoadFrom from {0}</source>
+        <target state="needs-review-translation">从 {0} 中删除对 Assembly.LoadFrom 的调用。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
-        <source>Remove the call to Assembly.LoadFile from {0}.</source>
-        <target state="translated">从 {0} 中删除对 Assembly.LoadFile 的调用。</target>
+        <source>Remove the call to Assembly.LoadFile from {0}</source>
+        <target state="needs-review-translation">从 {0} 中删除对 Assembly.LoadFile 的调用。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
-        <source>Remove the call to Assembly.LoadWithPartialName from {0}.</source>
-        <target state="translated">从 {0} 中删除对 Assembly.LoadWithPartialName 的调用。</target>
+        <source>Remove the call to Assembly.LoadWithPartialName from {0}</source>
+        <target state="needs-review-translation">从 {0} 中删除对 Assembly.LoadWithPartialName 的调用。</target>
         <note />
       </trans-unit>
       <trans-unit id="CategoryReliability">
@@ -1843,8 +1843,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceMessage">
-        <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'</source>
-        <target state="translated">“{0}”的对象层次结构在定义模块内的深度为“{1}” 层。如有可能，请消除层次结构中的基类，将其层次结构级别降到“{2}”以下:“{3}”</target>
+        <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'.</source>
+        <target state="needs-review-translation">“{0}”的对象层次结构在定义模块内的深度为“{1}” 层。如有可能，请消除层次结构中的基类，将其层次结构级别降到“{2}”以下:“{3}”</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceTitle">
@@ -1868,8 +1868,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileDescription">
-        <source>Invalid entry in code metrics rule specification file</source>
-        <target state="translated">代码度量规则规范文件中的条目无效</target>
+        <source>Invalid entry in code metrics rule specification file.</source>
+        <target state="needs-review-translation">代码度量规则规范文件中的条目无效</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileMessage">
@@ -1978,8 +1978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnusedPrivateFieldsMessage">
-        <source>Unused field '{0}'.</source>
-        <target state="translated">未使用的字段“{0}”。</target>
+        <source>Unused field '{0}'</source>
+        <target state="needs-review-translation">未使用的字段“{0}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessagePureMethod">
@@ -2003,13 +2003,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidPropertySelfAssignmentMessage">
-        <source>The property {0} should not be assigned to itself.</source>
-        <target state="translated">不得将属性 {0} 分配给其自身。</target>
+        <source>The property {0} should not be assigned to itself</source>
+        <target state="needs-review-translation">不得将属性 {0} 分配给其自身。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPropertySelfAssignmentTitle">
-        <source>Do not assign a property to itself.</source>
-        <target state="translated">请勿将属性分配给其自身。</target>
+        <source>Do not assign a property to itself</source>
+        <target state="needs-review-translation">请勿将属性分配给其自身。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticCodeFix">
@@ -2053,8 +2053,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Member '{0}' is explicitly initialized to its default value.</source>
-        <target state="translated">成员“{0}”已显式初始化为其默认值。</target>
+        <source>Member '{0}' is explicitly initialized to its default value</source>
+        <target state="needs-review-translation">成员“{0}”已显式初始化为其默认值。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2148,13 +2148,13 @@
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Re-throwing caught exception changes stack information.</source>
-        <target state="translated">再次引发捕获到的异常会更改堆栈信息。</target>
+        <source>Re-throwing caught exception changes stack information</source>
+        <target state="needs-review-translation">再次引发捕获到的异常会更改堆栈信息。</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details.</source>
-        <target state="translated">再次引发以保留堆栈详细信息。</target>
+        <source>Rethrow to preserve stack details</source>
+        <target state="needs-review-translation">再次引发以保留堆栈详细信息。</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeDeclaringTypeInternal">
@@ -2178,8 +2178,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesMessageFinally">
-        <source>Do not raise an exception from within a finally clause. </source>
-        <target state="translated">不要在 finally 子句中引发异常。 </target>
+        <source>Do not raise an exception from within a finally clause. .</source>
+        <target state="needs-review-translation">不要在 finally 子句中引发异常。 </target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesTitle">
