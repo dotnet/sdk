@@ -48,18 +48,18 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
-        <source>Marshalling of StringBuilder always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
-        <target state="new">Marshalling of StringBuilder always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</target>
+        <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
+        <target state="new">Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersMessage">
-        <source>Avoid StringBuilder parameters for P/Invokes. Consider using a char buffer from ArrayPool instead</source>
-        <target state="new">Avoid StringBuilder parameters for P/Invokes. Consider using a char buffer from ArrayPool instead</target>
+        <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead</source>
+        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersTitle">
-        <source>Avoid StringBuilder parameters for P/Invokes</source>
-        <target state="new">Avoid StringBuilder parameters for P/Invokes</target>
+        <source>Avoid 'StringBuilder' parameters for P/Invokes</source>
+        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">

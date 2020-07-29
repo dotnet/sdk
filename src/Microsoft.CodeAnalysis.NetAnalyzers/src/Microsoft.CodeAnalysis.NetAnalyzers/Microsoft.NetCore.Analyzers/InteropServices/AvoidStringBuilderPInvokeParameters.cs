@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
-            // Warn on StringBuilder paramaters
+            // Warn on StringBuilder parameters
             foreach (IParameterSymbol parameter in methodSymbol.Parameters)
             {
                 if (parameter.Type.Equals(stringBuilderType))
