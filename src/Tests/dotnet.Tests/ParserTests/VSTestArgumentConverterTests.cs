@@ -93,6 +93,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 new object[] { @"sometest.dll --blame-hang-timeout 10min", @"sometest.dll --blame:""CollectHangDump;TestTimeout=10min""" },
                 new object[] { @"sometest.dll --blame --blame-hang-dump-type full --blame-hang-timeout 10min", @"sometest.dll --blame:""CollectHangDump;DumpType=full;TestTimeout=10min""" },
                 new object[] { @"sometest.dll --blame --blame-hang-dump-type full --blame-hang-timeout 10min --blame-crash-dump-type mini --blame-crash-collect-always", @"sometest.dll --blame:""CollectDump;CollectAlways=true;DumpType=mini;CollectHangDump;DumpType=full;TestTimeout=10min""" },
+                // using the legacy --blame syntax when we provide the parameter that are already in vstest.console format still works
+                new object[] { @"sometest.dll --blame ""CollectDump;DumpType=full""", @"sometest.dll --blame:""CollectDump;DumpType=full""" },
+                new object[] { @"sometest.dll --blame:""CollectDump;DumpType=full""", @"sometest.dll --blame:""CollectDump;DumpType=full""" },
 
 
 

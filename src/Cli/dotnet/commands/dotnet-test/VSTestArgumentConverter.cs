@@ -80,6 +80,10 @@ namespace Microsoft.DotNet.Cli
                         {
                             ignoredArgs.Add(activeArgument);
                         }
+                        else if (blame.IsBlameArg(activeArgument, null))
+                        {
+                            // do nothing, we process remaining arguments ourselves
+                        }
                         else
                         {
                             newArgList.Add(activeArgument);
@@ -104,7 +108,7 @@ namespace Microsoft.DotNet.Cli
                             continue;
                         }
 
-                        if (blame.IsBlameArg(argValues[0]))
+                        if (blame.IsBlameArg(argValues[0], argValues[1]))
                         {
                             blame.UpdateBlame(argValues[0], argValues[1]);
                             continue;
@@ -123,6 +127,7 @@ namespace Microsoft.DotNet.Cli
                         if (blame.IsBlameSwitch(arg))
                         {
                             blame.UpdateBlame(arg, null);
+                            activeArgument = arg;
                         }
                         else
                         {
@@ -145,7 +150,7 @@ namespace Microsoft.DotNet.Cli
                         ignoredArgs.Add(activeArgument);
                         ignoredArgs.Add(arg);
                     }
-                    else if (blame.IsBlameArg(activeArgument))
+                    else if (blame.IsBlameArg(activeArgument, arg))
                     {
                         blame.UpdateBlame(activeArgument, arg);
                     }
@@ -158,7 +163,7 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    if (blame.IsBlameArg(arg))
+                    if (blame.IsBlameArg(arg, null))
                     {
                         blame.UpdateBlame(arg, null);
                     }
@@ -174,6 +179,9 @@ namespace Microsoft.DotNet.Cli
                 if (IgnoredArguments.Contains(activeArgument))
                 {
                     ignoredArgs.Add(activeArgument);
+                }
+                else if( blame.IsBlameArg(activeArgument, null)) {
+                    // do nothing, we process remaining arguments ourselves
                 }
                 else
                 {
@@ -208,6 +216,7 @@ namespace Microsoft.DotNet.Cli
     class BlameArgs
     {
         public bool Blame = false;
+        public string LegacyBlame = null;
 
         public bool CollectCrashDump = false;
         public string CollectCrashDumpType = null;
@@ -244,19 +253,38 @@ namespace Microsoft.DotNet.Cli
         };
 
 
-        internal bool IsBlameArg(string parameter)
+        internal bool IsBlameArg(string parameter, string value)
         {
-            return _blameArgList.Contains(parameter) || _blameSwitchList.Contains(parameter);
+            return _blameArgList.Any(p => Eq(p, parameter)) || _blameSwitchList.Any(p => Eq(p, parameter));
+        }
+
+        private bool IsLegacyBlame(string parameter, string value)
+        {
+            // when provided --blame <value>, we do not want to process it any further
+            // most likely a legacy call, and the param is already in the format that vstest.console expects
+            return Eq(BlameParam, parameter) && !string.IsNullOrWhiteSpace(value);
+        }
+
+        internal bool IsBlame(string parameter)
+        {
+            return Eq(BlameParam, parameter);
+
         }
 
         internal bool IsBlameSwitch(string parameter)
         {
-            return _blameSwitchList.Contains(parameter);
+            return _blameSwitchList.Any(p => Eq(p, parameter));
 
         }
 
         internal void UpdateBlame(string parameter, string argument)
         {
+            if (IsLegacyBlame(parameter, argument))
+            {
+                Blame = true;
+                LegacyBlame = argument;
+            }
+
             if (Eq(parameter, BlameParam))
             {
                 Blame = true;
@@ -314,6 +342,14 @@ namespace Microsoft.DotNet.Cli
         {
             if (!Blame)
                 return;
+
+            if (!string.IsNullOrWhiteSpace(LegacyBlame))
+            {
+                // when legacy call is detected don't process
+                // any more parameters
+                newArgList.Add($"--blame:{LegacyBlame}");
+                return;
+            }
 
             string crashDumpArgs = null;
             string hangDumpArgs = null;
