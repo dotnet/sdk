@@ -2,6 +2,7 @@
 Param(
     [string]$repo,
     [string]$sha,
+    [string]$branchName,
     [string]$targetSolution,
     [string]$testPath,
     [string]$stage  # Valid values are "prepare", "format-workspace", "format-folder"
@@ -20,7 +21,7 @@ try {
 
     if ($stage -eq "prepare") {
         Write-Output "$(Get-Date) - Cloning $repoName."
-        git.exe clone $repo $repoPath -b master --single-branch --no-tags
+        git.exe clone $repo $repoPath -b $branchName --single-branch --no-tags
     }
 
     Set-Location $repoPath

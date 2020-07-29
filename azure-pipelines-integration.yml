@@ -20,49 +20,57 @@ jobs:
         _repo: "https://github.com/dotnet/format"
         _repoName: "dotnet/format"
         _targetSolution: "format.sln"
+        _branchName: "master"
         _sha: "36d343a6fb81806bff265f1180c0e3193edbbeec"
       roslyn:
         _repo: "https://github.com/dotnet/roslyn"
         _repoName: "dotnet/roslyn"
         _targetSolution: "Compilers.sln"
+        _branchName: "master"
         _sha: "f4a14672ea85096f9c101961fd5ac96fe5482ad8"
       sdk:
         _repo: "https://github.com/dotnet/sdk"
         _repoName: "dotnet/sdk"
         _targetSolution: "sdk.sln"
+        _branchName: "master"
         _sha: "4f3a8d1e5800173b32e795319236e81b6b9f55a0"
       project-system:
         _repo: "https://github.com/dotnet/project-system"
         _repoName: "dotnet/project-system"
         _targetSolution: "ProjectSystem.sln"
+        _branchName: "master"
         _sha: "385943552a5dc219635551c1c0e6318ff35ffa38"
       msbuild:
         _repo: "https://github.com/Microsoft/msbuild"
         _repoName: "Microsoft/msbuild"
         _targetSolution: "MSBuild.sln"
+        _branchName: "master"
         _sha: "f6739274e179fd1ecb7317b8fdc6a3e2c09b4ee0"
       blazor:
         _repo: "https://github.com/aspnet/blazor"
         _repoName: "aspnet/blazor"
         _targetSolution: "Blazor.sln"
+        _branchName: "master"
         _sha: "4fa24e8de3d97555e2026fec286829457f6686da"
       efcore:
         _repo: "https://github.com/dotnet/efcore"
         _repoName: "dotnet/efcore"
         _targetSolution: "All.sln"
+        _branchName: "main"
         _sha: "7f78ddfadb6318d1605b38c5b3a1569957bf5c89"
       ef6:
         _repo: "https://github.com/dotnet/ef6"
         _repoName: "dotnet/ef6"
         _targetSolution: "EntityFramework.sln"
+        _branchName: "master"
         _sha: "efd56d44977632d1915a569046be6a23cb39da16"
   timeoutInMinutes: 30
   steps:
-    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
       displayName: Prepare $(_repoName) for formatting
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-workspace'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-workspace'
       displayName: Run dotnet-format on $(_repoName) $(_targetSolution)
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-folder'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-folder'
       displayName: Run dotnet-format on $(_repoName) repo folder
