@@ -1422,4 +1422,13 @@
   <data name="DoNotUseOutAttributeStringPInvokeParametersTitle" xml:space="preserve">
     <value>Do not use 'OutAttribute' on string parameters for P/Invokes</value>
   </data>
+  <data name="AvoidStringBuilderPInvokeParametersDescription" xml:space="preserve">
+    <value>Marshalling of StringBuilder always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</value>
+  </data>
+  <data name="AvoidStringBuilderPInvokeParametersMessage" xml:space="preserve">
+    <value>Avoid StringBuilder parameters for P/Invokes. Consider using a char buffer from ArrayPool instead</value>
+  </data>
+  <data name="AvoidStringBuilderPInvokeParametersTitle" xml:space="preserve">
+    <value>Avoid StringBuilder parameters for P/Invokes</value>
+  </data>
 </root>
