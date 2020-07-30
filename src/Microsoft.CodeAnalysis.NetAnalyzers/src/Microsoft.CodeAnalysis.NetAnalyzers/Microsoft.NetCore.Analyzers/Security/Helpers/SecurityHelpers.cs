@@ -204,7 +204,8 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         {
             INamedTypeSymbol? xmlReaderTypeSymbol =
                 wellKnownTypeProvider.GetOrCreateTypeByMetadataName(
-                    WellKnownTypeNames.SystemXmlXmlReader); INamedTypeSymbol? designerCategoryAttributeTypeSymbol =
+                    WellKnownTypeNames.SystemXmlXmlReader);
+            INamedTypeSymbol? designerCategoryAttributeTypeSymbol =
                 wellKnownTypeProvider.GetOrCreateTypeByMetadataName(
                     WellKnownTypeNames.SystemComponentModelDesignerCategoryAttribute);
             INamedTypeSymbol? debuggerNonUserCodeAttributeTypeSymbol =
@@ -212,15 +213,15 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                     WellKnownTypeNames.SystemDiagnosticsDebuggerNonUserCode);
 
             return
-                operationAnalysisContext.ContainingSymbol?.MetadataName == "ReadXmlSerializable"
-                && operationAnalysisContext.ContainingSymbol?.DeclaredAccessibility == Accessibility.Protected
-                && operationAnalysisContext.ContainingSymbol?.IsOverride == true
-                && operationAnalysisContext.ContainingSymbol is IMethodSymbol methodSymbol
+                operationAnalysisContext.ContainingSymbol is IMethodSymbol methodSymbol
+                && methodSymbol.MetadataName == "ReadXmlSerializable"
+                && methodSymbol.DeclaredAccessibility == Accessibility.Protected
+                && methodSymbol.IsOverride
                 && methodSymbol.ReturnsVoid
                 && methodSymbol.Parameters.Length == 1
                 && methodSymbol.Parameters[0].Type.Equals(xmlReaderTypeSymbol)
-                && operationAnalysisContext.ContainingSymbol.ContainingType?.HasAttribute(designerCategoryAttributeTypeSymbol) == true
-                && operationAnalysisContext.ContainingSymbol.HasAttribute(debuggerNonUserCodeAttributeTypeSymbol);
+                && methodSymbol.ContainingType?.HasAttribute(designerCategoryAttributeTypeSymbol) == true
+                && methodSymbol.HasAttribute(debuggerNonUserCodeAttributeTypeSymbol);
         }
 
         /// <summary>
