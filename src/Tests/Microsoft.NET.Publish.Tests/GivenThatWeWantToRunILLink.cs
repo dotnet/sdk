@@ -708,7 +708,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
-                                    "/p:AnalysisLevel=")
+                                    "/p:AnalysisLevel=0.0")
                 .Should().Pass()
                 .And.NotHaveStdOutContaining(@"IL\d\d\d\d");
         }
