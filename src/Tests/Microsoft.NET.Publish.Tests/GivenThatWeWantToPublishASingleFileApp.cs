@@ -32,8 +32,8 @@ namespace Microsoft.NET.Publish.Tests
         private const string UseAppHost = "/p:UseAppHost=true";
         private const string IncludeDefault = "/p:IncludeSymbolsInSingleFile=false";
         private const string IncludePdb = "/p:IncludeSymbolsInSingleFile=true";
-        private const string IncludeNative = "/p:IncludeNativeLibrariesInSingleFile=true";
-        private const string IncludeAllContent = "/p:IncludeAllContentInSingleFile=true";
+        private const string IncludeNative = "/p:IncludeNativeLibrariesForSelfExtract=true";
+        private const string IncludeAllContent = "/p:IncludeAllContentForSelfExtract=true";
 
         private readonly string RuntimeIdentifier = $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}";
         private readonly string SingleFile = $"{TestProjectName}{Constants.ExeSuffix}";
@@ -423,16 +423,18 @@ namespace Microsoft.NET.Publish.Tests
         [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("netcoreapp3.0", false, IncludeDefault)]
         [InlineData("netcoreapp3.0", true, IncludeDefault)]
+        [InlineData("netcoreapp3.0", false, IncludePdb)]
+        [InlineData("netcoreapp3.0", true, IncludePdb)]
         [InlineData("netcoreapp3.1", false, IncludeDefault)]
         [InlineData("netcoreapp3.1", true, IncludeDefault)]
+        [InlineData("netcoreapp3.1", false, IncludePdb)]
+        [InlineData("netcoreapp3.1", true, IncludePdb)]
         [InlineData("net5.0", false, IncludeDefault)]
         [InlineData("net5.0", false, IncludeNative)]
         [InlineData("net5.0", false, IncludeAllContent)]
-        [InlineData("net5.0", false, IncludePdb)]
         [InlineData("net5.0", true, IncludeDefault)]
         [InlineData("net5.0", true, IncludeNative)]
         [InlineData("net5.0", true, IncludeAllContent)]
-        [InlineData("net5.0", true, IncludePdb)]
         public void It_runs_single_file_apps(string targetFramework, bool selfContained, string bundleOption)
         {
             var testProject = new TestProject()
@@ -460,6 +462,30 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass()
                 .And
                 .HaveStdOutContaining("Hello World");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void It_errors_when_including_symbols_targeting_net5(bool selfContained)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = "net5.0",
+                IsSdkProject = true,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", $"{selfContained}");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
+            publishCommand.Execute(PublishSingleFile, RuntimeIdentifier, IncludePdb)
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining(Strings.CannotIncludeSymbolsInSingleFile);
         }
     }
 }
