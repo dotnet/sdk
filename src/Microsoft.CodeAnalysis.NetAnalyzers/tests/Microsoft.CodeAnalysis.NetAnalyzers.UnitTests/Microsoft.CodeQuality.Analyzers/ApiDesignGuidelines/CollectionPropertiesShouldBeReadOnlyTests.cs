@@ -1,42 +1,34 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.CollectionPropertiesShouldBeReadOnlyAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.CollectionPropertiesShouldBeReadOnlyAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class CollectionPropertiesShouldBeReadOnlyTests : DiagnosticAnalyzerTestBase
+    public class CollectionPropertiesShouldBeReadOnlyTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new CollectionPropertiesShouldBeReadOnlyAnalyzer();
-        }
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string propertyName)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(propertyName);
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CollectionPropertiesShouldBeReadOnlyAnalyzer();
-        }
-
-        private DiagnosticResult GetBasicResultAt(int line, int column, string propertyName)
-        {
-            return GetBasicResultAt(line, column,
-                id: CollectionPropertiesShouldBeReadOnlyAnalyzer.RuleId,
-                message: string.Format(MicrosoftCodeQualityAnalyzersResources.CollectionPropertiesShouldBeReadOnlyMessage, propertyName));
-        }
-
-        private DiagnosticResult GetCSharpResultAt(int line, int column, string propertyName)
-        {
-            return GetCSharpResultAt(line, column,
-                id: CollectionPropertiesShouldBeReadOnlyAnalyzer.RuleId,
-                message: string.Format(MicrosoftCodeQualityAnalyzersResources.CollectionPropertiesShouldBeReadOnlyMessage, propertyName));
-        }
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string propertyName)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(propertyName);
 
         [Fact]
-        public void CSharp_CA2227_Test()
+        public async Task CSharp_CA2227_Test()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A
@@ -47,9 +39,9 @@ public class A
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public void CSharp_CA2227_Test_GenericCollection()
+        public async Task CSharp_CA2227_Test_GenericCollection()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A
@@ -60,9 +52,9 @@ public class A
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharp_CA2227_Test_Internal()
+        public async Task CSharp_CA2227_Test_Internal()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 internal class A
@@ -91,9 +83,9 @@ public class A4
         }
 
         [Fact]
-        public void Basic_CA2227_Test()
+        public async Task Basic_CA2227_Test()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class A
@@ -103,9 +95,9 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void Basic_CA2227_Test_Internal()
+        public async Task Basic_CA2227_Test_Internal()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Friend Class A
@@ -147,9 +139,9 @@ End Class
         }
 
         [Fact]
-        public void CSharp_CA2227_Inherited()
+        public async Task CSharp_CA2227_Inherited()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A<T>
@@ -160,9 +152,9 @@ public class A<T>
         }
 
         [Fact]
-        public void CSharp_CA2227_NotPublic()
+        public async Task CSharp_CA2227_NotPublic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A
@@ -178,9 +170,9 @@ class A
         }
 
         [Fact]
-        public void CSharp_CA2227_Array()
+        public async Task CSharp_CA2227_Array()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A
@@ -191,9 +183,9 @@ public class A
         }
 
         [Fact]
-        public void CSharp_CA2227_Indexer()
+        public async Task CSharp_CA2227_Indexer()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A
@@ -208,9 +200,9 @@ public class A
         }
 
         [Fact]
-        public void CSharp_CA2227_NonCollection()
+        public async Task CSharp_CA2227_NonCollection()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A
@@ -220,32 +212,45 @@ public class A
 ");
         }
 
-        [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public void CSharp_CA2227_ReadOnlyCollections()
+        [Fact]
+        [WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
+        [WorkItem(3313, "https://github.com/dotnet/roslyn-analyzers/issues/3313")]
+        public async Task CA2227_ReadOnlyCollections()
         {
-            // NOTE: ReadOnlyCollection<T> and ReadOnlyDictionary<Key, Value> implement ICollection and hence are flagged.
-            //       IReadOnlyCollection<T> does not implement ICollection or ICollection<T>, hence is not flagged.
-            VerifyCSharp(@"
+            // Readonly interfaces don't implement ICollection/ICollection<T> so won't report a diagnostic
+
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-public class A
+public class C
 {
-    public IReadOnlyCollection<byte> P1 { get; set; }
-    public ReadOnlyCollection<byte> P2 { get; set; }
-    public ReadOnlyDictionary<string, byte> P3 { get; set; }
-}
-",
-            // Test0.cs(8,37): warning CA2227: Change 'P2' to be read-only by removing the property setter.
-            GetCSharpResultAt(8, 37, "P2"),
-            // Test0.cs(9,45): warning CA2227: Change 'P3' to be read-only by removing the property setter.
-            GetCSharpResultAt(9, 45, "P3"));
+    public IReadOnlyCollection<string> PI1 { get; protected set; }
+    public IReadOnlyDictionary<string, int> PI2 { get; protected set; }
+
+    public ReadOnlyCollection<string> P1 { get; protected set; }
+    public ReadOnlyDictionary<string, int> P2 { get; protected set; }
+    public ReadOnlyObservableCollection<string> P3 { get; protected set; }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Collections.Generic
+Imports System.Collections.ObjectModel
+
+Public Class C
+    Public Property PI1 As IReadOnlyCollection(Of String)
+    Public Property PI2 As IReadOnlyDictionary(Of String, Integer)
+
+    Public Property P1 As ReadOnlyCollection(Of String)
+    Public Property P2 As ReadOnlyDictionary(Of String, Integer)
+    Public Property P3 As ReadOnlyObservableCollection(Of String)
+End Class");
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public void CSharp_CA2227_ImmutableCollection()
+        public async Task CSharp_CA2227_ImmutableCollection()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Immutable;
 
 public class A
@@ -259,9 +264,9 @@ public class A
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public void CSharp_CA2227_ImmutableCollection_02()
+        public async Task CSharp_CA2227_ImmutableCollection_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Immutable;
 
 public class A
@@ -276,9 +281,9 @@ public class A
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public void CSharp_CA2227_ImmutableCollection_03()
+        public async Task CSharp_CA2227_ImmutableCollection_03()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -406,9 +411,9 @@ public class CustomImmutableList : IImmutableList<int>, ICollection<int>
         }
 
         [Fact]
-        public void CSharp_CA2227_DataMember()
+        public async Task CSharp_CA2227_DataMember()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 namespace System.Runtime.Serialization

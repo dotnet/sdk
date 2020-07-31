@@ -35,7 +35,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                                                          s_localizableMessageAndTitleCA2101,
                                                                          s_localizableMessageAndTitleCA2101,
                                                                          DiagnosticCategory.Globalization,
-                                                                         RuleLevel.BuildWarning,
+                                                                         RuleLevel.BuildWarningCandidate,
                                                                          description: s_localizableDescriptionCA2101,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false);

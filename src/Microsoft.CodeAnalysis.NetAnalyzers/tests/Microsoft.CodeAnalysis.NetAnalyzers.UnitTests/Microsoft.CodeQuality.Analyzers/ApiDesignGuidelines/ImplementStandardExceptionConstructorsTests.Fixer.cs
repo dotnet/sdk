@@ -21,26 +21,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         {
             var code = @"
 using System;
-public class [|[|Foo|]|] : Exception
+public class [|[|SomeException|]|] : Exception
 {
-    public Foo()
+    public SomeException()
     {
     }
 }
 ";
             var fix = @"
 using System;
-public class Foo : Exception
+public class SomeException : Exception
 {
-    public Foo()
+    public SomeException()
     {
     }
 
-    public Foo(string message) : base(message)
+    public SomeException(string message) : base(message)
     {
     }
 
-    public Foo(string message, Exception innerException) : base(message, innerException)
+    public SomeException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }
@@ -58,26 +58,26 @@ public class Foo : Exception
         {
             var code = @"
 using System;
-public class [|[|Foo|]|] : Exception
+public class [|[|SomeException|]|] : Exception
 {
-    public Foo(string message)
+    public SomeException(string message)
     {
     }
 }
 ";
             var fix = @"
 using System;
-public class Foo : Exception
+public class SomeException : Exception
 {
-    public Foo(string message)
+    public SomeException(string message)
     {
     }
 
-    public Foo()
+    public SomeException()
     {
     }
 
-    public Foo(string message, Exception innerException) : base(message, innerException)
+    public SomeException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }
@@ -95,26 +95,26 @@ public class Foo : Exception
         {
             var code = @"
 using System;
-public class [|[|Foo|]|] : Exception
+public class [|[|SomeException|]|] : Exception
 {
-    public Foo(string message, Exception innerException)
+    public SomeException(string message, Exception innerException)
     {
     }
 }
 ";
             var fix = @"
 using System;
-public class Foo : Exception
+public class SomeException : Exception
 {
-    public Foo(string message, Exception innerException)
+    public SomeException(string message, Exception innerException)
     {
     }
 
-    public Foo()
+    public SomeException()
     {
     }
 
-    public Foo(string message) : base(message)
+    public SomeException(string message) : base(message)
     {
     }
 }
@@ -132,13 +132,13 @@ public class Foo : Exception
         {
             var code = @"
 using System;
-public class [|Foo|] : Exception
+public class [|SomeException|] : Exception
 {
-    public Foo(string message): base(message)
+    public SomeException(string message): base(message)
     {
     }
 
-    public Foo(string message, Exception innerException) : base(message, innerException)
+    public SomeException(string message, Exception innerException) : base(message, innerException)
     {
     }
 
@@ -146,17 +146,17 @@ public class [|Foo|] : Exception
 ";
             var fix = @"
 using System;
-public class Foo : Exception
+public class SomeException : Exception
 {
-    public Foo(string message): base(message)
+    public SomeException(string message): base(message)
     {
     }
 
-    public Foo(string message, Exception innerException) : base(message, innerException)
+    public SomeException(string message, Exception innerException) : base(message, innerException)
     {
     }
 
-    public Foo()
+    public SomeException()
     {
     }
 }
@@ -169,13 +169,13 @@ public class Foo : Exception
         {
             var code = @"
 using System;
-public class [|Foo|] : Exception
+public class [|SomeException|] : Exception
 {
-    public Foo()
+    public SomeException()
     {
     }
 
-    public Foo(string message)
+    public SomeException(string message)
     {
     }
 
@@ -183,17 +183,17 @@ public class [|Foo|] : Exception
 ";
             var fix = @"
 using System;
-public class Foo : Exception
+public class SomeException : Exception
 {
-    public Foo()
+    public SomeException()
     {
     }
 
-    public Foo(string message)
+    public SomeException(string message)
     {
     }
 
-    public Foo(string message, Exception innerException) : base(message, innerException)
+    public SomeException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }
@@ -206,13 +206,13 @@ public class Foo : Exception
         {
             var code = @"
 using System;
-public class [|Foo|] : Exception
+public class [|SomeException|] : Exception
 {
-    public Foo()
+    public SomeException()
     {
     }
 
-    public Foo(string message, Exception innerException)
+    public SomeException(string message, Exception innerException)
     {
     }
 
@@ -220,17 +220,17 @@ public class [|Foo|] : Exception
 ";
             var fix = @"
 using System;
-public class Foo : Exception
+public class SomeException : Exception
 {
-    public Foo()
+    public SomeException()
     {
     }
 
-    public Foo(string message, Exception innerException)
+    public SomeException(string message, Exception innerException)
     {
     }
 
-    public Foo(string message) : base(message)
+    public SomeException(string message) : base(message)
     {
     }
 }
@@ -248,14 +248,14 @@ public class Foo : Exception
         {
             var code = @"
 Imports System
-Public Class [|[|Foo|]|] : Inherits Exception
+Public Class [|[|SomeException|]|] : Inherits Exception
     Public Sub New()
     End Sub
 End Class
 ";
             var fix = @"
 Imports System
-Public Class Foo : Inherits Exception
+Public Class SomeException : Inherits Exception
     Public Sub New()
     End Sub
 
@@ -281,14 +281,14 @@ End Class
         {
             var code = @"
 Imports System
-Public Class [|[|Foo|]|] : Inherits Exception
+Public Class [|[|SomeException|]|] : Inherits Exception
     Public Sub New(message As String)
     End Sub
 End Class
 ";
             var fix = @"
 Imports System
-Public Class Foo : Inherits Exception
+Public Class SomeException : Inherits Exception
     Public Sub New(message As String)
     End Sub
 
@@ -313,14 +313,14 @@ End Class
         {
             var code = @"
 Imports System
-Public Class [|[|Foo|]|] : Inherits Exception
+Public Class [|[|SomeException|]|] : Inherits Exception
     Public Sub New(message As String, innerException As Exception)
     End Sub
 End Class
 ";
             var fix = @"
 Imports System
-Public Class Foo : Inherits Exception
+Public Class SomeException : Inherits Exception
     Public Sub New(message As String, innerException As Exception)
     End Sub
 
@@ -345,7 +345,7 @@ End Class
         {
             var code = @"
 Imports System
-Public Class [|Foo|] : Inherits Exception
+Public Class [|SomeException|] : Inherits Exception
     Public Sub New()
     End Sub
 
@@ -355,7 +355,7 @@ End Class
 ";
             var fix = @"
 Imports System
-Public Class Foo : Inherits Exception
+Public Class SomeException : Inherits Exception
     Public Sub New()
     End Sub
 
@@ -375,7 +375,7 @@ End Class
         {
             var code = @"
 Imports System
-Public Class [|Foo|] : Inherits Exception
+Public Class [|SomeException|] : Inherits Exception
     Public Sub New()
     End Sub
 
@@ -385,7 +385,7 @@ End Class
 ";
             var fix = @"
 Imports System
-Public Class Foo : Inherits Exception
+Public Class SomeException : Inherits Exception
     Public Sub New()
     End Sub
 
@@ -405,7 +405,7 @@ End Class
         {
             var code = @"
 Imports System
-Public Class [|Foo|] : Inherits Exception
+Public Class [|SomeException|] : Inherits Exception
     Public Sub New(message As String)
     End Sub
 
@@ -415,7 +415,7 @@ End Class
 ";
             var fix = @"
 Imports System
-Public Class Foo : Inherits Exception
+Public Class SomeException : Inherits Exception
     Public Sub New(message As String)
     End Sub
 

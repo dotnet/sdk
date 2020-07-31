@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             "CA5397",
             nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsTitle),
             nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsMessage),
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             isPortedFxCopRule: false,
             isDataflowRule: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsDescription));

@@ -28,7 +28,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
             Select Case operation
 
-                Case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationEqualsInstance
+                Case UseCountProperlyAnalyzer.OperationEqualsInstance
 
                     Dim invocation = TryCast(node, InvocationExpressionSyntax)
 
@@ -50,7 +50,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     End If
 
-                Case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationEqualsArgument
+                Case UseCountProperlyAnalyzer.OperationEqualsArgument
 
                     Dim invocation = TryCast(node, InvocationExpressionSyntax)
 
@@ -66,7 +66,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     End If
 
-                Case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationBinaryLeft
+                Case UseCountProperlyAnalyzer.OperationBinaryLeft
 
                     Dim binary = TryCast(node, BinaryExpressionSyntax)
 
@@ -82,7 +82,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     End If
 
-                Case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationBinaryRight
+                Case UseCountProperlyAnalyzer.OperationBinaryRight
 
                     Dim binary = TryCast(node, BinaryExpressionSyntax)
 
@@ -97,7 +97,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         Return True
 
                     End If
-
 
             End Select
 

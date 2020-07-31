@@ -1,16 +1,20 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Analyzer.Utilities;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.VisualBasic;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.DisposeObjectsBeforeLosingScope,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.DisposeObjectsBeforeLosingScope,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VisualBasicLanguageVersion = Microsoft.CodeAnalysis.VisualBasic.LanguageVersion;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -18,43 +22,55 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.DisposeAnalysis)]
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PointsToAnalysis)]
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
-    public partial class DisposeObjectsBeforeLosingScopeTests : DiagnosticAnalyzerTestBase
+    public partial class DisposeObjectsBeforeLosingScopeTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer() => new DisposeObjectsBeforeLosingScope();
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new DisposeObjectsBeforeLosingScope();
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+           => VerifyCS.Diagnostic(rule)
+               .WithLocation(line, column)
+               .WithArguments(arguments);
 
-        private DiagnosticResult GetCSharpResultAt(int line, int column, string allocationText) =>
+        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+            => VerifyVB.Diagnostic(rule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string allocationText) =>
             GetCSharpResultAt(line, column, DisposeObjectsBeforeLosingScope.NotDisposedRule, allocationText);
-        private DiagnosticResult GetCSharpMayBeNotDisposedResultAt(int line, int column, string allocationText) =>
+        private static DiagnosticResult GetCSharpMayBeNotDisposedResultAt(int line, int column, string allocationText) =>
             GetCSharpResultAt(line, column, DisposeObjectsBeforeLosingScope.MayBeDisposedRule, allocationText);
-        private DiagnosticResult GetCSharpNotDisposedOnExceptionPathsResultAt(int line, int column, string allocationText) =>
+        private static DiagnosticResult GetCSharpNotDisposedOnExceptionPathsResultAt(int line, int column, string allocationText) =>
             GetCSharpResultAt(line, column, DisposeObjectsBeforeLosingScope.NotDisposedOnExceptionPathsRule, allocationText);
-        private DiagnosticResult GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(int line, int column, string allocationText) =>
+        private static DiagnosticResult GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(int line, int column, string allocationText) =>
             GetCSharpResultAt(line, column, DisposeObjectsBeforeLosingScope.MayBeDisposedOnExceptionPathsRule, allocationText);
 
-        private DiagnosticResult GetBasicResultAt(int line, int column, string allocationText) =>
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string allocationText) =>
             GetBasicResultAt(line, column, DisposeObjectsBeforeLosingScope.NotDisposedRule, allocationText);
-        private DiagnosticResult GetBasicMayBeNotDisposedResultAt(int line, int column, string allocationText) =>
+        private static DiagnosticResult GetBasicMayBeNotDisposedResultAt(int line, int column, string allocationText) =>
             GetBasicResultAt(line, column, DisposeObjectsBeforeLosingScope.MayBeDisposedRule, allocationText);
-        private DiagnosticResult GetBasicNotDisposedOnExceptionPathsResultAt(int line, int column, string allocationText) =>
+        private static DiagnosticResult GetBasicNotDisposedOnExceptionPathsResultAt(int line, int column, string allocationText) =>
             GetBasicResultAt(line, column, DisposeObjectsBeforeLosingScope.NotDisposedOnExceptionPathsRule, allocationText);
-        private DiagnosticResult GetBasicMayBeNotDisposedOnExceptionPathsResultAt(int line, int column, string allocationText) =>
+        private static DiagnosticResult GetBasicMayBeNotDisposedOnExceptionPathsResultAt(int line, int column, string allocationText) =>
             GetBasicResultAt(line, column, DisposeObjectsBeforeLosingScope.MayBeDisposedOnExceptionPathsRule, allocationText);
 
-        private FileAndSource GetEditorConfigFileToDisableInterproceduralAnalysis(DisposeAnalysisKind disposeAnalysisKind)
+        private string GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind disposeAnalysisKind)
         {
             var text = $@"dotnet_code_quality.interprocedural_analysis_kind = None
                           dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
-            return GetEditorConfigAdditionalFile(text);
+            return text;
         }
 
-        private FileAndSource GetEditorConfigFile(DisposeAnalysisKind disposeAnalysisKind)
-            => GetEditorConfigAdditionalFile($@"dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}");
+        private string GetEditorConfigContent(DisposeAnalysisKind disposeAnalysisKind)
+            => $@"dotnet_code_quality.dispose_analysis_kind = {disposeAnalysisKind}";
+
+        private string GetEditorConfigContent(PointsToAnalysisKind? pointsToAnalysisKind)
+            => pointsToAnalysisKind.HasValue ?
+                $"dotnet_code_quality.CA2000.points_to_analysis_kind = {pointsToAnalysisKind}" :
+                string.Empty;
 
         [Fact]
-        public void LocalWithDisposableInitializer_DisposeCall_NoDiagnostic()
+        public async Task LocalWithDisposableInitializer_DisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -74,7 +90,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -92,9 +108,9 @@ End Class");
         }
 
         [Fact]
-        public void LocalWithDisposableInitializer_NoDisposeCall_Diagnostic()
+        public async Task LocalWithDisposableInitializer_NoDisposeCall_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -115,7 +131,7 @@ class Test
             // Test0.cs(15,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(15, 17, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -134,9 +150,9 @@ End Class",
         }
 
         [Fact]
-        public void LocalWithDisposableAssignment_DisposeCall_NoDiagnostic()
+        public async Task LocalWithDisposableAssignment_DisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -161,7 +177,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -184,9 +200,9 @@ End Class");
         }
 
         [Fact]
-        public void LocalWithDisposableAssignment_NoDisposeCall_Diagnostic()
+        public async Task LocalWithDisposableAssignment_NoDisposeCall_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -208,7 +224,7 @@ class Test
             // Test0.cs(16,13): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(16, 13, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -228,9 +244,9 @@ End Class",
         }
 
         [Fact]
-        public void ParameterWithDisposableAssignment_DisposeCall_NoDiagnostic()
+        public async Task ParameterWithDisposableAssignment_DisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -250,7 +266,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -268,9 +284,9 @@ End Class");
         }
 
         [Fact]
-        public void ParameterWithDisposableAssignment_NoDisposeCall_Diagnostic()
+        public async Task ParameterWithDisposableAssignment_NoDisposeCall_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -291,7 +307,7 @@ class Test
             // Test0.cs(15,13): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(15, 13, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -310,9 +326,9 @@ End Class",
         }
 
         [Fact]
-        public void OutAndRefParametersWithDisposableAssignment_NoDisposeCall_NoDiagnostic()
+        public async Task OutAndRefParametersWithDisposableAssignment_NoDisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -332,7 +348,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -349,9 +365,9 @@ End Class");
         }
 
         [Fact]
-        public void OutDisposableArgument_NoDisposeCall_Diagnostic()
+        public async Task OutDisposableArgument_NoDisposeCall_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -404,9 +420,9 @@ class Test
         }
 
         [Fact]
-        public void OutDisposableArgument_DisposeCall_NoDiagnostic()
+        public async Task OutDisposableArgument_DisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -456,9 +472,9 @@ class Test
         }
 
         [Fact]
-        public void TryGetSpecialCase_OutDisposableArgument_NoDisposeCall_NoDiagnostic()
+        public async Task TryGetSpecialCase_OutDisposableArgument_NoDisposeCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -487,9 +503,9 @@ class MyCollection
         }
 
         [Fact, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
-        public void OutDisposableArgument_StoredIntoField_NoDiagnostic()
+        public async Task OutDisposableArgument_StoredIntoField_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -516,9 +532,9 @@ class Test
         }
 
         [Fact, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
-        public void OutDisposableArgument_WithinTryXXXInvocation_DisposedOnSuccessPath_NoDiagnostic()
+        public async Task OutDisposableArgument_WithinTryXXXInvocation_DisposedOnSuccessPath_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Concurrent;
 
@@ -551,9 +567,9 @@ public class C
         }
 
         [Fact, WorkItem(2245, "https://github.com/dotnet/roslyn-analyzers/issues/2245")]
-        public void OutDisposableArgument_WithinTryXXXInvocation_NotDisposed_Diagnostic()
+        public async Task OutDisposableArgument_WithinTryXXXInvocation_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Concurrent;
 
@@ -578,9 +594,9 @@ public class C
         }
 
         [Fact]
-        public void LocalWithMultipleDisposableAssignment_DisposeCallOnSome_Diagnostic()
+        public async Task LocalWithMultipleDisposableAssignment_DisposeCallOnSome_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -607,7 +623,7 @@ class Test
             // Test0.cs(19,13): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(19, 13, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -632,9 +648,9 @@ End Class",
         }
 
         [Fact]
-        public void FieldWithDisposableAssignment_NoDiagnostic()
+        public async Task FieldWithDisposableAssignment_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -660,7 +676,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -684,9 +700,9 @@ End Class");
         }
 
         [Fact]
-        public void PropertyWithDisposableAssignment_NoDiagnostic()
+        public async Task PropertyWithDisposableAssignment_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -712,7 +728,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -736,9 +752,9 @@ End Class");
         }
 
         [Fact]
-        public void Interprocedural_DisposedInHelper_MethodInvocation_NoDiagnostic()
+        public async Task Interprocedural_DisposedInHelper_MethodInvocation_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -779,7 +795,7 @@ class Test2
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -813,9 +829,9 @@ End Class
         }
 
         [Fact]
-        public void Interprocedural_DisposeOwnershipTransfer_MethodInvocation_NoDiagnostic()
+        public async Task Interprocedural_DisposeOwnershipTransfer_MethodInvocation_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -857,7 +873,7 @@ class Test2
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -894,9 +910,9 @@ End Class
         }
 
         [Fact]
-        public void Interprocedural_NoDisposeOwnershipTransfer_MethodInvocation_Diagnostic()
+        public async Task Interprocedural_NoDisposeOwnershipTransfer_MethodInvocation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -946,7 +962,7 @@ class Test2
             // Test0.cs(19,51): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
             GetCSharpResultAt(19, 51, "new A(3)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -993,9 +1009,9 @@ End Class
         }
 
         [Fact, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
-        public void Interprocedural_DisposedInHelper_ConstructorInvocation_NoDiagnostic()
+        public async Task Interprocedural_DisposedInHelper_ConstructorInvocation_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -1033,7 +1049,7 @@ class DisposeHelperType
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -1066,9 +1082,9 @@ End Class
         }
 
         [Fact, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
-        public void Interprocedural_DisposeOwnershipTransfer_ConstructorInvocation_NoDiagnostic()
+        public async Task Interprocedural_DisposeOwnershipTransfer_ConstructorInvocation_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -1107,7 +1123,7 @@ class DisposableOwnerType
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -1141,9 +1157,9 @@ End Class
         }
 
         [Fact, WorkItem(2136, "https://github.com/dotnet/roslyn-analyzers/issues/2136")]
-        public void Interprocedural_NoDisposeOwnershipTransfer_ConstructorInvocation_Diagnostic()
+        public async Task Interprocedural_NoDisposeOwnershipTransfer_ConstructorInvocation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -1188,7 +1204,7 @@ class NotDisposableOwnerType
             // Test0.cs(17,51): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
             GetCSharpResultAt(17, 51, "new A(2)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -1232,13 +1248,12 @@ End Class
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Configured_DisposeOwnershipTransfer_AtConstructorInvocation(bool disposeOwnershipTransferAtConstructor)
+        public async Task Configured_DisposeOwnershipTransfer_AtConstructorInvocation(bool disposeOwnershipTransferAtConstructor)
         {
             var editorConfigText = disposeOwnershipTransferAtConstructor ?
                         $@"dotnet_code_quality.interprocedural_analysis_kind = None
                            dotnet_code_quality.dispose_ownership_transfer_at_constructor = true" :
                         string.Empty;
-            var editorConfigFile = GetEditorConfigAdditionalFile(editorConfigText);
 
             var source = @"
 using System;
@@ -1265,17 +1280,25 @@ class DisposableOwnerType
     }
 }";
 
-            var expectedDiagnostics = Array.Empty<DiagnosticResult>();
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
             if (!disposeOwnershipTransferAtConstructor)
             {
-                expectedDiagnostics = new[]
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
                     // Test0.cs(15,40): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
                     GetCSharpResultAt(15, 40, "new A()")
-                };
+                });
             }
 
-            VerifyCSharp(source, editorConfigFile, expectedDiagnostics);
+            await csharpTest.RunAsync();
 
             source = @"
 Imports System
@@ -1298,29 +1321,37 @@ Class DisposableOwnerType
     End Sub
 End Class
 ";
-            expectedDiagnostics = Array.Empty<DiagnosticResult>();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
             if (!disposeOwnershipTransferAtConstructor)
             {
-                expectedDiagnostics = new[]
+                vbTest.ExpectedDiagnostics.AddRange(new[]
                 {
                     // Test0.vb(13,40): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
                     GetBasicResultAt(13, 40, "New A()")
-                };
+                });
             }
 
-            VerifyBasic(source, editorConfigFile, expectedDiagnostics);
+            await vbTest.RunAsync();
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Configured_DisposeOwnershipTransfer_AtMethodCall(bool disposeOwnershipTransferAtMethodCall)
+        public async Task Configured_DisposeOwnershipTransfer_AtMethodCall(bool disposeOwnershipTransferAtMethodCall)
         {
             var editorConfigText = disposeOwnershipTransferAtMethodCall ?
                         $@"dotnet_code_quality.interprocedural_analysis_kind = None
                            dotnet_code_quality.dispose_ownership_transfer_at_method_call = true" :
                         string.Empty;
-            var editorConfigFile = GetEditorConfigAdditionalFile(editorConfigText);
 
             var source = @"
 using System;
@@ -1344,17 +1375,25 @@ class Test
     }
 }";
 
-            var expectedDiagnostics = Array.Empty<DiagnosticResult>();
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
             if (!disposeOwnershipTransferAtMethodCall)
             {
-                expectedDiagnostics = new[]
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
                     // Test0.cs(15,34): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
                     GetCSharpResultAt(15, 34, "new A()")
-                };
+                });
             }
 
-            VerifyCSharp(source, editorConfigFile, expectedDiagnostics);
+            await csharpTest.RunAsync();
 
             source = @"
 Imports System
@@ -1375,17 +1414,26 @@ Class Test
     End Sub
 End Class
 ";
-            expectedDiagnostics = Array.Empty<DiagnosticResult>();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
             if (!disposeOwnershipTransferAtMethodCall)
             {
-                expectedDiagnostics = new[]
+                vbTest.ExpectedDiagnostics.AddRange(new[]
                 {
                     // Test0.vb(13,34): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
                     GetBasicResultAt(13, 34, "New A()")
-                };
+                });
             }
 
-            VerifyBasic(source, editorConfigFile, expectedDiagnostics);
+            await vbTest.RunAsync();
         }
 
         [Theory, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404")]
@@ -1393,11 +1441,11 @@ End Class
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void DocsMicrosoft_Sample(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task DocsMicrosoft_Sample(DisposeAnalysisKind disposeAnalysisKind)
         {
-            // See https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2000-dispose-objects-before-losing-scope
+            // See https://docs.microsoft.com/en-us/visualstudio/code-quality/ca2000
 
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
             var source = @"
 using System;
@@ -1466,17 +1514,26 @@ public class SerialPort : IDisposable
     }
 }
 ";
-            var expectedDiagnostics = Array.Empty<DiagnosticResult>();
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            };
+
             if (disposeAnalysisKind.AreExceptionPathsEnabled())
             {
-                expectedDiagnostics = new[]
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
                     // Test0.cs(8,27): warning CA2000: Object created by 'new SerialPort(portName)' is not disposed along all exception paths. Call System.IDisposable.Dispose on the object before all references to it are out of scope.
                     GetCSharpNotDisposedOnExceptionPathsResultAt(8, 27, "new SerialPort(portName)")
-                };
+                });
             }
 
-            VerifyCSharp(source, editorConfigFile, expectedDiagnostics);
+            await csharpTest.RunAsync();
 
             source = @"
 Imports System
@@ -1533,30 +1590,39 @@ Public Class SerialPort
     End Sub
 End Class
 ";
-            expectedDiagnostics = Array.Empty<DiagnosticResult>();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            };
+
             if (disposeAnalysisKind.AreExceptionPathsEnabled())
             {
-                expectedDiagnostics = new[]
+                vbTest.ExpectedDiagnostics.AddRange(new[]
                 {
                     // Test0.vb(6,34): warning CA2000: Object created by 'New SerialPort(portName)' is not disposed along all exception paths. Call System.IDisposable.Dispose on the object before all references to it are out of scope.
                     GetBasicNotDisposedOnExceptionPathsResultAt(6, 34, "New SerialPort(portName)")
-                };
+                });
             }
 
-            VerifyBasic(source, editorConfigFile, expectedDiagnostics);
+            await vbTest.RunAsync();
         }
 
         [Fact, WorkItem(1404, "https://github.com/dotnet/roslyn-analyzers/issues/1404#issuecomment-446715696")]
-        public void DisposableCreationInLoop()
+        public async Task DisposableCreationInLoop()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class Test
     Public Sub M()
         Dim disposeMe As IDisposable = Nothing
         Try
-            For Each c In ""Foo""
+            For Each c In ""aaa""
                 If disposeMe Is Nothing Then
                     disposeMe = New A()
                 End If
@@ -1583,19 +1649,15 @@ End Class
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void ExceptionInFinally(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task ExceptionInFinally(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var expectedDiagnostics = Array.Empty<DiagnosticResult>();
-            if (disposeAnalysisKind.AreExceptionPathsAndMayBeNotDisposedViolationsEnabled())
+            var vbTest = new VerifyVB.Test
             {
-                expectedDiagnostics = new[]
+                TestState =
                 {
-                    // Test0.vb(7,26): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-                    GetBasicMayBeNotDisposedOnExceptionPathsResultAt(7, 26, "New A(1)")
-                };
-            }
-
-            VerifyBasic(@"
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Class Test
@@ -1627,13 +1689,28 @@ Public Class A
     Public Sub Dispose() Implements IDisposable.Dispose
     End Sub
 End Class
-", GetEditorConfigFile(disposeAnalysisKind), expectedDiagnostics);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(disposeAnalysisKind)) }
+                }
+            };
+
+            if (disposeAnalysisKind.AreExceptionPathsAndMayBeNotDisposedViolationsEnabled())
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.vb(7,26): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                    GetBasicMayBeNotDisposedOnExceptionPathsResultAt(7, 26, "New A(1)")
+                });
+            }
+
+            await vbTest.RunAsync();
         }
 
         [Fact]
-        public void LocalWithDisposableAssignment_DisposeBoolCall_NoDiagnostic()
+        public async Task LocalWithDisposableAssignment_DisposeBoolCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -1663,7 +1740,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -1690,9 +1767,9 @@ End Class");
         }
 
         [Fact]
-        public void LocalWithDisposableAssignment_CloseCall_NoDiagnostic()
+        public async Task LocalWithDisposableAssignment_CloseCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -1722,7 +1799,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -1749,9 +1826,9 @@ End Class");
         }
 
         [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
-        public void LocalWithDisposableAssignment_DisposeAsyncCall_NoDiagnostic()
+        public async Task LocalWithDisposableAssignment_DisposeAsyncCall_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -1777,7 +1854,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 
@@ -1807,9 +1884,15 @@ End Class");
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
-        public void LocalWithAsyncDisposableAssignment_DisposeAsyncCall_NoDiagnostic()
+        public async Task LocalWithAsyncDisposableAssignment_DisposeAsyncCall_NoDiagnostic()
         {
-            VerifyCSharp(IAsyncDisposable.CSharp + @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
 class AsyncDisposable : IAsyncDisposable
 {
     public ValueTask DisposeAsync()
@@ -1826,9 +1909,16 @@ class Test
         await e.DisposeAsync();
     }
 }
-");
+"
+            }.RunAsync();
 
-            VerifyBasic(IAsyncDisposable.VisualBasic + @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
 Class AsyncDisposable
     Implements IAsyncDisposable
 
@@ -1842,13 +1932,20 @@ Class Test
         Dim e = New AsyncDisposable()
         Await e.DisposeAsync()
     End Function
-End Class");
+End Class"
+            }.RunAsync();
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
-        public void LocalWithAsyncDisposableAssignment_NoDisposeAsyncCall_Diagnostic()
+        public async Task LocalWithAsyncDisposableAssignment_NoDisposeAsyncCall_Diagnostic()
         {
-            VerifyCSharp(IAsyncDisposable.CSharp + @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
 class AsyncDisposable : IAsyncDisposable
 {
     public ValueTask DisposeAsync()
@@ -1865,10 +1962,19 @@ class Test
     }
 }
 ",
-            // Test0.cs(43,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposable()' before all references to it are out of scope.
-            GetCSharpResultAt(43, 17, "new AsyncDisposable()"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(17, 17, "new AsyncDisposable()"),
+                }
+            }.RunAsync();
 
-            VerifyBasic(IAsyncDisposable.VisualBasic + @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
 Class AsyncDisposable
     Implements IAsyncDisposable
 
@@ -1882,14 +1988,23 @@ Class Test
         Dim e = New AsyncDisposable()
     End Function
 End Class",
-            // Test0.vb(43,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'New AsyncDisposable()' before all references to it are out of scope.
-            GetBasicResultAt(43, 17, "New AsyncDisposable()"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(15, 17, "New AsyncDisposable()"),
+                }
+            }.RunAsync();
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
-        public void LocalWithAsyncDisposableAndDisposableAssignment_Disposed_NoDiagnostic()
+        public async Task LocalWithAsyncDisposableAndDisposableAssignment_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(IAsyncDisposable.CSharp + @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
 class AsyncDisposableAndDisposable : IAsyncDisposable, IDisposable
 {
     public ValueTask DisposeAsync()
@@ -1915,9 +2030,16 @@ class Test
         using (var e3 = new AsyncDisposableAndDisposable()) { }
     }
 }
-");
+"
+            }.RunAsync();
 
-            VerifyBasic(IAsyncDisposable.VisualBasic + @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
 Class AsyncDisposableAndDisposable
     Implements IAsyncDisposable
     Implements IDisposable
@@ -1941,13 +2063,20 @@ Class Test
         Using e3 As New AsyncDisposableAndDisposable()
         End Using
     End Function
-End Class");
+End Class"
+            }.RunAsync();
         }
 
         [Fact, WorkItem(3042, "https://github.com/dotnet/roslyn-analyzers/issues/3042")]
-        public void LocalWithAsyncDisposableAndDisposableAssignment_NotDisposed_Diagnostic()
+        public async Task LocalWithAsyncDisposableAndDisposableAssignment_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(IAsyncDisposable.CSharp + @"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.Threading.Tasks;
+
 class AsyncDisposableAndDisposable : IAsyncDisposable, IDisposable
 {
     public ValueTask DisposeAsync()
@@ -1968,10 +2097,19 @@ class Test
     }
 }
 ",
-            // Test0.cs(47,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new AsyncDisposableAndDisposable()' before all references to it are out of scope.
-            GetCSharpResultAt(47, 17, "new AsyncDisposableAndDisposable()"));
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(21, 17, "new AsyncDisposableAndDisposable()"),
+                }
+            }.RunAsync();
 
-            VerifyBasic(IAsyncDisposable.VisualBasic + @"
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+Imports System
+Imports System.Threading.Tasks
+
 Class AsyncDisposableAndDisposable
     Implements IAsyncDisposable
     Implements IDisposable
@@ -1989,14 +2127,106 @@ Class Test
         Dim e = New AsyncDisposableAndDisposable()
     End Function
 End Class",
-            // Test0.vb(47,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'New AsyncDisposableAndDisposable()' before all references to it are out of scope.
-            GetBasicResultAt(47, 17, "New AsyncDisposableAndDisposable()"));
+                ExpectedDiagnostics =
+                {
+                    GetBasicResultAt(19, 17, "New AsyncDisposableAndDisposable()"),
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
+        public async Task LocalWithRefStructDisposableAssignment_NotDisposed_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+
+ref struct RefStructDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    public static void M1()
+    {
+        var e = new RefStructDisposable();
+    }
+}
+",
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(15, 17, "new RefStructDisposable()"),
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
+        public async Task LocalWithRefStructDisposableAssignment_Internal_NotDisposed_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+
+ref struct RefStructDisposable
+{
+    internal void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    public static void M1()
+    {
+        var e = new RefStructDisposable();
+    }
+}
+",
+                ExpectedDiagnostics =
+                {
+                    GetCSharpResultAt(15, 17, "new RefStructDisposable()"),
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3305, "https://github.com/dotnet/roslyn-analyzers/issues/3305")]
+        public async Task LocalWithRefStructDisposableAssignment_Disposed_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+
+ref struct RefStructDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    public static void M1()
+    {
+        var e = new RefStructDisposable();
+        e.Dispose();
+    }
+}"
+            }.RunAsync();
         }
 
         [Fact]
-        public void ArrayElementWithDisposableAssignment_NoDiagnostic()
+        public async Task ArrayElementWithDisposableAssignment_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2016,7 +2246,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2035,9 +2265,9 @@ End Class");
         }
 
         [Fact]
-        public void ArrayElementWithDisposableAssignment_ConstantIndex_NoDiagnostic()
+        public async Task ArrayElementWithDisposableAssignment_ConstantIndex_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2058,7 +2288,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2078,9 +2308,9 @@ End Class");
         }
 
         [Fact]
-        public void ArrayElementWithDisposableAssignment_NonConstantIndex_NoDiagnostic()
+        public async Task ArrayElementWithDisposableAssignment_NonConstantIndex_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2101,7 +2331,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2121,9 +2351,9 @@ End Class");
         }
 
         [Fact]
-        public void ArrayElementWithDisposableAssignment_NonConstantIndex_02_NoDiagnostic()
+        public async Task ArrayElementWithDisposableAssignment_NonConstantIndex_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2145,7 +2375,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2166,9 +2396,9 @@ End Class");
         }
 
         [Fact]
-        public void ArrayInitializer_ElementWithDisposableAssignment_NoDiagnostic()
+        public async Task ArrayInitializer_ElementWithDisposableAssignment_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2188,7 +2418,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2206,9 +2436,9 @@ End Class");
         }
 
         [Fact, WorkItem(37528, "https://github.com/dotnet/roslyn/issues/37528")]
-        public void ArrayInitializer_MultipleElementsWithDisposableAssignment_NoDiagnostic()
+        public async Task ArrayInitializer_MultipleElementsWithDisposableAssignment_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2228,7 +2458,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2246,9 +2476,9 @@ End Class");
         }
 
         [Fact]
-        public void ArrayInitializer_ElementWithDisposableAssignment_ConstantIndex_NoDiagnostic()
+        public async Task ArrayInitializer_ElementWithDisposableAssignment_ConstantIndex_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2269,7 +2499,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2288,9 +2518,9 @@ End Class");
         }
 
         [Fact, WorkItem(37528, "https://github.com/dotnet/roslyn/issues/37528")]
-        public void ArrayInitializer_MultipleElementsWithDisposableAssignment_ConstantIndices_NoDiagnostic()
+        public async Task ArrayInitializer_MultipleElementsWithDisposableAssignment_ConstantIndices_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2312,7 +2542,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2332,9 +2562,9 @@ End Class");
         }
 
         [Fact]
-        public void ArrayInitializer_ElementWithDisposableAssignment_NonConstantIndex_NoDiagnostic()
+        public async Task ArrayInitializer_ElementWithDisposableAssignment_NonConstantIndex_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2355,7 +2585,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2378,11 +2608,17 @@ End Class");
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void CollectionInitializer_ElementWithDisposableAssignment_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task CollectionInitializer_ElementWithDisposableAssignment_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
-            var source = @"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Collections.Generic;
 
@@ -2401,10 +2637,19 @@ class Test
         List<A> a = new List<A>() { new A() };   // TODO: https://github.com/dotnet/roslyn-analyzers/issues/1577
     }
 }
-";
-            VerifyCSharp(source, editorConfigFile);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
 
-            source = @"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Collections.Generic
 
@@ -2419,9 +2664,11 @@ Class Test
     Sub M1()
         Dim a As List(Of A) = New List(Of A) From {New A()}    ' TODO: https://github.com/dotnet/roslyn-analyzers/issues/1577
     End Sub
-End Class";
-
-            VerifyBasic(source, editorConfigFile);
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
         [Theory]
@@ -2429,11 +2676,17 @@ End Class";
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void CollectionInitializer_ElementWithDisposableAssignment_ConstantIndex_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task CollectionInitializer_ElementWithDisposableAssignment_ConstantIndex_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
-            var source = @"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 using System;
 using System.Collections.Generic;
 
@@ -2453,10 +2706,19 @@ class Test
         a[0].Dispose();
     }
 }
-";
-            VerifyCSharp(source, editorConfigFile);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
 
-            source = @"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 Imports System
 Imports System.Collections.Generic
 
@@ -2472,9 +2734,11 @@ Class Test
         Dim a As List(Of A) = New List(Of A) From {New A()}
         a(0).Dispose()
     End Sub
-End Class";
-
-            VerifyBasic(source, editorConfigFile);
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
         [Theory]
@@ -2482,11 +2746,17 @@ End Class";
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void CollectionInitializer_ElementWithDisposableAssignment_NonConstantIndex_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task CollectionInitializer_ElementWithDisposableAssignment_NonConstantIndex_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
-            var source = @"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 using System;
 using System.Collections.Generic;
 
@@ -2506,10 +2776,19 @@ class Test
         a[i].Dispose();
     }
 }
-";
-            VerifyCSharp(source, editorConfigFile);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
 
-            source = @"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 Imports System
 Imports System.Collections.Generic
 
@@ -2525,9 +2804,11 @@ Class Test
         Dim a As List(Of A) = New List(Of A) From {New A()}
         a(i).Dispose()
     End Sub
-End Class";
-
-            VerifyBasic(source, editorConfigFile);
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
         [Theory]
@@ -2535,11 +2816,17 @@ End Class";
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void CollectionAdd_SpecialCases_ElementWithDisposableAssignment_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task CollectionAdd_SpecialCases_ElementWithDisposableAssignment_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
-            var source = @"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -2592,10 +2879,19 @@ class Test
         l.Add(b);
     }
 }
-";
-            VerifyCSharp(source, editorConfigFile);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
 
-            source = @"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 Imports System
 Imports System.Collections
 Imports System.Collections.Generic
@@ -2656,9 +2952,11 @@ Class Test
         b = New A(4)
         l.Add(b)
     End Sub
-End Class";
-
-            VerifyBasic(source, editorConfigFile);
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
         [Theory]
@@ -2666,11 +2964,17 @@ End Class";
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void CollectionAdd_IReadOnlyCollection_SpecialCases_ElementWithDisposableAssignment_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task CollectionAdd_IReadOnlyCollection_SpecialCases_ElementWithDisposableAssignment_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
-            var source = @"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -2724,10 +3028,19 @@ class Test
         builder.Add(a3);
     }
 }
-";
-            VerifyCSharp(source, editorConfigFile);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
 
-            source = @"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 Imports System
 Imports System.Collections
 Imports System.Collections.Concurrent
@@ -2781,15 +3094,17 @@ Class Test
         Dim a3 As A = New A(6)
         builder.Add(a3)
     End Sub
-End Class";
-
-            VerifyBasic(source, editorConfigFile);
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void MemberInitializerWithDisposableAssignment_NoDiagnostic()
+        public async Task MemberInitializerWithDisposableAssignment_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -2812,7 +3127,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Collections.Generic
 
@@ -2833,9 +3148,9 @@ End Class");
         }
 
         [Fact]
-        public void StructImplementingIDisposable_NoDiagnostic()
+        public async Task StructImplementingIDisposable_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 struct A : IDisposable
@@ -2855,7 +3170,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Structure A
@@ -2873,9 +3188,9 @@ End Class");
         }
 
         [Fact]
-        public void NonUserDefinedConversions_NoDiagnostic()
+        public async Task NonUserDefinedConversions_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2903,7 +3218,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2929,9 +3244,9 @@ End Class");
         }
 
         [Fact]
-        public void NonUserDefinedConversions_Diagnostic()
+        public async Task NonUserDefinedConversions_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -2960,7 +3275,7 @@ class Test
             // Test0.cs(21,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'new B()' before all references to it are out of scope.
             GetCSharpResultAt(21, 18, "new B()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -2987,9 +3302,9 @@ End Class",
         }
 
         [Fact]
-        public void UserDefinedConversions_NoDiagnostic()
+        public async Task UserDefinedConversions_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 
 using System;
 
@@ -3035,7 +3350,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3071,9 +3386,9 @@ End Class");
         }
 
         [Fact]
-        public void LocalWithDisposableAssignment_ByRef_DisposedInCallee_NoDiagnostic()
+        public async Task LocalWithDisposableAssignment_ByRef_DisposedInCallee_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3100,7 +3415,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3124,9 +3439,9 @@ End Class");
         }
 
         [Fact]
-        public void LocalWithDisposableAssignment_ByRefEscape_AbstractVirtualMethod_NoDiagnostic()
+        public async Task LocalWithDisposableAssignment_ByRefEscape_AbstractVirtualMethod_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A : IDisposable
@@ -3156,7 +3471,7 @@ public abstract class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class A
@@ -3183,10 +3498,10 @@ End Class");
         }
 
         [Fact]
-        public void LocalWithDisposableAssignment_OutRefKind_NotDisposed_Diagnostic()
+        public async Task LocalWithDisposableAssignment_OutRefKind_NotDisposed_Diagnostic()
         {
             // Local/parameter passed as out is not considered escaped.
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3218,9 +3533,9 @@ class Test
         }
 
         [Fact]
-        public void LocalWithDefaultOfDisposableAssignment_NoDiagnostic()
+        public async Task LocalWithDefaultOfDisposableAssignment_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3240,7 +3555,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3258,9 +3573,9 @@ End Module");
         }
 
         [Fact]
-        public void NullCoalesce_NoDiagnostic()
+        public async Task NullCoalesce_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3285,7 +3600,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3308,9 +3623,9 @@ End Class");
         }
 
         [Fact]
-        public void NullCoalesce_Diagnostic()
+        public async Task NullCoalesce_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3336,7 +3651,7 @@ class Test
             // Test0.cs(15,20): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(15, 20, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3360,10 +3675,10 @@ End Class",
         }
 
         [Fact]
-        public void WhileLoop_DisposeOnBackEdge_NoDiagnostic()
+        public async Task WhileLoop_DisposeOnBackEdge_NoDiagnostic()
         {
             // Need precise CFG to avoid false reports.
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3392,7 +3707,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3417,9 +3732,9 @@ End Module");
         }
 
         [Fact, WorkItem(1648, "https://github.com/dotnet/roslyn-analyzers/issues/1648")]
-        public void WhileLoop_MissingDisposeOnExit_Diagnostic()
+        public async Task WhileLoop_MissingDisposeOnExit_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3449,7 +3764,7 @@ class Test
             // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
             GetCSharpResultAt(21, 17, "new A(2)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3478,9 +3793,9 @@ End Module",
         }
 
         [Fact]
-        public void WhileLoop_MissingDisposeOnEntry_Diagnostic()
+        public async Task WhileLoop_MissingDisposeOnEntry_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3523,7 +3838,7 @@ class Test
             // Test0.cs(29,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
             GetCSharpResultAt(29, 21, "new A(3)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3547,9 +3862,9 @@ End Module",
         }
 
         [Fact]
-        public void DoWhileLoop_DisposeOnBackEdge_NoDiagnostic()
+        public async Task DoWhileLoop_DisposeOnBackEdge_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3578,7 +3893,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3603,9 +3918,9 @@ End Module");
         }
 
         [Fact]
-        public void DoWhileLoop_MissingDisposeOnExit_Diagnostic()
+        public async Task DoWhileLoop_MissingDisposeOnExit_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3632,7 +3947,7 @@ class Test
             // Test0.cs(20,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
             GetCSharpResultAt(20, 17, "new A(2)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3658,9 +3973,9 @@ End Module",
         }
 
         [Fact]
-        public void DoWhileLoop_MissingDisposeOnEntry_Diagnostic()
+        public async Task DoWhileLoop_MissingDisposeOnEntry_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3702,7 +4017,7 @@ class Test
             // Test0.cs(36,23): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
             GetCSharpResultAt(36, 23, "new A(4)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3726,10 +4041,10 @@ End Module",
         }
 
         [Fact]
-        public void ForLoop_DisposeOnBackEdge_NoDiagnostic()
+        public async Task ForLoop_DisposeOnBackEdge_NoDiagnostic()
         {
             // Need precise CFG to avoid false reports.
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3763,7 +4078,7 @@ class Test
             // Test0.cs(25,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(25, 17, "new A(2)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3794,9 +4109,9 @@ End Module",
         }
 
         [Fact]
-        public void ForLoop_MissingDisposeOnExit_Diagnostic()
+        public async Task ForLoop_MissingDisposeOnExit_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3826,7 +4141,7 @@ class Test
             // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
             GetCSharpResultAt(21, 17, "new A(2)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3855,9 +4170,9 @@ End Module",
         }
 
         [Fact]
-        public void ForLoop_MissingDisposeOnEntry_Diagnostic()
+        public async Task ForLoop_MissingDisposeOnEntry_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3885,7 +4200,7 @@ class Test
             // Test0.cs(18,25): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(18, 25, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3909,9 +4224,9 @@ End Module",
         }
 
         [Fact]
-        public void IfStatement_NoDiagnostic()
+        public async Task IfStatement_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -3950,7 +4265,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -3984,9 +4299,9 @@ End Class");
         }
 
         [Fact]
-        public void IfStatement_02_NoDiagnostic()
+        public async Task IfStatement_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4029,19 +4344,19 @@ class Test
                 }
             }
         }
-        else 
+        else
         {
             a = a2;
             b = new A();
         }
-        
+
         a.Dispose();         // a points to either a1 or a2 or instance created in 'if(param == """")'.
         b.Dispose();         // b points to either instance created in outer if or outer else or innermost if or innermost else.
     }
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -4084,9 +4399,9 @@ End Class");
         }
 
         [Fact]
-        public void IfStatement_Diagnostic()
+        public async Task IfStatement_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4158,7 +4473,7 @@ class Test
             // Test0.cs(42,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new D()' before all references to it are out of scope.
             GetCSharpResultAt(42, 17, "new D()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -4223,9 +4538,9 @@ End Class",
         }
 
         [Fact]
-        public void IfStatement_02_Diagnostic()
+        public async Task IfStatement_02_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4281,7 +4596,7 @@ class Test
                         b = new A();    // Maybe disposed
                     }
                 }
-                
+
                 if (param2 == """")
                 {
                     b.Dispose();    // b points to one of the three instances of A created above.
@@ -4289,7 +4604,7 @@ class Test
                 }
             }
         }
-        else 
+        else
         {
             a = a2;
             b = new A();        // Maybe disposed
@@ -4306,7 +4621,7 @@ class Test
             a.Dispose();
         }
 
-        b.Dispose();         
+        b.Dispose();
     }
 }
 ",
@@ -4317,7 +4632,7 @@ class Test
             // Test0.cs(41,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'new D()' before all references to it are out of scope.
             GetCSharpResultAt(41, 21, "new D()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -4393,9 +4708,9 @@ End Class",
         }
 
         [Fact]
-        public void UsingStatement_NoDiagnostic()
+        public async Task UsingStatement_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4435,7 +4750,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -4464,9 +4779,9 @@ End Class");
         }
 
         [Fact, WorkItem(2201, "https://github.com/dotnet/roslyn-analyzers/issues/2201")]
-        public void UsingStatementInTryCatch_NoDiagnostic()
+        public async Task UsingStatementInTryCatch_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
 class Test
@@ -4485,7 +4800,7 @@ class Test
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
 
 Class Test
@@ -4500,9 +4815,9 @@ End Class");
         }
 
         [Fact, WorkItem(2201, "https://github.com/dotnet/roslyn-analyzers/issues/2201")]
-        public void NestedTryFinallyInTryCatch_NoDiagnostic()
+        public async Task NestedTryFinallyInTryCatch_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
 class Test
@@ -4526,7 +4841,7 @@ class Test
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
 
 Class Test
@@ -4544,9 +4859,9 @@ End Class");
         }
 
         [Fact]
-        public void ReturnStatement_NoDiagnostic()
+        public async Task ReturnStatement_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Generic;
 
@@ -4587,7 +4902,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Collections.Generic
 
@@ -4621,9 +4936,9 @@ End Class");
         }
 
         [Fact]
-        public void ReturnStatement_02_NoDiagnostic()
+        public async Task ReturnStatement_02_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : I, IDisposable
@@ -4652,7 +4967,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Collections.Generic
 
@@ -4680,9 +4995,9 @@ End Class");
         }
 
         [Fact, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
-        public void ReturnStatement_03_NoDiagnostic()
+        public async Task ReturnStatement_03_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -4710,9 +5025,9 @@ public class C
         }
 
         [Fact, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
-        public void ReturnStatement_04_NoDiagnostic()
+        public async Task ReturnStatement_04_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -4742,9 +5057,9 @@ public class C
         }
 
         [Fact, WorkItem(2583, "https://github.com/dotnet/roslyn-analyzers/issues/2583")]
-        public void ReturnStatement_05_NoDiagnostic()
+        public async Task ReturnStatement_05_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -4770,9 +5085,9 @@ public class C
         }
 
         [Fact]
-        public void LocalFunctionInvocation_EmptyBody_Diagnostic()
+        public async Task LocalFunctionInvocation_EmptyBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4805,9 +5120,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunctionInvocation_DisposesCapturedValue_NoDiagnostic()
+        public async Task LocalFunctionInvocation_DisposesCapturedValue_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4838,9 +5153,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunctionInvocation_CapturedValueAssignedNewDisposable_Diagnostic()
+        public async Task LocalFunctionInvocation_CapturedValueAssignedNewDisposable_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4873,9 +5188,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunctionInvocation_ChangesCapturedValueContextSensitive_Diagnostic()
+        public async Task LocalFunctionInvocation_ChangesCapturedValueContextSensitive_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4908,9 +5223,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreationNotDisposed_Diagnostic()
+        public async Task LocalFunction_DisposableCreationNotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4941,9 +5256,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreation_InvokedMultipleTimes_NotDisposed_Diagnostic()
+        public async Task LocalFunction_DisposableCreation_InvokedMultipleTimes_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -4975,9 +5290,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreationReturned_NotDisposed_Diagnostic()
+        public async Task LocalFunction_DisposableCreationReturned_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5011,9 +5326,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreationReturned_Disposed_NoDiagnostic()
+        public async Task LocalFunction_DisposableCreationReturned_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5043,9 +5358,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreationAssignedToRefOutParameter_NotDisposed_Diagnostic()
+        public async Task LocalFunction_DisposableCreationAssignedToRefOutParameter_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5081,9 +5396,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreationAssignedToRefOutParameter_Disposed_NoDiagnostic()
+        public async Task LocalFunction_DisposableCreationAssignedToRefOutParameter_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5117,9 +5432,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreationAssignedToRefOutParameter_MultipleCalls_Diagnostic()
+        public async Task LocalFunction_DisposableCreationAssignedToRefOutParameter_MultipleCalls_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5157,9 +5472,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreation_MultipleLevelsBelow_NotDisposed_Diagnostic()
+        public async Task LocalFunction_DisposableCreation_MultipleLevelsBelow_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5200,9 +5515,9 @@ class Test
         }
 
         [Fact]
-        public void LocalFunction_DisposableCreation_MultipleLevelsBelow_Nested_NotDisposed_Diagnostic()
+        public async Task LocalFunction_DisposableCreation_MultipleLevelsBelow_Nested_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5243,9 +5558,9 @@ class Test
         }
 
         [Fact]
-        public void LambdaInvocation_EmptyBody_Diagnostic()
+        public async Task LambdaInvocation_EmptyBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5274,7 +5589,7 @@ class Test
             // Test0.cs(17,13): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(17, 13, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -5300,9 +5615,9 @@ End Module",
         }
 
         [Fact]
-        public void LambdaInvocation_DisposesCapturedValue_NoDiagnostic()
+        public async Task LambdaInvocation_DisposesCapturedValue_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5330,7 +5645,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -5354,9 +5669,9 @@ End Module");
         }
 
         [Fact]
-        public void LambdaInvocation_CapturedValueAssignedNewDisposable_Diagnostic()
+        public async Task LambdaInvocation_CapturedValueAssignedNewDisposable_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5383,10 +5698,10 @@ class Test
     }
 }
 ",
-            // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.            
+            // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(21, 17, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -5412,9 +5727,9 @@ End Module",
         }
 
         [Fact]
-        public void LambdaInvocation_ChangesCapturedValueContextSensitive_Diagnostic()
+        public async Task LambdaInvocation_ChangesCapturedValueContextSensitive_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5443,7 +5758,7 @@ class Test
             // Test0.cs(23,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(23, 18, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -5469,9 +5784,9 @@ End Module",
         }
 
         [Fact]
-        public void Lambda_DisposableCreationNotDisposed_Diagnostic()
+        public async Task Lambda_DisposableCreationNotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5500,9 +5815,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_DisposableCreation_InvokedMultipleTimes_NotDisposed_Diagnostic()
+        public async Task Lambda_DisposableCreation_InvokedMultipleTimes_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5532,9 +5847,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_DisposableCreationReturned_NotDisposed_Diagnostic()
+        public async Task Lambda_DisposableCreationReturned_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5566,9 +5881,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_DisposableCreationReturned_Disposed_NoDiagnostic()
+        public async Task Lambda_DisposableCreationReturned_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5596,9 +5911,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_DisposableCreationAssignedToRefOutParameter_NotDisposed_Diagnostic()
+        public async Task Lambda_DisposableCreationAssignedToRefOutParameter_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5633,9 +5948,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_DisposableCreationAssignedToRefOutParameter_Disposed_NoDiagnostic()
+        public async Task Lambda_DisposableCreationAssignedToRefOutParameter_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5668,9 +5983,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_DisposableCreationAssignedToRefOutParameter_MultipleCalls_Diagnostic()
+        public async Task Lambda_DisposableCreationAssignedToRefOutParameter_MultipleCalls_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5707,9 +6022,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_DisposableCreation_MultipleLevelsBelow_NotDisposed_Diagnostic()
+        public async Task Lambda_DisposableCreation_MultipleLevelsBelow_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5748,9 +6063,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_DisposableCreation_MultipleLevelsBelow_Nested_NotDisposed_Diagnostic()
+        public async Task Lambda_DisposableCreation_MultipleLevelsBelow_Nested_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5789,9 +6104,9 @@ class Test
         }
 
         [Fact]
-        public void Lambda_InvokedFromInterprocedural_NoDiagnostic()
+        public async Task Lambda_InvokedFromInterprocedural_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5819,9 +6134,9 @@ class Test
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void Lambda_MayBeInvokedFromInterprocedural_Diagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task Lambda_MayBeInvokedFromInterprocedural_Diagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
             var source = @"
 using System;
@@ -5856,25 +6171,34 @@ class Test
     void M3(Action disposeCallback) => disposeCallback();
 }
 ";
-            var expected = Array.Empty<DiagnosticResult>();
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            };
+
             if (disposeAnalysisKind.AreMayBeNotDisposedViolationsEnabled())
             {
-                expected = new[]
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
                     // Test0.cs(17,16): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                     GetCSharpMayBeNotDisposedResultAt(17, 16, "new A(1)"),
                     // Test0.cs(20,16): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
                     GetCSharpMayBeNotDisposedResultAt(20, 16, "new A(2)")
-                };
+                });
             }
 
-            VerifyCSharp(source, editorConfigFile, expected);
+            await csharpTest.RunAsync();
         }
 
         [Fact]
-        public void DelegateInvocation_EmptyBody_NoArguments_Diagnostic()
+        public async Task DelegateInvocation_EmptyBody_NoArguments_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5902,7 +6226,7 @@ class Test
             // Test0.cs(17,13): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(17, 13, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -5929,9 +6253,9 @@ End Module",
         }
 
         [Fact]
-        public void DelegateInvocation_PassedAsArgumentButNotDisposed_Diagnostic()
+        public async Task DelegateInvocation_PassedAsArgumentButNotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -5959,7 +6283,7 @@ class Test
             // Test0.cs(17,13): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(17, 13, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -5986,9 +6310,9 @@ End Module",
         }
 
         [Fact, WorkItem(1813, "https://github.com/dotnet/roslyn-analyzers/issues/1813")]
-        public void DelegateInvocation_DisposesCapturedValue_NoDiagnostic()
+        public async Task DelegateInvocation_DisposesCapturedValue_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -6013,7 +6337,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -6038,9 +6362,9 @@ End Module");
         }
 
         [Fact]
-        public void PointsTo_ReferenceTypeCopyDisposed_NoDiagnostic()
+        public async Task PointsTo_ReferenceTypeCopyDisposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -6063,7 +6387,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -6083,9 +6407,9 @@ End Class");
         }
 
         [Fact]
-        public void DynamicObjectCreation_Diagnostic()
+        public async Task DynamicObjectCreation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -6116,9 +6440,9 @@ class Test
         }
 
         [Fact]
-        public void DynamicObjectCreation_NoDiagnostic()
+        public async Task DynamicObjectCreation_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -6148,9 +6472,9 @@ class Test
         }
 
         [Fact]
-        public void SpecialDisposableObjectCreationApis_Diagnostic()
+        public async Task SpecialDisposableObjectCreationApis_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
@@ -6168,7 +6492,7 @@ class Test
             // Test0.cs(10,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'File.CreateText(filePath)' before all references to it are out of scope.
             GetCSharpResultAt(10, 21, "File.CreateText(filePath)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.IO
 
@@ -6186,9 +6510,9 @@ End Class
         }
 
         [Fact]
-        public void SpecialDisposableObjectCreationApis_NoDiagnostic()
+        public async Task SpecialDisposableObjectCreationApis_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
@@ -6206,7 +6530,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.IO
 
@@ -6223,9 +6547,9 @@ End Class
         }
 
         [Fact]
-        public void InvocationInstanceReceiverOrArgument_Diagnostic()
+        public async Task InvocationInstanceReceiverOrArgument_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -6259,7 +6583,7 @@ class Test
             // Test0.cs(20,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(20, 15, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -6288,9 +6612,9 @@ End Class",
         }
 
         [Fact]
-        public void DisposableCreationInArgument_Diagnostic()
+        public async Task DisposableCreationInArgument_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -6317,7 +6641,7 @@ class Test
             // Test0.cs(16,12): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(16, 12, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -6340,9 +6664,9 @@ End Class",
         }
 
         [Fact]
-        public void DisposableCreationNotAssignedToAVariable_Diagnostic()
+        public async Task DisposableCreationNotAssignedToAVariable_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -6375,7 +6699,7 @@ class Test
             // Test0.cs(23,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(23, 17, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -6391,18 +6715,18 @@ End Class
 
 Class Test
     Private Sub M1()
-        New A()
-        New A().M()
+        {|BC30035:New|} A()
+        {|BC30035:New|} A().M()
         Dim x = New A().X
     End Sub
-End Class", TestValidationMode.AllowCompileErrors);
+End Class");
         }
 
         [Fact]
-        public void DisposableCreationPassedToDisposableConstructor_NoDiagnostic()
+        public async Task DisposableCreationPassedToDisposableConstructor_NoDiagnostic()
         {
             // Dispose ownership transfer
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -6463,7 +6787,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -6515,9 +6839,9 @@ End Class
         }
 
         [Fact]
-        public void DisposableCreationPassedToDisposableConstructor_SpecialCases_NoDiagnostic()
+        public async Task DisposableCreationPassedToDisposableConstructor_SpecialCases_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 using System.Resources;
@@ -6640,7 +6964,7 @@ class Test
             // Test0.cs(92,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(92, 18, "new FileStream(filePath + filePath, fileMode)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 
 Imports System
 Imports System.IO
@@ -6735,14 +7059,20 @@ End Class
         }
 
         [Fact, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
-        public void DisposableCreationPassedToDisposableConstructor_SpecialCases_ExceptionPath_Diagnostic()
+        public async Task DisposableCreationPassedToDisposableConstructor_SpecialCases_ExceptionPath_Diagnostic()
         {
             // Disable interprocedural analysis to test special ctor invocation cases from metadata.
-            var editorConfigFile = GetEditorConfigFileToDisableInterproceduralAnalysis(DisposeAnalysisKind.AllPaths);
+            var editorConfigFile = GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind.AllPaths);
 
             // For special dispose ownership transfer cases, we always assume ownership transfer
             // and the constructor invocation is assumed to be non-exception throwing.
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.IO;
 using System.Resources;
@@ -6856,19 +7186,32 @@ class Test
         }
     }
 }
-", editorConfigFile,
-            // Test0.cs(34,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(34, 25, "new FileStream(filePath, fileMode)"),
-            // Test0.cs(52,29): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.OpenText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(52, 29, "File.OpenText(filePath)"),
-            // Test0.cs(70,29): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.CreateText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(70, 29, "File.CreateText(filePath)"),
-            // Test0.cs(87,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(87, 18, "new FileStream(filePath + filePath, fileMode)"),
-            // Test0.cs(92,30): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new ResourceReader(stream)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(92, 30, "new ResourceReader(stream)"));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.cs(34,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(34, 25, "new FileStream(filePath, fileMode)"),
+                        // Test0.cs(52,29): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.OpenText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(52, 29, "File.OpenText(filePath)"),
+                        // Test0.cs(70,29): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.CreateText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(70, 29, "File.CreateText(filePath)"),
+                        // Test0.cs(87,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(87, 18, "new FileStream(filePath + filePath, fileMode)"),
+                        // Test0.cs(92,30): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new ResourceReader(stream)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(92, 30, "new ResourceReader(stream)"),
+                    }
+                }
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 
 Imports System
 Imports System.IO
@@ -6953,23 +7296,30 @@ Class Test
         End Try
     End Sub
 End Class
-", editorConfigFile,
-            // Test0.vb(30,32): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedOnExceptionPathsResultAt(30, 32, "New FileStream(filePath, fileMode)"),
-            // Test0.vb(42,36): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.OpenText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedOnExceptionPathsResultAt(42, 36, "File.OpenText(filePath)"),
-            // Test0.vb(54,36): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.CreateText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedOnExceptionPathsResultAt(54, 36, "File.CreateText(filePath)"),
-            // Test0.vb(66,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(66, 18, "New FileStream(filePath + filePath, fileMode)"),
-            // Test0.vb(70,30): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New ResourceReader(stream)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedOnExceptionPathsResultAt(70, 30, "New ResourceReader(stream)"));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.vb(30,32): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath, fileMode)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedOnExceptionPathsResultAt(30, 32, "New FileStream(filePath, fileMode)"),
+                        // Test0.vb(42,36): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.OpenText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedOnExceptionPathsResultAt(42, 36, "File.OpenText(filePath)"),
+                        // Test0.vb(54,36): warning CA2000: Use recommended dispose pattern to ensure that object created by 'File.CreateText(filePath)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedOnExceptionPathsResultAt(54, 36, "File.CreateText(filePath)"),
+                        // Test0.vb(66,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(66, 18, "New FileStream(filePath + filePath, fileMode)"),
+                        // Test0.vb(70,30): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New ResourceReader(stream)' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedOnExceptionPathsResultAt(70, 30, "New ResourceReader(stream)"),
+                    }
+                }
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1580, "https://github.com/dotnet/roslyn-analyzers/issues/1580")]
-        public void DisposableCreationPassedToDisposableConstructor_SpecialCases_InterproceduralAnalysis_ExceptionPath_Diagnostic()
+        public async Task DisposableCreationPassedToDisposableConstructor_SpecialCases_InterproceduralAnalysis_ExceptionPath_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 using System.Resources;
@@ -7092,7 +7442,7 @@ class Test
             // Test0.cs(92,18): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new FileStream(filePath + filePath, fileMode)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(92, 18, "new FileStream(filePath + filePath, fileMode)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 
 Imports System
 Imports System.IO
@@ -7192,9 +7542,9 @@ End Class
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void DisposableObjectNotDisposed_ExceptionPath_Diagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task DisposableObjectNotDisposed_ExceptionPath_Diagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
             var source = @"
 using System;
@@ -7270,7 +7620,16 @@ class Test
                     GetCSharpMayBeNotDisposedResultAt(23, 17, "new A()"));
             }
 
-            VerifyCSharp(source, editorConfigFile, builder.ToArray());
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            };
+            csharpTest.ExpectedDiagnostics.AddRange(builder);
+            await csharpTest.RunAsync();
 
             source = @"
 Imports System
@@ -7337,13 +7696,22 @@ End Class
                     GetBasicMayBeNotDisposedResultAt(21, 17, "New A()"));
             }
 
-            VerifyBasic(source, editorConfigFile, builder.ToArray());
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            };
+            vbTest.ExpectedDiagnostics.AddRange(builder);
+            await vbTest.RunAsync();
         }
 
         [Fact]
-        public void DisposableObjectOnlyDisposedOnExceptionPath_Diagnostic()
+        public async Task DisposableObjectOnlyDisposedOnExceptionPath_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -7428,7 +7796,7 @@ class Test
             // Test0.cs(58,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
             GetCSharpResultAt(58, 17, "new A()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -7496,9 +7864,9 @@ End Class
         }
 
         [Fact]
-        public void DisposableObjectDisposed_FinallyPath_NoDiagnostic()
+        public async Task DisposableObjectDisposed_FinallyPath_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -7566,7 +7934,7 @@ class Test
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -7619,9 +7987,9 @@ End Class
         }
 
         [Fact, WorkItem(1597, "https://github.com/dotnet/roslyn-analyzers/issues/1597")]
-        public void DisposableObjectInErrorCode_NotDisposed_BailOut_NoDiagnostic()
+        public async Task DisposableObjectInErrorCode_NotDisposed_BailOut_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -7636,17 +8004,17 @@ class B : IDisposable
 {
     public void Dispose()
     {
-        A x = new A();
-        = x
+        A x = new A();{|CS1525:|}
+        = x{|CS1002:|}
     }
 }
-", TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Fact, WorkItem(1597, "https://github.com/dotnet/roslyn-analyzers/issues/1597")]
-        public void DisposableObjectInErrorCode_02_NotDisposed_BailOut_NoDiagnostic()
+        public async Task DisposableObjectInErrorCode_02_NotDisposed_BailOut_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 using System.Text;
@@ -7664,7 +8032,7 @@ class Test
     void M1()
     {
         var builder = new StringBuilder();
-        using ()        // This erroneous code used to cause a null reference exception in the analysis.
+        using ({|CS1525:)|}        // This erroneous code used to cause a null reference exception in the analysis.
         this.WriteTo(new StringWriter(builder));
         return;
     }
@@ -7673,13 +8041,13 @@ class Test
     {
     }
 }
-", TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Fact]
-        public void DelegateCreation_Disposed_NoDiagnostic()
+        public async Task DelegateCreation_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -7706,7 +8074,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -7730,9 +8098,9 @@ End Class");
         }
 
         [Fact, WorkItem(1602, "https://github.com/dotnet/roslyn-analyzers/issues/1602")]
-        public void MemberReferenceInQueryFromClause_Disposed_NoDiagnostic()
+        public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -7774,9 +8142,9 @@ class Test
         }
 
         [Fact]
-        public void SystemThreadingTask_SpecialCase_NotDisposed_NoDiagnostic()
+        public async Task SystemThreadingTask_SpecialCase_NotDisposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading.Tasks;
 
 public class A
@@ -7794,7 +8162,7 @@ public class A
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -7814,9 +8182,9 @@ End Class");
         }
 
         [Fact]
-        public void MultipleReturnStatements_AllInstancesReturned_NoDiagnostic()
+        public async Task MultipleReturnStatements_AllInstancesReturned_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -7846,7 +8214,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -7876,9 +8244,9 @@ End Class
         }
 
         [Fact]
-        public void MultipleReturnStatements_AllInstancesEscapedWithOutParameter_NoDiagnostic()
+        public async Task MultipleReturnStatements_AllInstancesEscapedWithOutParameter_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -7907,7 +8275,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -7936,9 +8304,9 @@ End Class
         }
 
         [Fact]
-        public void MultipleReturnStatements_AllButOneInstanceReturned_Diagnostic()
+        public async Task MultipleReturnStatements_AllButOneInstanceReturned_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -8007,7 +8375,7 @@ public class Test
             // Test0.cs(42,25): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
             GetCSharpMayBeNotDisposedResultAt(42, 25, "new A(4)"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -8067,9 +8435,9 @@ End Class
         }
 
         [Fact]
-        public void MultipleReturnStatements_AllButOneInstanceEscapedWithOutParameter_Diagnostic()
+        public async Task MultipleReturnStatements_AllButOneInstanceEscapedWithOutParameter_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -8135,7 +8503,7 @@ public class Test
             // Test0.cs(39,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'new B()' before all references to it are out of scope.
             GetCSharpResultAt(39, 21, "new B()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -8189,9 +8557,9 @@ End Class
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_AssignedToTuple_Escaped_NoDiagnostic()
+        public async Task DisposableAllocation_AssignedToTuple_Escaped_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -8219,7 +8587,7 @@ public class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -8251,11 +8619,17 @@ End Class
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void DisposableAllocation_AssignedToTuple_Escaped_SpecialCases_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task DisposableAllocation_AssignedToTuple_Escaped_SpecialCases_NoDiagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var editorConfigFile = GetEditorConfigFile(disposeAnalysisKind);
+            var editorConfigFile = GetEditorConfigContent(disposeAnalysisKind);
 
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -8317,13 +8691,21 @@ public class Test
         return b;
     }
 }
-", editorConfigFile);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_AssignedToTuple_NotDisposed_SpecialCases_Diagnostic()
+        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task DisposableAllocation_AssignedToTuple_NotDisposed_SpecialCases_Diagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
         {
-            VerifyCSharp(@"
+            var source = @"
 using System;
 
 class A : IDisposable
@@ -8388,25 +8770,39 @@ public class Test
         return b;
     }
 }
-",
-            // Test0.cs(19,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
-            GetCSharpResultAt(19, 15, "new A(1)"),
-            // Test0.cs(28,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
-            GetCSharpResultAt(28, 15, "new A(3)"),
-            // Test0.cs(36,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
-            GetCSharpResultAt(36, 15, "new A(4)"),
-            // Test0.cs(44,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(5)' before all references to it are out of scope.
-            GetCSharpResultAt(44, 15, "new A(5)"),
-            // Test0.cs(52,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(6)' before all references to it are out of scope.
-            GetCSharpResultAt(52, 15, "new A(6)"),
-            // Test0.cs(60,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(7)' before all references to it are out of scope.
-            GetCSharpResultAt(60, 15, "new A(7)"));
+";
+            var test = new VerifyCS.Test()
+            {
+                TestCode = source,
+                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+            };
+
+            if (pointsToAnalysisKind != PointsToAnalysisKind.None)
+            {
+                test.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.cs(19,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
+                    GetCSharpResultAt(19, 15, "new A(1)"),
+                    // Test0.cs(28,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
+                    GetCSharpResultAt(28, 15, "new A(3)"),
+                    // Test0.cs(36,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
+                    GetCSharpResultAt(36, 15, "new A(4)"),
+                    // Test0.cs(44,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(5)' before all references to it are out of scope.
+                    GetCSharpResultAt(44, 15, "new A(5)"),
+                    // Test0.cs(52,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(6)' before all references to it are out of scope.
+                    GetCSharpResultAt(52, 15, "new A(6)"),
+                    // Test0.cs(60,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(7)' before all references to it are out of scope.
+                    GetCSharpResultAt(60, 15, "new A(7)")
+                });
+            }
+
+            await test.RunAsync();
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_EscapedTupleLiteral_SpecialCases_NoDiagnostic()
+        public async Task DisposableAllocation_EscapedTupleLiteral_SpecialCases_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -8459,10 +8855,14 @@ public class Test
 ");
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_AddedToTupleLiteral_SpecialCases_Diagnostic()
+        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task DisposableAllocation_AddedToTupleLiteral_SpecialCases_Diagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
         {
-            VerifyCSharp(@"
+            var csCode = @"
 using System;
 
 class A : IDisposable
@@ -8507,27 +8907,46 @@ public class Test
         arg = default((A, A));
     }
 }
-",
-            // Test0.cs(18,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
-            GetCSharpResultAt(18, 15, "new A(1)"),
-            // Test0.cs(24,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
-            GetCSharpResultAt(24, 15, "new A(2)"),
-            // Test0.cs(25,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
-            GetCSharpResultAt(25, 16, "new A(3)"),
-            // Test0.cs(31,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
-            GetCSharpResultAt(31, 15, "new A(4)"),
-            // Test0.cs(32,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(5)' before all references to it are out of scope.
-            GetCSharpResultAt(32, 16, "new A(5)"),
-            // Test0.cs(39,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(6)' before all references to it are out of scope.
-            GetCSharpResultAt(39, 15, "new A(6)"),
-            // Test0.cs(40,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(7)' before all references to it are out of scope.
-            GetCSharpResultAt(40, 16, "new A(7)"));
+";
+
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csCode,
+                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+            };
+
+            if (pointsToAnalysisKind != PointsToAnalysisKind.None)
+            {
+                csTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.cs(18,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
+                    GetCSharpResultAt(18, 15, "new A(1)"),
+                    // Test0.cs(24,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
+                    GetCSharpResultAt(24, 15, "new A(2)"),
+                    // Test0.cs(25,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
+                    GetCSharpResultAt(25, 16, "new A(3)"),
+                    // Test0.cs(31,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(4)' before all references to it are out of scope.
+                    GetCSharpResultAt(31, 15, "new A(4)"),
+                    // Test0.cs(32,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(5)' before all references to it are out of scope.
+                    GetCSharpResultAt(32, 16, "new A(5)"),
+                    // Test0.cs(39,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(6)' before all references to it are out of scope.
+                    GetCSharpResultAt(39, 15, "new A(6)"),
+                    // Test0.cs(40,16): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(7)' before all references to it are out of scope.
+                    GetCSharpResultAt(40, 16, "new A(7)")
+                });
+            }
+
+            await csTest.RunAsync();
         }
 
-        [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_AssignedToTuple_NotDisposed_Diagnostic()
+        [Theory, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task DisposableAllocation_AssignedToTuple_NotDisposed_Diagnostic(PointsToAnalysisKind? pointsToAnalysisKind)
         {
-            VerifyCSharp(@"
+            var csCode = @"
 using System;
 
 class A : IDisposable
@@ -8551,13 +8970,27 @@ public class Test
         A a = new A();
         (A, int) b = (a, 0);
     }
-}",
-            // Test0.cs(16,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
-            GetCSharpResultAt(16, 15, "new A()"),
-            // Test0.cs(22,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
-            GetCSharpResultAt(22, 15, "new A()"));
+}";
+            var csTest = new VerifyCS.Test()
+            {
+                TestCode = csCode,
+                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+            };
 
-            VerifyBasic(@"
+            if (pointsToAnalysisKind != PointsToAnalysisKind.None)
+            {
+                csTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.cs(16,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                    GetCSharpResultAt(16, 15, "new A()"),
+                    // Test0.cs(22,15): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                    GetCSharpResultAt(22, 15, "new A()")
+                });
+            }
+
+            await csTest.RunAsync();
+
+            var vbCode = @"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -8580,17 +9013,37 @@ Public Class Test
         Dim b As (a As A, i As Integer) = (a, 0)
     End Sub
 End Class
-",
-            // Test0.vb(15,22): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
-            GetBasicResultAt(15, 22, "New A()"),
-            // Test0.vb(20,22): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
-            GetBasicResultAt(20, 22, "New A()"));
+";
+            var vbTest = new VerifyVB.Test()
+            {
+                TestCode = vbCode,
+                AnalyzerConfigDocument = GetEditorConfigContent(pointsToAnalysisKind)
+            };
+
+            if (pointsToAnalysisKind != PointsToAnalysisKind.None)
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.vb(15,22): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
+                    GetBasicResultAt(15, 22, "New A()"),
+                    // Test0.vb(20,22): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
+                    GetBasicResultAt(20, 22, "New A()")
+                });
+            }
+
+            await vbTest.RunAsync();
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_AssignedToTuple_Disposed_NoDiagnostic()
+        public async Task DisposableAllocation_AssignedToTuple_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -8616,9 +9069,19 @@ public class Test
         (A, int) b = (a, 0);
         a.Dispose();
     }
-}", parseOptions: CSharpParseOptions.Default.WithLanguageVersion(CSharpLanguageVersion.CSharp7_3));
+}"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp7_3
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -8643,13 +9106,23 @@ Public Class Test
         a.Dispose()
     End Sub
 End Class
-", parseOptions: VisualBasicParseOptions.Default.WithLanguageVersion(VisualBasicLanguageVersion.VisualBasic15_3));
+"
+                    }
+                },
+                LanguageVersion = VisualBasicLanguageVersion.VisualBasic15_3
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_AssignedToTuple_Item1_Disposed_NoDiagnostic()
+        public async Task DisposableAllocation_AssignedToTuple_Item1_Disposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -8668,9 +9141,19 @@ public class Test
         var b = (a, 0);
         b.Item1.Dispose();
     }
-}", parseOptions: CSharpParseOptions.Default.WithLanguageVersion(CSharpLanguageVersion.CSharp7_3));
+}"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp7_3
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 Imports System.Threading.Tasks
 Imports System.Runtime.InteropServices
@@ -8689,13 +9172,23 @@ Public Class Test
         b.Item1.Dispose()
     End Sub
 End Class
-", parseOptions: VisualBasicParseOptions.Default.WithLanguageVersion(VisualBasicLanguageVersion.VisualBasic15_3));
+"
+                    }
+                },
+                LanguageVersion = VisualBasicLanguageVersion.VisualBasic15_3
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_DeconstructionAssignmentToTuple_DeconstructMethod_Diagnostic()
+        public async Task DisposableAllocation_DeconstructionAssignmentToTuple_DeconstructMethod_Diagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Collections.Generic;
 
@@ -8745,21 +9238,26 @@ public class Test
         (a, y) = pair;
         var x = new A(3);
     }
-}", parseOptions: CSharpParseOptions.Default.WithLanguageVersion(CSharpLanguageVersion.CSharp7_3),
-    expected: new[] {
-            // Test0.cs(31,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
-            GetCSharpResultAt(31, 21, "new A(1)"),
-            // Test0.cs(40,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
-            GetCSharpResultAt(40, 21, "new A(2)"),
-            // Test0.cs(49,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
-            GetCSharpResultAt(49, 17, "new A(3)")
-    });
+}"
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.cs(31,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(1)' before all references to it are out of scope.
+                        GetCSharpResultAt(31, 21, "new A(1)"),
+                        // Test0.cs(40,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(2)' before all references to it are out of scope.
+                        GetCSharpResultAt(40, 21, "new A(2)"),
+                        // Test0.cs(49,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A(3)' before all references to it are out of scope.
+                        GetCSharpResultAt(49, 17, "new A(3)"),
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp7_3
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void DisposableAllocation_RefArgument_Diagnostic()
+        public async Task DisposableAllocation_RefArgument_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading;
 
@@ -8785,9 +9283,9 @@ public class Test
         }
 
         [Fact]
-        public void DisposableAllocation_IncrementOperator_RegressionTest()
+        public async Task DisposableAllocation_IncrementOperator_RegressionTest()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -8812,9 +9310,9 @@ public class Test
         }
 
         [Fact]
-        public void DifferentDisposePatternsInFinally_NoDiagnostic()
+        public async Task DifferentDisposePatternsInFinally_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -9073,7 +9571,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class A
@@ -9273,9 +9771,15 @@ End Class
         }
 
         [Fact]
-        public void DifferentDisposePatternsInFinally_Diagnostic()
+        public async Task DifferentDisposePatternsInFinally_Diagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -9563,27 +10067,40 @@ class Test
         }
     }
 }
-", GetEditorConfigFile(DisposeAnalysisKind.AllPaths),
-            // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(17, 15, "new A(1)"),
-            // Test0.cs(36,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(36, 17, "new A(2)"),
-            // Test0.cs(58,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(3)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(58, 21, "new A(3)"),
-            // Test0.cs(83,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(83, 21, "new A(4)"),
-            // Test0.cs(84,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(41)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(84, 21, "new A(41)"),
-            // Test0.cs(100,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(5)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(100, 15, "new A(5)"),
-            // Test0.cs(120,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(6)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(120, 21, "new A(6)"),
-            // Test0.cs(184,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(9)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(184, 15, "new A(9)"),
-            // Test0.cs(242,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(11)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetCSharpMayBeNotDisposedResultAt(242, 15, "new A(11)"));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(DisposeAnalysisKind.AllPaths)) },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.cs(17,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(17, 15, "new A(1)"),
+                        // Test0.cs(36,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(36, 17, "new A(2)"),
+                        // Test0.cs(58,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(3)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(58, 21, "new A(3)"),
+                        // Test0.cs(83,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(83, 21, "new A(4)"),
+                        // Test0.cs(84,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(41)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(84, 21, "new A(41)"),
+                        // Test0.cs(100,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(5)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(100, 15, "new A(5)"),
+                        // Test0.cs(120,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(6)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(120, 21, "new A(6)"),
+                        // Test0.cs(184,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(9)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(184, 15, "new A(9)"),
+                        // Test0.cs(242,15): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A(11)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetCSharpMayBeNotDisposedResultAt(242, 15, "new A(11)"),
+                    }
+                }
+            }.RunAsync();
 
-            VerifyBasic(@"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Class A
@@ -9793,31 +10310,38 @@ Class Test
         End Try
     End Sub
 End Class
-", GetEditorConfigFile(DisposeAnalysisKind.AllPaths),
-            // Test0.vb(16,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(16, 22, "New A(1)"),
-            // Test0.vb(30,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(30, 17, "New A(2)"),
-            // Test0.vb(44,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(3)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(44, 21, "New A(3)"),
-            // Test0.vb(61,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(61, 21, "New A(4)"),
-            // Test0.vb(62,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(41)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(62, 21, "New A(41)"),
-            // Test0.vb(73,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(5)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(73, 22, "New A(5)"),
-            // Test0.vb(86,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(6)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(86, 21, "New A(6)"),
-            // Test0.vb(131,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(9)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(131, 22, "New A(9)"),
-            // Test0.vb(174,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(11)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-            GetBasicMayBeNotDisposedResultAt(174, 22, "New A(11)"));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(DisposeAnalysisKind.AllPaths)) },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.vb(16,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(1)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(16, 22, "New A(1)"),
+                        // Test0.vb(30,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(2)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(30, 17, "New A(2)"),
+                        // Test0.vb(44,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(3)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(44, 21, "New A(3)"),
+                        // Test0.vb(61,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(4)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(61, 21, "New A(4)"),
+                        // Test0.vb(62,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(41)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(62, 21, "New A(41)"),
+                        // Test0.vb(73,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(5)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(73, 22, "New A(5)"),
+                        // Test0.vb(86,21): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(6)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(86, 21, "New A(6)"),
+                        // Test0.vb(131,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(9)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(131, 22, "New A(9)"),
+                        // Test0.vb(174,22): warning CA2000: Use recommended dispose pattern to ensure that object created by 'New A(11)' is disposed on all paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                        GetBasicMayBeNotDisposedResultAt(174, 22, "New A(11)"),
+                    }
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void DisposableObjectsCopyValues_NoDiagnostic()
+        public async Task DisposableObjectsCopyValues_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -9859,9 +10383,9 @@ class Test
         }
 
         [Fact]
-        public void DisposableObjectsCopyValues_NoDiagnostic_02()
+        public async Task DisposableObjectsCopyValues_NoDiagnostic_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -9935,19 +10459,15 @@ class DataflowAnalysis<TContext>
         [InlineData(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [InlineData(DisposeAnalysisKind.NonExceptionPaths)]
         [InlineData(DisposeAnalysisKind.NonExceptionPathsOnlyNotDisposed)]
-        internal void ExceptionFromCatch_Diagnostic(DisposeAnalysisKind disposeAnalysisKind)
+        internal async Task ExceptionFromCatch_Diagnostic(DisposeAnalysisKind disposeAnalysisKind)
         {
-            var expectedDiagnostics = Array.Empty<DiagnosticResult>();
-            if (disposeAnalysisKind.AreExceptionPathsAndMayBeNotDisposedViolationsEnabled())
+            var csharpTest = new VerifyCS.Test
             {
-                expectedDiagnostics = new[]
+                TestState =
                 {
-                    // Test0.cs(15,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A()' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
-                    GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(15, 17, "new A()")
-                };
-            }
-
-            VerifyCSharp(@"
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -9982,13 +10502,28 @@ class MyException: Exception
     {
     }
 }
-", GetEditorConfigFile(disposeAnalysisKind), expectedDiagnostics);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", GetEditorConfigContent(disposeAnalysisKind)) }
+                }
+            };
+
+            if (disposeAnalysisKind.AreExceptionPathsAndMayBeNotDisposedViolationsEnabled())
+            {
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.cs(15,17): warning CA2000: Use recommended dispose pattern to ensure that object created by 'new A()' is disposed on all exception paths. If possible, wrap the creation within a 'using' statement or a 'using' declaration. Otherwise, use a try-finally pattern, with a dedicated local variable declared before the try region and an unconditional Dispose invocation on non-null value in the 'finally' region, say 'x?.Dispose()'. If the object is explicitly disposed within the try region or the dispose ownership is transfered to another object or method, assign 'null' to the local variable just after such an operation to prevent double dispose in 'finally'.
+                    GetCSharpMayBeNotDisposedOnExceptionPathsResultAt(15, 17, "new A()")
+                });
+            }
+
+            await csharpTest.RunAsync();
         }
 
         [Fact]
-        public void InvocationOfLambdaCachedOntoField_InterproceduralAnalysis()
+        public async Task InvocationOfLambdaCachedOntoField_InterproceduralAnalysis()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -10026,9 +10561,9 @@ class A : IDisposable
         }
 
         [Fact]
-        public void InvocationOfLocalFunctionCachedOntoField_InterproceduralAnalysis()
+        public async Task InvocationOfLocalFunctionCachedOntoField_InterproceduralAnalysis()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -10068,9 +10603,9 @@ class A : IDisposable
         }
 
         [Fact]
-        public void InvocationOfMethodDelegate_PriorInterproceduralCallChain()
+        public async Task InvocationOfMethodDelegate_PriorInterproceduralCallChain()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -10104,9 +10639,9 @@ class A : IDisposable
         }
 
         [Fact]
-        public void RecursiveInvocationWithConditionalAccess_InterproceduralAnalysis()
+        public async Task RecursiveInvocationWithConditionalAccess_InterproceduralAnalysis()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -10127,9 +10662,9 @@ class A : IDisposable
         }
 
         [Fact]
-        public void StaticExtensionMethodInvokedAsDelegate_InterproceduralAnalysis()
+        public async Task StaticExtensionMethodInvokedAsDelegate_InterproceduralAnalysis()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 internal delegate bool MyPredicate<in T>(T obj);
@@ -10167,9 +10702,9 @@ internal static class AExtensions
         }
 
         [Fact]
-        public void InfiniteAnalysesIterationBug_InterproceduralAnalysis()
+        public async Task InfiniteAnalysesIterationBug_InterproceduralAnalysis()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.ObjectModel;
 
@@ -10249,9 +10784,9 @@ public class CustomType : IDisposable
         }
 
         [Fact, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
-        public void ReturnDisposableObjectWrappenInTask_NoDiagnostic()
+        public async Task ReturnDisposableObjectWrappenInTask_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -10267,7 +10802,7 @@ class C : IDisposable
     }
 }
 ");
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 
@@ -10284,9 +10819,9 @@ End Class");
         }
 
         [Fact, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
-        public void AwaitedButNotDisposed_Diagnostic()
+        public async Task AwaitedButNotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -10310,7 +10845,7 @@ class C : IDisposable
             // Test0.cs(18,23): warning CA2000: Call System.IDisposable.Dispose on object created by 'M1_Task()' before all references to it are out of scope.
             GetCSharpResultAt(18, 23, "M1_Task()"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 
@@ -10333,9 +10868,9 @@ End Class",
         }
 
         [Fact, WorkItem(2212, "https://github.com/dotnet/roslyn-analyzers/issues/2212")]
-        public void AwaitedButNotDisposed_TaskWrappingField_NoDiagnostic()
+        public async Task AwaitedButNotDisposed_TaskWrappingField_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -10358,7 +10893,7 @@ class C : IDisposable
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading.Tasks
 
@@ -10381,9 +10916,9 @@ End Class");
         }
 
         [Fact, WorkItem(2347, "https://github.com/dotnet/roslyn-analyzers/issues/2347")]
-        public void ReturnDisposableObjectInAsyncMethod_DisposedInCaller_NoDiagnostic()
+        public async Task ReturnDisposableObjectInAsyncMethod_DisposedInCaller_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -10408,9 +10943,9 @@ class C : IDisposable
         }
 
         [Fact, WorkItem(2347, "https://github.com/dotnet/roslyn-analyzers/issues/2347")]
-        public void ReturnDisposableObjectInAsyncMethod_NotDisposedInCaller_Diagnostic()
+        public async Task ReturnDisposableObjectInAsyncMethod_NotDisposedInCaller_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading.Tasks;
 
@@ -10436,9 +10971,9 @@ class C : IDisposable
         }
 
         [Fact, WorkItem(37065, "https://github.com/dotnet/roslyn/issues/37065")]
-        public void ReturnDisposableObjectInAsyncMethod_DisposedInCallerInUsing_NoDiagnostic()
+        public async Task ReturnDisposableObjectInAsyncMethod_DisposedInCallerInUsing_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Threading.Tasks;
 
@@ -10461,9 +10996,9 @@ public class C
         }
 
         [Fact, WorkItem(2361, "https://github.com/dotnet/roslyn-analyzers/issues/2361")]
-        public void ExpressionBodiedMethod_ReturnsDisposableObject_NoDiagnostic()
+        public async Task ExpressionBodiedMethod_ReturnsDisposableObject_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
 class C
@@ -10473,9 +11008,9 @@ class C
         }
 
         [Fact, WorkItem(2361, "https://github.com/dotnet/roslyn-analyzers/issues/2361")]
-        public void ReturnsDisposableObject_NotDisposed_Diagnostic()
+        public async Task ReturnsDisposableObject_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
 class C
@@ -10492,9 +11027,9 @@ class C
         }
 
         [Fact]
-        public void PointsToAnalysisAssert_UninitializedLocalPassedToInvocation()
+        public async Task PointsToAnalysisAssert_UninitializedLocalPassedToInvocation()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C : IDisposable
@@ -10502,7 +11037,7 @@ class C : IDisposable
     void M1()
     {
         IDisposable local;
-        M2(local);
+        M2({|CS0165:local|});
         local = new C();
     }
 
@@ -10513,15 +11048,15 @@ class C : IDisposable
     public void Dispose()
     {
     }
-}", TestValidationMode.AllowCompileErrors,
+}",
             // Test0.cs(10,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new C()' before all references to it are out of scope.
             GetCSharpResultAt(10, 17, "new C()"));
         }
 
         [Fact, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
-        public void UsingStatementInCatch()
+        public async Task UsingStatementInCatch()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C : IDisposable
@@ -10544,9 +11079,9 @@ class C : IDisposable
         }
 
         [Fact, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
-        public void TryFinallyStatementInCatch()
+        public async Task TryFinallyStatementInCatch()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C : IDisposable
@@ -10575,9 +11110,9 @@ class C : IDisposable
         }
 
         [Fact, WorkItem(2497, "https://github.com/dotnet/roslyn-analyzers/issues/2497")]
-        public void UsingStatementInFinally()
+        public async Task UsingStatementInFinally()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C : IDisposable
@@ -10600,9 +11135,9 @@ class C : IDisposable
         }
 
         [Fact, WorkItem(2506, "https://github.com/dotnet/roslyn-analyzers/issues/2506")]
-        public void ErroroneousCodeWithBrokenIfCondition_BailOut_NoDiagnostic()
+        public async Task ErroroneousCodeWithBrokenIfCondition_BailOut_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C : IDisposable
@@ -10612,15 +11147,15 @@ class C : IDisposable
     void M1()
     {
         var c = new C();
-        if()
+        if({|CS1525:)|}{|CS1002:|}{|CS1525:|}
     }
-}", TestValidationMode.AllowCompileErrors);
+}");
         }
 
         [Fact, WorkItem(2506, "https://github.com/dotnet/roslyn-analyzers/issues/2506")]
-        public void ErroroneousCodeWithBrokenIfCondition_Interprocedural_BailOut_NoDiagnostic()
+        public async Task ErroroneousCodeWithBrokenIfCondition_Interprocedural_BailOut_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C : IDisposable
@@ -10635,17 +11170,17 @@ class C : IDisposable
 
     void M2(C c)
     {
-        if()
+        if({|CS1525:)|}{|CS1002:|}{|CS1525:|}
     }
-}", TestValidationMode.AllowCompileErrors,
+}",
             // Test0.cs(10,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new C()' before all references to it are out of scope.
             GetCSharpResultAt(10, 17, "new C()"));
         }
 
         [Fact, WorkItem(2529, "https://github.com/dotnet/roslyn-analyzers/issues/2529")]
-        public void MultilineDisposableCreation_SingleLine_Diagnostic()
+        public async Task MultilineDisposableCreation_SingleLine_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class A : IDisposable
@@ -10671,12 +11206,18 @@ class Test
         }
 
         [Fact]
-        public void DisposableObject_NotDisposed_DisposeOwnershipTransferAtMethodCall_NoDiagnostic()
+        public async Task DisposableObject_NotDisposed_DisposeOwnershipTransferAtMethodCall_NoDiagnostic()
         {
             var editorConfigText = $@"dotnet_code_quality.interprocedural_analysis_kind = None
                                       dotnet_code_quality.dispose_ownership_transfer_at_method_call = true";
 
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class C : IDisposable
@@ -10692,16 +11233,26 @@ class C : IDisposable
     void M2(object o)
     {
     }
-}", GetEditorConfigAdditionalFile(editorConfigText));
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+}
+            }.RunAsync();
         }
 
         [Fact]
-        public void OutArgument_Disposed_DisposeOwnershipTransferAtMethodCall_NoDiagnostic()
+        public async Task OutArgument_Disposed_DisposeOwnershipTransferAtMethodCall_NoDiagnostic()
         {
             var editorConfigText = $@"dotnet_code_quality.interprocedural_analysis_kind = None
                                       dotnet_code_quality.dispose_ownership_transfer_at_method_call = true";
 
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Collections.Concurrent;
 
@@ -10730,14 +11281,18 @@ public class C
 
         value.Dispose();
     }
-}", GetEditorConfigAdditionalFile(editorConfigText));
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
         }
 
         [Fact]
         [WorkItem(2637, "https://github.com/dotnet/roslyn-analyzers/issues/2637")]
-        public void DisposableObject_NotDisposed_ReturnedObject_NoDiagnostic()
+        public async Task DisposableObject_NotDisposed_ReturnedObject_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public static class CA2000Issue
@@ -10770,9 +11325,9 @@ public static class CA2000Issue
 
         [Fact]
         [WorkItem(2637, "https://github.com/dotnet/roslyn-analyzers/issues/2637")]
-        public void DisposableObject_NotDisposed_ReturnedObject_NoDiagnostic_02()
+        public async Task DisposableObject_NotDisposed_ReturnedObject_NoDiagnostic_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public static class CA2000Issue
@@ -10805,9 +11360,9 @@ public static class CA2000Issue
 
         [Fact]
         [WorkItem(2637, "https://github.com/dotnet/roslyn-analyzers/issues/2637")]
-        public void DisposableObject_NotDisposed_SomePaths_Diagnostic()
+        public async Task DisposableObject_NotDisposed_SomePaths_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public static class CA2000Issue
@@ -10841,9 +11396,9 @@ public static class CA2000Issue
 
         [Fact]
         [WorkItem(2637, "https://github.com/dotnet/roslyn-analyzers/issues/2637")]
-        public void DisposableObject_NotDisposed_SomePaths_Diagnostic_02()
+        public async Task DisposableObject_NotDisposed_SomePaths_Diagnostic_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public static class CA2000Issue
@@ -10877,16 +11432,16 @@ public static class CA2000Issue
 
         [Fact]
         [WorkItem(36643, "https://github.com/dotnet/roslyn/issues/36643")]
-        public void DisposableObject_StoredInField_NotDisposed_NoDiagnostic()
+        public async Task DisposableObject_StoredInField_NotDisposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Threading.Tasks;
 
 public class C
 {
     private readonly Task<FileStream> fileStreamTask;
-    public C() => fileStreamTask = Task.Run(() => File.OpenRead("""")); 
+    public C() => fileStreamTask = Task.Run(() => File.OpenRead(""""));
 
     public async Task M()
     {
@@ -10898,16 +11453,16 @@ public class C
 
         [Fact]
         [WorkItem(36643, "https://github.com/dotnet/roslyn/issues/36643")]
-        public void DisposableObject_StoredInField_NotDisposed_NoDiagnostic_02()
+        public async Task DisposableObject_StoredInField_NotDisposed_NoDiagnostic_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Threading.Tasks;
 
 public class C
 {
     private Task<FileStream> fileStreamTask;
-    private Task<FileStream> GetStreamAsync() => Task.FromResult(File.OpenRead("""")); 
+    private Task<FileStream> GetStreamAsync() => Task.FromResult(File.OpenRead(""""));
 
     public async Task M()
     {
@@ -10920,15 +11475,15 @@ public class C
 
         [Fact]
         [WorkItem(36643, "https://github.com/dotnet/roslyn/issues/36643")]
-        public void DisposableObject_StoredInLocal_NotDisposed_Diagnostic()
+        public async Task DisposableObject_StoredInLocal_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 using System.Threading.Tasks;
 
 public class C
 {
-    private Task<FileStream> GetStreamAsync() => Task.FromResult(File.OpenRead("""")); 
+    private Task<FileStream> GetStreamAsync() => Task.FromResult(File.OpenRead(""""));
 
     public async Task M()
     {
@@ -10946,19 +11501,15 @@ public class C
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality." + DisposeObjectsBeforeLosingScope.RuleId + ".excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        public void EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
-            var expected = Array.Empty<DiagnosticResult>();
-            if (editorConfigText.Length == 0)
+            var csharpTest = new VerifyCS.Test
             {
-                expected = new DiagnosticResult[]
+                TestState =
                 {
-                    // Test0.cs(15,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
-                    GetCSharpResultAt(15, 17, "new A()")
-                };
-            }
-
-            VerifyCSharp(@"
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -10975,19 +11526,30 @@ class Test
         var a = new A();
     }
 }
-", GetEditorConfigAdditionalFile(editorConfigText), expected);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
 
-            expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {
-                expected = new DiagnosticResult[]
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    // Test0.vb(12,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
-                    GetBasicResultAt(12, 18, "New A()")
-                };
+                    // Test0.cs(15,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                    GetCSharpResultAt(15, 17, "new A()")
+                });
             }
 
-            VerifyBasic(@"
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Class A
@@ -11000,26 +11562,37 @@ Class Test
     Sub M1()
         Dim a As New A()
     End Sub
-End Class", GetEditorConfigAdditionalFile(editorConfigText), expected);
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.vb(12,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
+                    GetBasicResultAt(12, 18, "New A()")
+                });
+            }
+
+            await vbTest.RunAsync();
         }
 
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M2")]
         [InlineData("dotnet_code_quality.interproceduraldataflow.excluded_symbol_names = M2")]
-        public void EditorConfigConfiguration_ExcludedSymbolNamesOption_InterproceduralDataflow(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption_InterproceduralDataflow(string editorConfigText)
         {
-            var expected = Array.Empty<DiagnosticResult>();
-            if (editorConfigText.Length > 0)
+            var csharpTest = new VerifyCS.Test
             {
-                expected = new DiagnosticResult[]
+                TestState =
                 {
-                    // Test0.cs(15,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
-                    GetCSharpResultAt(15, 17, "new A()")
-                };
-            }
-
-            VerifyCSharp(@"
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -11039,19 +11612,30 @@ class Test
 
     void M2(A a) => a.Dispose();
 }
-", GetEditorConfigAdditionalFile(editorConfigText), expected);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
 
-            expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length > 0)
             {
-                expected = new DiagnosticResult[]
+                csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    // Test0.vb(12,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
-                    GetBasicResultAt(12, 18, "New A()")
-                };
+                    // Test0.cs(15,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                    GetCSharpResultAt(15, 17, "new A()")
+                });
             }
 
-            VerifyBasic(@"
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Imports System
 
 Class A
@@ -11069,14 +11653,29 @@ Class Test
     Sub M2(a As A)
         a.Dispose()
     End Sub
-End Class", GetEditorConfigAdditionalFile(editorConfigText), expected);
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
+            if (editorConfigText.Length > 0)
+            {
+                vbTest.ExpectedDiagnostics.AddRange(new[]
+                {
+                    // Test0.vb(12,18): warning CA2000: Call System.IDisposable.Dispose on object created by 'New A()' before all references to it are out of scope.
+                    GetBasicResultAt(12, 18, "New A()")
+                });
+            }
+
+            await vbTest.RunAsync();
         }
 
         [Fact]
         [WorkItem(2746, "https://github.com/dotnet/roslyn-analyzers/issues/2746#issuecomment-518959894")]
-        public void DisposableObject_ReturnOperationWithInvocation_NotDisposed_Diagnostic()
+        public async Task DisposableObject_ReturnOperationWithInvocation_NotDisposed_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public interface IMyDisposable : IDisposable
@@ -11104,7 +11703,7 @@ public class Consumer
         return new MyDisposable();
     }
 
-    public bool Foo()
+    public bool SomeMethod()
     {
         var myDisposable = CreateMyDisposable();
         return myDisposable.IsItFalse();
@@ -11115,12 +11714,101 @@ public class Consumer
         }
 
         [Fact]
-        [WorkItem(2746, "https://github.com/dotnet/roslyn-analyzers/issues/2746")]
-        public void DisposableObject_FieldAsOutArgument_NotDisposed_NoDiagnostic()
+        [WorkItem(2782, "https://github.com/dotnet/roslyn-analyzers/issues/2782")]
+        public async Task DisposableObject_CoalesceAssignment_NotDisposed_Diagnostic()
         {
-            var editorConfigFile = GetEditorConfigFileToDisableInterproceduralAnalysis(DisposeAnalysisKind.AllPaths);
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Collections.Generic;
+using System.IO;
 
-            VerifyCSharp(@"
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+
+        internal void RunDotNetNewAsync(
+            string fileName,
+            IDictionary<string, string> environmentVariables = null)
+        {
+            environmentVariables ??= new Dictionary<string, string>();
+            var f = File.Open(fileName, FileMode.Open);
+        }
+    }
+}"
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.cs(18,21): warning CA2000: Call System.IDisposable.Dispose on object created by 'File.Open(fileName, FileMode.Open)' before all references to it are out of scope.
+                        GetCSharpResultAt(18, 21, "File.Open(fileName, FileMode.Open)"),
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(2782, "https://github.com/dotnet/roslyn-analyzers/issues/2782")]
+        public async Task DisposableObject_CoalesceAssignment_NotDisposed_Diagnostic_02()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Collections.Generic;
+using System.IO;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+
+        internal void RunDotNetNewAsync(
+            string fileName,
+            FileStream f = null)
+        {
+            f ??= File.Open(fileName, FileMode.Open);
+        }
+    }
+}"
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.cs(17,19): warning CA2000: Call System.IDisposable.Dispose on object created by 'File.Open(fileName, FileMode.Open)' before all references to it are out of scope.
+                        GetCSharpResultAt(17, 19, "File.Open(fileName, FileMode.Open)"),
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(2746, "https://github.com/dotnet/roslyn-analyzers/issues/2746")]
+        public async Task DisposableObject_FieldAsOutArgument_NotDisposed_NoDiagnostic()
+        {
+            var editorConfigFile = GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind.AllPaths);
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -11148,16 +11836,26 @@ class B : IDisposable
     {
         _a?.Dispose();
     }
-}", editorConfigFile);
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
         [Fact]
         [WorkItem(2746, "https://github.com/dotnet/roslyn-analyzers/issues/2746")]
-        public void DisposableObject_FieldAsRefArgument_NotDisposed_NoDiagnostic()
+        public async Task DisposableObject_FieldAsRefArgument_NotDisposed_NoDiagnostic()
         {
-            var editorConfigFile = GetEditorConfigFileToDisableInterproceduralAnalysis(DisposeAnalysisKind.AllPaths);
+            var editorConfigFile = GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind.AllPaths);
 
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A : IDisposable
@@ -11185,16 +11883,26 @@ class B : IDisposable
     {
         _a?.Dispose();
     }
-}", editorConfigFile);
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
         [Fact]
         [WorkItem(2681, "https://github.com/dotnet/roslyn-analyzers/issues/2681")]
-        public void DisposableObject_InterlockedAssignmentToField_NotDisposed_NoDiagnostic()
+        public async Task DisposableObject_InterlockedAssignmentToField_NotDisposed_NoDiagnostic()
         {
-            var editorConfigFile = GetEditorConfigFileToDisableInterproceduralAnalysis(DisposeAnalysisKind.AllPaths);
+            var editorConfigFile = GetEditorConfigContentToDisableInterproceduralAnalysis(DisposeAnalysisKind.AllPaths);
 
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 using System.Threading;
 
@@ -11223,14 +11931,18 @@ class Test
         var temp = new CustomDisposable();
         Interlocked.CompareExchange(ref field1, temp, null);
     }
-}", editorConfigFile);
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigFile) }
+                }
+            }.RunAsync();
         }
 
         [Fact]
         [WorkItem(3082, "https://github.com/dotnet/roslyn-analyzers/issues/3082")]
-        public void DisposableObject_DictionaryAddVariants_NotDisposed_NoDiagnostic()
+        public async Task DisposableObject_DictionaryAddVariants_NotDisposed_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11287,6 +11999,333 @@ class Test
         return d;
     }
 }");
+        }
+
+        [Fact, WorkItem(3085, "https://github.com/dotnet/roslyn-analyzers/issues/3085")]
+        public async Task LocalInvocationOfAnExcludedType_NoDiagnostic()
+        {
+            string editorConfigText = $"dotnet_code_quality.{DisposeObjectsBeforeLosingScope.RuleId}.excluded_symbol_names = T:A";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class B : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+        var b = new B();
+    }
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(23, 17, "new B()"),
+                    }
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class B
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class Test
+    Sub M1()
+        Dim a As New A()
+        Dim b As New B()
+    End Sub
+End Class",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics =
+                    {
+                        GetBasicResultAt(19, 18, "New B()"),
+                    }
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3297, "https://github.com/dotnet/roslyn-analyzers/issues/3297")]
+        public async Task NameOfInsideTheScope_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+    }
+
+    void M2()
+    {
+        var a = new A();
+        var b = nameof(Test);
+    }
+}
+",
+                // Test0.cs(16,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                GetCSharpResultAt(16, 17, "new A()"),
+
+                // Test0.cs(21,17): warning CA2000: Call System.IDisposable.Dispose on object created by 'new A()' before all references to it are out of scope.
+                GetCSharpResultAt(21, 17, "new A()")
+            );
+        }
+
+        [Fact, WorkItem(3212, "https://github.com/dotnet/roslyn-analyzers/issues/3212")]
+        public async Task StringReader_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+
+public class C
+{
+    public C()
+    {
+        var x = new StringReader(""abc"");
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+
+Public Class C
+    Public Sub New()
+        Dim x = new StringReader(""abc"")
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3212, "https://github.com/dotnet/roslyn-analyzers/issues/3212")]
+        public async Task StringReader_CustomSymbolExclusion_NoDiagnostic()
+        {
+            string editorConfigText = $"dotnet_code_quality.{DisposeObjectsBeforeLosingScope.RuleId}.excluded_symbol_names = T:A";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.IO;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+public class C
+{
+    public C()
+    {
+        var x = new StringReader(""abc"");
+        var a = new A();
+    }
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+Imports System.IO
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Public Class C
+    Public Sub New()
+        Dim x = new StringReader(""abc"")
+        Dim a = new A()
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                }
+            }.RunAsync();
+        }
+
+        [Fact(Skip = "The throw statement prevents the analysis"), WorkItem(3356, "https://github.com/dotnet/roslyn-analyzers/issues/3356")]
+        public async Task Dispose_UnconditionalThrowStatement_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+        throw new Exception();
+    }
+}
+",
+                GetCSharpResultAt(15, 17, "new A()"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class Test
+    Sub M1()
+        Dim a As New A()
+        'Throw New Exception()
+    End Sub
+End Class",
+                GetBasicResultAt(12, 18, "New A()"));
+        }
+
+        [Fact]
+        public async Task Dispose_ConditionalThrowStatement_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+class Test
+{
+    void M1()
+    {
+        var a = new A();
+        if (a == null)
+            throw new Exception();
+    }
+}
+",
+                GetCSharpResultAt(15, 17, "new A()"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Class A
+    Implements IDisposable
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Class Test
+    Sub M1()
+        Dim a As New A()
+
+        If a Is Nothing Then Throw New Exception()
+    End Sub
+End Class",
+                GetBasicResultAt(12, 18, "New A()"));
+        }
+
+        [Fact]
+        public async Task Dispose_UsingDeclaration_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.Diagnostics;
+
+public class A : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+public class Class1
+{
+    public void M()
+    {
+        using Process _ = new Process
+        {
+            StartInfo = new ProcessStartInfo()
+        };
+
+        using var a = GetA();
+    }
+
+    public A GetA()
+        => new A();
+}",
+                LanguageVersion = CSharpLanguageVersion.CSharp8,
+            }.RunAsync();
         }
     }
 }

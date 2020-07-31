@@ -23,7 +23,9 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [Fact]
         public async Task UseXmlReaderCreateWrongOverloadShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml;
 
 namespace TestNamespace
@@ -39,7 +41,9 @@ namespace TestNamespace
                 GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(10, 26)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Xml
 
 Namespace TestNamespace
@@ -56,7 +60,9 @@ End Namespace",
         [Fact]
         public async Task UseXmlReaderCreateInsecureOverloadInGetShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml;
 
 class TestClass
@@ -73,7 +79,9 @@ class TestClass
                 GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(10, 32)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Xml
 
 Class TestClass
@@ -92,7 +100,9 @@ End Class",
         [Fact]
         public async Task UseXmlReaderCreateInsecureOverloadInSetShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml;
 
 class TestClass1
@@ -112,7 +122,9 @@ class TestClass1
                 GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(12, 26)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Xml
 
 Class TestClass1
@@ -134,7 +146,9 @@ End Class",
         [Fact]
         public async Task UseXmlReaderCreateInsecureOverloadInTryShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System;
 using System.Xml;
 
@@ -153,7 +167,9 @@ class TestClass
                 GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(11, 26)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System
 Imports System.Xml
 
@@ -174,7 +190,9 @@ End Class",
         [Fact]
         public async Task UseXmlReaderCreateInsecureOverloadInCatchShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System;
 using System.Xml;
 
@@ -192,7 +210,9 @@ class TestClass
                 GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(11, 26)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System
 Imports System.Xml
 
@@ -212,7 +232,9 @@ End Class",
         [Fact]
         public async Task UseXmlReaderCreateInsecureOverloadInFinallyShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System;
 using System.Xml;
 
@@ -230,7 +252,9 @@ class TestClass
                 GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(12, 26)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System
 Imports System.Xml
 
@@ -251,7 +275,9 @@ End Class",
         [Fact]
         public async Task UseXmlReaderCreateInsecureOverloadInAsyncAwaitShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -270,7 +296,9 @@ class TestClass
                 GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(9, 45)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Threading.Tasks
 Imports System.Xml
 
@@ -293,7 +321,9 @@ End Class",
         [Fact]
         public async Task UseXmlReaderCreateInsecureOverloadInDelegateShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml;
 
 class TestClass
@@ -305,7 +335,9 @@ class TestClass
                 GetCA3075XmlReaderCreateWrongOverloadCSharpResultAt(8, 40)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Xml
 
 Class TestClass
@@ -322,7 +354,9 @@ End Class",
         [Fact]
         public async Task UseXmlReaderCreateTextReaderOnlyOverloadShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.IO;
 using System.Xml;
 
@@ -342,7 +376,9 @@ namespace TestNamespace
         [Fact]
         public async Task UseXmlReaderCreateStreamOnlyOverloadShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.IO;
 using System.Text;
 using System.Xml;

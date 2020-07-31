@@ -78,7 +78,6 @@ namespace Microsoft.NetFramework.Analyzers
             );
         }
 
-
 #pragma warning disable RS1026 // Enable concurrent execution
         public override void Initialize(AnalysisContext analysisContext)
 #pragma warning restore RS1026 // Enable concurrent execution
@@ -652,7 +651,6 @@ namespace Microsoft.NetFramework.Analyzers
                                 _xmlReaderSettingsEnvironments[assignedSymbol] = env;
                             }
 
-
                             if (assignment.Value is IConversionOperation conv && SecurityDiagnosticHelpers.IsXmlReaderSettingsXmlResolverProperty(propRef.Property, _xmlTypes))
                             {
                                 if (SecurityDiagnosticHelpers.IsXmlSecureResolverType(conv.Operand.Type, _xmlTypes))
@@ -722,7 +720,7 @@ namespace Microsoft.NetFramework.Analyzers
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            RuleLevel.BuildWarning,
+                                            RuleLevel.IdeHidden_BulkConfigurable,
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
                                             isPortedFxCopRule: false,
                                             isDataflowRule: false);

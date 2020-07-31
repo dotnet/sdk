@@ -61,7 +61,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     method.IsImplementationOfAnyInterfaceMember() ||
                     method.IsConstructor() ||
                     method.IsFinalizer() ||
-                    !method.MatchesConfiguredVisibility(symbolContext.Options, Rule, symbolContext.CancellationToken))
+                    !method.MatchesConfiguredVisibility(symbolContext.Options, Rule, symbolContext.Compilation, symbolContext.CancellationToken))
                 {
                     return;
                 }

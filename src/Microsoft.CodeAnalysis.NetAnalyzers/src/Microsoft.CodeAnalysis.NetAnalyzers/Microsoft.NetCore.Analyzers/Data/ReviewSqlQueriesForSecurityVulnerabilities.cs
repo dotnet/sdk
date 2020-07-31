@@ -55,12 +55,6 @@ namespace Microsoft.NetCore.Analyzers.Data
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
                     ISymbol symbol = operationBlockStartContext.OwningSymbol;
-                    if (symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options,
-                        Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
-                    {
-                        return;
-                    }
-
                     var isInDbCommandConstructor = false;
                     var isInDataAdapterConstructor = false;
 
@@ -209,6 +203,12 @@ namespace Microsoft.NetCore.Analyzers.Data
                                                  ISymbol invokedSymbol,
                                                  ISymbol containingMethod)
         {
+            if (containingMethod.IsConfiguredToSkipAnalysis(operationContext.Options,
+                    Rule, operationContext.Compilation, operationContext.CancellationToken))
+            {
+                return false;
+            }
+
             if (argumentValue.Type.SpecialType != SpecialType.System_String || !argumentValue.ConstantValue.HasValue)
             {
                 // We have a candidate for diagnostic. perform more precise dataflow analysis.

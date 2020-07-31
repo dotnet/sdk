@@ -475,7 +475,6 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(17, 17, 17, 31, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-
         [Fact]
         public async Task Sanitized_HttpRequest_Form_Direct_NoDiagnostic()
         {
@@ -534,7 +533,6 @@ namespace VulnerableWebApp
 }
             ");
         }
-
 
         [Fact]
         public async Task HttpRequest_Form_Item_Diagnostic()
@@ -621,7 +619,6 @@ namespace VulnerableWebApp
             ",
                 GetCSharpResultAt(15, 37, 15, 52, "SqlCommand.SqlCommand(string cmdText)", "void WebForm.Page_Load(object sender, EventArgs e)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
-
 
         [Fact]
         public async Task HttpRequest_Form_Method_Diagnostic()
@@ -782,7 +779,6 @@ namespace VulnerableWebApp
             ",
                 GetCSharpResultAt(21, 17, 17, 45, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
-
 
         [Fact]
         public async Task HttpRequest_Form_Array_Diagnostic()
@@ -1094,7 +1090,7 @@ namespace VulnerableWebApp
         {
             SqlCommand sqlCommand = new SqlCommand()
             {
-                CommandText = ""SELECT * FROM users WHERE username = 'foo'"",
+                CommandText = ""SELECT * FROM users WHERE username = 'aaa'"",
                 CommandType = CommandType.Text,
             };
         }
@@ -1363,7 +1359,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string sqlCommandText = StillTainted(taintedInput, out string notTaintedSqlCommandText);
 
             ExecuteSql(notTaintedSqlCommandText);
@@ -1405,7 +1401,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string notTaintedSqlCommandText = taintedInput;
             string sqlCommandText = StillTainted(taintedInput, ref notTaintedSqlCommandText);
 
@@ -1448,7 +1444,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string sqlCommandText = StillTainted(taintedInput, out string taintedSqlCommandText);
 
             ExecuteSql(taintedSqlCommandText);
@@ -1491,7 +1487,7 @@ namespace VulnerableWebApp
         protected void Page_Load(object sender, EventArgs e)
         {
             string taintedInput = this.Request[""input""];
-            
+
             string taintedSqlCommandText = null;
             string sqlCommandText = StillTainted(taintedInput, ref taintedSqlCommandText);
 
@@ -3118,7 +3114,7 @@ namespace TestNamespace
                 StringProperty = ""This is tainted: "" + name,
             };
 
-            if ((new Random()).Next(6) == 4) 
+            if ((new Random()).Next(6) == 4)
             {
                 return null;
             }
@@ -3214,7 +3210,7 @@ namespace TestNamespace
                 StringProperty = ""This is tainted: "" + name,
             };
 
-            if ((new Random()).Next(6) == 4) 
+            if ((new Random()).Next(6) == 4)
             {
                 return null;
             }

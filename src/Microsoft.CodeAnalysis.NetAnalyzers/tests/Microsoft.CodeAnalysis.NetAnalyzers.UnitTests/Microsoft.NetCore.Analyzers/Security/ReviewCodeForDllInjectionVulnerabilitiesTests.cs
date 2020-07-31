@@ -103,7 +103,7 @@ public partial class WebForm : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         string input = Request.Form[""in""];
-        Assembly.LoadFrom(""foo.dll"");
+        Assembly.LoadFrom(""myassembly.dll"");
     }
 }");
         }

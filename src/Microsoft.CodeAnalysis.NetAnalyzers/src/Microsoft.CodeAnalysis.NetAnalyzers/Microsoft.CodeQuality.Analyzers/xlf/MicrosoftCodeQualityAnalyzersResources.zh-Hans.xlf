@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../MicrosoftCodeQualityAnalyzersResources.resx">
+  <file datatype="xml" source-language="en" target-language="zh-HANS" original="../MicrosoftCodeQualityAnalyzersResources.resx">
     <body>
       <trans-unit id="AppendConfigureAwaitTrue">
         <source>Append .ConfigureAwait(true)</source>
@@ -52,6 +52,51 @@
         <target state="translated">异步方法名称应以 Async 结尾</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
+        <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
+        <target state="translated">泛型类型包含的类型参数越多，就越难了解和记住每个类型参数表示的内容。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
+        <source>Consider a design where '{0}' has no more than {1} type parameters.</source>
+        <target state="translated">考虑使用“{0}”所含类型参数不超过 {1} 个的设计。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
+        <source>Avoid excessive parameters on generic types</source>
+        <target state="translated">避免泛型类型的参数过多</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
+        <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
+        <target state="translated">请勿在资源库中分配该属性。此调用可能导致无限递归。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageSure">
+        <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
+        <target state="translated">请勿在资源库中分配该属性。此调用将导致无限递归。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionTitle">
+        <source>Avoid infinite recursion</source>
+        <target state="translated">避免无限递归</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersDescription">
+        <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
+        <target state="translated">按引用(使用 "out" 或 "ref")传递类型需要使用指针，了解值类型和引用类型有何不同，以及处理具有多个返回值的方法。此外，"out" 和 "ref" 参数之间的差异不太容易理解。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersMessage">
+        <source>Avoid 'out' parameters as they are not designed for general audience.</source>
+        <target state="translated">请避免使用 "out" 参数，因为它们不是针对一般受众设计的。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersTitle">
+        <source>Avoid out parameters</source>
+        <target state="translated">避免使用 out 参数</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
         <target state="translated">在 catch 语句中捕获到了 System.Exception 或 System.SystemException 等常规异常或不允许的异常类型，或者已使用常规 catch 子句。不应捕获常规异常和不允许的异常。</target>
@@ -67,6 +112,96 @@
         <target state="translated">不捕获常规异常类型</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesDescription">
+        <source>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</source>
+        <target state="translated">类型声明受保护的成员，以便继承类型可以访问或重写成员。根据定义，不能从密封类型继承，这意味着不能调用密封类型上的受保护方法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
+        <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'.</source>
+        <target state="translated">“{0}” 是 NonInheritable 类 "{1}” 中新的受保护成员。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
+        <source>Do not declare protected member in sealed type</source>
+        <target state="translated">不要在密封类型中声明受保护的成员</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">“{0}”会调用“{1}”，但不使用方法返回的值。据了解，Linq 方法没有负面影响。请使用条件语句中的结果，并将结果赋给变量或将其作为自变量传递给另一个方法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">“{0}”调用“{1}”，但不使用方法返回的值。此方法被定义为用户选项。请使用条件语句中的结果，并将结果赋给变量或将其作为自变量传递给另一个方法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="translated">删除不必要的分配。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedDescription">
+        <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
+        <target state="translated">此规则假设当前未使用名称中包含 "reserved" 的枚举成员，且该成员是要在未来版本中重命名或删除的占位符。重命名或删除成员是一个中断性变更。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedMessage">
+        <source>If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</source>
+        <target state="translated">如果未在当前实现中使用“{0}.{1}”，请将它移除。否则，请为它指定一个有意义的名称。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedTitle">
+        <source>Do not name enum values 'Reserved'</source>
+        <target state="translated">不要命名“Reserved”枚举值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsDescription">
+        <source>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</source>
+        <target state="translated">System.Collections.Generic.List&lt;T&gt; 是设计用于性能和非继承的泛型集合。List&lt;T&gt; 不包含可使更改继承类的行为变得更容易的虚拟成员。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsMessage">
+        <source>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</source>
+        <target state="translated">更改 {1} 中的 {0} 以使用 "Collection&lt;T&gt;"、"ReadOnlyCollection&lt;T&gt;" 或 "KeyedCollection&lt;K,V&gt;"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsTitle">
+        <source>Do not expose generic lists</source>
+        <target state="translated">不要公开泛型列表</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
+        <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="translated">不要在基类中声明虚拟事件。派生类中已替代的事件具有未定义的行为。C# 编译器没有正确处理此内容，而且无法预测出派生事件的订阅者实际上是否将订阅基类事件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
+        <source>Event '{0}' should not be declared virtual</source>
+        <target state="translated">不得将事件“{0}”声明为虚拟事件</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
+        <source>Do not declare event fields as virtual</source>
+        <target state="translated">不要将事件字段声明为“虚拟”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
+        <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
+        <target state="translated">对于引用类型，相等运算符的默认实现几乎总是正确的。默认情况下，仅当两个引用指向同一个对象时，它们才相等。如果运算符提供有意义的值相等，则该类型应实现泛型 "System.iequatable" 接口。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
+        <source>'{0}' should not overload the equality operator.</source>
+        <target state="translated">“{0}”不应重载相等运算符。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
+        <source>Do not overload equality operator on reference types</source>
+        <target state="translated">不要对引用类型重载相等运算符</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">不要将异步 Lambda 作为 Void 返回委托类型传递</target>
@@ -80,6 +215,21 @@
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesMessage">
         <source>Don't Pass Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">不要将异步 Lambda 作为 Void 返回委托类型传递</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceDescription">
+        <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
+        <target state="translated">要按引用传递类型(使用 out 或 ref)，需具备指针方面的经验、了解值类型和引用类型之间的区别，并处理具有多个返回值的方法。此外，out 和 ref 参数之间的差异未被广泛理解。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceMessage">
+        <source>Consider a design that does not require that '{0}' be a reference parameter.</source>
+        <target state="translated">请考虑使用不要求将“{0}”用作引用参数的设计。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceTitle">
+        <source>Do not pass types by reference</source>
+        <target state="translated">不要通过引用来传递类型</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
@@ -110,6 +260,36 @@
       <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesMessage">
         <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">不要将异步 Lambda 作为 Void 返回委托类型存储</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
+        <source>The field reference '{0}' is duplicated in this bitwise initialization.</source>
+        <target state="translated">此按位初始化中的字段引用 "{0}" 重复。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
+        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'.</source>
+        <target state="translated">枚举成员 "{0}" 具有与成员 "{2}" 相同的常量值 "{1}"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
+        <source>Enums values should not be duplicated</source>
+        <target state="translated">不应复制枚举值</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixDescription">
+        <source>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</source>
+        <target state="translated">事件名称应描述引发该事件的操作。要对按特定序列引发的相关事件命名，请使用现在时或过去时来指示在操作序列中的相对位置。例如，在对关闭资源时引发的一对事件进行命名时，可将其命名为 "Closing" 和 "Closed"，而不是 "BeforeClose" 和 "AfterClose"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixMessage">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="translated">事件不应具有 "Before" 或 "After" 前缀</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixTitle">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="translated">事件不应具有 "Before" 或 "After" 前缀</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -145,6 +325,11 @@
       <trans-unit id="DoNotMixBlockingAndAsyncMessage">
         <source>Don't Mix Blocking and Async</source>
         <target state="translated">不要混合阻止和异步</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
+        <source>Remove redundant element initializer</source>
+        <target state="translated">删除冗余的元素初始值设定项</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
@@ -193,8 +378,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
-        <source>Abstract types should not have constructors</source>
-        <target state="translated">抽象类型不应具有构造函数</target>
+        <source>Abstract types should not have public constructors</source>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -203,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
-        <source>Abstract type {0} should not have constructors</source>
-        <target state="translated">抽象类型 {0} 不应具有构造函数</target>
+        <source>Abstract type '{0}' should not have public constructors</source>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -538,13 +723,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
-        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="translated">类型 {0} 应实现 IEquatable&lt;T&gt; ，因为它将替代 Equals</target>
+        <source>Implement IEquatable when overriding Object.Equals</source>
+        <target state="translated">重写 Object.Equals 时实现 IEquatable</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
-        <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="translated">重写 Object.Equals 时实现 IEquatable</target>
+        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
+        <target state="translated">类型 {0} 应实现 IEquatable&lt;T&gt; ，因为它将替代 Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">
@@ -1863,13 +2048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">在运行构造函数前，公共语言运行时将所有字段都初始化为其默认值。在大多数情况下，在构造函数中将字段初始化为其默认值是多余的行为，这会降低性能并且增加维护成本。但在构造函数调用相同类的另一构造函数或基类构造函数(此构造函数将字段初始化为非默认值)时，不存在多余的情况。在这种情况下，将字段值更改回其默认值是恰当的行为。</target>
+        <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
+        <target state="translated">在运行构造函数之前，.NET 运行时会将引用类型的所有字段初始化为它们的默认值。在大多数情况下，在构造函数中将字段显式初始化为其默认值这个操作是多余的，这增加了维护成本并可能降低性能(例如随着程序集大小的增加)，而显式初始化是可被删除的。在某些情况下(例如使用永久保留其默认值的静态只读字段时)，考虑将它们改为常量或属性。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">避免进行不必要的初始化</target>
+        <source>Member '{0}' is explicitly initialized to its default value.</source>
+        <target state="translated">成员“{0}”已显式初始化为其默认值。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -1922,14 +2107,9 @@
         <target state="translated">检测到公共或受保护的事件处理方法。除非绝对必要，否则不应公开事件处理方法。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">请考虑将 {0} 设为对外部不可见或确保它是良性代码。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">请考虑将 {0} 设为对外部不可见。</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="translated">请考虑将“{0}”设为对外部不可见</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -2018,8 +2198,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
-        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
-        <target state="translated">索引 [{0}] 处的元素已进行初始化。可能覆盖此元素先前的初始值设定项。</target>
+        <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
+        <target state="translated">索引“{0}”处的元素初始化冗余。对象初始值设定项还有一个元素初始值设定项具有相同索引，它会覆盖此值。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

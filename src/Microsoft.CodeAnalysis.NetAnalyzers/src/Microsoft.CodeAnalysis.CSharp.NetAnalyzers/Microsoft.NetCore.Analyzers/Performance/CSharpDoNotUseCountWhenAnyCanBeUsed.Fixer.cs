@@ -36,7 +36,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
         {
             switch (operation)
             {
-                case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationEqualsInstance:
+                case UseCountProperlyAnalyzer.OperationEqualsInstance:
                     {
                         if (node is InvocationExpressionSyntax invocation &&
                             invocation.Expression is MemberAccessExpressionSyntax member &&
@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
                         break;
                     }
-                case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationEqualsArgument:
+                case UseCountProperlyAnalyzer.OperationEqualsArgument:
                     {
                         if (node is InvocationExpressionSyntax invocation &&
                             invocation.ArgumentList.Arguments.Count == 1 &&
@@ -66,7 +66,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
                         break;
                     }
-                case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationBinaryLeft:
+                case UseCountProperlyAnalyzer.OperationBinaryLeft:
                     {
                         if (node is BinaryExpressionSyntax binary &&
                             TryGetExpressionAndInvocationArguments(
@@ -80,7 +80,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
                         break;
                     }
-                case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationBinaryRight:
+                case UseCountProperlyAnalyzer.OperationBinaryRight:
                     {
                         if (node is BinaryExpressionSyntax binary &&
                             TryGetExpressionAndInvocationArguments(
