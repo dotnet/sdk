@@ -33,6 +33,7 @@ namespace Microsoft.NET.Publish.Tests
         private const string IncludeDefault = "/p:IncludeSymbolsInSingleFile=false";
         private const string IncludePdb = "/p:IncludeSymbolsInSingleFile=true";
         private const string IncludeNative = "/p:IncludeNativeLibrariesForSelfExtract=true";
+        private const string DontIncludeNative = "/p:IncludeNativeLibrariesForSelfExtract=false";
         private const string IncludeAllContent = "/p:IncludeAllContentForSelfExtract=true";
 
         private readonly string RuntimeIdentifier = $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}";
@@ -178,6 +179,18 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.PublishSingleFileRequiresVersion30);
         }
 
+        [Fact]
+        public void It_errors_when_including_all_content_but_not_native_libraries()
+        {
+            var publishCommand = GetPublishCommand();
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, DontIncludeNative)
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining(Strings.CannotIncludeAllContentButNotNativeLibrariesInSingleFile);
+        }
+
         [RequiresMSBuildVersionFact("16.8.0")]
         public void It_generates_a_single_file_for_framework_dependent_apps()
         {
@@ -272,17 +285,29 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
-        public void It_generates_a_single_file_including_pdbs()
+        [RequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp3.1")]
+        public void It_generates_a_single_file_including_pdbs(string targetFramework)
         {
-            var publishCommand = GetPublishCommand();
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+                IsExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
             publishCommand
                 .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, IncludePdb)
                 .Should()
                 .Pass();
 
-            string[] expectedFiles = { SingleFile };
-            GetPublishDirectory(publishCommand)
+            string[] expectedFiles = { $"{testProject.Name}{Constants.ExeSuffix}" };
+            GetPublishDirectory(publishCommand, targetFramework)
                 .Should()
                 .OnlyHaveFiles(expectedFiles);
         }

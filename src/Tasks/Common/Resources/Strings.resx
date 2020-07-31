@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -673,5 +673,9 @@ The following are names of parameters or literal values and should not be transl
   <data name="CannotIncludeSymbolsInSingleFile" xml:space="preserve">
     <value>NETSDK1142: Including symbols in a single file bundle is not supported when publishing for .NET5 or higher.</value>
     <comment>{StrBegin="NETSDK1142: "}</comment>
+  </data>
+  <data name="CannotIncludeAllContentButNotNativeLibrariesInSingleFile" xml:space="preserve">
+    <value>NETSDK1143: Including all content in a single file bundle also includes native libraries. Either set IncludeNativeLibrariesForSelfExtract to true, or set IncludeAllContentForSelfExtract to false.</value>
+    <comment>{StrBegin="NETSDK1143: "}</comment>
   </data>
 </root>
