@@ -39,7 +39,6 @@ namespace Microsoft.NET.Publish.Tests
         private readonly string RuntimeIdentifier = $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}";
         private readonly string SingleFile = $"{TestProjectName}{Constants.ExeSuffix}";
         private readonly string PdbFile = $"{TestProjectName}.pdb";
-        private readonly string NiPdbFile = $"{TestProjectName}.ni.pdb";
         private const string NewestContent = "Signature.Newest.Stamp";
         private const string AlwaysContent = "Signature.Always.Stamp";
 
@@ -312,7 +311,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void It_excludes_ni_pdbs_from_single_file()
         {
             var publishCommand = GetPublishCommand();
@@ -321,22 +320,39 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
-            string[] expectedFiles = { SingleFile, PdbFile, NiPdbFile };
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: "net5.0", runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
+            var mainProjectDll = Path.Combine(intermediateDirectory.FullName, $"{TestProjectName}.dll");
+            var niPdbFile = GivenThatWeWantToPublishReadyToRun.GetPDBFileName(mainProjectDll);
+
+            string[] expectedFiles = { SingleFile, PdbFile, niPdbFile };
             GetPublishDirectory(publishCommand)
                 .Should()
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0")]
-        public void It_can_include_ni_pdbs_in_single_file()
+        // Windows-only due to https://github.com/dotnet/runtime/issues/40224
+        [WindowsOnlyRequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp3.1")]
+        public void It_can_include_ni_pdbs_in_single_file(string targetFramework)
         {
-            var publishCommand = GetPublishCommand();
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+                IsExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
             publishCommand
                 .Execute(PublishSingleFile, RuntimeIdentifier, ReadyToRun, ReadyToRunWithSymbols, IncludeAllContent, IncludePdb)
                 .Should()
                 .Pass();
 
-            string[] expectedFiles = { SingleFile };
+            string[] expectedFiles = { $"{testProject.Name}{Constants.ExeSuffix}" };
             GetPublishDirectory(publishCommand)
                 .Should()
                 .OnlyHaveFiles(expectedFiles);
