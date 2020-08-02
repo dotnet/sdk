@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForSqlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -622,6 +624,40 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(15, 37, 15, 52, "SqlCommand.SqlCommand(string cmdText)", "void WebForm.Page_Load(object sender, EventArgs e)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
+        [Fact]
+        public async Task HttpRequest_Form_Method_GenericsSink_Diagnostic()
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default
+                    .AddAssemblies(ImmutableArray.Create("System.Web", "System.Web.Extensions"))
+                    .AddPackages(ImmutableArray.Create(new PackageIdentity("EntityFramework", "6.4.4"))),
+                TestState =
+                {
+                    Sources = { @"
+namespace VulnerableWebApp
+{
+    using System;
+    using System.Data.Entity;
+    using System.Web.UI;
+
+    public partial class WebForm : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            string input = Request.Form.Get(""in"");
+            new DbContext(""connectionString"").Set<Object>().SqlQuery(input, null);
+        }
+     }
+}
+" }
+                },
+            };
+
+            csharpTest.ExpectedDiagnostics.AddRange(new[] { GetCSharpResultAt(13, 13, 12, 28, "DbSqlQuery<object> DbSet<object>.SqlQuery(string sql, params object[] parameters)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)") });
+
+            await csharpTest.RunAsync();
+        }
 
         [Fact]
         public async Task HttpRequest_Form_Method_Diagnostic()
