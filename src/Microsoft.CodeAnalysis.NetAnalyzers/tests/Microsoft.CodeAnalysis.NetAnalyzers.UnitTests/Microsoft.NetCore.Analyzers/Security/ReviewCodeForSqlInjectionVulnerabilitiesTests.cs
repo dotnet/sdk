@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForSqlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -3256,6 +3257,176 @@ namespace TestNamespace
         }
     }
 }");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_InheritedNonController_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+[NonController]
+public class TotallyNonController : Controller
+{
+}
+
+public class MyController : TotallyNonController
+{
+    public void DoSomethingNonAction(string input)
+    {
+        new SqlCommand(input);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_InheritedNonAction_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyControllerBase : Controller
+{
+    [NonAction]
+    public virtual void DoSomethingNonAction(string input)
+    {
+        new SqlCommand(input);
+    }
+}
+
+public class MyController : MyControllerBase
+{
+    public override void DoSomethingNonAction(string input)
+    {
+        new SqlCommand(input);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_ControllerAttribute()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+[Controller]
+public class My
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+}",
+                GetCSharpResultAt(10, 9, 10, 24, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_ControllerSuffix_Inherited()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class Controller
+{
+}
+
+public class My : Controller
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+}",
+                GetCSharpResultAt(13, 9, 13, 24, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_ControllerSuffix()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+}",
+                GetCSharpResultAt(9, 9, 9, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_NoMvcReferenced_NoDiagnostic()
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestState =
+                {
+                    Sources = { @"
+using System.Data.SqlClient;
+
+public class MyController
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+}"
+                    }
+                },
+            };
+
+            await csharpTest.RunAsync();
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController : Controller
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    [NonAction]
+    public void DoSomethingNonAction(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    public static void DoSomethingStatic(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    private void DoSomethingPrivate(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    protected void DoSomethingProtected(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    public MyController(string x)
+    {
+        new SqlCommand(x);
+    }
+}",
+                GetCSharpResultAt(9, 9, 9, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
         }
     }
 }
