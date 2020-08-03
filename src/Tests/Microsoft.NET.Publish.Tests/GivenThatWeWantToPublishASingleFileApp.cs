@@ -178,7 +178,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.PublishSingleFileRequiresVersion30);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void It_errors_when_including_all_content_but_not_native_libraries()
         {
             var publishCommand = GetPublishCommand();
@@ -314,6 +314,12 @@ namespace Microsoft.NET.Publish.Tests
         [RequiresMSBuildVersionFact("16.8.0")]
         public void It_excludes_ni_pdbs_from_single_file()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // R2R doesn't produce ni pdbs on OSX.
+                return;
+            }
+
             var publishCommand = GetPublishCommand();
             publishCommand
                 .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun, ReadyToRunWithSymbols)
@@ -330,12 +336,18 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        // Windows-only due to https://github.com/dotnet/runtime/issues/40224
+        // Fails on linux due to https://github.com/dotnet/runtime/issues/40224
         [WindowsOnlyRequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("netcoreapp3.0")]
         [InlineData("netcoreapp3.1")]
         public void It_can_include_ni_pdbs_in_single_file(string targetFramework)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // R2R doesn't produce ni pdbs on OSX.
+                return;
+            }
+
             var testProject = new TestProject()
             {
                 Name = "SingleFileTest",
@@ -353,7 +365,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
 
             string[] expectedFiles = { $"{testProject.Name}{Constants.ExeSuffix}" };
-            GetPublishDirectory(publishCommand)
+            GetPublishDirectory(publishCommand, targetFramework)
                 .Should()
                 .OnlyHaveFiles(expectedFiles);
         }
@@ -505,7 +517,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_errors_when_including_symbols_targeting_net5(bool selfContained)
