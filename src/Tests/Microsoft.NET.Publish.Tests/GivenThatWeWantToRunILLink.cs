@@ -267,8 +267,8 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
                 "/p:SuppressTrimAnalysisWarnings=false", "/p:_ExtraTrimmerArgs=--verbose")
                 .Should().Fail()
-                .And.HaveStdOutMatching("error IL1001")
-                .And.HaveStdOutMatching("NETSDK1136");
+                .And.HaveStdOutContaining("error IL1001")
+                .And.HaveStdOutContaining(Strings.ILLinkFailed);
 
             var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
@@ -652,7 +652,7 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute("/p:PublishTrimmed=true")
                 .Should().Fail()
-                .And.HaveStdOutContainingIgnoreCase("NETSDK1102");
+                .And.HaveStdOutContaining(Strings.ILLinkNotSupportedError);
         }
 
         [Theory]
@@ -661,12 +661,13 @@ namespace Microsoft.NET.Publish.Tests
         {
             var projectName = "HelloWorld";
             var referenceProjectName = "ClassLibForILLink";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute("/p:PublishTrimmed=true", $"/p:SelfContained=true", "/p:PublishTrimmed=true")
+            publishCommand.Execute("/p:PublishTrimmed=true", $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:PublishTrimmed=true")
                 .Should().Pass().And.HaveStdOutContainingIgnoreCase("https://aka.ms/dotnet-illink");
         }
 
