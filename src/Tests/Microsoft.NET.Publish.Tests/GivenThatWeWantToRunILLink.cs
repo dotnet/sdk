@@ -642,7 +642,7 @@ namespace Microsoft.NET.Publish.Tests
             publishPdbSize.Should().Be(linkedPdbSize);
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
         public void ILLink_can_treat_warnings_as_errors(string targetFramework)
         {
@@ -660,7 +660,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL2026");
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
         public void ILLink_can_treat_warnings_not_as_errors(string targetFramework)
         {
@@ -678,7 +678,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL2006");
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
         public void ILLink_can_ignore_warnings(string targetFramework)
         {
@@ -713,7 +713,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining(@"IL\d\d\d\d");
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
         public void ILLink_respects_warning_level_independently(string targetFramework)
         {
@@ -730,10 +730,10 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("IL2006");
         }
 
-         [Theory]
-         [InlineData("net5.0")]
-         public void ILLink_can_treat_warnings_as_errors_independently(string targetFramework)
-         {
+        [RequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData("net5.0")]
+        public void ILLink_can_treat_warnings_as_errors_independently(string targetFramework)
+        {
             var projectName = "AnalysisWarnings";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
@@ -745,7 +745,7 @@ namespace Microsoft.NET.Publish.Tests
                                     "/p:TreatWarningsAsErrors=true", "/p:ILLinkTreatWarningsAsErrors=false")
                 .Should().Pass()
                 .And.HaveStdOutContaining("warning IL2006");
-         }
+        }
 
         [Theory]
         [InlineData("netcoreapp3.0")]

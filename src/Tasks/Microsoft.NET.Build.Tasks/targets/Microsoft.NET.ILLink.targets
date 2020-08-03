@@ -92,7 +92,6 @@ Copyright (c) .NET Foundation. All rights reserved.
             RemoveSymbols="$(TrimmerRemoveSymbols)"
             FeatureSettings="@(_TrimmerFeatureSettings)"
             CustomData="@(_TrimmerCustomData)"
-            NoWarn="$(NoWarn)"
 
             BeforeFieldInit="$(_TrimmerBeforeFieldInit)"
             OverrideRemoval="$(_TrimmerOverrideRemoval)"
