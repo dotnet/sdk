@@ -235,7 +235,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:TrimAnalysis=true", "/p:_ExtraTrimmerArgs=--verbose")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false", "/p:_ExtraTrimmerArgs=--verbose")
                 .Should().Pass()
                 .And.HaveStdOutMatching("IL2006.*Program.IL_2006")
                 .And.HaveStdOutMatching("IL2026.*Program.IL_2026.*Testing analysis warning IL2026")
@@ -265,7 +265,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
-                "/p:TrimAnalysis=true", "/p:_ExtraTrimmerArgs=--verbose")
+                "/p:SuppressTrimAnalysisWarnings=false", "/p:_ExtraTrimmerArgs=--verbose")
                 .Should().Fail()
                 .And.HaveStdOutMatching("error IL1001")
                 .And.HaveStdOutMatching("NETSDK1136");
