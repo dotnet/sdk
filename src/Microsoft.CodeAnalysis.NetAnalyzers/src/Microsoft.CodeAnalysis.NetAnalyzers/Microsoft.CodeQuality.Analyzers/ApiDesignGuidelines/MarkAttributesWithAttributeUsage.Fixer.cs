@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
@@ -37,23 +38,31 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            var title = MicrosoftCodeQualityAnalyzersResources.MarkAttributesWithAttributeUsageCodeFix;
+            var applyAttributeTargetValues = Enum.GetValues(typeof(AttributeTargets))
+                .Cast<AttributeTargets>()
+                .Select(attributeTarget =>
+                {
+                    var attributeTargetValue = attributeTarget.ToString();
+
+                    return CodeAction.Create(
+                        attributeTargetValue,
+                        async ct => await AddAttributeUsageAttribute(context.Document, nodeToFix, attributeUsageAttributeType, attributeTargetsType, attributeTargetValue, ct).ConfigureAwait(false),
+                        equivalenceKey: attributeTargetValue);
+                })
+                .ToImmutableArray();
 
             context.RegisterCodeFix(
-                CodeAction.Create(
-                    title,
-                    async ct => await AddAttributeUsageAttribute(context.Document, nodeToFix, attributeUsageAttributeType, attributeTargetsType, ct).ConfigureAwait(false),
-                    equivalenceKey: title),
+                CodeAction.Create(MicrosoftCodeQualityAnalyzersResources.MarkAttributesWithAttributeUsageCodeFix, applyAttributeTargetValues, isInlinable: false),
                 context.Diagnostics);
         }
 
         private static async Task<Document> AddAttributeUsageAttribute(Document document, SyntaxNode nodeToFix, INamedTypeSymbol attributeUsageAttributeType,
-            INamedTypeSymbol attributeTargetsType, CancellationToken cancellationToken)
+            INamedTypeSymbol attributeTargetsType, string attributeTargetValue, CancellationToken cancellationToken)
         {
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 
             var attribute = editor.Generator.Attribute(editor.Generator.TypeExpression(attributeUsageAttributeType),
-                new[] { editor.Generator.MemberAccessExpression(editor.Generator.TypeExpression(attributeTargetsType), nameof(AttributeTargets.All)) });
+                new[] { editor.Generator.MemberAccessExpression(editor.Generator.TypeExpression(attributeTargetsType), attributeTargetValue) });
             editor.AddAttribute(nodeToFix, attribute);
 
             return editor.GetChangedDocument();
