@@ -26,7 +26,7 @@ CA1836 | Performance | Info | PreferIsEmptyOverCountAnalyzer, [Documentation](ht
 CA1837 | Performance | Info | UseEnvironmentProcessId, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1837)
 CA1838 | Performance | Hidden | AvoidStringBuilderPInvokeParametersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1838)
 CA2011 | Reliability | Info | AvoidInfiniteRecursion, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2011)
-CA2012 | Reliability | Hidden | UseValueTasksCorrectlyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2012)
+CA2012 | Reliability | Info | UseValueTasksCorrectlyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2012)
 CA2013 | Reliability | Warning | DoNotUseReferenceEqualsWithValueTypesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2013)
 CA2014 | Reliability | Warning | DoNotUseStackallocInLoopsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2014)
 CA2015 | Reliability | Warning | DoNotDefineFinalizersForTypesDerivedFromMemoryManager, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2015)
