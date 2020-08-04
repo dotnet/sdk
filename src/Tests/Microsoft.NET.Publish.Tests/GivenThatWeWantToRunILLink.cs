@@ -204,7 +204,7 @@ namespace Microsoft.NET.Publish.Tests
             DoesImageHaveMethod(isTrimmableDll, "UnusedMethod").Should().BeFalse();
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
         public void ILLink_analysis_warnings_are_disabled_by_default(string targetFramework)
         {
@@ -224,7 +224,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("IL2047");
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
         public void ILLink_accepts_option_to_enable_analysis_warnings(string targetFramework)
         {
@@ -244,7 +244,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutMatching("IL2047.*Program.Derived.IL_2047");
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("net5.0")]
         public void ILLink_errors_fail_the_build(string targetFramework)
         {
