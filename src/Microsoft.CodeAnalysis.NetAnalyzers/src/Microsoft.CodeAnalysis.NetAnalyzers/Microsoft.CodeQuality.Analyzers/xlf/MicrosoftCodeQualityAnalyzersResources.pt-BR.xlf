@@ -1028,7 +1028,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsDescription">
-        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. he System.Uri class provides these services in a safe and secure manner.</source>
+        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</source>
         <target state="needs-review-translation">Se um método usar uma representação de cadeia de caracteres de um URI, deverá ser fornecida uma sobrecarga correspondente que use uma instância da classe do URI, que por sua vez forneça esses serviços de maneira segura.</target>
         <note />
       </trans-unit>

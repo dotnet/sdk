@@ -1028,7 +1028,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsDescription">
-        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. he System.Uri class provides these services in a safe and secure manner.</source>
+        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</source>
         <target state="needs-review-translation">若方法使用 URI 的字串表示法，應該提供採用 URI 類別執行個體的相對應多載，如此可透過安全的方式提供這些服務。</target>
         <note />
       </trans-unit>
