@@ -3257,5 +3257,25 @@ namespace TestNamespace
     }
 }");
         }
+
+        [Fact]
+        public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_WrongSanitizer()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        SharedCode.WrongSanitizer,
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(16, 33, 11, 24, "SqlCommand.SqlCommand(string cmdText)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)")
+                    },
+                },
+            }.RunAsync();
+        }
     }
 }
