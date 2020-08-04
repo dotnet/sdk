@@ -43,6 +43,9 @@ CA2361 | Security | Disabled | DoNotUseDataSetReadXml, [Documentation](https://d
 CA2362 | Security | Disabled | DataSetDataTableInSerializableTypeAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2362)
 CA2363 | Security | Disabled | DataSetDataTableInSerializableTypeAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2363)
 
+### Publish Rules
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
 IL3000 | Publish  | Warning  | DoNotUseAssemblyLocationInSingleFile, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/il3000)
 IL3001 | Publish  | Warning  | DoNotUseAssemblyGetFilesInSingleFile, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/il3001)
 
