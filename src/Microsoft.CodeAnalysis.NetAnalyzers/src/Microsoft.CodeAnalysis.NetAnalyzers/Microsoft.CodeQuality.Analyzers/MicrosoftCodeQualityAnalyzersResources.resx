@@ -608,7 +608,7 @@
     <value>URI-like parameters should not be strings</value>
   </data>
   <data name="UriParametersShouldNotBeStringsDescription" xml:space="preserve">
-    <value>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. he System.Uri class provides these services in a safe and secure manner.</value>
+    <value>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</value>
   </data>
   <data name="UriParametersShouldNotBeStringsMessage" xml:space="preserve">
     <value>Change the type of parameter '{0}' of method '{1}' from 'string' to 'System.Uri', or provide an overload to '{1}' that allows '{0}' to be passed as a 'System.Uri' object.</value>
