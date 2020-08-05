@@ -143,8 +143,8 @@
         <note>{StrBegin="NETSDK1134: "}</note>
       </trans-unit>
       <trans-unit id="CannotIncludeAllContentButNotNativeLibrariesInSingleFile">
-        <source>NETSDK1143: Including all content in a single file bundle also includes native libraries. Either set IncludeNativeLibrariesForSelfExtract to true, or set IncludeAllContentForSelfExtract to false.</source>
-        <target state="new">NETSDK1143: Including all content in a single file bundle also includes native libraries. Either set IncludeNativeLibrariesForSelfExtract to true, or set IncludeAllContentForSelfExtract to false.</target>
+        <source>NETSDK1143: Including all content in a single file bundle also includes native libraries. If IncludeAllContentForSelfExtract is true, IncludeNativeLibrariesForSelfExtract must not be false.</source>
+        <target state="new">NETSDK1143: Including all content in a single file bundle also includes native libraries. If IncludeAllContentForSelfExtract is true, IncludeNativeLibrariesForSelfExtract must not be false.</target>
         <note>{StrBegin="NETSDK1143: "}</note>
       </trans-unit>
       <trans-unit id="CannotIncludeSymbolsInSingleFile">

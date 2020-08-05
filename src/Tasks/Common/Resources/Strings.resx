@@ -675,7 +675,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1142: "}</comment>
   </data>
   <data name="CannotIncludeAllContentButNotNativeLibrariesInSingleFile" xml:space="preserve">
-    <value>NETSDK1143: Including all content in a single file bundle also includes native libraries. Either set IncludeNativeLibrariesForSelfExtract to true, or set IncludeAllContentForSelfExtract to false.</value>
+    <value>NETSDK1143: Including all content in a single file bundle also includes native libraries. If IncludeAllContentForSelfExtract is true, IncludeNativeLibrariesForSelfExtract must not be false.</value>
     <comment>{StrBegin="NETSDK1143: "}</comment>
   </data>
 </root>
