@@ -12327,5 +12327,72 @@ public class Class1
                 LanguageVersion = CSharpLanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Fact, WorkItem(3873, "https://github.com/dotnet/roslyn-analyzers/issues/3873")]
+        public async Task Dispose_ConditionalControlFlow_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+
+namespace CA2000Test
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+
+        public IDisposable TestCa2000(string path, bool boolA, bool boolB)
+        {
+            if (boolA)
+            {
+                IDisposable entry = null;
+                if (Dictionary.ContainsKey(path))
+                {
+                    entry = Dictionary[path];
+                }
+
+                return entry ?? new Process();
+            }
+
+            return !boolB ? new Process() : Dictionary[path];
+        }
+
+        public Dictionary<string, IDisposable> Dictionary { get; set; }
+    }
+}");
+        }
+
+        [Fact, WorkItem(3873, "https://github.com/dotnet/roslyn-analyzers/issues/3873")]
+        public async Task Dispose_ConditionalControlFlow_NoDiagnostic_02()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+
+class Program
+{
+    private IDisposable _field;
+    public Dictionary<string, IDisposable> Dictionary { get; set; }
+
+    public IDisposable TestCa2000(string path)
+    {
+        return Dictionary[path] ?? new Process();
+    }
+
+    public IDisposable TestCa2000()
+    {
+        return _field ?? new Process();
+    }
+
+    public IDisposable TestCa2000(IDisposable[] disposables)
+    {
+        return disposables[0] ?? new Process();
+    }
+}");
+        }
     }
 }
