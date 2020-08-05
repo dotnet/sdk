@@ -78,7 +78,6 @@ namespace Microsoft.NetFramework.Analyzers
             );
         }
 
-
 #pragma warning disable RS1026 // Enable concurrent execution
         public override void Initialize(AnalysisContext analysisContext)
 #pragma warning restore RS1026 // Enable concurrent execution
@@ -651,7 +650,6 @@ namespace Microsoft.NetFramework.Analyzers
                                 env = new XmlReaderSettingsEnvironment(_isFrameworkSecure);
                                 _xmlReaderSettingsEnvironments[assignedSymbol] = env;
                             }
-
 
                             if (assignment.Value is IConversionOperation conv && SecurityDiagnosticHelpers.IsXmlReaderSettingsXmlResolverProperty(propRef.Property, _xmlTypes))
                             {

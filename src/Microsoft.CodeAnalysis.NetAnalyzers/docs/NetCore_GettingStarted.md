@@ -11,26 +11,26 @@
 ## Definition of done 
 
 - Analyzer implemented to work for C# and VB. 
-	- Unit tests for C#:
-		- All scenarios covered. 
-		- Prefer markup syntax for the majority of tests. 
-		- If your analyzer has placeholders in the diagnostic message and you want to test the arguments, write a smaller number of tests using the `VerifyCS.Diagnostic` syntax to construct specific diagnostic forms.
-	- Unit tests for VB:
-		- Obvious positive and negative scenarios covered. 
-		- If the implementation uses any syntax-specific code, then all scenarios must be covered. 
+    - Unit tests for C#:
+        - All scenarios covered. 
+        - Prefer markup syntax for the majority of tests. 
+        - If your analyzer has placeholders in the diagnostic message and you want to test the arguments, write a smaller number of tests using the `VerifyCS.Diagnostic` syntax to construct specific diagnostic forms.
+    - Unit tests for VB:
+        - Obvious positive and negative scenarios covered. 
+        - If the implementation uses any syntax-specific code, then all scenarios must be covered. 
 - Fixer implemented for C#, using the language-agnostic APIs if possible. 
-	- If the fixer can be entirely implemented with language-agnostic APIs `(IOperation)`, then VB support is essentially free. 
-	- With a language-agnostic fixer, apply the attribute to indicate the fixer also applies to VB and add mainline VB tests. 
-	- If language-specific APIs are needed to implement the fixer, the VB fixer is not required.
-	- Do not separate analyzer tests from code fix tests. If the analyzer has a code fix, then write all your tests as code fix tests.
-		- Calling `VerifyCodeFixAsync(source, source)` verifies that the analyzer either does not produce diagnostics, or produces diagnostics where no code fix is offered.
-		- Calling `VerifyCodeFixAsync(source, fixedSource)` verifies the diagnostics (analyzer testing) and verifies that the code fix on source produces the expected output.
+    - If the fixer can be entirely implemented with language-agnostic APIs `(IOperation)`, then VB support is essentially free. 
+    - With a language-agnostic fixer, apply the attribute to indicate the fixer also applies to VB and add mainline VB tests. 
+    - If language-specific APIs are needed to implement the fixer, the VB fixer is not required.
+    - Do not separate analyzer tests from code fix tests. If the analyzer has a code fix, then write all your tests as code fix tests.
+        - Calling `VerifyCodeFixAsync(source, source)` verifies that the analyzer either does not produce diagnostics, or produces diagnostics where no code fix is offered.
+        - Calling `VerifyCodeFixAsync(source, fixedSource)` verifies the diagnostics (analyzer testing) and verifies that the code fix on source produces the expected output.
 - Run the analyzer locally against `dotnet/runtime` and `dotnet/roslyn-analyzers` [instructions](#Testing-against-the-Runtime-and-Roslyn-analyzers-repo).
-	- Review each of the failures in those repositories and determine the course of action for each.
-	- Use the failures to discover nuance and guide the implementation details.
-	- Run the analyzer against `dotnet/roslyn` [instruction](#Testing-against-the-Roslyn-repo), and if feasable with `dotnet/aspnetcore` repos.
-	- Document for review: matching and non-matching scenarios, including any discovered nuance.
-	- Failures in all `dotnet` repos are addressed.
+    - Review each of the failures in those repositories and determine the course of action for each.
+    - Use the failures to discover nuance and guide the implementation details.
+    - Run the analyzer against `dotnet/roslyn` [instruction](#Testing-against-the-Roslyn-repo), and if feasable with `dotnet/aspnetcore` repos.
+    - Document for review: matching and non-matching scenarios, including any discovered nuance.
+    - Failures in all `dotnet` repos are addressed.
 - Document for review: severity, default, categorization, numbering, titles, messages, and descriptions.
 - Create the appropriate documentation for [docs.microsoft.com](https://github.com/MicrosoftDocs/visualstudio-docs-pr/tree/master/docs/code-quality) within **ONE WEEK**, instructions available on OneNote. External contributors should create an issue at https://github.com/microsoftDocs/visualstudio-docs/issues with a subject `Add documentation for analyzer rule [Your Rule ID]`. 
 - PR merged into `dotnet/roslyn-analyzers`. 
@@ -38,29 +38,35 @@
 ## Testing against the Runtime and Roslyn-analyzers repo 
 
 1. Navigate to the root of the Roslyn-analyzers repo and run these commands: 
-	- `cd roslyn-analyzers` 
-	- `set RUNTIMEPACKAGEVERSION=3.0.0` 
-	- `build.cmd -ci /p:AssemblyVersion=%RUNTIMEPACKAGEVERSION% /p:AutoGenerateAssemblyVersion=false /p:OfficialBuild=true`
-	- `cd artifacts\bin\Microsoft.NetCore.CSharp.Analyzers\Debug\netstandard2.0` 
-2. Copy the two DLLs and replace the NuGet cache entries used by `dotnet/runtime`. They might be in `"runtime/.packages/..."` or `"%USERPROFILE%/.nuget/packages/... "`. You can check the exact path by building something in runtime with /bl and checking the binlog file. Example: 
-	- `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.NetCore.Analyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs`
-3. Build the rolsyn-analyzers with `build.cmd`, now new analyzers will be used from updated nuget packages and you would see the warnings if diagnostics found.
+    - `cd roslyn-analyzers` 
+    - `set RUNTIMEPACKAGEVERSION=3.0.0` 
+    - `build.cmd -ci /p:AssemblyVersion=%RUNTIMEPACKAGEVERSION% /p:AutoGenerateAssemblyVersion=false /p:OfficialBuild=true`
+    - For testing against `dotnet/runtime`:
+        - `cd artifacts\bin\Microsoft.CodeAnalysis.CSharp.NetAnalyzers\Debug\netstandard2.0`
+    - For testing against `dotnet/roslyn-analyzers`:
+        - `cd artifacts\bin\Microsoft.NetCore.CSharp.Analyzers\Debug\netstandard2.0` 
+2. Copy the two DLLs and replace the NuGet cache entries used by `dotnet/runtime` and `dotnet/roslyn-analyzers`. They might be in `"runtime/.packages/..."` or `"%USERPROFILE%/.nuget/packages/... "`. You can check the exact path by building something in runtime with /bl and checking the binlog file.
+    - Example for `dotnet/runtime`: 
+        - `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.CodeAnalysis.NetAnalyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs`
+    - Example for `dotnet/roslyn-analyzers`: 
+        - `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.NetCore.Analyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs`
+3. Build the roslyn-analyzers with `build.cmd`, now new analyzers will be used from updated nuget packages and you would see the warnings if diagnostics found.
 4. If failures found, review each of the failures and determine the course of action for each. 
-	- Improve analyzer to reduce false positives, fix valid warnings, in a very rare edge cases suppress them.
+    - Improve analyzer to reduce false positives, fix valid warnings, in a very rare edge cases suppress them.
 5. Make sure all failures addressed and corresponding PR(s) merged.	
 6. Switch to the runtime repo. 
 7. Build the runtime repo, either do a complete build or build each repo separately (coreclr, libraries, mono). 
 8. In case no any failure introduce an error somewhere to prove that the rule ran. 
-	- Be careful about in which project you are producing an error, choose an API not having reference from other APIs, else all dependent API's will fail.
+    - Be careful about in which project you are producing an error, choose an API not having reference from other APIs, else all dependent API's will fail.
 9. If failures found, repeat step 4-5 to evaluate and address all warnings. 
 
 ## Testing against the Roslyn repo 
 
 1. Clone `dotnet/roslyn` and build it with this command: 
-	- `Build.cmd -restore -Configuration Release`
+    - `Build.cmd -restore -Configuration Release`
 2. Build `dotnet/roslyn-analyzers` in debug mode:
-	- `Build.cmd -Configuration Debug`
+    - `Build.cmd -Configuration Debug`
 3. Run AnalyzerRunner from the Roslyn root directory to get the diagnostics. 
-	- `.\artifacts\bin\AnalyzerRunner\Release\netcoreapp3.1\AnalyzerRunner.exe ..\roslyn-analyzers\artifacts\bin\Microsoft.NetCore.Analyzers.Package\Debug\netstandard2.0 .\Roslyn.sln /stats /concurrent /a AnalyzerNameToTest /log Output.txt` 
-	- Do not forget change value after `/a` option with your testing analyzer name.
+    - `.\artifacts\bin\AnalyzerRunner\Release\netcoreapp3.1\AnalyzerRunner.exe ..\roslyn-analyzers\artifacts\bin\Microsoft.NetCore.Analyzers.Package\Debug\netstandard2.0 .\Roslyn.sln /stats /concurrent /a AnalyzerNameToTest /log Output.txt` 
+    - Do not forget change value after `/a` option with your testing analyzer name.
 The diagnostics reported by the analyzer will be listed in Output.txt. 

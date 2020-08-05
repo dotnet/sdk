@@ -312,7 +312,6 @@ End Module",
 
         #endregion
 
-
         #region Unit tests for analyzer diagnostic(s)
 
         [Fact]
@@ -465,7 +464,6 @@ public class Person : INotifyPropertyChanged
 }",
     GetCSharpNameofResultAt(14, 44, "PersonName"));
         }
-
 
         [Fact]
         public async Task Diagnostic_AnonymousFunctionMultiline1()

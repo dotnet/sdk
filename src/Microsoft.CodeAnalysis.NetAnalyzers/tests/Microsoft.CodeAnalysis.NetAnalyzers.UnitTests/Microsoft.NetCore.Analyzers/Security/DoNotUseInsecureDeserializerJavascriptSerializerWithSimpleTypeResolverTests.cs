@@ -376,7 +376,6 @@ namespace Blah
                GetCSharpResultAt(11, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-
         [Fact]
         public async Task Deserialize_InLocalFunction_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnostic()
         {
@@ -552,7 +551,6 @@ namespace Blah
 }",
                   GetCSharpResultAt(23, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
-
 
         [Fact]
         public async Task DeserializeObject_InOtherMethod_CustomTypeResolver_MaybeDiagnostic()

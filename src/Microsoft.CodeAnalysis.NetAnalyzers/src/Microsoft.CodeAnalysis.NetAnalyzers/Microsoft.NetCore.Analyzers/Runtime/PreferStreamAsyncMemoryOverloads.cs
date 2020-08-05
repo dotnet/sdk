@@ -188,7 +188,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTask, out INamedTypeSymbol? genericTaskType))
+            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1, out INamedTypeSymbol? genericTaskType))
             {
                 return;
             }

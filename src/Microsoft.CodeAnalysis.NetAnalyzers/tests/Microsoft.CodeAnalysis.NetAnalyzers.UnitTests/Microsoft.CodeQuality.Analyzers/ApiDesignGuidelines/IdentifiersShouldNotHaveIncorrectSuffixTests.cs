@@ -1860,7 +1860,6 @@ End Class",
                     "MyMethodEx"));
         }
 
-
         [Fact]
         public async Task CA1711_CSharp_Diagnostic_MethodNameEndsWithImpl()
         {

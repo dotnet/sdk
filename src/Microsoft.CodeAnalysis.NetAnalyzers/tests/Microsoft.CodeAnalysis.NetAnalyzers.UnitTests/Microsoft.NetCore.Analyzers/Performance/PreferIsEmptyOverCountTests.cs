@@ -435,6 +435,22 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(4, 31),
         ? 0 :
         _dictionary.Count;
 }");
+
+        [Theory]
+        [InlineData("System.ReadOnlyMemory")]
+        [InlineData("System.ReadOnlySpan")]
+        [InlineData("System.Memory")]
+        [InlineData("System.Span")]
+        public Task CSharpTest_DisallowedTypesForCA1836_NoDiagnosis(string type)
+            => VerifyCS.VerifyAnalyzerAsync(
+$@"class C
+{{
+    private {type}<T> GetData_Generic<T>() => default;
+    private {type}<char> GetData_NonGeneric() => default;
+
+    private bool Test_Generic() => GetData_Generic<byte>().Length == 0;
+    private bool Test_NonGeneric() => GetData_NonGeneric().Length == 0;
+}}");
     }
 
     public abstract class PreferIsEmptyOverCountTestsBase
@@ -633,19 +649,6 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(4, 31),
                       extensionsNamespace: "System.Linq", extensionsClass: "Enumerable",
                       isAsync: false),
                   new BasicVerifier<UseCountProperlyAnalyzer, BasicPreferIsEmptyOverCountFixer>(UseCountProperlyAnalyzer.CA1836))
-        { }
-    }
-
-    public class CSharpPreferIsEmptyOverCountTests_Span
-        : PreferIsEmptyOverCountTestsBase
-    {
-        public CSharpPreferIsEmptyOverCountTests_Span()
-            : base(
-                  new CSharpTestsSourceCodeProvider(
-                      "Length",
-                      "global::System.Span<int>",
-                      extensionsNamespace: null, extensionsClass: null, isAsync: false),
-                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpPreferIsEmptyOverCountFixer>(UseCountProperlyAnalyzer.CA1836))
         { }
     }
 }
