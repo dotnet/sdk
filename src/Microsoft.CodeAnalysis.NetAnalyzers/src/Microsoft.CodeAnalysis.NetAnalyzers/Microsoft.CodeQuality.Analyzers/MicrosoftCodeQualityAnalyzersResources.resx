@@ -184,13 +184,13 @@
     <value>Use generic event handler instances</value>
   </data>
   <data name="UseGenericEventHandlerInstancesForDelegateMessage" xml:space="preserve">
-    <value>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</value>
+    <value>Remove '{0}' and replace its usage with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</value>
   </data>
   <data name="UseGenericEventHandlerInstancesForDelegateDescription" xml:space="preserve">
     <value>A type contains a delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.</value>
   </data>
   <data name="UseGenericEventHandlerInstancesForEventMessage" xml:space="preserve">
-    <value>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</value>
+    <value>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</value>
   </data>
   <data name="UseGenericEventHandlerInstancesForEventDescription" xml:space="preserve">
     <value>A delegate that handles a public or protected event does not have the correct signature, return type, or parameter names.</value>

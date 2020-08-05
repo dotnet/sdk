@@ -1678,7 +1678,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
-        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
         <target state="needs-review-translation">'{0}'을(를) 제거하고 대신 제네릭 EventHandler를 사용합니다(예: EventHandler&lt;T&gt;). 여기서 T는 유효한 EventArgs입니다.</target>
         <note />
       </trans-unit>
@@ -1688,7 +1688,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
-        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
         <target state="needs-review-translation">'{0}' 이벤트를 변경하여 '{1}' 형식을 제네릭 EventHandler로 바꿉니다(예: EventHandler&lt;T&gt;). 여기서 T는 유효한 EventArgs입니다.</target>
         <note />
       </trans-unit>

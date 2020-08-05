@@ -1678,7 +1678,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
-        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
         <target state="needs-review-translation">'{0}' öğesini kaldırın ve kullanımını genel bir EventHandler ile değiştirin. Örneğin, T'nin geçerli bir EventArgs olduğu EventHandler&lt;T&gt;</target>
         <note />
       </trans-unit>
@@ -1688,7 +1688,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
-        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
         <target state="needs-review-translation">'{0}' olayını genel bir EventHandler'ın '{1}' türünün yerini alacak şekilde değiştirin. Örneğin, T'nin geçerli bir EventArgs olduğu EventHandler&lt;T&gt;</target>
         <note />
       </trans-unit>

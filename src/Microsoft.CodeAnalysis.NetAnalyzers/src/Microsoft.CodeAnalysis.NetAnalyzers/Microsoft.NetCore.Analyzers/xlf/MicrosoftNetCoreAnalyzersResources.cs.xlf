@@ -1998,7 +1998,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
-        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copiesUse '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copiesUse '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
         <target state="needs-review-translation">V {2} místo indexeru založeného na {1} použijte {0}, nebudou se tak vytvářet nepotřebné kopie dat.</target>
         <note />
       </trans-unit>

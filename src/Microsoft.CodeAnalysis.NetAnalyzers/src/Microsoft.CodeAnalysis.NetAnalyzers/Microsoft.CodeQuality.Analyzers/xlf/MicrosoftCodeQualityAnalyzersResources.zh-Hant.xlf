@@ -1678,7 +1678,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
-        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
         <target state="needs-review-translation">移除 '{0}' 並利用泛型 EventHandler 取代其用法，例如 EventHandler&lt;T&gt;，其中的 T 是有效的 EventArgs</target>
         <note />
       </trans-unit>
@@ -1688,7 +1688,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
-        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
         <target state="needs-review-translation">變更事件 '{0}' 來取代具有泛型 EventHandler 的類型 '{1}'，例如 EventHandler&lt;T&gt;，其中的 T 是有效的 EventArgs</target>
         <note />
       </trans-unit>

@@ -1678,7 +1678,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
-        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
         <target state="needs-review-translation">Quite "{0}" y reemplace su uso con un EventHandler genérico, por ejemplo, EventHandler&lt;T&gt;, donde T es un elemento EventArgs válido.</target>
         <note />
       </trans-unit>
@@ -1688,7 +1688,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
-        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs.</source>
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
         <target state="needs-review-translation">Cambie el evento "{0}" para que reemplace al tipo "{1}" con un EventHandler genérico, por ejemplo, EventHandler&lt;T&gt;, donde T es un elemento EventArgs válido.</target>
         <note />
       </trans-unit>
