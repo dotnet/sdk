@@ -3,7 +3,7 @@
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
-    <Channel>$(SourceBranch.Replace('refs/heads/', '').Replace('internal/', ''))</Channel>
+    <Channel>$(SourceBranch.Replace('refs/heads/', ''))</Channel>
   </PropertyGroup>
 
   <Import Project="..\redist\targets\BuildCoreSdkTasks.targets" />

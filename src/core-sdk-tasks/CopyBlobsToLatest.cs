@@ -64,6 +64,11 @@ namespace Microsoft.DotNet.Cli.Build
 
         public override bool Execute()
         {
+            if (!(Channel.Equals("master") || Channel.Equals("main") || Channel.StartsWith("release")))
+            {
+                return true; // Skip copy to latest, we don't want to publish to arbitrary places
+            }
+
             string targetFolder = $"{AzurePublisher.Product.Sdk}/{Channel}";
 
             string targetVersionFile = $"{targetFolder}/{CommitHash}";
