@@ -1373,7 +1373,6 @@ End Namespace"
             }.RunAsync();
         }
 
-
         [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         public async Task CA1710_UserMappingWinsOverHardcoded()
         {

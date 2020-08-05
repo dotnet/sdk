@@ -34,6 +34,5 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 (a.IsImplicit && !a.Parameter.Type.Equals(cancellationTokenType)) ||
                 (a.Syntax is ArgumentSyntax argumentNode && argumentNode.NameColon != null));
         }
-
     }
 }

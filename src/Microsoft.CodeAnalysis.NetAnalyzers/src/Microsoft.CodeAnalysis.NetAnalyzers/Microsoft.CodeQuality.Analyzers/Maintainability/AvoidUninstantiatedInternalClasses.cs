@@ -309,7 +309,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             var wellKnowTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
             var taskSymbol = wellKnowTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask);
-            var genericTaskSymbol = wellKnowTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTask);
+            var genericTaskSymbol = wellKnowTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1);
 
             // TODO: Handle the case where Compilation.Options.MainTypeName matches this type.
             // TODO: Test: can't have type parameters.
@@ -400,7 +400,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             var newGenerics = namedTypeArg.TypeParameters.Zip(namedTypeArg.TypeArguments, (parameter, argument) => (parameter, argument));
                             ProcessGenericTypes(newGenerics, instantiatedTypes);
                         }
-                    };
+                    }
 
                     if (typeArg is INamedTypeSymbol namedType)
                     {
@@ -414,7 +414,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                             var inheritedConstraints = t.ConstraintTypes.OfType<ITypeParameterSymbol>()
                                 .SelectMany(constraintT => GetAllNamedTypeConstraints(constraintT));
                             return directConstraints.Concat(inheritedConstraints);
-                        };
+                        }
 
                         var constraints = GetAllNamedTypeConstraints(typeParameterArg);
                         foreach (INamedTypeSymbol constraint in constraints)

@@ -48,7 +48,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                                                     ("Queue", "accessPolicyIdentifier"),
                                                                                                     ("Table", "accessPolicyIdentifier"));
 
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
@@ -156,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                         wellKnownTypeProvider,
                                                                         PointsToAnalysisKind.Complete,
                                                                         interproceduralAnalysisConfig,
-                                                                        interproceduralAnalysisPredicateOpt: null,
+                                                                        interproceduralAnalysisPredicate: null,
                                                                         false);
                                         if (pointsToAnalysisResult == null)
                                         {

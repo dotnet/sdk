@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -1270,46 +1270,70 @@
     <value>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</value>
   </data>
   <data name="DataTableReadXmlMessage" xml:space="preserve">
-    <value>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</value>
+    <value>The method '{0}' is insecure when deserializing untrusted data</value>
   </data>
   <data name="DataTableReadXmlTitle" xml:space="preserve">
-    <value>Do not use insecure deserialization with DataTable.ReadXml()</value>
+    <value>Do not use DataTable.ReadXml() with untrusted data</value>
   </data>
   <data name="DataSetDataTableInSerializableTypeMessage" xml:space="preserve">
-    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</value>
-  </data>
-  <data name="DataSetDataTableInSerializableTypeTitle" xml:space="preserve">
-    <value>Unsafe DataSet or DataTable in serializable type</value>
+    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</value>
   </data>
   <data name="DataSetDataTableInWebDeserializableObjectGraphMessage" xml:space="preserve">
-    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</value>
+    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</value>
   </data>
   <data name="DataSetDataTableInWebDeserializableObjectGraphTitle" xml:space="preserve">
     <value>Unsafe DataSet or DataTable type in web deserializable object graph</value>
   </data>
   <data name="DataSetReadXmlMessage" xml:space="preserve">
-    <value>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</value>
+    <value>The method '{0}' is insecure when deserializing untrusted data</value>
   </data>
   <data name="DataSetReadXmlTitle" xml:space="preserve">
-    <value>Do not use insecure deserialization with DataSet.ReadXml()</value>
+    <value>Do not use DataSet.ReadXml() with untrusted data</value>
   </data>
   <data name="DataSetDataTableInRceSerializableTypeMessage" xml:space="preserve">
     <value>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</value>
   </data>
-  <data name="DataSetDataTableInRceSerializableTypeTitle" xml:space="preserve">
-    <value>Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</value>
-  </data>
   <data name="DataSetDataTableInDeserializableObjectGraphMessage" xml:space="preserve">
-    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</value>
+    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</value>
   </data>
   <data name="DataSetDataTableInDeserializableObjectGraphTitle" xml:space="preserve">
     <value>Unsafe DataSet or DataTable type found in deserializable object graph</value>
   </data>
   <data name="DataSetDataTableInRceDeserializableObjectGraphMessage" xml:space="preserve">
-    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</value>
+    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</value>
   </data>
   <data name="DataSetDataTableInRceDeserializableObjectGraphTitle" xml:space="preserve">
     <value>Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</value>
+  </data>
+  <data name="DataSetDataTableInAutogeneratedSerializableTypeMessage" xml:space="preserve">
+    <value>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</value>
+  </data>
+  <data name="DataSetDataTableInAutogeneratedSerializableTypeTitle" xml:space="preserve">
+    <value>Unsafe DataSet or DataTable in autogenerated serializable type</value>
+  </data>
+  <data name="DataSetDataTableInRceAutogeneratedSerializableTypeMessage" xml:space="preserve">
+    <value>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</value>
+  </data>
+  <data name="DataSetDataTableInRceAutogeneratedSerializableTypeTitle" xml:space="preserve">
+    <value>Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</value>
+  </data>
+  <data name="DataSetDataTableInRceSerializableTypeTitle" xml:space="preserve">
+    <value>Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</value>
+  </data>
+  <data name="DataSetDataTableInSerializableTypeTitle" xml:space="preserve">
+    <value>Unsafe DataSet or DataTable in serializable type</value>
+  </data>
+  <data name="DataSetReadXmlAutogeneratedMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</value>
+  </data>
+  <data name="DataSetReadXmlAutogeneratedTitle" xml:space="preserve">
+    <value>Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</value>
+  </data>
+  <data name="DataTableReadXmlAutogeneratedMessage" xml:space="preserve">
+    <value>The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</value>
+  </data>
+  <data name="DataTableReadXmlAutogeneratedTitle" xml:space="preserve">
+    <value>Ensure autogenerated class containing DataTable.ReadXml() is not used with untrusted data</value>
   </data>
   <data name="DoNotUseStackallocInLoopsTitle" xml:space="preserve">
     <value>Do not use stackalloc in loops.</value>
@@ -1395,6 +1419,18 @@
   <data name="PreferIsEmptyOverCountTitle" xml:space="preserve">
     <value>Prefer IsEmpty over Count</value>
   </data>
+  <data name="UseEnvironmentProcessIdDescription" xml:space="preserve">
+    <value>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'</value>
+  </data>
+  <data name="UseEnvironmentProcessIdMessage" xml:space="preserve">
+    <value>Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</value>
+  </data>
+  <data name="UseEnvironmentProcessIdTitle" xml:space="preserve">
+    <value>Use 'Environment.ProcessId'</value>
+  </data>
+  <data name="UseEnvironmentProcessIdFix" xml:space="preserve">
+    <value>Use 'Environment.ProcessId'</value>
+  </data>
   <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on a string</value>
   </data>
@@ -1409,5 +1445,23 @@
   </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersTitle" xml:space="preserve">
     <value>Do not use 'OutAttribute' on string parameters for P/Invokes</value>
+  </data>
+  <data name="AvoidStringBuilderPInvokeParametersDescription" xml:space="preserve">
+    <value>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</value>
+  </data>
+  <data name="AvoidStringBuilderPInvokeParametersMessage" xml:space="preserve">
+    <value>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead</value>
+  </data>
+  <data name="AvoidStringBuilderPInvokeParametersTitle" xml:space="preserve">
+    <value>Avoid 'StringBuilder' parameters for P/Invokes</value>
+  </data>
+  <data name="AvoidAssemblyLocationInSingleFileTitle" xml:space="preserve">
+    <value>Avoid using accessing Assembly file path when publishing as a single-file</value>
+  </data>
+  <data name="AvoidAssemblyLocationInSingleFileMessage" xml:space="preserve">
+    <value>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</value>
+  </data>
+  <data name="AvoidAssemblyGetFilesInSingleFile" xml:space="preserve">
+    <value>'{0}' will throw for assemblies embedded in a single-file app.</value>
   </data>
 </root>

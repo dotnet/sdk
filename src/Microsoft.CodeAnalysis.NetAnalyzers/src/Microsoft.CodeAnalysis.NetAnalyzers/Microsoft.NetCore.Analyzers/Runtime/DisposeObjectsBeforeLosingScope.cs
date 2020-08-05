@@ -94,17 +94,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var trackExceptionPaths = disposeAnalysisKind.AreExceptionPathsEnabled();
 
                     // For non-exception paths analysis, we can skip interprocedural analysis for certain invocations.
-                    var interproceduralAnalysisPredicateOpt = !trackExceptionPaths ?
+                    var interproceduralAnalysisPredicate = !trackExceptionPaths ?
                         new InterproceduralAnalysisPredicate(
-                            skipAnalysisForInvokedMethodPredicateOpt: SkipInterproceduralAnalysis,
-                            skipAnalysisForInvokedLambdaOrLocalFunctionPredicateOpt: null,
-                            skipAnalysisForInvokedContextPredicateOpt: null) :
+                            skipAnalysisForInvokedMethodPredicate: SkipInterproceduralAnalysis,
+                            skipAnalysisForInvokedLambdaOrLocalFunctionPredicate: null,
+                            skipAnalysisForInvokedContextPredicate: null) :
                         null;
 
                     if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockContext.OperationBlocks, containingMethod,
                         operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, trackInstanceFields: false, trackExceptionPaths,
                         operationBlockContext.CancellationToken, out var disposeAnalysisResult, out var pointsToAnalysisResult,
-                        interproceduralAnalysisPredicateOpt))
+                        interproceduralAnalysisPredicate))
                     {
                         var notDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
                         var mayBeNotDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();

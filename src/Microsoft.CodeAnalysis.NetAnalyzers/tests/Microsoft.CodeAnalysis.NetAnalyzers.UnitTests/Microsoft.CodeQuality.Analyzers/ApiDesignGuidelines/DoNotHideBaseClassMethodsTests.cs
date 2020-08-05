@@ -241,7 +241,6 @@ Class Derived
 End Class");
         }
 
-
         [Fact]
         public async Task CA1061_DerivedMethodHasLessDerivedParameter_OverridesAbstractBaseMethod_CompileError()
         {
