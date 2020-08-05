@@ -1023,23 +1023,23 @@
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsTitle">
-        <source>Uri parameters should not be strings</source>
-        <target state="translated">URI パラメーターを文字列にすることはできません</target>
+        <source>URI-like parameters should not be strings</source>
+        <target state="needs-review-translation">URI パラメーターを文字列にすることはできません</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsDescription">
-        <source>If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.</source>
-        <target state="translated">メソッドで URI の文字列表現を使用する場合、URI クラスのインスタンスを取得する、対応するオーバーロードを指定する必要があります。これにより、安全な方法でこれらのサービスが提供されます。</target>
+        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</source>
+        <target state="needs-review-translation">メソッドで URI の文字列表現を使用する場合、URI クラスのインスタンスを取得する、対応するオーバーロードを指定する必要があります。これにより、安全な方法でこれらのサービスが提供されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsMessage">
-        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object</source>
+        <source>Change the type of parameter '{0}' of method '{1}' from 'string' to 'System.Uri', or provide an overload to '{1}' that allows '{0}' to be passed as a 'System.Uri' object</source>
         <target state="needs-review-translation">メソッド {1} のパラメーター {0} の型を文字列から System.Uri に変更するか、または {1} のオーバーロードを指定してください。そうすると、{0} を System.Uri オブジェクトとして渡すことができます。</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
-        <source>Uri return values should not be strings</source>
-        <target state="translated">URI 戻り値を文字列にすることはできません</target>
+        <source>URI-like return values should not be strings</source>
+        <target state="needs-review-translation">URI 戻り値を文字列にすることはできません</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsDescription">
@@ -1048,13 +1048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
-        <source>Change the return type of method {0} from string to System.Uri</source>
+        <source>Change the return type of method '{0}' from 'string' to 'System.Uri'</source>
         <target state="needs-review-translation">メソッド {0} の戻り値の型を文字列から System.Uri に変更してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
-        <source>Uri properties should not be strings</source>
-        <target state="translated">URI プロパティを文字列にすることはできません</target>
+        <source>URI-like properties should not be strings</source>
+        <target state="needs-review-translation">URI プロパティを文字列にすることはできません</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsDescription">
@@ -1063,7 +1063,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
-        <source>Change the type of property {0} from string to System.Uri</source>
+        <source>Change the type of property '{0}' from 'string' to 'System.Uri'</source>
         <target state="needs-review-translation">プロパティ {0} の型を文字列から System.Uri に変更してください。</target>
         <note />
       </trans-unit>

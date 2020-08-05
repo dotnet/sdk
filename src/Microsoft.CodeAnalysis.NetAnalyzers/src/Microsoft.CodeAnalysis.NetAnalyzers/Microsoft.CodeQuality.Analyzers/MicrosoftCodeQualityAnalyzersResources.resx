@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -605,31 +605,31 @@
     <value>Do not declare visible instance fields</value>
   </data>
   <data name="UriParametersShouldNotBeStringsTitle" xml:space="preserve">
-    <value>Uri parameters should not be strings</value>
+    <value>URI-like parameters should not be strings</value>
   </data>
   <data name="UriParametersShouldNotBeStringsDescription" xml:space="preserve">
-    <value>If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.</value>
+    <value>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</value>
   </data>
   <data name="UriParametersShouldNotBeStringsMessage" xml:space="preserve">
-    <value>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object</value>
+    <value>Change the type of parameter '{0}' of method '{1}' from 'string' to 'System.Uri', or provide an overload to '{1}' that allows '{0}' to be passed as a 'System.Uri' object</value>
   </data>
   <data name="UriReturnValuesShouldNotBeStringsTitle" xml:space="preserve">
-    <value>Uri return values should not be strings</value>
+    <value>URI-like return values should not be strings</value>
   </data>
   <data name="UriReturnValuesShouldNotBeStringsDescription" xml:space="preserve">
     <value>This rule assumes that the method returns a URI. A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.</value>
   </data>
   <data name="UriReturnValuesShouldNotBeStringsMessage" xml:space="preserve">
-    <value>Change the return type of method {0} from string to System.Uri</value>
+    <value>Change the return type of method '{0}' from 'string' to 'System.Uri'</value>
   </data>
   <data name="UriPropertiesShouldNotBeStringsTitle" xml:space="preserve">
-    <value>Uri properties should not be strings</value>
+    <value>URI-like properties should not be strings</value>
   </data>
   <data name="UriPropertiesShouldNotBeStringsDescription" xml:space="preserve">
     <value>This rule assumes that the property represents a Uniform Resource Identifier (URI). A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.</value>
   </data>
   <data name="UriPropertiesShouldNotBeStringsMessage" xml:space="preserve">
-    <value>Change the type of property {0} from string to System.Uri</value>
+    <value>Change the type of property '{0}' from 'string' to 'System.Uri'</value>
   </data>
   <data name="ImplementIDisposableCorrectlyTitle" xml:space="preserve">
     <value>Implement IDisposable Correctly</value>
