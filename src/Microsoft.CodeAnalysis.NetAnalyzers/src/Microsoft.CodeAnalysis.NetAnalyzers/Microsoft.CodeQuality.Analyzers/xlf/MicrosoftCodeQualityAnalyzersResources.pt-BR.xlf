@@ -1023,23 +1023,23 @@
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsTitle">
-        <source>Uri parameters should not be strings</source>
-        <target state="translated">Os parâmetros do URI não devem ser cadeias de caracteres</target>
+        <source>URI-like parameters should not be strings</source>
+        <target state="needs-review-translation">Os parâmetros do URI não devem ser cadeias de caracteres</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsDescription">
-        <source>If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.</source>
-        <target state="translated">Se um método usar uma representação de cadeia de caracteres de um URI, deverá ser fornecida uma sobrecarga correspondente que use uma instância da classe do URI, que por sua vez forneça esses serviços de maneira segura.</target>
+        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</source>
+        <target state="needs-review-translation">Se um método usar uma representação de cadeia de caracteres de um URI, deverá ser fornecida uma sobrecarga correspondente que use uma instância da classe do URI, que por sua vez forneça esses serviços de maneira segura.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsMessage">
-        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object.</source>
-        <target state="translated">Altere o tipo do parâmetro {0} do método {1} da cadeia de caracteres para System.Uri ou forneça uma sobrecarga para {1} que permita que {0} seja passado como um objeto System.Uri.</target>
+        <source>Change the type of parameter '{0}' of method '{1}' from 'string' to 'System.Uri', or provide an overload to '{1}' that allows '{0}' to be passed as a 'System.Uri' object.</source>
+        <target state="needs-review-translation">Altere o tipo do parâmetro {0} do método {1} da cadeia de caracteres para System.Uri ou forneça uma sobrecarga para {1} que permita que {0} seja passado como um objeto System.Uri.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
-        <source>Uri return values should not be strings</source>
-        <target state="translated">Os valores retornados do URI não devem ser cadeias de caracteres</target>
+        <source>URI-like return values should not be strings</source>
+        <target state="needs-review-translation">Os valores retornados do URI não devem ser cadeias de caracteres</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsDescription">
@@ -1048,13 +1048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
-        <source>Change the return type of method {0} from string to System.Uri.</source>
-        <target state="translated">Altere o tipo de retorno do método {0} da cadeia de caracteres para System.Uri.</target>
+        <source>Change the return type of method '{0}' from 'string' to 'System.Uri'</source>
+        <target state="needs-review-translation">Altere o tipo de retorno do método {0} da cadeia de caracteres para System.Uri.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
-        <source>Uri properties should not be strings</source>
-        <target state="translated">As propriedades do URI não devem ser cadeias de caracteres</target>
+        <source>URI-like properties should not be strings</source>
+        <target state="needs-review-translation">As propriedades do URI não devem ser cadeias de caracteres</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsDescription">
@@ -1063,8 +1063,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
-        <source>Change the type of property {0} from string to System.Uri.</source>
-        <target state="translated">Altere o tipo da propriedade {0} de cadeia de caracteres para System.Uri.</target>
+        <source>Change the type of property '{0}' from 'string' to 'System.Uri'</source>
+        <target state="needs-review-translation">Altere o tipo da propriedade {0} de cadeia de caracteres para System.Uri.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyTitle">
