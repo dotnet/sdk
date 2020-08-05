@@ -1450,7 +1450,7 @@
     <value>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</value>
   </data>
   <data name="AvoidStringBuilderPInvokeParametersMessage" xml:space="preserve">
-    <value>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead</value>
+    <value>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead.</value>
   </data>
   <data name="AvoidStringBuilderPInvokeParametersTitle" xml:space="preserve">
     <value>Avoid 'StringBuilder' parameters for P/Invokes</value>
@@ -1461,7 +1461,7 @@
   <data name="AvoidAssemblyLocationInSingleFileMessage" xml:space="preserve">
     <value>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</value>
   </data>
-  <data name="AvoidAssemblyGetFilesInSingleFile" xml:space="preserve">
-    <value>'{0}' will throw for assemblies embedded in a single-file app.</value>
+  <data name="AvoidAssemblyGetFilesInSingleFileMessage" xml:space="preserve">
+    <value>'{0}' will throw for assemblies embedded in a single-file app</value>
   </data>
 </root>

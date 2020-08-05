@@ -47,9 +47,9 @@
         <target state="translated">Attributzeichenfolgenliterale müssen richtig analysiert werden</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFile">
-        <source>'{0}' will throw for assemblies embedded in a single-file app.</source>
-        <target state="new">'{0}' will throw for assemblies embedded in a single-file app.</target>
+      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
+        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
+        <target state="new">'{0}' will throw for assemblies embedded in a single-file app</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
@@ -68,8 +68,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersMessage">
-        <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead</source>
-        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead</target>
+        <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead.</source>
+        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersTitle">
