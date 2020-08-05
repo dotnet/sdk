@@ -336,8 +336,7 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        // Fails on linux due to https://github.com/dotnet/runtime/issues/40224
-        [WindowsOnlyRequiresMSBuildVersionTheory("16.8.0")]
+        [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("netcoreapp3.0")]
         [InlineData("netcoreapp3.1")]
         public void It_can_include_ni_pdbs_in_single_file(string targetFramework)
