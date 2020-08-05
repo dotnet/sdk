@@ -1,29 +1,25 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Globalization;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumsShouldHavePluralNamesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumsShouldHavePluralNamesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class EnumsShouldHavePluralNamesTests : DiagnosticAnalyzerTestBase
+    public class EnumsShouldHavePluralNamesTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new EnumsShouldHavePluralNamesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new EnumsShouldHavePluralNamesAnalyzer();
-        }
-
         [Fact]
-        public void CA1714_CA1717_Test_EnumWithNoFlags_SingularName()
+        public async Task CA1714_CA1717_Test_EnumWithNoFlags_SingularName()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                public enum Day 
@@ -36,7 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                             }"
                           );
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                         Public Class A
 	                        Public Enum Day
 		                           Sunday = 0
@@ -49,9 +45,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1714_CA1717__Test_EnumWithNoFlags_PluralName()
+        public async Task CA1714_CA1717__Test_EnumWithNoFlags_PluralName()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                public enum Days 
@@ -64,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                             }",
                             GetCSharpNoPluralResultAt(4, 44));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                         Public Class A
 	                        Public Enum Days
 		                           Sunday = 0
@@ -78,9 +74,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1714_CA1717__Test_EnumWithNoFlags_PluralName_Internal()
+        public async Task CA1714_CA1717__Test_EnumWithNoFlags_PluralName_Internal()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class A 
 { 
     enum Days 
@@ -115,7 +111,7 @@ internal class A3
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class A
 	Private Enum Days
 		Sunday = 0
@@ -143,9 +139,9 @@ End Class
         }
 
         [Fact]
-        public void CA1714_CA1717__Test_EnumWithNoFlags_PluralName_UpperCase()
+        public async Task CA1714_CA1717__Test_EnumWithNoFlags_PluralName_UpperCase()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                public enum DAYS 
@@ -158,7 +154,7 @@ End Class
                             }",
                             GetCSharpNoPluralResultAt(4, 44));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                         Public Class A
 	                        Public Enum DAYS
 		                           Sunday = 0
@@ -172,9 +168,9 @@ End Class
         }
 
         [Fact]
-        public void CA1714_CA1717_Test_EnumWithFlags_SingularName()
+        public async Task CA1714_CA1717_Test_EnumWithFlags_SingularName()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -188,7 +184,7 @@ End Class
                             }",
                             GetCSharpPluralResultAt(5, 44));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
 	                    <System.Flags> _
 	                    Public Enum Day
@@ -201,9 +197,9 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1714_CA1717_Test_EnumWithFlags_SingularName_Internal()
+        public async Task CA1714_CA1717_Test_EnumWithFlags_SingularName_Internal()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class A 
 { 
     [System.Flags] 
@@ -241,7 +237,7 @@ internal class A3
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class A
     <System.Flags> _
     Enum Day
@@ -272,9 +268,9 @@ End Class
         }
 
         [Fact]
-        public void CA1714_CA1717_Test_EnumWithFlags_PluralName()
+        public async Task CA1714_CA1717_Test_EnumWithFlags_PluralName()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -287,7 +283,7 @@ End Class
                                 };
                             }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
 	                    <System.Flags> _
 	                    Public Enum Days
@@ -299,9 +295,9 @@ End Class
         }
 
         [Fact]
-        public void CA1714_CA1717_Test_EnumWithFlags_PluralName_UpperCase()
+        public async Task CA1714_CA1717_Test_EnumWithFlags_PluralName_UpperCase()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -310,11 +306,11 @@ End Class
                                     sunday = 0,
                                     Monday = 1,
                                     Tuesday = 2
-                                       
+
                                 };
                             }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
 	                    <System.Flags> _
 	                    Public Enum DAYS
@@ -326,9 +322,9 @@ End Class
         }
 
         [Fact, WorkItem(1323, "https://github.com/dotnet/roslyn-analyzers/issues/1323")]
-        public void CA1714_CA1717_Test_EnumWithFlags_NonPluralNameEndsWithS()
+        public async Task CA1714_CA1717_Test_EnumWithFlags_NonPluralNameEndsWithS()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -342,7 +338,7 @@ End Class
                             }",
                             GetCSharpPluralResultAt(5, 44));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
 	                    <System.Flags> _
 	                    Public Enum Axis
@@ -355,9 +351,9 @@ End Class
         }
 
         [Fact, WorkItem(1323, "https://github.com/dotnet/roslyn-analyzers/issues/1323")]
-        public void CA1714_CA1717_Test_EnumWithFlags_PluralNameEndsWithS()
+        public async Task CA1714_CA1717_Test_EnumWithFlags_PluralNameEndsWithS()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -370,7 +366,7 @@ End Class
                                 };
                             }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
 	                    <System.Flags> _
 	                    Public Enum Axes
@@ -382,9 +378,9 @@ End Class
         }
 
         [Fact, WorkItem(1323, "https://github.com/dotnet/roslyn-analyzers/issues/1323")]
-        public void CA1714_CA1717_Test_EnumWithFlags_PluralName_NotEndingWithS()
+        public async Task CA1714_CA1717_Test_EnumWithFlags_PluralName_NotEndingWithS()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -397,7 +393,7 @@ End Class
                                 };
                             }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
                         < System.Flags > _
                         Public Enum Men
@@ -409,9 +405,9 @@ End Class
         }
 
         [Fact, WorkItem(1323, "https://github.com/dotnet/roslyn-analyzers/issues/1323")]
-        public void CA1714_CA1717_Test_EnumWithNoFlags_PluralWord_NotEndingWithS()
+        public async Task CA1714_CA1717_Test_EnumWithNoFlags_PluralWord_NotEndingWithS()
         {
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                public enum Men 
@@ -424,7 +420,7 @@ End Class
                             }",
                             GetCSharpNoPluralResultAt(4, 44));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
                         Public Enum Men
                             M1 = 0
@@ -436,10 +432,10 @@ End Class
         }
 
         [Fact, WorkItem(1323, "https://github.com/dotnet/roslyn-analyzers/issues/1323")]
-        public void CA1714_CA1717_Test_EnumWithNoFlags_irregularPluralWord_EndingWith_ae()
+        public async Task CA1714_CA1717_Test_EnumWithNoFlags_irregularPluralWord_EndingWith_ae()
         {
             // Humanizer does not recognize 'formulae' as plural, but we skip words ending with 'ae'
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -452,7 +448,7 @@ End Class
                                 };
                             }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
                         < System.Flags > _
                         Public Enum formulae
@@ -464,10 +460,10 @@ End Class
         }
 
         [Fact, WorkItem(1323, "https://github.com/dotnet/roslyn-analyzers/issues/1323")]
-        public void CA1714_CA1717_Test_EnumWithNoFlags_irregularPluralWord_EndingWith_i()
+        public async Task CA1714_CA1717_Test_EnumWithNoFlags_irregularPluralWord_EndingWith_i()
         {
             // Humanizer does not recognize 'trophi' as plural, but we skip words ending with 'i'
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -480,7 +476,7 @@ End Class
                                 };
                             }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
                         < System.Flags > _
                         Public Enum trophi
@@ -492,10 +488,10 @@ End Class
         }
 
         [Fact, WorkItem(1323, "https://github.com/dotnet/roslyn-analyzers/issues/1323")]
-        public void CA1714_CA1717_Test_EnumWithNoFlags_NonAscii()
+        public async Task CA1714_CA1717_Test_EnumWithNoFlags_NonAscii()
         {
             // We skip non-ASCII names.
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                [System.Flags] 
@@ -508,7 +504,7 @@ End Class
                                 };
                             }");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                        Public Class A
                         < System.Flags > _
                         Public Enum UnicodeNameΔ
@@ -525,12 +521,12 @@ End Class
         [InlineData("pl-PL")]
         [InlineData("fi-FI")]
         [InlineData("de-DE")]
-        public void CA1714_CA1717__Test_EnumWithNoFlags_PluralName_MultipleCultures(string culture)
+        public async Task CA1714_CA1717__Test_EnumWithNoFlags_PluralName_MultipleCultures(string culture)
         {
             var currentCulture = CultureInfo.DefaultThreadCurrentCulture;
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo(culture);
 
-            VerifyCSharp(@" 
+            await VerifyCS.VerifyAnalyzerAsync(@"
                             public class A 
                             { 
                                public enum Days 
@@ -543,7 +539,7 @@ End Class
                             }",
                             GetCSharpNoPluralResultAt(4, 44));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
                         Public Class A
 	                        Public Enum Days
 		                           Sunday = 0
@@ -559,23 +555,19 @@ End Class
         }
 
         private static DiagnosticResult GetCSharpPluralResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, EnumsShouldHavePluralNamesAnalyzer.RuleId_Plural, MicrosoftCodeQualityAnalyzersResources.FlagsEnumsShouldHavePluralNamesMessage);
-        }
+            => VerifyCS.Diagnostic(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1714)
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicPluralResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, EnumsShouldHavePluralNamesAnalyzer.RuleId_Plural, MicrosoftCodeQualityAnalyzersResources.FlagsEnumsShouldHavePluralNamesMessage);
-        }
+            => VerifyVB.Diagnostic(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1714)
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetCSharpNoPluralResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, EnumsShouldHavePluralNamesAnalyzer.RuleId_NoPlural, MicrosoftCodeQualityAnalyzersResources.OnlyFlagsEnumsShouldHavePluralNamesMessage);
-        }
+            => VerifyCS.Diagnostic(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1717)
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetBasicNoPluralResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, EnumsShouldHavePluralNamesAnalyzer.RuleId_NoPlural, MicrosoftCodeQualityAnalyzersResources.OnlyFlagsEnumsShouldHavePluralNamesMessage);
-        }
+            => VerifyVB.Diagnostic(EnumsShouldHavePluralNamesAnalyzer.Rule_CA1717)
+                .WithLocation(line, column);
     }
 }

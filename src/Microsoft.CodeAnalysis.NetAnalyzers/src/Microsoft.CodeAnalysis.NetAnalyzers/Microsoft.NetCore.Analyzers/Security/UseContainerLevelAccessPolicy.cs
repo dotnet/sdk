@@ -48,7 +48,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                                                     ("Queue", "accessPolicyIdentifier"),
                                                                                                     ("Table", "accessPolicyIdentifier"));
 
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
@@ -142,10 +141,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     if (cfg != null)
                                     {
                                         var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
-                                                                                operationBlockStartContext.Options,
+                                                                                operationAnalysisContext.Options,
                                                                                 SupportedDiagnostics,
+                                                                                operationAnalysisContext.Operation.Syntax.SyntaxTree,
+                                                                                operationAnalysisContext.Compilation,
                                                                                 defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
-                                                                                cancellationToken: operationBlockStartContext.CancellationToken,
+                                                                                cancellationToken: operationAnalysisContext.CancellationToken,
                                                                                 defaultMaxInterproceduralMethodCallChain: 1);
                                         var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(
                                                                         cfg,
@@ -154,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                         wellKnownTypeProvider,
                                                                         PointsToAnalysisKind.Complete,
                                                                         interproceduralAnalysisConfig,
-                                                                        interproceduralAnalysisPredicateOpt: null,
+                                                                        interproceduralAnalysisPredicate: null,
                                                                         false);
                                         if (pointsToAnalysisResult == null)
                                         {

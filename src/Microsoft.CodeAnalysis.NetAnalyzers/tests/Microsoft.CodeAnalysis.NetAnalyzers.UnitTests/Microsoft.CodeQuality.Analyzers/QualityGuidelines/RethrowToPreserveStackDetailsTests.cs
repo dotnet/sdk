@@ -1,30 +1,24 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpRethrowToPreserveStackDetailsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicRethrowToPreserveStackDetailsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
-    public partial class RethrowToPreserveStackDetailsTests : DiagnosticAnalyzerTestBase
+    public class RethrowToPreserveStackDetailsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicRethrowToPreserveStackDetailsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpRethrowToPreserveStackDetailsAnalyzer();
-        }
-
         [Fact]
-        public void CA2200_NoDiagnosticsForRethrow()
+        public async Task CA2200_NoDiagnosticsForRethrow()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -43,7 +37,7 @@ class Program
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -58,9 +52,9 @@ End Class
         }
 
         [Fact]
-        public void CA2200_NoDiagnosticsForThrowAnotherException()
+        public async Task CA2200_NoDiagnosticsForThrowAnotherException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -81,7 +75,7 @@ class Program
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -98,9 +92,9 @@ End Class
         }
 
         [Fact]
-        public void CA2200_DiagnosticForThrowCaughtException()
+        public async Task CA2200_DiagnosticForThrowCaughtException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -125,7 +119,7 @@ class Program
 ",
            GetCA2200CSharpResultAt(14, 13));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -142,9 +136,9 @@ End Class
         }
 
         [Fact]
-        public void CA2200_NoDiagnosticsForThrowCaughtReassignedException()
+        public async Task CA2200_NoDiagnosticsForThrowCaughtReassignedException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -168,7 +162,7 @@ class Program
     }
 }
 ");
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -185,9 +179,9 @@ End Class
         }
 
         [Fact]
-        public void CA2200_NoDiagnosticsForEmptyBlock()
+        public async Task CA2200_NoDiagnosticsForEmptyBlock()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -210,7 +204,7 @@ class Program
     }
 }
 ");
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -226,9 +220,9 @@ End Class
         }
 
         [Fact]
-        public void CA2200_NoDiagnosticsForThrowCaughtExceptionInAnotherScope()
+        public async Task CA2200_NoDiagnosticsForThrowCaughtExceptionInAnotherScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -241,22 +235,22 @@ class Program
         }
         catch (ArithmeticException e)
         {
-            throw e;
+            [|throw e;|]
         }
     }
 
-    [|void ThrowException()
+    void ThrowException()
     {
         throw new ArithmeticException();
-    }|]
+    }
 }
 ");
         }
 
         [Fact]
-        public void CA2200_SingleDiagnosticForThrowCaughtExceptionInSpecificScope()
+        public async Task CA2200_SingleDiagnosticForThrowCaughtExceptionInSpecificScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -264,10 +258,10 @@ Class Program
         Try
             Throw New ArithmeticException()
         Catch e As ArithmeticException
+            [|Throw e|]
+        Catch e As Exception
             Throw e
-        [|Catch e As Exception
-            Throw e
-        End Try|]
+        End Try
     End Sub
 End Class
 ",
@@ -275,9 +269,9 @@ End Class
         }
 
         [Fact]
-        public void CA2200_MultipleDiagnosticsForThrowCaughtExceptionAtMultiplePlaces()
+        public async Task CA2200_MultipleDiagnosticsForThrowCaughtExceptionAtMultiplePlaces()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -307,7 +301,7 @@ class Program
             GetCA2200CSharpResultAt(14, 13),
             GetCA2200CSharpResultAt(18, 13));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -327,9 +321,9 @@ End Class
         }
 
         [Fact]
-        public void CA2200_DiagnosticForThrowOuterCaughtException()
+        public async Task CA2200_DiagnosticForThrowOuterCaughtException()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -356,7 +350,7 @@ class Program
 ",
             GetCA2200CSharpResultAt(20, 17));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -377,9 +371,9 @@ End Class
         }
 
         [Fact]
-        public void CA2200_NoDiagnosticsForNestingWithCompileErrors()
+        public async Task CA2200_NoDiagnosticsForNestingWithCompileErrors()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -396,7 +390,7 @@ class Program
             {
                 throw;
             }
-            catch (ArithmeticException)   // error CS0160: A previous catch clause already catches all exceptions of this or of a super type ('ArithmeticException')
+            catch ({|CS0160:ArithmeticException|})
             {
                 try
                 {
@@ -404,7 +398,7 @@ class Program
                 }
                 catch (ArithmeticException i)
                 {
-                    throw e;   // error CS0103: The name 'e' does not exist in the current context
+                    throw {|CS0103:e|};
                 }
             }
         }
@@ -414,9 +408,9 @@ class Program
         }
     }
 }
-", TestValidationMode.AllowCompileErrors);
+");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrowExplicitly()
@@ -429,7 +423,7 @@ Class Program
                 Try
                     Throw New ArithmeticException()
                 Catch e As Exception
-                    Throw ex   ' error BC30451: 'ex' is not declared. It may be inaccessible due to its protection level.
+                    Throw {|BC30451:ex|}
                 End Try
             End Try
         Catch ex As Exception
@@ -437,13 +431,13 @@ Class Program
         End Try
     End Sub
 End Class
-", TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Fact]
-        public void CA2200_NoDiagnosticsForCatchWithoutIdentifier()
+        public async Task CA2200_NoDiagnosticsForCatchWithoutIdentifier()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -455,7 +449,7 @@ class Program
         }
         catch (Exception)
         { 
-            var finalException = new InvalidOperationException(""barf"", exception);
+            var finalException = new InvalidOperationException(""aaa"", exception);
             throw finalException;
         }
     }
@@ -465,9 +459,9 @@ class Program
 
         [Fact]
         [WorkItem(2167, "https://github.com/dotnet/roslyn-analyzers/issues/2167")]
-        public void CA2200_NoDiagnosticsForCatchWithoutArgument()
+        public async Task CA2200_NoDiagnosticsForCatchWithoutArgument()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class Program
@@ -479,21 +473,21 @@ class Program
         }
         catch
         { 
-            var finalException = new InvalidOperationException(""barf"", exception);
+            var finalException = new InvalidOperationException(""aaa"", exception);
             throw finalException;
         }
     }
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Class Program
     Sub CatchAndRethrow(exception As Exception)
         Try
             
         Catch
-            Dim finalException = new InvalidOperationException(""barf"", exception)
+            Dim finalException = new InvalidOperationException(""aaa"", exception)
             Throw finalException
         End Try
     End Sub
@@ -502,13 +496,11 @@ End Class
         }
 
         private static DiagnosticResult GetCA2200BasicResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, RethrowToPreserveStackDetailsAnalyzer.Rule);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetCA2200CSharpResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, RethrowToPreserveStackDetailsAnalyzer.Rule);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
     }
 }

@@ -1,30 +1,27 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseEventsWhereAppropriateAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpUseEventsWhereAppropriateFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseEventsWhereAppropriateAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicUseEventsWhereAppropriateFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class UseEventsWhereAppropriateTests : DiagnosticAnalyzerTestBase
+    public class UseEventsWhereAppropriateTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new UseEventsWhereAppropriateAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new UseEventsWhereAppropriateAnalyzer();
-        }
-
         #region No Diagnostic Tests
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public void NoDiagnostic_NamingCases()
+        public async Task NoDiagnostic_NamingCases()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class EventsClass1
@@ -51,7 +48,7 @@ public class EventsClass1
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class EventsClass1
@@ -80,9 +77,9 @@ End Class
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public void NoDiagnostic_InterfaceMemberImplementation()
+        public async Task NoDiagnostic_InterfaceMemberImplementation()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class InterfaceImplementation : I
@@ -110,7 +107,7 @@ public interface I
 #pragma warning restore CA1030
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class InterfaceImplementation
@@ -138,9 +135,9 @@ End Interface
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public void NoDiagnostic_UnflaggedMethodKinds()
+        public async Task NoDiagnostic_UnflaggedMethodKinds()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class FireOnSomethingDerivedClass : BaseClass
@@ -195,7 +192,7 @@ public abstract class BaseClass
 #pragma warning restore CA1030
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class FireOnSomethingDerivedClass
@@ -249,9 +246,9 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void NoDiagnostic_FlaggedMethodKinds_NotExternallyVisible()
+        public async Task NoDiagnostic_FlaggedMethodKinds_NotExternallyVisible()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 internal interface InterfaceWithViolations
@@ -298,7 +295,7 @@ public abstract class ClassWithViolations
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Interface InterfaceWithViolations
     ' Interface methods.
     Sub FireOnSomething_InterfaceMethod1()
@@ -343,9 +340,9 @@ End Class
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public void Diagnostic_FlaggedMethodKinds()
+        public async Task Diagnostic_FlaggedMethodKinds()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public interface InterfaceWithViolations
@@ -381,23 +378,23 @@ public abstract class ClassWithViolations
 }
 ",
       // Test0.cs(7,10): warning CA1030: Consider making 'FireOnSomething_InterfaceMethod1' an event.
-      GetCSharpResultAt(7, 10, UseEventsWhereAppropriateAnalyzer.Rule, "FireOnSomething_InterfaceMethod1"),
+      GetCSharpResultAt(7, 10, "FireOnSomething_InterfaceMethod1"),
       // Test0.cs(8,10): warning CA1030: Consider making 'FireOnSomething_InterfaceMethod2' an event.
-      GetCSharpResultAt(8, 10, UseEventsWhereAppropriateAnalyzer.Rule, "FireOnSomething_InterfaceMethod2"),
+      GetCSharpResultAt(8, 10, "FireOnSomething_InterfaceMethod2"),
       // Test0.cs(14,24): warning CA1030: Consider making 'RaiseOnSomething_StaticMethod' an event.
-      GetCSharpResultAt(14, 24, UseEventsWhereAppropriateAnalyzer.Rule, "RaiseOnSomething_StaticMethod"),
+      GetCSharpResultAt(14, 24, "RaiseOnSomething_StaticMethod"),
       // Test0.cs(19,25): warning CA1030: Consider making 'FireOnSomething_VirtualMethod' an event.
-      GetCSharpResultAt(19, 25, UseEventsWhereAppropriateAnalyzer.Rule, "FireOnSomething_VirtualMethod"),
+      GetCSharpResultAt(19, 25, "FireOnSomething_VirtualMethod"),
       // Test0.cs(24,26): warning CA1030: Consider making 'FireOnSomething_AbstractMethod' an event.
-      GetCSharpResultAt(24, 26, UseEventsWhereAppropriateAnalyzer.Rule, "FireOnSomething_AbstractMethod"),
+      GetCSharpResultAt(24, 26, "FireOnSomething_AbstractMethod"),
       // Test0.cs(27,26): warning CA1030: Consider making 'RaiseOnSomething_AbstractMethod' an event.
-      GetCSharpResultAt(27, 26, UseEventsWhereAppropriateAnalyzer.Rule, "RaiseOnSomething_AbstractMethod"),
+      GetCSharpResultAt(27, 26, "RaiseOnSomething_AbstractMethod"),
       // Test0.cs(30,26): warning CA1030: Consider making 'AddOnSomething_AbstractMethod' an event.
-      GetCSharpResultAt(30, 26, UseEventsWhereAppropriateAnalyzer.Rule, "AddOnSomething_AbstractMethod"),
+      GetCSharpResultAt(30, 26, "AddOnSomething_AbstractMethod"),
       // Test0.cs(33,26): warning CA1030: Consider making 'RemoveOnSomething_AbstractMethod' an event.
-      GetCSharpResultAt(33, 26, UseEventsWhereAppropriateAnalyzer.Rule, "RemoveOnSomething_AbstractMethod"));
+      GetCSharpResultAt(33, 26, "RemoveOnSomething_AbstractMethod"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Interface InterfaceWithViolations
 	' Interface methods - Rule fires.
 	Sub FireOnSomething_InterfaceMethod1()
@@ -427,28 +424,28 @@ Public MustInherit Class ClassWithViolations
 End Class
 ",
       // Test0.vb(4,6): warning CA1030: Consider making 'FireOnSomething_InterfaceMethod1' an event.
-      GetBasicResultAt(4, 6, UseEventsWhereAppropriateAnalyzer.Rule, "FireOnSomething_InterfaceMethod1"),
+      GetBasicResultAt(4, 6, "FireOnSomething_InterfaceMethod1"),
       // Test0.vb(5,6): warning CA1030: Consider making 'FireOnSomething_InterfaceMethod2' an event.
-      GetBasicResultAt(5, 6, UseEventsWhereAppropriateAnalyzer.Rule, "FireOnSomething_InterfaceMethod2"),
+      GetBasicResultAt(5, 6, "FireOnSomething_InterfaceMethod2"),
       // Test0.vb(10,20): warning CA1030: Consider making 'RaiseOnSomething_StaticMethod' an event.
-      GetBasicResultAt(10, 20, UseEventsWhereAppropriateAnalyzer.Rule, "RaiseOnSomething_StaticMethod"),
+      GetBasicResultAt(10, 20, "RaiseOnSomething_StaticMethod"),
       // Test0.vb(14,25): warning CA1030: Consider making 'FireOnSomething_VirtualMethod' an event.
-      GetBasicResultAt(14, 25, UseEventsWhereAppropriateAnalyzer.Rule, "FireOnSomething_VirtualMethod"),
+      GetBasicResultAt(14, 25, "FireOnSomething_VirtualMethod"),
       // Test0.vb(18,26): warning CA1030: Consider making 'FireOnSomething_AbstractMethod' an event.
-      GetBasicResultAt(18, 26, UseEventsWhereAppropriateAnalyzer.Rule, "FireOnSomething_AbstractMethod"),
+      GetBasicResultAt(18, 26, "FireOnSomething_AbstractMethod"),
       // Test0.vb(21,26): warning CA1030: Consider making 'RaiseOnSomething_AbstractMethod' an event.
-      GetBasicResultAt(21, 26, UseEventsWhereAppropriateAnalyzer.Rule, "RaiseOnSomething_AbstractMethod"),
+      GetBasicResultAt(21, 26, "RaiseOnSomething_AbstractMethod"),
       // Test0.vb(24,26): warning CA1030: Consider making 'AddOnSomething_AbstractMethod' an event.
-      GetBasicResultAt(24, 26, UseEventsWhereAppropriateAnalyzer.Rule, "AddOnSomething_AbstractMethod"),
+      GetBasicResultAt(24, 26, "AddOnSomething_AbstractMethod"),
       // Test0.vb(27,26): warning CA1030: Consider making 'RemoveOnSomething_AbstractMethod' an event.
-      GetBasicResultAt(27, 26, UseEventsWhereAppropriateAnalyzer.Rule, "RemoveOnSomething_AbstractMethod"));
+      GetBasicResultAt(27, 26, "RemoveOnSomething_AbstractMethod"));
         }
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public void Diagnostic_PascalCasedMethodNames()
+        public async Task Diagnostic_PascalCasedMethodNames()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class EventsClassPascalCased
 {
     public void Fire() { }
@@ -469,23 +466,23 @@ public class EventsClassPascalCased
 }
 ",
       // Test0.cs(4,17): warning CA1030: Consider making 'Fire' an event.
-      GetCSharpResultAt(4, 17, UseEventsWhereAppropriateAnalyzer.Rule, "Fire"),
+      GetCSharpResultAt(4, 17, "Fire"),
       // Test0.cs(6,17): warning CA1030: Consider making 'Raise' an event.
-      GetCSharpResultAt(6, 17, UseEventsWhereAppropriateAnalyzer.Rule, "Raise"),
+      GetCSharpResultAt(6, 17, "Raise"),
       // Test0.cs(8,17): warning CA1030: Consider making 'RaiseFileEvent' an event.
-      GetCSharpResultAt(8, 17, UseEventsWhereAppropriateAnalyzer.Rule, "RaiseFileEvent"),
+      GetCSharpResultAt(8, 17, "RaiseFileEvent"),
       // Test0.cs(10,17): warning CA1030: Consider making 'FireFileEvent' an event.
-      GetCSharpResultAt(10, 17, UseEventsWhereAppropriateAnalyzer.Rule, "FireFileEvent"),
+      GetCSharpResultAt(10, 17, "FireFileEvent"),
       // Test0.cs(12,17): warning CA1030: Consider making 'AddOnFileEvent' an event.
-      GetCSharpResultAt(12, 17, UseEventsWhereAppropriateAnalyzer.Rule, "AddOnFileEvent"),
+      GetCSharpResultAt(12, 17, "AddOnFileEvent"),
       // Test0.cs(14,17): warning CA1030: Consider making 'RemoveOnFileEvent' an event.
-      GetCSharpResultAt(14, 17, UseEventsWhereAppropriateAnalyzer.Rule, "RemoveOnFileEvent"),
+      GetCSharpResultAt(14, 17, "RemoveOnFileEvent"),
       // Test0.cs(16,17): warning CA1030: Consider making 'Add_OnFileEvent' an event.
-      GetCSharpResultAt(16, 17, UseEventsWhereAppropriateAnalyzer.Rule, "Add_OnFileEvent"),
+      GetCSharpResultAt(16, 17, "Add_OnFileEvent"),
       // Test0.cs(18,17): warning CA1030: Consider making 'Remove_OnFileEvent' an event.
-      GetCSharpResultAt(18, 17, UseEventsWhereAppropriateAnalyzer.Rule, "Remove_OnFileEvent"));
+      GetCSharpResultAt(18, 17, "Remove_OnFileEvent"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class EventsClassPascalCased
 	Public Sub Fire()
 	End Sub
@@ -513,29 +510,29 @@ Public Class EventsClassPascalCased
 End Class
 ",
       // Test0.vb(3,13): warning CA1030: Consider making 'Fire' an event.
-      GetBasicResultAt(3, 13, UseEventsWhereAppropriateAnalyzer.Rule, "Fire"),
+      GetBasicResultAt(3, 13, "Fire"),
       // Test0.vb(6,13): warning CA1030: Consider making 'Raise' an event.
-      GetBasicResultAt(6, 13, UseEventsWhereAppropriateAnalyzer.Rule, "Raise"),
+      GetBasicResultAt(6, 13, "Raise"),
       // Test0.vb(9,13): warning CA1030: Consider making 'RaiseFileEvent' an event.
-      GetBasicResultAt(9, 13, UseEventsWhereAppropriateAnalyzer.Rule, "RaiseFileEvent"),
+      GetBasicResultAt(9, 13, "RaiseFileEvent"),
       // Test0.vb(12,13): warning CA1030: Consider making 'FireFileEvent' an event.
-      GetBasicResultAt(12, 13, UseEventsWhereAppropriateAnalyzer.Rule, "FireFileEvent"),
+      GetBasicResultAt(12, 13, "FireFileEvent"),
       // Test0.vb(15,13): warning CA1030: Consider making 'AddOnFileEvent' an event.
-      GetBasicResultAt(15, 13, UseEventsWhereAppropriateAnalyzer.Rule, "AddOnFileEvent"),
+      GetBasicResultAt(15, 13, "AddOnFileEvent"),
       // Test0.vb(18,13): warning CA1030: Consider making 'RemoveOnFileEvent' an event.
-      GetBasicResultAt(18, 13, UseEventsWhereAppropriateAnalyzer.Rule, "RemoveOnFileEvent"),
+      GetBasicResultAt(18, 13, "RemoveOnFileEvent"),
       // Test0.vb(21,13): warning CA1030: Consider making 'Add_OnFileEvent' an event.
-      GetBasicResultAt(21, 13, UseEventsWhereAppropriateAnalyzer.Rule, "Add_OnFileEvent"),
+      GetBasicResultAt(21, 13, "Add_OnFileEvent"),
       // Test0.vb(24,13): warning CA1030: Consider making 'Remove_OnFileEvent' an event.
-      GetBasicResultAt(24, 13, UseEventsWhereAppropriateAnalyzer.Rule, "Remove_OnFileEvent"));
+      GetBasicResultAt(24, 13, "Remove_OnFileEvent"));
 
         }
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public void Diagnostic_LowerCaseMethodNames()
+        public async Task Diagnostic_LowerCaseMethodNames()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class EventsClassLowercase
 {
     public void fire() { }
@@ -556,23 +553,23 @@ public class EventsClassLowercase
 }
 ",
       // Test0.cs(4,17): warning CA1030: Consider making 'fire' an event.
-      GetCSharpResultAt(4, 17, UseEventsWhereAppropriateAnalyzer.Rule, "fire"),
+      GetCSharpResultAt(4, 17, "fire"),
       // Test0.cs(6,17): warning CA1030: Consider making 'raise' an event.
-      GetCSharpResultAt(6, 17, UseEventsWhereAppropriateAnalyzer.Rule, "raise"),
+      GetCSharpResultAt(6, 17, "raise"),
       // Test0.cs(8,17): warning CA1030: Consider making 'raiseFileEvent' an event.
-      GetCSharpResultAt(8, 17, UseEventsWhereAppropriateAnalyzer.Rule, "raiseFileEvent"),
+      GetCSharpResultAt(8, 17, "raiseFileEvent"),
       // Test0.cs(10,17): warning CA1030: Consider making 'fireFileEvent' an event.
-      GetCSharpResultAt(10, 17, UseEventsWhereAppropriateAnalyzer.Rule, "fireFileEvent"),
+      GetCSharpResultAt(10, 17, "fireFileEvent"),
       // Test0.cs(12,17): warning CA1030: Consider making 'addOnFileEvent' an event.
-      GetCSharpResultAt(12, 17, UseEventsWhereAppropriateAnalyzer.Rule, "addOnFileEvent"),
+      GetCSharpResultAt(12, 17, "addOnFileEvent"),
       // Test0.cs(14,17): warning CA1030: Consider making 'removeOnFileEvent' an event.
-      GetCSharpResultAt(14, 17, UseEventsWhereAppropriateAnalyzer.Rule, "removeOnFileEvent"),
+      GetCSharpResultAt(14, 17, "removeOnFileEvent"),
       // Test0.cs(16,17): warning CA1030: Consider making 'add_onFileEvent' an event.
-      GetCSharpResultAt(16, 17, UseEventsWhereAppropriateAnalyzer.Rule, "add_onFileEvent"),
+      GetCSharpResultAt(16, 17, "add_onFileEvent"),
       // Test0.cs(18,17): warning CA1030: Consider making 'remove_onFileEvent' an event.
-      GetCSharpResultAt(18, 17, UseEventsWhereAppropriateAnalyzer.Rule, "remove_onFileEvent"));
+      GetCSharpResultAt(18, 17, "remove_onFileEvent"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class EventsClassLowercase
 	Public Sub fire()
 	End Sub
@@ -600,24 +597,34 @@ Public Class EventsClassLowercase
 End Class
 ",
       // Test0.vb(3,13): warning CA1030: Consider making 'fire' an event.
-      GetBasicResultAt(3, 13, UseEventsWhereAppropriateAnalyzer.Rule, "fire"),
+      GetBasicResultAt(3, 13, "fire"),
       // Test0.vb(6,13): warning CA1030: Consider making 'raise' an event.
-      GetBasicResultAt(6, 13, UseEventsWhereAppropriateAnalyzer.Rule, "raise"),
+      GetBasicResultAt(6, 13, "raise"),
       // Test0.vb(9,13): warning CA1030: Consider making 'raiseFileEvent' an event.
-      GetBasicResultAt(9, 13, UseEventsWhereAppropriateAnalyzer.Rule, "raiseFileEvent"),
+      GetBasicResultAt(9, 13, "raiseFileEvent"),
       // Test0.vb(12,13): warning CA1030: Consider making 'fireFileEvent' an event.
-      GetBasicResultAt(12, 13, UseEventsWhereAppropriateAnalyzer.Rule, "fireFileEvent"),
+      GetBasicResultAt(12, 13, "fireFileEvent"),
       // Test0.vb(15,13): warning CA1030: Consider making 'addOnFileEvent' an event.
-      GetBasicResultAt(15, 13, UseEventsWhereAppropriateAnalyzer.Rule, "addOnFileEvent"),
+      GetBasicResultAt(15, 13, "addOnFileEvent"),
       // Test0.vb(18,13): warning CA1030: Consider making 'removeOnFileEvent' an event.
-      GetBasicResultAt(18, 13, UseEventsWhereAppropriateAnalyzer.Rule, "removeOnFileEvent"),
+      GetBasicResultAt(18, 13, "removeOnFileEvent"),
       // Test0.vb(21,13): warning CA1030: Consider making 'add_onFileEvent' an event.
-      GetBasicResultAt(21, 13, UseEventsWhereAppropriateAnalyzer.Rule, "add_onFileEvent"),
+      GetBasicResultAt(21, 13, "add_onFileEvent"),
       // Test0.vb(24,13): warning CA1030: Consider making 'remove_onFileEvent' an event.
-      GetBasicResultAt(24, 13, UseEventsWhereAppropriateAnalyzer.Rule, "remove_onFileEvent"));
+      GetBasicResultAt(24, 13, "remove_onFileEvent"));
 
         }
 
         #endregion
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(arguments);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column, params string[] arguments)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(arguments);
     }
 }

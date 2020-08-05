@@ -40,18 +40,40 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            // Analyze properties, methods 
-            analysisContext.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.Property, SymbolKind.Method);
+            analysisContext.RegisterCompilationStartAction(context =>
+            {
+                var obsoleteAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+
+                // Analyze properties, methods
+                context.RegisterSymbolAction(ctx => AnalyzeSymbol(ctx, obsoleteAttributeType), SymbolKind.Property, SymbolKind.Method);
+            });
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, INamedTypeSymbol? obsoleteAttributeType)
         {
             string identifier;
             var symbol = context.Symbol;
 
+            // We only want to report an issue when the user is free to update the member.
+            // This method will be called for both the property and the method so we can bail out
+            // when the member (symbol) is an override.
+            // Note that in the case of an override + a local declaration, the issue will be raised from
+            // the local declaration.
+            if (symbol.IsOverride)
+            {
+                return;
+            }
+
             // Bail out if the method/property is not exposed (public, protected, or protected internal) by default
-            var configuredVisibilities = context.Options.GetSymbolVisibilityGroupOption(Rule, SymbolVisibilityGroup.Public, context.CancellationToken);
+            var configuredVisibilities = context.Options.GetSymbolVisibilityGroupOption(Rule, context.Symbol, context.Compilation, SymbolVisibilityGroup.Public, context.CancellationToken);
             if (!configuredVisibilities.Contains(symbol.GetResultantVisibility()))
+            {
+                return;
+            }
+
+            // If either the property or method is marked as obsolete, bail out
+            // see https://github.com/dotnet/roslyn-analyzers/issues/2956
+            if (symbol.HasAttribute(obsoleteAttributeType))
             {
                 return;
             }
@@ -89,6 +111,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // Ignore members whose IsStatic does not match with the symbol's IsStatic
                     if (symbol.IsStatic != member.IsStatic)
+                    {
+                        continue;
+                    }
+
+                    // If either the property or method is marked as obsolete, bail out
+                    // see https://github.com/dotnet/roslyn-analyzers/issues/2956
+                    if (member.HasAttribute(obsoleteAttributeType))
                     {
                         continue;
                     }

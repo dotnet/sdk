@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using System.Threading;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -45,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, systemSingleType, systemDoubleType);
+            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, systemSingleType, systemDoubleType, context.CancellationToken);
 
             if (resolution != null)
             {
@@ -57,19 +58,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, INamedTypeSymbol systemSingleType, INamedTypeSymbol systemDoubleType)
+        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, INamedTypeSymbol systemSingleType, INamedTypeSymbol systemDoubleType, CancellationToken cancellationToken)
         {
             bool isEqualsOperator = IsEqualsOperator(binaryExpressionSyntax);
             SyntaxNode leftOperand = GetLeftOperand(binaryExpressionSyntax);
             SyntaxNode rightOperand = GetRightOperand(binaryExpressionSyntax);
 
-            ITypeSymbol? systemTypeLeft = TryGetSystemTypeForNanConstantExpression(leftOperand, model, systemSingleType, systemDoubleType);
+            ITypeSymbol? systemTypeLeft = TryGetSystemTypeForNanConstantExpression(leftOperand, model, systemSingleType, systemDoubleType, cancellationToken);
             if (systemTypeLeft != null)
             {
                 return new FixResolution(binaryExpressionSyntax, systemTypeLeft, rightOperand, isEqualsOperator);
             }
 
-            ITypeSymbol? systemTypeRight = TryGetSystemTypeForNanConstantExpression(rightOperand, model, systemSingleType, systemDoubleType);
+            ITypeSymbol? systemTypeRight = TryGetSystemTypeForNanConstantExpression(rightOperand, model, systemSingleType, systemDoubleType, cancellationToken);
             if (systemTypeRight != null)
             {
                 return new FixResolution(binaryExpressionSyntax, systemTypeRight, leftOperand, isEqualsOperator);
@@ -78,9 +79,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
-        private static ITypeSymbol? TryGetSystemTypeForNanConstantExpression(SyntaxNode expressionSyntax, SemanticModel model, INamedTypeSymbol systemSingleType, INamedTypeSymbol systemDoubleType)
+        private static ITypeSymbol? TryGetSystemTypeForNanConstantExpression(SyntaxNode expressionSyntax, SemanticModel model, INamedTypeSymbol systemSingleType, INamedTypeSymbol systemDoubleType, CancellationToken cancellationToken)
         {
-            if (model.GetSymbolInfo(expressionSyntax).Symbol is IFieldSymbol fieldSymbol)
+            if (model.GetSymbolInfo(expressionSyntax, cancellationToken).Symbol is IFieldSymbol fieldSymbol)
             {
                 if (fieldSymbol.Type.Equals(systemSingleType) || fieldSymbol.Type.Equals(systemDoubleType))
                 {

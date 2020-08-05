@@ -1,28 +1,24 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class UriParametersShouldNotBeStringsTests : DiagnosticAnalyzerTestBase
+    public class UriParametersShouldNotBeStringsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new UriParametersShouldNotBeStringsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new UriParametersShouldNotBeStringsAnalyzer();
-        }
-
         [Fact]
-        public void CA1054NoWarningWithUrlNotStringType()
+        public async Task CA1054NoWarningWithUrlNotStringType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -33,9 +29,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1054WarningWithUrl()
+        public async Task CA1054WarningWithUrl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -46,9 +42,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1054NoWarningWithUrlWithOverload()
+        public async Task CA1054NoWarningWithUrlWithOverload()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -60,9 +56,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1495, "https://github.com/dotnet/roslyn-analyzers/issues/1495")]
-        public void CA1054NoWarningWithUrlWithOverload_IdenticalTypeParameters()
+        public async Task CA1054NoWarningWithUrlWithOverload_IdenticalTypeParameters()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -85,9 +81,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1495, "https://github.com/dotnet/roslyn-analyzers/issues/1495")]
-        public void CA1054WarningWithUrlWithOverload_DifferingTypeParameters()
+        public async Task CA1054WarningWithUrlWithOverload_DifferingTypeParameters()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -105,15 +101,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class C<T> { }
 ",
             // Test0.cs(7,51): warning CA1054: Change the type of parameter url of method A.Method1<T1, T2>(string, T1) from string to System.Uri, or provide an overload to A.Method1<T1, T2>(string, T1) that allows url to be passed as a System.Uri object.
-            GetCSharpResultAt(7, 51, UriParametersShouldNotBeStringsAnalyzer.Rule, "url", "A.Method1<T1, T2>(string, T1)"),
+            GetCA1054CSharpResultAt(7, 51, "url", "A.Method1<T1, T2>(string, T1)"),
             // Test0.cs(11,46): warning CA1054: Change the type of parameter url of method A.Method2<T>(string, B<T>) from string to System.Uri, or provide an overload to A.Method2<T>(string, B<T>) that allows url to be passed as a System.Uri object.
-            GetCSharpResultAt(11, 46, UriParametersShouldNotBeStringsAnalyzer.Rule, "url", "A.Method2<T>(string, B<T>)"));
+            GetCA1054CSharpResultAt(11, 46, "url", "A.Method2<T>(string, B<T>)"));
         }
 
         [Fact]
-        public void CA1054MultipleWarningWithUrl()
+        public async Task CA1054MultipleWarningWithUrl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -125,9 +121,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1054NoMultipleWarningWithUrlWithOverload()
+        public async Task CA1054NoMultipleWarningWithUrlWithOverload()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -141,10 +137,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1054MultipleWarningWithUrlWithOverload()
+        public async Task CA1054MultipleWarningWithUrlWithOverload()
         {
             // Following original FxCop implementation. but this seems strange.
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -158,9 +154,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1054NoWarningNotPublic()
+        public async Task CA1054NoWarningNotPublic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     internal class A
@@ -171,9 +167,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1054NoWarningDerivedFromAttribute()
+        public async Task CA1054NoWarningDerivedFromAttribute()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     internal class A : Attribute
@@ -184,10 +180,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1054WarningVB()
+        public async Task CA1054WarningVB()
         {
             // C# and VB shares same implementation. so just one vb test
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
     Imports System
     
     Public Module A
@@ -198,13 +194,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCA1054CSharpResultAt(int line, int column, params string[] args)
-        {
-            return GetCSharpResultAt(line, column, UriParametersShouldNotBeStringsAnalyzer.Rule, args);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(args);
 
         private static DiagnosticResult GetCA1054BasicResultAt(int line, int column, params string[] args)
-        {
-            return GetBasicResultAt(line, column, UriParametersShouldNotBeStringsAnalyzer.Rule, args);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(args);
     }
 }

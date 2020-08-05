@@ -62,11 +62,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     //  2. Do not fire for enumerators.
                     //  3. Do not fire for value types without members.
                     //  4. Externally visible types by default.
+                    //  5. Do not fire for ref struct.
                     // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                     // will always have identical configured visibility.
                     if (!namedType.IsValueType ||
                         namedType.TypeKind == TypeKind.Enum ||
-                        !namedType.MatchesConfiguredVisibility(context.Options, EqualsRule, context.CancellationToken) ||
+                        (namedType.TypeKind == TypeKind.Struct && namedType.IsRefLikeType) ||
+                        !namedType.MatchesConfiguredVisibility(context.Options, EqualsRule, context.Compilation, context.CancellationToken) ||
                         !namedType.GetMembers().Any(m => !m.IsConstructor()))
                     {
                         return;

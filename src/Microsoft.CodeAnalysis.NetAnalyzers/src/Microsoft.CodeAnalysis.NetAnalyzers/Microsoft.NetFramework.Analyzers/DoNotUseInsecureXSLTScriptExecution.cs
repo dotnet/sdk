@@ -47,14 +47,13 @@ namespace Microsoft.NetFramework.Analyzers
                 });
         }
 
-
         private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat, LocalizableResourceString description)
         {
             return DiagnosticDescriptorHelper.Create(RuleId,
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXsltScriptProcessingMessage)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            RuleLevel.BuildWarning,
+                                            RuleLevel.IdeHidden_BulkConfigurable,
                                             description,
                                             isPortedFxCopRule: false,
                                             isDataflowRule: false);
@@ -108,7 +107,6 @@ namespace Microsoft.NetFramework.Analyzers
 
                         isSecureResolver = SyntaxNodeHelper.NodeHasConstantValueNull(resolverNode, model) ||
                                            SecurityDiagnosticHelpers.IsXmlSecureResolverType(model.GetTypeInfo(resolverNode).Type, _xmlTypes);
-
 
                         SyntaxNode settingsNode = argumentExpressionNodes.ElementAt(xsltSettingsIndex);
                         ISymbol settingsSymbol = SyntaxNodeHelper.GetSymbol(settingsNode, model);
@@ -245,7 +243,6 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     bool isXlstSettingsEnableDocumentFunctionProperty = SecurityDiagnosticHelpers.IsXsltSettingsEnableDocumentFunctionProperty(lhsSymbol as IPropertySymbol, _xmlTypes);
                     bool isXlstSettingsEnableScriptProperty = SecurityDiagnosticHelpers.IsXsltSettingsEnableScriptProperty(lhsSymbol as IPropertySymbol, _xmlTypes);
-
 
                     if (isXlstSettingsEnableDocumentFunctionProperty ||
                         isXlstSettingsEnableScriptProperty)
