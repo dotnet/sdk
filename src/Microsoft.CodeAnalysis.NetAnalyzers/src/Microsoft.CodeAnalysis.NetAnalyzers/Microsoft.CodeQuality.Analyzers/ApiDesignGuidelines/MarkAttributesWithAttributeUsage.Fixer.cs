@@ -43,11 +43,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 .Select(attributeTarget =>
                 {
                     var attributeTargetValue = attributeTarget.ToString();
+                    var title = $"AttributeTargets.{attributeTargetValue}";
 
                     return CodeAction.Create(
-                        attributeTargetValue,
+                        title,
                         async ct => await AddAttributeUsageAttribute(context.Document, nodeToFix, attributeUsageAttributeType, attributeTargetsType, attributeTargetValue, ct).ConfigureAwait(false),
-                        equivalenceKey: attributeTargetValue);
+                        equivalenceKey: title);
                 })
                 .ToImmutableArray();
 

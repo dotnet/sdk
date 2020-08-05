@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -15,23 +16,66 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public partial class MarkAttributesWithAttributeUsageTests
     {
-        [Fact]
-        public async Task TestCSSimpleAttributeClass()
+        [Theory]
+        [InlineData(AttributeTargets.All)]
+        [InlineData(AttributeTargets.Assembly)]
+        [InlineData(AttributeTargets.Class)]
+        [InlineData(AttributeTargets.Constructor)]
+        [InlineData(AttributeTargets.Delegate)]
+        [InlineData(AttributeTargets.Enum)]
+        [InlineData(AttributeTargets.Event)]
+        [InlineData(AttributeTargets.Field)]
+        [InlineData(AttributeTargets.GenericParameter)]
+        [InlineData(AttributeTargets.Interface)]
+        [InlineData(AttributeTargets.Method)]
+        [InlineData(AttributeTargets.Module)]
+        [InlineData(AttributeTargets.Parameter)]
+        [InlineData(AttributeTargets.Property)]
+        [InlineData(AttributeTargets.ReturnValue)]
+        [InlineData(AttributeTargets.Struct)]
+        public async Task TestSimpleAttributeClass(AttributeTargets attributeTarget)
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
+            var attributeTargetsValue = "AttributeTargets." + attributeTarget.ToString();
+
+            await new VerifyCS.Test
+            {
+                TestCode = @"
 using System;
 
 class C : Attribute
 {
 }
-", GetCA1018CSharpResultAt(4, 7, "C"), @"
+",
+                ExpectedDiagnostics = { GetCA1018CSharpResultAt(4, 7, "C"), },
+                FixedCode = @"
 using System;
 
-[AttributeUsage(AttributeTargets.All)]
+[AttributeUsage(" + attributeTargetsValue + @")]
 class C : Attribute
 {
 }
-");
+",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Imports System
+
+Class C
+    Inherits Attribute
+End Class
+",
+                ExpectedDiagnostics = { GetCA1018BasicResultAt(4, 7, "C"), },
+                FixedCode = @"
+Imports System
+
+<AttributeUsage(AttributeTargets.All)>
+Class C
+    Inherits Attribute
+End Class
+",
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
@@ -59,25 +103,6 @@ using System;
 abstract class C : Attribute
 {
 }
-");
-        }
-
-        [Fact]
-        public async Task TestVBSimpleAttributeClass()
-        {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
-
-Class C
-    Inherits Attribute
-End Class
-", GetCA1018BasicResultAt(4, 7, "C"), @"
-Imports System
-
-<AttributeUsage(AttributeTargets.All)>
-Class C
-    Inherits Attribute
-End Class
 ");
         }
 
