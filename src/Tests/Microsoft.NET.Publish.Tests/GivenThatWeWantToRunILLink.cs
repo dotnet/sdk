@@ -102,9 +102,10 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("net5.0")]
-        public void ILLink_links_simple_app_without_warnings_and_it_runs(string targetFramework)
+        [InlineData("netcoreapp3.0", "copyused")]
+        [InlineData("net5.0", "copyused")]
+        [InlineData("net5.0", "link")]
+        public void ILLink_links_simple_app_without_analysis_warnings_and_it_runs(string targetFramework, string trimMode)
         {
             var projectName = "HelloWorld";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -113,9 +114,10 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:PublishTrimmed=true")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:PublishTrimmed=true", $"/p:TrimMode={trimMode}")
                 .Should().Pass()
-                .And.NotHaveStdOutMatching(@"IL\d\d\d\d");
+                .And.NotHaveStdOutContaining("IL2006")
+                .And.NotHaveStdOutContaining("IL2026");
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
             var exe = Path.Combine(publishDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}");
@@ -215,13 +217,15 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:_ExtraTrimmerArgs=--verbose")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true")
                 .Should().Pass()
+                // trim analysis warnings are disabled
                 .And.NotHaveStdOutContaining("IL2006")
                 .And.NotHaveStdOutContaining("IL2026")
-                .And.NotHaveStdOutContaining("IL2043")
-                .And.NotHaveStdOutContaining("IL2046")
-                .And.NotHaveStdOutContaining("IL2047");
+                // warnings about invalid attributes still show up
+                .And.HaveStdOutContaining("IL2043")
+                .And.HaveStdOutContaining("IL2046")
+                .And.HaveStdOutContaining("IL2047");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -235,7 +239,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false", "/p:_ExtraTrimmerArgs=--verbose")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false")
                 .Should().Pass()
                 .And.HaveStdOutMatching("IL2006.*Program.IL_2006")
                 .And.HaveStdOutMatching("IL2026.*Program.IL_2026.*Testing analysis warning IL2026")
@@ -264,8 +268,7 @@ namespace Microsoft.NET.Publish.Tests
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{projectName}.xml"));
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true",
-                "/p:SuppressTrimAnalysisWarnings=false", "/p:_ExtraTrimmerArgs=--verbose")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false")
                 .Should().Fail()
                 .And.HaveStdOutContaining("error IL1001")
                 .And.HaveStdOutContaining(Strings.ILLinkFailed);
