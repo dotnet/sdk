@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             s_localizableTitle,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_General), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            RuleLevel.IdeHidden_BulkConfigurable,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             s_localizableTitle,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_Unconsumed), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            RuleLevel.IdeHidden_BulkConfigurable,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             s_localizableTitle,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_DoubleConsumption), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            RuleLevel.IdeHidden_BulkConfigurable,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             s_localizableTitle,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_AccessingIncompleteResult), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            RuleLevel.IdeHidden_BulkConfigurable,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -72,7 +72,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 
                 // Get the target ValueTask / ValueTask<T> types. If they don't exist, nothing more to do.
                 if (!typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask, out var valueTaskType) ||
-                    !typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericValueTask, out var valueTaskOfTType))
+                    !typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1, out var valueTaskOfTType))
                 {
                     return;
                 }

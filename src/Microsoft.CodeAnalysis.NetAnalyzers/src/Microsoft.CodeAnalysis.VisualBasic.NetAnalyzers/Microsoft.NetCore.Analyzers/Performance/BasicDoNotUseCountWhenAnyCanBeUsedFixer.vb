@@ -98,7 +98,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     End If
 
-
             End Select
 
             Return False

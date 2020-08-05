@@ -240,7 +240,6 @@ namespace Blah
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
         {
-            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
             var csharpTest = new VerifyCS.Test
             {
                 ReferenceAssemblies = AdditionalMetadataReferences

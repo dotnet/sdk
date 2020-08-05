@@ -403,7 +403,6 @@ GetIFormatProviderUICultureRuleCSharpResultAt(13, 9, "UICultureAsIFormatProvider
                                                      "IFormatProviderOverloads.IFormatProviderReturningNonString(string, IFormatProvider, IFormatProvider)"));
         }
 
-
         [Fact]
         public async Task CA1305_AcceptNullForIFormatProvider_CSharp()
         {

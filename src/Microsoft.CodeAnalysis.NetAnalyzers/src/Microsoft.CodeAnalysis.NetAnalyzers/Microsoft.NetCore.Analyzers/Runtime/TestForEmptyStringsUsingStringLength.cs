@@ -94,7 +94,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-
         /// <summary>
         /// Checks if the given method is the string.Equals method.
         /// </summary>

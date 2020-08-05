@@ -1028,23 +1028,23 @@
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsTitle">
-        <source>Uri parameters should not be strings</source>
-        <target state="translated">URI-Parameter dürfen keine Zeichenfolgen sein</target>
+        <source>URI-like parameters should not be strings</source>
+        <target state="needs-review-translation">URI-Parameter dürfen keine Zeichenfolgen sein</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsDescription">
-        <source>If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.</source>
-        <target state="translated">Wenn eine Methode eine Zeichenfolgendarstellung eines URI akzeptiert, muss eine entsprechende Überladung angegeben werden, die eine Instanz der URI-Klasse für die sichere Bereitstellung dieser Dienste akzeptiert.</target>
+        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</source>
+        <target state="needs-review-translation">Wenn eine Methode eine Zeichenfolgendarstellung eines URI akzeptiert, muss eine entsprechende Überladung angegeben werden, die eine Instanz der URI-Klasse für die sichere Bereitstellung dieser Dienste akzeptiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsMessage">
-        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object.</source>
-        <target state="translated">Ändern Sie den Typ des Parameters "{0}" der Methode "{1}" von Zeichenfolge in System.Uri, oder geben Sie eine Überladung für "{1}" an, die das Übergeben von "{0}" als System.Uri-Objekt ermöglicht.</target>
+        <source>Change the type of parameter '{0}' of method '{1}' from 'string' to 'System.Uri', or provide an overload to '{1}' that allows '{0}' to be passed as a 'System.Uri' object.</source>
+        <target state="needs-review-translation">Ändern Sie den Typ des Parameters "{0}" der Methode "{1}" von Zeichenfolge in System.Uri, oder geben Sie eine Überladung für "{1}" an, die das Übergeben von "{0}" als System.Uri-Objekt ermöglicht.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
-        <source>Uri return values should not be strings</source>
-        <target state="translated">URI-Rückgabewerte dürfen keine Zeichenfolgen sein</target>
+        <source>URI-like return values should not be strings</source>
+        <target state="needs-review-translation">URI-Rückgabewerte dürfen keine Zeichenfolgen sein</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsDescription">
@@ -1053,13 +1053,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
-        <source>Change the return type of method {0} from string to System.Uri.</source>
-        <target state="translated">Ändern Sie den Rückgabetyp der Methode "{0}" von Zeichenfolge in System.Uri.</target>
+        <source>Change the return type of method '{0}' from 'string' to 'System.Uri'</source>
+        <target state="needs-review-translation">Ändern Sie den Rückgabetyp der Methode "{0}" von Zeichenfolge in System.Uri.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
-        <source>Uri properties should not be strings</source>
-        <target state="translated">URI-Eigenschaften dürfen keine Zeichenfolgen sein</target>
+        <source>URI-like properties should not be strings</source>
+        <target state="needs-review-translation">URI-Eigenschaften dürfen keine Zeichenfolgen sein</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsDescription">
@@ -1068,8 +1068,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
-        <source>Change the type of property {0} from string to System.Uri.</source>
-        <target state="translated">Ändern Sie den Typ der Eigenschaft "{0}" von Zeichenfolge in System.Uri.</target>
+        <source>Change the type of property '{0}' from 'string' to 'System.Uri'</source>
+        <target state="needs-review-translation">Ändern Sie den Typ der Eigenschaft "{0}" von Zeichenfolge in System.Uri.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyTitle">

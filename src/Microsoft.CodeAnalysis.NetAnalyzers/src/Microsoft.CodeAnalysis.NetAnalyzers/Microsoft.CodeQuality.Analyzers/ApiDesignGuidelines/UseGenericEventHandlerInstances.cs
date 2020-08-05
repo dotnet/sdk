@@ -134,7 +134,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 // CA1003: Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs
                                 symbolContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(RuleForEvents, eventSymbol.Name, eventType.ToDisplayString()));
                             }
-
                         }
                     }, SymbolKind.Event);
                 });

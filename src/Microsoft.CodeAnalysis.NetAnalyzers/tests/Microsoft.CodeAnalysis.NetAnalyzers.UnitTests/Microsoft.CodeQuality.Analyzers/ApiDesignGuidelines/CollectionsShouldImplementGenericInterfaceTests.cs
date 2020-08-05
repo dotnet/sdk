@@ -833,7 +833,6 @@ End Class
                 GetCA1010BasicResultAt(47, 14, "R", "ICollection", "ICollection(Of T)"));
         }
 
-
         [Fact]
         public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBaseAndGenericIEnumerable_NoDiagnostic()
         {

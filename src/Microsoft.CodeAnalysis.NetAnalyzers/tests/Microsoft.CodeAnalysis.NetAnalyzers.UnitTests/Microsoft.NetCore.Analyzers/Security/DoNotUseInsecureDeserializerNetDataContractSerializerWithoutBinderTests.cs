@@ -820,7 +820,6 @@ namespace Blah
 }");
         }
 
-
         [Fact]
         public async Task Deserialize_InvokedAsDelegate_Diagnostic()
         {
