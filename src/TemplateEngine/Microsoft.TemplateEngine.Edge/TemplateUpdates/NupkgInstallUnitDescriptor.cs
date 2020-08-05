@@ -7,11 +7,12 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 {
     public class NupkgInstallUnitDescriptor : IInstallUnitDescriptor
     {
-        public NupkgInstallUnitDescriptor(Guid descriptorId, Guid mountPointId, string identifier, string version, string author)
+        public NupkgInstallUnitDescriptor(Guid descriptorId, Guid mountPointId, string identifier, bool isPartOfAnOptionalWorkload, string version, string author)
         {
             DescriptorId = descriptorId;
             MountPointId = mountPointId;
             Identifier = identifier;
+            IsPartOfAnOptionalWorkload = isPartOfAnOptionalWorkload;
             Version = version;
             Author = author;
         }
@@ -65,5 +66,8 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 
         [JsonIgnore]
         public IReadOnlyList<string> DetailKeysDisplayOrder => _detailKeysDisplayOrder;
+
+        [JsonProperty]
+        public bool IsPartOfAnOptionalWorkload { get; }
     }
 }

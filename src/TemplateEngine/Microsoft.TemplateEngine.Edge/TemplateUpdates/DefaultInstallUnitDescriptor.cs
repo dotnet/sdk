@@ -7,13 +7,14 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 {
     public sealed class DefaultInstallUnitDescriptor : IInstallUnitDescriptor
     {
-        public DefaultInstallUnitDescriptor(Guid descriptorId, Guid mountPointId, string identifier)
+        public DefaultInstallUnitDescriptor(Guid descriptorId, Guid mountPointId, string identifier, bool isPartOfAnOptionalWorkload)
         {
             DescriptorId = descriptorId;
             MountPointId = mountPointId;
             Identifier = identifier;
             Details = _details;
             DetailKeysDisplayOrder = Empty<string>.List.Value;
+            IsPartOfAnOptionalWorkload = isPartOfAnOptionalWorkload;
         }
 
         private static readonly IReadOnlyDictionary<string, string> _details = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -31,5 +32,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
         public string UninstallString => Identifier;
 
         public IReadOnlyList<string> DetailKeysDisplayOrder { get; }
+
+        public bool IsPartOfAnOptionalWorkload { get; }
     }
 }

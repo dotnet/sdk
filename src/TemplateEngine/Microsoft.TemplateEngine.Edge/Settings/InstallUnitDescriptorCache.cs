@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public IReadOnlyDictionary<Guid, IInstallUnitDescriptor> Descriptors => _cache;
 
-        public bool TryAddDescriptorForLocation(Guid mountPointId, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
+        public bool TryAddDescriptorForLocation(Guid mountPointId, bool isPartOfAnOptionalWorkload, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
         {
             IMountPoint mountPoint = null;
 
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     return false;
                 }
 
-                if (InstallUnitDescriptorFactory.TryCreateFromMountPoint(_environmentSettings, mountPoint, out descriptorList))
+                if (InstallUnitDescriptorFactory.TryCreateFromMountPoint(_environmentSettings, mountPoint, isPartOfAnOptionalWorkload, out descriptorList))
                 {
                     foreach (IInstallUnitDescriptor descriptor in descriptorList)
                     {

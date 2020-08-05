@@ -58,6 +58,12 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                 return false;
             }
 
+            bool isPartOfAnOptionalWorkload = false;
+            if (descriptorObj.TryGetValue(nameof(IInstallUnitDescriptor.IsPartOfAnOptionalWorkload), StringComparison.OrdinalIgnoreCase, out JToken optionalToken))
+            {
+                _ = bool.TryParse(optionalToken.ToString(), out isPartOfAnOptionalWorkload);
+            }
+
             Dictionary<string, string> details = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (JProperty property in descriptorObj.PropertiesOf(nameof(IInstallUnitDescriptor.Details)))
             {
@@ -70,7 +76,7 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                 details[property.Name] = property.Value.ToString();
             }
 
-            if (factory.TryCreateFromDetails(descriptorId, identifierToken.ToString(), mountPointId, details, out IInstallUnitDescriptor descriptor))
+            if (factory.TryCreateFromDetails(descriptorId, identifierToken.ToString(), mountPointId, isPartOfAnOptionalWorkload, details, out IInstallUnitDescriptor descriptor))
             {
                 parsedDescriptor = descriptor;
                 return true;
@@ -81,7 +87,8 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
         }
 
         // For creating descriptors.
-        public static bool TryCreateFromMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint mountPoint, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
+        public static bool TryCreateFromMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint mountPoint,
+            bool isPartOfAnOptionalWorkload, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
         {
             IInstallUnitDescriptorFactory defaultFactory = null;
 
@@ -93,13 +100,13 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                     continue;
                 }
 
-                if (factory.TryCreateFromMountPoint(mountPoint, out descriptorList))
+                if (factory.TryCreateFromMountPoint(mountPoint, isPartOfAnOptionalWorkload, out descriptorList))
                 {
                     return true;
                 }
             }
 
-            return defaultFactory.TryCreateFromMountPoint(mountPoint, out descriptorList);
+            return defaultFactory.TryCreateFromMountPoint(mountPoint, isPartOfAnOptionalWorkload, out descriptorList);
         }
     }
 }

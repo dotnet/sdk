@@ -21,5 +21,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateUpdates
         string UninstallString { get; }
 
         IReadOnlyList<string> DetailKeysDisplayOrder { get; }
+
+        bool IsPartOfAnOptionalWorkload { get; }
     }
 }

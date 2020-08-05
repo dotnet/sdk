@@ -11,17 +11,18 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 
         public Guid Id => FactoryId;
 
-        public bool TryCreateFromDetails(Guid descriptorId, string identifier, Guid mountPointId, IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor)
+        public bool TryCreateFromDetails(Guid descriptorId, string identifier, Guid mountPointId, bool isPartOfAnOptionalWorkload,
+            IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor)
         {
-            descriptor = new DefaultInstallUnitDescriptor(descriptorId, mountPointId, identifier);
+            descriptor = new DefaultInstallUnitDescriptor(descriptorId, mountPointId, identifier, isPartOfAnOptionalWorkload);
             return true;
         }
 
-        public bool TryCreateFromMountPoint(IMountPoint mountPoint, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
+        public bool TryCreateFromMountPoint(IMountPoint mountPoint, bool isPartOfAnOptionalWorkload, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
         {
             descriptorList = new List<IInstallUnitDescriptor>()
             {
-                new DefaultInstallUnitDescriptor(Guid.NewGuid(), mountPoint.Info.MountPointId, mountPoint.Info.Place),
+                new DefaultInstallUnitDescriptor(Guid.NewGuid(), mountPoint.Info.MountPointId, mountPoint.Info.Place, isPartOfAnOptionalWorkload),
             };
 
             return true;

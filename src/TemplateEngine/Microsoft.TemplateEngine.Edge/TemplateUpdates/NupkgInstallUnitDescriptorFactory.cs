@@ -14,7 +14,8 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
 
         public Guid Id => FactoryId;
 
-        public bool TryCreateFromDetails(Guid descriptorId, string identifier, Guid mountPointId, IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor)
+        public bool TryCreateFromDetails(Guid descriptorId, string identifier, Guid mountPointId, bool isPartOfAnOptionalWorkload,
+            IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor)
         {
             if (string.IsNullOrEmpty(identifier) || mountPointId == Guid.Empty)
             {
@@ -36,11 +37,11 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                 return false;
             }
 
-            descriptor = new NupkgInstallUnitDescriptor(descriptorId, mountPointId, identifier, version, author);
+            descriptor = new NupkgInstallUnitDescriptor(descriptorId, mountPointId, identifier, isPartOfAnOptionalWorkload, version, author);
             return true;
         }
 
-        public bool TryCreateFromMountPoint(IMountPoint mountPoint, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
+        public bool TryCreateFromMountPoint(IMountPoint mountPoint, bool isPartOfAnOptionalWorkload, out IReadOnlyList<IInstallUnitDescriptor> descriptorList)
         {
             List<IInstallUnitDescriptor> allDescriptors = new List<IInstallUnitDescriptor>();
             descriptorList = allDescriptors;
@@ -50,7 +51,13 @@ namespace Microsoft.TemplateEngine.Edge.TemplateUpdates
                 && TryGetPackageInfoFromNuspec(mountPoint, out string packageName, out string version, out string author))
             {
                 Guid descriptorId = Guid.NewGuid();
-                IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(descriptorId, mountPoint.Info.MountPointId, packageName, version, author);
+                IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(
+                    descriptorId,
+                    mountPoint.Info.MountPointId,
+                    packageName,
+                    isPartOfAnOptionalWorkload,
+                    version,
+                    author);
                 allDescriptors.Add(descriptor);
                 return true;
             }

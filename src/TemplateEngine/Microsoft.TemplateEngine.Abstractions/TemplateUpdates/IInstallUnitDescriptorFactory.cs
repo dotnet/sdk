@@ -7,9 +7,10 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateUpdates
     public interface IInstallUnitDescriptorFactory : IIdentifiedComponent
     {
         // for existing descriptors saved in the metadata
-        bool TryCreateFromDetails(Guid descriptorId, string identifier, Guid mountPointId, IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor);
+        bool TryCreateFromDetails(Guid descriptorId, string identifier, Guid mountPointId, bool isPartOfAnOptionalWorkload,
+            IReadOnlyDictionary<string, string> details, out IInstallUnitDescriptor descriptor);
 
         // for creating from a mount point
-        bool TryCreateFromMountPoint(IMountPoint mountPoint, out IReadOnlyList<IInstallUnitDescriptor> descriptorList);
+        bool TryCreateFromMountPoint(IMountPoint mountPoint, bool isPartOfAnOptionalWorkload, out IReadOnlyList<IInstallUnitDescriptor> descriptorList);
     }
 }

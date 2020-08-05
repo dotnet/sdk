@@ -21,14 +21,16 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string packageName = "TestPackage";
             string version = "1.2.3";
             string author = "TestAuthor";
+            bool isOptional = true;
 
-            IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(descriptorId, mountPointId, packageName, version, author);
+            IInstallUnitDescriptor descriptor = new NupkgInstallUnitDescriptor(descriptorId, mountPointId, packageName, isOptional, version, author);
             Assert.Equal(descriptorId, descriptor.DescriptorId);
             Assert.Equal(packageName, descriptor.Identifier);
             Assert.Equal(NupkgInstallUnitDescriptorFactory.FactoryId, descriptor.FactoryId);
             Assert.Equal(mountPointId, descriptor.MountPointId);
             Assert.Equal(version, descriptor.Details[VersionKey]);
             Assert.Equal(author, descriptor.Details[nameof(NupkgInstallUnitDescriptor.Author)]);
+            Assert.Equal(isOptional, descriptor.IsPartOfAnOptionalWorkload);
         }
 
         [Fact(DisplayName = nameof(NupkgDescriptorFactoryCreatesFromDetailsTest))]
@@ -39,6 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string packageName = "TestPackage";
             string version = "1.2.3";
             string author = "Microsoft";
+            bool isOptional = true;
 
             Dictionary<string, string> details = new Dictionary<string, string>()
             {
@@ -46,7 +49,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 { nameof(NupkgInstallUnitDescriptor.Author), author }
             };
 
-            Assert.True(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(descriptorId, packageName, mountPointId, details, out IInstallUnitDescriptor descriptor));
+            Assert.True(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(descriptorId, packageName, mountPointId,
+                isOptional, details, out IInstallUnitDescriptor descriptor));
             Assert.Equal(descriptorId, descriptor.DescriptorId);
             Assert.Equal(packageName, descriptor.Identifier);
             Assert.Equal(NupkgInstallUnitDescriptorFactory.FactoryId, descriptor.FactoryId);
@@ -95,13 +99,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             string packageName = "TestPackage";
             string version = "1.2.3";
+            bool isOptional = false;
 
             Dictionary<string, string> details = new Dictionary<string, string>()
             {
                 { VersionKey, version }
             };
 
-            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.NewGuid(), packageName, Guid.Empty, details, out IInstallUnitDescriptor descriptor));
+            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.NewGuid(), packageName, Guid.Empty, isOptional, details, out _));
         }
 
         [Fact(DisplayName = nameof(NupkgDescriptorFactoryFailsOnMissingPackageNameTest))]
@@ -109,13 +114,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             Guid mountPointId = new Guid("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9");
             string version = "1.2.3";
+            bool isOptional = false;
 
             Dictionary<string, string> details = new Dictionary<string, string>()
             {
                 { VersionKey, version }
             };
 
-            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.Empty, null, mountPointId, details, out IInstallUnitDescriptor descriptor));
+            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.Empty, null, mountPointId, isOptional, details, out _));
         }
 
         [Fact(DisplayName = nameof(NupkgDescriptorFactoryFailsOnMissingVersionTest))]
@@ -123,12 +129,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             Guid mountPointId = new Guid("D1ADBDAF-0382-4EEA-A43C-8356A8BEFAA9");
             string packageName = "TestPackage";
+            bool isOptional = false;
 
             Dictionary<string, string> details = new Dictionary<string, string>()
             {
             };
 
-            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.NewGuid(), packageName, mountPointId, details, out IInstallUnitDescriptor descriptor));
+            Assert.False(new NupkgInstallUnitDescriptorFactory().TryCreateFromDetails(Guid.NewGuid(), packageName, mountPointId, isOptional, details, out _));
         }
     }
 }
