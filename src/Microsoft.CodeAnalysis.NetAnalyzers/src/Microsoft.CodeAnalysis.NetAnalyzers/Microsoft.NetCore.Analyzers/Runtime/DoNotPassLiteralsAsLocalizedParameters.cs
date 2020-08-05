@@ -61,8 +61,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
                     if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
-                        containingMethod.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options,
-                            Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
+                        operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
                     {
                         return;
                     }
@@ -109,7 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     // Local functions
                     bool ShouldAnalyze(ISymbol? symbol)
-                        => symbol != null && !symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.OwningSymbol, operationBlockStartContext.Options, Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
+                        => symbol != null && !operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, symbol, operationBlockStartContext.OwningSymbol, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
 
                     static bool GetUseNamingHeuristicOption(OperationAnalysisContext operationContext)
                         => operationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule,
