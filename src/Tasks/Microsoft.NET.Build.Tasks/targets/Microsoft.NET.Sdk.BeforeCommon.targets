@@ -48,7 +48,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Related issue: https://github.com/dotnet/sdk/issues/12324-->
   <PropertyGroup>
-    <!-- Import winfx targets when we're not on WPF and targeting .NETFramework. -->
+    <!-- Import winfx targets when we're targeting .NETFramework and not importing the newer WindowsDesktop targets via `UseWPF`. -->
     <ImportFrameworkWinFXTargets Condition="'$(ImportFrameworkWinFXTargets)' == '' and '$(UseWPF)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">true</ImportFrameworkWinFXTargets>
 
     <!-- Otherwise, don't import. -->
