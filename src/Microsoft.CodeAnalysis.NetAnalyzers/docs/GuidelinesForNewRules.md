@@ -3,7 +3,7 @@
 
 1. File an issue describing your proposed rule prior to working on a PR. This will ensure that the rule gets triaged and there is no duplicate work involved from an existing rule OR another contributor working on a similar rule.
    1. For .NET API related analyzer suggestions, please open an issue at [dotnet/runtime/issues](https://github.com/dotnet/runtime/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) with [code-analyzer](https://github.com/dotnet/runtime/issues?q=is%3Aopen+is%3Aissue+label%3Acode-analyzer+sort%3Aupdated-desc) label.
-   2. For non-API related analyzer suggestions, please open an issue in this repo over [here](https://github.com/dotnet/roslyn-analyzers/issues/new).
+   2. For non-API related analyzer suggestions, please open an issue in this repo over [here](https://github.com/dotnet/roslyn-analyzers/issues/new?template=suggest-a-new-rule.md).
 
 2. Newly proposed rule would be tagged with [Needs-Review](https://github.com/dotnet/roslyn-analyzers/labels/Needs-Review) label. An [Approved-Rule](https://github.com/dotnet/roslyn-analyzers/labels/Approved-Rule) label indicates that the proposal has been reviewed and a PR to implement the rule would be accepted.
 
