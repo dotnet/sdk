@@ -4,8 +4,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
@@ -18,14 +16,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         private readonly string _featuresCSharpPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.CSharp.Features.dll");
         private readonly string _featuresVisualBasicPath = Path.Combine(s_executingPath, "Microsoft.CodeAnalysis.VisualBasic.Features.dll");
 
-        public (ImmutableArray<DiagnosticAnalyzer> Analyzers, ImmutableArray<CodeFixProvider> Fixers) GetAnalyzersAndFixers(
+        public ImmutableDictionary<Project, AnalyzersAndFixers> GetAnalyzersAndFixers(
             Solution solution,
             FormatOptions options,
             ILogger logger)
         {
             if (!options.FixCodeStyle)
             {
-                return (ImmutableArray<DiagnosticAnalyzer>.Empty, ImmutableArray<CodeFixProvider>.Empty);
+                return ImmutableDictionary<Project, AnalyzersAndFixers>.Empty;
             }
 
             var assemblies = new[]
@@ -35,7 +33,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 _featuresVisualBasicPath
             }.Select(path => Assembly.LoadFrom(path));
 
-            return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            var analyzersAndFixers = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            return solution.Projects
+                .ToImmutableDictionary(project => project, project => analyzersAndFixers);
         }
 
         public DiagnosticSeverity GetSeverity(FormatOptions formatOptions) => formatOptions.CodeStyleSeverity;

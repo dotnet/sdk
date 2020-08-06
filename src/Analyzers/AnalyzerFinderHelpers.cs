@@ -12,7 +12,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal static class AnalyzerFinderHelpers
     {
-        public static (ImmutableArray<DiagnosticAnalyzer> Analyzers, ImmutableArray<CodeFixProvider> Fixers) LoadAnalyzersAndFixers(IEnumerable<Assembly> assemblies)
+        public static AnalyzersAndFixers LoadAnalyzersAndFixers(IEnumerable<Assembly> assemblies)
         {
             var types = assemblies
                 .SelectMany(assembly => assembly.GetTypes()
@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 .OfType<DiagnosticAnalyzer>()
                 .ToImmutableArray();
 
-            return (diagnosticAnalyzers, codeFixProviders);
+            return new AnalyzersAndFixers(diagnosticAnalyzers, codeFixProviders);
         }
     }
 }

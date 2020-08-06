@@ -5,43 +5,34 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal class AnalyzerReferenceInformationProvider : IAnalyzerInformationProvider
     {
-        private static readonly string[] s_roslynCodeStyleAssmeblies = new[]
-        {
-            "Microsoft.CodeAnalysis.CodeStyle",
-            "Microsoft.CodeAnalysis.CodeStyle.Fixes",
-            "Microsoft.CodeAnalysis.CSharp.CodeStyle",
-            "Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes",
-            "Microsoft.CodeAnalysis.VisualBasic.CodeStyle",
-            "Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes"
-        };
-
-        public (ImmutableArray<DiagnosticAnalyzer> Analyzers, ImmutableArray<CodeFixProvider> Fixers) GetAnalyzersAndFixers(
+        public ImmutableDictionary<Project, AnalyzersAndFixers> GetAnalyzersAndFixers(
             Solution solution,
             FormatOptions formatOptions,
             ILogger logger)
         {
             if (!formatOptions.FixAnalyzers)
             {
-                return (ImmutableArray<DiagnosticAnalyzer>.Empty, ImmutableArray<CodeFixProvider>.Empty);
+                return ImmutableDictionary<Project, AnalyzersAndFixers>.Empty;
             }
 
-            var assemblies = solution.Projects
-                .SelectMany(project => project.AnalyzerReferences.Select(reference => reference.FullPath))
-                .Distinct()
-                .Select(TryLoadAssemblyFrom)
+            return solution.Projects
+                .ToImmutableDictionary(project => project, GetAnalyzersAndFixers);
+        }
+
+        private AnalyzersAndFixers GetAnalyzersAndFixers(Project project)
+        {
+            var analyzerAssemblies = project.AnalyzerReferences
+                .Select(reference => TryLoadAssemblyFrom(reference.FullPath))
                 .OfType<Assembly>()
                 .ToImmutableArray();
 
-            return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(analyzerAssemblies);
         }
 
         private Assembly? TryLoadAssemblyFrom(string? path)
@@ -52,28 +43,12 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return null;
             }
 
-            // Roslyn CodeStyle analysis is handled with the --fix-style option.
-            var assemblyFileName = Path.GetFileNameWithoutExtension(path);
-            if (s_roslynCodeStyleAssmeblies.Contains(assemblyFileName))
-            {
-                return null;
-            }
-
             try
             {
+                var context = new AnalyzerLoadContext(Path.GetDirectoryName(path));
+
                 // First try loading the assembly from disk.
-                return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
-            }
-            catch { }
-
-            try
-            {
-                // Next see if this assembly has already been loaded into our context.
-                var assemblyName = AssemblyLoadContext.GetAssemblyName(path);
-                if (assemblyName?.Name != null)
-                {
-                    return AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName.Name));
-                }
+                return context.LoadFromAssemblyPath(path);
             }
             catch { }
 
@@ -82,5 +57,38 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         }
 
         public DiagnosticSeverity GetSeverity(FormatOptions formatOptions) => formatOptions.AnalyzerSeverity;
+
+        internal sealed class AnalyzerLoadContext : AssemblyLoadContext
+        {
+            private readonly string _assemblyFolderPath;
+
+            public AnalyzerLoadContext(string assemblyFolderPath)
+            {
+                _assemblyFolderPath = assemblyFolderPath;
+            }
+
+            protected override Assembly Load(AssemblyName assemblyName)
+            {
+                // Since we build against .NET Core 2.1 we do not have access to the
+                // AssemblyDependencyResolver which resolves depenendency assembly paths
+                // from AssemblyName by using the .deps.json.
+
+                // We will instead do the simplest thing by looking for the requested assembly
+                // by name in the same folder as the assembly being loaded.
+                var possibleAssemblyFileName = $"{assemblyName.Name}.dll";
+                var possibleAssemblyPath = Path.Combine(_assemblyFolderPath, possibleAssemblyFileName);
+                try
+                {
+                    if (File.Exists(possibleAssemblyPath))
+                    {
+                        return LoadFromAssemblyPath(possibleAssemblyPath);
+                    }
+                }
+                catch { }
+
+                // Try to load the requested assembly from the default load context.
+                return AssemblyLoadContext.Default.LoadFromAssemblyName(assemblyName);
+            }
+        }
     }
 }
