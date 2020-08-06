@@ -375,7 +375,8 @@ class Test
         return null;
     }}
 }}
-");
+",
+            GetCSharpResultAt(103, 21, "Command1.Command1(string cmd, string parameter2)", "M1"));
 
             await VerifyVB.VerifyAnalyzerAsync($@"
 {SetupCodeBasic}
@@ -406,7 +407,8 @@ Class Test
     Public Shared Widening Operator CType(ByVal value As Test) As String
         Return Nothing
     End Operator
-End Class");
+End Class",
+            GetBasicResultAt(140, 18, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
         [Fact]

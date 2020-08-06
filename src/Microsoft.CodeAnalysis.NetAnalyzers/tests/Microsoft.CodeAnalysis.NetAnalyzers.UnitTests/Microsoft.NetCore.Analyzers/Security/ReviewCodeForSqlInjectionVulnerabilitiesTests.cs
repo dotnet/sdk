@@ -13,6 +13,35 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForSqlInjectionVulnerabilities.Rule;
 
         [Fact]
+        public async Task EntityFramework_FromSql_Constant_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+namespace VulnerableWebApp
+{
+    using System;
+    using System.Data;
+    using System.Linq;
+    using System.Web;
+    using System.Web.UI;
+    using Microsoft.EntityFrameworkCore;
+
+    public class MyContext : DbContext
+    {
+        public DbSet<string> DataSet { get; set; }
+    }
+
+    public partial class WebForm : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            new MyContext().DataSet.FromSql("""");
+        }
+    }
+}
+            ");
+        }
+
+        [Fact]
         public async Task HttpRequest_Form_Item_EntityFramework_FromSql_Diagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
