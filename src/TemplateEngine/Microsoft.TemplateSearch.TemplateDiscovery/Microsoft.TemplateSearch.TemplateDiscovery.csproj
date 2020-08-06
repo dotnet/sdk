@@ -11,7 +11,7 @@
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Cli\Microsoft.TemplateEngine.Cli.csproj" />
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
 
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
 
   <ItemGroup>
