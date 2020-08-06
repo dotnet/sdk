@@ -238,7 +238,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameMessage">
-        <source>Do not prefix enum values with the name of the enum type '{0}'. .</source>
+        <source>Do not prefix enum values with the name of the enum type '{0}'</source>
         <target state="needs-review-translation">Nepřidávejte před hodnoty výčtu název typu výčtu {0}.</target>
         <note />
       </trans-unit>

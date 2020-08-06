@@ -238,7 +238,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameMessage">
-        <source>Do not prefix enum values with the name of the enum type '{0}'. .</source>
+        <source>Do not prefix enum values with the name of the enum type '{0}'</source>
         <target state="needs-review-translation">列挙値の前に列挙型 '{0}' の名前を付けないでください。</target>
         <note />
       </trans-unit>
