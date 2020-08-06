@@ -461,5 +461,113 @@ namespace Microsoft.NET.Publish.Tests
                 .And
                 .HaveStdOutContaining("Hello World");
         }
+
+        [RequiresMSBuildVersionTheory("16.8.0")]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp3.1")]
+        [InlineData("net5.0")]
+        public void It_runs_single_file_apps_with_satellite_assemblies(string targetFramework)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true,
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = @"
+                        using System;
+
+                        public static class Program
+                        {
+                            public static void Main()
+                            {
+                                Console.WriteLine(Strings.GetHelloWorld());
+                            }
+                        }",
+                    ["Strings.cs"] = @"using System;
+                        using System.Globalization;
+                        using System.Reflection;
+                        using System.Resources;
+                        using System.Threading;
+
+                        public class Strings
+                        {
+                            public static string GetHelloWorld()
+                            {
+                                CultureInfo.CurrentUICulture = new CultureInfo(""en-US"");
+                                var resources = new ResourceManager(""Strings"", typeof(Strings).GetTypeInfo().Assembly);
+                                return resources.GetString(""HelloWorld"");
+                            }
+                        }"
+                },
+                EmbeddedResources =
+                {
+                    ["Strings.en-US.resx"] = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <root>
+                          <xsd:schema id=""root"" xmlns="""" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:msdata=""urn:schemas-microsoft-com:xml-msdata"">
+                            <xsd:element name=""root"" msdata:IsDataSet=""true"">
+                              <xsd:complexType>
+                                <xsd:choice maxOccurs=""unbounded"">
+                                  <xsd:element name=""data"">
+                                    <xsd:complexType>
+                                      <xsd:sequence>
+                                        <xsd:element name=""value"" type=""xsd:string"" minOccurs=""0"" msdata:Ordinal=""1"" />
+                                        <xsd:element name=""comment"" type=""xsd:string"" minOccurs=""0"" msdata:Ordinal=""2"" />
+                                      </xsd:sequence>
+                                      <xsd:attribute name=""name"" type=""xsd:string"" msdata:Ordinal=""1"" />
+                                      <xsd:attribute name=""type"" type=""xsd:string"" msdata:Ordinal=""3"" />
+                                      <xsd:attribute name=""mimetype"" type=""xsd:string"" msdata:Ordinal=""4"" />
+                                    </xsd:complexType>
+                                  </xsd:element>
+                                  <xsd:element name=""resheader"">
+                                    <xsd:complexType>
+                                      <xsd:sequence>
+                                        <xsd:element name=""value"" type=""xsd:string"" minOccurs=""0"" msdata:Ordinal=""1"" />
+                                      </xsd:sequence>
+                                      <xsd:attribute name=""name"" type=""xsd:string"" use=""required"" />
+                                    </xsd:complexType>
+                                  </xsd:element>
+                                </xsd:choice>
+                              </xsd:complexType>
+                            </xsd:element>
+                          </xsd:schema>
+                          <resheader name=""resmimetype"">
+                            <value>text/microsoft-resx</value>
+                          </resheader>
+                          <resheader name=""version"">
+                            <value>1.3</value>
+                          </resheader>
+                          <resheader name=""reader"">
+                            <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+                          </resheader>
+                          <resheader name=""writer"">
+                            <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+                          </resheader>
+                          <data name=""HelloWorld"" xml:space=""preserve"">
+                            <value>Hello World!</value>
+                          </data>
+                        </root>"
+                }
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+
+            publishCommand.Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            var publishDir = GetPublishDirectory(publishCommand, targetFramework).FullName;
+            var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            var command = new RunExeCommand(Log, singleFilePath);
+            command.Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World!");
+        }
     }
 }
