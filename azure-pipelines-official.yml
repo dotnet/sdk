@@ -36,7 +36,6 @@ stages:
     - script: eng\common\CIBuild.cmd
                 -configuration $(BuildConfiguration)
                 /p:OfficialBuildId=$(Build.BuildNumber)
-                /p:VisualStudioDropName=$(VisualStudioDropName)
                 /p:DotNetSignType=$(SignType)
                 /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
                 /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
@@ -48,7 +47,7 @@ stages:
     - task: NuGetPublisher@0
       displayName: Publish NuGet Packages to MyGet
       inputs:
-        searchPattern: 'artifacts\packages\$(BuildConfiguration)\Shipping\*.nupkg'
+        searchPattern: '$(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)\Shipping\*.nupkg'
         connectedServiceName: 'dotnet-format - NuGet feed'
         nuGetVersion: 4.0.0.2283
       condition: succeeded()
@@ -65,7 +64,7 @@ stages:
       displayName: Publish Test Results
       inputs:
         testRunner: XUnit
-        testResultsFiles: 'artifacts/TestResults/$(BuildConfiguration)/*.xml'
+        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
         mergeTestResults: true
         testRunTitle: 'Unit Tests'
       condition: always()
@@ -75,7 +74,7 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: Publish Artifact Packages
       inputs:
-        PathtoPublish: 'artifacts\packages\$(BuildConfiguration)'
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)'
         ArtifactName: 'PackageArtifacts'
       condition: succeeded()
 
