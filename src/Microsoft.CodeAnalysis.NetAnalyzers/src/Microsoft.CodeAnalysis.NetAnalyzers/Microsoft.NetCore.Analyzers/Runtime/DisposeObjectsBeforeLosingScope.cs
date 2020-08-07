@@ -120,13 +120,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             if (trackExceptionPaths)
                             {
                                 // Compute diagnostics for undisposed objects at handled exception exit paths.
-                                var disposeDataAtHandledExceptionPaths = disposeAnalysisResult.ExceptionPathsExitBlockOutput!.Data;
+                                var disposeDataAtHandledExceptionPaths = disposeAnalysisResult.ExceptionPathsExitBlockOutputOpt!.Data;
                                 ComputeDiagnostics(disposeDataAtHandledExceptionPaths,
                                     notDisposedDiagnostics, mayBeNotDisposedDiagnostics, disposeAnalysisResult, pointsToAnalysisResult,
                                     disposeAnalysisKind, isDisposeDataForExceptionPaths: true);
 
                                 // Compute diagnostics for undisposed objects at unhandled exception exit paths, if any.
-                                var disposeDataAtUnhandledExceptionPaths = disposeAnalysisResult.MergedStateForUnhandledThrowOperations?.Data;
+                                var disposeDataAtUnhandledExceptionPaths = disposeAnalysisResult.MergedStateForUnhandledThrowOperationsOpt?.Data;
                                 if (disposeDataAtUnhandledExceptionPaths != null)
                                 {
                                     ComputeDiagnostics(disposeDataAtUnhandledExceptionPaths,
@@ -207,7 +207,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 AbstractLocation location = kvp.Key;
                 DisposeAbstractValue disposeValue = kvp.Value;
                 if (disposeValue.Kind == DisposeAbstractValueKind.NotDisposable ||
-                    location.Creation == null)
+                    location.CreationOpt == null)
                 {
                     continue;
                 }
