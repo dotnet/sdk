@@ -3260,6 +3260,49 @@ namespace TestNamespace
         }
 
         [Fact]
+        public async Task TaintFunctionArguments_MvcFromServices_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public interface ISomething
+{
+    string ToString();
+}
+
+public class MyController : Controller
+{
+    public void DoSomething([FromServices]ISomething input)
+    {
+        new SqlCommand(input.ToString());
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_MvcNoFromServices_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public interface ISomething
+{
+    string ToString();
+}
+
+public class MyController : Controller
+{
+    public void DoSomething(ISomething input)
+    {
+        new SqlCommand(input.ToString());
+    }
+}",
+                GetCSharpResultAt(14, 9, 14, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(ISomething input)", "ISomething input", "void MyController.DoSomething(ISomething input)"));
+        }
+
+        [Fact]
         public async Task TaintFunctionArguments_InheritedNonController_NoDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
