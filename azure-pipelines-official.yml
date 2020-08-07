@@ -36,6 +36,7 @@ stages:
     - script: eng\common\CIBuild.cmd
                 -configuration $(BuildConfiguration)
                 /p:OfficialBuildId=$(Build.BuildNumber)
+                /p:VisualStudioDropName=$(VisualStudioDropName)
                 /p:DotNetSignType=$(SignType)
                 /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
                 /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
@@ -43,6 +44,15 @@ stages:
                 /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
                 /p:DotnetPublishUsingPipelines=true
       displayName: Build
+
+    - task: PublishTestResults@2
+      displayName: Publish XUnit Test Results
+      inputs:
+        testRunner: XUnit
+        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
+        mergeTestResults: true
+        testRunTitle: 'Unit Tests'
+      condition: always()
 
     - task: NuGetPublisher@0
       displayName: Publish NuGet Packages to MyGet
@@ -57,22 +67,22 @@ stages:
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
         ArtifactName: 'Logs'
+        publishLocation: Container
       continueOnError: true
       condition: not(succeeded())
 
-    - task: PublishTestResults@1
-      displayName: Publish Test Results
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs
       inputs:
-        testRunner: XUnit
-        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
-        mergeTestResults: true
-        testRunTitle: 'Unit Tests'
-      condition: always()
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)'
+        ArtifactName: 'TestResults'
+        publishLocation: Container
+      condition: not(succeeded())
 
     # Publish our NuPkgs as an artifact. The name of this artifact must be PackageArtifacts as the
     # arcade templates depend on the name.'
     - task: PublishBuildArtifacts@1
-      displayName: Publish Artifact Packages
+      displayName: Publish Packages
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)'
         ArtifactName: 'PackageArtifacts'
@@ -94,9 +104,8 @@ stages:
       displayName: Publish MicroBuild Artifacts
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)\MicroBuild\Output'
-        ArtifactName: '$(Build.BuildNumber)'
-        publishLocation: FilePath
-        TargetPath: '$(DropRoot)\$(TeamName)\$(Build.DefinitionName)\$(Build.SourceBranchName)'
+        ArtifactName: MicroBuildOutputs
+        publishLocation: Container
       condition: succeededOrFailed()
 
   # Publish to Build Asset Registry
