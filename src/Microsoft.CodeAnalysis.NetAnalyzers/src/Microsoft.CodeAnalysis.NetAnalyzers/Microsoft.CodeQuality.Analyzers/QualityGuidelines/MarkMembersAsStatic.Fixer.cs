@@ -141,13 +141,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     var operation = semanticModel.GetOperationWalkingUpParentChain(referenceNode, cancellationToken);
-                    SyntaxNode? nodeToReplaceOpt = null;
+                    SyntaxNode? nodeToReplace = null;
                     switch (operation)
                     {
                         case IMemberReferenceOperation memberReference:
                             if (IsReplacableOperation(memberReference.Instance))
                             {
-                                nodeToReplaceOpt = GetSyntaxNodeToReplace(memberReference);
+                                nodeToReplace = GetSyntaxNodeToReplace(memberReference);
                             }
 
                             break;
@@ -155,13 +155,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         case IInvocationOperation invocation:
                             if (IsReplacableOperation(invocation.Instance))
                             {
-                                nodeToReplaceOpt = GetExpressionOfInvocation(invocation.Syntax);
+                                nodeToReplace = GetExpressionOfInvocation(invocation.Syntax);
                             }
 
                             break;
                     }
 
-                    if (nodeToReplaceOpt == null)
+                    if (nodeToReplace == null)
                     {
                         allReferencesFixed = false;
                         continue;
@@ -169,7 +169,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                     // Fetch the symbol for the node to replace - note that this might be
                     // different from the original symbol due to generic type arguments.
-                    var symbolForNodeToReplace = GetSymbolForNodeToReplace(nodeToReplaceOpt, semanticModel);
+                    var symbolForNodeToReplace = GetSymbolForNodeToReplace(nodeToReplace, semanticModel);
                     if (symbolForNodeToReplace == null)
                     {
                         allReferencesFixed = false;
@@ -177,19 +177,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     SyntaxNode memberName;
-                    var typeArgumentsOpt = GetTypeArguments(referenceNode);
-                    memberName = typeArgumentsOpt != null ?
-                        editor.Generator.GenericName(symbolForNodeToReplace.Name, typeArgumentsOpt) :
+                    var typeArguments = GetTypeArguments(referenceNode);
+                    memberName = typeArguments != null ?
+                        editor.Generator.GenericName(symbolForNodeToReplace.Name, typeArguments) :
                         editor.Generator.IdentifierName(symbolForNodeToReplace.Name);
 
                     var newNode = editor.Generator.MemberAccessExpression(
                             expression: editor.Generator.TypeExpression(symbolForNodeToReplace.ContainingType),
                             memberName: memberName)
-                        .WithLeadingTrivia(nodeToReplaceOpt.GetLeadingTrivia())
-                        .WithTrailingTrivia(nodeToReplaceOpt.GetTrailingTrivia())
+                        .WithLeadingTrivia(nodeToReplace.GetLeadingTrivia())
+                        .WithTrailingTrivia(nodeToReplace.GetTrailingTrivia())
                         .WithAdditionalAnnotations(Formatter.Annotation);
 
-                    editor.ReplaceNode(nodeToReplaceOpt, newNode);
+                    editor.ReplaceNode(nodeToReplace, newNode);
                 }
 
                 document = document.WithSyntaxRoot(editor.GetChangedRoot());

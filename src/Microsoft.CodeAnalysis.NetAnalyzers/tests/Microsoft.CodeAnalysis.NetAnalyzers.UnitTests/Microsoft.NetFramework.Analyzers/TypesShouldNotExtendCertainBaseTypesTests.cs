@@ -203,8 +203,6 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
-
-
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_ApplicationException_Internal()
         {

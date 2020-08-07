@@ -513,7 +513,6 @@ End Namespace",
             );
         }
 
-
         [Fact]
         public async Task XmlTextReaderDerivedTypeSecureResolverInOnePathMethodShouldNotGenerateDiagnostic()
         {

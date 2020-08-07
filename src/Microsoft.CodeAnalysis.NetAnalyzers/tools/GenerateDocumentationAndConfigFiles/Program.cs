@@ -117,14 +117,14 @@ namespace GenerateDocumentationAndConfigFiles
                     $"{category} Rules with default severity",
                     $@"All {category} Rules with default severity. Rules with IsEnabledByDefault = false or from a different category are disabled.",
                     RulesetKind.CategoryDefault,
-                    categoryOpt: category);
+                    category: category);
 
                 createRulesetAndEditorconfig(
                     $"{category}RulesEnabled",
                     $"{category} Rules Enabled with default severity",
                     $@"All {category} Rules are enabled with default severity. {category} Rules with IsEnabledByDefault = false are force enabled with default severity. Rules from a different category are disabled.",
                     RulesetKind.CategoryEnabled,
-                    categoryOpt: category);
+                    category: category);
             }
 
             // We generate custom tag based rulesets only for select custom tags.
@@ -139,14 +139,14 @@ namespace GenerateDocumentationAndConfigFiles
                     $"{customTag} Rules with default severity",
                     $@"All {customTag} Rules with default severity. Rules with IsEnabledByDefault = false and non-{customTag} rules are disabled.",
                     RulesetKind.CustomTagDefault,
-                    customTagOpt: customTag);
+                    customTag: customTag);
 
                 createRulesetAndEditorconfig(
                     $"{customTag}RulesEnabled",
                     $"{customTag} Rules Enabled with default severity",
                     $@"All {customTag} Rules are enabled with default severity. {customTag} Rules with IsEnabledByDefault = false are force enabled with default severity. Non-{customTag} Rules are disabled.",
                     RulesetKind.CustomTagEnabled,
-                    customTagOpt: customTag);
+                    customTag: customTag);
             }
 
             createPropsFile();
@@ -171,11 +171,11 @@ namespace GenerateDocumentationAndConfigFiles
                 string title,
                 string description,
                 RulesetKind rulesetKind,
-                string? categoryOpt = null,
-                string? customTagOpt = null)
+                string? category = null,
+                string? customTag = null)
             {
-                CreateRuleset(analyzerRulesetsDir, fileName + ".ruleset", title, description, rulesetKind, categoryOpt, customTagOpt, allRulesById, analyzerPackageName);
-                CreateEditorconfig(analyzerEditorconfigsDir, fileName, title, description, rulesetKind, categoryOpt, customTagOpt, allRulesById);
+                CreateRuleset(analyzerRulesetsDir, fileName + ".ruleset", title, description, rulesetKind, category, customTag, allRulesById, analyzerPackageName);
+                CreateEditorconfig(analyzerEditorconfigsDir, fileName, title, description, rulesetKind, category, customTag, allRulesById);
                 return;
             }
 
@@ -445,8 +445,8 @@ Rule ID | Missing Help Link | Title |
             string rulesetTitle,
             string rulesetDescription,
             RulesetKind rulesetKind,
-            string? categoryOpt,
-            string? customTagOpt,
+            string? category,
+            string? customTag,
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
             string analyzerPackageName)
         {
@@ -460,8 +460,8 @@ Rule ID | Missing Help Link | Title |
                 getSeverityString,
                 commentStart: "   <!-- ",
                 commentEnd: " -->",
-                categoryOpt,
-                customTagOpt,
+                category,
+                customTag,
                 sortedRulesById);
 
             var directory = Directory.CreateDirectory(analyzerRulesetsDir);
@@ -497,9 +497,9 @@ Rule ID | Missing Help Link | Title |
                 result.AppendLine($@"      <Rule Id=""{rule.Id}"" Action=""{severity}"" /> {spacing} <!-- {rule.Title} -->");
             }
 
-            static string getSeverityString(DiagnosticSeverity? severityOpt)
+            static string getSeverityString(DiagnosticSeverity? severity)
             {
-                return severityOpt.HasValue ? severityOpt.ToString() ?? "None" : "None";
+                return severity.HasValue ? severity.ToString() ?? "None" : "None";
             }
         }
 
@@ -509,8 +509,8 @@ Rule ID | Missing Help Link | Title |
             string editorconfigTitle,
             string editorconfigDescription,
             RulesetKind rulesetKind,
-            string? categoryOpt,
-            string? customTagOpt,
+            string? category,
+            string? customTag,
             SortedList<string, DiagnosticDescriptor> sortedRulesById)
         {
             var text = GetRulesetOrEditorconfigText(
@@ -523,8 +523,8 @@ Rule ID | Missing Help Link | Title |
                 getSeverityString,
                 commentStart: "# ",
                 commentEnd: string.Empty,
-                categoryOpt,
-                customTagOpt,
+                category,
+                customTag,
                 sortedRulesById);
 
             var directory = Directory.CreateDirectory(Path.Combine(analyzerEditorconfigsDir, editorconfigFolder));
@@ -564,20 +564,20 @@ Rule ID | Missing Help Link | Title |
                 result.AppendLine($@"dotnet_diagnostic.{rule.Id}.severity = {severity}");
             }
 
-            static string getSeverityString(DiagnosticSeverity? severityOpt)
+            static string getSeverityString(DiagnosticSeverity? severity)
             {
-                if (!severityOpt.HasValue)
+                if (!severity.HasValue)
                 {
                     return "none";
                 }
 
-                return severityOpt.Value switch
+                return severity.Value switch
                 {
                     DiagnosticSeverity.Error => "error",
                     DiagnosticSeverity.Warning => "warning",
                     DiagnosticSeverity.Info => "suggestion",
                     DiagnosticSeverity.Hidden => "silent",
-                    _ => throw new NotImplementedException(severityOpt.Value.ToString()),
+                    _ => throw new NotImplementedException(severity.Value.ToString()),
                 };
             }
         }
@@ -592,24 +592,24 @@ Rule ID | Missing Help Link | Title |
             Func<DiagnosticSeverity?, string> getSeverityString,
             string commentStart,
             string commentEnd,
-            string? categoryOpt,
-            string? customTagOpt,
+            string? category,
+            string? customTag,
             SortedList<string, DiagnosticDescriptor> sortedRulesById)
         {
-            Debug.Assert(categoryOpt == null || customTagOpt == null);
-            Debug.Assert(categoryOpt != null == (rulesetKind == RulesetKind.CategoryDefault || rulesetKind == RulesetKind.CategoryEnabled));
-            Debug.Assert(customTagOpt != null == (rulesetKind == RulesetKind.CustomTagDefault || rulesetKind == RulesetKind.CustomTagEnabled));
+            Debug.Assert(category == null || customTag == null);
+            Debug.Assert(category != null == (rulesetKind == RulesetKind.CategoryDefault || rulesetKind == RulesetKind.CategoryEnabled));
+            Debug.Assert(customTag != null == (rulesetKind == RulesetKind.CustomTagDefault || rulesetKind == RulesetKind.CustomTagEnabled));
 
             var result = new StringBuilder();
             startRulesetOrEditorconfig(result);
-            if (categoryOpt == null && customTagOpt == null)
+            if (category == null && customTag == null)
             {
                 addRules(categoryPass: false, customTagPass: false);
             }
             else
             {
-                result.AppendLine($@"{commentStart}{categoryOpt ?? customTagOpt} Rules{commentEnd}");
-                addRules(categoryPass: categoryOpt != null, customTagPass: customTagOpt != null);
+                result.AppendLine($@"{commentStart}{category ?? customTag} Rules{commentEnd}");
+                addRules(categoryPass: category != null, customTagPass: customTag != null);
                 result.AppendLine();
                 result.AppendLine();
                 result.AppendLine();
@@ -658,22 +658,22 @@ Rule ID | Missing Help Link | Title |
                         case RulesetKind.CategoryEnabled:
                             if (categoryPass)
                             {
-                                return rule.Category != categoryOpt;
+                                return rule.Category != category;
                             }
                             else
                             {
-                                return rule.Category == categoryOpt;
+                                return rule.Category == category;
                             }
 
                         case RulesetKind.CustomTagDefault:
                         case RulesetKind.CustomTagEnabled:
                             if (customTagPass)
                             {
-                                return !rule.CustomTags.Contains(customTagOpt);
+                                return !rule.CustomTags.Contains(customTag);
                             }
                             else
                             {
-                                return rule.CustomTags.Contains(customTagOpt);
+                                return rule.CustomTags.Contains(customTag);
                             }
 
                         default:
