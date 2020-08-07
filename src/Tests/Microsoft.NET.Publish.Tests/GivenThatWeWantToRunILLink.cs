@@ -116,8 +116,8 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:PublishTrimmed=true", $"/p:TrimMode={trimMode}")
                 .Should().Pass()
-                .And.NotHaveStdOutContaining("IL2006")
-                .And.NotHaveStdOutContaining("IL2026");
+                .And.NotHaveStdOutContaining("warning IL2006")
+                .And.NotHaveStdOutContaining("warning IL2026");
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
             var exe = Path.Combine(publishDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}");
@@ -220,12 +220,12 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true")
                 .Should().Pass()
                 // trim analysis warnings are disabled
-                .And.NotHaveStdOutContaining("IL2006")
-                .And.NotHaveStdOutContaining("IL2026")
+                .And.NotHaveStdOutContaining("warning IL2006")
+                .And.NotHaveStdOutContaining("warning IL2026")
                 // warnings about invalid attributes still show up
-                .And.HaveStdOutContaining("IL2043")
-                .And.HaveStdOutContaining("IL2046")
-                .And.HaveStdOutContaining("IL2047");
+                .And.HaveStdOutContaining("warning IL2043")
+                .And.HaveStdOutContaining("warning IL2046")
+                .And.HaveStdOutContaining("warning IL2047");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -241,11 +241,11 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false")
                 .Should().Pass()
-                .And.HaveStdOutMatching("IL2006.*Program.IL_2006")
-                .And.HaveStdOutMatching("IL2026.*Program.IL_2026.*Testing analysis warning IL2026")
-                .And.HaveStdOutMatching("IL2043.*Program.get_IL_2043")
-                .And.HaveStdOutMatching("IL2046.*Program.Derived.IL_2046")
-                .And.HaveStdOutMatching("IL2047.*Program.Derived.IL_2047");
+                .And.HaveStdOutMatching("warning IL2006.*Program.IL_2006")
+                .And.HaveStdOutMatching("warning IL2026.*Program.IL_2026.*Testing analysis warning IL2026")
+                .And.HaveStdOutMatching("warning IL2043.*Program.get_IL_2043")
+                .And.HaveStdOutMatching("warning IL2046.*Program.Derived.IL_2046")
+                .And.HaveStdOutMatching("warning IL2047.*Program.Derived.IL_2047");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
