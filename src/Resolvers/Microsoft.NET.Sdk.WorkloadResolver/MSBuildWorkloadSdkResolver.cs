@@ -7,6 +7,8 @@ using System.Linq;
 
 #if NET
 using Microsoft.DotNet.Cli;
+#else
+using Microsoft.DotNet.MSBuildSdkResolver;
 #endif
 
 namespace Microsoft.NET.Sdk.WorkloadResolver
@@ -17,20 +19,27 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
 
         public override int Priority => 4000;
 
-        WorkloadManifest _manifests;
+#if NETFRAMEWORK
+        private readonly NETCoreSdkResolver _sdkResolver;
+#endif
+
         public MSBuildWorkloadSdkResolver()
         {
-            LoadManifests();
+#if NETFRAMEWORK
+            _sdkResolver = new NETCoreSdkResolver();
+#endif
         }
 
         public override SdkResult Resolve(SdkReference sdkReference, SdkResolverContext resolverContext, SdkResultFactory factory)
         {
+            var manifests = GetWorkloadManifests(resolverContext);
+
             if (sdkReference.Name.Equals("Microsoft.NET.SDK.WorkloadAutoImportPropsLocator", StringComparison.OrdinalIgnoreCase))
             {
                 List<string> autoImportSdkPaths = new List<string>();
-                foreach (var sdkPack in _manifests.SdkPackVersions)
+                foreach (var sdkPack in manifests.SdkPackVersions)
                 {
-                    string sdkPackSdkFolder = Path.Combine(GetWorkloadPackPath(sdkPack.Key, sdkPack.Value), "Sdk");
+                    string sdkPackSdkFolder = Path.Combine(GetWorkloadPackPath(resolverContext, sdkPack.Key, sdkPack.Value), "Sdk");
                     string autoImportPath = Path.Combine(sdkPackSdkFolder, "AutoImport.props");
                     if (File.Exists(autoImportPath))
                     {
@@ -63,9 +72,9 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
             }
             else
             {
-                if (_manifests.SdkPackVersions.TryGetValue(sdkReference.Name, out string sdkVersion))
+                if (manifests.SdkPackVersions.TryGetValue(sdkReference.Name, out string sdkVersion))
                 {
-                    string workloadPackPath = GetWorkloadPackPath(sdkReference.Name, sdkVersion);
+                    string workloadPackPath = GetWorkloadPackPath(resolverContext, sdkReference.Name, sdkVersion);
                     if (Directory.Exists(workloadPackPath))
                     {
                         return factory.IndicateSuccess(Path.Combine(workloadPackPath, "Sdk"), sdkReference.Version);
@@ -81,7 +90,6 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
                                 }));
 
                         Dictionary<string, string> propertiesToAdd = new Dictionary<string, string>();
-                        propertiesToAdd["WorkloadMissing"] = "true";
                         return factory.IndicateSuccess(Enumerable.Empty<string>(),
                             sdkReference.Version,
                             propertiesToAdd: propertiesToAdd,
@@ -92,15 +100,16 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
             return null;
         }
 
-        private void LoadManifests()
+        private WorkloadManifest GetWorkloadManifests(SdkResolverContext context)
         {
+            //  TODO: Caching
             List<WorkloadManifest> manifests = new List<WorkloadManifest>();
 
             string workloadManifestRoot = Environment.GetEnvironmentVariable("DOTNETSDK_WORKLOAD_MANIFEST_ROOT");
 
             if (string.IsNullOrEmpty(workloadManifestRoot))
             {
-                workloadManifestRoot = GetWorkloadManifestRoot();
+                workloadManifestRoot = GetWorkloadManifestRoot(context);
             }
 
             foreach (var workloadManifestFolder in Directory.GetDirectories(workloadManifestRoot))
@@ -108,10 +117,10 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
                 manifests.Add(WorkloadManifest.LoadFromFolder(workloadManifestFolder));
             }
 
-            _manifests = WorkloadManifest.Merge(manifests);
+            return WorkloadManifest.Merge(manifests);
         }
 
-        private string GetSdkDirectory()
+        private string GetSdkDirectory(SdkResolverContext context)
         {
 #if NET
             var sdkDirectory = Path.GetDirectoryName(typeof(DotnetFiles).Assembly.Location);
@@ -119,30 +128,42 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
 
 #else
             //  TODO: Implement for .NET Framework
-            throw new NotImplementedException();
+            string dotnetExeDir = _sdkResolver.GetDotnetExeDirectory();
+            string globalJsonStartDir = Path.GetDirectoryName(context.SolutionFilePath ?? context.ProjectFilePath);
+            var sdkResolutionResult = _sdkResolver.ResolveNETCoreSdkDirectory(globalJsonStartDir, context.MSBuildVersion, context.IsRunningInVisualStudio, dotnetExeDir);
+
+            return sdkResolutionResult.ResolvedSdkDirectory;
 #endif
 
         }
 
-        private string GetDotNetRoot()
+        private string GetDotNetRoot(SdkResolverContext context)
         {
-            var sdkDirectory = GetSdkDirectory();
+            var sdkDirectory = GetSdkDirectory(context);
             var dotnetRoot = Directory.GetParent(sdkDirectory).Parent.FullName;
             return dotnetRoot;
         }
 
-        private string GetWorkloadPackPath(string packId, string packVersion)
+        private string GetWorkloadPackPath(SdkResolverContext context, string packId, string packVersion)
         {
-            var dotnetRoot = GetDotNetRoot();
+            var dotnetRoot = GetDotNetRoot(context);
             return Path.Combine(dotnetRoot, "packs", packId, packVersion);
         }
 
         private static readonly char[] dashOrPlus = new[] { '-', '+' };
 
-        private string GetWorkloadManifestRoot()
+        private string GetWorkloadManifestRoot(SdkResolverContext context)
         {
-            var dotnetRoot = GetDotNetRoot();
-            var sdkDirectory = GetSdkDirectory();
+            var dotnetRoot = GetDotNetRoot(context);
+
+            string versionBand = GetSdkVersionBand(context);
+
+            return Path.Combine(dotnetRoot, "workloadmanifests", versionBand);
+        }
+
+        private string GetSdkVersionBand(SdkResolverContext context)
+        {
+            var sdkDirectory = GetSdkDirectory(context);
             //  TODO: Is the directory name OK, or should we read the .version file (we don't want to use the Cli.Utils library to read it on .NET Framework)
             var sdkVersion = Path.GetFileName(sdkDirectory);
 
@@ -157,7 +178,7 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
             var version = Version.Parse(sdkVersion);
             var versionBand = new Version(version.Major, version.Minor, (version.Build / 100) * 100);
 
-            return Path.Combine(dotnetRoot, "workloadmanifests", versionBand.ToString());
+            return versionBand.ToString();
         }
     }
 }

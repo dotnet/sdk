@@ -42,4 +42,19 @@
     <Exec Command="$(RedistLayoutPath)dotnet new"
           EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)" />
   </Target>
+  
+  
+  <Target Name="PublishTestWorkloads"
+          AfterTargets="OverlaySdkOnLKG">
+    <PropertyGroup>
+      <TestWorkloadSource>C:\git\msbuild-sdk-resolver-test\testresolver\</TestWorkloadSource>
+    </PropertyGroup>
+    <ItemGroup>
+      <TestWorkloadContent Include="$(TestWorkloadSource)packs\**" DeploymentSubPath="packs"/>
+      <TestWorkloadContent Include="$(TestWorkloadSource)workloadmanifests\**" DeploymentSubPath="workloadmanifests" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(TestWorkloadContent)"
+          DestinationFiles="@(TestWorkloadContent->'$(RedistLayoutPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
 </Project>
