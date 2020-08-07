@@ -24,26 +24,16 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         private const string IsEmpty = nameof(IsEmpty);
 
         private const string csSnippet = @"
-using System;
-using System.Linq;
-
 public class Test
 {{
-    public int Count {{ get; }}
-    public bool IsEmpty {{ get; }}
-
+    private System.Collections.Concurrent.ConcurrentDictionary<string, string> _concurrent;
     public bool DummyProperty => {0};
 }}
 ";
 
         private const string vbSnippet = @"
-Imports System
-Imports System.Collections.Concurrent
-
 Public Class Test
-    Public ReadOnly Property Count As Integer
-    Public ReadOnly Property IsEmpty As Boolean
-
+    Private _concurrent As System.Collections.Concurrent.ConcurrentDictionary(Of string, string)
     Public ReadOnly Property DummyProperty As Boolean
         Get
             Return {0}
@@ -159,55 +149,49 @@ End Class
         }
 
         [Theory]
-        [InlineData("(Count) > 0")]
-        [InlineData("Count > (0)")]
-        [InlineData("(Count) > (0)")]
-        [InlineData("(this.Count) > 0")]
-        [InlineData("this.Count > (0)")]
-        [InlineData("(this.Count) > (0)")]
-        [InlineData("((this).Count) > (0)")]
-        public Task CSharpTestFixOnParentheses(string condition)
+        [InlineData("(_concurrent.Count) > 0", "!_concurrent.IsEmpty")]
+        [InlineData("_concurrent.Count > (0)", "!_concurrent.IsEmpty")]
+        [InlineData("(_concurrent.Count) > (0)", "!_concurrent.IsEmpty")]
+        [InlineData("((_concurrent).Count) > (0)", "!(_concurrent).IsEmpty")]
+        public Task CSharpTestFixOnParentheses(string condition, string expectedFix)
         {
             string input = string.Format(CultureInfo.InvariantCulture, csSnippet, condition);
-            string fix = string.Format(CultureInfo.InvariantCulture, csSnippet, $"!{IsEmpty}");
+            string fix = string.Format(CultureInfo.InvariantCulture, csSnippet, expectedFix);
 
             return VerifyCS.VerifyCodeFixAsync(
                  input,
-                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(10, 34, 10, 34 + condition.Length),
+                 VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(5, 34, 5, 34 + condition.Length),
                  fix);
         }
 
         [Theory]
-        [InlineData("(Count) > 0", "Not IsEmpty")]
-        [InlineData("Count > (0)", "Not IsEmpty")]
-        [InlineData("(Count) > (0)", "Not IsEmpty")]
-        [InlineData("(Me.Count) > 0", "Not IsEmpty")]
-        [InlineData("Me.Count > (0)", "Not IsEmpty")]
-        [InlineData("(Me.Count) > (0)", "Not IsEmpty")]
+        [InlineData("(_concurrent.Count) > 0", "Not _concurrent.IsEmpty")]
+        [InlineData("_concurrent.Count > (0)", "Not _concurrent.IsEmpty")]
+        [InlineData("(_concurrent.Count) > (0)", "Not _concurrent.IsEmpty")]
         // TODO: Reduce suggested fix to avoid special casing here.
-        [InlineData("((Me).Count) > (0)", "Not (Me).IsEmpty")]
-        public Task BasicTestFixOnParentheses(string condition, string replacement)
+        [InlineData("((_concurrent).Count) > (0)", "Not (_concurrent).IsEmpty")]
+        public Task BasicTestFixOnParentheses(string condition, string expectedFix)
         {
             string input = string.Format(CultureInfo.InvariantCulture, vbSnippet, condition);
-            string fix = string.Format(CultureInfo.InvariantCulture, vbSnippet, replacement);
+            string fix = string.Format(CultureInfo.InvariantCulture, vbSnippet, expectedFix);
 
             return VerifyVB.VerifyCodeFixAsync(
                  input,
-                 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(11, 20, 11, 20 + condition.Length),
+                 VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithSpan(6, 20, 6, 20 + condition.Length),
                  fix);
         }
 
         [Theory]
-        [InlineData("array.Length > 0", true)]
-        [InlineData("(array.Length) > 0", true)]
-        [InlineData("array.Length > (0)", true)]
-        [InlineData("array.Count() == 0", false)]
-        [InlineData("(array.Count()) == 0", false)]
-        [InlineData("array.Count() == (0)", false)]
-        [InlineData("array.Length.Equals(0)", false)]
-        [InlineData("0.Equals(array.Length)", false)]
-        [InlineData("array.Count().Equals(0)", false)]
-        [InlineData("0.Equals(array.Count())", false)]
+        [InlineData("queue.Count > 0", true)]
+        [InlineData("(queue.Count) > 0", true)]
+        [InlineData("queue.Count > (0)", true)]
+        [InlineData("queue.Count() == 0", false)]
+        [InlineData("(queue.Count()) == 0", false)]
+        [InlineData("queue.Count() == (0)", false)]
+        [InlineData("queue.Count.Equals(0)", false)]
+        [InlineData("0.Equals(queue.Count)", false)]
+        [InlineData("queue.Count().Equals(0)", false)]
+        [InlineData("0.Equals(queue.Count())", false)]
         public Task CSharpTestExpressionAsArgument(string expression, bool negate)
             => VerifyCS.VerifyCodeFixAsync(
     $@"using System;
@@ -216,51 +200,51 @@ using System.Linq;
 public class Test
 {{
     public static void TakeBool(bool isEmpty) {{ }}
-    public static void M(System.Collections.Immutable.ImmutableArray<int> array) => TakeBool({expression});
+    public static void M(System.Collections.Concurrent.ConcurrentQueue<int> queue) => TakeBool({expression});
 }}",
-                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(7, 94),
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(7, 96),
     $@"using System;
 using System.Linq;
 
 public class Test
 {{
     public static void TakeBool(bool isEmpty) {{ }}
-    public static void M(System.Collections.Immutable.ImmutableArray<int> array) => TakeBool({(negate ? "!" : "")}array.IsEmpty);
+    public static void M(System.Collections.Concurrent.ConcurrentQueue<int> queue) => TakeBool({(negate ? "!" : "")}queue.IsEmpty);
 }}");
 
         [Theory]
-        [InlineData("(uint)Count > 0", true)]
-        [InlineData("(uint)Count == 0", false)]
-        [InlineData("((uint)Count).Equals(0)", false)]
-        [InlineData("0.Equals((uint)Count)", false)]
+        [InlineData("(uint)_concurrent.Count > 0", true)]
+        [InlineData("(uint)_concurrent.Count == 0", false)]
+        [InlineData("((uint)_concurrent.Count).Equals(0)", false)]
+        [InlineData("0.Equals((uint)_concurrent.Count)", false)]
         public Task CSharpTestCastExpression(string expression, bool negate)
             => VerifyCS.VerifyCodeFixAsync(
                 string.Format(CultureInfo.InvariantCulture, csSnippet, expression),
-                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(10, 34),
-                string.Format(CultureInfo.InvariantCulture, csSnippet, $"{(negate ? "!" : "")}IsEmpty"));
+                VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(5, 34),
+                string.Format(CultureInfo.InvariantCulture, csSnippet, $"{(negate ? "!" : "")}_concurrent.IsEmpty"));
 
         [Theory]
-        [InlineData("CType(Count, UInteger) > 0", true)]
-        [InlineData("CType(Count, UInteger) = 0", false)]
-        [InlineData("CType(Count, UInteger).Equals(0)", false)]
-        [InlineData("0.Equals(CType(Count, UInteger))", false)]
+        [InlineData("CType(_concurrent.Count, UInteger) > 0", true)]
+        [InlineData("CType(_concurrent.Count, UInteger) = 0", false)]
+        [InlineData("CType(_concurrent.Count, UInteger).Equals(0)", false)]
+        [InlineData("0.Equals(CType(_concurrent.Count, UInteger))", false)]
         public Task BasicTestCastExpression(string expression, bool negate)
             => VerifyVB.VerifyCodeFixAsync(
                 string.Format(CultureInfo.InvariantCulture, vbSnippet, expression),
-                VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(11, 20),
-                string.Format(CultureInfo.InvariantCulture, vbSnippet, $"{(negate ? "Not " : "")}IsEmpty"));
+                VerifyVB.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(6, 20),
+                string.Format(CultureInfo.InvariantCulture, vbSnippet, $"{(negate ? "Not " : "")}_concurrent.IsEmpty"));
 
         [Theory]
-        [InlineData("array.Length > 0", true)]
-        [InlineData("(array.Length) > 0", true)]
-        [InlineData("array.Length > (0)", true)]
-        [InlineData("array.Count() = 0", false)]
-        [InlineData("(array.Count()) = 0", false)]
-        [InlineData("array.Count() = (0)", false)]
-        [InlineData("array.Length.Equals(0)", false)]
-        [InlineData("0.Equals(array.Length)", false)]
-        [InlineData("array.Count().Equals(0)", false)]
-        [InlineData("0.Equals(array.Count())", false)]
+        [InlineData("queue.Count > 0", true)]
+        [InlineData("(queue.Count) > 0", true)]
+        [InlineData("queue.Count > (0)", true)]
+        [InlineData("queue.Count() = 0", false)]
+        [InlineData("(queue.Count()) = 0", false)]
+        [InlineData("queue.Count() = (0)", false)]
+        [InlineData("queue.Count.Equals(0)", false)]
+        [InlineData("0.Equals(queue.Count)", false)]
+        [InlineData("queue.Count().Equals(0)", false)]
+        [InlineData("0.Equals(queue.Count())", false)]
         public Task BasicTestExpressionAsArgument(string expression, bool negate)
             => VerifyVB.VerifyCodeFixAsync(
     $@"Imports System
@@ -270,7 +254,7 @@ Public Class Test
     Public Shared Sub TakeBool(ByVal isEmpty As Boolean)
     End Sub
 
-    Public Shared Sub M(ByVal array As System.Collections.Immutable.ImmutableArray(Of Integer))
+    Public Shared Sub M(ByVal queue As System.Collections.Concurrent.ConcurrentQueue(Of Integer))
         TakeBool({expression})
     End Sub
 End Class",
@@ -282,12 +266,12 @@ Public Class Test
     Public Shared Sub TakeBool(ByVal isEmpty As Boolean)
     End Sub
 
-    Public Shared Sub M(ByVal array As System.Collections.Immutable.ImmutableArray(Of Integer))
-        TakeBool({(negate ? "Not " : "")}array.IsEmpty)
+    Public Shared Sub M(ByVal queue As System.Collections.Concurrent.ConcurrentQueue(Of Integer))
+        TakeBool({(negate ? "Not " : "")}queue.IsEmpty)
     End Sub
 End Class");
 
-        [Theory]
+        [Theory(Skip = "Removed default support for all types but this scenario can be useful for .editorconfig")]
         [InlineData(false)]
         [InlineData(true)]
         public Task CSharpTestIsEmptyGetter_NoDiagnosis(bool useThis)
@@ -304,7 +288,7 @@ $@"class MyIntList
     public int Count => _list.Count;
 }}");
 
-        [Theory]
+        [Theory(Skip = "Removed default support for all types but this scenario can be useful for .editorconfig")]
         [InlineData(false)]
         [InlineData(true)]
         public Task BasicTestIsEmptyGetter_NoDiagnosis(bool useMe)
@@ -595,60 +579,6 @@ $@"class C
                       extensionsNamespace: "System.Linq", extensionsClass: "Enumerable",
                       isAsync: false),
                   new CSharpVerifier<UseCountProperlyAnalyzer, CSharpPreferIsEmptyOverCountFixer>(UseCountProperlyAnalyzer.CA1836))
-        { }
-    }
-
-    public class CSharpPreferIsEmptyOverCountTests_Immutable
-        : PreferIsEmptyOverCountTestsBase
-    {
-        public CSharpPreferIsEmptyOverCountTests_Immutable()
-            : base(
-                  new CSharpTestsSourceCodeProvider(
-                      "Length",
-                      "global::System.Collections.Immutable.ImmutableArray<int>",
-                      extensionsNamespace: null, extensionsClass: null, isAsync: false),
-                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpPreferIsEmptyOverCountFixer>(UseCountProperlyAnalyzer.CA1836))
-        { }
-    }
-
-    public class CSharpPreferIsEmptyOverCountLinqTests_Immutable
-        : PreferIsEmptyOverCountLinqTestsBase
-    {
-        public CSharpPreferIsEmptyOverCountLinqTests_Immutable()
-            : base(
-                  new CSharpTestsSourceCodeProvider(
-                      "Length",
-                      "global::System.Collections.Immutable.ImmutableArray<int>",
-                      extensionsNamespace: "System.Linq", extensionsClass: "Enumerable",
-                      isAsync: false),
-                  new CSharpVerifier<UseCountProperlyAnalyzer, CSharpPreferIsEmptyOverCountFixer>(UseCountProperlyAnalyzer.CA1836))
-        { }
-    }
-
-    public class BasicPreferIsEmptyOverCountTests_Immutable
-        : PreferIsEmptyOverCountTestsBase
-    {
-        public BasicPreferIsEmptyOverCountTests_Immutable()
-            : base(
-                  new BasicTestsSourceCodeProvider(
-                      "Length",
-                      "Global.System.Collections.Immutable.ImmutableArray(Of Integer)",
-                      extensionsNamespace: null, extensionsClass: null, isAsync: false),
-                  new BasicVerifier<UseCountProperlyAnalyzer, BasicPreferIsEmptyOverCountFixer>(UseCountProperlyAnalyzer.CA1836))
-        { }
-    }
-
-    public class BasicPreferIsEmptyOverCountLinqTests_Immutable
-        : PreferIsEmptyOverCountLinqTestsBase
-    {
-        public BasicPreferIsEmptyOverCountLinqTests_Immutable()
-            : base(
-                  new BasicTestsSourceCodeProvider(
-                      "Length",
-                      "Global.System.Collections.Immutable.ImmutableArray(Of Integer)",
-                      extensionsNamespace: "System.Linq", extensionsClass: "Enumerable",
-                      isAsync: false),
-                  new BasicVerifier<UseCountProperlyAnalyzer, BasicPreferIsEmptyOverCountFixer>(UseCountProperlyAnalyzer.CA1836))
         { }
     }
 }
