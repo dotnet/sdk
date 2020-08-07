@@ -2182,7 +2182,7 @@
         "CA1837": {
           "id": "CA1837",
           "shortDescription": "Use 'Environment.ProcessId'",
-          "fullDescription": "'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.",
+          "fullDescription": "'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1837",
           "properties": {
@@ -4737,7 +4737,7 @@
         "IL3001": {
           "id": "IL3001",
           "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
-          "fullDescription": "'{0}' will throw for assemblies embedded in a single-file app",
+          "fullDescription": "'{0}' will throw for assemblies embedded in a single-file app.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/il3001",
           "properties": {

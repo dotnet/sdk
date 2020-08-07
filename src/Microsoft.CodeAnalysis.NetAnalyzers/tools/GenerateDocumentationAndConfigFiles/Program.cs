@@ -266,10 +266,10 @@ $@"<Project>
                 var fileWithPath = Path.Combine(directory.FullName, analyzerDocumentationFileName);
 
                 var builder = new StringBuilder();
-                builder.Append(@"
-Rule ID | Title | Category | Enabled | Severity | CodeFix | Description |
---------|-------|----------|---------|----------|---------|--------------------------------------------------------------------------------------------------------------|
-");
+
+                var title = Path.GetFileNameWithoutExtension(analyzerDocumentationFileName);
+                builder.AppendLine($"# {title}");
+                builder.AppendLine();
 
                 foreach (var ruleById in allRulesById)
                 {
@@ -282,7 +282,20 @@ Rule ID | Title | Category | Enabled | Severity | CodeFix | Description |
                         ruleIdWithHyperLink = $"[{ruleIdWithHyperLink}]({descriptor.HelpLinkUri})";
                     }
 
+                    builder.AppendLine($"## {ruleIdWithHyperLink}: {descriptor.Title}");
+                    builder.AppendLine();
+
+                    builder.AppendLine("|Item|Value|");
+                    builder.AppendLine("|-|-|");
+                    builder.AppendLine($"|Category|{descriptor.Category}|");
+                    builder.AppendLine($"|Enabled|{descriptor.IsEnabledByDefault}|");
+                    builder.AppendLine($"|Severity|{descriptor.DefaultSeverity}|");
                     var hasCodeFix = fixableDiagnosticIds.Contains(descriptor.Id);
+                    builder.AppendLine($"|CodeFix|{hasCodeFix}|");
+                    builder.AppendLine();
+
+                    builder.AppendLine($"### Rule description");
+                    builder.AppendLine();
 
                     var description = descriptor.Description.ToString(CultureInfo.InvariantCulture);
                     if (string.IsNullOrWhiteSpace(description))
@@ -293,8 +306,8 @@ Rule ID | Title | Category | Enabled | Severity | CodeFix | Description |
                     // Replace line breaks with HTML breaks so that new
                     // lines don't break the markdown table formatting.
                     description = System.Text.RegularExpressions.Regex.Replace(description, "\r?\n", "<br>");
-
-                    builder.AppendLine($"{ruleIdWithHyperLink} | {descriptor.Title} | {descriptor.Category} | {descriptor.IsEnabledByDefault} | {descriptor.DefaultSeverity} | {hasCodeFix} | {description} |");
+                    builder.AppendLine(description);
+                    builder.AppendLine();
                 }
 
                 File.WriteAllText(fileWithPath, builder.ToString());
