@@ -6282,7 +6282,6 @@ public class Test
             csTest.ExpectedDiagnostics.AddRange(expected);
             await csTest.RunAsync();
 
-
             expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)
             {

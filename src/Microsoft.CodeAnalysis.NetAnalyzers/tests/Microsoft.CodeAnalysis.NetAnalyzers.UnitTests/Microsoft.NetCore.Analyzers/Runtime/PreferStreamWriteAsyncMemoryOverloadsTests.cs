@@ -748,7 +748,6 @@ End Module
         public Task VB_Fixer_Diagnostic_AsStream_WithConfigureAwait(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "Stream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
-
         [Theory]
         [MemberData(nameof(VisualBasicInlinedByteArrayTestData))]
         public Task VB_Fixer_Diagnostic_InlineByteArray(string originalArgs, string fixedArgs)

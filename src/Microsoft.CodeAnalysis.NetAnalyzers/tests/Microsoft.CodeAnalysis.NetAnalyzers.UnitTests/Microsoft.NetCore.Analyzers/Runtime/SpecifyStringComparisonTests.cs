@@ -17,6 +17,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Fact]
         public async Task CA1307_StringCompareTests_CSharp()
         {
+#if !NETCOREAPP
+            const string StringArgType = "string";
+#else
+            const string StringArgType = "string?";
+#endif
+
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
@@ -34,18 +40,18 @@ public class StringComparisonTests
         return 0;
     }
 }",
-GetCA1307CSharpResultsAt(11, 18, "string.Compare(string, string)",
+GetCA1307CSharpResultsAt(11, 18, $"string.Compare({StringArgType}, {StringArgType})",
                                  "StringComparisonTests.StringCompare()",
-                                 "string.Compare(string, string, System.StringComparison)"),
-GetCA1307CSharpResultsAt(12, 18, "string.Compare(string, string, bool)",
+                                 $"string.Compare({StringArgType}, {StringArgType}, System.StringComparison)"),
+GetCA1307CSharpResultsAt(12, 18, $"string.Compare({StringArgType}, {StringArgType}, bool)",
                                  "StringComparisonTests.StringCompare()",
-                                 "string.Compare(string, string, System.StringComparison)"),
-GetCA1307CSharpResultsAt(13, 18, "string.Compare(string, int, string, int, int)",
+                                 $"string.Compare({StringArgType}, {StringArgType}, System.StringComparison)"),
+GetCA1307CSharpResultsAt(13, 18, $"string.Compare({StringArgType}, int, {StringArgType}, int, int)",
                                  "StringComparisonTests.StringCompare()",
-                                 "string.Compare(string, int, string, int, int, System.StringComparison)"),
-GetCA1307CSharpResultsAt(14, 18, "string.Compare(string, int, string, int, int, bool)",
+                                 $"string.Compare({StringArgType}, int, {StringArgType}, int, int, System.StringComparison)"),
+GetCA1307CSharpResultsAt(14, 18, $"string.Compare({StringArgType}, int, {StringArgType}, int, int, bool)",
                                  "StringComparisonTests.StringCompare()",
-                                 "string.Compare(string, int, string, int, int, System.StringComparison)"));
+                                 $"string.Compare({StringArgType}, int, {StringArgType}, int, int, System.StringComparison)"));
         }
 
         [Fact]
@@ -104,6 +110,14 @@ GetCA1307CSharpResultsAt(12, 16, "string.IndexOf(string, int, int)",
         [Fact]
         public async Task CA1307_StringCompareToTests_CSharp()
         {
+#if !NETCOREAPP
+            const string ObjectArgType = "object";
+            const string StringArgType = "string";
+#else
+            const string ObjectArgType = "object?";
+            const string StringArgType = "string?";
+#endif
+
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
@@ -118,12 +132,12 @@ public class StringComparisonTests
             return """".CompareTo(new object());
     }
 }",
-GetCA1307CSharpResultsAt(11, 22, "string.CompareTo(string)",
+GetCA1307CSharpResultsAt(11, 22, $"string.CompareTo({StringArgType})",
                                  "StringComparisonTests.StringCompareTo()",
-                                 "string.Compare(string, string, System.StringComparison)"),
-GetCA1307CSharpResultsAt(12, 20, "string.CompareTo(object)",
+                                 $"string.Compare({StringArgType}, {StringArgType}, System.StringComparison)"),
+GetCA1307CSharpResultsAt(12, 20, $"string.CompareTo({ObjectArgType})",
                                  "StringComparisonTests.StringCompareTo()",
-                                 "string.Compare(string, string, System.StringComparison)"));
+                                 $"string.Compare({StringArgType}, {StringArgType}, System.StringComparison)"));
         }
 
         [Fact]

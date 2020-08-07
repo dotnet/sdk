@@ -421,7 +421,6 @@ End Class",
                 GetBasicResultAt(45, 26, BinderMaybeNotSetRule, "Function BinaryFormatter.Deserialize(serializationStream As Stream) As Object"));
         }
 
-
         [Fact]
         public async Task DocSample3_CSharp_Solution_NoDiagnostic()
         {

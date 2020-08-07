@@ -33,18 +33,48 @@
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</source>
-        <target state="translated">在“{0}”的构造函数中，将参数“{1}”的当前值“{2}”更改为可正确解析为“{3}”的某个值。</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'</source>
+        <target state="needs-review-translation">在“{0}”的构造函数中，将参数“{1}”的当前值“{2}”更改为可正确解析为“{3}”的某个值。</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</source>
-        <target state="translated">在“{0}”的构造函数中，将参数“{1}”的值(此值当前为空字符串(""))更改为可正确解析为“{2}”的某个值。</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'</source>
+        <target state="needs-review-translation">在“{0}”的构造函数中，将参数“{1}”的值(此值当前为空字符串(""))更改为可正确解析为“{2}”的某个值。</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
         <source>Attribute string literals should parse correctly</source>
         <target state="translated">特性字符串文本应正确分析</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
+        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
+        <target state="new">'{0}' will throw for assemblies embedded in a single-file app</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
+        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
+        <target state="new">'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
+        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
+        <target state="new">Avoid using accessing Assembly file path when publishing as a single-file</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
+        <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
+        <target state="new">Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersMessage">
+        <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead.</source>
+        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersTitle">
+        <source>Avoid 'StringBuilder' parameters for P/Invokes</source>
+        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
@@ -68,8 +98,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
-        <source>Avoid zero-length array allocations.</source>
-        <target state="translated">避免长度为零的数组分配。</target>
+        <source>Avoid zero-length array allocations</source>
+        <target state="needs-review-translation">避免长度为零的数组分配。</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -143,8 +173,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
-        <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</target>
+        <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
+        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphTitle">
@@ -152,9 +182,19 @@
         <target state="new">Unsafe DataSet or DataTable type found in deserializable object graph</target>
         <note />
       </trans-unit>
+      <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeMessage">
+        <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</source>
+        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeTitle">
+        <source>Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</source>
+        <target state="new">Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphMessage">
-        <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</target>
+        <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
+        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphTitle">
@@ -173,8 +213,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeMessage">
-        <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</target>
+        <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
+        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeTitle">
@@ -183,8 +223,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphMessage">
-        <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</target>
+        <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
+        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphTitle">
@@ -192,24 +232,34 @@
         <target state="new">Unsafe DataSet or DataTable type in web deserializable object graph</target>
         <note />
       </trans-unit>
+      <trans-unit id="DataSetReadXmlAutogeneratedMessage">
+        <source>The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</source>
+        <target state="new">The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DataSetReadXmlAutogeneratedTitle">
+        <source>Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</source>
+        <target state="new">Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DataSetReadXmlMessage">
-        <source>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</target>
+        <source>The method '{0}' is insecure when deserializing untrusted data</source>
+        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlTitle">
-        <source>Do not use insecure deserialization with DataSet.ReadXml()</source>
-        <target state="new">Do not use insecure deserialization with DataSet.ReadXml()</target>
+        <source>Do not use DataSet.ReadXml() with untrusted data</source>
+        <target state="new">Do not use DataSet.ReadXml() with untrusted data</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlMessage">
-        <source>The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.</target>
+        <source>The method '{0}' is insecure when deserializing untrusted data</source>
+        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlTitle">
-        <source>Do not use insecure deserialization with DataTable.ReadXml()</source>
-        <target state="new">Do not use insecure deserialization with DataTable.ReadXml()</target>
+        <source>Do not use DataTable.ReadXml() with untrusted data</source>
+        <target state="new">Do not use DataTable.ReadXml() with untrusted data</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
@@ -313,8 +363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
-        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</source>
-        <target state="translated">请确保方法“{0}”在所有可能的控制流路径中都调用“{1}”。</target>
+        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths</source>
+        <target state="needs-review-translation">请确保方法“{0}”在所有可能的控制流路径中都调用“{1}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
@@ -338,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
-        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</source>
-        <target state="translated">在对 System.IDisposable.Dispose 的所有引用超出范围之前，在“{0}”创建的对象上对其进行调用。</target>
+        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope</source>
+        <target state="needs-review-translation">在对 System.IDisposable.Dispose 的所有引用超出范围之前，在“{0}”创建的对象上对其进行调用。</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
@@ -393,8 +443,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
-        <target state="translated">反序列化类 {0} 的实例时, 方法 {1} 可以调用危险方法 {2}。</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
+        <target state="needs-review-translation">反序列化类 {0} 的实例时, 方法 {1} 可以调用危险方法 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -448,13 +498,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
-        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum.</source>
-        <target state="translated">参数包含 TaskContinuationsOptions 枚举而不是 TaskCreationOptions 枚举。</target>
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum</source>
+        <target state="needs-review-translation">参数包含 TaskContinuationsOptions 枚举而不是 TaskCreationOptions 枚举。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
-        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.</source>
-        <target state="translated">传递到 TaskCompletionSource 构造函数的参数应为 TaskCreationOptions 枚举，而不是 TaskContinuationOptions 枚举。</target>
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</source>
+        <target state="needs-review-translation">传递到 TaskCompletionSource 构造函数的参数应为 TaskCreationOptions 枚举，而不是 TaskContinuationOptions 枚举。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -478,8 +528,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
-        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
-        <target state="translated">将终结器添加到派生自 MemoryManager&lt;T&gt; 的类型可能使内存在仍被 Span&lt;T&gt; 使用时得到释放。</target>
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;</source>
+        <target state="needs-review-translation">将终结器添加到派生自 MemoryManager&lt;T&gt; 的类型可能使内存在仍被 Span&lt;T&gt; 使用时得到释放。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
@@ -633,13 +683,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
-        <source>Exception type {0} is reserved by the runtime.</source>
-        <target state="translated">异常类型 {0} 是运行时保留的。</target>
+        <source>Exception type {0} is reserved by the runtime</source>
+        <target state="needs-review-translation">异常类型 {0} 是运行时保留的。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
-        <source>Exception type {0} is not sufficiently specific.</source>
-        <target state="translated">异常类型 {0} 不够具体。</target>
+        <source>Exception type {0} is not sufficiently specific</source>
+        <target state="needs-review-translation">异常类型 {0} 不够具体。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
@@ -658,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
-        <source>Pointer field {0} on serializable type.</source>
-        <target state="translated">可序列化类型上的 Pointer 字段 {0}。</target>
+        <source>Pointer field {0} on serializable type</source>
+        <target state="needs-review-translation">可序列化类型上的 Pointer 字段 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
@@ -698,8 +748,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
-        <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="translated">如果可以使用 AnyAsync()，请改为使用 {0}() 来提高性能。</target>
+        <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
+        <target state="needs-review-translation">如果可以使用 AnyAsync()，请改为使用 {0}() 来提高性能。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -713,8 +763,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
-        <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="translated">如果可以使用 Any()，请改为使用 {0}() 来提高性能。</target>
+        <source>{0}() is used where Any() could be used instead to improve performance</source>
+        <target state="needs-review-translation">如果可以使用 Any()，请改为使用 {0}() 来提高性能。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
@@ -753,8 +803,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDSAMessage">
-        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</source>
-        <target state="translated">非对称加密算法 {0} 较弱。请转而切换到至少具有 2048 位密钥大小的 RSA、ECDH 或者 ECDSA 算法</target>
+        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
+        <target state="needs-review-translation">非对称加密算法 {0} 较弱。请转而切换到至少具有 2048 位密钥大小的 RSA、ECDH 或者 ECDSA 算法</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -763,13 +813,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">不要在可索引的集合上使用 Enumerable 方法。而是直接使用集合</target>
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly.</source>
+        <target state="needs-review-translation">不要在可索引的集合上使用 Enumerable 方法。而是直接使用集合</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">不要在可索引的集合上使用 Enumerable 方法。而是直接使用集合</target>
+        <source>Do not use Enumerable methods on indexable collections</source>
+        <target state="needs-review-translation">不要在可索引的集合上使用 Enumerable 方法。而是直接使用集合</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomness">
@@ -783,8 +833,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
-        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</source>
-        <target state="translated">{0} 是不安全的随机数生成器。当需要随机性以确保安全性时，请使用加密的安全随机数生成器</target>
+        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
+        <target state="needs-review-translation">{0} 是不安全的随机数生成器。当需要随机性以确保安全性时，请使用加密的安全随机数生成器</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseMD5">
@@ -818,8 +868,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
-        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</source>
-        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead</target>
+        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</source>
+        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
@@ -868,8 +918,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
-        <source>Do not use stackalloc in loops.</source>
-        <target state="translated">不要在循环中使用 stackalloc。</target>
+        <source>Do not use stackalloc in loops</source>
+        <target state="needs-review-translation">不要在循环中使用 stackalloc。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -928,8 +978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
-        <target state="translated">{0} 是使用弱哈希算法创建的。请使用 SHA256、SHA384 或 SHA512 根据密码创建强密钥</target>
+        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0} 是使用弱哈希算法创建的。请使用 SHA256、SHA384 或 SHA512 根据密码创建强密钥</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
@@ -1008,18 +1058,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}.</source>
-        <target state="translated">向类型 {0} 中添加对 GetObjectData 的实现。</target>
+        <source>Add an implementation of GetObjectData to type {0}</source>
+        <target state="needs-review-translation">向类型 {0} 中添加对 GetObjectData 的实现。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable.</source>
-        <target state="translated">将 {0}.GetObjectData 设置为虚拟的和可重写的。</target>
+        <source>Make {0}.GetObjectData virtual and overridable</source>
+        <target state="needs-review-translation">将 {0}.GetObjectData 设置为虚拟的和可重写的。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</source>
-        <target state="translated">提高 {0}.GetObjectData 的可访问性以便它对于派生类型可见。</target>
+        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
+        <target state="needs-review-translation">提高 {0}.GetObjectData 的可访问性以便它对于派生类型可见。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyTitle">
@@ -1063,28 +1113,28 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请更改它的签名，使它不再是泛型的。</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
+        <target state="needs-review-translation">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请更改它的签名，使它不再是泛型的。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请更改它的签名，使它采用类型为“System.Runtime.Serialization.StreamingContext”的单个参数。</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
+        <target state="needs-review-translation">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请更改它的签名，使它采用类型为“System.Runtime.Serialization.StreamingContext”的单个参数。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它的返回类型从 {1} 改为 void (Visual Basic 中为 Sub)。</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
+        <target state="needs-review-translation">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它的返回类型从 {1} 改为 void (Visual Basic 中为 Sub)。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它从 static (Visual Basic 中为 Shared)改为实例方法。</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
+        <target state="needs-review-translation">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它从 static (Visual Basic 中为 Shared)改为实例方法。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它的可访问性改为 private。</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
+        <target state="needs-review-translation">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它的可访问性改为 private。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
@@ -1143,8 +1193,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
-        <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">调用 {0} 构造函数，该函数包含 message 和/或 paramName 参数。</target>
+        <source>Call the {0} constructor that contains a message and/or paramName parameter</source>
+        <target state="needs-review-translation">调用 {0} 构造函数，该函数包含 message 和/或 paramName 参数。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1408,8 +1458,8 @@
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
-        <source>In method '{0}', replace the call to '{1}' with '{2}'.</source>
-        <target state="translated">在方法“{0}”中，将对“{1}”的调用替换为“{2}”。</target>
+        <source>In method '{0}', replace the call to '{1}' with '{2}'</source>
+        <target state="needs-review-translation">在方法“{0}”中，将对“{1}”的调用替换为“{2}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseTitle">
@@ -1488,8 +1538,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
-        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items.</source>
-        <target state="translated">最好使用 "IsEmpty" (而不是 "Count")来确定对象是否包含项。</target>
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
+        <target state="needs-review-translation">最好使用 "IsEmpty" (而不是 "Count")来确定对象是否包含项。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
@@ -1508,8 +1558,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
-        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'</source>
-        <target state="translated">如果结果用于检查是否存在/缺少子字符串，对 "string.IndexOf" 的调用可替换为对 "string.Contains" 的调用</target>
+        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
+        <target state="needs-review-translation">如果结果用于检查是否存在/缺少子字符串，对 "string.IndexOf" 的调用可替换为对 "string.Contains" 的调用</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
@@ -1528,8 +1578,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
-        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload.</source>
-        <target state="translated">删除 ToString 调用以使用强类型 StringBuilder 重载。</target>
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
+        <target state="needs-review-translation">删除 ToString 调用以使用强类型 StringBuilder 重载。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -1538,8 +1588,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
-        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder.</source>
-        <target state="translated">最好使用 StringBuilder 的强类型 Append 和 Insert 方法重载。</target>
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder</source>
+        <target state="needs-review-translation">最好使用 StringBuilder 的强类型 Append 和 Insert 方法重载。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
@@ -1548,13 +1598,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
-        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string.</source>
-        <target state="translated">当输入是常量单位字符串时，请使用 "StringBuilder.Append(char)" 而不是 "StringBuilder.Append(string)"。</target>
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string</source>
+        <target state="needs-review-translation">当输入是常量单位字符串时，请使用 "StringBuilder.Append(char)" 而不是 "StringBuilder.Append(string)"。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
-        <source>Consider using 'StringBuilder.Append(char)' when applicable.</source>
-        <target state="translated">若适用，请考虑使用 "StringBuilder.Append(char)"。</target>
+        <source>Consider using 'StringBuilder.Append(char)' when applicable</source>
+        <target state="needs-review-translation">若适用，请考虑使用 "StringBuilder.Append(char)"。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -1598,13 +1648,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</source>
-        <target state="translated">向类型 {0} 中添加“private void OnDeserialized(StreamingContext)”方法并使其具有 System.Runtime.Serialization.OnDeserializedAttribute 特性。</target>
+        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
+        <target state="needs-review-translation">向类型 {0} 中添加“private void OnDeserialized(StreamingContext)”方法并使其具有 System.Runtime.Serialization.OnDeserializedAttribute 特性。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</source>
-        <target state="translated">向类型 {0} 中添加“private void OnDeserializing(StreamingContext)”方法并使其具有 System.Runtime.Serialization.OnDeserializingAttribute 特性。</target>
+        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
+        <target state="needs-review-translation">向类型 {0} 中添加“private void OnDeserializing(StreamingContext)”方法并使其具有 System.Runtime.Serialization.OnDeserializingAttribute 特性。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
@@ -1758,8 +1808,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
-        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input.</source>
-        <target state="translated">查看传递给“{1}”中的“{0}”的查询字符串是否接受任何用户输入。</target>
+        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input</source>
+        <target state="needs-review-translation">查看传递给“{1}”中的“{0}”的查询字符串是否接受任何用户输入。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
@@ -1813,8 +1863,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
-        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</source>
-        <target state="translated">某方法或构造函数调用的一个或多个成员具有接受 System.IFormatProvider 参数的重载，但该方法或构造函数没有调用接受 IFormatProvider 参数的重载。如果未提供 System.Globalization.CultureInfo 或 System.IFormatProvider 对象，则重载成员提供的默认值可能不会在所有区域设置中产生想要的效果。如果要基于输入/输出向用户显示结果，请指定 "CultureInfo.CurrentCulture" 作为 "IFormatProvider" 参数。或者，如果软件将存储和访问此结果(例如，从磁盘/数据库加载此结果以及将它保留到磁盘/数据库中时)，则指定 "CultureInfo.InvariantCulture"</target>
+        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
+        <target state="needs-review-translation">某方法或构造函数调用的一个或多个成员具有接受 System.IFormatProvider 参数的重载，但该方法或构造函数没有调用接受 IFormatProvider 参数的重载。如果未提供 System.Globalization.CultureInfo 或 System.IFormatProvider 对象，则重载成员提供的默认值可能不会在所有区域设置中产生想要的效果。如果要基于输入/输出向用户显示结果，请指定 "CultureInfo.CurrentCulture" 作为 "IFormatProvider" 参数。或者，如果软件将存储和访问此结果(例如，从磁盘/数据库加载此结果以及将它保留到磁盘/数据库中时)，则指定 "CultureInfo.InvariantCulture"</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -1893,8 +1943,8 @@
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
-        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</source>
-        <target state="translated">使用 "string.Length" 属性或 "string.IsNullOrEmpty" 方法而不是 Equality 检查来测试是否有空字符串。</target>
+        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check</source>
+        <target state="needs-review-translation">使用 "string.Length" 属性或 "string.IsNullOrEmpty" 方法而不是 Equality 检查来测试是否有空字符串。</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
@@ -1928,8 +1978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
-        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies.</source>
-        <target state="translated">请使用 "{0}" 代替 "{2}" 上的基于 "{1}" 的索引器，以避免创建不必要的数据副本。</target>
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
+        <target state="needs-review-translation">请使用 "{0}" 代替 "{2}" 上的基于 "{1}" 的索引器，以避免创建不必要的数据副本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
@@ -1983,8 +2033,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</source>
-        <target state="translated">如果可能，请考虑使用 Azure 基于角色的访问控制，而不是共享访问签名(SAS)。如果仍需使用 SAS，请在创建 SAS 时使用容器级别访问策略</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS.</source>
+        <target state="needs-review-translation">如果可能，请考虑使用 Azure 基于角色的访问控制，而不是共享访问签名(SAS)。如果仍需使用 SAS，请在创建 SAS 时使用容器级别访问策略</target>
         <note />
       </trans-unit>
       <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
@@ -2000,6 +2050,26 @@
       <trans-unit id="UseDefaultDllImportSearchPathsAttributeMessage">
         <source>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</source>
         <target state="translated">方法 {0} 未对 P/Invoke 使用 DefaultDllImportSearchPaths 属性。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdDescription">
+        <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
+        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdFix">
+        <source>Use 'Environment.ProcessId'</source>
+        <target state="new">Use 'Environment.ProcessId'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdMessage">
+        <source>Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</source>
+        <target state="new">Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdTitle">
+        <source>Use 'Environment.ProcessId'</source>
+        <target state="new">Use 'Environment.ProcessId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2048,8 +2118,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
-        <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="translated">请使用 "{0}" 属性而不是 Enumerable.Count()。</target>
+        <source>Use the "{0}" property instead of Enumerable.Count()</source>
+        <target state="needs-review-translation">请使用 "{0}" 属性而不是 Enumerable.Count()。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
@@ -2088,8 +2158,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
-        <target state="translated">如果可能，请考虑使用 Azure 基于角色的访问控制，而不是共享访问签名(SAS)。如果仍需使用 SAS，请指定 SharedAccessProtocol.HttpsOnly</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
+        <target state="needs-review-translation">如果可能，请考虑使用 Azure 基于角色的访问控制，而不是共享访问签名(SAS)。如果仍需使用 SAS，请指定 SharedAccessProtocol.HttpsOnly</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
