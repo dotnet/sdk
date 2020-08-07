@@ -365,8 +365,8 @@
         <note>{StrBegin="NETSDK1141: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkFailed">
-        <source>NETSDK1144: Optimizing assemblies for size failed. You can either fix the errors, or set the PublishTrimmed property to false.</source>
-        <target state="new">NETSDK1144: Optimizing assemblies for size failed. You can either fix the errors, or set the PublishTrimmed property to false.</target>
+        <source>NETSDK1144: Optimizing assemblies for size failed. Optimization can be disabled by setting the PublishTrimmed property to false.</source>
+        <target state="new">NETSDK1144: Optimizing assemblies for size failed. Optimization can be disabled by setting the PublishTrimmed property to false.</target>
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNotSupportedError">
