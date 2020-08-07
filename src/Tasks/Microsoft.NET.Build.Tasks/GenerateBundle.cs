@@ -51,7 +51,7 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var item in FilesToBundle)
             {
                 fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec, 
-                                          bundleRelativePath:item.GetMetadata(MetadataKeys.RelativePath)));
+                                          bundleRelativePath: NormalizePathDirectorySeparator(item.GetMetadata(MetadataKeys.RelativePath))));
             }
 
             bundler.GenerateBundle(fileSpec);
@@ -63,6 +63,11 @@ namespace Microsoft.NET.Build.Tasks
             // Return the set of excluded files in ExcludedFiles, so that they can be placed in the publish directory.
 
             ExcludedFiles = FilesToBundle.Zip(fileSpec, (item, spec) => (spec.Excluded) ? item : null).Where(x => x != null).ToArray();
+        }
+
+        private static string NormalizePathDirectorySeparator(string path)
+        {
+            return path.Replace('\\', '/');
         }
     }
 }
