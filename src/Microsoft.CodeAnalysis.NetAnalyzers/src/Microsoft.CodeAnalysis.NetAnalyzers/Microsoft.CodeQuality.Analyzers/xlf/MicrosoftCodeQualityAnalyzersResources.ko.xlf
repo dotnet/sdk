@@ -2178,7 +2178,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesMessageFinally">
-        <source>Do not raise an exception from within a finally clause. .</source>
+        <source>Do not raise an exception from within a finally clause</source>
         <target state="needs-review-translation">finally 절 내에서 예외를 발생시키지 마세요. </target>
         <note />
       </trans-unit>

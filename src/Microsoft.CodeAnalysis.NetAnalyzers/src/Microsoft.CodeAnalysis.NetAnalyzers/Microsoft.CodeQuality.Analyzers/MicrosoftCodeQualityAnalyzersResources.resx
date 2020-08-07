@@ -1296,7 +1296,7 @@
     <value>When an exception is raised in a finally clause, the new exception hides the active exception. This makes the original error difficult to detect and debug.</value>
   </data>
   <data name="DoNotRaiseExceptionsInExceptionClausesMessageFinally" xml:space="preserve">
-    <value>Do not raise an exception from within a finally clause. .</value>
+    <value>Do not raise an exception from within a finally clause</value>
   </data>
   <data name="DoNotRaiseExceptionsInExceptionClausesTitle" xml:space="preserve">
     <value>Do not raise exceptions in finally clauses</value>
