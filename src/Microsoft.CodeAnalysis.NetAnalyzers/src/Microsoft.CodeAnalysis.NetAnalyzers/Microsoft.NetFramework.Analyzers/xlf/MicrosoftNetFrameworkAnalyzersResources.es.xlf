@@ -173,13 +173,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
-        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</source>
-        <target state="translated">La toma de excepciones de estado dañado podría enmascarar errores (como las infracciones de acceso), lo que podría originar un estado incoherente de ejecución o que los atacantes tuvieran más fácil poner el sistema en peligro. Lo que debe hacer es tomar y controlar un conjunto más específico de tipos de excepción o iniciar de nuevo la excepción.</target>
+        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
+        <target state="needs-review-translation">La toma de excepciones de estado dañado podría enmascarar errores (como las infracciones de acceso), lo que podría originar un estado incoherente de ejecución o que los atacantes tuvieran más fácil poner el sistema en peligro. Lo que debe hacer es tomar y controlar un conjunto más específico de tipos de excepción o iniciar de nuevo la excepción.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
-        <source>{0} is catching corrupted state exception.</source>
-        <target state="translated">{0} está tomando una excepción de estado dañado.</target>
+        <source>{0} is catching corrupted state exception</source>
+        <target state="needs-review-translation">{0} está tomando una excepción de estado dañado.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -363,8 +363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
-        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</source>
-        <target state="translated">El uso de HttpVerbs.GET y ValidateAntiForgeryTokenAttribute no es compatible con MVC en la acción del controlador {0}.</target>
+        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
+        <target state="needs-review-translation">El uso de HttpVerbs.GET y ValidateAntiForgeryTokenAttribute no es compatible con MVC en la acción del controlador {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -373,8 +373,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</source>
-        <target state="translated">Falta ValidateAntiForgeryTokenAttribute en la acción {0} del controlador de MVC, que de manera predeterminada acepta solicitudes POST.</target>
+        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
+        <target state="needs-review-translation">Falta ValidateAntiForgeryTokenAttribute en la acción {0} del controlador de MVC, que de manera predeterminada acepta solicitudes POST.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -383,8 +383,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</source>
-        <target state="translated">Falta ValidateAntiForgeryTokenAttribute en la acción del controlador {0}.</target>
+        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
+        <target state="needs-review-translation">Falta ValidateAntiForgeryTokenAttribute en la acción del controlador {0}.</target>
         <note />
       </trans-unit>
     </body>

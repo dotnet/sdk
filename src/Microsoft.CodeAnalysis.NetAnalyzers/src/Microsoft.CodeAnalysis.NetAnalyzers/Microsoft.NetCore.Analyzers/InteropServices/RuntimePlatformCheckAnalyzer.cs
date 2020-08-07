@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         // TODO: Define resource strings for title, message and description.
         private static readonly LocalizableString s_localizableTitle = "RuntimePlatformCheckTitle"; //new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.RuntimePlatformCheckTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableMessage = "Platform checks:'{0}'"; //new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.RuntimePlatformCheckMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = "RuntimePlatformCheckDescription"; //new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.RuntimePlatformCheckMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableDescription = "RuntimePlatformCheckDescription."; //new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.RuntimePlatformCheckMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       s_localizableTitle,
