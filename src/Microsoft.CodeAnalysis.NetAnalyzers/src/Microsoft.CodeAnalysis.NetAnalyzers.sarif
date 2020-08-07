@@ -140,6 +140,25 @@
             ]
           }
         },
+        "CA1812": {
+          "id": "CA1812",
+          "shortDescription": "Avoid uninstantiated internal classes",
+          "fullDescription": "An instance of an assembly-level type is not created by code in the assembly.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1812",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpAvoidUninstantiatedInternalClasses",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
         "CA1824": {
           "id": "CA1824",
           "shortDescription": "Mark assemblies with NeutralResourcesLanguageAttribute",
@@ -880,8 +899,8 @@
         },
         "CA1054": {
           "id": "CA1054",
-          "shortDescription": "Uri parameters should not be strings",
-          "fullDescription": "If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.",
+          "shortDescription": "URI-like parameters should not be strings",
+          "fullDescription": "This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1054",
           "properties": {
@@ -900,7 +919,7 @@
         },
         "CA1055": {
           "id": "CA1055",
-          "shortDescription": "Uri return values should not be strings",
+          "shortDescription": "URI-like return values should not be strings",
           "fullDescription": "This rule assumes that the method returns a URI. A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1055",
@@ -920,7 +939,7 @@
         },
         "CA1056": {
           "id": "CA1056",
-          "shortDescription": "Uri properties should not be strings",
+          "shortDescription": "URI-like properties should not be strings",
           "fullDescription": "This rule assumes that the property represents a Uniform Resource Identifier (URI). A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1056",
@@ -1270,6 +1289,25 @@
             ],
             "tags": [
               "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1417": {
+          "id": "CA1417",
+          "shortDescription": "Do not use 'OutAttribute' on string parameters for P/Invokes",
+          "fullDescription": "String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1417",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseOutAttributeStringPInvokeParametersAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry"
             ]
           }
@@ -1753,26 +1791,6 @@
             ]
           }
         },
-        "CA1812": {
-          "id": "CA1812",
-          "shortDescription": "Avoid uninstantiated internal classes",
-          "fullDescription": "An instance of an assembly-level type is not created by code in the assembly.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1812",
-          "properties": {
-            "category": "Performance",
-            "isEnabledByDefault": false,
-            "typeName": "AvoidUninstantiatedInternalClassesAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry"
-            ]
-          }
-        },
         "CA1813": {
           "id": "CA1813",
           "shortDescription": "Avoid unsealed attributes",
@@ -2161,6 +2179,44 @@
             ]
           }
         },
+        "CA1837": {
+          "id": "CA1837",
+          "shortDescription": "Use 'Environment.ProcessId'",
+          "fullDescription": "'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1837",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseEnvironmentProcessId",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1838": {
+          "id": "CA1838",
+          "shortDescription": "Avoid 'StringBuilder' parameters for P/Invokes",
+          "fullDescription": "Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1838",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidStringBuilderPInvokeParametersAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -2282,7 +2338,7 @@
           "id": "CA2012",
           "shortDescription": "Use ValueTasks correctly",
           "fullDescription": "ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.",
-          "defaultLevel": "hidden",
+          "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2012",
           "properties": {
             "category": "Reliability",
@@ -3263,8 +3319,8 @@
         },
         "CA2350": {
           "id": "CA2350",
-          "shortDescription": "Do not use insecure deserialization with DataTable.ReadXml()",
-          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.",
+          "shortDescription": "Do not use DataTable.ReadXml() with untrusted data",
+          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2350",
           "properties": {
@@ -3282,8 +3338,8 @@
         },
         "CA2351": {
           "id": "CA2351",
-          "shortDescription": "Do not use insecure deserialization with DataSet.ReadXml()",
-          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. If deserializing untrusted data, replace with TBD.",
+          "shortDescription": "Do not use DataSet.ReadXml() with untrusted data",
+          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2351",
           "properties": {
@@ -3321,7 +3377,7 @@
         "CA2353": {
           "id": "CA2353",
           "shortDescription": "Unsafe DataSet or DataTable in serializable type",
-          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2353",
           "properties": {
@@ -3340,7 +3396,7 @@
         "CA2354": {
           "id": "CA2354",
           "shortDescription": "Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks",
-          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2354",
           "properties": {
@@ -3359,7 +3415,7 @@
         "CA2355": {
           "id": "CA2355",
           "shortDescription": "Unsafe DataSet or DataTable type found in deserializable object graph",
-          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2355",
           "properties": {
@@ -3378,13 +3434,51 @@
         "CA2356": {
           "id": "CA2356",
           "shortDescription": "Unsafe DataSet or DataTable type in web deserializable object graph",
-          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
+          "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2356",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
             "typeName": "DataSetDataTableInWebSerializableObjectGraphAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2361": {
+          "id": "CA2361",
+          "shortDescription": "Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data",
+          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2361",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotUseDataSetReadXml",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA2362": {
+          "id": "CA2362",
+          "shortDescription": "Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks",
+          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2362",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": false,
+            "typeName": "DataSetDataTableInSerializableTypeAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -4620,6 +4714,44 @@
               "Telemetry"
             ]
           }
+        },
+        "IL3000": {
+          "id": "IL3000",
+          "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
+          "fullDescription": "'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/il3000",
+          "properties": {
+            "category": "Publish",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidAssemblyLocationInSingleFile",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "IL3001": {
+          "id": "IL3001",
+          "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
+          "fullDescription": "'{0}' will throw for assemblies embedded in a single-file app.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/il3001",
+          "properties": {
+            "category": "Publish",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidAssemblyLocationInSingleFile",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
         }
       }
     },
@@ -4757,6 +4889,25 @@
               "Visual Basic"
             ],
             "tags": [
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1812": {
+          "id": "CA1812",
+          "shortDescription": "Avoid uninstantiated internal classes",
+          "fullDescription": "An instance of an assembly-level type is not created by code in the assembly.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1812",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "BasicAvoidUninstantiatedInternalClasses",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
               "Telemetry"
             ]
           }
