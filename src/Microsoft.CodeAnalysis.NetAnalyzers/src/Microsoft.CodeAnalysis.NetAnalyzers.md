@@ -154,7 +154,7 @@ ComVisibleAttribute determines how COM clients access managed code. Good design 
 
 ### Rule description
 
-Specify AttributeUsage on {0}.
+Specify AttributeUsage on {0}
 
 ## [CA1019](https://docs.microsoft.com/visualstudio/code-quality/ca1019): Define accessors for attribute arguments
 
@@ -167,7 +167,7 @@ Specify AttributeUsage on {0}.
 
 ### Rule description
 
-Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}.
+Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}
 
 ## [CA1021](https://docs.microsoft.com/visualstudio/code-quality/ca1021): Avoid out parameters
 
@@ -609,7 +609,7 @@ Method '{0}' should take CancellationToken as the last parameter
 
 ### Rule description
 
-The field reference '{0}' is duplicated in this bitwise initialization.
+The field reference '{0}' is duplicated in this bitwise initialization
 
 ## [CA1070](https://docs.microsoft.com/visualstudio/code-quality/ca1070): Do not declare event fields as virtual
 
@@ -674,7 +674,7 @@ A method or constructor calls a member that has an overload that accepts a Syste
 
 ### Rule description
 
-A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'
+A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.
 
 ## [CA1307](https://docs.microsoft.com/visualstudio/code-quality/ca1307): Specify StringComparison
 
@@ -830,7 +830,7 @@ Using nameof helps keep your code valid when refactoring.
 
 ### Rule description
 
-Invalid entry in code metrics rule specification file
+Invalid entry in code metrics rule specification file.
 
 ## [CA1700](https://docs.microsoft.com/visualstudio/code-quality/ca1700): Do not name enum values 'Reserved'
 
@@ -934,7 +934,7 @@ Event names should describe the action that raises the event. To name related ev
 
 ### Rule description
 
-Identifiers should have correct prefix
+The name of an externally visible interface does not start with an uppercase ""I"". The name of a generic type parameter on an externally visible type or method does not start with an uppercase ""T"".
 
 ## [CA1716](https://docs.microsoft.com/visualstudio/code-quality/ca1716): Identifiers should not match keywords
 
@@ -1209,7 +1209,7 @@ Private fields were detected that do not appear to be accessed in the assembly.
 
 The NeutralResourcesLanguage attribute informs the ResourceManager of the language that was used to display the resources of a neutral culture for an assembly. This improves lookup performance for the first resource that you load and can reduce your working set.
 
-## [CA1825](https://docs.microsoft.com/visualstudio/code-quality/ca1825): Avoid zero-length array allocations.
+## [CA1825](https://docs.microsoft.com/visualstudio/code-quality/ca1825): Avoid zero-length array allocations
 
 |Item|Value|
 |-|-|
@@ -1222,7 +1222,7 @@ The NeutralResourcesLanguage attribute informs the ResourceManager of the langua
 
 Avoid unnecessary zero-length array allocations.  Use {0} instead.
 
-## [CA1826](https://docs.microsoft.com/visualstudio/code-quality/ca1826): Do not use Enumerable methods on indexable collections. Instead use the collection directly
+## [CA1826](https://docs.microsoft.com/visualstudio/code-quality/ca1826): Do not use Enumerable methods on indexable collections
 
 |Item|Value|
 |-|-|
@@ -1274,7 +1274,7 @@ For non-empty collections, CountAsync() and LongCountAsync() enumerate the entir
 
 Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.
 
-## [CA1830](https://docs.microsoft.com/visualstudio/code-quality/ca1830): Prefer strongly-typed Append and Insert method overloads on StringBuilder.
+## [CA1830](https://docs.microsoft.com/visualstudio/code-quality/ca1830): Prefer strongly-typed Append and Insert method overloads on StringBuilder
 
 |Item|Value|
 |-|-|
@@ -1326,7 +1326,7 @@ The Range-based indexer on array values produces a copy of requested portion of 
 
 The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.
 
-## [CA1834](https://docs.microsoft.com/visualstudio/code-quality/ca1834): Consider using 'StringBuilder.Append(char)' when applicable.
+## [CA1834](https://docs.microsoft.com/visualstudio/code-quality/ca1834): Consider using 'StringBuilder.Append(char)' when applicable
 
 |Item|Value|
 |-|-|
@@ -1376,7 +1376,7 @@ For determining whether the object contains or not any items, prefer using 'IsEm
 
 ### Rule description
 
-'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'
+'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.
 
 ## [CA1838](https://docs.microsoft.com/visualstudio/code-quality/ca1838): Avoid 'StringBuilder' parameters for P/Invokes
 
@@ -1495,7 +1495,7 @@ ValueTasks returned from member invocations are intended to be directly awaited.
 
 Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.
 
-## [CA2014](https://docs.microsoft.com/visualstudio/code-quality/ca2014): Do not use stackalloc in loops.
+## [CA2014](https://docs.microsoft.com/visualstudio/code-quality/ca2014): Do not use stackalloc in loops
 
 |Item|Value|
 |-|-|
@@ -1597,9 +1597,9 @@ An inheritable public type provides an overridable method implementation of an i
 
 ### Rule description
 
-Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception
+Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.
 
-## [CA2200](https://docs.microsoft.com/visualstudio/code-quality/ca2200): Rethrow to preserve stack details.
+## [CA2200](https://docs.microsoft.com/visualstudio/code-quality/ca2200): Rethrow to preserve stack details
 
 |Item|Value|
 |-|-|
@@ -1610,7 +1610,7 @@ Catching corrupted state exceptions could mask errors (such as access violations
 
 ### Rule description
 
-Re-throwing caught exception changes stack information.
+Re-throwing caught exception changes stack information
 
 ## [CA2201](https://docs.microsoft.com/visualstudio/code-quality/ca2201): Do not raise reserved exception types
 
@@ -1831,7 +1831,7 @@ To fix a violation of this rule, implement the serialization constructor. For a 
 
 ### Rule description
 
-In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals
+In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.
 
 ## [CA2234](https://docs.microsoft.com/visualstudio/code-quality/ca2234): Pass system uri objects instead of strings
 
@@ -1924,7 +1924,7 @@ The string literal parameter of an attribute does not parse correctly for a URL,
 
 Indexed elements in objects initializers must initialize unique elements. A duplicate index might overwrite a previous element initialization.
 
-## [CA2245](https://docs.microsoft.com/visualstudio/code-quality/ca2245): Do not assign a property to itself.
+## [CA2245](https://docs.microsoft.com/visualstudio/code-quality/ca2245): Do not assign a property to itself
 
 |Item|Value|
 |-|-|
@@ -1935,9 +1935,9 @@ Indexed elements in objects initializers must initialize unique elements. A dupl
 
 ### Rule description
 
-The property {0} should not be assigned to itself.
+The property {0} should not be assigned to itself
 
-## [CA2246](https://docs.microsoft.com/visualstudio/code-quality/ca2246): Assigning symbol and its member in the same statement.
+## [CA2246](https://docs.microsoft.com/visualstudio/code-quality/ca2246): Assigning symbol and its member in the same statement
 
 |Item|Value|
 |-|-|
@@ -1950,7 +1950,7 @@ The property {0} should not be assigned to itself.
 
 Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.
 
-## [CA2247](https://docs.microsoft.com/visualstudio/code-quality/ca2247): Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum.
+## [CA2247](https://docs.microsoft.com/visualstudio/code-quality/ca2247): Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum
 
 |Item|Value|
 |-|-|
@@ -1987,7 +1987,7 @@ TaskCompletionSource has constructors that take TaskCreationOptions that control
 
 ### Rule description
 
-Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'
+Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.
 
 ## [CA2300](https://docs.microsoft.com/visualstudio/code-quality/ca2300): Do not use insecure deserializer BinaryFormatter
 
@@ -2520,7 +2520,7 @@ Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocu
 
 ### Rule description
 
-Missing ValidateAntiForgeryTokenAttribute on controller action {0}.
+Missing ValidateAntiForgeryTokenAttribute on controller action {0}
 
 ## [CA5350](https://docs.microsoft.com/visualstudio/code-quality/ca5350): Do Not Use Weak Cryptographic Algorithms
 
@@ -3170,5 +3170,5 @@ Hard-coded certificates in source code are vulnerable to being exploited.
 
 ### Rule description
 
-'{0}' will throw for assemblies embedded in a single-file app.
+'{0}' will throw for assemblies embedded in a single-file app
 
