@@ -439,6 +439,45 @@ public class Something : ISomething
 ");
         }
 
+        [Fact, WorkItem(3877, "https://github.com/dotnet/roslyn-analyzers/issues/3877")]
+        public async Task CA1024_ReturnsTask_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Threading.Tasks;
+
+public class Something
+{
+    public Task GetTask() => default(Task);
+    public Task<int> GetGenericTask() => default(Task<int>);
+
+    public ValueTask GetValueTask() => default(ValueTask);
+    public ValueTask<int> GetGenericValueTask() => default(ValueTask<int>);
+}
+");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Threading.Tasks
+
+Public Class Something
+    Public Function GetTask() As Task
+        Return Nothing
+    End Function
+
+    Public Function GetGenericTask() As Task(Of Integer)
+        Return Nothing
+    End Function
+
+    Public Function GetValueTask() As ValueTask
+        Return Nothing
+    End Function
+
+    Public Function GetGenericValueTask() As ValueTask(Of Integer)
+        Return Nothing
+    End Function
+End Class
+");
+        }
+
         private static DiagnosticResult GetCA1024CSharpResultAt(int line, int column, string methodName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
