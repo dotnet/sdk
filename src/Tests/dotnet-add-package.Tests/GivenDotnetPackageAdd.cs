@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [MemberData(nameof(AddPkg_PackageVersionsLatestPrereleaseSucessData))]
         public void WhenPrereleaseOptionIsPassed(string[] inputVersions, string expectedVersion)
         {
-            var targetFramework = "netcoreapp5.0";
+            var targetFramework = "net5.0";
             TestProject testProject = new TestProject()
             {
                 Name = "Project",
@@ -71,14 +71,13 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-
             var cmd = new DotnetCommand(Log)
-                .WithWorkingDirectory(buildCommand.ProjectRootPath)
-                .Execute("add", "package", "--prerelease", "A");
-            cmd.Should().Pass();
-            cmd.StdOut.Should().Contain($"PackageReference for package 'A' version '{expectedVersion}' ");
-            cmd.StdErr.Should().BeEmpty();
+                .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
+                .Execute("add", "package", "--prerelease", "A")
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining($"PackageReference for package 'A' version '{expectedVersion}' ")
+                .And.NotHaveStdErr();
         }
 
         [Fact]
@@ -91,9 +90,9 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"add", "package", "--prerelease", "Newtonsoft.Json", "--version", "9.6.0");
-            cmd.Should().Fail();
-            cmd.StdOut.Should().Contain("The --prerelease and --version options are not supported in the same command.");
+                .Execute($"add", "package", "--prerelease", "Newtonsoft.Json", "--version", "9.6.0")
+                .Should().Fail()
+                .And.HaveStdOutContaining("The --prerelease and --version options are not supported in the same command.");
         }
 
         [Fact]
@@ -111,14 +110,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var packageVersion = "9.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("add", csproj, "package", packageName, "--version", packageVersion);
-
-            cmd.Should().Pass();
-
-            cmd.StdOut.Should()
-               .Contain($"PackageReference for package \'{packageName}\' version \'{packageVersion}\' added to file '{csproj}'.");
-
-            cmd.StdErr.Should().BeEmpty();
+                .Execute("add", csproj, "package", packageName, "--version", packageVersion)
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining($"PackageReference for package \'{packageName}\' version \'{packageVersion}\' added to file '{csproj}'.")
+                .And.NotHaveStdErr();
         }
 
         [Fact]
@@ -138,14 +134,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var packageVersion = "9.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("add", csproj, "package", packageName, "--version", packageVersion, "--package-directory", packageDirectory);
-
-            cmd.Should().Pass();
-
-            cmd.StdOut.Should()
-               .Contain($"PackageReference for package \'{packageName}\' version \'{packageVersion}\' added to file '{csproj}'.");
-
-            cmd.StdErr.Should().BeEmpty();
+                .Execute("add", csproj, "package", packageName, "--version", packageVersion, "--package-directory", packageDirectory)
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining($"PackageReference for package \'{packageName}\' version \'{packageVersion}\' added to file '{csproj}'.")
+                .And.NotHaveStdErr();
 
             var restoredPackageDirectory = Path.Combine(packageDirectory, packageName.ToLowerInvariant(), packageVersion);
             var packageDirectoryExists = Directory.Exists(restoredPackageDirectory);
@@ -165,11 +158,12 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var packageVersion = "9.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"add", "package", "--version", packageVersion, packageName);
-            cmd.Should().Pass();
-            cmd.StdOut.Should().Contain($"PackageReference for package '{packageName}' version '{packageVersion}' " +
-                $"added to file '{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj'.");
-            cmd.StdErr.Should().BeEmpty();
+                .Execute($"add", "package", "--version", packageVersion, packageName)
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining($"PackageReference for package '{packageName}' version '{packageVersion}' " +
+                $"added to file '{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj'.")
+                .And.NotHaveStdErr();
         }
 
         [Fact]
@@ -186,11 +180,12 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var framework = "netcoreapp3.0";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"add", "package", packageName, "--version", packageVersion, "--framework", framework);
-            cmd.Should().Pass();
-            cmd.StdOut.Should().Contain($"PackageReference for package '{packageName}' version '{packageVersion}' " +
-                $"added to file '{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj'.");
-            cmd.StdErr.Should().BeEmpty();
+                .Execute($"add", "package", packageName, "--version", packageVersion, "--framework", framework)
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining($"PackageReference for package '{packageName}' version '{packageVersion}' " +
+                $"added to file '{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj'.")
+                .And.NotHaveStdErr();
         }
 
         [Fact]
@@ -206,10 +201,11 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var packageVersion = "9.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"add", "package", packageName, "--version", packageVersion);
-            cmd.Should().Pass();
-            cmd.StdOut.Should().NotContain("Microsoft (R) Build Engine version");
-            cmd.StdErr.Should().BeEmpty();
+                .Execute($"add", "package", packageName, "--version", packageVersion)
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining("Microsoft (R) Build Engine version")
+                .And.NotHaveStdErr();
         }
 
         [Fact]
@@ -222,9 +218,10 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("add", "package", "package1", "package2", "package3");
-            cmd.Should().Fail();
-            cmd.StdErr.Should().Contain(LocalizableStrings.SpecifyExactlyOnePackageReference);
+                .Execute("add", "package", "package1", "package2", "package3")
+                .Should()
+                .Fail()
+                .And.HaveStdErrContaining(LocalizableStrings.SpecifyExactlyOnePackageReference);
         }
 
         [Fact]
@@ -237,9 +234,10 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"add", "package");
-            cmd.Should().Fail();
-            cmd.StdErr.Should().Contain(LocalizableStrings.SpecifyExactlyOnePackageReference);
+                .Execute($"add", "package")
+                .Should()
+                .Fail()
+                .And.HaveStdErrContaining(LocalizableStrings.SpecifyExactlyOnePackageReference);
         }
 
 
