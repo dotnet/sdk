@@ -20,7 +20,7 @@ namespace GenerateDocumentationAndConfigFiles
     {
         public static int Main(string[] args)
         {
-            const int expectedArguments = 16;
+            const int expectedArguments = 17;
 
             if (args.Length != expectedArguments)
             {
@@ -36,13 +36,14 @@ namespace GenerateDocumentationAndConfigFiles
             var assemblyList = args[5].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList();
             string propsFileDir = args[6];
             string propsFileName = args[7];
-            string analyzerDocumentationFileDir = args[8];
-            string analyzerDocumentationFileName = args[9];
-            string analyzerSarifFileDir = args[10];
-            string analyzerSarifFileName = args[11];
-            var analyzerVersion = args[12];
-            var analyzerPackageName = args[13];
-            if (!bool.TryParse(args[14], out var containsPortedFxCopRules))
+            string propsFileToDisableNetAnalyzersInNuGetPackageName = args[8];
+            string analyzerDocumentationFileDir = args[9];
+            string analyzerDocumentationFileName = args[10];
+            string analyzerSarifFileDir = args[11];
+            string analyzerSarifFileName = args[12];
+            var analyzerVersion = args[13];
+            var analyzerPackageName = args[14];
+            if (!bool.TryParse(args[15], out var containsPortedFxCopRules))
             {
                 containsPortedFxCopRules = false;
             }
@@ -149,7 +150,7 @@ namespace GenerateDocumentationAndConfigFiles
                     customTag: customTag);
             }
 
-            createPropsFile();
+            createPropsFiles();
 
             createAnalyzerDocumentationFile();
 
@@ -179,21 +180,65 @@ namespace GenerateDocumentationAndConfigFiles
                 return;
             }
 
-            void createPropsFile()
+            void createPropsFiles()
             {
                 if (string.IsNullOrEmpty(propsFileDir) || string.IsNullOrEmpty(propsFileName))
                 {
                     Debug.Assert(!containsPortedFxCopRules);
+                    Debug.Assert(string.IsNullOrEmpty(propsFileToDisableNetAnalyzersInNuGetPackageName));
                     return;
                 }
 
+                var disableNetAnalyzersImport = getDisableNetAnalyzersImport();
+
                 var fileContents =
-$@"<Project DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-  {getCodeAnalysisTreatWarningsNotAsErrors()}
+$@"<Project>
+  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsNotAsErrors()}
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
                 File.WriteAllText(fileWithPath, fileContents);
+
+                if (!string.IsNullOrEmpty(disableNetAnalyzersImport))
+                {
+                    fileWithPath = Path.Combine(directory.FullName, propsFileToDisableNetAnalyzersInNuGetPackageName);
+                    fileContents =
+$@"<Project>
+  <!-- 
+    PropertyGroup to disable built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
+    This props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
+  -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+  </PropertyGroup>
+</Project>";
+                    File.WriteAllText(fileWithPath, fileContents);
+                }
+
+                return;
+
+                string getDisableNetAnalyzersImport()
+                {
+                    if (!string.IsNullOrEmpty(propsFileToDisableNetAnalyzersInNuGetPackageName))
+                    {
+                        Debug.Assert(analyzerPackageName == "Microsoft.CodeAnalysis.NetAnalyzers" ||
+                            analyzerPackageName == "Microsoft.CodeAnalysis.FxCopAnalyzers" ||
+                            analyzerPackageName == "Microsoft.NetCore.Analyzers" ||
+                            analyzerPackageName == "Microsoft.NetFramework.Analyzers" ||
+                            analyzerPackageName == "Microsoft.CodeQuality.Analyzers");
+
+                        return $@"
+  <!-- 
+    This import includes an additional props file that disables built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
+    This additional props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
+  -->
+  <Import Project=""{propsFileToDisableNetAnalyzersInNuGetPackageName}"" Condition=""Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')"" />
+";
+                    }
+
+                    Debug.Assert(!containsPortedFxCopRules);
+                    return string.Empty;
+                }
             }
 
             string getCodeAnalysisTreatWarningsNotAsErrors()
