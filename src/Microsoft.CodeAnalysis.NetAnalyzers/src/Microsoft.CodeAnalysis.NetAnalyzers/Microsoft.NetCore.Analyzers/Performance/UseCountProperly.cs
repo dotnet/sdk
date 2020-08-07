@@ -153,12 +153,33 @@ namespace Microsoft.NetCore.Analyzers.Performance
             methods = namedType?.GetMembers(LongCountAsync).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(asyncMethods, methods);
 
+            // Disallowed types that shouldn't report a diagnosis given that there is no proven benefit on doing so.
+            ImmutableHashSet<ITypeSymbol>.Builder disallowedTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
+
+            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemory1);
+            disallowedTypesBuilder.AddIfNotNull(namedType);
+
+            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSpan1);
+            disallowedTypesBuilder.AddIfNotNull(namedType);
+
+            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlyMemory1);
+            disallowedTypesBuilder.AddIfNotNull(namedType);
+
+            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1);
+            disallowedTypesBuilder.AddIfNotNull(namedType);
+
+            ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836 = disallowedTypesBuilder.ToImmutable();
+
             if (syncMethods.Count > 0 || asyncMethods.Count > 0)
             {
-                context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(operationContext, syncMethods.ToImmutable(), asyncMethods.ToImmutable()), OperationKind.Invocation);
+                context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(
+                    operationContext, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), disallowedTypesForCA1836),
+                    OperationKind.Invocation);
             }
 
-            context.RegisterOperationAction(AnalyzePropertyReference, OperationKind.PropertyReference);
+            context.RegisterOperationAction(operationContext => AnalyzePropertyReference(
+                operationContext, disallowedTypesForCA1836),
+                OperationKind.PropertyReference);
 
             static void AddIfNotNull(ImmutableHashSet<IMethodSymbol>.Builder set, IEnumerable<IMethodSymbol>? others)
             {
@@ -170,7 +191,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
         private static void AnalyzeInvocationOperation(
-            OperationAnalysisContext context, ImmutableHashSet<IMethodSymbol> syncMethods, ImmutableHashSet<IMethodSymbol> asyncMethods)
+            OperationAnalysisContext context,
+            ImmutableHashSet<IMethodSymbol> syncMethods,
+            ImmutableHashSet<IMethodSymbol> asyncMethods,
+            ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836)
         {
             var invocationOperation = (IInvocationOperation)context.Operation;
 
@@ -212,10 +236,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
             bool shouldReplaceParent = ShouldReplaceParent(ref parentOperation, out string? operationKey, out bool shouldNegateIsEmpty);
 
             DetermineReportForInvocationAnalysis(context, invocationOperation, parentOperation,
-                shouldReplaceParent, isAsync, shouldNegateIsEmpty, hasPredicate, originalDefinition.Name, operationKey);
+                shouldReplaceParent, isAsync, shouldNegateIsEmpty, hasPredicate, originalDefinition.Name, operationKey, disallowedTypesForCA1836);
         }
 
-        private static void AnalyzePropertyReference(OperationAnalysisContext context)
+        private static void AnalyzePropertyReference(OperationAnalysisContext context, ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836)
         {
             var propertyReferenceOperation = (IPropertyReferenceOperation)context.Operation;
 
@@ -234,7 +258,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             if (shouldReplaceParent)
             {
-                DetermineReportForPropertyReference(context, propertyReferenceOperation, parentOperation, operationKey, shouldNegateIsEmpty);
+                DetermineReportForPropertyReference(context, propertyReferenceOperation, parentOperation,
+                    operationKey, shouldNegateIsEmpty, disallowedTypesForCA1836);
             }
         }
 
@@ -380,7 +405,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     properties: propertiesBuilder.ToImmutable()));
         }
 
-        private static void DetermineReportForInvocationAnalysis(OperationAnalysisContext context, IInvocationOperation invocationOperation, IOperation parent, bool shouldReplaceParent, bool isAsync, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey)
+        private static void DetermineReportForInvocationAnalysis(
+            OperationAnalysisContext context,
+            IInvocationOperation invocationOperation, IOperation parent,
+            bool shouldReplaceParent, bool isAsync, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey,
+            ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836)
         {
             if (!shouldReplaceParent)
             {
@@ -409,7 +438,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                     else
                     {
-                        if (TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
+                        if (!disallowedTypesForCA1836.Contains(type.OriginalDefinition) &&
+                            TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
                             !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
                         {
                             ReportCA1836(context, operationKey!, shouldNegateIsEmpty, parent);
@@ -432,12 +462,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
         }
 
-        private static void DetermineReportForPropertyReference(OperationAnalysisContext context, IOperation operation, IOperation parent, string? operationKey, bool shouldNegateIsEmpty)
+        private static void DetermineReportForPropertyReference(
+            OperationAnalysisContext context, IOperation operation, IOperation parent,
+            string? operationKey, bool shouldNegateIsEmpty,
+            ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836)
         {
             ITypeSymbol? type = operation.GetInstanceType();
             if (type != null)
             {
-                if (TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
+                if (!disallowedTypesForCA1836.Contains(type.OriginalDefinition) &&
+                    TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
                     !IsPropertyGetOfIsEmptyUsingThisInstance(context, operation, isEmptyPropertySymbol!))
                 {
                     ReportCA1836(context, operationKey!, shouldNegateIsEmpty, parent);

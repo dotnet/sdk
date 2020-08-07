@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.InteropServices.DoNotUseOutAttributeStringPinvokeParametersAnalyzer,
+    Microsoft.NetCore.Analyzers.InteropServices.DoNotUseOutAttributeStringPInvokeParametersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.InteropServices.DoNotUseOutAttributeStringPinvokeParametersAnalyzer,
+    Microsoft.NetCore.Analyzers.InteropServices.DoNotUseOutAttributeStringPInvokeParametersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     public class DoNotUseOutAttributeStringPInvokeParametersAnalyzerTests
     {
         [Fact]
-        public async Task StringByReference_NoDiagnostics_Diagnostics_CS()
+        public async Task StringByReference_NoDiagnostics_CS()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -36,7 +36,7 @@ public class C
         }
 
         [Fact]
-        public async Task NotPInvoke_NoDiagnostics_Diagnostics_CS()
+        public async Task NotPInvoke_NoDiagnostics_CS()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -72,7 +72,7 @@ public class C
         }
 
         [Fact]
-        public async Task StringByReference_NoDiagnostics_Diagnostics_VB()
+        public async Task StringByReference_NoDiagnostics_VB()
         {
             string source = @"
 Imports System.Runtime.InteropServices
@@ -124,12 +124,12 @@ End Class
         }
 
         private DiagnosticResult CSharpResult(int markupKey, params string[] arguments)
-           => VerifyCS.Diagnostic(DoNotUseOutAttributeStringPinvokeParametersAnalyzer.Rule)
+           => VerifyCS.Diagnostic(DoNotUseOutAttributeStringPInvokeParametersAnalyzer.Rule)
                .WithLocation(markupKey)
                .WithArguments(arguments);
 
         private DiagnosticResult BasicResult(int markupKey, params string[] arguments)
-            => VerifyVB.Diagnostic(DoNotUseOutAttributeStringPinvokeParametersAnalyzer.Rule)
+            => VerifyVB.Diagnostic(DoNotUseOutAttributeStringPInvokeParametersAnalyzer.Rule)
                 .WithLocation(markupKey)
                 .WithArguments(arguments);
     }

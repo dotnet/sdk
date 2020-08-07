@@ -56,7 +56,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                 CodeFixContext context, SyntaxNode root, SemanticModel model, CancellationToken cancellationToken)
             {
                 if (// If we can get all the necessary types,
-                    model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTaskCompletionSource, out _) &&
+                    model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTaskCompletionSource1, out _) &&
                     model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTaskContinuationOptions, out var taskContinutationOptionsType) &&
                     model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTaskCreationOptions, out INamedTypeSymbol? taskCreationOptionsType) &&
 

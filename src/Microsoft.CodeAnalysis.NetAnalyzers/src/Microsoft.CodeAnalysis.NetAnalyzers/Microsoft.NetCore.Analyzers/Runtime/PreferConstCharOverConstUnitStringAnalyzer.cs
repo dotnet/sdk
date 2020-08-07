@@ -79,7 +79,5 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 OperationKind.Invocation);
             });
         }
-
-
     }
 }

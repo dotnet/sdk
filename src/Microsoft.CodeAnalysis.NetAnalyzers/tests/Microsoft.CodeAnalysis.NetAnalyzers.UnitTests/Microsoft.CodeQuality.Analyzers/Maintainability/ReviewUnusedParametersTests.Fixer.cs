@@ -205,7 +205,6 @@ class E
                         anotherCodeFix,
                     },
                 },
-                NumberOfFixAllInDocumentIterations = 2,
             }.RunAsync();
         }
 
@@ -671,7 +670,6 @@ End Class
                         anotherCodeFix,
                     },
                 },
-                NumberOfFixAllInDocumentIterations = 2,
             }.RunAsync();
         }
 

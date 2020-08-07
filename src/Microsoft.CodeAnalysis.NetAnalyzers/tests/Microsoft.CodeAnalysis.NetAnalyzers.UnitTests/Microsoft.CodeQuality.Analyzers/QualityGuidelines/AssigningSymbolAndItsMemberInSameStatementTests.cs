@@ -164,7 +164,6 @@ public class Test
             GetCSharpResultAt(13, 31, "x", "Property"));
         }
 
-
         [Fact]
         public async Task CSharpReassignGlobalPropertyAndItsPropertyAndReferToItsProperty()
         {

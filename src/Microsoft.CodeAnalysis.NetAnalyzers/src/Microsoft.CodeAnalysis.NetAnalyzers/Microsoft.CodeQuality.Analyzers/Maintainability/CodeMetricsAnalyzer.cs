@@ -394,7 +394,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 }
                 else
                 {
-                    SymbolKind? symbolKindOpt = null;
+                    SymbolKind? symbolKind = null;
                     string[] keyParts = key.Split('(');
                     switch (keyParts[0])
                     {
@@ -424,25 +424,25 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                             switch (symbolKindStr)
                             {
                                 case "Assembly":
-                                    symbolKindOpt = SymbolKind.Assembly;
+                                    symbolKind = SymbolKind.Assembly;
                                     break;
                                 case "Namespace":
-                                    symbolKindOpt = SymbolKind.Namespace;
+                                    symbolKind = SymbolKind.Namespace;
                                     break;
                                 case "Type":
-                                    symbolKindOpt = SymbolKind.NamedType;
+                                    symbolKind = SymbolKind.NamedType;
                                     break;
                                 case "Method":
-                                    symbolKindOpt = SymbolKind.Method;
+                                    symbolKind = SymbolKind.Method;
                                     break;
                                 case "Field":
-                                    symbolKindOpt = SymbolKind.Field;
+                                    symbolKind = SymbolKind.Field;
                                     break;
                                 case "Event":
-                                    symbolKindOpt = SymbolKind.Event;
+                                    symbolKind = SymbolKind.Event;
                                     break;
                                 case "Property":
-                                    symbolKindOpt = SymbolKind.Property;
+                                    symbolKind = SymbolKind.Property;
                                     break;
 
                                 default:
@@ -460,7 +460,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                             builder.Add(keyParts[0], values);
                         }
 
-                        ((List<(SymbolKind?, uint)>)values).Add((symbolKindOpt, threshold));
+                        ((List<(SymbolKind?, uint)>)values).Add((symbolKind, threshold));
                     }
                 }
 

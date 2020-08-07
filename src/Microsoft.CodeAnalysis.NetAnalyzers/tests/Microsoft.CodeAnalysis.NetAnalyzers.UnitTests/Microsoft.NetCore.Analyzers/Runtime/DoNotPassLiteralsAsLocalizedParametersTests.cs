@@ -1647,10 +1647,16 @@ public class Test
 
             if (string.IsNullOrEmpty(editorConfigText))
             {
+#if !NETCOREAPP
+                const string StringArgType = "string";
+#else
+                const string StringArgType = "string?";
+#endif
+
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    // Test0.cs(9,31): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'Exception.Exception(string message)'. Retrieve the following string(s) from a resource table instead: "a".
-                    GetCSharpResultAt(9, 31, "void Test.M1()", "message", "Exception.Exception(string message)", "a")
+                    // Test0.cs(9,31): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'Exception.Exception(string? message)'. Retrieve the following string(s) from a resource table instead: "a".
+                    GetCSharpResultAt(9, 31, "void Test.M1()", "message", $"Exception.Exception({StringArgType} message)", "a")
                 });
             }
 
@@ -1697,14 +1703,20 @@ public class Test
 
             if (string.IsNullOrEmpty(editorConfigText))
             {
+#if !NETCOREAPP
+                const string StringArgType = "string";
+#else
+                const string StringArgType = "string?";
+#endif
+
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    // Test0.cs(9,31): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'Exception.Exception(string message)'. Retrieve the following string(s) from a resource table instead: "a".
-                    GetCSharpResultAt(9, 31, "void Test.M1()", "message", "Exception.Exception(string message)", "a"),
-                    // Test0.cs(10,39): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'ArgumentException.ArgumentException(string message)'. Retrieve the following string(s) from a resource table instead: "a".
-                    GetCSharpResultAt(10, 39, "void Test.M1()", "message", "ArgumentException.ArgumentException(string message)", "a"),
-                    // Test0.cs(11,47): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'InvalidOperationException.InvalidOperationException(string message)'. Retrieve the following string(s) from a resource table instead: "a".
-                    GetCSharpResultAt(11, 47, "void Test.M1()", "message", "InvalidOperationException.InvalidOperationException(string message)", "a")
+                    // Test0.cs(9,31): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'Exception.Exception(string? message)'. Retrieve the following string(s) from a resource table instead: "a".
+                    GetCSharpResultAt(9, 31, "void Test.M1()", "message", $"Exception.Exception({StringArgType} message)", "a"),
+                    // Test0.cs(10,39): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'ArgumentException.ArgumentException(string? message)'. Retrieve the following string(s) from a resource table instead: "a".
+                    GetCSharpResultAt(10, 39, "void Test.M1()", "message", $"ArgumentException.ArgumentException({StringArgType} message)", "a"),
+                    // Test0.cs(11,47): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'InvalidOperationException.InvalidOperationException(string? message)'. Retrieve the following string(s) from a resource table instead: "a".
+                    GetCSharpResultAt(11, 47, "void Test.M1()", "message", $"InvalidOperationException.InvalidOperationException({StringArgType} message)", "a")
                 });
             }
 
@@ -1747,14 +1759,20 @@ public class Test
 
             if (string.IsNullOrEmpty(editorConfigText))
             {
+#if !NETCOREAPP
+                const string StringArgType = "string";
+#else
+                const string StringArgType = "string?";
+#endif
+
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
-                    // Test0.cs(9,31): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'Exception.Exception(string message)'. Retrieve the following string(s) from a resource table instead: "a".
-                    GetCSharpResultAt(9, 31, "void Test.M1()", "message", "Exception.Exception(string message)", "a"),
-                    // Test0.cs(10,39): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'ArgumentException.ArgumentException(string message)'. Retrieve the following string(s) from a resource table instead: "a".
-                    GetCSharpResultAt(10, 39, "void Test.M1()", "message", "ArgumentException.ArgumentException(string message)", "a"),
-                    // Test0.cs(11,47): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'InvalidOperationException.InvalidOperationException(string message)'. Retrieve the following string(s) from a resource table instead: "a".
-                    GetCSharpResultAt(11, 47, "void Test.M1()", "message", "InvalidOperationException.InvalidOperationException(string message)", "a")
+                    // Test0.cs(9,31): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'Exception.Exception(string? message)'. Retrieve the following string(s) from a resource table instead: "a".
+                    GetCSharpResultAt(9, 31, "void Test.M1()", "message", $"Exception.Exception({StringArgType} message)", "a"),
+                    // Test0.cs(10,39): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'ArgumentException.ArgumentException(string? message)'. Retrieve the following string(s) from a resource table instead: "a".
+                    GetCSharpResultAt(10, 39, "void Test.M1()", "message", $"ArgumentException.ArgumentException({StringArgType} message)", "a"),
+                    // Test0.cs(11,47): warning CA1303: Method 'void Test.M1()' passes a literal string as parameter 'message' of a call to 'InvalidOperationException.InvalidOperationException(string? message)'. Retrieve the following string(s) from a resource table instead: "a".
+                    GetCSharpResultAt(11, 47, "void Test.M1()", "message", $"InvalidOperationException.InvalidOperationException({StringArgType} message)", "a")
                 });
             }
 
