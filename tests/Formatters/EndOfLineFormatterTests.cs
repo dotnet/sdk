@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 ["end_of_line"] = endOfLine,
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Theory]
@@ -56,7 +56,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 ["end_of_line"] = endOfLine,
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Theory]
@@ -67,11 +67,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         {
             var testCode = $"class C{codeNewline}{{{codeNewline}}}{codeNewline}";
 
-            var editorConfig = new Dictionary<string, string>()
-            {
-            };
+            var editorConfig = new Dictionary<string, string>();
 
-            await TestAsync(testCode, testCode, editorConfig);
+            await AssertCodeUnchangedAsync(testCode, editorConfig);
         }
     }
 }

@@ -47,7 +47,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 ["charset"] = expectedValue,
             };
 
-            var formattedText = await TestAsync(testCode, testCode, editorConfig, codeEncoding);
+            var formattedText = await AssertCodeUnchangedAsync(testCode, editorConfig, codeEncoding);
 
             Assert.Equal(expectedEncoding, formattedText.Encoding);
         }
@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             {
             };
 
-            var formattedText = await TestAsync(testCode, testCode, editorConfig, codeEncoding);
+            var formattedText = await AssertCodeUnchangedAsync(testCode, editorConfig, codeEncoding);
 
             Assert.Equal(codeEncoding, formattedText.Encoding);
         }
