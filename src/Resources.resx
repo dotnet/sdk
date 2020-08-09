@@ -270,4 +270,7 @@
   <data name="Unable_to_fix_0_No_associated_code_fix_found" xml:space="preserve">
     <value>Unable to fix {0}. No associated code fix found.</value>
   </data>
+  <data name="Remove_unnecessary_import" xml:space="preserve">
+    <value>Remove unnecessary import.</value>
+  </data>
 </root>

@@ -152,6 +152,11 @@
         <target state="translated">{0} obsahuje více souborů řešení MSBuild. Určete, který soubor chcete použít, pomocí argumentu &lt;workspace&gt;.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Remove_unnecessary_import">
+        <source>Remove unnecessary import.</source>
+        <target state="new">Remove unnecessary import.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
         <source>Run 3rd party analyzers and apply fixes.</source>
         <target state="translated">Spustit analyzátory třetích stran a použít opravy</target>

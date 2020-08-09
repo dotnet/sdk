@@ -152,6 +152,11 @@
         <target state="translated">Plusieurs fichiers solution MSBuild trouvés dans '{0}'. Spécifiez celui qui doit être utilisé avec l'argument &lt;espace de travail&gt;.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Remove_unnecessary_import">
+        <source>Remove unnecessary import.</source>
+        <target state="new">Remove unnecessary import.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
         <source>Run 3rd party analyzers and apply fixes.</source>
         <target state="translated">Exécutez des analyseurs tiers et appliquez des correctifs.</target>
