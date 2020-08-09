@@ -48,12 +48,12 @@ class C
         }
 
         [Theory]
-        [InlineData(RemoveUnnecessaryImportDiagnosticKey, "warning")]
-        [InlineData(RemoveUnnecessaryImportDiagnosticKey, "info")]
-        [InlineData(RemoveUnnecessaryImportCategoryKey, "warning")]
-        [InlineData(RemoveUnnecessaryImportCategoryKey, "info")]
-        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, "warning")]
-        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, "info")]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Info)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Info)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Info)]
         public async Task WhenIDE0005SeverityLowerThanFixSeverity_AndHasUnusedImports_NoChange(string key, string severity)
         {
             var code =
@@ -72,12 +72,12 @@ class C
         }
 
         [Theory]
-        [InlineData(RemoveUnnecessaryImportDiagnosticKey, "warning")]
-        [InlineData(RemoveUnnecessaryImportDiagnosticKey, "error")]
-        [InlineData(RemoveUnnecessaryImportCategoryKey, "warning")]
-        [InlineData(RemoveUnnecessaryImportCategoryKey, "error")]
-        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, "warning")]
-        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, "error")]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportDiagnosticKey, Severity.Error)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Warning)]
+        [InlineData(RemoveUnnecessaryImportCategoryKey, Severity.Error)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Warning)]
+        [InlineData(AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticSeverityKey, Severity.Error)]
         public async Task WhenIDE0005SeverityEqualOrGreaterThanFixSeverity_AndHasUnusedImports_ImportRemoved(string key, string severity)
         {
             var testCode =

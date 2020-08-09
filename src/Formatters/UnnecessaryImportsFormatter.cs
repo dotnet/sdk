@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     /// <summary>
-    /// UnusedImportsFormatter that removes unsused imports when fixing code style errors.
+    /// UnnecessaryImportsFormatter that removes unsused imports when fixing code style errors.
     /// </summary>
     internal sealed class UnnecessaryImportsFormatter : DocumentFormatter
     {
