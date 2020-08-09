@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
     public sealed class CSharpDoNotUseCountWhenAnyCanBeUsedFixer : DoNotUseCountWhenAnyCanBeUsedFixer
     {
         /// <summary>
-        /// Tries the get a fixer the specified <paramref name="node" />.
+        /// Tries to get a fixer for the specified <paramref name="node" />.
         /// </summary>
         /// <param name="node">The node to get a fixer for.</param>
         /// <param name="operation">The operation to get the fixer from.</param>
