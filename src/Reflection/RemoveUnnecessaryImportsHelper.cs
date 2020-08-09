@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.CodeAnalysis.Tools.Refelection
+namespace Microsoft.CodeAnalysis.Tools.Reflection
 {
     internal static class RemoveUnnecessaryImportsHelper
     {
