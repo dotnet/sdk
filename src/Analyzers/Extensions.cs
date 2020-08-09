@@ -92,6 +92,17 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             return severity;
         }
 
+        public static DiagnosticSeverity ToSeverity(this ReportDiagnostic reportDiagnostic)
+        {
+            return reportDiagnostic switch
+            {
+                ReportDiagnostic.Error => DiagnosticSeverity.Error,
+                ReportDiagnostic.Warn => DiagnosticSeverity.Warning,
+                ReportDiagnostic.Info => DiagnosticSeverity.Info,
+                _ => DiagnosticSeverity.Hidden
+            };
+        }
+
         private static DiagnosticSeverity GetSeverity(
             this DiagnosticAnalyzer analyzer,
             Document document,
@@ -113,9 +124,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     break;
                 }
 
-                if (analyzerOptions.TryGetSeverityFromBulkConfiguration(tree, compilation, descriptor, out var reportDiagnostic))
+                if (analyzerOptions.TryGetSeverityFromConfiguration(tree, compilation, descriptor, out var reportDiagnostic))
                 {
-                    var configuredSeverity = ToSeverity(reportDiagnostic);
+                    var configuredSeverity = reportDiagnostic.ToSeverity();
                     if (configuredSeverity > severity)
                     {
                         severity = configuredSeverity;
@@ -139,17 +150,6 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
 
             return severity;
-
-            static DiagnosticSeverity ToSeverity(ReportDiagnostic reportDiagnostic)
-            {
-                return reportDiagnostic switch
-                {
-                    ReportDiagnostic.Error => DiagnosticSeverity.Error,
-                    ReportDiagnostic.Warn => DiagnosticSeverity.Warning,
-                    ReportDiagnostic.Info => DiagnosticSeverity.Info,
-                    _ => DiagnosticSeverity.Hidden
-                };
-            }
 
             static bool TryGetSeverityFromCodeStyleOption(
                 DiagnosticDescriptor descriptor,
