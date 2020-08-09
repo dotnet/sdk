@@ -28,7 +28,8 @@ namespace Microsoft.CodeAnalysis.Tools
             new FinalNewlineFormatter(),
             new EndOfLineFormatter(),
             new CharsetFormatter(),
-            new ImportsFormatter(),
+            new OrganizeImportsFormatter(),
+            new UnnecessaryImportsFormatter(),
             new AnalyzerFormatter(Resources.Code_Style, new CodeStyleInformationProvider(), new AnalyzerRunner(includeCompilerDiagnostics: true), new SolutionCodeFixApplier()),
             new AnalyzerFormatter(Resources.Analyzer_Reference, new AnalyzerReferenceInformationProvider(), new AnalyzerRunner(includeCompilerDiagnostics: true), new SolutionCodeFixApplier()),
         }.ToImmutableArray();
