@@ -11,9 +11,9 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.NET.Build.Tests
 {
-    public class GivenThatWeWantToBuildAP2PrefernceWithTargetPlatform : SdkTest
+    public class GivenThatWeWantToBuildAP2PReferenceWithTargetPlatform : SdkTest
     {
-        public GivenThatWeWantToBuildAP2PrefernceWithTargetPlatform(ITestOutputHelper log) : base(log)
+        public GivenThatWeWantToBuildAP2PReferenceWithTargetPlatform(ITestOutputHelper log) : base(log)
         {
         }
 
