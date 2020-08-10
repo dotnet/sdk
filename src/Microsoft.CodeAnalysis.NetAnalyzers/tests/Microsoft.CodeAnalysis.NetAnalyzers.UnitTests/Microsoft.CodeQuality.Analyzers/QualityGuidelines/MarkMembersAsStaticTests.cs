@@ -1179,7 +1179,7 @@ End Class";
         }
 
         [Fact]
-        public async Task Properties_NoDiagnostic()
+        public async Task AutoProperties_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
