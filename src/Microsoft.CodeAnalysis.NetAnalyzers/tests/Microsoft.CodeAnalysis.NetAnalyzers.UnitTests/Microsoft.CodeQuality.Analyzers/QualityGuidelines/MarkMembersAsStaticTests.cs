@@ -1220,6 +1220,32 @@ public class C1
 }");
         }
 
+        [Fact]
+        public async Task Properties_StaticField_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C1
+{
+    private static int s_field;
+
+    public int [|P1|]
+    {
+        get { return s_field; }
+        set { s_field = value; }
+    }
+
+    public int [|P2|]
+    {
+        get { return s_field; }
+    }
+
+    public int [|P3|]
+    {
+        set { s_field = value; }
+    }
+}");
+        }
+
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
