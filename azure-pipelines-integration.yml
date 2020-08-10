@@ -64,7 +64,7 @@ jobs:
         _targetSolution: "EntityFramework.sln"
         _branchName: "master"
         _sha: "efd56d44977632d1915a569046be6a23cb39da16"
-  timeoutInMinutes: 30
+  timeoutInMinutes: 35
   steps:
     - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
       displayName: Prepare $(_repoName) for formatting
