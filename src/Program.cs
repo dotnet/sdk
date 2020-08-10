@@ -134,7 +134,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     fixCodeStyle: s_parseResult.WasOptionUsed("--fix-style", "-fs"),
                     codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
                     fixAnalyzers: s_parseResult.WasOptionUsed("--fix-analyzers", "-fa"),
-                    analyerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
+                    analyzerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
                     fileMatcher,
