@@ -1,6 +1,6 @@
 function InitializeCustomSDKToolset {
   if ($env:TestFullMSBuild -eq "true") {
-     $env:DOTNET_SDK_TEST_MSBUILD_PATH = InitializeVisualStudioMSBuild -install:$false -vsRequirements:$GlobalJson.tools.'vs-opt'
+     $env:DOTNET_SDK_TEST_MSBUILD_PATH = InitializeVisualStudioMSBuild -install:$true -vsRequirements:$GlobalJson.tools.'vs-opt'
      Write-Host "INFO: Tests will run against full MSBuild in $env:DOTNET_SDK_TEST_MSBUILD_PATH"
   }
 
@@ -50,6 +50,8 @@ set DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$env:DOTNET_INSTALL_DIR
 
 set PATH=$env:DOTNET_INSTALL_DIR;%PATH%
 set NUGET_PACKAGES=$env:NUGET_PACKAGES
+
+DOSKEY killdotnet=taskkill /F /IM dotnet.exe /T ^& taskkill /F /IM VSTest.Console.exe /T ^& taskkill /F /IM msbuild.exe /T
 "@
 
   Out-File -FilePath $scriptPath -InputObject $scriptContents -Encoding ASCII

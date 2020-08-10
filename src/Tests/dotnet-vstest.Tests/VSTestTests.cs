@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                 .Execute()
                 .Should().Pass();
 
-            var outputDll = Path.Combine(testRoot, "bin", configuration, "netcoreapp3.0", $"{testAppName}.dll");
+            var outputDll = Path.Combine(testRoot, "bin", configuration, "netcoreapp3.1", $"{testAppName}.dll");
 
             // Call vstest
             var result = new DotnetVSTestCommand(Log)
@@ -48,8 +48,8 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                     .Should().Contain("Total tests: 2")
                     .And.Contain("Passed: 1")
                     .And.Contain("Failed: 1")
-                    .And.Contain("\u221a VSTestPassTest")
-                    .And.Contain("X VSTestFailTest");
+                    .And.Contain("Passed VSTestPassTest")
+                    .And.Contain("Failed VSTestFailTest");
             }
 
             result.ExitCode.Should().Be(1);
@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                 .Execute()
                 .Should().Pass();
 
-            var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, "netcoreapp3.0", "VSTestTestRunParameters.dll");
+            var outputDll = Path.Combine(testProjectDirectory, "bin", configuration, "netcoreapp3.1", "VSTestTestRunParameters.dll");
 
             // Call test
             CommandResult result = new DotnetVSTestCommand(Log)
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                 result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
                 result.StdOut.Should().Contain("Total tests: 1");
                 result.StdOut.Should().Contain("Passed: 1");
-                result.StdOut.Should().Contain("\u221a VSTestTestRunParameters");
+                result.StdOut.Should().Contain("Passed VSTestTestRunParameters");
             }
 
             result.ExitCode.Should().Be(0);
