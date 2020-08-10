@@ -692,8 +692,9 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
                                     "/p:NoWarn=IL2006", "/p:WarnAsError=IL2006")
                 .Should().Pass()
-                .And.NotHaveStdOutContaining("IL2006")
-                .And.HaveStdOutContaining("IL2026");
+                .And.NotHaveStdOutContaining("warning IL2006")
+                .And.NotHaveStdOutContaining("error IL2006")
+                .And.HaveStdOutContaining("warning IL2026");
         }
 
         [Theory]
@@ -710,7 +711,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
                                     "/p:AnalysisLevel=0.0")
                 .Should().Pass()
-                .And.NotHaveStdOutContaining(@"IL\d\d\d\d");
+                .And.NotHaveStdOutMatching(@"warning IL\d\d\d\d");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
@@ -727,7 +728,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
                                     "/p:ILLinkWarningLevel=0")
                 .Should().Pass()
-                .And.NotHaveStdOutContaining("IL2006");
+                .And.NotHaveStdOutContaining("warning IL2006");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
