@@ -33,13 +33,13 @@
       <Uri>https://github.com/dotnet/CliCommandLineParser</Uri>
       <Sha>0e89c2116ad28e404ba56c14d1c3f938caa25a01</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="16.8.0-preview-20410-07">
+    <Dependency Name="Microsoft.Build" Version="16.8.0-preview-20410-08">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>b7ea3f70e5bce6bd94bc2f10a44ce1e8063d8034</Sha>
+      <Sha>cb5277fbfa4fba3e87874b472ade356c0ecf47b2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="16.8.0-preview-20410-07">
+    <Dependency Name="Microsoft.Build.Localization" Version="16.8.0-preview-20410-08">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>b7ea3f70e5bce6bd94bc2f10a44ce1e8063d8034</Sha>
+      <Sha>cb5277fbfa4fba3e87874b472ade356c0ecf47b2</Sha>
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="11.0.0-beta.20375.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
