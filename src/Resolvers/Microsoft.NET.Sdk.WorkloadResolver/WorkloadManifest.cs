@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Microsoft.NET.Sdk.WorkloadResolver
 {
@@ -13,29 +14,28 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
 
         public static WorkloadManifest LoadFromFolder(string manifestFolder)
         {
-            string windowsDesktopSdkName = "Microsoft.NET.Sdk.WindowsDesktop2";
-            string androidWorkloadSdkName = "Xamarin.Android.Workload";
+            var manifest = new WorkloadManifest();
 
-            var manifestName = Path.GetFileName(manifestFolder);
+            string manifestPath = Path.Combine(manifestFolder, "WorkloadManifest.xml");
+            if (File.Exists(manifestPath))
+            {
+                var manifestXml = XDocument.Load(manifestPath);
 
-            if (manifestName.Equals(windowsDesktopSdkName, StringComparison.OrdinalIgnoreCase))
-            {
-                var manifest = new WorkloadManifest();
-                manifest.SdkPackVersions[windowsDesktopSdkName] = "1.0.5";
-                manifest.Workloads["WindowsDesktop Workload"] = new List<string>() { windowsDesktopSdkName };
-                return manifest;
+                foreach (var workload in manifestXml.Root.Element("Workloads").Elements("Workload"))
+                {
+                    string workloadName = workload.Attribute("Name").Value;
+                    var workloadPacks = workload.Elements("RequiredPack").Select(rp => rp.Attribute("Name").Value).ToList();
+
+                    manifest.Workloads[workloadName] = workloadPacks;
+                }
+                foreach (var pack in manifestXml.Root.Element("WorkloadPacks").Elements("Pack"))
+                {
+                    string packName = pack.Attribute("Name").Value;
+                    string packVersion = pack.Attribute("Version").Value;
+                    manifest.SdkPackVersions[packName] = packVersion;
+                }
             }
-            else if (manifestName.Equals(androidWorkloadSdkName, StringComparison.OrdinalIgnoreCase))
-            {
-                var manifest = new WorkloadManifest();
-                manifest.SdkPackVersions[androidWorkloadSdkName] = "1.0.1";
-                manifest.Workloads["Xamarin.Android Workload"] = new List<string>() { androidWorkloadSdkName };
-                return manifest;
-            }
-            else
-            {
-                throw new NotImplementedException("Workload manifest loading not implemented");
-            }            
+            return manifest;
         }
 
         public static WorkloadManifest Merge(IEnumerable<WorkloadManifest> manifests)
