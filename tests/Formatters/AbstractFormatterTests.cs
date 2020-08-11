@@ -119,7 +119,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 fixCodeStyle: false,
                 codeStyleSeverity: DiagnosticSeverity.Error,
                 fixAnalyzers: false,
-                analyerSeverity: DiagnosticSeverity.Error,
+                analyzerSeverity: DiagnosticSeverity.Error,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,
