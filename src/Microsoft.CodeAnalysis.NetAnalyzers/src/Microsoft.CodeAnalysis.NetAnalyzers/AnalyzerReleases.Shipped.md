@@ -107,7 +107,7 @@ CA2101 | Globalization | Info | PInvokeDiagnosticAnalyzer, [Documentation](https
 CA2109 | Security | Disabled | ReviewVisibleEventHandlersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2109)
 CA2119 | Security | Disabled | SealMethodsThatSatisfyPrivateInterfacesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2119)
 CA2153 | Security | Disabled | DoNotCatchCorruptedStateExceptionsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2153)
-CA2200 | Usage | Info | RethrowToPreserveStackDetailsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2200)
+CA2200 | Usage | Warning | RethrowToPreserveStackDetailsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2200)
 CA2201 | Usage | Hidden | DoNotRaiseReservedExceptionTypesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2201)
 CA2205 | Usage | Disabled | UseManagedEquivalentsOfWin32ApiAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2205)
 CA2207 | Usage | Disabled | InitializeStaticFieldsInlineAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2207)
