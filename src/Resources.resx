@@ -270,4 +270,13 @@
   <data name="Unable_to_fix_0_No_associated_code_fix_found" xml:space="preserve">
     <value>Unable to fix {0}. No associated code fix found.</value>
   </data>
+  <data name="Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting" xml:space="preserve">
+    <value>Required references did not load for {0} or referenced project. Run `dotnet restore` prior to formatting.</value>
+  </data>
+  <data name="Running_0_analyzers_on_1" xml:space="preserve">
+    <value>Running {0} analyzers on {1}.</value>
+  </data>
+  <data name="The_dotnet_runtime_version_is_0" xml:space="preserve">
+    <value>The dotnet runtime version is '{0}'.</value>
+  </data>
 </root>

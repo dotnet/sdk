@@ -152,6 +152,11 @@
         <target state="translated">{0} obsahuje více souborů řešení MSBuild. Určete, který soubor chcete použít, pomocí argumentu &lt;workspace&gt;.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting">
+        <source>Required references did not load for {0} or referenced project. Run `dotnet restore` prior to formatting.</source>
+        <target state="new">Required references did not load for {0} or referenced project. Run `dotnet restore` prior to formatting.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
         <source>Run 3rd party analyzers and apply fixes.</source>
         <target state="translated">Spustit analyzátory třetích stran a použít opravy</target>
@@ -165,6 +170,11 @@
       <trans-unit id="Running_0_analysis">
         <source>Running {0} analysis.</source>
         <target state="translated">Probíhá analýza {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Running_0_analyzers_on_1">
+        <source>Running {0} analyzers on {1}.</source>
+        <target state="new">Running {0} analyzers on {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Running_formatters">
@@ -190,6 +200,11 @@
       <trans-unit id="The_dotnet_CLI_version_is_0">
         <source>The dotnet CLI version is '{0}'.</source>
         <target state="translated">Verze .NET CLI je {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_dotnet_runtime_version_is_0">
+        <source>The dotnet runtime version is '{0}'.</source>
+        <target state="new">The dotnet runtime version is '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">

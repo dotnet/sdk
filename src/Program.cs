@@ -109,7 +109,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 var runtimeVersion = GetRuntimeVersion();
 
-                Debug.WriteLine($"The dotnet runtime version is '{runtimeVersion}'.");
+                logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
 
                 // Load MSBuild
                 Environment.CurrentDirectory = workspaceDirectory;
