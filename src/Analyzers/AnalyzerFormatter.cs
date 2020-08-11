@@ -49,6 +49,11 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return solution;
             }
 
+            // Only include compiler diagnostics if we have a fixer that can fix them.
+            var includeCompilerDiagnostics = fixers.Any(
+                codefix => codefix.FixableDiagnosticIds.Any(
+                    id => id.StartsWith("CS") || id.StartsWith("BC")));
+
             var analysisStopwatch = Stopwatch.StartNew();
             logger.LogTrace(Resources.Running_0_analysis, _name);
 
@@ -63,7 +68,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var projectAnalyzers = await FilterBySeverityAsync(solution.Projects, analyzers, formattablePaths, severity, cancellationToken).ConfigureAwait(false);
 
             // Determine which diagnostics are being reported for each project.
-            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+            var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, includeCompilerDiagnostics, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
 
             var projectDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, projectDiagnosticsMS);
@@ -71,7 +76,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             logger.LogTrace(Resources.Fixing_diagnostics);
 
             // Run each analyzer individually and apply fixes if possible.
-            solution = await FixDiagnosticsAsync(solution, analyzers, fixers, projectDiagnostics, formattablePaths, severity, logger, cancellationToken).ConfigureAwait(false);
+            solution = await FixDiagnosticsAsync(solution, analyzers, fixers, projectDiagnostics, formattablePaths, severity, includeCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
 
             var fixDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds - projectDiagnosticsMS;
             logger.LogTrace(Resources.Complete_in_0_ms, fixDiagnosticsMS);
@@ -87,6 +92,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ImmutableHashSet<string> formattablePaths,
             FormatOptions options,
             DiagnosticSeverity severity,
+            bool includeCompilerDiagnostics,
             ILogger logger,
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
@@ -101,7 +107,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 }
 
                 // Run all the filtered analyzers to determine which are reporting diagnostic.
-                await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, logger, cancellationToken).ConfigureAwait(false);
+                await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, includeCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
             }
 
             LogDiagnosticLocations(solution, result.Diagnostics.SelectMany(kvp => kvp.Value), options.WorkspaceFilePath, options.ChangesAreErrors, logger, formattedFiles);
@@ -143,6 +149,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ImmutableDictionary<ProjectId, ImmutableHashSet<string>> projectDiagnostics,
             ImmutableHashSet<string> formattablePaths,
             DiagnosticSeverity severity,
+            bool includeCompilerDiagnostics,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -180,7 +187,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     }
 
                     var analyzers = analyzersByLanguage[project.Language];
-                    await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, logger, cancellationToken).ConfigureAwait(false);
+                    await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, includeCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
                 }
 
                 var hasDiagnostics = result.Diagnostics.Any(kvp => kvp.Value.Count > 0);
