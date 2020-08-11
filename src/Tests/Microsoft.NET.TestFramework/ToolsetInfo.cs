@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml.Linq;
+using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using System.Xml.Linq;
-using System.Reflection;
-using Xunit.Abstractions;
-using Microsoft.Build.Utilities;
 using NuGet.Versioning;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -128,7 +128,7 @@ namespace Microsoft.NET.TestFramework
                 return MicrosoftNETBuildExtensionsPathOverride;
             }
             else
-            {                
+            {
                 if (ShouldUseFullFrameworkMSBuild)
                 {
                     var msbuildBinPath = Path.GetDirectoryName(FullFrameworkMSBuildPath);
@@ -247,7 +247,7 @@ namespace Microsoft.NET.TestFramework
             }
 
             var ret = new ToolsetInfo(dotnetRoot);
-            
+
             // if (!string.IsNullOrWhiteSpace(commandLine.MSBuildSDKsPath))
             // {
             //     ret.SdksPath = commandLine.MSBuildSDKsPath;
@@ -277,7 +277,7 @@ namespace Microsoft.NET.TestFramework
             if (repoRoot != null)
             {
                 ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration);
-            }            
+            }
 
             return ret;
         }

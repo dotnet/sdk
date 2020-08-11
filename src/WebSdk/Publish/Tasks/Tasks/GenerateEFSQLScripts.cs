@@ -79,7 +79,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         private bool GenerateSQLScript(string sqlFileFullPath, string dbContextName, bool isLoggingEnabled = true)
         {
             string previousSkipValue = Environment.GetEnvironmentVariable(SkipFirstTimeEnvironmentVariable);
-            string previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment); 
+            string previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment);
             Environment.SetEnvironmentVariable(SkipFirstTimeEnvironmentVariable, "true");
             Environment.SetEnvironmentVariable(AspNetCoreEnvironment, "Development");
             ProcessStartInfo psi = new ProcessStartInfo("dotnet", $@"ef migrations script --no-build --idempotent --configuration {Configuration} --output ""{sqlFileFullPath}"" --context {dbContextName} {EFMigrationsAdditionalArgs}")

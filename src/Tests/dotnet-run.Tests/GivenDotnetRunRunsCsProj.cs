@@ -197,9 +197,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var rootPath = _testAssetsManager.CreateTestDirectory().Path;
 
             string dir = "pkgs";
-            string [] args = new string[] { "--packages", dir };
+            string[] args = new string[] { "--packages", dir };
 
-            string [] newArgs = new string[] { "console", "-o", rootPath, "--no-restore" };
+            string[] newArgs = new string[] { "console", "-o", rootPath, "--no-restore" };
             new DotnetCommand(Log, "new")
                 .WithWorkingDirectory(rootPath)
                 .Execute(newArgs)
@@ -483,7 +483,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                             .WithSource();
 
             var result = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory( testInstance.Path)
+                .WithWorkingDirectory(testInstance.Path)
                 .Execute("-v:n");
 
             result.Should().Pass()

@@ -1,14 +1,14 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using FluentAssertions.Execution;
-using Microsoft.DotNet.Cli.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
+using FluentAssertions.Execution;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework.Assertions
 {
@@ -160,7 +160,7 @@ namespace Microsoft.NET.TestFramework.Assertions
 
             var subDirectories = _dirInfo.EnumerateDirectories();
 
-            
+
             if (!notExpectedSubdirectories.Any())
             {
                 //  If no subdirectories were passed in, it means there should be no subdirectories at all

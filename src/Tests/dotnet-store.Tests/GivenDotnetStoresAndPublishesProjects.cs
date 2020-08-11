@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             var profileProject = Path.Combine(profileProjectPath, $"{profileProjectName}.xml");
             var profileFilter = Path.Combine(profileProjectPath, "NewtonsoftFilterProfile.xml");
 
-            var profileProjectPath1 = _testAssetsManager.CopyTestAsset(profileProjectName1).WithSource().Path; 
+            var profileProjectPath1 = _testAssetsManager.CopyTestAsset(profileProjectName1).WithSource().Path;
             var profileProject1 = Path.Combine(profileProjectPath1, $"{profileProjectName1}.xml");
             var profileFilter1 = Path.Combine(profileProjectPath1, "FluentFilterProfile.xml");
 

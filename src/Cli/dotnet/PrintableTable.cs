@@ -39,7 +39,8 @@ namespace Microsoft.DotNet.Cli
             }
 
             _columns.Add(
-                new Column() {
+                new Column()
+                {
                     Header = header,
                     GetContent = getContent,
                     MaxWidth = maxWidth
@@ -183,7 +184,8 @@ namespace Microsoft.DotNet.Cli
         private int[] CalculateColumnWidths(IEnumerable<T> rows)
         {
             return _columns
-                .Select(c => {
+                .Select(c =>
+                {
                     var width = new StringInfo(c.Header ?? "").LengthInTextElements;
 
                     foreach (var row in rows)

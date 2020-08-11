@@ -1,15 +1,15 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -27,9 +27,9 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void It_errors_when_publishing_self_contained_app_without_rid()
         {
-             var testAsset = _testAssetsManager
-                .CopyTestAsset(TestProjectName)
-                .WithSource();
+            var testAsset = _testAssetsManager
+               .CopyTestAsset(TestProjectName)
+               .WithSource();
 
             var publishCommand = new PublishCommand(Log, testAsset.TestRoot);
             publishCommand
@@ -119,7 +119,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
 
             string outputDirectory = publishCommand.GetOutputDirectory(
-                targetFramework: TargetFramework, 
+                targetFramework: TargetFramework,
                 runtimeIdentifier: runtimeIdentifier).FullName;
             byte[] fileContent = File.ReadAllBytes(Path.Combine(outputDirectory, TestProjectName + ".exe"));
             UInt32 peHeaderOffset = BitConverter.ToUInt32(fileContent, PEHeaderPointerOffset);

@@ -210,14 +210,14 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         public static IEnumerable<LockFileTargetLibrary> Filter(
-            this IEnumerable<LockFileTargetLibrary> libraries, 
+            this IEnumerable<LockFileTargetLibrary> libraries,
             HashSet<string> exclusionList)
         {
             return libraries.Where(e => !exclusionList.Contains(e.Name));
         }
 
         public static IEnumerable<IGrouping<string, LockFileRuntimeTarget>> GetRuntimeTargetsGroups(
-            this LockFileTargetLibrary library, 
+            this LockFileTargetLibrary library,
             string assetType)
         {
             return library.RuntimeTargets
@@ -242,7 +242,7 @@ namespace Microsoft.NET.Build.Tasks
                 directProjectDependencies = lockFile.GetProjectFileDependencySet();
             }
 
-            return !directProjectDependencies.Contains(library.Name) 
+            return !directProjectDependencies.Contains(library.Name)
                 && !library.CompileTimeAssemblies.Any(f => f.IsPlaceholderFile());
         }
 

@@ -2,23 +2,20 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
-
+using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-
-using FluentAssertions;
 using Xunit;
-
 using Xunit.Abstractions;
-using System.Text.RegularExpressions;
-using System.Collections.Generic;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -539,7 +536,7 @@ namespace DefaultReferences
 
             testProject.PackageReferences.Add(new TestPackageReference("System.Net.Http", httpPackageVersion));
 
-            testProject.SourceFiles["Program.cs"] = 
+            testProject.SourceFiles["Program.cs"] =
                 (useAlias ? "extern alias snh;" + Environment.NewLine : "") +
 
                 @"using System;

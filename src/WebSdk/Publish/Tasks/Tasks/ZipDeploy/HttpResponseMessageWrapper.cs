@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Http
-{ 
+{
     public class HttpResponseMessageWrapper : IHttpResponse
     {
         private readonly HttpResponseMessage _message;

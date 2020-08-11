@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Utils
         public ICommand CaptureStdOut()
         {
             _stdOut.Capture();
-            
+
             return this;
         }
 

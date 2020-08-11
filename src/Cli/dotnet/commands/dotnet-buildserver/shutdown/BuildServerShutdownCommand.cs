@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tools.BuildServer.Shutdown
             : base(result)
         {
             bool msbuild = options.ValueOrDefault<bool>("msbuild");
-            bool vbcscompiler  = options.ValueOrDefault<bool>("vbcscompiler");
+            bool vbcscompiler = options.ValueOrDefault<bool>("vbcscompiler");
             bool razor = options.ValueOrDefault<bool>("razor");
             bool all = !msbuild && !vbcscompiler && !razor;
 

@@ -3,15 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.DependencyModel;
-using Xunit;
 using Microsoft.NET.Build.Tasks.ConflictResolution;
-using System.Linq;
-using System.IO;
+using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {

@@ -1,25 +1,25 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Xml.Linq;
+using FluentAssertions;
+using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Linq;
-using FluentAssertions;
-using System.Xml.Linq;
-using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System;
-using System.Runtime.CompilerServices;
-using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using NuGet.ProjectModel;
-using NuGet.Common;
 using Newtonsoft.Json.Linq;
-using Microsoft.NET.Build.Tasks;
+using NuGet.Common;
+using NuGet.ProjectModel;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -78,10 +78,10 @@ namespace Microsoft.NET.Build.Tests
             ITestOutputHelper log,
             TestAssetsManager testAssetsManager,
             string itemTypeOrPropertyName,
-            Action<GetValuesCommand> setup = null, 
+            Action<GetValuesCommand> setup = null,
             string[] msbuildArgs = null,
-            GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item, 
-            [CallerMemberName] string callingMethod = "", 
+            GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item,
+            [CallerMemberName] string callingMethod = "",
             Action<XDocument> projectChanges = null)
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("vb", false)]
         public void It_allows_us_to_override_the_documentation_file_name(string language, bool setGenerateDocumentationFileProperty)
         {
-            var testAsset = CreateDocumentationFileLibraryAsset(setGenerateDocumentationFileProperty ? (bool?)true : null, "TestLibDoc.xml", language,  "OverrideDocFileName");
+            var testAsset = CreateDocumentationFileLibraryAsset(setGenerateDocumentationFileProperty ? (bool?)true : null, "TestLibDoc.xml", language, "OverrideDocFileName");
 
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
@@ -219,7 +219,8 @@ namespace Microsoft.NET.Build.Tests
             };
 
             // vb uses DocumentationFile relative to the IntermediateOutputPath
-            if (language != "vb") {
+            if (language != "vb")
+            {
                 expectedProjectDirectoryFiles.Add("TestLibDoc.xml");
             }
 
@@ -371,7 +372,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 shouldCompile = false;
             }
-            
+
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
             var getValuesCommand = new GetValuesCommand(Log, libraryProjectDirectory,
@@ -417,7 +418,7 @@ namespace Microsoft.NET.Build.Tests
                     itemGroup.Add(supportedFramework);
                 });
 
-            AssertDefinedConstantsOutput(testAsset, targetFramework, new[] { "NETCOREAPP", "NET"}.Concat(expectedDefines).ToArray());
+            AssertDefinedConstantsOutput(testAsset, targetFramework, new[] { "NETCOREAPP", "NET" }.Concat(expectedDefines).ToArray());
         }
 
         [Theory]
@@ -946,7 +947,7 @@ class Program
             string runtimeConfigFile = Path.Combine(outputDirectory.FullName, runtimeConfigName);
             string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
             JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
-            JToken rollForward= runtimeConfig["runtimeOptions"]["rollForward"];
+            JToken rollForward = runtimeConfig["runtimeOptions"]["rollForward"];
             if (shouldSetRollForward)
             {
                 rollForward.Value<string>().Should().Be(string.IsNullOrEmpty(rollForwardValue) ? "LatestMinor" : rollForwardValue);

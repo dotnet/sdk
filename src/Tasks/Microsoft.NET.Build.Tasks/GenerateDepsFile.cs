@@ -1,18 +1,18 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using Microsoft.Extensions.DependencyModel;
-using Newtonsoft.Json;
-using NuGet.Packaging.Core;
-using NuGet.RuntimeModel;
-using NuGet.ProjectModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Microsoft.Extensions.DependencyModel;
+using Newtonsoft.Json;
+using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {

@@ -215,7 +215,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             }
             private set { _sourcePath = value; }
         }
-        
+
         private string _displayName;
         public string DisplayName
         {

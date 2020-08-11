@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Tools.NuGet;
+using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.NET.TestFramework;
 using Moq;
 using NuGet.Frameworks;
 using Xunit;
-using Microsoft.NET.TestFramework;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tools.Run.Tests

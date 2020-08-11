@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.DotNet.Tools.Pack;
-using FluentAssertions;
-using Xunit;
 using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using FluentAssertions;
+using Microsoft.DotNet.Tools.Pack;
+using Xunit;
 
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m -restore -target:pack";
         const string ExpectedNoBuildPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m -target:pack";
 
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPackInvocation));
 
         [Theory]

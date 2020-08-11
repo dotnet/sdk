@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using NuGet.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Common;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -40,7 +40,8 @@ namespace Microsoft.NET.Build.Tasks
 
                 using (FileStream input = File.OpenRead(originalAssetPath))
                 {
-                    string result = Preprocessor.Process(input, (token) => {
+                    string result = Preprocessor.Process(input, (token) =>
+                    {
                         string value;
                         if (!_preprocessorValues.TryGetValue(token, out value))
                         {

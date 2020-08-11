@@ -50,7 +50,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         public List<TestPackageReference> PackageReferences { get; } = new List<TestPackageReference>();
 
         public List<TestPackageReference> DotNetCliToolReferences { get; } = new List<TestPackageReference>();
-        
+
         public List<CopyFilesTarget> CopyFilesTargets { get; } = new List<CopyFilesTarget>();
 
         public Dictionary<string, string> SourceFiles { get; } = new Dictionary<string, string>();
@@ -231,7 +231,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                         projectXml.Root.Add(packageReferenceItemGroup);
                     }
                     additionalItemGroup.Add(new XElement(
-                        ns + additionalItem.Key, 
+                        ns + additionalItem.Key,
                         new XAttribute("Include", additionalItem.Value)));
                 }
             }
@@ -288,7 +288,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                         new XAttribute("Include", frameworkReference)));
                 }
             }
-            
+
             if (this.CopyFilesTargets.Any())
             {
                 foreach (var copyFilesTarget in CopyFilesTargets)

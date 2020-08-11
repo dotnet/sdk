@@ -3,8 +3,8 @@
 
 using System.IO;
 using System.Runtime.InteropServices;
-using Microsoft.DotNet.Tools.Build;
 using FluentAssertions;
+using Microsoft.DotNet.Tools.Build;
 using Xunit;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m";
 
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
 
         [Theory]
@@ -59,8 +59,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                                   "-target:Restore -property:OutputPath=<cwd>myoutput -verbosity:diag /ArbitrarySwitchForMSBuild",
                                   "-property:OutputPath=<cwd>myoutput -property:TargetFramework=tfm -verbosity:diag /ArbitrarySwitchForMSBuild")]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
-            string[] args, 
-            string expectedAdditionalArgsForRestore, 
+            string[] args,
+            string expectedAdditionalArgsForRestore,
             string expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>

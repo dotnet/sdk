@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.IO;
+using System.Threading;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -9,8 +11,6 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using System.IO;
-using System.Threading;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -75,7 +75,8 @@ namespace Microsoft.NET.Restore.Tests
             var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             restoreCommand
                 .Execute($"/p:RestorePackagesPath={packagesFolder}")
-                .Should().Pass();;
+                .Should().Pass();
+            ;
         }
     }
 }

@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.ShellShim
                     environmentProvider: environmentProvider);
             }
 
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return new WindowsEnvironmentPath(
                     CliFolderPathCalculator.ToolsShimPath,

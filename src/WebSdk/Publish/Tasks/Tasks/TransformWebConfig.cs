@@ -30,12 +30,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         /// </summary>
         /// <returns></returns>
         public bool IsAzure { get; set; }
-        
+
         /// <summary>
         /// ProjectGuid that uniquely identifies the project. Used for Telemetry
         /// </summary>
         public string ProjectGuid { get; set; }
-        
+
         /// <summary>
         /// Flag that determines whether the publish telemtry needs to be disabled. 
         /// </summary>

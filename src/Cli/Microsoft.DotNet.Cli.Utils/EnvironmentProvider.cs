@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.Utils
                         ? Environment.GetEnvironmentVariable("PATHEXT")
                             .Split(';')
                             .Select(e => e.ToLower().Trim('"'))
-                        : new [] { string.Empty };
+                        : new[] { string.Empty };
                 }
 
                 return _executableExtensions;

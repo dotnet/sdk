@@ -74,14 +74,14 @@ namespace Microsoft.NET.Build.Tasks
                 return false;
             }
 
-            if(CrossgenTool != null)
+            if (CrossgenTool != null)
             {
                 if (!File.Exists(CrossgenTool.ItemSpec) || !File.Exists(CrossgenTool.GetMetadata("JitPath")))
                 {
                     return false;
                 }
             }
-            if(Crossgen2Tool != null)
+            if (Crossgen2Tool != null)
             {
                 if (!File.Exists(Crossgen2Tool.ItemSpec) || !File.Exists(Crossgen2Tool.GetMetadata("JitPath")))
                 {

@@ -267,7 +267,7 @@ namespace Microsoft.NET.Build.Tests
                 IsSdkProject = true,
                 IsExe = true,
             };
-            
+
             // enable generating apphost even on macOS
             testProject.AdditionalProperties.Add("UseApphost", "true");
 

@@ -104,7 +104,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 var dependencyType = GetDependencyType(packageDef.GetMetadata(MetadataKeys.Type));
-                
+
                 if (dependencyType == DependencyType.Package ||
                     dependencyType == DependencyType.Unresolved)
                 {

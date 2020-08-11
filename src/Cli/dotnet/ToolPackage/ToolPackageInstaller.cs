@@ -46,7 +46,8 @@ namespace Microsoft.DotNet.ToolPackage
             string rollbackDirectory = null;
 
             return TransactionalAction.Run<IToolPackage>(
-                action: () => {
+                action: () =>
+                {
                     try
                     {
                         var stageDirectory = _store.GetRandomStagingDirectory();
@@ -104,7 +105,8 @@ namespace Microsoft.DotNet.ToolPackage
                             ex);
                     }
                 },
-                rollback: () => {
+                rollback: () =>
+                {
                     if (!string.IsNullOrEmpty(rollbackDirectory) && Directory.Exists(rollbackDirectory))
                     {
                         Directory.Delete(rollbackDirectory, true);

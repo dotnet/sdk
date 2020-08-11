@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using FluentAssertions;
 using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Configurer.UnitTests

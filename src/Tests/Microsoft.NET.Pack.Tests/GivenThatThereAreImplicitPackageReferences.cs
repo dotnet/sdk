@@ -3,16 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml.Linq;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
-using System.Linq;
-using FluentAssertions;
-using System.Runtime.InteropServices;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Pack.Tests
@@ -137,7 +137,7 @@ namespace Microsoft.NET.Pack.Tests
             testProject.References.Add("System.Web");
 
             var dependencies = GetFrameworkAssemblies(PackAndGetNuspec(testProject), out var _);
-            
+
             dependencies.Count().Should().Be(1);
             dependencies.Single().Attribute("assemblyName").Value.Should().Be("System.Web");
         }

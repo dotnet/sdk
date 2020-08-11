@@ -57,7 +57,7 @@ public class Program
                 IsExe = false
             };
 
-            
+
             referencedProjectWithPart.References.Add("System.ServiceModel");
 
             referencedProjectWithPart.SourceFiles["Class1.cs"] = @"

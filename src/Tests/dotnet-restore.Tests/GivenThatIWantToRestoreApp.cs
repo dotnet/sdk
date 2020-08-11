@@ -4,16 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using FluentAssertions;
 using Microsoft.Build.Construction;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-using FluentAssertions;
-using System.Linq;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.ProjectConstruction;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Restore.Test
 {
@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.Restore.Test
                 .Should()
                 .Pass();
 
-            string[] args = new[] { "--packages", dir, "--verbosity",  "quiet" };
+            string[] args = new[] { "--packages", dir, "--verbosity", "quiet" };
             args = HandleStaticGraphEvaluation(useStaticGraphEvaluation, args);
             new DotnetRestoreCommand(Log)
                  .WithWorkingDirectory(rootPath)
@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Restore.Test
         }
 
         private static string[] HandleStaticGraphEvaluation(bool useStaticGraphEvaluation, string[] args) =>
-            useStaticGraphEvaluation ? 
+            useStaticGraphEvaluation ?
                 args.Append("/p:RestoreUseStaticGraphEvaluation=true").ToArray() :
                 args;
     }

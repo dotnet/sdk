@@ -1,17 +1,17 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.Build.Tasks;
-using System.Collections.Generic;
 
 namespace Microsoft.NET.ToolPack.Tests
 {

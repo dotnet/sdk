@@ -3,8 +3,8 @@
 
 using System;
 using System.IO;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools.VSTest
 {

@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli
                       .With(name: CommonLocalizableStrings.SolutionOrProjectArgumentName,
                             description: CommonLocalizableStrings.SolutionOrProjectArgumentDescription),
                 CommonOptions.HelpOption(),
-                Create.Option("-o|--output", 
+                Create.Option("-o|--output",
                               LocalizableStrings.CmdOutputDirDescription,
                                          Accept.ExactlyOneArgument()
                         .With(name: LocalizableStrings.CmdOutputDir)

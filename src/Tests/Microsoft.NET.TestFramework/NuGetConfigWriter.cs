@@ -24,7 +24,7 @@ namespace Microsoft.NET.TestFramework
             var packageSources = new XElement("packageSources");
             root.Add(packageSources);
 
-            for (int i=0;i<nugetSources.Count;i++)
+            for (int i = 0; i < nugetSources.Count; i++)
             {
                 packageSources.Add(new XElement("add",
                     new XAttribute("key", Guid.NewGuid().ToString()),

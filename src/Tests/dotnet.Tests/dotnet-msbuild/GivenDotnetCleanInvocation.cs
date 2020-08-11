@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.DotNet.Tools.Clean;
-using FluentAssertions;
-using Xunit;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using FluentAssertions;
+using Microsoft.DotNet.Tools.Clean;
+using Xunit;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m -verbosity:normal -target:Clean";
 
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetCleanInvocation));
 
         [Fact]

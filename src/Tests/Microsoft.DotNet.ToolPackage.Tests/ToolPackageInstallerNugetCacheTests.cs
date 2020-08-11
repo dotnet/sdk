@@ -3,21 +3,21 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
-using NuGet.Versioning;
-using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Utilities;
+using NuGet.Versioning;
+using Xunit;
 using Xunit.Abstractions;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
 {

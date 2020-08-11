@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Xunit;
-using Microsoft.DotNet.MSBuildSdkResolver;
 using FluentAssertions;
+using Microsoft.DotNet.MSBuildSdkResolver;
+using Xunit;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void OrderingMatchesSemVer200Rules()
         {
-            TestCase [] orderedCases = new TestCase []
+            TestCase[] orderedCases = new TestCase[]
             {
                 new TestCase( "1.0.0-0.3.7",                false ),
                 new TestCase( "1.0.0-alpha",                false ),
@@ -79,13 +79,15 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             for (int i = 0; i < orderedCases.Length; ++i)
             {
-                if (orderedCases[i].Same) isame++;
+                if (orderedCases[i].Same)
+                    isame++;
 
                 int jsame = 0;
 
                 for (int j = 0; j < orderedCases.Length; ++j)
                 {
-                    if (orderedCases[j].Same) jsame++;
+                    if (orderedCases[j].Same)
+                        jsame++;
 
                     int expected = (i - isame) == (j - jsame) ? 0 : ((i - isame) > (j - jsame) ? 1 : -1);
 

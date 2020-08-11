@@ -130,7 +130,7 @@ namespace Microsoft.NET.Build.Tasks
 
             //  Filter out duplicate references (which can happen when referencing two different profiles that overlap)
             List<TaskItem> deduplicatedReferences = DeduplicateItems(referencesToAdd);
-            ReferencesToAdd = deduplicatedReferences.Distinct() .ToArray();
+            ReferencesToAdd = deduplicatedReferences.Distinct().ToArray();
 
             PlatformManifests = platformManifests.ToArray();
             PackageConflictOverrides = packageConflictOverrides.ToArray();
@@ -272,7 +272,7 @@ namespace Microsoft.NET.Build.Tasks
 
             reference.SetMetadata("FrameworkReferenceName", targetingPack.ItemSpec);
             reference.SetMetadata("FrameworkReferenceVersion", targetingPack.GetMetadata(MetadataKeys.NuGetPackageVersion));
-            
+
             return reference;
         }
     }

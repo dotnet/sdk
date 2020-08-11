@@ -3,11 +3,11 @@
 
 using System;
 using System.IO;
-using Microsoft.DotNet.Tools.MSBuild;
 using FluentAssertions;
-using Xunit;
+using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Exist();
         }
 
-        [Fact(Skip ="Test app base folder doesn't have Sdks")]
+        [Fact(Skip = "Test app base folder doesn't have Sdks")]
         public void ItSetsMSBuildSDKsPathToExistingPath()
         {
             var msbuildPath = "<msbuildpath>";

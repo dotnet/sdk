@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli
             return RunWithReporter(args, Reporter.Output);
         }
 
-        public static int RunWithReporter(string [] args, IReporter reporter)
+        public static int RunWithReporter(string[] args, IReporter reporter)
         {
             if (reporter == null)
             {

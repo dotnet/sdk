@@ -1,17 +1,17 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.Tools.Add.PackageReference;
 using System;
 using System.IO;
 using System.Linq;
-using Xunit;
-using Xunit.Abstractions;
+using FluentAssertions;
+using Microsoft.DotNet.Tools.Add.PackageReference;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
 {
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var packageVersion = "9.0.1";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("add", "package", packageName, "--version",  packageVersion);
+                .Execute("add", "package", packageName, "--version", packageVersion);
             cmd.Should().Pass();
             cmd.StdOut.Should().Contain($"PackageReference for package '{packageName}' version '{packageVersion}' " +
                 $"added to file '{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj'.");
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         }
 
         [Fact]
-        public void 
+        public void
             WhenValidProjectAndPackageArePassedItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithSource()
                 .Path;
 
-            var packageDirectory = Path.Combine(projectDirectory, "local packages"); 
+            var packageDirectory = Path.Combine(projectDirectory, "local packages");
 
             var csproj = $"{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj";
             var packageName = "Newtonsoft.Json";

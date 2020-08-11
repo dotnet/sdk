@@ -383,7 +383,7 @@ namespace Microsoft.NET.Build.Tasks
             // the target runtime-identifier.
 
             var runtimeFallbackGraph =
-                (_runtimeGraph == null || _runtimeIdentifier == null) ? 
+                (_runtimeGraph == null || _runtimeIdentifier == null) ?
                     new RuntimeFallbacks[] { } :
                     _runtimeGraph.Runtimes
                         .Select(runtimeDict => _runtimeGraph.ExpandRuntime(runtimeDict.Key))
@@ -403,7 +403,7 @@ namespace Microsoft.NET.Build.Tasks
             RuntimeAssetGroup[] runtimeAssemblyGroups = new[] { new RuntimeAssetGroup(string.Empty, _mainProjectInfo.OutputName) };
 
             var dependencies = GetProjectDependencies();
-            
+
             //  Runtime pack assets only get added as dependencies to the runtime (not the compile) project
             if (_runtimePackAssets != null)
             {
@@ -441,7 +441,7 @@ namespace Microsoft.NET.Build.Tasks
                         (IncludeCompilationLibraries && !dependencyLibrary.ExcludeFromCompilation))
                     {
                         dependencies.Add(dependencyLibrary.Dependency);
-                    }                    
+                    }
                 }
             }
 

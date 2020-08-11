@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using NuGet.ProjectModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -277,7 +277,7 @@ namespace Microsoft.NET.Build.Tasks
             var transitiveProjectRefs = new HashSet<string>(
                 target.Libraries
                     .Where(lib => lib.IsTransitiveProjectReference(LockFile, ref _projectFileDependencies))
-                    .Select(pkg => pkg.Name), 
+                    .Select(pkg => pkg.Name),
                 StringComparer.OrdinalIgnoreCase);
 
             foreach (var package in target.Libraries)
@@ -305,8 +305,8 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private void GetPackageDependencies(
-            LockFileTargetLibrary package, 
-            string targetName, 
+            LockFileTargetLibrary package,
+            string targetName,
             Dictionary<string, string> resolvedPackageVersions,
             HashSet<string> transitiveProjectRefs)
         {
@@ -403,7 +403,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (string.IsNullOrEmpty(relativeMSBuildProjectPath))
                 {
-                    throw new BuildErrorException(Strings.ProjectAssetsConsumedWithoutMSBuildProjectPath, package.Name, ProjectAssetsFile); 
+                    throw new BuildErrorException(Strings.ProjectAssetsConsumedWithoutMSBuildProjectPath, package.Name, ProjectAssetsFile);
                 }
 
                 return GetAbsolutePathFromProjectRelativePath(relativeMSBuildProjectPath);
@@ -430,12 +430,12 @@ namespace Microsoft.NET.Build.Tasks
             {
                 relativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
             }
-            
+
             if (Path.DirectorySeparatorChar != '\\')
             {
                 relativePath = relativePath.Replace('\\', Path.DirectorySeparatorChar);
             }
-            
+
             return Path.Combine(resolvedPackagePath, relativePath);
         }
 

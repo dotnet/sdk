@@ -3,8 +3,8 @@
 
 using System;
 using System.IO;
-using FluentAssertions;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Tools.Publish;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     public class GivenDotnetPublishInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPublishInvocation));
         private readonly ITestOutputHelper output;
 

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.DotNet.Cli.Utils;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Text;
 using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Assertions;
 using Xunit.Abstractions;
 

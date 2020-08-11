@@ -1,9 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Build.Framework;
 using System;
 using System.Globalization;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 message = FormattedText;
             }
-            
+
 
             LogMessage(message);
         }

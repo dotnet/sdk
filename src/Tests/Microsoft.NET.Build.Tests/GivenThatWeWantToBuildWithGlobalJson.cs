@@ -3,18 +3,18 @@
 
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildWithGlobalJson : SdkTest
     {
         public GivenThatWeWantToBuildWithGlobalJson(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [Fact]
         public void It_fails_build_on_failed_sdk_resolution()

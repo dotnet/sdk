@@ -1,24 +1,24 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Xml.Linq;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Linq;
-using FluentAssertions;
-using System.Xml.Linq;
-using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System;
-using System.Runtime.CompilerServices;
-using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using NuGet.ProjectModel;
-using NuGet.Common;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
+using NuGet.ProjectModel;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -71,9 +71,9 @@ namespace Microsoft.NET.Build.Tests
 
         internal static IEnumerable<string> ExpandSequence(IEnumerable<string> sequence)
         {
-            foreach(var item in sequence)
+            foreach (var item in sequence)
             {
-                foreach(var i in item.Split(','))
+                foreach (var i in item.Split(','))
                 {
                     yield return i;
                 }
@@ -84,10 +84,10 @@ namespace Microsoft.NET.Build.Tests
             ITestOutputHelper log,
             TestAssetsManager testAssetsManager,
             string itemTypeOrPropertyName,
-            Action<GetValuesCommand> setup = null, 
+            Action<GetValuesCommand> setup = null,
             string[] msbuildArgs = null,
-            GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item, 
-            [CallerMemberName] string callingMethod = "", 
+            GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item,
+            [CallerMemberName] string callingMethod = "",
             Action<XDocument> projectChanges = null)
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
@@ -162,8 +162,8 @@ namespace Microsoft.NET.Build.Tests
         [Theory]
         [InlineData("Debug", new[] { "CONFIG=\"Debug\"", "DEBUG=-1", "TRACE=-1", "_MyType=\"Empty\"" })]
         [InlineData("Release", new[] { "CONFIG=\"Release\"", "RELEASE=-1", "TRACE=-1", "_MyType=\"Empty\"" })]
-        [InlineData("CustomConfiguration",  new[] { "CONFIG=\"CustomConfiguration\"", "CUSTOMCONFIGURATION=-1", "_MyType=\"Empty\"" })]
-        [InlineData("Debug-NetCore",  new[] { "CONFIG=\"Debug-NetCore\"", "DEBUG_NETCORE=-1", "_MyType=\"Empty\"" })]
+        [InlineData("CustomConfiguration", new[] { "CONFIG=\"CustomConfiguration\"", "CUSTOMCONFIGURATION=-1", "_MyType=\"Empty\"" })]
+        [InlineData("Debug-NetCore", new[] { "CONFIG=\"Debug-NetCore\"", "DEBUG_NETCORE=-1", "_MyType=\"Empty\"" })]
         public void It_implicitly_defines_compilation_constants_for_the_configuration(string configuration, string[] expectedDefines)
         {
             var testAsset = _testAssetsManager
@@ -264,7 +264,7 @@ namespace Microsoft.NET.Build.Tests
 
             var definedConstants = ExpandSequence(getValuesCommand.GetValues()).ToList();
 
-            definedConstants.Should().BeEquivalentTo( new[] { "CONFIG=\"Debug\"", "DEBUG=-1", "TRACE=-1", "PLATFORM=\"AnyCPU\"" }.Concat(expectedDefines).ToArray() );
+            definedConstants.Should().BeEquivalentTo(new[] { "CONFIG=\"Debug\"", "DEBUG=-1", "TRACE=-1", "PLATFORM=\"AnyCPU\"" }.Concat(expectedDefines).ToArray());
         }
     }
 }

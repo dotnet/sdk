@@ -2,17 +2,17 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using FluentAssertions;
-using System.Runtime.InteropServices;
-using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
+using Xunit;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Tests
@@ -349,7 +349,7 @@ namespace Microsoft.NET.Build.Tests
                 return command;
             }
         }
-        
+
         [Fact]
         public void It_includes_internals_visible_to()
         {
@@ -387,7 +387,7 @@ namespace Microsoft.NET.Build.Tests
                     var ns = project.Root.Name.Namespace;
 
                     project.Root.Add(
-                        new XElement(ns + "PropertyGroup", 
+                        new XElement(ns + "PropertyGroup",
                             new XElement(ns + "GenerateInternalsVisibleToAttributes", "false")),
                         new XElement(ns + "ItemGroup",
                             new XElement(ns + "InternalsVisibleTo",
@@ -661,7 +661,7 @@ namespace Microsoft.NET.Build.Tests
             else
             {
                 AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute").Should().Be(false);
-            } 
+            }
         }
     }
 }

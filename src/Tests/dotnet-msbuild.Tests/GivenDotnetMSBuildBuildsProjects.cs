@@ -2,21 +2,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using NuGet.Protocol;
-using Xunit;
-using Xunit.Abstractions;
-using System.Diagnostics;
-using System.Threading;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using NuGet.Protocol;
+using Xunit;
+using Xunit.Abstractions;
 
 
 // There are tests which modify static Telemetry.CurrentSessionId and they cannot run in parallel
@@ -55,14 +55,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             new DotnetCommand(Log)
                 .WithWorkingDirectory(testProjectDirectory)
-                .Execute("msbuild", "/t:SayThis",  "/p:This=GreatScott")
+                .Execute("msbuild", "/t:SayThis", "/p:This=GreatScott")
                 .Should()
                 .Pass()
                 .And
                 .HaveStdOutContaining("You want me to say 'GreatScott'");
         }
 
-        [Theory(Skip="New parser feature needed")]
+        [Theory(Skip = "New parser feature needed")]
         [InlineData("build")]
         [InlineData("clean")]
         [InlineData("pack")]
@@ -125,8 +125,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
 
 
-        
+
     }
 
-    
+
 }

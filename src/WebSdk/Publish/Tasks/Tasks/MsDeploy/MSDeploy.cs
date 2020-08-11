@@ -1,11 +1,11 @@
 ﻿namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
-    using CultureInfo = System.Globalization.CultureInfo;
-    using IO = System.IO;
-    using Framework = Microsoft.Build.Framework;
-    using Utilities = Microsoft.Build.Utilities;
     using System.Linq;
     using Microsoft.NET.Sdk.Publish.Tasks.Properties;
+    using CultureInfo = System.Globalization.CultureInfo;
+    using Framework = Microsoft.Build.Framework;
+    using IO = System.IO;
+    using Utilities = Microsoft.Build.Utilities;
 
     /// <summary>
     /// The MSDeploy task, which is a wrapper around msdeploy.exe
@@ -176,9 +176,9 @@
         // *    public const string WebServerDirectory = "-webServerDir";
         //      public const string WebServerManifest = "-webServerManifest";
 
-        public string WebServerAppHostConfigDirectory { get; set;}
+        public string WebServerAppHostConfigDirectory { get; set; }
         public string WebServerDirectory { get; set; }
-        public string WebServerManifest { get; set;}
+        public string WebServerManifest { get; set; }
 
 
         private Framework.ITaskItem[] m_sourceITaskItem = null;
@@ -188,10 +188,10 @@
         private Framework.ITaskItem[] m_declareParameterItems = null;
         private Framework.ITaskItem[] m_importDeclareParametersItems = null;
         private Framework.ITaskItem[] m_simpleSetParamterItems = null;
-        private Framework.ITaskItem[] m_importSetParametersItems = null; 
+        private Framework.ITaskItem[] m_importSetParametersItems = null;
         private Framework.ITaskItem[] m_setParamterItems = null;
-        
-        
+
+
         private bool m_previewOnly = false;
 
         public class Provider
@@ -225,7 +225,8 @@
         /// </summary>
         public string ExePath
         {
-            get {
+            get
+            {
 #if NET472
                 if (string.IsNullOrEmpty(m_exePath))
                 {
@@ -273,7 +274,7 @@
                     }
                 }
 #endif
-                return m_exePath; 
+                return m_exePath;
             }
             set { m_exePath = value; }
         }
@@ -309,8 +310,8 @@
             set { this.m_whatif = value; }
         }
 
-        public bool OptimisticParameterDefaultValue { get; set;}
-        
+        public bool OptimisticParameterDefaultValue { get; set; }
+
         public bool UseChecksum
         {
             get { return m_useChecksum; }
@@ -369,7 +370,7 @@
             get { return this.m_enableLink; }
             set { this.m_enableLink = value; }
         }
-        
+
         public bool EnableTransaction
         {
             get { return this.m_enableTransaction; }
@@ -389,9 +390,10 @@
         public bool UseDoubleQuoteForValue
         {
             get { return this.m_useDoubleQuoteForValue; }
-            set {
+            set
+            {
                 this.m_useDoubleQuoteForValue = value;
-                m_strValueQuote = (m_useDoubleQuoteForValue)? "\"": null;
+                m_strValueQuote = (m_useDoubleQuoteForValue) ? "\"" : null;
             }
         }
 
@@ -449,14 +451,16 @@
             get { return m_setParamterItems; }
             set { this.m_setParamterItems = value; }
         }
-        
-        public Framework.ITaskItem[] AdditionalDestinationProviderOptions {get;set;}
+
+        public Framework.ITaskItem[] AdditionalDestinationProviderOptions { get; set; }
 
         string _userAgent;
-        public string UserAgent {
-            get{return _userAgent;}
-            set {
-                if(!string.IsNullOrEmpty(value))
+        public string UserAgent
+        {
+            get { return _userAgent; }
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
                 {
                     _userAgent = MsDeploy.Utility.GetFullUserAgentString(value);
                 }
@@ -542,8 +546,8 @@
             }
 
             try
-            {               
-                Log.LogMessage( Framework.MessageImportance.Normal, Resources.MSDEPLOY_EXE_Start);
+            {
+                Log.LogMessage(Framework.MessageImportance.Normal, Resources.MSDEPLOY_EXE_Start);
                 bSuccess = base.Execute();
                 if (bSuccess)
                     Log.LogMessage(Framework.MessageImportance.Normal, Resources.MSDEPLOY_EXE_Succeeded);
@@ -588,7 +592,7 @@
                 && replaceRuleItems != null)// Dev10 bug 496639 foreach will throw the exception if the replaceRuleItem is null
             {
                 System.Collections.Generic.List<string> arguments = new System.Collections.Generic.List<string>(6);
-                    
+
                 foreach (Framework.ITaskItem item in replaceRuleItems)
                 {
                     arguments.Clear();
@@ -609,7 +613,7 @@
                 {
                     arguments.Clear();
                     MsDeploy.Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(MsDeploy.SkipRuleMetadata), valueQuoteChar);
-                    commandLineBuilder.AppendSwitchUnquotedIfNotNull("-skip:", arguments.Count == 0? null : string.Join(",", arguments.ToArray()));
+                    commandLineBuilder.AppendSwitchUnquotedIfNotNull("-skip:", arguments.Count == 0 ? null : string.Join(",", arguments.ToArray()));
                 }
             }
         }
@@ -617,7 +621,7 @@
 
         static public void AddDeclareParameterToCommandArgument(System.Collections.Generic.List<string> arguments,
                                                                 Framework.ITaskItem item,
-                                                                string valueQuote, 
+                                                                string valueQuote,
                                                                 System.Collections.Generic.Dictionary<string, string> lookupDictionary)
         {
             if (arguments != null && item != null && lookupDictionary != null)
@@ -692,13 +696,13 @@
             AddImportParametersFilesOptions(commandLineBuilder, "-setParamFile:", items);
         }
 
-        static internal void AddImportParametersFilesOptions(Utilities.CommandLineBuilder commandLineBuilder, string parameterFlag,  Framework.ITaskItem[] items)
+        static internal void AddImportParametersFilesOptions(Utilities.CommandLineBuilder commandLineBuilder, string parameterFlag, Framework.ITaskItem[] items)
         {
             if (commandLineBuilder != null
                 && !string.IsNullOrEmpty(parameterFlag)
                 && items != null)// Dev10 bug 496639 foreach will throw the exception if the replaceRuleItem is null
             {
-                
+
                 foreach (Framework.ITaskItem item in items)
                 {
                     string fileName = item.ItemSpec;
@@ -753,7 +757,7 @@
             {
                 System.Collections.Generic.List<string> arguments = new System.Collections.Generic.List<string>(6);
                 System.Collections.Generic.Dictionary<string, string> lookupDictionary = new System.Collections.Generic.Dictionary<string, string>(items.Count);
-                System.Collections.Generic.Dictionary<string, string> nameValueDictionary = new System.Collections.Generic.Dictionary<string, string>(items.Count,System.StringComparer.OrdinalIgnoreCase);
+                System.Collections.Generic.Dictionary<string, string> nameValueDictionary = new System.Collections.Generic.Dictionary<string, string>(items.Count, System.StringComparer.OrdinalIgnoreCase);
 
                 foreach (Framework.ITaskItem item in items)
                 {
@@ -820,8 +824,8 @@
         }
 
 
-        
-        static public void AddDestinationProviderSettingToObject(Utilities.CommandLineBuilder commandLineBuilder, string dest, Framework.ITaskItem[] items, string valueQuoteChar, 
+
+        static public void AddDestinationProviderSettingToObject(Utilities.CommandLineBuilder commandLineBuilder, string dest, Framework.ITaskItem[] items, string valueQuoteChar,
                                                                 Framework.ITaskItem[] additionalProviderItems, MSDeploy msdeploy)
         {
             //commandLineBuilder.AppendSwitchUnquotedIfNotNull("-source:", m_source);
@@ -837,15 +841,15 @@
                 string setData = (string.IsNullOrEmpty(path)) ? provider : string.Concat(provider, "=", valueData);
                 arguments.Add(setData);
 
-                 //Commonly supported provider settings:
-                 //    computerName=<name>     Name of remote computer or proxy-URL
-                 //    wmsvc=<name>            Name of remote computer or proxy-URL for the Web
-                 //                            Management Service (wmsvc)
-                 //    userName=<name>         User name to authenticate
-                 //    password=<password>     Password of user name
-                 //    encryptPassword=<pwd>   Password to use for encryption related operations
-                 //    includeAcls=<bool>      If true, include ACLs in the operation for the
-                 //                            specified path
+                //Commonly supported provider settings:
+                //    computerName=<name>     Name of remote computer or proxy-URL
+                //    wmsvc=<name>            Name of remote computer or proxy-URL for the Web
+                //                            Management Service (wmsvc)
+                //    userName=<name>         User name to authenticate
+                //    password=<password>     Password of user name
+                //    encryptPassword=<pwd>   Password to use for encryption related operations
+                //    includeAcls=<bool>      If true, include ACLs in the operation for the
+                //                            specified path
 
                 foreach (string name in taskItem.MetadataNames)
                 {
@@ -861,26 +865,26 @@
                     }
                     else
                     {
-                       MsDeploy.Utility.IISExpressMetadata  expressMetadata;
-                       if (System.Enum.TryParse<MsDeploy.Utility.IISExpressMetadata>(name, out expressMetadata))
-                       {
-                           string value = taskItem.GetMetadata(name);
-                           if (!string.IsNullOrEmpty(value))
-                           {
-                               switch (expressMetadata)
-                               {
-                                   case Utility.IISExpressMetadata.WebServerAppHostConfigDirectory:
-                                       msdeploy.WebServerAppHostConfigDirectory = value;
-                                       break;
-                                   case Utility.IISExpressMetadata.WebServerDirectory:
-                                       msdeploy.WebServerDirectory = value;
-                                       break;
-                                   case Utility.IISExpressMetadata.WebServerManifest:
-                                       msdeploy.WebServerManifest = value;
-                                       break;
-                               }
-                           }
-                       }
+                        MsDeploy.Utility.IISExpressMetadata expressMetadata;
+                        if (System.Enum.TryParse<MsDeploy.Utility.IISExpressMetadata>(name, out expressMetadata))
+                        {
+                            string value = taskItem.GetMetadata(name);
+                            if (!string.IsNullOrEmpty(value))
+                            {
+                                switch (expressMetadata)
+                                {
+                                    case Utility.IISExpressMetadata.WebServerAppHostConfigDirectory:
+                                        msdeploy.WebServerAppHostConfigDirectory = value;
+                                        break;
+                                    case Utility.IISExpressMetadata.WebServerDirectory:
+                                        msdeploy.WebServerDirectory = value;
+                                        break;
+                                    case Utility.IISExpressMetadata.WebServerManifest:
+                                        msdeploy.WebServerManifest = value;
+                                        break;
+                                }
+                            }
+                        }
 
                     }
                 }
@@ -891,11 +895,11 @@
             {
                 foreach (Framework.ITaskItem item in additionalProviderItems)
                 {
-                    if(!string.IsNullOrEmpty(item.ItemSpec))
+                    if (!string.IsNullOrEmpty(item.ItemSpec))
                     {
                         string settingName = item.GetMetadata("Name");
                         string settingValue = item.GetMetadata("Value");
-                        if(!string.IsNullOrEmpty(settingName) && !string.IsNullOrEmpty(settingValue))
+                        if (!string.IsNullOrEmpty(settingName) && !string.IsNullOrEmpty(settingValue))
                         {
                             string providerString = string.Concat(item.ItemSpec, ".", settingName, "=", settingValue);
                             arguments.Add(providerString);
@@ -969,12 +973,12 @@
         /// Generates command line arguments for msdeploy.exe
         /// </summary>
         protected override string GenerateCommandLineCommands()
-        {           
+        {
             Utilities.CommandLineBuilder commandLine = new Utilities.CommandLineBuilder();
             IncorporateSettingsFromHostObject(ref m_skipRuleItemsITaskItem, this.Destination, HostObject as System.Collections.Generic.IEnumerable<Framework.ITaskItem>);
-            AddDestinationProviderSettingToObject(commandLine, "-source:", this.Source, m_strValueQuote, null, this );
+            AddDestinationProviderSettingToObject(commandLine, "-source:", this.Source, m_strValueQuote, null, this);
             AddDestinationProviderSettingToObject(commandLine, "-dest:", this.Destination, m_strValueQuote, AdditionalDestinationProviderOptions, this);
-            
+
             commandLine.AppendSwitchUnquotedIfNotNull("-verb:", m_verb);
             commandLine.AppendSwitchUnquotedIfNotNull("-failureLevel:", m_failureLevel);
             commandLine.AppendSwitchUnquotedIfNotNull("-xpath:", m_xpath);
@@ -991,24 +995,32 @@
             // this allow multiple replace rule to happen, we should consider do the same thing for skip:
             AddReplaceRulesToOptions(commandLine, m_replaceRuleItemsITaskItem, m_strValueQuote);
             AddSkipDirectiveToBaseOptions(commandLine, m_skipRuleItemsITaskItem, m_strValueQuote);
-            AddImportDeclareParametersFilesOptions(commandLine, m_importDeclareParametersItems); 
+            AddImportDeclareParametersFilesOptions(commandLine, m_importDeclareParametersItems);
             AddDeclareParametersOptions(commandLine, m_declareParameterItems, m_strValueQuote, OptimisticParameterDefaultValue);
 
             AddImportSetParametersFilesOptions(commandLine, m_importSetParametersItems);
             AddSimpleSetParametersToObject(commandLine, m_simpleSetParamterItems, m_strValueQuote, OptimisticParameterDefaultValue);
             AddSetParametersToObject(commandLine, m_setParamterItems, m_strValueQuote, OptimisticParameterDefaultValue);
-            
-            if (m_xml) commandLine.AppendSwitch("-xml");
-            if (m_whatif) commandLine.AppendSwitch("-whatif");
-            if (m_verbose) commandLine.AppendSwitch("-verbose");
-            if (m_allowUntrusted) commandLine.AppendSwitch("-allowUntrusted");
-            if (m_useChecksum) commandLine.AppendSwitch("-useChecksum");
 
-            if (m_enableTransaction) commandLine.AppendSwitch("-enableTransaction");
-            if (m_retryAttempts > 0) commandLine.AppendSwitchUnquotedIfNotNull("-retryAttempts=", m_retryAttempts.ToString(CultureInfo.InvariantCulture));
-            if (m_retryInterval > 0) commandLine.AppendSwitchUnquotedIfNotNull("-retryInterval=", m_retryInterval.ToString(CultureInfo.InvariantCulture));
-            
-            if(!string.IsNullOrEmpty(UserAgent))
+            if (m_xml)
+                commandLine.AppendSwitch("-xml");
+            if (m_whatif)
+                commandLine.AppendSwitch("-whatif");
+            if (m_verbose)
+                commandLine.AppendSwitch("-verbose");
+            if (m_allowUntrusted)
+                commandLine.AppendSwitch("-allowUntrusted");
+            if (m_useChecksum)
+                commandLine.AppendSwitch("-useChecksum");
+
+            if (m_enableTransaction)
+                commandLine.AppendSwitch("-enableTransaction");
+            if (m_retryAttempts > 0)
+                commandLine.AppendSwitchUnquotedIfNotNull("-retryAttempts=", m_retryAttempts.ToString(CultureInfo.InvariantCulture));
+            if (m_retryInterval > 0)
+                commandLine.AppendSwitchUnquotedIfNotNull("-retryInterval=", m_retryInterval.ToString(CultureInfo.InvariantCulture));
+
+            if (!string.IsNullOrEmpty(UserAgent))
             {
                 commandLine.AppendSwitchUnquotedIfNotNull("-userAgent=", string.Concat("\"", UserAgent, "\""));
             }
@@ -1022,10 +1034,10 @@
             // bug in msdeploy.exe currently only take the file name
             commandLine.AppendSwitchIfNotNull("-webServerManifest:", System.IO.Path.GetFileName(WebServerManifest));
 
-            m_lastCommandLine =  commandLine.ToString();
+            m_lastCommandLine = commandLine.ToString();
 
             // show arguments in the output 
-            Log.LogMessage(Framework.MessageImportance.Low, string.Concat("\"", GenerateFullPathToTool(), "\" ",  m_lastCommandLine));
+            Log.LogMessage(Framework.MessageImportance.Low, string.Concat("\"", GenerateFullPathToTool(), "\" ", m_lastCommandLine));
             return m_lastCommandLine;
         }
 
@@ -1045,10 +1057,11 @@
         {
             string result = IO.Path.Combine(ExePath, ToolName);
 
-            if (string.Compare(ExePath, "%MSDeployPath%", System.StringComparison.OrdinalIgnoreCase) == 0) {
+            if (string.Compare(ExePath, "%MSDeployPath%", System.StringComparison.OrdinalIgnoreCase) == 0)
+            {
                 // if it comes in as %msdeploypath% don't use Path.Combine because it will add a \ which is 
                 // not necessary since reg key for MSDeployPath already contains it
-                result = string.Format("{0}{1}",ExePath,ToolName);
+                result = string.Format("{0}{1}", ExePath, ToolName);
             }
 
             return result;
@@ -1065,20 +1078,20 @@
                 Log.LogError(string.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.MSDEPLOY_InvalidSourceCount, Source.GetLength(0)), null);
                 return false;
             }
-            
-            if (this.Destination != null &&  this.Destination.GetLength(0) > 1)
+
+            if (this.Destination != null && this.Destination.GetLength(0) > 1)
             {
                 Log.LogError(string.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.MSDEPLOY_InvalidDestinationCount, Destination.GetLength(0)), null);
                 return false;
             }
-            else 
+            else
             {
                 string[] validVerbs = null;
                 bool fNullDestination = false;
                 if (this.Destination == null || this.Destination.GetLength(0) == 0)
                 {
-                    fNullDestination = true;    
-                    validVerbs = new string[] {  
+                    fNullDestination = true;
+                    validVerbs = new string[] {
                         "dump",
                         "getDependencies",
                         "getParameters",

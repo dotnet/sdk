@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.DependencyModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.TestFramework.Assertions
 {

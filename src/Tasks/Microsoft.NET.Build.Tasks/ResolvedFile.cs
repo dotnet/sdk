@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.IO;
 using System;
-using NuGet.Packaging.Core;
+using System.IO;
 using Microsoft.Build.Framework;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks
         public string PackageVersion { get; }
         public string PathInPackage { get; }
         public string DestinationSubDirectory { get; }
-        public AssetType Asset{ get; }
+        public AssetType Asset { get; }
         public bool IsRuntimeTarget { get; }
         public string RuntimeIdentifier { get; }
         public string Culture { get; }

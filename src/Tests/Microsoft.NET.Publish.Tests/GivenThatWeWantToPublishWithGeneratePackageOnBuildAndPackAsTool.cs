@@ -10,18 +10,18 @@ using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using NuGet.Packaging;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
     public class GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool : SdkTest
     {
         public GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [Theory]
         [InlineData(false, false)]

@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var appliedOptions = result["dotnet"]["tool"]["install"];
             appliedOptions.ValueOrDefault<bool>("global").Should().Be(true);
         }
-        
+
         [Fact]
         public void InstallToolParserCanGetLocalOption()
         {

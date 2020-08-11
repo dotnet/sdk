@@ -2,14 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.CommandFactory;
 using System.Linq;
-using Xunit.Abstractions;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.TestFramework.Commands;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {

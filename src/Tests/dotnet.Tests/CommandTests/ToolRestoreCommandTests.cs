@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ParseResult result = Parser.Instance.Parse("dotnet tool restore");
             _appliedCommand = result["dotnet"]["tool"]["restore"];
             Cli.CommandLine.Parser parser = Parser.Instance;
-            _parseResult = parser.ParseFrom("dotnet tool", new[] {"restore"});
+            _parseResult = parser.ParseFrom("dotnet tool", new[] { "restore" });
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(

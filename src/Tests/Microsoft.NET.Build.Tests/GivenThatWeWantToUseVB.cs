@@ -1,20 +1,17 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
 using System.Linq;
-
+using FluentAssertions;
+using Microsoft.Build.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-
-using FluentAssertions;
-
-using Xunit.Abstractions;
-using Xunit;
-using System;
-using System.IO;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using Microsoft.Build.Utilities;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -144,8 +141,8 @@ namespace Microsoft.NET.Build.Tests
                     }));
 
                 case ("netcoreapp3.0", false):
-                   return (VBRuntime.Referenced, new[]
-                   {
+                    return (VBRuntime.Referenced, new[]
+                    {
                         "HelloWorld.dll",
                         "HelloWorld.pdb",
                         "HelloWorld.deps.json",
@@ -181,7 +178,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyFact(Skip="https://github.com/dotnet/sdk/issues/3678")]
+        [WindowsOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/3678")]
         public void It_builds_a_vb_wpf_app()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;

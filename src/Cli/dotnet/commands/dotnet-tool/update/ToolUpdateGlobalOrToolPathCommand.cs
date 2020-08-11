@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
     internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller, IToolPackageUninstaller) CreateToolPackageStoresAndInstallerAndUninstaller(
         DirectoryPath? nonGlobalLocation = null,
-		IEnumerable<string> additionalRestoreArguments = null);
+        IEnumerable<string> additionalRestoreArguments = null);
 
     internal class ToolUpdateGlobalOrToolPathCommand : CommandBase
     {

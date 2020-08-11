@@ -263,7 +263,7 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public static TestCommandLine HandleCommandLine(string [] args)
+        public static TestCommandLine HandleCommandLine(string[] args)
         {
             TestCommandLine commandLine = Parse(args);
 

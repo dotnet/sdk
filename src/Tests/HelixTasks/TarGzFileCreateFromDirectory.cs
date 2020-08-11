@@ -145,10 +145,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     excludes += $" --exclude {excludeTaskItem.ItemSpec}";
                 }
             }
-            
+
             return excludes;
         }
-        
+
         protected override void LogToolCommand(string message)
         {
             base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");

@@ -1,11 +1,11 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.IO;
+using System.Reflection;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using System;
-using System.IO;
 using Xunit.Abstractions;
-using System.Reflection;
 
 namespace Microsoft.NET.Build.Tests
 {

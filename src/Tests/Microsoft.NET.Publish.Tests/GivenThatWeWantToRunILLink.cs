@@ -4,11 +4,11 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
@@ -676,7 +676,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/12064")]
         public void ILLink_and_crossgen_process_razor_assembly()
-        { 
+        {
             var targetFramework = "netcoreapp3.0";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
@@ -868,7 +868,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var ns = project.Root.Name.Namespace;
 
-            project.Root.Add (new XElement(ns + "ItemGroup",
+            project.Root.Add(new XElement(ns + "ItemGroup",
                                 new XElement("EmbeddedResource",
                                     new XAttribute("Include", substitutionsFilename),
                                     new XElement("LogicalName", substitutionsFilename))));
@@ -892,11 +892,11 @@ namespace Microsoft.NET.Publish.Tests
         {
             var ns = project.Root.Name.Namespace;
 
-            project.Root.Add (new XElement(ns + "ItemGroup",
+            project.Root.Add(new XElement(ns + "ItemGroup",
                                 new XElement("RuntimeHostConfigurationOption",
                                     new XAttribute("Include", "DisableFeature"),
                                     new XAttribute("Value", "true"),
-                                    new XAttribute("Trim", trim.ToString ()))));
+                                    new XAttribute("Trim", trim.ToString()))));
         }
 
         private TestProject CreateTestProjectWithAnalysisWarnings(string targetFramework, string projectName)
@@ -990,7 +990,8 @@ public class Program
 }
 ";
 
-            if (referenceProjectName == null) {
+            if (referenceProjectName == null)
+            {
                 return testProject;
             }
 

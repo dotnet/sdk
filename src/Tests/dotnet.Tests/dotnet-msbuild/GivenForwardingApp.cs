@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Xunit;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
+using Xunit;
 
 namespace Microsoft.DotNet.Cli
 {

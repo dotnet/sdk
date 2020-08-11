@@ -4,9 +4,9 @@
 using FluentAssertions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.NET.TestFramework.Assertions;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {

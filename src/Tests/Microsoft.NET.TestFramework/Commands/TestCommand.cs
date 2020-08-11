@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.DotNet.Cli.Utils;
+using System;
 using System.Collections.Generic;
-using Xunit.Abstractions;
 using System.Diagnostics;
 using System.Linq;
-using System;
+using Microsoft.DotNet.Cli.Utils;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
@@ -87,7 +87,7 @@ namespace Microsoft.NET.TestFramework.Commands
         }
 
         public virtual CommandResult Execute(IEnumerable<string> args)
-        { 
+        {
             var command = CreateCommandSpec(args)
                 .ToCommand()
                 .CaptureStdOut()

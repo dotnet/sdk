@@ -1,11 +1,11 @@
-﻿using Microsoft.NET.Sdk.Publish.Tasks.Xdt;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.NET.Sdk.Publish.Tasks.Xdt;
 using Xunit;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks

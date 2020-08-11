@@ -4,14 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System.Reflection.Metadata;
-using System.Reflection;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -64,10 +64,10 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private void ProcessInputFileList(
-            ITaskItem[] inputFiles, 
+            ITaskItem[] inputFiles,
             List<ITaskItem> imageCompilationList,
             List<ITaskItem> symbolsCompilationList,
-            List<ITaskItem> r2rFilesPublishList, 
+            List<ITaskItem> r2rFilesPublishList,
             List<ITaskItem> r2rReferenceList,
             bool hasValidDiaSymReaderLib)
         {
@@ -215,7 +215,7 @@ namespace Microsoft.NET.Build.Tasks
                         {
                             return Eligibility.None;
                         }
-                        
+
                         if (IsReferenceAssembly(mdReader))
                         {
                             // crossgen can only take implementation assemblies, even as references

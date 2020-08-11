@@ -34,9 +34,9 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            ImplicitPackageReferences = 
+            ImplicitPackageReferences =
                 PreprocessPackageDependenciesDesignTime.GetImplicitPackageReferences(DefaultImplicitPackages);
-            
+
             var sdkDesignTimeList = new List<ITaskItem>(SdkReferences);
             sdkDesignTimeList.AddRange(GetImplicitPackageReferences());
 

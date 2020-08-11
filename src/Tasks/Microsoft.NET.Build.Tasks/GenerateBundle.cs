@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Build.Framework;
-using Microsoft.NET.HostModel.Bundle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Build.Framework;
+using Microsoft.NET.HostModel.Bundle;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -50,8 +50,8 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var item in FilesToBundle)
             {
-                fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec, 
-                                          bundleRelativePath:item.GetMetadata(MetadataKeys.RelativePath)));
+                fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec,
+                                          bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath)));
             }
 
             bundler.GenerateBundle(fileSpec);

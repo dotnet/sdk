@@ -11,14 +11,14 @@ namespace Microsoft.DotNet.Tools.DependencyContextTest
     {
         public static int Main(string[] args)
         {
-            if(args.Length > 0 && args[0] == "--debug")
+            if (args.Length > 0 && args[0] == "--debug")
             {
                 Console.WriteLine("Waiting for Debugger to attach, press ENTER to continue");
                 Console.WriteLine($"Process ID: {System.Diagnostics.Process.GetCurrentProcess().Id}");
                 Console.ReadLine();
             }
 
-            if(DependencyContext.Default != null)
+            if (DependencyContext.Default != null)
             {
                 Console.WriteLine("DependencyContext.Default is set!");
             }
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tools.DependencyContextTest
                 return 1;
             }
 
-            if(DependencyContext.Default.RuntimeGraph.Any())
+            if (DependencyContext.Default.RuntimeGraph.Any())
             {
                 Console.WriteLine("DependencyContext.Default.RuntimeGraph has items!");
             }

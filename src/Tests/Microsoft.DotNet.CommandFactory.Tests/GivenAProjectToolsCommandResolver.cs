@@ -6,18 +6,18 @@ using System.IO;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Tools.MSBuild;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using Xunit;
-using Microsoft.DotNet.CommandFactory;
-using LocalizableStrings = Microsoft.DotNet.CommandFactory.LocalizableStrings;
-using Microsoft.DotNet.Tools.MSBuild;
 using Xunit.Abstractions;
+using LocalizableStrings = Microsoft.DotNet.CommandFactory.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -401,7 +401,7 @@ namespace Microsoft.DotNet.Tests
         private string UseNuGetConfigWithFallbackFolder(TestAsset testInstance, string fallbackFolder, string testPackagesSource)
         {
             var nugetConfig = Path.Combine(testInstance.Path, "NuGet.Config");
-            
+
             File.WriteAllText(
                 nugetConfig,
                 $@"<?xml version=""1.0"" encoding=""utf-8""?>

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using NuGet.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using NuGet.Common;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         public string MockWrittenContent { get; set; }
 
-        public MockContentAssetPreprocessor(Func<string,bool> exists)
+        public MockContentAssetPreprocessor(Func<string, bool> exists)
         {
             _exists = exists;
         }

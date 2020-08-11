@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using Xunit;
 using System;
 using System.Runtime.InteropServices;
+using FluentAssertions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
 using Microsoft.NET.TestFramework;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tests
 
             Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
-        
+
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnHashedMachineIdOld()
         {

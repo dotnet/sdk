@@ -1,6 +1,6 @@
-﻿using Microsoft.Build.Utilities;
-using System;
+﻿using System;
 using System.Text;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 {
@@ -36,6 +36,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
                     return Convert.ToBase64String(Encoding.UTF8.GetBytes(authInfo));
                 }
             }
-        } 
+        }
     }
 }

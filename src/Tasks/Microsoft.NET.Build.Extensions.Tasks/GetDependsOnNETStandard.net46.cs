@@ -146,7 +146,7 @@ namespace Microsoft.NET.Build.Tasks
             return false;
         }
 
-        #region Interop
+#region Interop
         
         [ComImport]
         [Guid("E5CB7A31-7512-11d2-89CE-0080C792E5D8")]
@@ -228,7 +228,7 @@ namespace Microsoft.NET.Build.Tasks
             public UInt32 cOses;
         }
 
-        #endregion
+#endregion
     }
 }
 

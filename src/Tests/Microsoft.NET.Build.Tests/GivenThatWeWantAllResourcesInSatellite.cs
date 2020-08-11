@@ -4,14 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit;
-using Microsoft.DotNet.Cli.Utils;
-using System.Xml.Linq;
-using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
@@ -30,9 +30,9 @@ namespace Microsoft.NET.Build.Tests
 
         internal static void TestSatelliteResources(
             ITestOutputHelper log,
-            TestAssetsManager testAssetsManager, 
+            TestAssetsManager testAssetsManager,
             Action<XDocument> projectChanges = null,
-            Action<BuildCommand> setup = null, 
+            Action<BuildCommand> setup = null,
             [CallerMemberName] string callingMethod = null)
         {
             var testAsset = testAssetsManager

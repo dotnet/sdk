@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System.Globalization;
-using NuGet.ProjectModel;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
@@ -62,9 +62,9 @@ namespace Microsoft.NET.Build.Tasks
                 runtimeFrameworks: null,
                 IsSelfContained);
 
-            var packageClosure =  new HashSet<PackageIdentity>();
+            var packageClosure = new HashSet<PackageIdentity>();
 
-            foreach ( var packageItem in PackagesToPrune)
+            foreach (var packageItem in PackagesToPrune)
             {
                 var pkgName = packageItem.ItemSpec;
                 if (!string.IsNullOrEmpty(pkgName))

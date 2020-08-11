@@ -7,27 +7,27 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Transactions;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Transactions;
 using FluentAssertions;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.TemplateEngine.Cli;
-using NuGet.Versioning;
-using Xunit;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using System.Runtime.CompilerServices;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.TemplateEngine.Cli;
+using NuGet.Versioning;
+using Xunit;
+using Xunit.Abstractions;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.ToolPackage.Tests
 {
@@ -925,7 +925,8 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 
         private static void WriteNugetConfigFileToPointToTheFeed(IFileSystem fileSystem, FilePath? filePath)
         {
-            if (!filePath.HasValue) return;
+            if (!filePath.HasValue)
+                return;
 
             fileSystem.Directory.CreateDirectory(filePath.Value.GetDirectoryPath().Value);
 

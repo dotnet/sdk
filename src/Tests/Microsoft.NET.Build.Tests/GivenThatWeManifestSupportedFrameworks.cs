@@ -28,7 +28,7 @@ namespace Microsoft.NET.Build.Tests
             var project = new TestProject
             {
                 Name = "packagethatwillgomissing",
-                TargetFrameworks = targetFrameworkIdentifier ==  ".NETCoreApp" ? "netcoreapp3.0" : "netstandard2.1",
+                TargetFrameworks = targetFrameworkIdentifier == ".NETCoreApp" ? "netcoreapp3.0" : "netstandard2.1",
                 IsSdkProject = true,
             };
 
@@ -38,9 +38,9 @@ namespace Microsoft.NET.Build.Tests
             string testDirectory = Path.Combine(asset.TestRoot, project.Name);
 
             var getMaximumVersion = new GetValuesCommand(
-                Log, 
-                testDirectory, 
-                project.TargetFrameworks, 
+                Log,
+                testDirectory,
+                project.TargetFrameworks,
                 targetFrameworkIdentifier.Substring(1) + "MaximumVersion",
                 GetValuesCommand.ValueType.Property);
 

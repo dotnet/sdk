@@ -1,9 +1,18 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -12,18 +21,9 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection.PortableExecutable;
-using System.Runtime.InteropServices;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.NET.Build.Tasks;
-using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -209,7 +209,7 @@ namespace Microsoft.NET.Build.Tests
 
             string runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;            
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = runtimeIdentifier;
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .Restore(Log, testProject.Name);
@@ -430,7 +430,8 @@ public static class Program
                     .And
                     .HaveNoDuplicateRuntimeAssemblies("")
                     .And
-                    .HaveNoDuplicateNativeAssets(""); ;
+                    .HaveNoDuplicateNativeAssets("");
+                ;
             }
         }
 

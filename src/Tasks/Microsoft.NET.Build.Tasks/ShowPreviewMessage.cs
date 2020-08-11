@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Build.Framework;
 using System;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             const string previewMessageKey = "Microsoft.NET.Build.Tasks.DisplayPreviewMessageKey";
 
-            object messageDisplayed = 
+            object messageDisplayed =
                 BuildEngine4.GetRegisteredTaskObject(previewMessageKey, RegisteredTaskObjectLifetime.Build);
             if (messageDisplayed == null)
             {

@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Tools.Sln.List
         private readonly string _fileOrDirectory;
 
         public ListProjectsInSolutionCommand(
-            AppliedOption appliedCommand, 
+            AppliedOption appliedCommand,
             string fileOrDirectory,
             ParseResult parseResult) : base(parseResult)
         {

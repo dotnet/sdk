@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp1.1")]
         [InlineData("netcoreapp3.0")]
         public void ResolvePackageAssets_runs_incrementally(string targetFramework)
-        { 
+        {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()

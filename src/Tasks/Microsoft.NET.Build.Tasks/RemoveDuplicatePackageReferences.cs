@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System.Globalization;
-using NuGet.ProjectModel;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks
@@ -35,7 +35,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             var packageSet = new HashSet<PackageIdentity>();
 
-            foreach(var pkg in InputPackageReferences)
+            foreach (var pkg in InputPackageReferences)
             {
                 var pkgName = pkg.ItemSpec;
                 var pkgVersion = NuGetVersion.Parse(pkg.GetMetadata("Version"));

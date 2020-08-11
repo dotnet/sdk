@@ -5,12 +5,12 @@ using System;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-using Parser = Microsoft.DotNet.Cli.Parser;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.NET.TestFramework.Utilities;
+using Xunit;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -20,19 +20,19 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
-        
+
 
         public ToolUninstallCommandTests()
         {
             _reporter = new BufferedReporter();
         }
-        
+
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var result = Parser.Instance.Parse($"dotnet tool uninstall -g --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["uninstall"];
-            
+
             var toolUninstallCommand = new ToolUninstallCommand(
                 appliedCommand,
                 result);
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     string.Format(LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
                         "local tool-path"));
         }
-        
+
         [Fact]
         public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
         {
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var toolUninstallCommand = new ToolUninstallCommand(
                 appliedCommand,
                 result);
-            
+
             Action a = () => toolUninstallCommand.Execute();
 
             a.ShouldThrow<GracefulException>().And.Message

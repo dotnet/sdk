@@ -7,11 +7,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using NuGet.Packaging;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
 
 namespace Microsoft.NET.ToolPack.Tests
 {

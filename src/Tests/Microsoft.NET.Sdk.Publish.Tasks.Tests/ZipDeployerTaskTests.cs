@@ -5,8 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Http;
 using Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy;
+using Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy.Http;
 using Moq;
 using Xunit;
 

@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection.PortableExecutable;
 using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace Microsoft.NET.TestFramework

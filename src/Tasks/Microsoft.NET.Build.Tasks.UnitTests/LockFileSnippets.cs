@@ -1,8 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
 
@@ -77,7 +77,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             Action<string, string[]> addListIfPresent = (label, list) =>
             {
-                if (list != null) parts.Add($"\"{label}\": {{{string.Join(",", list)}}}");
+                if (list != null)
+                    parts.Add($"\"{label}\": {{{string.Join(",", list)}}}");
             };
 
             addListIfPresent("dependencies", dependencies);
@@ -120,9 +121,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             parts.Add($"\"message\": \"{message}\"");
             parts.Add($"\"warningLevel\": \"{warningLevel}\"");
 
-            if (filePath != null) parts.Add($"\"filePath\": \"{filePath}\"");
-            if (libraryId != null) parts.Add($"\"libraryId\": \"{libraryId}\"");
-            if (targetGraphs != null) parts.Add($"\"targetGraphs\": [{ToStringList(targetGraphs)}]");
+            if (filePath != null)
+                parts.Add($"\"filePath\": \"{filePath}\"");
+            if (libraryId != null)
+                parts.Add($"\"libraryId\": \"{libraryId}\"");
+            if (targetGraphs != null)
+                parts.Add($"\"targetGraphs\": [{ToStringList(targetGraphs)}]");
 
             return $@"{{
                 {string.Join(",", parts)}

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
 using FluentAssertions;
 using Microsoft.Build.Construction;
 using Microsoft.DotNet.Tools;
@@ -9,8 +11,6 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Msbuild.Tests.Utilities;
-using System;
-using System.IO;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -111,7 +111,7 @@ Commands:
 
             var cmd = new ListReferenceCommand(Log)
                     .WithProject(projName)
-                    .WithWorkingDirectory(setup.TestRoot)                    
+                    .WithWorkingDirectory(setup.TestRoot)
                     .Execute(setup.ValidRefCsprojPath);
             cmd.ExitCode.Should().NotBe(0);
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.ProjectIsInvalid, "Broken/Broken.csproj"));

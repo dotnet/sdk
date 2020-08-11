@@ -3,12 +3,12 @@
 
 using System;
 using System.IO;
+using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-using FluentAssertions;
-using NuGet.Frameworks;
 using Microsoft.NET.TestFramework;
+using NuGet.Frameworks;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests

@@ -8,7 +8,7 @@ Public Module Program
         If args.Length > 0 Then
             Console.WriteLine("echo args:" & String.Join(";", args))
         End If
-        
+
         Dim message As String = Environment.GetEnvironmentVariable("Message")
 
         If (String.IsNullOrEmpty(message)) Then

@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Tools;
@@ -8,9 +11,6 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using System;
-using System.IO;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 using CommandLocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
@@ -99,7 +99,7 @@ Commands:
                 .CopyTestAsset("InvalidSolution")
                 .WithSource()
                 .Path;
-            
+
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("sln", "InvalidSolution.sln", "list");
@@ -209,7 +209,7 @@ Commands:
             var slnFileName = Path.Combine(projectDirectory, "App.sln");
             var attributes = File.GetAttributes(slnFileName);
             File.SetAttributes(slnFileName, attributes | FileAttributes.ReadOnly);
-            
+
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("sln", "list");

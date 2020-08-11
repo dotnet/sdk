@@ -1,6 +1,10 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using FluentAssertions;
 using Microsoft.Build.Construction;
 using Microsoft.DotNet.Cli.CommandLine;
@@ -10,10 +14,6 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Msbuild.Tests.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -72,7 +72,7 @@ Commands:
 
             try
             {
-                string [] newArgs = new[] { "classlib", "-o", projDir.Path, "--no-restore" };
+                string[] newArgs = new[] { "classlib", "-o", projDir.Path, "--no-restore" };
                 new DotnetCommand(Log, "new")
                     .WithWorkingDirectory(projDir.Path)
                     .Execute(newArgs)
@@ -117,7 +117,7 @@ Commands:
             return ret;
         }
 
-        private ProjDir AddValidRef(TestSetup setup, ProjDir proj, params string [] frameworkArgs)
+        private ProjDir AddValidRef(TestSetup setup, ProjDir proj, params string[] frameworkArgs)
         {
             var ret = new ProjDir(setup.ValidRefDir);
             new AddReferenceCommand(Log)

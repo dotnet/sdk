@@ -3,18 +3,18 @@
 
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildAWindowsDesktopProject : SdkTest
     {
         public GivenThatWeWantToBuildAWindowsDesktopProject(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
         [InlineData("UseWindowsForms")]
@@ -102,8 +102,8 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1137");
         }
-		
-		[WindowsOnlyFact]
+
+        [WindowsOnlyFact]
         public void It_fails_if_windows_target_platform_version_is_invalid()
         {
             var testProject = new TestProject()
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
                 IsSdkProject = true,
                 TargetFrameworks = "net5.0"
             };
-            testProject.AdditionalProperties["TargetPlatformIdentifier"] = "Windows"; 
+            testProject.AdditionalProperties["TargetPlatformIdentifier"] = "Windows";
             testProject.AdditionalProperties["TargetPlatformVersion"] = "10.0.18362.0"; // We must set this manually because if we set it in the TFM we remove the trailing zeroes. 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 

@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netcoreapp2.1",
                 IsSdkProject = true,
                 IsExe = true,
-                
+
             };
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);

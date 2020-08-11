@@ -27,19 +27,19 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_project_successfully_when_RAR_finds_all_references()
         {
-            BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/p:DisableTransitiveProjectReferences=true"});
+            BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/p:DisableTransitiveProjectReferences=true" });
         }
-        
+
         [Fact]
         public void It_builds_the_project_successfully_with_static_graph_and_isolation()
         {
-            BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/graph", "/isolate"});
+            BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/isolate" });
         }
-        
+
         [Fact]
         public void It_cleans_the_project_successfully_with_static_graph_and_isolation()
         {
-            var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new []{"/graph", "/isolate"});
+            var (testAsset, outputDirectories) = BuildAppWithTransitiveDependenciesAndTransitiveCompileReference(new[] { "/graph", "/isolate" });
 
             var cleanCommand = new DotnetCommand(
                 Log,
@@ -69,7 +69,7 @@ namespace Microsoft.NET.Build.Tests
 
             testAsset.Restore(Log, "1");
 
-            string[] targetFrameworks = {"netcoreapp2.1", "net472"};
+            string[] targetFrameworks = { "netcoreapp2.1", "net472" };
 
             var (buildResult, outputDirectories) = Build(testAsset, targetFrameworks, msbuildArguments);
 
@@ -158,7 +158,7 @@ namespace Microsoft.NET.Build.Tests
 
             testAsset.Restore(Log, "1");
 
-            var (buildResult, outputDirectories) = Build(testAsset, new []{"netcoreapp2.1"}, new []{"/p:DisableTransitiveProjectReferences=true"});
+            var (buildResult, outputDirectories) = Build(testAsset, new[] { "netcoreapp2.1" }, new[] { "/p:DisableTransitiveProjectReferences=true" });
 
             buildResult.Should().Pass();
 
@@ -231,7 +231,7 @@ namespace _{0}
                     ["Program.cs"] = string.Format(SourceFile, "4", string.Empty)
                 }
             };
-            
+
             var project3 = new TestProject
             {
                 Name = "3",
@@ -243,7 +243,7 @@ namespace _{0}
                     ["Program.cs"] = string.Format(SourceFile, "3", string.Empty)
                 }
             };
-            
+
             var project2 = new TestProject
             {
                 Name = "2",
@@ -255,7 +255,7 @@ namespace _{0}
                     ["Program.cs"] = string.Format(SourceFile, "2", string.Empty)
                 }
             };
-            
+
             var project1 = new TestProject
             {
                 Name = "1",
@@ -284,7 +284,7 @@ namespace _{0}
                     ["Program.cs"] = string.Format(SourceFile, "5", string.Empty)
                 }
             };
-            
+
             var project4 = new TestProject
             {
                 Name = "4",
@@ -296,7 +296,7 @@ namespace _{0}
                     ["Program.cs"] = string.Format(SourceFile, "4", "_5.Class1.Message();")
                 }
             };
-            
+
             var project3 = new TestProject
             {
                 Name = "3",
@@ -308,7 +308,7 @@ namespace _{0}
                     ["Program.cs"] = string.Format(SourceFile, "3", "_4.Class1.Message();")
                 }
             };
-            
+
             var project2 = new TestProject
             {
                 Name = "2",
@@ -320,7 +320,7 @@ namespace _{0}
                     ["Program.cs"] = string.Format(SourceFile, "2", "_4.Class1.Message();")
                 }
             };
-            
+
             var project1 = new TestProject
             {
                 Name = "1",

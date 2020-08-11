@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Build.Execution;
 using Microsoft.Build.Exceptions;
+using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Run.LaunchSettings;
 using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Tools.Run.LaunchSettings;
 
 namespace Microsoft.DotNet.Tools.Run
 {

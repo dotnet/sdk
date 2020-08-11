@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.CommandFactory
 {
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.CommandFactory
             {
                 return Enumerable.Empty<NuGetVersion>();
             }
-            
+
             var versionDirectories = Directory.EnumerateDirectories(toolBase);
 
             foreach (var versionDirectory in versionDirectories)

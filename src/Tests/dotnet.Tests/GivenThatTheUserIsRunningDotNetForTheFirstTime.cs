@@ -2,18 +2,18 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information. 
 
 using System;
-using System.IO;
 using System.Collections.Generic;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Configurer;
-using Xunit;
-using Xunit.Abstractions;
+using System.IO;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using System.Runtime.CompilerServices;
+using Xunit;
+using Xunit.Abstractions;
 
 //[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Tests
 
         public void Dispose()
         {
-            
+
         }
     }
 

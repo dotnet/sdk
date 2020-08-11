@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using Microsoft.DotNet.Tools.Store;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using FluentAssertions;
+using Microsoft.DotNet.Tools.Store;
 using Xunit;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m -target:ComposeStore <project>";
         static readonly string[] ArgsPrefix = { "--manifest", "<project>" };
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetStoreInvocation));
 
         [Theory]

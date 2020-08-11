@@ -1,18 +1,18 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
-using System.Xml.Linq;
-using System.Runtime.CompilerServices;
-using System;
-using Microsoft.Extensions.DependencyModel;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
@@ -135,7 +135,7 @@ namespace Microsoft.NET.Publish.Tests
                 RuntimeIdentifier = rid,
                 IsExe = true,
             };
-            
+
             testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = "true";
             testProject.SourceFiles["Program.cs"] = @"
 using System;
@@ -158,7 +158,7 @@ public static class Program
 
             publishDirectory.Should().HaveFile($"Hello.World{Constants.ExeSuffix}");
         }
-		
+
         [Theory]
         [InlineData("win-arm")]
         [InlineData("win8-arm")]
@@ -203,14 +203,14 @@ public static class Program
                 targetFramework: targetFramework,
                 runtimeIdentifier: runtimeIdentifier);
             var outputDirectory = publishDirectory.Parent;
-            
+
             // The name of the self contained executable depends on the runtime identifier.
             // For Windows family ARM publishing, it'll always be Hello.exe.
             // We shouldn't use "Constants.ExeSuffix" for the suffix here because that changes
             // depending on the RuntimeInformation
             var selfContainedExecutable = "Hello.exe";
 
-            var filesPublished = new [] {
+            var filesPublished = new[] {
                 selfContainedExecutable,
                 "Hello.dll",
                 "Hello.pdb",
@@ -522,7 +522,7 @@ public static class Program
                     testProject.AdditionalProperties.Add("UseWpf", "true");
                     testProject.AdditionalProperties.Add("UseWindowsForms", "true");
                     break;
-               case "console":
+                case "console":
                     break;
                 case "web":
                     testProject.ProjectSdk = "Microsoft.NET.Sdk.Web";

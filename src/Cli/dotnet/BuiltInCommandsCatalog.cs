@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using Microsoft.DotNet.Tools.Add;
 using Microsoft.DotNet.Tools.Build;
 using Microsoft.DotNet.Tools.BuildServer;
@@ -19,9 +20,8 @@ using Microsoft.DotNet.Tools.Run;
 using Microsoft.DotNet.Tools.Sln;
 using Microsoft.DotNet.Tools.Store;
 using Microsoft.DotNet.Tools.Test;
-using Microsoft.DotNet.Tools.VSTest;
-using System.Collections.Generic;
 using Microsoft.DotNet.Tools.Tool;
+using Microsoft.DotNet.Tools.VSTest;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli
                 // aka.ms target: https://docs.microsoft.com/dotnet/articles/core/tools/dotnet-build
                 DocLink = "https://aka.ms/dotnet-build"
             },
-            ["clean"] = new BuiltInCommandMetadata 
+            ["clean"] = new BuiltInCommandMetadata
             {
                 Command = CleanCommand.Run,
                 // aka.ms target: https://docs.microsoft.com/dotnet/articles/core/tools/dotnet-clean

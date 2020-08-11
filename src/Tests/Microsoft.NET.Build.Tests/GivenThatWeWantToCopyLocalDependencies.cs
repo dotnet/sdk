@@ -43,8 +43,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tests
 
             var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
 
-            var expectedFiles = new []
+            var expectedFiles = new[]
             {
                 $"{ProjectName}.deps.json",
                 $"{ProjectName}.dll",
@@ -88,8 +88,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 
@@ -125,8 +125,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 
@@ -165,8 +165,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 
@@ -199,8 +199,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 
@@ -236,8 +236,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 
@@ -270,8 +270,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 
@@ -307,8 +307,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 
@@ -343,8 +343,8 @@ namespace Microsoft.NET.Build.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
-             var testProjectInstance = _testAssetsManager
-                .CreateTestProject(testProject);
+            var testProjectInstance = _testAssetsManager
+               .CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testProjectInstance);
 

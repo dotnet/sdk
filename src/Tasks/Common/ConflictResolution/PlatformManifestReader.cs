@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.NET.Build.Tasks;
-using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using Microsoft.Build.Utilities;
+using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {

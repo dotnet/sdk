@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.ToolManifest
         {
             IEnumerable<(FilePath manifestfile, DirectoryPath _)> allPossibleManifests =
                 filePath != null
-                    ? new[] {(filePath.Value, filePath.Value.GetDirectoryPath())}
+                    ? new[] { (filePath.Value, filePath.Value.GetDirectoryPath()) }
                     : EnumerateDefaultAllPossibleManifests();
 
             var findAnyManifest =
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.ToolManifest
         {
             IEnumerable<(FilePath manifestfile, DirectoryPath _)> allPossibleManifests =
                 filePath != null
-                    ? new[] {(filePath.Value, filePath.Value.GetDirectoryPath())}
+                    ? new[] { (filePath.Value, filePath.Value.GetDirectoryPath()) }
                     : EnumerateDefaultAllPossibleManifests();
 
 
@@ -69,11 +69,11 @@ namespace Microsoft.DotNet.ToolManifest
         }
 
         private bool TryFindToolManifestPackages(
-            IEnumerable<(FilePath manifestfile, DirectoryPath _)> allPossibleManifests, 
+            IEnumerable<(FilePath manifestfile, DirectoryPath _)> allPossibleManifests,
             out List<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> toolManifestPackageAndSource)
         {
             bool findAnyManifest = false;
-            toolManifestPackageAndSource 
+            toolManifestPackageAndSource
                 = new List<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
             foreach ((FilePath possibleManifest, DirectoryPath correspondingDirectory) in allPossibleManifests)
             {

@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Cli
 {

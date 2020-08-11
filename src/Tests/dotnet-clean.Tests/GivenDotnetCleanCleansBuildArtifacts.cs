@@ -3,13 +3,13 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-using System.Linq;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Xunit;
 using Xunit.Abstractions;
 
 

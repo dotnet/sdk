@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Microsoft.Extensions.EnvironmentAbstractions
 {
-    internal class FileWrapper: IFile
+    internal class FileWrapper : IFile
     {
         public bool Exists(string path)
         {

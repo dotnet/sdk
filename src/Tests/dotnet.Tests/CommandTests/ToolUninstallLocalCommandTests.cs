@@ -7,16 +7,16 @@ using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
-using Parser = Microsoft.DotNet.Cli.Parser;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
-using Microsoft.DotNet.ToolManifest;
 using Microsoft.NET.TestFramework.Utilities;
+using Xunit;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _defaultToolUninstallLocalCommand.Execute();
 
             _fileSystem.File.ReadAllText(parentManifestFilePath).Should().Be(
-                _entryRemovedJsonContent, 
+                _entryRemovedJsonContent,
                 "First invoke remove the one in current dir, the second invoke remove the one in parent dir.");
         }
 

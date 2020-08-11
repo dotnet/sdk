@@ -1,16 +1,16 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -190,7 +190,7 @@ namespace Microsoft.DotNet.Tools.Common
             Dictionary<string, string> projectPlatforms,
             string defaultProjectPlatform)
         {
-            var pair = solutionConfigKey.Split(new char[] {'|'}, 2);
+            var pair = solutionConfigKey.Split(new char[] { '|' }, 2);
             if (pair.Length != 2)
             {
                 return null;

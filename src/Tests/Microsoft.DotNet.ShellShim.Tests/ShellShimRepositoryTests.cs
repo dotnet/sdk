@@ -367,7 +367,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             shellShimRepository.CreateShim(
                 new FilePath("dummy.dll"),
                 new ToolCommandName(shellCommandName),
-                new[] {new FilePath(dummyShimPath)});
+                new[] { new FilePath(dummyShimPath) });
 
             var createdShim = Directory.EnumerateFileSystemEntries(pathToShim).Single();
             File.ReadAllText(createdShim).Should().Contain(tokenToIdentifyCopiedShim);

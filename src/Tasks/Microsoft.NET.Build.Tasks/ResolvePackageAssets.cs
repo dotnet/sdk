@@ -681,7 +681,7 @@ namespace Microsoft.NET.Build.Tasks
                     _compileTimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, runtime: null);
                     _runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, _task.RuntimeIdentifier);
                 }
-                
+
 
                 _stringTable = new Dictionary<string, int>(InitialStringTableCapacity, StringComparer.Ordinal);
                 _metadataStrings = new List<string>(InitialStringTableCapacity);
@@ -772,7 +772,7 @@ namespace Microsoft.NET.Build.Tasks
                 WriteItemGroup(WriteFrameworkReferences);
                 WriteItemGroup(WriteNativeLibraries);
                 WriteItemGroup(WritePackageDependencies);
-                WriteItemGroup(WritePackageFolders);                
+                WriteItemGroup(WritePackageFolders);
                 WriteItemGroup(WriteResourceAssemblies);
                 WriteItemGroup(WriteRuntimeAssemblies);
                 WriteItemGroup(WriteRuntimeTargets);
@@ -935,9 +935,12 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     switch (level)
                     {
-                        case LogLevel.Warning: return nameof(LogLevel.Warning);
-                        case LogLevel.Error: return nameof(LogLevel.Error);
-                        default: return ""; // treated as info
+                        case LogLevel.Warning:
+                            return nameof(LogLevel.Warning);
+                        case LogLevel.Error:
+                            return nameof(LogLevel.Error);
+                        default:
+                            return ""; // treated as info
                     }
                 }
 
@@ -1294,7 +1297,7 @@ namespace Microsoft.NET.Build.Tasks
                     shouldIncludeInPublish = false;
                 }
 
-                if (!shouldCopyLocal&& !shouldIncludeInPublish)
+                if (!shouldCopyLocal && !shouldIncludeInPublish)
                 {
                     return false;
                 }

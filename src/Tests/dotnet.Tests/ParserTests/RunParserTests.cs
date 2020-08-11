@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Run;
 using Xunit;
 using Xunit.Abstractions;
-using System;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void RunParserCanGetArgumentFromDoubleDash()
         {
-            var runCommand = RunCommand.FromArgs(new[]{ "--", "foo" });
+            var runCommand = RunCommand.FromArgs(new[] { "--", "foo" });
             runCommand.Args.Single().Should().Be("foo");
         }
     }

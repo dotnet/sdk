@@ -1,20 +1,20 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.DotNet.Cli.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
     public class MSBuildCommand : TestCommand
-    { 
-        public string Target { get;  }
+    {
+        public string Target { get; }
 
         private readonly string _projectRootPath;
 
@@ -133,7 +133,7 @@ namespace Microsoft.NET.TestFramework.Commands
         {
             var newArgs = args.ToList();
             newArgs.Insert(0, FullPathProjectFile);
-            
+
             return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(Target, newArgs);
         }
     }

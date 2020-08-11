@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Build.Framework;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.DotNet.MSBuildSdkResolver
 {
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string, string> _getEnvironmentVariable;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
-        public DotNetMSBuildSdkResolver() 
+        public DotNetMSBuildSdkResolver()
             : this(Environment.GetEnvironmentVariable, VSSettings.Ambient)
         {
         }

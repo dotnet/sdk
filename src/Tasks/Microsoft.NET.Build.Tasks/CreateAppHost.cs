@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 int attempts = 0;
-                
+
                 while (true)
                 {
                     try
@@ -83,7 +83,8 @@ namespace Microsoft.NET.Build.Tasks
                                                // Note: replace this when https://github.com/dotnet/core-setup/issues/7516 is fixed
                                                ex.GetType().Name == "HResultException")
                     {
-                        if (Retries < 0 || attempts == Retries) {
+                        if (Retries < 0 || attempts == Retries)
+                        {
                             throw;
                         }
 
@@ -95,7 +96,8 @@ namespace Microsoft.NET.Build.Tasks
                                 Retries + 1,
                                 ex.Message));
 
-                        if (RetryDelayMilliseconds > 0) {
+                        if (RetryDelayMilliseconds > 0)
+                        {
                             Thread.Sleep(RetryDelayMilliseconds);
                         }
                     }

@@ -5,20 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.InternalAbstractions;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.Build.Construction;
 using System.Linq;
-using Microsoft.Build.Evaluation;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using FluentAssertions;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.InternalAbstractions;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Tests
                 .Execute()
                 .Should()
                 .Pass();
-            
+
             var result = new DotnetCommand(Log)
                     .WithWorkingDirectory(testInstance.Path)
                     .Execute("portable-v1");
@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact(Skip="https://github.com/dotnet/cli/issues/9688")]
+        [Fact(Skip = "https://github.com/dotnet/cli/issues/9688")]
         public void ToolsCanAccessDependencyContextProperly()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("DependencyContextFromTool")
@@ -247,8 +247,8 @@ namespace Microsoft.DotNet.Tests
                 .Execute();
 
             result.StdErr.Should().Contain(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-hello"));
-            
-            result.Should().Fail();        
+
+            result.Should().Fail();
         }
 
         private void SetGeneratedPackageName(FileInfo project, string packageName)

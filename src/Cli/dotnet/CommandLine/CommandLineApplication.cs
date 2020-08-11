@@ -158,7 +158,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
                     CommandOption option;
 
                     var result = ParseOption(isLongOption, command, args, ref index, out option);
-                  
+
 
                     if (result == ParseOptionResult.ShowHelp)
                     {
@@ -215,8 +215,8 @@ namespace Microsoft.DotNet.Cli.CommandLine
 
         private ParseOptionResult ParseOption(
             bool isLongOption,
-            CommandLineApplication command, 
-            string[] args, 
+            CommandLineApplication command,
+            string[] args,
             ref int index,
             out CommandOption option)
         {
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
             int optionPrefixLength = isLongOption ? 2 : 1;
             string[] optionComponents = arg.Substring(optionPrefixLength).Split(new[] { ':', '=' }, 2);
             string optionName = optionComponents[0];
-            
+
             if (isLongOption)
             {
                 option = command.Options.SingleOrDefault(
@@ -447,8 +447,8 @@ namespace Microsoft.DotNet.Cli.CommandLine
                     foreach (var arg in cmd.Arguments)
                     {
                         argumentsBuilder.AppendFormat(
-                            "  {0}{1}", 
-                            arg.Name.PadRight(maxArgLen + 2), 
+                            "  {0}{1}",
+                            arg.Name.PadRight(maxArgLen + 2),
                             arg.Description);
                         argumentsBuilder.AppendLine();
                     }

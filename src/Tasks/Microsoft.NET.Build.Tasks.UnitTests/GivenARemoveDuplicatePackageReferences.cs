@@ -1,16 +1,16 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using Microsoft.Build.Framework;
-using NuGet.ProjectModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Xunit;
+using FluentAssertions;
+using Microsoft.Build.Framework;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
+using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {

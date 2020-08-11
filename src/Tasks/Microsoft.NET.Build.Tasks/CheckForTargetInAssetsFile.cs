@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Build.Framework;
-using NuGet.ProjectModel;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Build.Framework;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks
 {

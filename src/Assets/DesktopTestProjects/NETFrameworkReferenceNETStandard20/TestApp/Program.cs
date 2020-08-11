@@ -8,8 +8,8 @@ namespace TestApp
     class Program
     {
         public static void Main(string[] args)
-         {
-             Console.WriteLine(TestLibrary.Helper.GetMessage());
-         }
+        {
+            Console.WriteLine(TestLibrary.Helper.GetMessage());
+        }
     }
 }

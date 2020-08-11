@@ -24,9 +24,9 @@ namespace Microsoft.Build.Tasks
 
             if (!string.IsNullOrEmpty(EventData))
             {
-                foreach (string pair in EventData.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries))
+                foreach (string pair in EventData.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    var item = pair.Split(new[] {'='}, 2);
+                    var item = pair.Split(new[] { '=' }, 2);
 
                     if (string.IsNullOrWhiteSpace(item[0]))
                     {

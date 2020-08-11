@@ -1,16 +1,16 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
+using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Commands;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -63,8 +63,8 @@ namespace Microsoft.NET.Build.Tests
         }
 
         private void VerifyBuild(TestAsset testAsset, string project, string targetFramework, string runtimeIdentifier,
-            string [] buildArgs,
-            params string [] expectedFiles)
+            string[] buildArgs,
+            params string[] expectedFiles)
         {
             var buildCommand = new BuildCommand(testAsset, project);
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: runtimeIdentifier);

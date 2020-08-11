@@ -5,22 +5,22 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.ShellShim;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Xunit;
-using Parser = Microsoft.DotNet.Cli.Parser;
-using System.Runtime.InteropServices;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parser = Parser.Instance;
             var parseResult = parser.ParseFrom(
                 "dotnet tool",
-                new[] {"install", "-g", "--tool-path", "/tmp/folder", PackageId});
+                new[] { "install", "-g", "--tool-path", "/tmp/folder", PackageId });
 
             var toolInstallCommand = new ToolInstallCommand(
                 appliedCommand,
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parser = Parser.Instance;
             var parseResult = parser.ParseFrom(
                 "dotnet tool",
-                new[] {"install", "--local", "--tool-path", "/tmp/folder", PackageId});
+                new[] { "install", "--local", "--tool-path", "/tmp/folder", PackageId });
 
             var toolInstallCommand = new ToolInstallCommand(
                 appliedCommand,
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parser = Parser.Instance;
             var parseResult = parser.ParseFrom(
                 "dotnet tool",
-                new[] {"install", "-g", "--tool-manifest", "folder/my-manifest.format", "PackageId"});
+                new[] { "install", "-g", "--tool-manifest", "folder/my-manifest.format", "PackageId" });
 
             var toolInstallCommand = new ToolInstallCommand(
                 appliedCommand,

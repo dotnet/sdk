@@ -7,7 +7,7 @@ using Microsoft.DotNet.InternalAbstractions;
 
 namespace Microsoft.Extensions.EnvironmentAbstractions
 {
-    internal class DirectoryWrapper: IDirectory
+    internal class DirectoryWrapper : IDirectory
     {
         public bool Exists(string path)
         {

@@ -62,7 +62,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
 
             string zipDeployPublishUrl = null;
 
-            if(!string.IsNullOrEmpty(publishUrl))
+            if (!string.IsNullOrEmpty(publishUrl))
             {
                 if (!publishUrl.EndsWith("/"))
                 {
@@ -71,13 +71,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
 
                 zipDeployPublishUrl = publishUrl + "api/zipdeploy";
             }
-            else if(!string.IsNullOrEmpty(siteName))
+            else if (!string.IsNullOrEmpty(siteName))
             {
                 zipDeployPublishUrl = $"https://{siteName}.scm.azurewebsites.net/api/zipdeploy";
             }
             else
             {
-                if(logMessages)
+                if (logMessages)
                 {
                     Log.LogError(Resources.ZIPDEPLOY_InvalidSiteNamePublishUrl);
                 }

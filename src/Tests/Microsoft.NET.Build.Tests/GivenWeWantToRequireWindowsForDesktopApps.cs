@@ -3,16 +3,16 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
+using FluentAssertions;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tests
 {

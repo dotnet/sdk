@@ -1,15 +1,15 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using FluentAssertions;
-using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.IO;
-using System;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
             var testProj = new TestProject()
             {
                 Name = "TargetPlatformTests",
-                IsSdkProject = true, 
+                IsSdkProject = true,
                 TargetFrameworks = targetFramework
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProj);

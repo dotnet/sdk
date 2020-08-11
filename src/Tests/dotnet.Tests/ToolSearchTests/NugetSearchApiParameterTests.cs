@@ -3,10 +3,10 @@
 
 using System;
 using FluentAssertions;
-using Microsoft.DotNet.NugetSearch;
-using Xunit;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.NugetSearch;
+using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 
@@ -23,7 +23,7 @@ namespace dotnet.Tests.ToolSearchTests
             Action a = () => new NugetSearchApiParameter(appliedOptions);
             a.ShouldThrow<GracefulException>();
         }
-        
+
         [Fact]
         public void ItShouldValidateTakeType()
         {
@@ -33,7 +33,7 @@ namespace dotnet.Tests.ToolSearchTests
             Action a = () => new NugetSearchApiParameter(appliedOptions);
             a.ShouldThrow<GracefulException>();
         }
-        
+
         [Fact]
         public void ItShouldNotThrowWhenInputIsValid()
         {

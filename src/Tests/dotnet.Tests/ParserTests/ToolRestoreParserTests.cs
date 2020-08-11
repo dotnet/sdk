@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var appliedOptions = result["dotnet"]["tool"]["restore"];
             appliedOptions.ValueOrDefault<bool>("local").Should().Be(true);
-            
+
             var result2 =
                 Parser.Instance.Parse(@"dotnet tool restore");
 

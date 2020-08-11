@@ -3,7 +3,7 @@
     public class KuduConnectionInfo
     {
         public string UserName { get; set; }
-        
+
         public string Password { get; set; }
 
         public string SiteName { get; set; }

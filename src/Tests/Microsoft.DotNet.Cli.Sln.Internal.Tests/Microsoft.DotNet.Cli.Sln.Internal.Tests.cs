@@ -3,14 +3,14 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
-using Xunit;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using System.Runtime.CompilerServices;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Sln.Internal.Tests
@@ -108,10 +108,11 @@ EndGlobal
         {
             var folder = _testAssetsManager.CreateTestDirectory(testName: callerName);
             var filename = Path.Combine(folder.Path, Guid.NewGuid().ToString() + ".tmp");
-            using (new FileStream(filename, FileMode.CreateNew)) { }
+            using (new FileStream(filename, FileMode.CreateNew))
+            { }
             return filename;
         }
-        
+
 
         [Fact]
         public void WhenGivenAValidSlnFileItReadsAndVerifiesContents()
@@ -269,7 +270,7 @@ EndGlobal
             var attr = File.GetAttributes(tmpFile);
             attr = attr | FileAttributes.ReadOnly;
             File.SetAttributes(tmpFile, attr);
-        
+
             Action act = () => SlnFile.Read(tmpFile);
             act.ShouldNotThrow("Because readonly file is not being modified.");
         }

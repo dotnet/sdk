@@ -20,10 +20,10 @@ namespace Microsoft.DotNet.Cli
         }
 
         public ICommand Create(
-        	string commandName, 
-        	IEnumerable<string> args, 
-        	NuGetFramework framework = null, 
-        	string configuration = Constants.DefaultConfiguration)
+            string commandName,
+            IEnumerable<string> args,
+            NuGetFramework framework = null,
+            string configuration = Constants.DefaultConfiguration)
         {
             BuiltInCommandMetadata builtInCommand;
             if (!_alwaysRunOutOfProc && Program.TryGetBuiltInCommand(commandName, out builtInCommand))

@@ -36,9 +36,12 @@ namespace Microsoft.NET.Build.Tasks
         {
             switch (projectLanguage)
             {
-                case "C#": return "cs";
-                case "F#": return "fs";
-                default: return projectLanguage?.ToLowerInvariant();
+                case "C#":
+                    return "cs";
+                case "F#":
+                    return "fs";
+                default:
+                    return projectLanguage?.ToLowerInvariant();
             }
         }
 

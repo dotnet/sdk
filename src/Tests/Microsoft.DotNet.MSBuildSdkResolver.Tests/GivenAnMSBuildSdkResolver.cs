@@ -1,19 +1,19 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using Microsoft.NET.TestFramework;
 using Xunit;
 using Xunit.Abstractions;
-using System;
-using Microsoft.NET.TestFramework;
-using System.Linq;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -423,7 +423,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             Check(disallowPreviews: true, message: "file changed to disallow previews");
 
             environment.CreateVSSettingsFile(disallowPreviews: false);
-            Check(disallowPreviews: false,  message: "file changed to not disallow previews");
+            Check(disallowPreviews: false, message: "file changed to not disallow previews");
 
             environment.CreateVSSettingsFile(disallowPreviews: true);
             Check(disallowPreviews: true, message: "file changed back to disallow previews");
@@ -438,7 +438,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var environment = new TestEnvironment(_testAssetsManager);
             var rtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0");
             var preview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.0-preview1");
- 
+
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
             environment.DisallowPrereleaseByDefault = true;
             environment.CreateGlobalJson(environment.TestDirectory, "11.0.0-preview1");
@@ -518,14 +518,14 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             public SdkResolver CreateResolver(bool useAmbientSettings = false)
                 => new DotNetMSBuildSdkResolver(
-                    GetEnvironmentVariable, 
+                    GetEnvironmentVariable,
                     useAmbientSettings
                         ? VSSettings.Ambient
                         : new VSSettings(VSSettingsFile?.FullName, DisallowPrereleaseByDefault));
 
             public DirectoryInfo GetSdkDirectory(ProgramFiles programFiles, string sdkName, string sdkVersion)
                 => new DirectoryInfo(Path.Combine(
-                    TestDirectory.FullName, 
+                    TestDirectory.FullName,
                     GetProgramFilesDirectory(programFiles).FullName,
                     "dotnet",
                     "sdk",
@@ -536,7 +536,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             public DirectoryInfo GetProgramFilesDirectory(ProgramFiles programFiles)
                 => new DirectoryInfo(Path.Combine(TestDirectory.FullName, $"ProgramFiles{programFiles}"));
-            
+
             public DirectoryInfo CreateSdkDirectory(
                 ProgramFiles programFiles,
                 string sdkName,
@@ -588,7 +588,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
 
             public void CreateGlobalJson(DirectoryInfo directory, string version)
-                => File.WriteAllText(Path.Combine(directory.FullName, "global.json"), 
+                => File.WriteAllText(Path.Combine(directory.FullName, "global.json"),
                     $@"{{ ""sdk"": {{ ""version"":  ""{version}"" }} }}");
 
             public string GetEnvironmentVariable(string variable)
@@ -608,7 +608,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             }
 
             private void DeleteMinimumVSDefinedSDKVersionFile()
-            {                
+            {
                 File.Delete(GetMinimumVSDefinedSDKVersionFilePath());
             }
 
@@ -696,7 +696,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 ItemsToAdd = itemsToAdd;
             }
 
-            public MockResult(bool success, IEnumerable<string> paths, string version, 
+            public MockResult(bool success, IEnumerable<string> paths, string version,
                 IDictionary<string, string> propertiesToAdd, IDictionary<string, SdkResultItem> itemsToAdd, IEnumerable<string> warnings)
             {
                 Success = success;

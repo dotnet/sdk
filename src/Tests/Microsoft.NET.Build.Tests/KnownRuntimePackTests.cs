@@ -159,7 +159,7 @@ namespace Microsoft.NET.Build.Tests
             selfContainedPublishDir.Should().HaveFilesMatching($"{new DirectoryInfo(testDirectory).Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
-       [WindowsOnlyFact]
+        [WindowsOnlyFact]
         public void ItCantPublishArm64Wpf()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;

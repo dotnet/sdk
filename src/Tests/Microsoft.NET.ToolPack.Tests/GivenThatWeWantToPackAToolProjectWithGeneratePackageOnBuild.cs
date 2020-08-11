@@ -10,11 +10,11 @@ using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using NuGet.Packaging;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
@@ -24,7 +24,7 @@ namespace Microsoft.NET.ToolPack.Tests
         private const string AppName = "consoledemo";
 
         public GivenThatWeWantToPackAToolProjectWithGeneratePackageOnBuild(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         private TestAsset SetupAndRestoreTestAsset([CallerMemberName] string callingMethod = "")
         {
@@ -70,7 +70,7 @@ namespace Microsoft.NET.ToolPack.Tests
             // Do not run pack, just use it to get nupkg since it should be run by build.
             var nugetPackage = packCommand.GetNuGetPackage();
 
-            using(var nupkgReader = new PackageArchiveReader(nugetPackage))
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
             {
                 IEnumerable<NuGet.Frameworks.NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
                 supportedFrameworks.Should().NotBeEmpty();

@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <param name="args"></param>
         /// <returns></returns>
         public static string EscapeAndConcatenateArgArrayForProcessStart(IEnumerable<string> args)
-        { 
+        {
             var escaped = EscapeArgArray(args);
 #if NET35
             return string.Join(" ", escaped.ToArray());
@@ -99,7 +99,8 @@ namespace Microsoft.DotNet.Cli.Utils
             var needsQuotes = length == 0 || ShouldSurroundWithQuotes(arg);
             var isQuoted = needsQuotes || IsSurroundedWithQuotes(arg);
 
-            if (needsQuotes) sb.Append("\"");
+            if (needsQuotes)
+                sb.Append("\"");
 
             for (int i = 0; i < length; ++i)
             {
@@ -142,8 +143,9 @@ namespace Microsoft.DotNet.Cli.Utils
                     sb.Append(arg[i]);
                 }
             }
-            
-            if (needsQuotes) sb.Append("\"");
+
+            if (needsQuotes)
+                sb.Append("\"");
 
             return sb.ToString();
         }
@@ -167,7 +169,8 @@ namespace Microsoft.DotNet.Cli.Utils
 
             var quoted = ShouldSurroundWithQuotes(argument);
 
-            if (quoted) sb.Append("^\"");
+            if (quoted)
+                sb.Append("^\"");
 
             // Prepend every character with ^
             // This is harmless when passing through cmd
@@ -179,7 +182,8 @@ namespace Microsoft.DotNet.Cli.Utils
                 sb.Append(character);
             }
 
-            if (quoted) sb.Append("^\"");
+            if (quoted)
+                sb.Append("^\"");
 
             return sb.ToString();
         }

@@ -1,6 +1,10 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
@@ -9,10 +13,6 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -51,7 +51,7 @@ namespace Microsoft.NET.Publish.Tests
 
             string appPath = publishCommand.GetPublishedAppPath("SimpleDependencies");
 
-            TestCommand runAppCommand = new DotnetCommand(Log,  appPath, "one", "two" );
+            TestCommand runAppCommand = new DotnetCommand(Log, appPath, "one", "two");
 
             string expectedOutput =
 @"{
@@ -213,7 +213,7 @@ namespace Microsoft.NET.Publish.Tests
             var kitchenSinkAsset = _testAssetsManager
                 .CopyTestAsset("KitchenSink", identifier: $"{expectAppDocPublished}_{expectLibProjectDocPublished}")
                 .WithSource();
-            
+
             var publishCommand = new PublishCommand(Log, Path.Combine(kitchenSinkAsset.TestRoot, "TestApp"));
             var publishArgs = properties.Split(';').Select(p => $"/p:{p}").ToArray();
             var publishResult = publishCommand.Execute(publishArgs);
@@ -272,7 +272,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             var appAsset = _testAssetsManager.CreateTestProject(appProject, identifier: identifier);
-            var appSourcePath  = Path.Combine(appAsset.TestRoot, "TestApp");
+            var appSourcePath = Path.Combine(appAsset.TestRoot, "TestApp");
 
             new RestoreCommand(appAsset, "TestApp").Execute().Should().Pass();
             var appPublishCommand = new PublishCommand(Log, appSourcePath);

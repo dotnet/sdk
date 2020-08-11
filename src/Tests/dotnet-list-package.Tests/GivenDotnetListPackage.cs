@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
-                .And.HaveStdOutContainingIgnoreSpaces(packageName+packageVersion+packageVersion);
+                .And.HaveStdOutContainingIgnoreSpaces(packageName + packageVersion + packageVersion);
         }
 
         [Fact]
@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(args:"--include-transitive")
+                .Execute(args: "--include-transitive")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -223,7 +223,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                     .And.HaveStdOutContainingIgnoreSpaces(shouldInclude.Replace(" ", ""))
                     .And.NotHaveStdOutContaining(shouldntInclude.Replace(" ", ""));
             }
-            
+
         }
 
         [Fact]

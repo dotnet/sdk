@@ -1,15 +1,15 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -95,21 +95,21 @@ namespace Microsoft.NET.Build.Tests
             const string PlatformTarget = "x86";
 
             var testAsset = _testAssetsManager
-				.CopyTestAsset("HelloWorld")
-				.WithSource()
-				.WithProjectChanges(project =>
-				{
-					var ns = project.Root.Name.Namespace;
-					var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-					propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", RuntimeIdentifier));
+                .CopyTestAsset("HelloWorld")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", RuntimeIdentifier));
                     propertyGroup.Add(new XElement(ns + "PlatformTarget", PlatformTarget));
-				});
+                });
 
-			var buildCommand = new BuildCommand(testAsset);
+            var buildCommand = new BuildCommand(testAsset);
 
-			buildCommand
-				.Execute()
-				.Should()
+            buildCommand
+                .Execute()
+                .Should()
                 .Fail()
                 .And.HaveStdOutContaining(string.Format(
                     Strings.CannotHaveRuntimeIdentifierPlatformMismatchPlatformTarget,
@@ -117,40 +117,40 @@ namespace Microsoft.NET.Build.Tests
                     PlatformTarget));
         }
 
-		[Fact]
-		public void It_succeeds_when_RuntimeIdentifier_and_PlatformTarget_mismatch_but_PT_is_AnyCPU()
-		{
-			var targetFramework = "netcoreapp2.1";
-			var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
-			var testAsset = _testAssetsManager
-				.CopyTestAsset("HelloWorld")
-				.WithSource()
-				.WithProjectChanges(project =>
-				{
-					var ns = project.Root.Name.Namespace;
-					var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-					propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", runtimeIdentifier));
-					propertyGroup.Add(new XElement(ns + "PlatformTarget", "AnyCPU"));
-				});
+        [Fact]
+        public void It_succeeds_when_RuntimeIdentifier_and_PlatformTarget_mismatch_but_PT_is_AnyCPU()
+        {
+            var targetFramework = "netcoreapp2.1";
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", runtimeIdentifier));
+                    propertyGroup.Add(new XElement(ns + "PlatformTarget", "AnyCPU"));
+                });
 
-			var buildCommand = new BuildCommand(testAsset);
+            var buildCommand = new BuildCommand(testAsset);
 
-			buildCommand
-				.Execute()
-				.Should()
-				.Pass();
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
 
-			var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: runtimeIdentifier);
-			var selfContainedExecutable = $"HelloWorld{Constants.ExeSuffix}";
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: runtimeIdentifier);
+            var selfContainedExecutable = $"HelloWorld{Constants.ExeSuffix}";
 
-			string selfContainedExecutableFullPath = Path.Combine(outputDirectory.FullName, selfContainedExecutable);
+            string selfContainedExecutableFullPath = Path.Combine(outputDirectory.FullName, selfContainedExecutable);
 
             new RunExeCommand(Log, selfContainedExecutableFullPath)
-				.Execute()
-				.Should()
-				.Pass()
-				.And
-				.HaveStdOutContaining("Hello World!");
-		}
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World!");
+        }
     }
 }

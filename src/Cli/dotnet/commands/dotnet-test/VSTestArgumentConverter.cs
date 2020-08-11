@@ -180,7 +180,8 @@ namespace Microsoft.DotNet.Cli
                 {
                     ignoredArgs.Add(activeArgument);
                 }
-                else if( blame.IsBlameArg(activeArgument, null)) {
+                else if (blame.IsBlameArg(activeArgument, null))
+                {
                     // do nothing, we process remaining arguments ourselves
                 }
                 else

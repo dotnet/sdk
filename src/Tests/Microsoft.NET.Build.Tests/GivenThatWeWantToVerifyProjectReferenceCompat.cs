@@ -1,18 +1,18 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Xunit;
-using FluentAssertions;
-using System.Runtime.InteropServices;
-using System.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp1.1", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netcoreapp1.0 netcoreapp1.1", true, true)]
         [InlineData("netcoreapp2.0", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 netcoreapp1.0 netcoreapp1.1 netcoreapp2.0", true, true)]
 
-        public void Project_reference_compat(string referencerTarget, string testIDPostFix, string rawDependencyTargets, 
+        public void Project_reference_compat(string referencerTarget, string testIDPostFix, string rawDependencyTargets,
                 bool restoreSucceeds, bool buildSucceeds)
         {
             string identifier = "_TestID_" + referencerTarget + "_" + testIDPostFix;

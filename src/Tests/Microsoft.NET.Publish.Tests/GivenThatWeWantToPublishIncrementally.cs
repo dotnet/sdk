@@ -1,16 +1,16 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
-using System.Collections.Generic;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute(@"/p:PublishSingleFile=true")
                 .Should()
                 .Pass();
-            CheckPublishOutput(publishDir, expectedSingleExeFileExtensions.Select(ending => newName + ending).Append("UserData.txt").Append(testProject.Name + ".deps.json"), 
+            CheckPublishOutput(publishDir, expectedSingleExeFileExtensions.Select(ending => newName + ending).Append("UserData.txt").Append(testProject.Name + ".deps.json"),
                 expectedSingleExeFileExtensions.Select(ending => testProject.Name + ending));
         }
 
@@ -176,7 +176,7 @@ namespace Microsoft.NET.Publish.Tests
             newCommand.WorkingDirectory = testDir.Path;
             newCommand.Execute("new", "mvc", "-n", assetName).Should().Pass();
 
-            var expectedRegularFiles = new string[] { ".dll", ".deps.json", ".runtimeconfig.json", ".Views.dll"}
+            var expectedRegularFiles = new string[] { ".dll", ".deps.json", ".runtimeconfig.json", ".Views.dll" }
                 .Select(ending => assetName + ending);
             var expectedSingleFiles = new string[] { ".Views.pdb", ".pdb", ".exe" }.Select(ending => assetName + ending)
                 .Concat(new string[] { "appsettings.json", "appsettings.Development.json", "web.config" });

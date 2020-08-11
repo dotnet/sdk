@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Utils
         {
             if (percent != null)
             {
-                var formattedPercent = $"{percent*100:00\\.00%}";
+                var formattedPercent = $"{percent * 100:00\\.00%}";
                 if (percent > threshold)
                 {
                     builder.Append(formattedPercent.Red());

@@ -1,14 +1,14 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
 using FluentAssertions;
-using HelpActual = Microsoft.DotNet.Tools.Help;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Xunit;
 using Xunit.Abstractions;
+using HelpActual = Microsoft.DotNet.Tools.Help;
 
 namespace Microsoft.DotNet.Help.Tests
 {

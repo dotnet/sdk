@@ -52,9 +52,9 @@ namespace Microsoft.DotNet.Cli
                 {
                     Reporter.Error.WriteLine(e.VerboseMessage.Red());
                 }
-                
+
                 Reporter.Error.WriteLine(e.Message.Red());
-                
+
                 if (e.IsUserError)
                 {
                     ParseResult.ShowHelp();

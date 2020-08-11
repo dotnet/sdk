@@ -2,19 +2,19 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Xml.Linq;
-using Xunit.Abstractions;
-using System.Collections.Generic;
 using Microsoft.NET.TestFramework.ProjectConstruction;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {

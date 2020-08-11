@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using NuGet.ProjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static IEnumerable<PathAndPropertiesTuple> SelectPath<T>(IList<T> fileItemList) 
+        private static IEnumerable<PathAndPropertiesTuple> SelectPath<T>(IList<T> fileItemList)
             where T : LockFileItem
             => fileItemList.Select(c => Tuple.Create(c.Path, c.Properties));
     }

@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Tools.New
             });
 
             string preferredLangEnvVar = Environment.GetEnvironmentVariable("DOTNET_NEW_PREFERRED_LANG");
-            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar)? "C#" : preferredLangEnvVar;
+            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar) ? "C#" : preferredLangEnvVar;
 
             var preferences = new Dictionary<string, string>
             {

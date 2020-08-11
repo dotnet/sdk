@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.Restore;
 using Parser = Microsoft.DotNet.Cli.Parser;
 

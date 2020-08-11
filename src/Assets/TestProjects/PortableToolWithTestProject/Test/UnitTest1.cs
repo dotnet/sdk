@@ -1,6 +1,6 @@
 using System;
-using Xunit;
 using consoledemo;
+using Xunit;
 
 namespace XUnitTestProject1
 {

@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tools
             IEnumerable<string> parsedArguments,
             bool noRestore)
         {
-            if (noRestore) 
+            if (noRestore)
             {
                 return msbuildArgs;
             }
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools
 
         private static RestoreCommand GetSeparateRestoreCommand(
             IEnumerable<string> parsedArguments,
-            IEnumerable<string> trailingArguments, 
+            IEnumerable<string> trailingArguments,
             bool noRestore,
             string msbuildPath)
         {
@@ -58,8 +58,8 @@ namespace Microsoft.DotNet.Tools
                 .Concat(trailingArguments);
 
             return RestoreCommand.FromArgs(
-                restoreArguments.ToArray(), 
-                msbuildPath, 
+                restoreArguments.ToArray(),
+                msbuildPath,
                 noLogo: false);
         }
 
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Tools
         private static bool HasArgumentToExcludeFromRestore(IEnumerable<string> arguments)
             => arguments.Any(a => IsExcludedFromRestore(a));
 
-        private static bool IsExcludedFromRestore(string argument) 
+        private static bool IsExcludedFromRestore(string argument)
             => argument.StartsWith("-property:TargetFramework=", StringComparison.Ordinal);
 
         public override int Execute()

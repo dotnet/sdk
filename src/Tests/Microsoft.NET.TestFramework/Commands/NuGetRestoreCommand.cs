@@ -1,20 +1,20 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Configuration;
 using Xunit.Abstractions;
-using System;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
     public class NuGetRestoreCommand : TestCommand
     {
         private List<string> _sources = new List<string>();
-        
+
         private readonly string _projectRootPath;
         public string ProjectRootPath => _projectRootPath;
 

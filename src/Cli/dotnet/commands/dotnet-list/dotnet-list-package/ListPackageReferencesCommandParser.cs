@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli
                               LocalizableStrings.CmdConfigDescription,
                               Accept.ExactlyOneArgument()
                                     .With(name: LocalizableStrings.CmdConfig)
-                                    .ForwardAsMany(o => new [] { "--config", o.Arguments.Single() })),
+                                    .ForwardAsMany(o => new[] { "--config", o.Arguments.Single() })),
                 Create.Option("--source",
                               LocalizableStrings.CmdSourceDescription,
                               Accept.OneOrMoreArguments()

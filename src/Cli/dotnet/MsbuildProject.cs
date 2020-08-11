@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Tools
                 throw new GracefulException(CommonLocalizableStrings.FoundInvalidProject, projectFile.FullName);
             }
 
-            return new MsbuildProject(projects, project,  interactive);
+            return new MsbuildProject(projects, project, interactive);
         }
 
         public static FileInfo GetProjectFileFromDirectory(string projectDirectory)
@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Tools
                     project = _projects.LoadProject(
                         ProjectRootElement.FullPath,
                         new Dictionary<string, string>
-                            {[Constants.MsBuildInteractivePropertyName] = "true"},
+                        { [Constants.MsBuildInteractivePropertyName] = "true" },
                         null);
                 }
                 else

@@ -1,10 +1,10 @@
-﻿using Microsoft.NET.TestFramework.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework

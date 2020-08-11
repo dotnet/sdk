@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.CommandLine
         private readonly bool _isRequiredSubCommandMissing;
 
         public CommandParsingException(
-            string message, 
+            string message,
             string helpText = null) : base(message)
         {
             HelpText = helpText ?? "";

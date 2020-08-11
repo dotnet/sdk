@@ -5,8 +5,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Build.Utilities;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace Microsoft.DotNet.Cli.Build
 {
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Build
                 outText = outText.Replace(replacementPattern, replacementString);
             }
 
-            for (int i=0; i<ReplacementPatterns.Length; ++i)
+            for (int i = 0; i < ReplacementPatterns.Length; ++i)
             {
                 var replacementPattern = ReplacementPatterns[i].ItemSpec;
                 var replacementString = ReplacementStrings[i].ItemSpec;

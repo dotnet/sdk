@@ -2,21 +2,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
 
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeHaveAPpContentFile : SdkTest
     {
         public GivenThatWeHaveAPpContentFile(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [Fact]
         public void It_copies_to_output_successfully()
@@ -26,8 +26,8 @@ namespace Microsoft.NET.Build.Tests
             TestProject testProject = new TestProject()
             {
                 Name = "CopyPPToOutputTest",
-                IsSdkProject = true, 
-                IsExe = true, 
+                IsSdkProject = true,
+                IsExe = true,
                 TargetFrameworks = "netcoreapp3.0"
             };
             testProject.PackageReferences.Add(packageReference);

@@ -4,19 +4,19 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Xunit;
-using Xunit.Abstractions;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests
 {
     public class GivenThatIWantToManageMulticoreJIT : SdkTest
     {
         private const string OptimizationProfileFileName = "dotnet";
-        
+
         public GivenThatIWantToManageMulticoreJIT(ITestOutputHelper log) : base(log)
         {
         }
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tests
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var testStartTime = GetTruncatedDateTime();
-                        
+
             new DotnetCommand(Log)
                 .WithUserProfileRoot(testDirectory.Path)
                 .Execute("--help");
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tests
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var testStartTime = GetTruncatedDateTime();
-                        
+
             new DotnetCommand(Log)
                 .WithUserProfileRoot(testDirectory.Path)
                 .WithEnvironmentVariable("DOTNET_DISABLE_MULTICOREJIT", "1")
@@ -68,18 +68,18 @@ namespace Microsoft.DotNet.Tests
         private static string GetOptimizationProfileFilePath(string userHomePath = null)
         {
             return Path.Combine(
-                GetUserProfileRoot(userHomePath), 
+                GetUserProfileRoot(userHomePath),
                 GetOptimizationRootPath(GetDotnetVersion()),
                 OptimizationProfileFileName);
         }
-        
+
         private static string GetUserProfileRoot(string overrideUserProfileRoot = null)
         {
             if (overrideUserProfileRoot != null)
             {
                 return overrideUserProfileRoot;
             }
-            
+
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? Environment.GetEnvironmentVariable("LocalAppData")
                 : Environment.GetEnvironmentVariable("HOME");
@@ -88,9 +88,9 @@ namespace Microsoft.DotNet.Tests
         private static string GetOptimizationRootPath(string version)
         {
             var rid = RuntimeInformation.RuntimeIdentifier;
-            
+
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? $@"Microsoft\dotnet\optimizationdata\{version}\{rid}" 
+                ? $@"Microsoft\dotnet\optimizationdata\{version}\{rid}"
                 : $@".dotnet/optimizationdata/{version}/{rid}";
         }
 
@@ -98,11 +98,11 @@ namespace Microsoft.DotNet.Tests
         {
             return TestContext.Current.ToolsetUnderTest.SdkVersion;
         }
-        
+
         private static DateTime GetTruncatedDateTime()
         {
             var dt = DateTime.UtcNow;
-            
+
             return new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, 0, dt.Kind);
         }
     }

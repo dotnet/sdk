@@ -1,12 +1,12 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Xunit.Abstractions;
 
 namespace EndToEnd

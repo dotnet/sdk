@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
         private readonly string _fileOrDirectory;
 
         public RemoveProjectFromSolutionCommand(
-            AppliedOption appliedCommand, 
+            AppliedOption appliedCommand,
             string fileOrDirectory,
             ParseResult parseResult) : base(parseResult)
         {
@@ -41,7 +41,8 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
             SlnFile slnFile = SlnFileFactory.CreateFromFileOrDirectory(_fileOrDirectory);
 
             var baseDirectory = PathUtility.EnsureTrailingSlash(slnFile.BaseDirectory);
-            var relativeProjectPaths = _appliedCommand.Arguments.Select(p => {
+            var relativeProjectPaths = _appliedCommand.Arguments.Select(p =>
+            {
                 var fullPath = Path.GetFullPath(p);
                 return Path.GetRelativePath(
                     baseDirectory,

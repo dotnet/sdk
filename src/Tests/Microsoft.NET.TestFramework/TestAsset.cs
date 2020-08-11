@@ -2,14 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using System.Collections.Generic;
-using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.ProjectConstruction;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -78,7 +78,7 @@ namespace Microsoft.NET.TestFramework
             foreach (string srcFile in sourceFiles)
             {
                 string destFile = srcFile.Replace(_testAssetRoot, Path);
-                
+
                 if (System.IO.Path.GetFileName(srcFile).EndsWith("proj"))
                 {
                     _projectFiles.Add(destFile);
@@ -173,7 +173,7 @@ namespace Microsoft.NET.TestFramework
                 }
             }
             return this;
-            
+
         }
 
         public RestoreCommand GetRestoreCommand(ITestOutputHelper log, string relativePath = "")

@@ -7,8 +7,8 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.List;
 using Xunit;
-using Parser = Microsoft.DotNet.Cli.Parser;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var result = Parser.Instance.Parse($"dotnet tool list -g --tool-path /test/path");
             var appliedCommand = result["dotnet"]["tool"]["list"];
-            
+
             var toolInstallCommand = new ToolListCommand(
                 appliedCommand,
                 result);

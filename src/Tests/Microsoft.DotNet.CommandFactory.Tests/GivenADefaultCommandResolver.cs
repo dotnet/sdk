@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tests
             resolvers.Select(r => r.GetType())
                 .Should()
                 .ContainInOrder(
-                    new []{
+                    new[]{
                         typeof(MuxerCommandResolver),
                         typeof(DotnetToolsCommandResolver),
                         typeof(LocalToolsCommandResolver),

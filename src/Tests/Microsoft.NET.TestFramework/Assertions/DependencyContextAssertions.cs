@@ -1,12 +1,12 @@
-﻿using FluentAssertions;
-using FluentAssertions.Execution;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.DependencyModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using FluentAssertions;
+using FluentAssertions.Execution;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.TestFramework.Assertions
 {

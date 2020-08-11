@@ -1,15 +1,15 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved. 
 // Licensed under the MIT license. See LICENSE file in the project root for full license information. 
 
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using System;
+using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.NET.TestFramework;
 using Xunit;
 using Xunit.Abstractions;
-using FluentAssertions;
-using Microsoft.DotNet.CommandFactory;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void WhenItCannotResolveCommandItThrows()
         {
-            Action a = () => { CommandFactoryUsingResolver.Create(new ResolveNothingCommandResolverPolicy(), "non-exist-command", Array.Empty<string>() ); };
+            Action a = () => { CommandFactoryUsingResolver.Create(new ResolveNothingCommandResolverPolicy(), "non-exist-command", Array.Empty<string>()); };
             a.ShouldThrow<CommandUnknownException>();
         }
 

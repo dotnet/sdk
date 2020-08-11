@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public IDisposable CaptureTiming(string instance = "", [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "")
         {
-            if(!PerfTrace.Enabled)
+            if (!PerfTrace.Enabled)
             {
                 return null;
             }

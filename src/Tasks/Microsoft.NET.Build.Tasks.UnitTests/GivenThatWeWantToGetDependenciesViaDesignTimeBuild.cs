@@ -372,7 +372,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                             { MetadataKeys.Type, "Package" }
                         })
                 },
-                PackageDependencies = new ITaskItem[] { 
+                PackageDependencies = new ITaskItem[] {
                     new MockTaskItem(
                         itemSpec: "Package1/1.0.0",
                         metadata: new Dictionary<string, string>

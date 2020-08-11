@@ -7,11 +7,11 @@
 ///--------------------------------------------------------------------------------------------
 namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
-    using Generic = System.Collections.Generic;
+    using Microsoft.NET.Sdk.Publish.Tasks.Properties;
     using Diagnostics = System.Diagnostics;
+    using Generic = System.Collections.Generic;
     // using Deployment = Microsoft.Web.Deployment;
     using RegularExpressions = System.Text.RegularExpressions;
-    using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
     // we need to think of a way to split the MSDeployment to other dll
     // using VSMSDeploySyncOption = Deployment.DeploymentSyncOptions;
@@ -94,7 +94,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
             if (vSMSDeployObject.RetryInterval >= 0)
                 baseOptions.RetryInterval = vSMSDeployObject.RetryInterval;
-            if (vSMSDeployObject.RetryAttempts >= 0 )
+            if (vSMSDeployObject.RetryAttempts >= 0)
                 baseOptions.RetryAttempts = vSMSDeployObject.RetryAttempts;
 
             if (!string.IsNullOrEmpty(vSMSDeployObject.UserAgent))
@@ -132,7 +132,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
             else
                 return new System.Collections.Generic.List<string>(0);
-            
+
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="enable"></param>
         public static void ChangeLinkExtensionEnableStatue(/*Deployment.DeploymentBaseOptions*/ dynamic baseOptions, System.Collections.Generic.List<string> linkExtensions, bool enable)
         {
-            if (linkExtensions!=null && linkExtensions.Count != 0)
+            if (linkExtensions != null && linkExtensions.Count != 0)
             {
                 foreach (string linkExtObj in linkExtensions)
                 {
@@ -245,7 +245,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
             // our code path should only take a well known provider
             Diagnostics.Debug.Assert(MsDeploy.Utility.IsDeploymentWellKnownProvider(m_provider));
-            
+
             // maybe we should show the "secure data to display"
             // for now just supress it.
             if (0 == string.Compare(m_provider, MSWebDeploymentAssembly.DynamicAssembly.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, MSDeploy.Provider.DBFullSql).ToString(), System.StringComparison.OrdinalIgnoreCase))
@@ -284,7 +284,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
                 }
             }
-            
+
         }
 
         public VSMSDeployObject(Build.Framework.ITaskItem taskItem, bool fNoDisplayRoot)
@@ -322,22 +322,22 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         protected bool m_fNoDisplayRoot = false;
         protected int m_retryInterval = -1;
         protected int m_retryAttempts = -1;
-        
+
         Generic.IList<MsDeploy.ParameterInfo> m_iListParameter = new Generic.List<MsDeploy.ParameterInfo>();
         Generic.IList<MsDeploy.ProviderOption> m_iListProviderOption = new Generic.List<MsDeploy.ProviderOption>();
         Generic.IList<MsDeploy.ParameterInfoWithEntry> m_iListParameterWithEntry = new Generic.List<MsDeploy.ParameterInfoWithEntry>();
         Generic.IList<string> m_iListSetParametersFiles = new Generic.List<string>();
-        
+
         private System.Collections.Generic.Dictionary<string, string> m_NameValueDictionary = new System.Collections.Generic.Dictionary<string, string>(10, System.StringComparer.OrdinalIgnoreCase);
-        
+
         protected /*Deployment.DeploymentBaseOptions*/ dynamic m_deploymentBaseOptions = null;
 
         public override string ToString()
         {
             string root = m_fNoDisplayRoot ? "******" : m_root;
-            return string.Format(System.Globalization.CultureInfo.CurrentCulture,Resources.VSMSDEPLOY_ObjectIdentity, m_provider.ToString(), root);
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.VSMSDEPLOY_ObjectIdentity, m_provider.ToString(), root);
         }
-        
+
 
         // property used to call Deployment.DeploymentManager.CreateObject
         public virtual string Root
@@ -356,14 +356,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         public virtual bool IsLocal
         {
             get { return string.IsNullOrEmpty(this.ComputerName) && string.IsNullOrEmpty(this.MSDeployServiceUrl); }
-            
+
         }
         public virtual bool UseSeparatedCredential
         {
             get { return !string.IsNullOrEmpty(this.UserName); }
         }
 
-        
+
         public virtual string DisableLinks
         {
             get { return this.m_disableLinks; }
@@ -378,14 +378,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
 
 
-      //   <ComputerName></ComputerName>
-      //<Wmsvc></Wmsvc>   -------------------------// bugbug, not supported yet
-      //<UserName></UserName>
-      //<Password></Password>
-      //<EncryptPassword></EncryptPassword>
-      //<IncludeAcls></IncludeAcls>
-      //<authType></authType>
-      //<prefetchPayload></prefetchPayload>
+        //   <ComputerName></ComputerName>
+        //<Wmsvc></Wmsvc>   -------------------------// bugbug, not supported yet
+        //<UserName></UserName>
+        //<Password></Password>
+        //<EncryptPassword></EncryptPassword>
+        //<IncludeAcls></IncludeAcls>
+        //<authType></authType>
+        //<prefetchPayload></prefetchPayload>
 
 
         public virtual string ComputerName
@@ -408,14 +408,16 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         // Note this support is still broken for vsmsdeploy
         public string MSDeployServiceUrl
         {
-            get {
+            get
+            {
                 string value = GetDictionaryValue("wmsvc");
                 Diagnostics.Debug.Assert(string.IsNullOrEmpty(value), "Not yet implement");
                 return value;
             }
-            set {
+            set
+            {
                 Diagnostics.Debug.Assert(false, "Not yet implement");
-                SetDictionaryValue("wmsvc", value); 
+                SetDictionaryValue("wmsvc", value);
             }
         }
 
@@ -474,7 +476,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         }
 
 
-        
+
         public int RetryAttempts
         {
             get { return this.m_retryAttempts; }
@@ -487,9 +489,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             set { this.m_retryInterval = value; }
         }
 
-        public string UserAgent {get;set;}
+        public string UserAgent { get; set; }
 
-        
+
 
         public Generic.IList<MsDeploy.ParameterInfo> Parameters
         {

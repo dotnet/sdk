@@ -20,8 +20,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 {
     internal delegate IShellShimRepository CreateShellShimRepository(DirectoryPath? nonGlobalLocation = null);
     internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller) CreateToolPackageStoresAndInstaller(
-		DirectoryPath? nonGlobalLocation = null,
-		IEnumerable<string> forwardRestoreArguments = null);
+        DirectoryPath? nonGlobalLocation = null,
+        IEnumerable<string> forwardRestoreArguments = null);
 
     internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     {
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolPath = appliedCommand.SingleArgumentOrDefault(ToolAppliedOption.ToolPathOption);
 
             _createToolPackageStoresAndInstaller = createToolPackageStoreAndInstaller ?? ToolPackageFactory.CreateToolPackageStoresAndInstaller;
-			_forwardRestoreArguments = appliedCommand.OptionValuesToBeForwarded();
+            _forwardRestoreArguments = appliedCommand.OptionValuesToBeForwarded();
 
             _environmentPathInstruction = environmentPathInstruction
                 ?? EnvironmentPathFactory.CreateEnvironmentPathInstruction();
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 throw new GracefulException(
                     messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId),
-                    verboseMessages: new[] {ex.ToString()},
+                    verboseMessages: new[] { ex.ToString() },
                     isUserError: false);
             }
         }

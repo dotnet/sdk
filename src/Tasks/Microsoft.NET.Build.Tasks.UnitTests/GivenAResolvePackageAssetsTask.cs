@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using FluentAssertions;
-using Microsoft.Build.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using FluentAssertions;
+using Microsoft.Build.Framework;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -24,12 +24,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             byte[] oldHash;
             try
             {
-                 oldHash = task.HashSettings();
+                oldHash = task.HashSettings();
             }
             catch (ArgumentNullException)
             {
                 Assert.True(
-                    false, 
+                    false,
                     "HashSettings is likely not correctly handling null value of one or more optional task parameters");
 
                 throw; // unreachable
@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 byte[] newHash = task.HashSettings();
                 newHash.Should().NotBeEquivalentTo(
-                    oldHash, 
+                    oldHash,
                     because: $"{property.Name} should be included in hash.");
 
                 oldHash = newHash;

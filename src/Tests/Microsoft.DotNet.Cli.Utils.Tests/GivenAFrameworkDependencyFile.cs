@@ -29,10 +29,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
                     currentRuntimeIdentifier: "win7",
-                    alternativeCurrentRuntimeIdentifier : "win",
-                    runtimeGraph : _testRuntimeGraph,
-                    candidateRuntimeIdentifiers : new [] { "win", "any" },
-                    mostFitRuntimeIdentifier : out string mostFitRid)
+                    alternativeCurrentRuntimeIdentifier: "win",
+                    runtimeGraph: _testRuntimeGraph,
+                    candidateRuntimeIdentifiers: new[] { "win", "any" },
+                    mostFitRuntimeIdentifier: out string mostFitRid)
                 .Should().BeTrue();
 
             mostFitRid.Should().Be("win");
@@ -69,10 +69,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
                     currentRuntimeIdentifier: "win7",
-                    alternativeCurrentRuntimeIdentifier : null,
-                    runtimeGraph : _testRuntimeGraph,
-                    candidateRuntimeIdentifiers : new [] { "Win", "any" },
-                    mostFitRuntimeIdentifier : out string mostFitRid)
+                    alternativeCurrentRuntimeIdentifier: null,
+                    runtimeGraph: _testRuntimeGraph,
+                    candidateRuntimeIdentifiers: new[] { "Win", "any" },
+                    mostFitRuntimeIdentifier: out string mostFitRid)
                 .Should().BeTrue();
 
             mostFitRid.Should().Be("Win");
@@ -83,10 +83,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
                     currentRuntimeIdentifier: "win7",
-                    alternativeCurrentRuntimeIdentifier : null,
-                    runtimeGraph : _testRuntimeGraph,
-                    candidateRuntimeIdentifiers : new [] { "win", "win", "any" },
-                    mostFitRuntimeIdentifier : out string mostFitRid)
+                    alternativeCurrentRuntimeIdentifier: null,
+                    runtimeGraph: _testRuntimeGraph,
+                    candidateRuntimeIdentifiers: new[] { "win", "win", "any" },
+                    mostFitRuntimeIdentifier: out string mostFitRid)
                 .Should().BeTrue();
 
             mostFitRid.Should().Be("win");
@@ -111,10 +111,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
                     currentRuntimeIdentifier: "win7",
-                    alternativeCurrentRuntimeIdentifier : null,
-                    runtimeGraph : _testRuntimeGraph,
-                    candidateRuntimeIdentifiers : new [] { "centos", "debian" },
-                    mostFitRuntimeIdentifier : out string mostFitRid)
+                    alternativeCurrentRuntimeIdentifier: null,
+                    runtimeGraph: _testRuntimeGraph,
+                    candidateRuntimeIdentifiers: new[] { "centos", "debian" },
+                    mostFitRuntimeIdentifier: out string mostFitRid)
                 .Should().BeFalse();
         }
 

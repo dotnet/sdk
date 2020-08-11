@@ -10,20 +10,20 @@ using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.Uninstall;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
-using Parser = Microsoft.DotNet.Cli.Parser;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
-using InstallLocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using Microsoft.DotNet.ShellShim;
 using Microsoft.NET.TestFramework.Utilities;
+using Xunit;
+using InstallLocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(packageDirectory.Value).Should().BeFalse();
             _fileSystem.File.Exists(shimPath).Should().BeFalse();
         }
-        
+
         [Fact]
         public void GivenAPackageWhenCallFromUninstallRedirectCommandItUninstalls()
         {
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Clear();
 
-            
+
             ParseResult result = Parser.Instance.Parse("dotnet tool uninstall " + $"-g {PackageId}");
 
             (IToolPackageStore, IToolPackageStoreQuery, IToolPackageUninstaller) CreateToolPackageStoreAndUninstaller(
@@ -154,15 +154,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem)),
                 _reporter);
-            
-            var uninstallCommand 
+
+            var uninstallCommand
                 = new ToolUninstallCommand(
-                    result["dotnet"]["tool"]["uninstall"], 
-                    result, 
-                    toolUninstallGlobalOrToolPathCommand: toolUninstallGlobalOrToolPathCommand) ;
+                    result["dotnet"]["tool"]["uninstall"],
+                    result,
+                    toolUninstallGlobalOrToolPathCommand: toolUninstallGlobalOrToolPathCommand);
 
             uninstallCommand.Execute().Should().Be(0);
-            
+
             _reporter
                 .Lines
                 .Single()

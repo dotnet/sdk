@@ -5,12 +5,12 @@ using System;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-using Parser = Microsoft.DotNet.Cli.Parser;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
+using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.NET.TestFramework.Utilities;
+using Xunit;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {

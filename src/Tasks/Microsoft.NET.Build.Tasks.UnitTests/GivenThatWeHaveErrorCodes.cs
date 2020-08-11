@@ -4,14 +4,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Resources;
-using System.Text.RegularExpressions;
-using FluentAssertions;
-using Xunit;
 using System.Linq;
-using System.Xml.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Resources;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using FluentAssertions;
+using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -88,9 +88,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 var value = data.Element(ns + "value").Value;
                 var comment = data.Element(ns + "comment")?.Value ?? "";
                 var prefix = value.Substring(0, value.IndexOf(' '));
-                
+
                 if (name.EndsWith("_Info"))
-                { 
+                {
                     comment.Should().NotContain("StrBegin",
                         because: "informational messages should not have error codes.");
                 }

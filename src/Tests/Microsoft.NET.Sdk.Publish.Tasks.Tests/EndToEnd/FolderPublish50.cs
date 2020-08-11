@@ -57,7 +57,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
             int? exitCode = new ProcessWrapper().RunProcess(DotNetExeName, dotNetNewArguments, testFolder, out int? processId1, createDirectoryIfNotExists: true);
             Assert.True(exitCode.HasValue && exitCode.Value == 0);
 
-            Publish(testFolder, projectName, configuration, msBuildType, isStandAlone:false, resultUrl:"http://localhost:5000/api/Values");
+            Publish(testFolder, projectName, configuration, msBuildType, isStandAlone: false, resultUrl: "http://localhost:5000/api/Values");
         }
 
         [Theory]

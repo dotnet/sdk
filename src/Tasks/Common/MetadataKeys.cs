@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string TargetFrameworkMoniker = "TargetFrameworkMoniker";
         public const string FrameworkName = "FrameworkName";
         public const string FrameworkVersion = "FrameworkVersion";
-        public const string IsTrimmable = "IsTrimmable"; 
+        public const string IsTrimmable = "IsTrimmable";
         public const string RuntimeFrameworkName = "RuntimeFrameworkName";
         public const string RuntimePackRuntimeIdentifiers = "RuntimePackRuntimeIdentifiers";
 
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string PackageConflictPreferredPackages = "PackageConflictPreferredPackages";
 
         //  Runtime packs
-		public const string DropFromSingleFile = "DropFromSingleFile";
+        public const string DropFromSingleFile = "DropFromSingleFile";
         public const string RuntimePackLabels = "RuntimePackLabels";
         public const string AdditionalFrameworkReferences = "AdditionalFrameworkReferences";
 

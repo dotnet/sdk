@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _fileSystemMockBuilder = FileSystemMockBuilder.Create();
         }
 
-        [Fact(Skip ="Product.Version not set correctly when running tests")]
+        [Fact(Skip = "Product.Version not set correctly when running tests")]
         public void TheSentinelHasTheCurrentVersionInItsName()
         {
             FirstTimeUseNoticeSentinel.SENTINEL.Should().Contain($"{Product.Version}");
@@ -153,7 +153,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
 
             public DirectoryMockWithSpy(IDirectory directorySystem, IList<string> directories = null)
             {
-                if (directorySystem != null) _directorySystem = directorySystem;
+                if (directorySystem != null)
+                    _directorySystem = directorySystem;
 
                 if (directories != null)
                 {

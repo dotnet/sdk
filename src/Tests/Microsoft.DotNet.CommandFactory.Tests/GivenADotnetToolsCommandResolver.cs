@@ -3,10 +3,10 @@
 
 using System.IO;
 using FluentAssertions;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
 using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests

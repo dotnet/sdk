@@ -1,14 +1,14 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public string GetPackageDirectory(string packageId, NuGetVersion version)
             => _packagePathResolver?.GetPackageDirectory(packageId, version);
-        
+
         public string GetPackageDirectory(string packageId, NuGetVersion version, out string packageRoot)
         {
             var packageInfo = _packagePathResolver?.GetPackageInfo(packageId, version);

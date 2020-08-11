@@ -102,7 +102,7 @@ namespace Microsoft.NET.Build.Tasks
             DebugThrowMissingOrIncorrectCode(code, format, level);
 
             return new Message(
-                level, 
+                level,
                 text: string.Format(format, args),
                 code: code);
         }
@@ -129,9 +129,9 @@ namespace Microsoft.NET.Build.Tasks
                 default:
                     if (code != null)
                     {
-                       throw new ArgumentException(
-                           "Message is prefixed with NETSDK error, but error codes should not be used for informational messages: "
-                           + $"{code}:{message}");
+                        throw new ArgumentException(
+                            "Message is prefixed with NETSDK error, but error codes should not be used for informational messages: "
+                            + $"{code}:{message}");
                     }
                     break;
             }

@@ -6,22 +6,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.DotNet.BuildServer;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Moq;
-using Xunit;
-using Parser = Microsoft.DotNet.Cli.Parser;
-using CommandLocalizableStrings = Microsoft.DotNet.BuildServer.LocalizableStrings;
-using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.Shutdown.LocalizableStrings;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.NET.TestFramework.Commands;
-using Microsoft.DotNet.BuildServer;
+using Microsoft.NET.TestFramework.Utilities;
+using Moq;
+using Xunit;
 using Xunit.Abstractions;
+using CommandLocalizableStrings = Microsoft.DotNet.BuildServer.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.Shutdown.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 namespace Microsoft.DotNet.Tests.Commands
 {
     public class BuildServerShutdownCommandTests : SdkTest

@@ -5,24 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.ShellShim;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Test.Utilities;
+using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
-using Parser = Microsoft.DotNet.Cli.Parser;
-using System.Runtime.InteropServices;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using System.Text.Json;
 using Microsoft.NET.TestFramework.Utilities;
+using Xunit;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
-            _temporaryDirectory =  _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             _pathToPlaceShim = Path.Combine(_temporaryDirectory, "pathToPlace");
             _fileSystem.Directory.CreateDirectory(_pathToPlaceShim);
             _pathToPlacePackages = _pathToPlaceShim + "Packages";
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId}");
             _appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            _parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
+            _parseResult = parser.ParseFrom("dotnet tool", new[] { "install", "-g", PackageId });
         }
 
         [Fact]
@@ -403,7 +403,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
 
-         [Fact]
+        [Fact]
         public void WhenRunWithValidVersionWildcardItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version 1.0.*");
@@ -435,7 +435,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var result = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
+            var parseResult = parser.ParseFrom("dotnet tool", new[] { "install", "-g", PackageId });
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(appliedCommand,
                 parseResult,
@@ -453,18 +453,18 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void AndPackagedShimIsProvidedWhenRunWithPackageIdItCreateShimUsingPackagedShim()
         {
             var extension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
-            var prepackagedShimPath = Path.Combine (_temporaryDirectory, ToolCommandName + extension);
+            var prepackagedShimPath = Path.Combine(_temporaryDirectory, ToolCommandName + extension);
             var tokenToIdentifyPackagedShim = "packagedShim";
             _fileSystem.File.WriteAllText(prepackagedShimPath, tokenToIdentifyPackagedShim);
 
             var result = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
             var appliedCommand = result["dotnet"]["tool"]["install"];
             var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
+            var parseResult = parser.ParseFrom("dotnet tool", new[] { "install", "-g", PackageId });
 
             var packagedShimsMap = new Dictionary<PackageId, IReadOnlyList<FilePath>>
             {
-                [new PackageId(PackageId)] = new[] {new FilePath(prepackagedShimPath)}
+                [new PackageId(PackageId)] = new[] { new FilePath(prepackagedShimPath) }
             };
 
             var installCommand = new ToolInstallGlobalOrToolPathCommand(appliedCommand,

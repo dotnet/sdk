@@ -1,6 +1,10 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using FluentAssertions;
 using Microsoft.Build.Construction;
 using Microsoft.DotNet.Tools;
@@ -9,10 +13,6 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Msbuild.Tests.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -74,7 +74,7 @@ Commands:
 
             try
             {
-                new DotnetCommand(Log, "new", "classlib", "-o", projDir.Path, "--debug:ephemeral-hive",  "--no-restore")
+                new DotnetCommand(Log, "new", "classlib", "-o", projDir.Path, "--debug:ephemeral-hive", "--no-restore")
                     .WithWorkingDirectory(projDir.Path)
                     .Execute()
                 .Should().Pass();
@@ -194,7 +194,7 @@ Commands:
         {
             var setup = Setup();
             var lib = NewLibWithFrameworks(dir: setup.TestRoot);
-            
+
             int noCondBefore = lib.CsProj().NumberOfItemGroupsWithoutCondition();
             var cmd = new DotnetCommand(Log, "add", lib.CsProjPath, "reference")
                 .WithWorkingDirectory(setup.TestRoot)
@@ -263,7 +263,8 @@ Commands:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute("-f", FrameworkNet451, setup.ValidRefCsprojPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj")); ;
+            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj"));
+            ;
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithConditionContaining(ConditionFrameworkNet451).Should().Be(condBefore);
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(setup.ValidRefCsprojName, ConditionFrameworkNet451).Should().Be(1);

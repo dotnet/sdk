@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FluentAssertions;
-using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
@@ -15,7 +16,6 @@ using NuGet.Frameworks;
 using NuGet.Versioning;
 using Xunit;
 using LocalizableStrings = Microsoft.DotNet.ToolManifest.LocalizableStrings;
-using System.Linq;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
 
             a.ShouldThrow<ToolManifestException>()
-                .And.Message.Should().Contain(string.Format(LocalizableStrings.UnexpectedTypeInJson, "True|False" ,"isRoot"));
+                .And.Message.Should().Contain(string.Format(LocalizableStrings.UnexpectedTypeInJson, "True|False", "isRoot"));
         }
 
         [Fact]

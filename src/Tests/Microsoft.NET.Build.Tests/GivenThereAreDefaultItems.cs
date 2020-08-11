@@ -2,22 +2,22 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using Xunit;
+using FluentAssertions;
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit.Abstractions;
-using NuGet.ProjectModel;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -466,7 +466,7 @@ namespace Microsoft.NET.Build.Tests
                 "wwwroot/wwwsubfolder/wwwsubfolder.txt",
             });
         }
- 
+
         [Fact]
         public void Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used()
         {
@@ -669,7 +669,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass()
                 .And
                 .NotHaveStdOutContaining("NETSDK1071");
-                ;
+            ;
 
             LockFile lockFile = LockFileUtilities.GetLockFile(Path.Combine(buildCommand.ProjectRootPath, "obj", "project.assets.json"), NullLogger.Instance);
 
@@ -690,7 +690,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "12.0.1"));
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "12.0.1"));
-            
+
             testProject.SourceFiles["Test.cs"] = @"
 public class Class1
 {

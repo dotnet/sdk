@@ -55,7 +55,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForR2RTesting(
                 targetFramework,
-                projectName, 
+                projectName,
                 "ClassLib");
 
             testProject.AdditionalProperties["PublishReadyToRun"] = "True";
@@ -67,7 +67,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute().Should().Pass();
 
             DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
-                targetFramework, 
+                targetFramework,
                 "Debug",
                 testProject.RuntimeIdentifier);
 
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("netcoreapp3.0")]
         public void It_supports_framework_dependent_publishing(string targetFramework)
         {
-            TestProjectPublishing_Internal("FrameworkDependent", targetFramework, isSelfContained: false, emitNativeSymbols:true);
+            TestProjectPublishing_Internal("FrameworkDependent", targetFramework, isSelfContained: false, emitNativeSymbols: true);
         }
 
         [Theory]
@@ -191,7 +191,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("netcoreapp3.0")]
         public void It_can_publish_readytorun_for_selfcontained_library_projects(string targetFramework)
         {
-            TestProjectPublishing_Internal("LibraryProject2", targetFramework, isSelfContained:true, makeExeProject: false);
+            TestProjectPublishing_Internal("LibraryProject2", targetFramework, isSelfContained: true, makeExeProject: false);
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]

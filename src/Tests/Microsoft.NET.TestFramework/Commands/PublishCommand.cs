@@ -17,7 +17,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public override DirectoryInfo GetOutputDirectory(string targetFramework = "netcoreapp1.1", string configuration = "Debug", string runtimeIdentifier = "")
         {
-            DirectoryInfo baseDirectory = base.GetOutputDirectory(targetFramework, configuration, runtimeIdentifier); 
+            DirectoryInfo baseDirectory = base.GetOutputDirectory(targetFramework, configuration, runtimeIdentifier);
             return new DirectoryInfo(Path.Combine(baseDirectory.FullName, PublishSubfolderName));
         }
 

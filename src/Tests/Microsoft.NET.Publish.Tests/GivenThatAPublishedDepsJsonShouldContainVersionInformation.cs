@@ -226,7 +226,7 @@ static class Program
             //  to force the .NET Core 2.0 app to run on that version
             string rollForwardVersion = GetRollForwardNetCoreAppVersion();
 
-            var runAppCommand = new DotnetCommand(Log, "exec", "--fx-version", rollForwardVersion, exePath );
+            var runAppCommand = new DotnetCommand(Log, "exec", "--fx-version", rollForwardVersion, exePath);
 
             var runAppResult = runAppCommand
                 .Execute();
