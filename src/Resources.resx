@@ -279,4 +279,7 @@
   <data name="The_dotnet_runtime_version_is_0" xml:space="preserve">
     <value>The dotnet runtime version is '{0}'.</value>
   </data>
+  <data name="Remove_unnecessary_import" xml:space="preserve">
+    <value>Remove unnecessary import.</value>
+  </data>
 </root>

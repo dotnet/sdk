@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
-    public class ImportsFormatterTests : CSharpFormatterTests
+    public class OrganizeImportsFormatterTests : CSharpFormatterTests
     {
-        private protected override ICodeFormatter Formatter => new ImportsFormatter();
+        private protected override ICodeFormatter Formatter => new OrganizeImportsFormatter();
 
         [Fact]
         public async Task WhenOptionsDisabled_AndImportsNotSorted_ImportsSorted()
@@ -40,7 +40,7 @@ class C
                 ["dotnet_separate_import_directive_groups"] = "false"
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -71,7 +71,7 @@ class C
                 ["dotnet_separate_import_directive_groups"] = "false"
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -103,7 +103,7 @@ class C
                 ["dotnet_separate_import_directive_groups"] = "true"
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -135,7 +135,7 @@ class C
                 ["dotnet_separate_import_directive_groups"] = "true"
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -155,7 +155,7 @@ class C
                 ["end_of_line"] = EndOfLineFormatter.GetEndOfLineOption(Environment.NewLine)
             };
 
-            await TestAsync(code, code, editorConfig);
+            await AssertCodeUnchangedAsync(code, editorConfig);
         }
     }
 }

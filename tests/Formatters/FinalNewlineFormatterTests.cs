@@ -14,12 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         [Fact]
         public async Task WhenFinalNewlineUnspecified_AndFinalNewlineMissing_NoChange()
         {
-            var testCode = @"
-class C
-{
-}";
-
-            var expectedCode = @"
+            var code = @"
 class C
 {
 }";
@@ -29,19 +24,13 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeUnchangedAsync(code, editorConfig);
         }
 
         [Fact]
         public async Task WhenFinalNewlineUnspecified_AndFinalNewlineExits_NoChange()
         {
-            var testCode = @"
-class C
-{
-}
-";
-
-            var expectedCode = @"
+            var code = @"
 class C
 {
 }
@@ -52,7 +41,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeUnchangedAsync(code, editorConfig);
         }
 
         [Fact]
@@ -68,7 +57,7 @@ class C
                 ["end_of_line"] = "lf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -84,7 +73,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -100,18 +89,12 @@ class C
                 ["end_of_line"] = "cr",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
         [Fact]
         public async Task WhenFinalNewlineRequired_AndFinalNewlineExits_NoChange()
         {
-            var testCode = @"
-class C
-{
-}
-";
-
-            var expectedCode = @"
+            var code = @"
 class C
 {
 }
@@ -123,7 +106,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeUnchangedAsync(code, editorConfig);
         }
 
         [Fact]
@@ -139,7 +122,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -155,7 +138,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
@@ -171,18 +154,13 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
         [Fact]
         public async Task WhenFinalNewlineUnwanted_AndFinalNewlineMissing_NoChange()
         {
-            var testCode = @"
-class C
-{
-}";
-
-            var expectedCode = @"
+            var code = @"
 class C
 {
 }";
@@ -193,15 +171,13 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeUnchangedAsync(code, editorConfig);
         }
 
         [Fact]
         public async Task WhenFinalNewlineUnwanted_AndFileIsEmpty_NoChange()
         {
-            var testCode = @"";
-
-            var expectedCode = @"";
+            var code = @"";
 
             var editorConfig = new Dictionary<string, string>()
             {
@@ -209,7 +185,7 @@ class C
                 ["end_of_line"] = "crlf",
             };
 
-            await TestAsync(testCode, expectedCode, editorConfig);
+            await AssertCodeUnchangedAsync(code, editorConfig);
         }
     }
 }

@@ -2,28 +2,33 @@
 
 using System;
 using System.Linq;
+using Microsoft.CodeAnalysis.Tools.Analyzers;
 
 namespace Microsoft.CodeAnalysis.Diagnostics
 {
     internal static class AnalyzerOptionsExtensions
     {
-        private const string DotnetAnalyzerDiagnosticPrefix = "dotnet_analyzer_diagnostic";
-        private const string CategoryPrefix = "category";
-        private const string SeveritySuffix = "severity";
+        internal const string DotnetDiagnosticPrefix = "dotnet_diagnostic";
+        internal const string DotnetAnalyzerDiagnosticPrefix = "dotnet_analyzer_diagnostic";
+        internal const string CategoryPrefix = "category";
+        internal const string SeveritySuffix = "severity";
 
-        private const string DotnetAnalyzerDiagnosticSeverityKey = DotnetAnalyzerDiagnosticPrefix + "." + SeveritySuffix;
+        internal const string DotnetAnalyzerDiagnosticSeverityKey = DotnetAnalyzerDiagnosticPrefix + "." + SeveritySuffix;
 
-        private static string GetCategoryBasedDotnetAnalyzerDiagnosticSeverityKey(string category)
+        internal static string GetDiagnosticIdBasedDotnetAnalyzerDiagnosticSeverityKey(string diagnosticId)
+            => $"{DotnetDiagnosticPrefix}.{diagnosticId}.{SeveritySuffix}";
+        internal static string GetCategoryBasedDotnetAnalyzerDiagnosticSeverityKey(string category)
             => $"{DotnetAnalyzerDiagnosticPrefix}.{CategoryPrefix}-{category}.{SeveritySuffix}";
 
         /// <summary>
         /// Tries to get configured severity for the given <paramref name="descriptor"/>
-        /// for the given <paramref name="tree"/> from bulk configuration analyzer config options, i.e.
-        ///     'dotnet_analyzer_diagnostic.category-%RuleCategory%.severity = %severity%'
+        /// for the given <paramref name="tree"/> from analyzer config options, i.e.
+        ///     'dotnet_diagnostic.%descriptor.Id%.severity = %severity%',
+        ///     'dotnet_analyzer_diagnostic.category-%RuleCategory%.severity = %severity%',
         ///         or
         ///     'dotnet_analyzer_diagnostic.severity = %severity%'
         /// </summary>
-        public static bool TryGetSeverityFromBulkConfiguration(
+        public static bool TryGetSeverityFromConfiguration(
             this AnalyzerOptions? analyzerOptions,
             SyntaxTree tree,
             Compilation compilation,
@@ -64,6 +69,79 @@ namespace Microsoft.CodeAnalysis.Diagnostics
                 TryParseSeverity(value, out severity))
             {
                 return true;
+            }
+
+            // Otherwise, if user has explicitly configured default severity for all analyzer diagnostics, that should be respected.
+            // For example, 'dotnet_analyzer_diagnostic.severity = error'
+            if (analyzerConfigOptions.TryGetValue(DotnetAnalyzerDiagnosticSeverityKey, out value) &&
+                TryParseSeverity(value, out severity))
+            {
+                return true;
+            }
+
+            severity = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether a diagnostic is configured in the <paramref name="analyzerConfigOptions" />.
+        /// </summary>
+        public static bool IsDiagnosticSeverityConfigured(this AnalyzerConfigOptions analyzerConfigOptions, SyntaxTree tree, string diagnosticId, string? diagnosticCategory)
+        {
+            return tree.DiagnosticOptions.TryGetValue(diagnosticId, out _)
+                || (diagnosticCategory != null && analyzerConfigOptions.TryGetValue(GetCategoryBasedDotnetAnalyzerDiagnosticSeverityKey(diagnosticCategory), out _))
+                || analyzerConfigOptions.TryGetValue(DotnetAnalyzerDiagnosticSeverityKey, out _);
+        }
+
+        /// <summary>
+        /// Get the configured severity for a diagnostic analyzer from the <paramref name="analyzerConfigOptions" />.
+        /// </summary>
+        public static DiagnosticSeverity GetDiagnosticSeverity(this AnalyzerConfigOptions analyzerConfigOptions, SyntaxTree tree, string diagnosticId, string? diagnosticCategory)
+        {
+            return analyzerConfigOptions.TryGetSeverityFromConfiguration(tree, diagnosticId, diagnosticCategory, out var reportSeverity)
+                ? reportSeverity.ToSeverity()
+                : DiagnosticSeverity.Hidden;
+        }
+
+        /// <summary>
+        /// Tries to get configured severity for the given <paramref name="diagnosticId"/>
+        /// for the given <paramref name="tree"/> from analyzer config options, i.e.
+        ///     'dotnet_diagnostic.%descriptor.Id%.severity = %severity%',
+        ///     'dotnet_analyzer_diagnostic.category-%RuleCategory%.severity = %severity%',
+        ///         or
+        ///     'dotnet_analyzer_diagnostic.severity = %severity%'
+        /// </summary>
+        public static bool TryGetSeverityFromConfiguration(
+            this AnalyzerConfigOptions? analyzerConfigOptions,
+            SyntaxTree tree,
+            string diagnosticId,
+            string? diagnosticCategory,
+            out ReportDiagnostic severity)
+        {
+            if (analyzerConfigOptions is null)
+            {
+                severity = default;
+                return false;
+            }
+
+            // If user has explicitly configured severity for this diagnostic ID, that should be respected.
+            // For example, 'dotnet_diagnostic.CA1000.severity = error'
+            if (tree.DiagnosticOptions.TryGetValue(diagnosticId, out severity))
+            {
+                return true;
+            }
+
+            string? value;
+            if (diagnosticCategory != null)
+            {
+                // If user has explicitly configured default severity for the diagnostic category, that should be respected.
+                // For example, 'dotnet_analyzer_diagnostic.category-security.severity = error'
+                var categoryBasedKey = GetCategoryBasedDotnetAnalyzerDiagnosticSeverityKey(diagnosticCategory);
+                if (analyzerConfigOptions.TryGetValue(categoryBasedKey, out value) &&
+                    TryParseSeverity(value, out severity))
+                {
+                    return true;
+                }
             }
 
             // Otherwise, if user has explicitly configured default severity for all analyzer diagnostics, that should be respected.

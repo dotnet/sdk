@@ -87,24 +87,42 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 { string.Join(Environment.NewLine, editorConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}")) }
 ";
 
-        private protected Task<SourceText> TestAsync(string testCode, string expectedCode, IReadOnlyDictionary<string, string> editorConfig)
+        private protected Task<SourceText> AssertCodeUnchangedAsync(
+            string code,
+            IReadOnlyDictionary<string, string> editorConfig,
+            Encoding encoding = null,
+            bool fixCodeStyle = false,
+            DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
+            bool fixAnalyzers = false,
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            return TestAsync(testCode, expectedCode, editorConfig, Encoding.UTF8);
+            return AssertCodeChangedAsync(code, code, ToEditorConfig(editorConfig), encoding, fixCodeStyle, codeStyleSeverity, fixAnalyzers, analyzerSeverity);
         }
 
-        private protected Task<SourceText> TestAsync(string testCode, string expectedCode, string editorConfigText)
+        private protected Task<SourceText> AssertCodeChangedAsync(
+            string testCode,
+            string expectedCode,
+            IReadOnlyDictionary<string, string> editorConfig,
+            Encoding encoding = null,
+            bool fixCodeStyle = false,
+            DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
+            bool fixAnalyzers = false,
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            return TestAsync(testCode, expectedCode, editorConfigText, Encoding.UTF8);
+            return AssertCodeChangedAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding, fixCodeStyle, codeStyleSeverity, fixAnalyzers, analyzerSeverity);
         }
 
-        private protected Task<SourceText> TestAsync(string testCode, string expectedCode, IReadOnlyDictionary<string, string> editorConfig, Encoding encoding)
+        private protected async Task<SourceText> AssertCodeChangedAsync(
+            string testCode,
+            string expectedCode,
+            string editorConfig,
+            Encoding encoding = null,
+            bool fixCodeStyle = false,
+            DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
+            bool fixAnalyzers = false,
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            return TestAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding);
-        }
-
-        private protected async Task<SourceText> TestAsync(string testCode, string expectedCode, string editorConfig, Encoding encoding)
-        {
-            var text = SourceText.From(testCode, encoding);
+            var text = SourceText.From(testCode, encoding ?? Encoding.UTF8);
             TestState.Sources.Add(text);
 
             var solution = GetSolution(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), editorConfig);
@@ -116,10 +134,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 workspaceFilePath: project.FilePath,
                 workspaceType: WorkspaceType.Folder,
                 logLevel: LogLevel.Trace,
-                fixCodeStyle: false,
-                codeStyleSeverity: DiagnosticSeverity.Error,
-                fixAnalyzers: false,
-                analyzerSeverity: DiagnosticSeverity.Error,
+                fixCodeStyle,
+                codeStyleSeverity,
+                fixAnalyzers,
+                analyzerSeverity,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,

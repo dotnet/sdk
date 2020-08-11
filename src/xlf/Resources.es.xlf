@@ -157,6 +157,11 @@
         <target state="new">Required references did not load for {0} or referenced project. Run `dotnet restore` prior to formatting.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Remove_unnecessary_import">
+        <source>Remove unnecessary import.</source>
+        <target state="new">Remove unnecessary import.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
         <source>Run 3rd party analyzers and apply fixes.</source>
         <target state="translated">Ejecute analizadores de terceros y aplique las correcciones.</target>

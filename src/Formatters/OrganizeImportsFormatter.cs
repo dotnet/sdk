@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     /// <summary>
-    /// ImportsFormatter that uses the <see cref="Formatter"/> to format document import directives.
+    /// OrganizeImportsFormatter that uses the <see cref="Formatter"/> to format document import directives.
     /// </summary>
-    internal sealed class ImportsFormatter : DocumentFormatter
+    internal sealed class OrganizeImportsFormatter : DocumentFormatter
     {
         protected override string FormatWarningDescription => Resources.Fix_imports_ordering;
         private readonly DocumentFormatter _endOfLineFormatter = new EndOfLineFormatter();
@@ -59,24 +59,5 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 return sourceText;
             }
         }
-
-        private static async Task<bool> IsSameDocumentAndVersionAsync(Document a, Document b, CancellationToken cancellationToken)
-        {
-            if (a == b)
-            {
-                return true;
-            }
-
-            if (a.Id != b.Id)
-            {
-                return false;
-            }
-
-            var aVersion = await a.GetTextVersionAsync(cancellationToken).ConfigureAwait(false);
-            var bVersion = await b.GetTextVersionAsync(cancellationToken).ConfigureAwait(false);
-
-            return aVersion == bVersion;
-        }
     }
 }
-

@@ -181,5 +181,23 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 logger.LogWarning(formatMessage);
             }
         }
+
+        protected static async Task<bool> IsSameDocumentAndVersionAsync(Document a, Document b, CancellationToken cancellationToken)
+        {
+            if (a == b)
+            {
+                return true;
+            }
+
+            if (a.Id != b.Id)
+            {
+                return false;
+            }
+
+            var aVersion = await a.GetTextVersionAsync(cancellationToken).ConfigureAwait(false);
+            var bVersion = await b.GetTextVersionAsync(cancellationToken).ConfigureAwait(false);
+
+            return aVersion == bVersion;
+        }
     }
 }
