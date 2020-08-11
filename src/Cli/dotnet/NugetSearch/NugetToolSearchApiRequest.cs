@@ -23,8 +23,8 @@ namespace Microsoft.DotNet.NugetSearch
                 nugetSearchApiParameter.Prerelease);
 
             var httpClient = new HttpClient();
-            var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            HttpResponseMessage response = await httpClient.GetAsync(queryUrl, cancellation.Token);
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            HttpResponseMessage response = await httpClient.GetAsync(queryUrl, cancellation.Token).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 if ((int)response.StatusCode >= 500 && (int)response.StatusCode < 600)
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.NugetSearch
                         queryUrl.AbsoluteUri, response.ReasonPhrase, response.StatusCode));
             }
 
-            return await response.Content.ReadAsStringAsync(cancellation.Token);
+            return await response.Content.ReadAsStringAsync(cancellation.Token).ConfigureAwait(false);
         }
 
         internal static async Task<Uri> ConstructUrl(string searchTerm = null, int? skip = null, int? take = null,
