@@ -1179,13 +1179,10 @@ End Class";
         }
 
         [Fact]
-        public async Task AutoProperties_NoDiagnostic()
+        public async Task FullProperties_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-
-public class C1
+public class C
 {
     private int field;
 
@@ -1195,23 +1192,47 @@ public class C1
         set { field = value; }
     }
 
-    public string P2 { get; set; }
+    public int P2
+    {
+        get { return field; }
+    }
 
-    public string P3 { get; }
+    public int P3 => field;
 
-    public string P4
+    public int P4
+    {
+        get => field;
+        set => field = value;
+    }
+}");
+        }
+
+        [Fact]
+        public async Task AutoProperties_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+public class C1
+{
+    public string P1 { get; set; }
+
+    public string P2 { get; }
+
+    public string P3
     {
         [DebuggerStepThrough]
         get;
     }
 
-    public string P5
+    public string P4
     {
         [DebuggerStepThrough]
         {|CS8051:set|};
     }
 
-    public string P6
+    public string P5
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [DebuggerStepThrough]
