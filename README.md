@@ -72,8 +72,8 @@ Arguments:
 
 Options:
   --folder, -f                        Whether to treat the `<workspace>` argument as a simple folder of files.
-  --fix-style, -fs <severity>         Run code style analyzers and apply fixes.
-  --fix-analyzers, -fa <severity>     Run 3rd party analyzers and apply fixes.
+  --fix-style <severity>              Run code style analyzers and apply fixes.
+  --fix-analyzers <severity>          Run 3rd party analyzers and apply fixes.
   --include <include>                 A list of relative file or folder paths to include in formatting. All files are formatted if empty.
   --exclude <exclude>                 A list of relative file or folder paths to exclude from formatting.
   --check                             Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
