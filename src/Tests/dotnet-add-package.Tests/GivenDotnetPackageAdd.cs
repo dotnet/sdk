@@ -204,7 +204,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Execute($"add", "package", packageName, "--version", packageVersion)
                 .Should()
                 .Pass()
-                .And.HaveStdOutContaining("Microsoft (R) Build Engine version")
+                .And.NotHaveStdOutContaining("Microsoft (R) Build Engine version")
                 .And.NotHaveStdErr();
         }
 
