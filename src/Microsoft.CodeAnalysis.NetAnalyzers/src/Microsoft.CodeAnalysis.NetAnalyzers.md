@@ -1605,7 +1605,7 @@ Catching corrupted state exceptions could mask errors (such as access violations
 |-|-|
 |Category|Usage|
 |Enabled|True|
-|Severity|Info|
+|Severity|Warning|
 |CodeFix|True|
 
 ### Rule description
