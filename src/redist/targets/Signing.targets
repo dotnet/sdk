@@ -108,6 +108,8 @@
                             $(SdkOutputDirectory)**/datacollector.exe;
                             $(SdkOutputDirectory)**/MSBuild.dll;
                             $(SdkOutputDirectory)**/MSBuild.resources.dll;
+                            $(SdkOutputDirectory)**/PresentationBuildTasks.dll;
+                            $(SdkOutputDirectory)**/rzc.dll;
                             $(SdkOutputDirectory)**/testhost.dll;
                             $(SdkOutputDirectory)**/testhost.exe;
                             $(SdkOutputDirectory)**/testhost.x86.exe;
