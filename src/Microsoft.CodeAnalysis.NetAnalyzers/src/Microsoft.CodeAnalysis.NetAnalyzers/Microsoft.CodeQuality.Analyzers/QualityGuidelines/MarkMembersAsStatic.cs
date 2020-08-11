@@ -254,8 +254,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            // Auto-properties (readonly, get, set) marked with an attribute have a block context callback while they don't
-            // if there is no attribute (see https://github.com/dotnet/roslyn/issues/46132).
             // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
             return !methodSymbol.IsAutoPropertyAccessor();
         }

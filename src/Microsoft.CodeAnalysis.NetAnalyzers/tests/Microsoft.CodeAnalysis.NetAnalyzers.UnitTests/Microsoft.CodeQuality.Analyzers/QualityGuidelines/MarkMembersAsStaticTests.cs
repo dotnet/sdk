@@ -1178,7 +1178,7 @@ End Class";
             }.RunAsync();
         }
 
-        [Fact]
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
         public async Task FullProperties_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1207,7 +1207,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
         public async Task AutoProperties_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1226,7 +1226,7 @@ public class C1
         get;
     }
 
-    public string P4
+    public string [|P4|] // Because of the error there is no generated field
     {
         [DebuggerStepThrough]
         {|CS8051:set|};
@@ -1241,7 +1241,7 @@ public class C1
 }");
         }
 
-        [Fact]
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
         public async Task Properties_StaticField_Diagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
