@@ -106,6 +106,10 @@ namespace Microsoft.CodeAnalysis.Tools
                     }
                 }
 
+                var runtimeVersion = GetRuntimeVersion();
+
+                logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
+
                 // Load MSBuild
                 Environment.CurrentDirectory = workspaceDirectory;
 
@@ -264,6 +268,13 @@ namespace Microsoft.CodeAnalysis.Tools
                 msBuildPath = null;
                 return false;
             }
+        }
+
+        private static string GetRuntimeVersion()
+        {
+            var pathParts = typeof(string).Assembly.Location.Split('\\', '/');
+            var netCoreAppIndex = Array.IndexOf(pathParts, "Microsoft.NETCore.App");
+            return pathParts[netCoreAppIndex + 1];
         }
     }
 }
