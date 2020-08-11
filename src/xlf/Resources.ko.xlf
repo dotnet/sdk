@@ -152,6 +152,11 @@
         <target state="translated">'{0}'에 여러 MSBuild 솔루션 파일이 있습니다. &lt;workspace&gt; 인수를 사용하여 사용할 파일을 지정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Remove_unnecessary_import">
+        <source>Remove unnecessary import.</source>
+        <target state="new">Remove unnecessary import.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
         <source>Run 3rd party analyzers and apply fixes.</source>
         <target state="translated">타사 분석기를 실행하고 수정 사항을 적용합니다.</target>

@@ -152,6 +152,11 @@
         <target state="translated">在 '{0}' 中找到多個 MSBuild 解決方案檔。請指定要用於 &lt;workspace&gt; 引數的檔案。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Remove_unnecessary_import">
+        <source>Remove unnecessary import.</source>
+        <target state="new">Remove unnecessary import.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Run_3rd_party_analyzers_and_apply_fixes">
         <source>Run 3rd party analyzers and apply fixes.</source>
         <target state="translated">執行協力廠商分析器並套用修正。</target>
