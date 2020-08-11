@@ -98,7 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     // Don't run any other check for this method if it isn't a valid analysis context
-                    if (!ShouldAnalyze(methodSymbol, blockStartContext, wellKnownTypeProvider, skippedAttributes,
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes,
                             blockStartContext.Options, isWebProject, blockStartContext.CancellationToken))
                     {
                         return;
@@ -189,9 +189,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         private static bool ShouldAnalyze(
             IMethodSymbol methodSymbol,
-#pragma warning disable RS1012 // Start action has no registered actions
-            OperationBlockStartAnalysisContext blockStartContext,
-#pragma warning restore RS1012 // Start action has no registered actions
             WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<INamedTypeSymbol> skippedAttributes,
             AnalyzerOptions options,
@@ -260,7 +257,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             // Auto-properties (readonly, get, set) marked with an attribute have a block context callback while they don't
             // if there is no attribute (see https://github.com/dotnet/roslyn/issues/46132).
             // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
-            return !blockStartContext.IsAutoProperty();
+            return !methodSymbol.IsAutoPropertyAccessor();
         }
 
         private static bool IsExplicitlyVisibleFromCom(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
