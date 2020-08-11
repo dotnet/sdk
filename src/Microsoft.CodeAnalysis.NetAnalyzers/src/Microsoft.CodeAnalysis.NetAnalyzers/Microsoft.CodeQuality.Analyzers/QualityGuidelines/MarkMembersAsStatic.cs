@@ -189,7 +189,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         private static bool ShouldAnalyze(
             IMethodSymbol methodSymbol,
+#pragma warning disable RS1012 // Start action has no registered actions
             OperationBlockStartAnalysisContext blockStartContext,
+#pragma warning restore RS1012 // Start action has no registered actions
             WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<INamedTypeSymbol> skippedAttributes,
             AnalyzerOptions options,
