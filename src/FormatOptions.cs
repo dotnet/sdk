@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Tools
             bool fixCodeStyle,
             DiagnosticSeverity codeStyleSeverity,
             bool fixAnalyzers,
-            DiagnosticSeverity analyerSeverity,
+            DiagnosticSeverity analyzerSeverity,
             bool saveFormattedFiles,
             bool changesAreErrors,
             Matcher fileMatcher,
@@ -40,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Tools
             FixCodeStyle = fixCodeStyle;
             CodeStyleSeverity = codeStyleSeverity;
             FixAnalyzers = fixAnalyzers;
-            AnalyzerSeverity = analyerSeverity;
+            AnalyzerSeverity = analyzerSeverity;
             SaveFormattedFiles = saveFormattedFiles;
             ChangesAreErrors = changesAreErrors;
             FileMatcher = fileMatcher;
@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Tools
             out bool fixCodeStyle,
             out DiagnosticSeverity codeStyleSeverity,
             out bool fixAnalyzers,
-            out DiagnosticSeverity analyerSeverity,
+            out DiagnosticSeverity analyzerSeverity,
             out bool saveFormattedFiles,
             out bool changesAreErrors,
             out Matcher fileMatcher,
@@ -68,7 +68,7 @@ namespace Microsoft.CodeAnalysis.Tools
             fixCodeStyle = FixCodeStyle;
             codeStyleSeverity = CodeStyleSeverity;
             fixAnalyzers = FixAnalyzers;
-            analyerSeverity = AnalyzerSeverity;
+            analyzerSeverity = AnalyzerSeverity;
             saveFormattedFiles = SaveFormattedFiles;
             changesAreErrors = ChangesAreErrors;
             fileMatcher = FileMatcher;

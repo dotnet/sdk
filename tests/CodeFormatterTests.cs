@@ -29,6 +29,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private const string FSharpProjectPath = "for_code_formatter/fsharp_project/";
         private const string FSharpProjectFilePath = FSharpProjectPath + "fsharp_project.fsproj";
 
+        private const string CodeStyleSolutionPath = "for_code_formatter/codestyle_solution/";
+        private const string CodeStyleSolutionFilePath = CodeStyleSolutionPath + "codestyle_solution.sln";
+
         private static IEnumerable<string> EmptyFilesList => Array.Empty<string>();
 
         private Regex FindFormattingLogLine => new Regex(@"((.*)\(\d+,\d+\): (.*))\r|((.*)\(\d+,\d+\): (.*))");
@@ -41,6 +44,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             testProjectsPathFixture.SetCurrentDirectory();
             msBuildFixture.RegisterInstance(_output);
+
+            // For NetStandard projects to resolve framework references, the project.assets.json files must
+            // be constructed by a NuGet restore.
+            ProcessRunner.CreateProcess("dotnet", $"restore \"{CodeStyleSolutionFilePath}\"").Result.GetAwaiter().GetResult();
         }
 
         [Fact]
@@ -320,7 +327,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             var include = new[] { UnformattedProgramFilePath };
 
-            var log = await TestFormatWorkspaceAsync(
+            await TestFormatWorkspaceAsync(
                 UnformattedSolutionFilePath,
                 include: include,
                 exclude: include,
@@ -328,11 +335,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 5);
-
-            var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
-            var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
-
-            Assert.False(match.Success, log);
         }
 
         [Fact]
@@ -341,7 +343,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var include = new[] { UnformattedProgramFilePath };
             var exclude = new[] { UnformattedProjectPath };
 
-            var log = await TestFormatWorkspaceAsync(
+            await TestFormatWorkspaceAsync(
                 UnformattedSolutionFilePath,
                 include: include,
                 exclude: exclude,
@@ -349,11 +351,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 5);
-
-            var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
-            var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
-
-            Assert.False(match.Success, log);
         }
 
         [Fact]
@@ -362,7 +359,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var include = new[] { UnformattedProgramFilePath };
             var exclude = new[] { "**/*.*" };
 
-            var log = await TestFormatWorkspaceAsync(
+            await TestFormatWorkspaceAsync(
                 UnformattedSolutionFilePath,
                 include: include,
                 exclude: exclude,
@@ -370,14 +367,64 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 5);
-
-            var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
-            var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
-
-            Assert.False(match.Success, log);
         }
 
-        public async Task<string> TestFormatWorkspaceAsync(string workspaceFilePath, IEnumerable<string> include, IEnumerable<string> exclude, bool includeGenerated, int expectedExitCode, int expectedFilesFormatted, int expectedFileCount)
+        [Fact]
+        public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
+        {
+            await TestFormatWorkspaceAsync(
+                CodeStyleSolutionFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 6,
+                fixCodeStyle: false);
+        }
+
+        [Fact]
+        public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
+        {
+            await TestFormatWorkspaceAsync(
+                CodeStyleSolutionFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 6,
+                fixCodeStyle: true,
+                codeStyleSeverity: DiagnosticSeverity.Error);
+        }
+
+        [Fact]
+        public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
+        {
+            await TestFormatWorkspaceAsync(
+                CodeStyleSolutionFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 2,
+                expectedFileCount: 6,
+                fixCodeStyle: true,
+                codeStyleSeverity: DiagnosticSeverity.Warning);
+        }
+
+        public async Task<string> TestFormatWorkspaceAsync(
+            string workspaceFilePath,
+            IEnumerable<string> include,
+            IEnumerable<string> exclude,
+            bool includeGenerated,
+            int expectedExitCode,
+            int expectedFilesFormatted,
+            int expectedFileCount,
+            bool fixCodeStyle = false,
+            DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
+            bool fixAnalyzers = false,
+            DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
             var workspacePath = Path.GetFullPath(workspaceFilePath);
 
@@ -399,10 +446,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 workspacePath,
                 workspaceType,
                 LogLevel.Trace,
-                fixCodeStyle: false,
-                codeStyleSeverity: DiagnosticSeverity.Error,
-                fixAnalyzers: false,
-                analyerSeverity: DiagnosticSeverity.Error,
+                fixCodeStyle,
+                codeStyleSeverity,
+                fixAnalyzers,
+                analyzerSeverity,
                 saveFormattedFiles: false,
                 changesAreErrors: false,
                 fileMatcher,
