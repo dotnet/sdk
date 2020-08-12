@@ -649,7 +649,6 @@ namespace VulnerableWebApp
      }
 }
 ",
-                },
             };
 
             csharpTest.ExpectedDiagnostics.AddRange(new[] { GetCSharpResultAt(13, 13, 12, 28, "DbSqlQuery<object> DbSet<object>.SqlQuery(string sql, params object[] parameters)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)") });
