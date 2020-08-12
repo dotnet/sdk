@@ -42,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 return sourceText;
             }
 
-            var severity = analyzerConfigOptions.GetDiagnosticSeverity(tree, IDE0005, Style);
+            var severity = analyzerConfigOptions.GetDiagnosticSeverity(document.Project, tree, IDE0005, Style);
             if (severity < formatOptions.CodeStyleSeverity)
             {
                 return sourceText;

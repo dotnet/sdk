@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
             // If user has explicitly configured severity for this diagnostic ID, that should be respected.
             // For example, 'dotnet_diagnostic.CA1000.severity = error'
-            if (tree.DiagnosticOptions.TryGetValue(descriptor.Id, out severity))
+            if (compilation.Options.SyntaxTreeOptionsProvider?.TryGetDiagnosticValue(tree, descriptor.Id, out severity) == true)
             {
                 return true;
             }
@@ -86,9 +86,10 @@ namespace Microsoft.CodeAnalysis.Diagnostics
         /// <summary>
         /// Determines whether a diagnostic is configured in the <paramref name="analyzerConfigOptions" />.
         /// </summary>
-        public static bool IsDiagnosticSeverityConfigured(this AnalyzerConfigOptions analyzerConfigOptions, SyntaxTree tree, string diagnosticId, string? diagnosticCategory)
+        public static bool IsDiagnosticSeverityConfigured(this AnalyzerConfigOptions analyzerConfigOptions, Project project, SyntaxTree tree, string diagnosticId, string? diagnosticCategory)
         {
-            return tree.DiagnosticOptions.TryGetValue(diagnosticId, out _)
+            var optionsProvider = project.CompilationOptions?.SyntaxTreeOptionsProvider;
+            return (optionsProvider != null && optionsProvider.TryGetDiagnosticValue(tree, diagnosticId, out _))
                 || (diagnosticCategory != null && analyzerConfigOptions.TryGetValue(GetCategoryBasedDotnetAnalyzerDiagnosticSeverityKey(diagnosticCategory), out _))
                 || analyzerConfigOptions.TryGetValue(DotnetAnalyzerDiagnosticSeverityKey, out _);
         }
@@ -96,9 +97,9 @@ namespace Microsoft.CodeAnalysis.Diagnostics
         /// <summary>
         /// Get the configured severity for a diagnostic analyzer from the <paramref name="analyzerConfigOptions" />.
         /// </summary>
-        public static DiagnosticSeverity GetDiagnosticSeverity(this AnalyzerConfigOptions analyzerConfigOptions, SyntaxTree tree, string diagnosticId, string? diagnosticCategory)
+        public static DiagnosticSeverity GetDiagnosticSeverity(this AnalyzerConfigOptions analyzerConfigOptions, Project project, SyntaxTree tree, string diagnosticId, string? diagnosticCategory)
         {
-            return analyzerConfigOptions.TryGetSeverityFromConfiguration(tree, diagnosticId, diagnosticCategory, out var reportSeverity)
+            return analyzerConfigOptions.TryGetSeverityFromConfiguration(project, tree, diagnosticId, diagnosticCategory, out var reportSeverity)
                 ? reportSeverity.ToSeverity()
                 : DiagnosticSeverity.Hidden;
         }
@@ -113,6 +114,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
         /// </summary>
         public static bool TryGetSeverityFromConfiguration(
             this AnalyzerConfigOptions? analyzerConfigOptions,
+            Project project,
             SyntaxTree tree,
             string diagnosticId,
             string? diagnosticCategory,
@@ -126,7 +128,9 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
             // If user has explicitly configured severity for this diagnostic ID, that should be respected.
             // For example, 'dotnet_diagnostic.CA1000.severity = error'
-            if (tree.DiagnosticOptions.TryGetValue(diagnosticId, out severity))
+            var optionsProvider = project.CompilationOptions?.SyntaxTreeOptionsProvider;
+            if (optionsProvider != null &&
+                optionsProvider.TryGetDiagnosticValue(tree, diagnosticId, out severity))
             {
                 return true;
             }
