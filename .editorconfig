@@ -170,7 +170,7 @@ indent_brace_style = Allman
 indent_size = 2
 
 [*.{csproj,vbproj,proj,nativeproj,locproj}]
-charset = utf-8
+charset = utf-8-bom
 
 # Xml build files
 [*.builds]
