@@ -27,57 +27,68 @@ namespace Microsoft.DotNet.Cli
 
         public static int Main(string[] args)
         {
+            // TODO: Capture the current timestamp for "Host to CLI main" timing.
+
             DebugHelper.HandleDebugSwitch(ref args);
 
-            new MulticoreJitActivator().TryActivateMulticoreJit();
+            // Keep track of the time we entered Main.
+            DateTime mainTimeStamp = DateTime.Now;
 
-            if (Env.GetEnvironmentVariableAsBool("DOTNET_CLI_CAPTURE_TIMING", false))
+            PerformanceLogManager.Initialize(FileSystemWrapper.Default);
+            using (PerformanceLogEventListener eventListener = PerformanceLogEventListener.Create(FileSystemWrapper.Default, PerformanceLogManager.Instance.CurrentLogDirectory))
             {
-                PerfTrace.Enabled = true;
-            }
+                new MulticoreJitActivator().TryActivateMulticoreJit();
 
-            InitializeProcess();
+                PerformanceLogEventSource.Log.LogStartUpInformation(mainTimeStamp);
 
-            try
-            {
-                using (PerfTrace.Current.CaptureTiming())
+                if (Env.GetEnvironmentVariableAsBool("DOTNET_CLI_CAPTURE_TIMING", false))
                 {
-                    return ProcessArgs(args);
-                }
-            }
-            catch (HelpException e)
-            {
-                Reporter.Output.WriteLine(e.Message);
-                return 0;
-            }
-            catch (Exception e) when (e.ShouldBeDisplayedAsError())
-            {
-                Reporter.Error.WriteLine(CommandContext.IsVerbose()
-                    ? e.ToString().Red().Bold()
-                    : e.Message.Red().Bold());
-
-                var commandParsingException = e as CommandParsingException;
-                if (commandParsingException != null)
-                {
-                    Reporter.Output.WriteLine(commandParsingException.HelpText);
+                    PerfTrace.Enabled = true;
                 }
 
-                return 1;
-            }
-            catch (Exception e) when (!e.ShouldBeDisplayedAsError())
-            {
-                // If telemetry object has not been initialized yet. It cannot be collected
-                TelemetryEventEntry.SendFiltered(e);
-                Reporter.Error.WriteLine(e.ToString().Red().Bold());
+                InitializeProcess();
 
-                return 1;
-            }
-            finally
-            {
-                if (PerfTrace.Enabled)
+                try
                 {
-                    Reporter.Output.WriteLine("Performance Summary:");
-                    PerfTraceOutput.Print(Reporter.Output, PerfTrace.GetEvents());
+                    using (PerfTrace.Current.CaptureTiming())
+                    {
+                        return ProcessArgs(args);
+                    }
+                }
+                catch (HelpException e)
+                {
+                    Reporter.Output.WriteLine(e.Message);
+                    return 0;
+                }
+                catch (Exception e) when (e.ShouldBeDisplayedAsError())
+                {
+                    Reporter.Error.WriteLine(CommandContext.IsVerbose()
+                        ? e.ToString().Red().Bold()
+                        : e.Message.Red().Bold());
+
+                    var commandParsingException = e as CommandParsingException;
+                    if (commandParsingException != null)
+                    {
+                        Reporter.Output.WriteLine(commandParsingException.HelpText);
+                    }
+
+                    return 1;
+                }
+                catch (Exception e) when (!e.ShouldBeDisplayedAsError())
+                {
+                    // If telemetry object has not been initialized yet. It cannot be collected
+                    TelemetryEventEntry.SendFiltered(e);
+                    Reporter.Error.WriteLine(e.ToString().Red().Bold());
+
+                    return 1;
+                }
+                finally
+                {
+                    if (PerfTrace.Enabled)
+                    {
+                        Reporter.Output.WriteLine("Performance Summary:");
+                        PerfTraceOutput.Print(Reporter.Output, PerfTrace.GetEvents());
+                    }
                 }
             }
         }
