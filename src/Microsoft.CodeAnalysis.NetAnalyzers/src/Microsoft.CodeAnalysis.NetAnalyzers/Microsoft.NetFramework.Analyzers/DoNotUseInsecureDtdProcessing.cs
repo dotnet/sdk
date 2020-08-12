@@ -23,8 +23,16 @@ namespace Microsoft.NetFramework.Analyzers
     {
         internal const string RuleId = "CA3075";
 
+        // Use 'DiagnosticDescriptorHelper.Create' for one of the descriptors so the rule "CA3075" can be captured in AnalyzerReleases.*.md
         internal static DiagnosticDescriptor RuleXmlDocumentWithNoSecureResolver =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)));
+            DiagnosticDescriptorHelper.Create(RuleId,
+                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
+                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)),
+                    DiagnosticCategory.Security,
+                    RuleLevel.IdeHidden_BulkConfigurable,
+                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
+                    isPortedFxCopRule: false,
+                    isDataflowRule: false);
 
         internal static DiagnosticDescriptor RuleXmlTextReaderConstructedWithNoSecureResolution =
             CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderConstructedWithNoSecureResolutionMessage)));

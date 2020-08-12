@@ -48,7 +48,7 @@ namespace GenerateDocumentationAndConfigFiles
                 containsPortedFxCopRules = false;
             }
 
-            if (!bool.TryParse(args[15], out var generateAnalyzerRulesMissingDocumentationFile))
+            if (!bool.TryParse(args[16], out var generateAnalyzerRulesMissingDocumentationFile))
             {
                 generateAnalyzerRulesMissingDocumentationFile = false;
             }
