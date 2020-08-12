@@ -632,9 +632,7 @@ namespace VulnerableWebApp
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default
                     .AddAssemblies(ImmutableArray.Create("System.Web", "System.Web.Extensions"))
                     .AddPackages(ImmutableArray.Create(new PackageIdentity("EntityFramework", "6.4.4"))),
-                TestState =
-                {
-                    Sources = { @"
+                TestCode = @"
 namespace VulnerableWebApp
 {
     using System;
@@ -650,7 +648,7 @@ namespace VulnerableWebApp
         }
      }
 }
-" }
+",
                 },
             };
 
