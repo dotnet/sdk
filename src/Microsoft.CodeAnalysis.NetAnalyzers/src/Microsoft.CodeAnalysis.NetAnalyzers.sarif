@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "3.3.0",
+        "version": "5.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -218,7 +218,7 @@
           "id": "CA2200",
           "shortDescription": "Rethrow to preserve stack details",
           "fullDescription": "Re-throwing caught exception changes stack information",
-          "defaultLevel": "note",
+          "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2200",
           "properties": {
             "category": "Usage",
@@ -293,7 +293,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "3.3.0",
+        "version": "5.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -4758,7 +4758,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "3.3.0",
+        "version": "5.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -4971,7 +4971,7 @@
           "id": "CA2200",
           "shortDescription": "Rethrow to preserve stack details",
           "fullDescription": "Re-throwing caught exception changes stack information",
-          "defaultLevel": "note",
+          "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2200",
           "properties": {
             "category": "Usage",
