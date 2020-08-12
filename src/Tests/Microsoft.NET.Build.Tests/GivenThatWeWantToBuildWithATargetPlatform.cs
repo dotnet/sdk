@@ -58,7 +58,8 @@ namespace Microsoft.NET.Build.Tests
             assertValue("TargetPlatformIdentifier", expectedTargetPlatformIdentifier);
             assertValue("TargetPlatformIdentifier", expectedTargetPlatformIdentifier);
             assertValue("TargetPlatformVersion", expectedTargetPlatformVersion);
-            assertValue("TargetPlatformMoniker", $"{expectedTargetPlatformIdentifier},Version={expectedTargetPlatformVersion}");
+            assertValue("TargetPlatformMoniker", expectedTargetPlatformIdentifier.Equals(string.Empty) && expectedTargetPlatformVersion.Equals(string.Empty) ? 
+                string.Empty : $"{expectedTargetPlatformIdentifier},Version={expectedTargetPlatformVersion}");
             assertValue("TargetPlatformDisplayName", $"{expectedTargetPlatformIdentifier} {expectedTargetPlatformVersion}");
         }
 
