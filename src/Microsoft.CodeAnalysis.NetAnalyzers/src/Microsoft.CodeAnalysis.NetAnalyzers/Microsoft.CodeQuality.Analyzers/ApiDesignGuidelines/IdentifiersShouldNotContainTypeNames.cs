@@ -9,15 +9,15 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
-    /// <summary> 
-    /// CA1720-redefined: Identifiers should not contain type names 
-    /// Cause: 
-    /// The name of a parameter or a member contains a language-specific data type name. 
-    ///  
-    /// Description: 
-    /// Names of parameters and members are better used to communicate their meaning than  
-    /// to describe their type, which is expected to be provided by development tools. For names of members,  
-    /// if a data type name must be used, use a language-independent name instead of a language-specific one.  
+    /// <summary>
+    /// CA1720-redefined: Identifiers should not contain type names
+    /// Cause:
+    /// The name of a parameter or a member contains a language-specific data type name.
+    ///
+    /// Description:
+    /// Names of parameters and members are better used to communicate their meaning than
+    /// to describe their type, which is expected to be provided by development tools. For names of members,
+    /// if a data type name must be used, use a language-independent name instead of a language-specific one.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class IdentifiersShouldNotContainTypeNames : DiagnosticAnalyzer
@@ -65,7 +65,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 "decimal",
                 "guid",
                 "object",
-                "obj",
                 "string"
             });
 
@@ -122,7 +121,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeSymbol(ISymbol symbol, SymbolAnalysisContext context)
         {
             // FxCop compat: only analyze externally visible symbols by default.
-            if (!symbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+            if (!symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
             {
                 return;
             }

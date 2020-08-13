@@ -4,14 +4,14 @@ using System;
 using System.Collections.Immutable;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
     /// <summary>
     /// CA1024: Use properties where appropriate
-    /// 
+    ///
     /// Cause:
     /// A public or protected method has a name that starts with Get, takes no parameters, and returns a value that is not an array.
     /// </summary>
@@ -42,45 +42,63 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterOperationBlockStartAction(context =>
+            analysisContext.RegisterCompilationStartAction(context =>
             {
+                var taskTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
 
-                if (!(context.OwningSymbol is IMethodSymbol methodSymbol) ||
-                    methodSymbol.ReturnsVoid ||
-                    methodSymbol.ReturnType.Kind == SymbolKind.ArrayType ||
-                    !methodSymbol.Parameters.IsEmpty ||
-                    !methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken) ||
-                    methodSymbol.IsAccessorMethod() ||
-                    !IsPropertyLikeName(methodSymbol.Name))
-                {
-                    return;
-                }
+                taskTypesBuilder.AddIfNotNull(
+                    context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask));
+                taskTypesBuilder.AddIfNotNull(
+                    context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1));
+                taskTypesBuilder.AddIfNotNull(
+                    context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask));
+                taskTypesBuilder.AddIfNotNull(
+                    context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1));
 
-                // A few additional checks to reduce the noise for this diagnostic:
-                // Ensure that the method is non-generic, non-virtual/override, has no overloads and doesn't have special names: 'GetHashCode' or 'GetEnumerator'.
-                // Also avoid generating this diagnostic if the method body has any invocation expressions.
-                if (methodSymbol.IsGenericMethod ||
-                    methodSymbol.IsVirtual ||
-                    methodSymbol.IsOverride ||
-                    methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
-                    methodSymbol.Name == GetHashCodeName ||
-                    methodSymbol.Name == GetEnumeratorName)
-                {
-                    return;
-                }
+                var taskTypes = taskTypesBuilder.ToImmutable();
 
-                bool hasInvocations = false;
-                context.RegisterOperationAction(operationContext =>
+                context.RegisterOperationBlockStartAction(context =>
                 {
-                    hasInvocations = true;
-                }, OperationKind.Invocation);
-
-                context.RegisterOperationBlockEndAction(endContext =>
-                {
-                    if (!hasInvocations)
+                    if (!(context.OwningSymbol is IMethodSymbol methodSymbol) ||
+                        methodSymbol.ReturnsVoid ||
+                        methodSymbol.ReturnType.Kind == SymbolKind.ArrayType ||
+                        !methodSymbol.Parameters.IsEmpty ||
+                        !methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken) ||
+                        methodSymbol.IsAccessorMethod() ||
+                        !IsPropertyLikeName(methodSymbol.Name))
                     {
-                        endContext.ReportDiagnostic(endContext.OwningSymbol.CreateDiagnostic(Rule));
+                        return;
                     }
+
+                    // A few additional checks to reduce the noise for this diagnostic:
+                    // Ensure that the method is non-generic, non-virtual/override, has no overloads and doesn't have special names: 'GetHashCode' or 'GetEnumerator'.
+                    // Also avoid generating this diagnostic if the method body has any invocation expressions.
+                    // Also avoid implicit interface implementation (explicit are handled through the member accessibility)
+                    if (methodSymbol.IsGenericMethod ||
+                        methodSymbol.IsVirtual ||
+                        methodSymbol.IsOverride ||
+                        methodSymbol.Name == GetHashCodeName ||
+                        methodSymbol.Name == GetEnumeratorName ||
+                        methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
+                        taskTypes.Contains(methodSymbol.ReturnType.OriginalDefinition) ||
+                        methodSymbol.IsImplementationOfAnyImplicitInterfaceMember())
+                    {
+                        return;
+                    }
+
+                    bool hasInvocations = false;
+                    context.RegisterOperationAction(operationContext =>
+                    {
+                        hasInvocations = true;
+                    }, OperationKind.Invocation);
+
+                    context.RegisterOperationBlockEndAction(endContext =>
+                    {
+                        if (!hasInvocations)
+                        {
+                            endContext.ReportDiagnostic(endContext.OwningSymbol.CreateDiagnostic(Rule));
+                        }
+                    });
                 });
             });
         }

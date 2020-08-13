@@ -49,7 +49,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isDataflowRule: true,
                                                                              isEnabledByDefaultInFxCopAnalyzers: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AlwaysTrueFalseOrNullRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AlwaysTrueFalseOrNullRule, NeverNullRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -154,9 +154,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         }
 
                                         var originalOperation = operationRoot.SemanticModel.GetOperation(operation.Syntax, operationBlockContext.CancellationToken);
-                                        if (originalOperation is IAssignmentOperation)
+                                        if (originalOperation is IAssignmentOperation ||
+                                            originalOperation is IVariableDeclaratorOperation)
                                         {
-                                            // Skip compiler generated IsNull operation for assignment within a using.
+                                            // Skip compiler generated IsNull operation for assignment/variable declaration within a using.
                                             continue;
                                         }
 
@@ -200,7 +201,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                     if (predicateKind != PredicateValueKind.Unknown)
                                     {
                                         return predicateKind;
-                                    };
+                                    }
                                 }
 
                                 return PredicateValueKind.Unknown;

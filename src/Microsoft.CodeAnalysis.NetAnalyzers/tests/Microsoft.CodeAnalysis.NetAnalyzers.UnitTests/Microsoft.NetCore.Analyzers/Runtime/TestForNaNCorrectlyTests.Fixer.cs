@@ -4,11 +4,10 @@
 
 using System.Threading.Tasks;
 using Xunit;
-// Use the security verifiers since this diagnostic is reported in generated code
-using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForNaNCorrectlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpTestForNaNCorrectlyFixer>;
-using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForNaNCorrectlyAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicTestForNaNCorrectlyFixer>;
 

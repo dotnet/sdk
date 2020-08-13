@@ -55,6 +55,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return;
                         }
 
+                        if (targetMethod.IsConfiguredToSkipAnalysis(oaContext.ContainingSymbol, oaContext.Options, Rule, oaContext.Compilation, oaContext.CancellationToken))
+                        {
+                            return;
+                        }
+
                         IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>().WhereMethodDoesNotContainAttribute(obsoleteAttributeType).ToList();
                         if (methodsWithSameNameAsTargetMethod.HasFewerThan(2))
                         {
