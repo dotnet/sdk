@@ -1438,7 +1438,7 @@
     <value>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</value>
   </data>
   <data name="AvoidStringBuilderPInvokeParametersMessage" xml:space="preserve">
-    <value>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead.</value>
+    <value>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</value>
   </data>
   <data name="AvoidStringBuilderPInvokeParametersTitle" xml:space="preserve">
     <value>Avoid 'StringBuilder' parameters for P/Invokes</value>
