@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         // CA1827
         private static readonly LocalizableString s_localizableTitle_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessag_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessage_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         // CA1828
@@ -69,7 +69,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         internal static readonly DiagnosticDescriptor s_rule_CA1827 = DiagnosticDescriptorHelper.Create(
             CA1827,
             s_localizableTitle_CA1827,
-            s_localizableMessag_CA1827,
+            s_localizableMessage_CA1827,
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
             description: s_localizableDescription_CA1827,
