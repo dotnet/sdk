@@ -75,7 +75,7 @@
   <String Id="InstallationNoteTitle">Примечание по установке</String>
   <String Id="InstallationNote">В процессе установки будет выполнена команда, которая увеличит скорость восстановления проекта и обеспечит автономный доступ. Выполнение займет до минуты.
   </String>
-  <String Id="VisualStudioWarning">Если вы планируете использовать .NET 5.0 с Visual Studio, требуется Visual Studio 2019 версии 16.6 или более поздней. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Дополнительные сведения&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Если вы планируете использовать .NET 5.0 с Visual Studio, требуется Visual Studio 2019 версии 16.8 или более поздней. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Дополнительные сведения&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Нажимая кнопку "Установить", вы принимаете следующие условия.</String>
 </WixLocalization>

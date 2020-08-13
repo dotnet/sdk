@@ -75,7 +75,7 @@
   <String Id="InstallationNoteTitle">安装说明</String>
   <String Id="InstallationNote">将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。
   </String>
-  <String Id="VisualStudioWarning">如果计划结合使用 .NET 5.0 和 Visual Studio，需要 Visual Studio 2019 16.6 或更高版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;了解详细信息&lt;/A&gt;。
+  <String Id="VisualStudioWarning">如果计划结合使用 .NET 5.0 和 Visual Studio，需要 Visual Studio 2019 16.8 或更高版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;了解详细信息&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">单击“安装”即表示你同意以下条款。</String>
 </WixLocalization>

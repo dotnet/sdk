@@ -75,7 +75,7 @@
   <String Id="InstallationNoteTitle">安裝附註</String>
   <String Id="InstallationNote">安裝程序期間將會執行命令，加快專案還原速度並啟用離線存取。最多需要一分鐘的時間完成。
   </String>
-  <String Id="VisualStudioWarning">若預計要併用 Visual Studio 與 .NET 5.0，需要 Visual Studio 2019 16.6 或更新版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;深入了解&lt;/A&gt;。
+  <String Id="VisualStudioWarning">若預計要併用 Visual Studio 與 .NET 5.0，需要 Visual Studio 2019 16.8 或更新版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;深入了解&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">按一下 [\[]安裝[\[] 即表示您同意下列條款。</String>
 </WixLocalization>
