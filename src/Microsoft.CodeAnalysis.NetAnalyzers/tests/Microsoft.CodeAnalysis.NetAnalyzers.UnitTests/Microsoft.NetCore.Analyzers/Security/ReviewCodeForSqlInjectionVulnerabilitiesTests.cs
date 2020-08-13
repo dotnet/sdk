@@ -3692,7 +3692,6 @@ public class MyController : Controller
     }
 }",
                 GetCSharpResultAt(9, 9, 9, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
-            }
         }
 
         [Fact]
