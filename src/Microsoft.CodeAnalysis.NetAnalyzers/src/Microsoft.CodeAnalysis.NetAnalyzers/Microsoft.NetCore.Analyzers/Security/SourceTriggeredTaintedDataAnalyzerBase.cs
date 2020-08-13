@@ -138,19 +138,22 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 },
                                 OperationKind.PropertyReference);
 
-                            operationBlockStartContext.RegisterOperationAction(
-                                operationAnalysisContext =>
-                                {
-                                    IParameterReferenceOperation parameterReferenceOperation = (IParameterReferenceOperation)operationAnalysisContext.Operation;
-                                    if (sourceInfoSymbolMap.IsSourceParameter(parameterReferenceOperation.Parameter, wellKnownTypeProvider))
+                            if (sourceInfoSymbolMap.RequiresParameterReferenceAnalysis)
+                            {
+                                operationBlockStartContext.RegisterOperationAction(
+                                    operationAnalysisContext =>
                                     {
-                                        lock (rootOperationsNeedingAnalysis)
+                                        IParameterReferenceOperation parameterReferenceOperation = (IParameterReferenceOperation)operationAnalysisContext.Operation;
+                                        if (sourceInfoSymbolMap.IsSourceParameter(parameterReferenceOperation.Parameter, wellKnownTypeProvider))
                                         {
-                                            rootOperationsNeedingAnalysis.Add(parameterReferenceOperation.GetRoot());
+                                            lock (rootOperationsNeedingAnalysis)
+                                            {
+                                                rootOperationsNeedingAnalysis.Add(parameterReferenceOperation.GetRoot());
+                                            }
                                         }
-                                    }
-                                },
-                                OperationKind.ParameterReference);
+                                    },
+                                    OperationKind.ParameterReference);
+                            }
 
                             operationBlockStartContext.RegisterOperationAction(
                                 operationAnalysisContext =>
