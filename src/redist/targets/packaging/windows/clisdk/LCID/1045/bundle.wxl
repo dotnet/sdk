@@ -75,7 +75,7 @@ Zasoby
   <String Id="InstallationNoteTitle">Uwaga dotycząca instalacji</String>
   <String Id="InstallationNote">W trakcie procesu instalacji zostanie uruchomione polecenie, które zwiększy szybkość przywracania projektu i umożliwi dostęp do trybu offline. Zajmie to maksymalnie minutę.
   </String>
-  <String Id="VisualStudioWarning">Jeśli planujesz używać platformy .NET 5.0 z programem Visual Studio, wymagany jest program Visual Studio 2019 16.6 lub nowszy. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Dowiedz się więcej&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Jeśli planujesz używać platformy .NET 5.0 z programem Visual Studio, wymagany jest program Visual Studio 2019 16.8 lub nowszy. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Dowiedz się więcej&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Klikając pozycję Zainstaluj, wyrażasz zgodę na następujące warunki.</String>
 </WixLocalization>
