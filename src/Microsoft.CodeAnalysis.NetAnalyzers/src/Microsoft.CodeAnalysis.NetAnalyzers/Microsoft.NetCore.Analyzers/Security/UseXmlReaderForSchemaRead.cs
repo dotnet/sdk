@@ -20,7 +20,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 s_Title,
                 Message,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: Description,
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
