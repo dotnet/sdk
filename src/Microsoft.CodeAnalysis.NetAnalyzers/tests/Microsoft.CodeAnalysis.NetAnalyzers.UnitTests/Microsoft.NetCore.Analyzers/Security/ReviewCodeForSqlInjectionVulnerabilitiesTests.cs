@@ -3380,8 +3380,116 @@ public class MyController : Controller
         new SqlCommand(input.ToString());
     }
 }",
-                GetCSharpResultAt(9, 9, 9, 24,   "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething1(string input)", "string input", "void MyController.DoSomething1(string input)"),
+                GetCSharpResultAt(9, 9, 9, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething1(string input)", "string input", "void MyController.DoSomething1(string input)"),
                 GetCSharpResultAt(14, 9, 14, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething2(string input)", "string input", "void MyController.DoSomething2(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_MultipleActions_NotController_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+[NonController]
+public class MyController : Controller
+{
+    // more actions to hit the cache even with the lock-free implementation
+    public void DoSomething1(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething2(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething3(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething4(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething5(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething6(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething7(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething8(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething9(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething10(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething11(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething12(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething13(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething14(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething15(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething16(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething17(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething18(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething19(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+}");
         }
 
         [Fact]
