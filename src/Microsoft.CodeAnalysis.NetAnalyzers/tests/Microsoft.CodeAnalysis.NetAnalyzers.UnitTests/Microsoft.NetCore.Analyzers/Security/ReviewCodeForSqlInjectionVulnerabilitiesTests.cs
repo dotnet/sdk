@@ -3362,6 +3362,29 @@ public class MyController : Controller
         }
 
         [Fact]
+        public async Task TaintFunctionArguments_MultipleActions_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController : Controller
+{
+    public void DoSomething1(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething2(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+}",
+                GetCSharpResultAt(9, 9, 9, 24,   "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething1(string input)", "string input", "void MyController.DoSomething1(string input)"),
+                GetCSharpResultAt(14, 9, 14, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething2(string input)", "string input", "void MyController.DoSomething2(string input)"));
+        }
+
+        [Fact]
         public async Task TaintFunctionArguments_InheritedNonController_NoDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
