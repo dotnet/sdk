@@ -254,7 +254,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            return true;
+            // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
+            return !methodSymbol.IsAutoPropertyAccessor();
         }
 
         private static bool IsExplicitlyVisibleFromCom(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
