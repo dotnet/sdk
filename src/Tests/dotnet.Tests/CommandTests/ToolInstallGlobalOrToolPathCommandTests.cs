@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _parseResult = parser.ParseFrom("dotnet tool", new[] {"install", "-g", PackageId});
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdItShouldCreateValidShim()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(_appliedCommand,
@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldCreateValidShim()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(_appliedCommand,
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdWithSourceItShouldCreateValidShim()
         {
             const string sourcePath = "http://mysource.com";
@@ -157,7 +157,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdItShouldShowPathInstruction()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(_appliedCommand,
@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.First().Should().Be(EnvironmentPathInstructionMock.MockInstructionText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdPackageFormatIsNotFullySupportedItShouldShowPathInstruction()
         {
             const string Warning = "WARNING";
@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Skip(1).First().Should().Be(EnvironmentPathInstructionMock.MockInstructionText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldFail()
         {
             const string ErrorMessage = "Simulated error";
@@ -231,7 +231,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenCreateShimItShouldHaveNoBrokenFolderOnDisk()
         {
             _fileSystem.File.CreateEmptyFile(ExpectedCommandPath()); // Create conflict shim
@@ -254,7 +254,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenInCorrectToolConfigurationWhenRunWithPackageIdItShouldFail()
         {
             var toolPackageInstaller =
@@ -280,7 +280,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 );
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -303,7 +303,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithInvalidVersionItShouldThrow()
         {
             const string invalidVersion = "!NotValidVersion!";
@@ -327,7 +327,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     invalidVersion));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithExactVersionItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
@@ -353,7 +353,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version [1.0,2.0]");
@@ -379,7 +379,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithoutAMatchingRangeItShouldFail()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version [5.0,10.0]");
@@ -403,7 +403,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
 
-         [Fact]
+         [Fact(Skip = "Test few tests")]
         public void WhenRunWithValidVersionWildcardItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version 1.0.*");
@@ -429,7 +429,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdAndBinPathItShouldNoteHaveEnvironmentPathInstruction()
         {
             var result = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
@@ -449,7 +449,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().NotContain(l => l.Contains(EnvironmentPathInstructionMock.MockInstructionText));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void AndPackagedShimIsProvidedWhenRunWithPackageIdItCreateShimUsingPackagedShim()
         {
             var extension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;

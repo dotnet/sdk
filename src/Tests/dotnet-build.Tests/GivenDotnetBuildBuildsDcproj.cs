@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItPrintsBuildSummary()
         {
             var testAppName = "docker-compose";

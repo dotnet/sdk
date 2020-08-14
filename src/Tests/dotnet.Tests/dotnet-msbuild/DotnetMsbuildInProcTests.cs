@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTelemetryIsEnabledTheLoggerIsAddedToTheCommandLine()
         {
             Telemetry.Telemetry telemetry;
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTelemetryIsDisabledTheLoggerIsNotAddedToTheCommandLine()
         {
             string[] allArgs = GetArgsForMSBuild(() => false);

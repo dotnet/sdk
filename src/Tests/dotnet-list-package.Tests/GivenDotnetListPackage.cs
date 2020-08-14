@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItShowsCoreOutputOnMinimalVerbosity()
         {
             var testAssetName = "NewtonSoftDependentProject";
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContaining("NewtonSoft.Json");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void RequestedAndResolvedVersionsMatch()
         {
             var testAssetName = "TestAppSimple";
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContainingIgnoreSpaces(packageName+packageVersion+packageVersion);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItListsAutoReferencedPackages()
         {
             var testAssetName = "TestAppSimple";
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunOnSolution()
         {
             var sln = "TestAppWithSlnAndSolutionFolders";
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContainingIgnoreSpaces("NewtonSoft.Json");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void AssetsPathExistsButNotRestored()
         {
             var testAsset = "NewtonSoftDependentProject";
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdErr();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItListsTransitivePackage()
         {
             var testAssetName = "NewtonSoftDependentProject";
@@ -181,7 +181,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.HaveStdOutContaining("System.IO.FileSystem");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("", "[net451]", null)]
         [InlineData("", "[netcoreapp3.1]", null)]
         [InlineData("--framework netcoreapp3.1 --framework net451", "[net451]", null)]
@@ -223,10 +223,10 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                     .And.HaveStdOutContainingIgnoreSpaces(shouldInclude.Replace(" ", ""))
                     .And.NotHaveStdOutContaining(shouldntInclude.Replace(" ", ""));
             }
-            
+
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotAcceptInvalidFramework()
         {
             var testAssetName = "MSBuildAppWithMultipleFrameworks";

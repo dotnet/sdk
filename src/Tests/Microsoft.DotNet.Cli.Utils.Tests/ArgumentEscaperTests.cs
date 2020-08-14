@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     public class ArgumentEscaperTests
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new[] { "one", "two", "three" }, "one two three")]
         [InlineData(new[] { "line1\nline2", "word1\tword2" }, "\"line1\nline2\" \"word1\tword2\"")]
         [InlineData(new[] { "with spaces" }, "\"with spaces\"")]

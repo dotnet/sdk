@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             this.output = output;
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallGlobaltoolParserCanGetPackageIdAndPackageVersion()
         {
             var command = Parser.Instance;
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             packageVersion.Should().Be("1.0.1");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallGlobaltoolParserCanGetFollowingArguments()
         {
             var command = Parser.Instance;
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             parseResult.ValueOrDefault<string>("framework").Should().Be("netcoreapp2.0");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanParseSourceOption()
         {
             const string expectedSourceValue = "TestSourceValue";
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<string[]>("add-source").First().Should().Be(expectedSourceValue);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanParseMultipleSourceOption()
         {
             const string expectedSourceValue1 = "TestSourceValue1";
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<string[]>("add-source")[1].Should().Be(expectedSourceValue2);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanGetGlobalOption()
         {
             var result = Parser.Instance.Parse("dotnet tool install -g console.test.app");
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<bool>("global").Should().Be(true);
         }
         
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanGetLocalOption()
         {
             var result = Parser.Instance.Parse("dotnet tool install --local console.test.app");
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<bool>("local").Should().Be(true);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanGetManifestOption()
         {
             var result =
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<string>("tool-manifest").Should().Be("folder/my-manifest.format");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanParseVerbosityOption()
         {
             const string expectedVerbosityLevel = "diag";
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.SingleArgumentOrDefault("verbosity").Should().Be(expectedVerbosityLevel);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanParseToolPathOption()
         {
             var result =
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.SingleArgumentOrDefault("tool-path").Should().Be(@"C:\Tools");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanParseNoCacheOption()
         {
             var result =
@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--no-cache");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanParseIgnoreFailedSourcesOption()
         {
             var result =
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--ignore-failed-sources");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanParseDisableParallelOption()
         {
             var result =
@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--disable-parallel");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void InstallToolParserCanParseInteractiveRestoreOption()
         {
             var result =

@@ -19,14 +19,14 @@ namespace Microsoft.DotNet.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenItCannotResolveCommandItThrows()
         {
             Action a = () => { CommandFactoryUsingResolver.Create(new ResolveNothingCommandResolverPolicy(), "non-exist-command", Array.Empty<string>() ); };
             a.ShouldThrow<CommandUnknownException>();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenItCannotResolveCommandButCommandIsInListOfKnownToolsItThrows()
         {
             Action a = () => { CommandFactoryUsingResolver.Create(new ResolveNothingCommandResolverPolicy(), "non-exist-command", Array.Empty<string>()); };

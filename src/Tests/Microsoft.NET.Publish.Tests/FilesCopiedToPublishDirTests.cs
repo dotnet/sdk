@@ -30,7 +30,7 @@ namespace Microsoft.NET.Publish.Tests
             "WindowsBase.dll",
         };
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true, false)]
         [InlineData(true, true)]
         [InlineData(false, false)]
@@ -106,7 +106,7 @@ namespace Microsoft.NET.Publish.Tests
                 FrameworkAssemblies.ForEach(fa => items.Should().NotContain(i => i.RelativePath.Equals(fa, StringComparison.OrdinalIgnoreCase)));
             }
 
-            // FilesCopiedToPublishDir should never contain the deps.json file 
+            // FilesCopiedToPublishDir should never contain the deps.json file
             items.Should().NotContain(i => i.RelativePath.Equals($"{testProject.Name}.deps.json", StringComparison.OrdinalIgnoreCase));
         }
     }

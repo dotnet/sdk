@@ -9,7 +9,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class ResolveTargetingPackAssetsTests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void Given_ResolvedTargetingPacks_with_valid_PATH_in_PlatformManifest_It_resolves_TargetingPack()
         {
             string mockPackageDirectory = Path.Combine(Path.GetTempPath(), "dotnetSdkTests", Path.GetRandomFileName());

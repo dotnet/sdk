@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
         {
             var testAppName = "VSTestCore";
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenADllAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("1");

@@ -260,7 +260,7 @@ EndGlobal
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--help")]
         [InlineData("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
@@ -271,7 +271,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
             var cmd = new DotnetCommand(Log)
@@ -282,7 +282,7 @@ EndGlobal
 {CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove}");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("")]
         [InlineData("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
@@ -294,7 +294,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(SlnCommandHelpText);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("idontexist.sln")]
         [InlineData("ihave?invalidcharacters")]
         [InlineData("ihaveinv@lidcharacters")]
@@ -309,7 +309,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -326,7 +326,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -344,7 +344,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -360,7 +360,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNoSolutionExistsInTheDirectoryRemovePrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -377,7 +377,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -394,7 +394,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassedAReferenceNotInSlnItPrintsStatus()
         {
             var projectDirectory = _testAssetsManager
@@ -413,7 +413,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassedAReferenceItRemovesTheReferenceButNotOtherReferences()
         {
             var projectDirectory = _testAssetsManager
@@ -437,7 +437,7 @@ EndGlobal
             slnFile.Projects[0].FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenSolutionItemsExistInFolderParentFoldersAreNotRemoved()
         {
             var projectDirectory = _testAssetsManager
@@ -461,7 +461,7 @@ EndGlobal
                 .BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveProjectInSolutionWithNestedSolutionItems);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDuplicateReferencesArePresentItRemovesThemAll()
         {
             var projectDirectory = _testAssetsManager
@@ -488,7 +488,7 @@ EndGlobal
             slnFile.Projects[0].FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassedMultipleReferencesAndOneOfThemDoesNotExistItRemovesTheOneThatExists()
         {
             var projectDirectory = _testAssetsManager
@@ -517,7 +517,7 @@ EndGlobal
             slnFile.Projects[0].FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenReferenceIsRemovedBuildConfigsAreAlsoRemoved()
         {
             var projectDirectory = _testAssetsManager
@@ -539,7 +539,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemove);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainingProjectIsGivenProjectIsRemoved()
         {
             var projectDirectory = _testAssetsManager
@@ -560,7 +560,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemove);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation()
         {
             var projectDirectory = _testAssetsManager
@@ -580,7 +580,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation()
         {
             var projectDirectory = _testAssetsManager
@@ -600,7 +600,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenReferenceIsRemovedSlnBuilds()
         {
             var projectDirectory = _testAssetsManager
@@ -639,7 +639,7 @@ EndGlobal
                 .Count().Should().Be(1, $"App {reasonString}");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenProjectIsRemovedSolutionHasUTF8BOM()
         {
             var projectDirectory = _testAssetsManager
@@ -663,7 +663,7 @@ EndGlobal
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenFinalReferenceIsRemovedEmptySectionsAreRemoved()
         {
             var projectDirectory = _testAssetsManager
@@ -687,7 +687,7 @@ EndGlobal
             solutionContents.Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveAllProjects);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNestedProjectIsRemovedItsSolutionFoldersAreRemoved()
         {
             var projectDirectory = _testAssetsManager
@@ -707,7 +707,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveNestedProj);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenFinalNestedProjectIsRemovedSolutionFoldersAreRemoved()
         {
             var projectDirectory = _testAssetsManager
@@ -727,7 +727,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveLastNestedProj);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenProjectIsRemovedThenDependenciesOnProjectAreAlsoRemoved()
         {
             var projectDirectory = _testAssetsManager

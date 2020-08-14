@@ -17,7 +17,7 @@ namespace dotnet.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("-h")]
         [InlineData("add -h")]
         [InlineData("add package -h")]

@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             _output = output;
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateGlobaltoolParserCanGetPackageId()
         {
             var command = Parser.Instance;
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             packageId.Should().Be("console.test.app");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanGetGlobalOption()
         {
             var result = Parser.Instance.Parse("dotnet tool update -g console.test.app");
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<bool>("global").Should().Be(true);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanGetFollowingArguments()
         {
             var command = Parser.Instance;
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             parseResult.ValueOrDefault<string>("framework").Should().Be("netcoreapp2.0");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseSourceOption()
         {
             const string expectedSourceValue = "TestSourceValue";
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<string[]>("add-source").First().Should().Be(expectedSourceValue);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseMultipleSourceOption()
         {
             const string expectedSourceValue1 = "TestSourceValue1";
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<string[]>("add-source")[1].Should().Be(expectedSourceValue2);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseVerbosityOption()
         {
             const string expectedVerbosityLevel = "diag";
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.SingleArgumentOrDefault("verbosity").Should().Be(expectedVerbosityLevel);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseToolPathOption()
         {
             var result =
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.SingleArgumentOrDefault("tool-path").Should().Be(@"C:\TestAssetLocalNugetFeed");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseNoCacheOption()
         {
             var result =
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--no-cache");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseIgnoreFailedSourcesOption()
         {
             var result =
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--ignore-failed-sources");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseDisableParallelOption()
         {
             var result =
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--disable-parallel");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseInteractiveRestoreOption()
         {
             var result =
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--interactive");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseVersionOption()
         {
             var result =
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.SingleArgumentOrDefault("version").Should().Be("1.2");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseLocalOption()
         {
             var result =
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<bool>("local").Should().Be(true);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UpdateToolParserCanParseToolManifestOption()
         {
             var result =

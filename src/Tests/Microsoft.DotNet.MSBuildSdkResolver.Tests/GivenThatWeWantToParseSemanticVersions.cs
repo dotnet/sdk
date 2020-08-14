@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     public class GivenThatWeWantToParseFXVersions
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("")]
         [InlineData("1")]
         [InlineData("1.1")]
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             FXVersion.TryParse(s1, out fxVersion).Should().BeFalse();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("1.0.0-0.3.7",                1, 0, 0,  "-0.3.7",             "")]
         [InlineData("1.0.0-alpha",                1, 0, 0,  "-alpha",             "")]
         [InlineData("1.0.0-alpha+001",            1, 0, 0,  "-alpha",             "+001")]
@@ -89,42 +89,42 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fxVersion.Build.Should().Be(build);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReturnsNullWhenNoMajorSeparatorIsFound()
         {
             FXVersion fxVersion;
             FXVersion.TryParse("1", out fxVersion).Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReturnsNullWhenMajorPortionIsNotANumber()
         {
             FXVersion fxVersion;
             FXVersion.TryParse("a.0.0", out fxVersion).Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReturnsNullWhenNoMinorSeparatorIsFound()
         {
             FXVersion fxVersion;
             FXVersion.TryParse("1.0", out fxVersion).Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReturnsNullWhenMinorPortionIsNotANumber()
         {
             FXVersion fxVersion;
             FXVersion.TryParse("1.a.0", out fxVersion).Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReturnsNullWhenPatchPortionIsNotANumber()
         {
             FXVersion fxVersion;
             FXVersion.TryParse("1.0.a", out fxVersion).Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReturnsFXVersionWhenOnlyMajorMinorPatchIsFound()
         {
             FXVersion fxVersion;
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fxVersion.Patch.Should().Be(3);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReturnsFXVersionWhenOnlyMajorMinorPatchAndPreIsFound()
         {
             FXVersion fxVersion;
@@ -151,11 +151,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fxVersion.Pre.Should().Be("-pre");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReturnsFXVersionWhenMajorMinorPatchAndPreAndBuildIsFound()
         {
             FXVersion fxVersion;
-            
+
             var result = FXVersion.TryParse("1.2.3-pre+build", out fxVersion);
 
             result.Should().BeTrue();

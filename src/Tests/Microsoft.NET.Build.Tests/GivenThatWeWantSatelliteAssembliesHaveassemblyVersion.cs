@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
             _satelliteAssemblyPath = Path.Combine(outputDirectory.FullName, "en", "AllResourcesInSatellite.resources.dll");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_should_produce_same_satelliteAssembly_FileVersionInfo_as_main()
         {
             RestoreAndBuildTestAssets();
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Build.Tests
             satelliteAssemblyFileVersioninfo.FileDescription.Should().Be(mainAssemblyFileVersioninfo.FileDescription);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_should_produce_same_satelliteAssembly_AssemblyVersions_as_main()
         {
             RestoreAndBuildTestAssets();

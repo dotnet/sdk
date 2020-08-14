@@ -129,7 +129,7 @@ Commands:
             return ret;
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--help")]
         [InlineData("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
@@ -139,7 +139,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null)]
         [InlineData("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
@@ -158,7 +158,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(RemoveCommandHelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
             var cmd = new DotnetCommand(Log, "add", "one", "two", "three", "reference", "proj.csproj")
@@ -168,7 +168,7 @@ Commands:
 {string.Format(CommandLine.LocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("idontexist.csproj")]
         [InlineData("ihave?inv@lid/char\\acters")]
         public void WhenNonExistingProjectIsPassedItPrintsErrorAndUsage(string projName)
@@ -184,7 +184,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenBrokenProjectIsPassedItPrintsErrorAndUsage()
         {
             string projName = "Broken/Broken.csproj";
@@ -199,7 +199,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMoreThanOneProjectExistsInTheDirectoryItPrintsErrorAndUsage()
         {
             var setup = Setup();
@@ -213,7 +213,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNoProjectsExistsInTheDirectoryItPrintsErrorAndUsage()
         {
             var setup = Setup();
@@ -226,7 +226,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRemovesRefWithoutCondAndPrintsStatus()
         {
             var setup = Setup();
@@ -245,7 +245,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRemovesRefWithCondAndPrintsStatus()
         {
             var setup = Setup();
@@ -264,7 +264,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(libref.Name, ConditionFrameworkNet451).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTwoDifferentRefsArePresentItDoesNotRemoveBoth()
         {
             var setup = Setup();
@@ -284,7 +284,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRefWithoutCondIsNotThereItPrintsMessage()
         {
             var setup = Setup();
@@ -301,7 +301,7 @@ Commands:
             lib.CsProjContent().Should().BeEquivalentTo(csprojContentBefore);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRefWithCondIsNotThereItPrintsMessage()
         {
             var setup = Setup();
@@ -318,7 +318,7 @@ Commands:
             lib.CsProjContent().Should().BeEquivalentTo(csprojContentBefore);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRefWithAndWithoutCondArePresentAndRemovingNoCondItDoesNotRemoveOther()
         {
             var setup = Setup();
@@ -343,7 +343,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(librefCond.Name, ConditionFrameworkNet451).Should().Be(1);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRefWithAndWithoutCondArePresentAndRemovingCondItDoesNotRemoveOther()
         {
             var setup = Setup();
@@ -368,7 +368,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(librefCond.Name, ConditionFrameworkNet451).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRefWithDifferentCondIsPresentItDoesNotRemoveIt()
         {
             var setup = Setup();
@@ -393,7 +393,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(librefCondNetCoreApp10.Name, ConditionFrameworkNetCoreApp10).Should().Be(1);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDuplicateReferencesArePresentItRemovesThemAll()
         {
             var setup = Setup();
@@ -416,7 +416,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassingRefWithRelPathItRemovesRefWithAbsolutePath()
         {
             var setup = Setup();
@@ -435,7 +435,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassingRefWithRelPathToProjectItRemovesRefWithPathRelToProject()
         {
             var setup = Setup();
@@ -454,7 +454,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassingRefWithAbsolutePathItRemovesRefWithRelPath()
         {
             var setup = Setup();
@@ -473,7 +473,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassingMultipleReferencesItRemovesThemAll()
         {
             var setup = Setup();
@@ -497,7 +497,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeContaining(validref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassingMultipleReferencesAndOneOfThemDoesNotExistItRemovesOne()
         {
             var setup = Setup();
@@ -520,7 +520,7 @@ Commands:
             csproj.NumberOfProjectReferencesWithIncludeContaining(validref.Name).Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainingProjectIsGivenReferenceIsRemoved()
         {
             var setup = Setup();
@@ -537,7 +537,7 @@ Commands:
             result.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation()
         {
             var setup = Setup();
@@ -554,7 +554,7 @@ Commands:
             result.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation()
         {
             var setup = Setup();

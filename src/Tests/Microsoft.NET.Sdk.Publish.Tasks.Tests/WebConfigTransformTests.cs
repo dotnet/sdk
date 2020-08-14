@@ -13,7 +13,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
 {
     public class WebConfigTransformTests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_creates_new_config_if_one_does_not_exist()
         {
             Assert.True(XNode.DeepEquals(WebConfigTransformTemplates.WebConfigTemplate,
@@ -23,7 +23,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                     WebConfigTransform.Transform(null, "test.dll", configureForAzure: false, useAppHost: false, extension: null, aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: null, projectFullPath: null)));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_creates_ProcessPath_WithCorrectExtension()
         {
             Assert.True(XNode.DeepEquals(WebConfigTransformTemplates.WebConfigTemplate,
@@ -33,14 +33,14 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                     WebConfigTransform.Transform(null, "test.dll", configureForAzure: false, useAppHost: true, extension: null, aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: null, projectFullPath: null)));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_creates_new_config_if_one_has_unexpected_format()
         {
             Assert.True(XNode.DeepEquals(WebConfigTransformTemplates.WebConfigTemplate,
                 WebConfigTransform.Transform(XDocument.Parse("<unexpected />"), "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: null, projectFullPath: null)));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new object[] { new[] { "system.webServer" } })]
         [InlineData(new object[] { new[] { "add" } })]
         [InlineData(new object[] { new[] { "handlers" } })]
@@ -60,7 +60,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                 WebConfigTransform.Transform(input, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: null, projectFullPath: null)));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("add", "path", "test")]
         [InlineData("add", "verb", "test")]
         [InlineData("add", "modules", "mods")]
@@ -79,7 +79,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
         }
 
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("aspNetCore", "hostingModel", "inprocess")]
         [InlineData("aspNetCore", "hostingModel", "InProcess")]
         [InlineData("aspNetCore", "hostingModel", "outofprocess")]
@@ -103,7 +103,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Equal(attributeValue, (string)output.Descendants(elementName).Single().Attribute(attributeName));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("add", "modules", "AspNetCoreModuleV2")]
         [InlineData("add", "modules", "AspNetCoreModule")]
         public void WebConfigTransform_UsesAspNetCoreHostingVersion_ForHostingModule(string elementName, string attributeName, string attributeValue)
@@ -112,7 +112,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Equal(attributeValue, (string)output.Descendants(elementName).Single().Attribute(attributeName));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("add", "modules", "AspNetCoreModuleV2")]
         [InlineData("add", "modules", "AspNetCoreModule")]
         [InlineData("add", "modules", "UnKnownValue")]
@@ -122,7 +122,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Equal("AspNetCoreModule", (string)output.Descendants(elementName).Single().Attribute(attributeName));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("aspNetCore", "hostingModel", "outofprocess")]
         [InlineData("aspNetCore", "hostingModel", "OutOfProcess")]
         public void WebConfigTransform_UsingAspNetCoreModule_SupportsOutOfProc(string elementName, string attributeName, string attributeValue)
@@ -134,7 +134,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Equal(attributeValue, (string)output.Descendants(elementName).Single().Attribute(attributeName));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("inprocess")]
         [InlineData("InProcess")]
         public void WebConfigTransform_Throws_ForInValidHostingModel(string attributeValue)
@@ -145,7 +145,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Throws<Exception>(() => WebConfigTransform.Transform(null, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: attributeValue, environmentName: null, projectFullPath: null));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("aspNetCore", "hostingModel", "inprocess", "AspNetCoreModuleV2")]
         [InlineData("aspNetCore", "hostingModel", "InProcess", "AspNetCoreModuleV2")]
         [InlineData("aspNetCore", "hostingModel", "outofprocess", "AspNetCoreModuleV2")]
@@ -158,7 +158,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Equal(attributeValue, (string)output.Descendants(elementName).Single().Attribute(attributeName));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("foo")]
         public void WebConfigTransform_Throws_IfHostingModelValueIsUndefined(string attributeValue)
         {
@@ -167,7 +167,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Throws<Exception>(() => WebConfigTransform.Transform(input, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: attributeValue, environmentName: null, projectFullPath: null));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("aspNetCore", "hostingModel", "")]
         public void WebConfigTransform_DoesNotSet_HostingModelIfEmpty(string elementName, string attributeName, string attributeValue)
         {
@@ -177,16 +177,16 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Null((string)output.Descendants(elementName).Single().Attribute(attributeName));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_will_append_Env_IfPassed()
         {
             var input = WebConfigTransformTemplates.WebConfigTemplate;
- 
+
             var output = WebConfigTransform.Transform(input, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: "Production", projectFullPath: null);
             Assert.True(XNode.DeepEquals(output, WebConfigTransformTemplates.WebConfigTemplateWithEnvironmentVariable));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_will_Override_Env_IfUpdated()
         {
             var input = WebConfigTransformTemplates.WebConfigTemplateWithEnvironmentVariable;
@@ -210,7 +210,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             get { return testData; }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(TemplatesToTest))]
         public void WebConfigTransform_HandlesLocations_Correctly(XDocument template)
         {
@@ -221,7 +221,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
         }
 
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_overwrites_processPath()
         {
             var newProcessPath =
@@ -231,7 +231,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Equal(@".\app.exe", newProcessPath);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_fixes_aspnetcore_casing()
         {
             var input = WebConfigTransformTemplates.WebConfigTemplate;
@@ -241,7 +241,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                 WebConfigTransform.Transform(input, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: null, projectFullPath: null)));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_does_not_remove_children_of_aspNetCore_element()
         {
             var envVarElement =
@@ -259,7 +259,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Equal("Test", (string)output.Descendants("environmentVariable").SingleOrDefault(e => (string)e.Attribute("name") == "ASPNETCORE_ENVIRONMENT").Attribute("value"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_adds_stdoutLogEnabled_if_attribute_is_missing()
         {
             var input = WebConfigTransformTemplates.WebConfigTemplate;
@@ -271,7 +271,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                     .Descendants().Attributes("stdoutLogEnabled").Single());
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null)]
         [InlineData("false")]
         [InlineData("true")]
@@ -292,7 +292,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                     .Descendants().Attributes("stdoutLogFile").Single());
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null)]
         [InlineData("true")]
         [InlineData("false")]
@@ -314,7 +314,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                     .Descendants().Attributes("stdoutLogFile").Single());
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_correctly_configures_for_Azure()
         {
             var input = WebConfigTransformTemplates.WebConfigTemplate;
@@ -330,7 +330,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                 aspNetCoreElement));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_overwrites_stdoutLogPath_for_Azure()
         {
             var input = WebConfigTransformTemplates.WebConfigTemplate;
@@ -341,7 +341,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                 (string)output.Descendants("aspNetCore").Single().Attribute("stdoutLogFile"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_configures_portable_apps_correctly()
         {
             var aspNetCoreElement =
@@ -354,7 +354,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                 aspNetCoreElement));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_configures_full_framework_apps_correctly()
         {
             var aspNetCoreElement =
@@ -367,7 +367,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                 aspNetCoreElement));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("%LAUNCHER_ARGS%", "")]
         [InlineData(" %launcher_ARGS%", "")]
         [InlineData("%LAUNCHER_args% ", "")]
@@ -398,7 +398,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.Equal(outputArguments, (string)aspNetCoreElement.Attribute("arguments"));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("", ".\\myapp.dll")]
         [InlineData("%LAUNCHER_ARGS%", ".\\myapp.dll")]
         [InlineData("%LAUNCHER_ARGS% %launcher_args%", ".\\myapp.dll")]
@@ -437,7 +437,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
                 WebConfigTransform.Transform(input, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: null, projectFullPath: null));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("66964EC2-712A-451A-AB4F-33F18D8F54F1")]
         [InlineData("  66964EC2-712A-451A-AB4F-33F18D8F54F1  ")]
         [InlineData("{ 66964EC2-712A-451A-AB4F-33F18D8F54F1 }")]
@@ -458,7 +458,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
             Assert.True(XNode.DeepEquals(WebConfigTransformTemplates.WebConfigTemplateWithProjectGuid, transformedWebConfigWithGuid));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("66964EC2-712A-451A-AB4F-33F18D8F54F1")]
         [InlineData(" 66964EC2-712A-451A-AB4F-33F18D8F54F1 ")]
         [InlineData("{ 66964EC2-712A-451A-AB4F-33F18D8F54F1 }")]
@@ -482,7 +482,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WebConfigTransform_DoesNothingWithProjectGuid_IfAbsent()
         {
             // Arrange

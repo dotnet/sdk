@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void DotnetExeIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .GetProcessStartInfo().FileName.Should().Be("dotnet.exe");
         }
 
-        [UnixOnlyFact]
+        [UnixOnlyFact(Skip = "Test few tests")]
         public void DotnetIsExecuted()
         {
             var msbuildPath = "<msbuildpath>";
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .GetProcessStartInfo().FileName.Should().Be("dotnet");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("MSBuildExtensionsPath")]
         [InlineData("MSBuildSDKsPath")]
         [InlineData("DOTNET_CLI_TELEMETRY_SESSIONID")]
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             startInfo.Environment.ContainsKey(envVarName).Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItSetsMSBuildExtensionPathToExistingPath()
         {
             var msbuildPath = "<msbuildpath>";
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Exist();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItSetsOrIgnoresTelemetrySessionId()
         {
             var msbuildPath = "<msbuildpath>";
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotSetCurrentWorkingDirectory()
         {
             var msbuildPath = "<msbuildpath>";

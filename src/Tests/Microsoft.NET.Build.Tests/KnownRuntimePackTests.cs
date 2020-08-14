@@ -42,7 +42,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void DuplicateRuntimePackCausesFailure()
         {
             var testProject = new TestProject()
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1133");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void RuntimePackWithLabelIsSelected()
         {
             var testProject = new TestProject()
@@ -159,7 +159,7 @@ namespace Microsoft.NET.Build.Tests
             selfContainedPublishDir.Should().HaveFilesMatching($"{new DirectoryInfo(testDirectory).Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
-       [WindowsOnlyFact]
+       [WindowsOnlyFact(Skip = "Test few tests")]
         public void ItCantPublishArm64Wpf()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;

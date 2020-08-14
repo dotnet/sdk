@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 {
     public class ValidationMessageTests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ValidationMessagesFormatCorrectly()
         {
             // Since not all validation messages that we provided to the command-line parser are triggered by our

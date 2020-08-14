@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_fails_to_produce_winmds_for_net5_0_or_newer()
         {
             var testAsset = _testAssetsManager
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1131: ");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_fails_when_referencing_winmds_for_net5_0_or_newer()
         {
             var testAsset = _testAssetsManager
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1130: ");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.1")]
         [InlineData("net48")]
         public void It_successfully_builds_when_referencing_winmds(string targetFramework)

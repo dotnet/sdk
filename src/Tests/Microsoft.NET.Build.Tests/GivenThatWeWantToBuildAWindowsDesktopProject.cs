@@ -102,8 +102,8 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1137");
         }
-		
-		[WindowsOnlyFact]
+
+		[WindowsOnlyFact(Skip = "Test few tests")]
         public void It_fails_if_windows_target_platform_version_is_invalid()
         {
             var testProject = new TestProject()
@@ -122,7 +122,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1140");
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void It_succeeds_if_windows_target_platform_version_has_trailing_zeros()
         {
             var testProject = new TestProject()
@@ -131,8 +131,8 @@ namespace Microsoft.NET.Build.Tests
                 IsSdkProject = true,
                 TargetFrameworks = "net5.0"
             };
-            testProject.AdditionalProperties["TargetPlatformIdentifier"] = "Windows"; 
-            testProject.AdditionalProperties["TargetPlatformVersion"] = "10.0.18362.0"; // We must set this manually because if we set it in the TFM we remove the trailing zeroes. 
+            testProject.AdditionalProperties["TargetPlatformIdentifier"] = "Windows";
+            testProject.AdditionalProperties["TargetPlatformVersion"] = "10.0.18362.0"; // We must set this manually because if we set it in the TFM we remove the trailing zeroes.
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -147,7 +147,7 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "10.0.18362" });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_fails_if_target_platform_identifier_and_version_are_invalid()
         {
             var testProject = new TestProject()

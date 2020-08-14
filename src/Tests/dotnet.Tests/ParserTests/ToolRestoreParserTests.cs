@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             this.output = output;
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanGetManifestFilePath()
         {
             var command = Parser.Instance;
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             parseResult.ValueOrDefault<string>("tool-manifest").Should().Be("folder/my-manifest.format");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanGetFollowingArguments()
         {
             var command = Parser.Instance;
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             parseResult.ValueOrDefault<string>("configfile").Should().Be(@"C:\TestAssetLocalNugetFeed");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanParseSourceOption()
         {
             const string expectedSourceValue = "TestSourceValue";
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<string[]>("add-source").First().Should().Be(expectedSourceValue);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanParseMultipleSourceOption()
         {
             const string expectedSourceValue1 = "TestSourceValue1";
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<string[]>("add-source")[1].Should().Be(expectedSourceValue2);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanParseVerbosityOption()
         {
             const string expectedVerbosityLevel = "diag";
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.SingleArgumentOrDefault("verbosity").Should().Be(expectedVerbosityLevel);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanParseNoCacheOption()
         {
             var result =
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--no-cache");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanParseIgnoreFailedSourcesOption()
         {
             var result =
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--ignore-failed-sources");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanParseDisableParallelOption()
         {
             var result =
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.OptionValuesToBeForwarded().Should().ContainSingle("--disable-parallel");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ToolRestoreParserCanParseInteractiveRestoreOption()
         {
             var result =

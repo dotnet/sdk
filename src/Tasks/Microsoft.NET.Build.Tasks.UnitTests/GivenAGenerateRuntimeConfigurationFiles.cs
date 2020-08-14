@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCanGenerateWithoutAssetFile()
         {
             var task = new TestableGenerateRuntimeConfigurationFiles
@@ -74,7 +74,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void Given3RuntimeFrameworksItCanGenerateWithoutAssetFile()
         {
             var task = new TestableGenerateRuntimeConfigurationFiles
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     "There is no Microsoft.NETCore.App. And it is under frameworkS.");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void Given2RuntimeFrameworksItCanGenerateWithoutAssetFile()
         {
             var task = new TestableGenerateRuntimeConfigurationFiles
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     "There is no Microsoft.NETCore.App.");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenTargetMonikerItGeneratesShortName()
         {
             var task = new TestableGenerateRuntimeConfigurationFiles

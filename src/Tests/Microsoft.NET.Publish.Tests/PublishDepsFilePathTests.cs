@@ -23,7 +23,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void PublishDepsFilePathIsSetAsExpectedForNormalApps()
         {
             var testProject = SetupProject(singleFile: false);
@@ -40,7 +40,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDepsFilePath.Should().Be(expectedDepsFilePath);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void PublishDepsFilePathIsEmptyForSingleFileApps()
         {
             var testProject = SetupProject(singleFile: true);

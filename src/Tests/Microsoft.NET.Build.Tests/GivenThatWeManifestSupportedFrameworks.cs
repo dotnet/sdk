@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(".NETCoreApp")]
         [InlineData(".NETStandard")]
         public void TheMaximumVersionsAreSupported(string targetFrameworkIdentifier)
@@ -38,9 +38,9 @@ namespace Microsoft.NET.Build.Tests
             string testDirectory = Path.Combine(asset.TestRoot, project.Name);
 
             var getMaximumVersion = new GetValuesCommand(
-                Log, 
-                testDirectory, 
-                project.TargetFrameworks, 
+                Log,
+                testDirectory,
+                project.TargetFrameworks,
                 targetFrameworkIdentifier.Substring(1) + "MaximumVersion",
                 GetValuesCommand.ValueType.Property);
 
@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tests
                 because: $"Microsoft.NET.SupportedTargetFrameworks.props should include an entry for {expectedTFM}");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void TheSupportedTargetFrameworkListIsComposed()
         {
             var project = new TestProject

@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 {
     public class ToolPackageUninstallerTests : SdkTest
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)

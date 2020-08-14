@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     public class GivenDotnetVsTestForwardingApp
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunsVsTestApp()
         {
             new VSTestForwardingApp(new string[0])

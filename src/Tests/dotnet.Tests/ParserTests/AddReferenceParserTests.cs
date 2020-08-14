@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             this.output = output;
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void AddReferenceHasDefaultArgumentSetToCurrentDirectory()
         {
             var command = Parser.Instance;
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                     PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void AddReferenceHasInteractiveFlag()
         {
             var command = Parser.Instance;
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             CommonOptionResult.GetInteractive(appliedOption).Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void AddReferenceDoesNotHaveInteractiveFlagByDefault()
         {
             var command = Parser.Instance;
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             return appliedOption["interactive"].Value<bool>();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void AddReferenceWithoutArgumentResultsInAnError()
         {
             var command = Parser.Instance;
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 .BeEquivalentTo(string.Format(LocalizableStrings.RequiredArgumentMissingForCommand, "reference"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void EnumerablePackageIdFromQueryResponseResultsPackageIds()
         {
             using (var stream = new MemoryStream())

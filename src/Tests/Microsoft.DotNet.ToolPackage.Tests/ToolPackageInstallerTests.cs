@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 {
     public class ToolPackageInstallerTests : SdkTest
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenNoFeedInstallFailsWithException(bool testMockBehaviorIsInSync)
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             reporter.Lines[0].Should().Contain(TestPackageId.ToString());
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenOfflineFeedInstallSucceeds(bool testMockBehaviorIsInSync)
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAEmptySourceAndOfflineFeedInstallSucceeds(bool testMockBehaviorIsInSync)
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenNugetConfigInstallSucceedsInTransaction(bool testMockBehaviorIsInSync)
@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenNugetConfigInstallCreatesAnAssetFile(bool testMockBehaviorIsInSync)
@@ -179,7 +179,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAConfigFileRootDirectoryPackageInstallSucceedsViaFindingNugetConfigInParentDir(
@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAllButNoPackageVersionItCanInstallThePackage(bool testMockBehaviorIsInSync)
@@ -245,7 +245,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAllButNoTargetFrameworkItCanDownloadThePackage(bool testMockBehaviorIsInSync)
@@ -265,7 +265,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenASourceInstallSucceeds(bool testMockBehaviorIsInSync)
@@ -286,7 +286,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenARelativeSourcePathInstallSucceeds(bool testMockBehaviorIsInSync)
@@ -308,7 +308,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAUriSourceInstallSucceeds(bool testMockBehaviorIsInSync)
@@ -329,7 +329,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAEmptySourceAndNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
@@ -353,7 +353,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenFailedRestoreInstallWillRollback(bool testMockBehaviorIsInSync)
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             AssertInstallRollBack(fileSystem, store);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenFailureAfterRestoreInstallWillRollback(bool testMockBehaviorIsInSync)
@@ -412,7 +412,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             AssertInstallRollBack(fileSystem, store);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenSecondInstallInATransactionTheFirstInstallShouldRollback(bool testMockBehaviorIsInSync)
@@ -455,7 +455,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             AssertInstallRollBack(fileSystem, store);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenSecondInstallWithoutATransactionTheFirstShouldNotRollback(bool testMockBehaviorIsInSync)
@@ -502,7 +502,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 .BeEmpty();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackage(bool testMockBehaviorIsInSync)
@@ -525,7 +525,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             storeQuery.EnumeratePackages().Should().BeEmpty();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAnInstalledPackageUninstallRollsbackWhenTransactionFails(bool testMockBehaviorIsInSync)
@@ -558,7 +558,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAnInstalledPackageUninstallRemovesThePackageWhenTransactionCommits(
@@ -588,7 +588,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             storeQuery.EnumeratePackages().Should().BeEmpty();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenAPackageNameWithDifferentCaseItCanInstallThePackage(bool testMockBehaviorIsInSync)
@@ -608,7 +608,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenANuGetDiagnosticMessageItShouldNotContainTheTempProject()
         {
             var nugetConfigPath = GenerateRandomNugetConfigFilePath();
@@ -634,7 +634,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenARootWithNonAsciiCharacterInstallSucceeds()
         {
             var nugetConfigPath = GenerateRandomNugetConfigFilePath();
@@ -663,7 +663,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             new ToolPackageUninstaller(store).Uninstall(package.PackageDirectory);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         // repro https://github.com/dotnet/cli/issues/9409
@@ -688,7 +688,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
-        [UnixOnlyTheory]
+        [UnixOnlyTheory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         // repro https://github.com/dotnet/cli/issues/10101

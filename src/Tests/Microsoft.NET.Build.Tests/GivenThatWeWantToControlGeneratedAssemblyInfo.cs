@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("AssemblyInformationVersionAttribute")]
         [InlineData("AssemblyFileVersionAttribute")]
         [InlineData("AssemblyVersionAttribute")]
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Build.Tests
             actualInfo.Should().Equal(expectedInfo);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_does_not_include_source_revision_id_if_initialize_source_control_target_not_available()
         {
             TestProject testProject = new TestProject()
@@ -109,7 +109,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.0.0" });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_does_not_include_source_revision_id_if_source_revision_id_not_set()
         {
             TestProject testProject = new TestProject()
@@ -141,7 +141,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.0.0" });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_does_not_include_source_revision_id_if_disabled()
         {
             TestProject testProject = new TestProject()
@@ -174,7 +174,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.0.0" });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_includes_source_revision_id_if_available__version_without_plus()
         {
             TestProject testProject = new TestProject()
@@ -211,7 +211,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.0.0+xyz" });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_includes_source_revision_id_if_available__version_with_plus()
         {
             TestProject testProject = new TestProject()
@@ -249,7 +249,7 @@ namespace Microsoft.NET.Build.Tests
             command.GetValues().ShouldBeEquivalentTo(new[] { "1.2.3+abc.xyz" });
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData("netcoreapp2.1")]
         [InlineData("net45")]
         public void It_respects_version_prefix(string targetFramework)
@@ -277,7 +277,7 @@ namespace Microsoft.NET.Build.Tests
             info["AssemblyInformationalVersionAttribute"].Should().Be("1.2.3");
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData("netcoreapp2.1")]
         [InlineData("net45")]
         public void It_respects_version_changes_on_incremental_build(string targetFramework)
@@ -311,7 +311,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_respects_custom_assembly_attribute_items_on_incremental_build()
         {
             var targetFramework = "netstandard1.5";
@@ -349,8 +349,8 @@ namespace Microsoft.NET.Build.Tests
                 return command;
             }
         }
-        
-        [Fact]
+
+        [Fact(Skip = "Test few tests")]
         public void It_includes_internals_visible_to()
         {
             var testAsset = _testAssetsManager
@@ -375,7 +375,7 @@ namespace Microsoft.NET.Build.Tests
             AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_respects_out_out_of_internals_visible_to()
         {
             var testAsset = _testAssetsManager
@@ -387,7 +387,7 @@ namespace Microsoft.NET.Build.Tests
                     var ns = project.Root.Name.Namespace;
 
                     project.Root.Add(
-                        new XElement(ns + "PropertyGroup", 
+                        new XElement(ns + "PropertyGroup",
                             new XElement(ns + "GenerateInternalsVisibleToAttributes", "false")),
                         new XElement(ns + "ItemGroup",
                             new XElement(ns + "InternalsVisibleTo",
@@ -402,7 +402,7 @@ namespace Microsoft.NET.Build.Tests
             Assert.False(AssemblyInfo.Get(assemblyPath).ContainsKey("InternalsVisibleToAttribute"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_includes_internals_visible_to_with_key()
         {
             var testAsset = _testAssetsManager
@@ -428,7 +428,7 @@ namespace Microsoft.NET.Build.Tests
             AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_includes_internals_visible_to_with_project_publickey()
         {
             var testAsset = _testAssetsManager
@@ -455,7 +455,7 @@ namespace Microsoft.NET.Build.Tests
             AssemblyInfo.Get(assemblyPath)["InternalsVisibleToAttribute"].Should().Be("Tests, PublicKey=00240000048000009400000006020000002400005253413100040000010001001d3e6bbb36e11ea61ceff6e1022b23dd779fc6230838db2d25a2c7c8433b3fcf86b16c25b281fc3db1027c0675395e7d0548e6add88b6a811962bf958101fa9e243b1618313bee11f5e3b3fefda7b1d1226311b6cc2d07e87ff893ba6890b20082df34a0aac14b605b8be055e81081a626f8c69e9ed4bbaa4eae9f94a35accd2");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_includes_assembly_metadata()
         {
             var testAsset = _testAssetsManager
@@ -481,7 +481,7 @@ namespace Microsoft.NET.Build.Tests
             AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("MetadataKey:MetadataValue");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_respects_out_out_of_assembly_metadata()
         {
             var testAsset = _testAssetsManager
@@ -509,7 +509,7 @@ namespace Microsoft.NET.Build.Tests
             Assert.False(AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute"));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false, false, false)]
         [InlineData(true, false, true)]
         [InlineData(false, true, true)]
@@ -555,7 +555,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GenerateUserSecretsForTestProject()
         {
             //  Test the scenario where a test project references a web app and uses user secrets.
@@ -596,7 +596,7 @@ namespace Microsoft.NET.Build.Tests
             AssemblyInfo.Get(assemblyPath)["UserSecretsIdAttribute"].Should().Be("SecretsIdValue");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_includes_repository_url(bool privateRepo)
@@ -629,7 +629,7 @@ namespace Microsoft.NET.Build.Tests
             AssemblyInfo.Get(assemblyPath)["AssemblyMetadataAttribute"].Should().Be("RepositoryUrl:" + fakeUrl);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("net40", false)]
         [InlineData("net45", true)]
         [InlineData("netcoreapp2.1", true)]
@@ -661,7 +661,7 @@ namespace Microsoft.NET.Build.Tests
             else
             {
                 AssemblyInfo.Get(assemblyPath).ContainsKey("AssemblyMetadataAttribute").Should().Be(false);
-            } 
+            }
         }
     }
 }

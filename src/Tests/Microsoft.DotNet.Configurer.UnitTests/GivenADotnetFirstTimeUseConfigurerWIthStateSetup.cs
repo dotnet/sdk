@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false, false, false, false, Never, FirstRun, FirstRun, true, true)]
         [InlineData(true, false, false, false, FirstRun, FirstRun, FirstRun, true, true)]
         [InlineData(false, true, false, false, Never, FirstRun, Never, false, false)]

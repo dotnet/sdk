@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tests
             _configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsACommandSpecWhenToolIsInAProjectRef()
         {
             var testAsset =
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Contain(commandResolverArguments.CommandName);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItPassesDepsfileArgToHostWhenReturningACommandSpecForMSBuildProject()
         {
             var testAsset =
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Contain("--depsfile");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsNullWhenCommandNameDoesNotExistInProjectDependenciesForMSBuildProject()
         {
             var testAsset =
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItSetsDepsfileToOutputInCommandspecForMSBuild()
         {
             var testAsset =

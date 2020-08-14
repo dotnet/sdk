@@ -35,7 +35,7 @@ namespace ZipDeployPublish.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public async Task ExecuteZipDeploy_InvalidZipFilePath()
         {
             Mock<IHttpClient> client = new Mock<IHttpClient>();
@@ -50,7 +50,7 @@ namespace ZipDeployPublish.Test
         /// <summary>
         /// ZipDeploy should use PublishUrl if not null or empty, else use SiteName.
         /// </summary>
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("https://sitename.scm.azurewebsites.net", null, "https://sitename.scm.azurewebsites.net/api/zipdeploy")]
         [InlineData("https://sitename.scm.azurewebsites.net", "", "https://sitename.scm.azurewebsites.net/api/zipdeploy")]
         [InlineData("https://sitename.scm.azurewebsites.net", "shouldNotBeUsed", "https://sitename.scm.azurewebsites.net/api/zipdeploy")]
@@ -71,7 +71,7 @@ namespace ZipDeployPublish.Test
             await RunZipDeployAsyncTest(publishUrl, siteName, UserAgentVersion, HttpStatusCode.OK, verifyStep);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null, null)]
         [InlineData("", "")]
         [InlineData("", null)]
@@ -91,7 +91,7 @@ namespace ZipDeployPublish.Test
             await RunZipDeployAsyncTest(publishUrl, siteName, UserAgentVersion, HttpStatusCode.OK, verifyStep);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(HttpStatusCode.OK, true)]
         [InlineData(HttpStatusCode.Accepted, true)]
         [InlineData(HttpStatusCode.Forbidden, false)]

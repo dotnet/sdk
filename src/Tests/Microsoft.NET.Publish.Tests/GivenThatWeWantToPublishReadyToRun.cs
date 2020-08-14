@@ -20,7 +20,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_only_runs_readytorun_compiler_when_switch_is_enabled(string targetFramework)
         {
@@ -47,7 +47,7 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().HaveFile("System.Private.CoreLib.dll"); // self-contained
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_creates_readytorun_images_for_all_assemblies_except_excluded_ones(string targetFramework)
         {
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var testProject = CreateTestProjectForR2RTesting(
                 targetFramework,
-                projectName, 
+                projectName,
                 "ClassLib");
 
             testProject.AdditionalProperties["PublishReadyToRun"] = "True";
@@ -67,7 +67,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute().Should().Pass();
 
             DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory(
-                targetFramework, 
+                targetFramework,
                 "Debug",
                 testProject.RuntimeIdentifier);
 
@@ -88,21 +88,21 @@ namespace Microsoft.NET.Publish.Tests
             publishDirectory.Should().HaveFile("System.Private.CoreLib.dll"); // self-contained
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_creates_readytorun_symbols_when_switch_is_used(string targetFramework)
         {
             TestProjectPublishing_Internal("CrossgenTest3", targetFramework, emitNativeSymbols: true);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_supports_framework_dependent_publishing(string targetFramework)
         {
             TestProjectPublishing_Internal("FrameworkDependent", targetFramework, isSelfContained: false, emitNativeSymbols:true);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_does_not_support_cross_platform_readytorun_compilation(string targetFramework)
         {
@@ -157,7 +157,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContainingIgnoreCase("NETSDK1095");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_warns_when_targetting_netcoreapp_2_x()
         {
             var testProject = new TestProject()
@@ -180,14 +180,14 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.PublishReadyToRunRequiresVersion30);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_can_publish_readytorun_for_library_projects(string targetFramework)
         {
             TestProjectPublishing_Internal("LibraryProject1", targetFramework, isSelfContained: false, makeExeProject: false);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.0")]
         public void It_can_publish_readytorun_for_selfcontained_library_projects(string targetFramework)
         {

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 {
     public class ZshDetectorTests
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("/bin/zsh")]
         [InlineData("/other-place/zsh")]
         public void GivenFollowingEnvironmentVariableValueItCanDetectZsh(string environmentVariableValue)
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             ZshDetector.IsZshTheUsersShell(provider.Object).Should().BeTrue();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("/bin/bash")]
         [InlineData("/other/value")]
         [InlineData(null)]

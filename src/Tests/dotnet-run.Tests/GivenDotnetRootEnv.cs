@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItShouldSetDotnetRootToDirectoryOfMuxer()
         {
             string expectDotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining(expectOutput);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDotnetRootIsSetItShouldSetDotnetRootToDirectoryOfMuxer()
         {
             string expectDotnetRoot = "OVERRIDE VALUE";

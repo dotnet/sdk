@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 {
     public class LockFileMatcherTests
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("tools/netcoreapp1.1/any/tool.dll", "tool.dll", true)]
         [InlineData(@"tools\netcoreapp1.1\any\subDirectory\tool.dll", "subDirectory/tool.dll", true)]
         [InlineData("tools/netcoreapp1.1/win-x64/tool.dll", "tool.dll", true)]
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
         }
 
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("tools/netcoreapp1.1/any/tool.dll", "", true)]
         [InlineData(@"tools\netcoreapp1.1\any\subDirectory\tool.dll", "subDirectory", true)]
         [InlineData(@"tools\netcoreapp1.1\any\subDirectory\tool.dll", "sub", false)]

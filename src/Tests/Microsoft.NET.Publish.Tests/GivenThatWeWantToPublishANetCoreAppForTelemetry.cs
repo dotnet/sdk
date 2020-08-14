@@ -19,7 +19,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip = "Test few tests")]
         [InlineData("net5.0")]
         public void It_collects_empty_Trimmer_SingleFile_ReadyToRun_publishing_properties(string targetFramework)
         {
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Publish.Tests
                 "{\"EventName\":\"PublishProperties\",\"Properties\":{\"PublishReadyToRun\":\"null\",\"PublishTrimmed\":\"null\",\"PublishSingleFile\":\"null\"}");
         }
 
-        [CoreMSBuildOnlyTheory]
+        [CoreMSBuildOnlyTheory(Skip = "Test few tests")]
         [InlineData("net5.0")]
         public void It_collects_Trimmer_SingleFile_ReadyToRun_publishing_properties(string targetFramework)
         {
@@ -60,8 +60,8 @@ namespace Microsoft.NET.Publish.Tests
                 "\"CompileListCount\":\"[1-9]\\d?\"");  // Do not hardcode number of assemblies being compiled here, due to ILTrimmer
         }
 
-        [CoreMSBuildOnlyTheory]
-        [InlineData("net5.0")] 
+        [CoreMSBuildOnlyTheory(Skip = "Test few tests")]
+        [InlineData("net5.0")]
         void It_collects_crossgen2_publishing_properties(string targetFramework)
         {
             // Crossgen2 only supported for Linux/Windows x64 scenarios for now

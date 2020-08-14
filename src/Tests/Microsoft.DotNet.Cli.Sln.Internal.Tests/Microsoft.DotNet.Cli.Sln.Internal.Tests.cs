@@ -111,9 +111,9 @@ EndGlobal
             using (new FileStream(filename, FileMode.CreateNew)) { }
             return filename;
         }
-        
 
-        [Fact]
+
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenAValidSlnFileItReadsAndVerifiesContents()
         {
             var tmpFile = CreateFile();
@@ -261,7 +261,7 @@ EndGlobal
                 .Should().Be("FALSE");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenAValidReadOnlySlnFileItReadsContentsWithNoException()
         {
             var tmpFile = CreateFile();
@@ -269,12 +269,12 @@ EndGlobal
             var attr = File.GetAttributes(tmpFile);
             attr = attr | FileAttributes.ReadOnly;
             File.SetAttributes(tmpFile, attr);
-        
+
             Action act = () => SlnFile.Read(tmpFile);
             act.ShouldNotThrow("Because readonly file is not being modified.");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenAValidSlnFileItModifiesSavesAndVerifiesContents()
         {
             var tmpFile = CreateFile();
@@ -317,7 +317,7 @@ EndGlobal
                 .Should().Be(SolutionModified);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("Microsoft Visual Studio Solution File, Format Version ", 1)]
         [InlineData("First Line\nMicrosoft Visual Studio Solution File, Format Version ", 2)]
         [InlineData("First Line\nMicrosoft Visual Studio Solution File, Format Version \nThird Line", 2)]
@@ -336,7 +336,7 @@ EndGlobal
                 .WithMessage(FormatError(lineNum, LocalizableStrings.FileHeaderMissingVersionError));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("Invalid Solution")]
         [InlineData("Invalid Solution\nSpanning Multiple Lines")]
         [InlineData("Microsoft Visual\nStudio Solution File,\nFormat Version ")]
@@ -354,7 +354,7 @@ EndGlobal
                 .WithMessage(LocalizableStrings.FileHeaderMissingError);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenASolutionWithMultipleGlobalSectionsItThrows()
         {
             const string SolutionFile = @"
@@ -376,7 +376,7 @@ EndGlobal
                 .WithMessage(FormatError(5, LocalizableStrings.GlobalSectionMoreThanOnceError));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenASolutionWithGlobalSectionNotClosedItThrows()
         {
             const string SolutionFile = @"
@@ -395,7 +395,7 @@ Global
                 .WithMessage(FormatError(3, LocalizableStrings.GlobalSectionNotClosedError));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenASolutionWithProjectSectionNotClosedItThrows()
         {
             const string SolutionFile = @"
@@ -414,7 +414,7 @@ Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App\App.csproj"
                 .WithMessage(FormatError(3, LocalizableStrings.ProjectSectionNotClosedError));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenASolutionWithInvalidProjectSectionItThrows()
         {
             const string SolutionFile = @"
@@ -435,7 +435,7 @@ EndProject
                 .WithMessage(FormatError(3, LocalizableStrings.ProjectParsingErrorFormatString, "(", 0));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenASolutionWithInvalidSectionTypeItThrows()
         {
             const string SolutionFile = @"
@@ -457,7 +457,7 @@ EndGlobal
                 .WithMessage(FormatError(4, LocalizableStrings.InvalidSectionTypeError, "thisIsUnknown"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenASolutionWithMissingSectionIdTypeItThrows()
         {
             const string SolutionFile = @"
@@ -479,7 +479,7 @@ EndGlobal
                 .WithMessage(FormatError(4, LocalizableStrings.SectionIdMissingError));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenASolutionWithSectionNotClosedItThrows()
         {
             const string SolutionFile = @"
@@ -500,7 +500,7 @@ EndGlobal
                 .WithMessage(FormatError(6, LocalizableStrings.ClosingSectionTagNotFoundError));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenGivenASolutionWithInvalidPropertySetItThrows()
         {
             const string SolutionFile = @"

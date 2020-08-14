@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenOnlyDotnetItSuggestsTopLevelCommandsAndOptions()
         {
             var expected = new[] {
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenASlashItSuggestsTopLevelOptions()
         {
             var expected = new[] {
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNewCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNuGetCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNuGetDeleteCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNuGetLocalsCommandItDisplaysCompletions()
         {
             var expected = new[] {
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Tests.Commands
             reporter.Lines.Should().Equal(expected.OrderBy(c => c));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNuGetPushCommandItDisplaysCompletions()
         {
             var expected = new[] {

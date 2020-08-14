@@ -61,7 +61,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void compose_dependencies()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -96,7 +96,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void compose_dependencies_noopt()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void store_nativeonlyassets()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void compose_multifile()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
@@ -217,7 +217,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_uses_star_versions_correctly()
         {
             TestAsset targetManifestsAsset = _testAssetsManager
@@ -245,13 +245,13 @@ namespace Microsoft.NET.Publish.Tests
             // 4.0.0-rc2
             // 4.0.0-rc-2048
             //
-            // and the StarVersion.xml uses Version="4.0.0-*", 
+            // and the StarVersion.xml uses Version="4.0.0-*",
             // so we expect a version greater than 4.0.0-rc2, since there is
             // a higher version on the feed that meets the criteria
             nugetPackage.Version.Should().BeGreaterThan(NuGetVersion.Parse("4.0.0-rc2"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_creates_profiling_symbols()
         {
             TestAsset targetManifestsAsset = _testAssetsManager
@@ -265,7 +265,7 @@ namespace Microsoft.NET.Publish.Tests
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // clear the PATH on windows to ensure creating .ni.pdbs works without 
+                // clear the PATH on windows to ensure creating .ni.pdbs works without
                 // being in a VS developer command prompt
                 composeStore.WithEnvironmentVariable("PATH", string.Empty);
             }
@@ -300,7 +300,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_stores_when_targeting_netcoreapp3(bool isExe)
@@ -340,7 +340,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void DotnetStoreWithPrunedPackages()
         {
             const string TargetFramework = "netcoreapp3.1";

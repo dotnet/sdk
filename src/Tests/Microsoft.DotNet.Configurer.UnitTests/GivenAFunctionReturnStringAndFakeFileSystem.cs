@@ -34,13 +34,13 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                     _fileSystemMock.Directory);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsTheFunctionResult()
         {
             _userLevelCacheWriter.RunWithCache("fooKey", () => "foo").Should().Be("foo");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunsTheFunctionOnlyOnceWhenInvokeTwice()
         {
             var counter = new Counter();
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             counter.Count.Should().Be(1);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItKeepsTheCacheInUserProfileWithCacheKey()
         {
             _userLevelCacheWriter.RunWithCache("fooKey", () => "foo");
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _fileSystemMock.File.ReadAllText(path).Should().Be("foo");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItKeepsTheCacheInSpecificPath()
         {
             var cacheFilePath = Path.Combine("some path", $"fooCache.dotnetUserLevelCache");
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _fileSystemMock.File.ReadAllText(cacheFilePath).Should().Be("foo");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunsAndReturnsTheValueIfCacheCreationFailed()
         {
             var mockFile = new Mock<IFile>();

@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
         [InlineData("net451", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 net45 net451", true, true)]
         [InlineData("net46", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 net45 net451 net46", true, true)]
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData("netstandard2.0")]
         [InlineData("netcoreapp2.0")]
         public void Netfx_is_implicit_for_Netstandard_and_Netcore_20(string targetFramework)
@@ -154,7 +154,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData("netstandard1.6")]
         [InlineData("netcoreapp1.1")]
         public void Netfx_is_not_implicit_for_Netstandard_and_Netcore_less_than_20(string targetFramework)
@@ -168,7 +168,7 @@ namespace Microsoft.NET.Build.Tests
             restoreCommand.Execute().Should().Fail();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void It_is_possible_to_disable_netfx_implicit_asset_target_fallback()
         {
             const string testProjectName = "netstandard20_disabled_atf";
@@ -184,7 +184,7 @@ namespace Microsoft.NET.Build.Tests
             restoreCommand.Execute().Should().Fail();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void It_chooses_lowest_netfx_in_default_atf()
         {
             var testProjectName = "netcoreapp30_multiple_atf";
@@ -195,7 +195,7 @@ namespace Microsoft.NET.Build.Tests
                "net462;net472",
                new Dictionary<string, string> { ["CopyLocalLockFileAssemblies"] = "true" });
 
-            
+
             var source = Path.Combine(testPackageReference.NupkgPath, testPackageReference.ID, "bin", "Debug");
             NuGetConfigWriter.Write(testProjectTestAsset.TestRoot, source);
 
@@ -230,10 +230,10 @@ namespace Microsoft.NET.Build.Tests
             {
                 foreach (var additionalProperty in additionalProperties)
                 {
-                    testProject.AdditionalProperties.Add(additionalProperty.Key, additionalProperty.Value);    
+                    testProject.AdditionalProperties.Add(additionalProperty.Key, additionalProperty.Value);
                 }
             }
-            
+
             testProject.PackageReferences.Add(testPackageReference);
 
             var testProjectTestAsset = _testAssetsManager.CreateTestProject(
@@ -246,7 +246,7 @@ namespace Microsoft.NET.Build.Tests
 
         private TestPackageReference CreateTestPackage(string targetFrameworks)
         {
-            var project = 
+            var project =
                 new TestProject
                 {
                     Name = $"{targetFrameworks.Replace(';', '_')}_pkg",
@@ -262,7 +262,7 @@ namespace Microsoft.NET.Build.Tests
 
             if (!packageReference.NuGetPackageExists())
             {
-                var testAsset = 
+                var testAsset =
                     _testAssetsManager.CreateTestProject(
                         project,
                         ConstantStringValues.TestDirectoriesNamePrefix,

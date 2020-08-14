@@ -44,7 +44,7 @@ namespace dotnet.Tests.ToolSearchTests
                 new List<SearchResultPackageVersion> {new SearchResultPackageVersion("1.0.0", 10), new SearchResultPackageVersion("0.9.0", 1234)});
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDetailedIsFalseResultHasNecessaryInfo()
         {
             var searchResultPackages =
@@ -69,7 +69,7 @@ namespace dotnet.Tests.ToolSearchTests
             _reporter.Lines.Should().NotContain(l => l.Contains(_filledSearchResultPackage.Tags.First()));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDetailedIsTrueResultHasNecessaryInfo()
         {
             var searchResultPackages =
@@ -93,7 +93,7 @@ namespace dotnet.Tests.ToolSearchTests
                     $"Expect \"{expectedInformationToBePresent}\" to be present");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInputIsEmptyDetailIsFalseItShouldPrintNoResultMessage()
         {
             var searchResultPackages =
@@ -103,7 +103,7 @@ namespace dotnet.Tests.ToolSearchTests
             _reporter.Lines.Should().Contain(LocalizableStrings.NoResult);
         }
         
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInputIsEmptyDetailIsTrueItShouldPrintNoResultMessage()
         {
             var searchResultPackages =

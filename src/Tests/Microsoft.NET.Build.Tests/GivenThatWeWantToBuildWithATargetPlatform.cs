@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.1", ".NETCoreApp", "v3.1", "Windows", "7.0")] // Default values pre-5.0
         [InlineData("net5.0", ".NETCoreApp", "v5.0", "", "")]
         [InlineData("net5.0-Windows7.0", ".NETCoreApp", "v5.0", "Windows", "7.0")]
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
             var testProj = new TestProject()
             {
                 Name = "TargetPlatformTests",
-                IsSdkProject = true, 
+                IsSdkProject = true,
                 TargetFrameworks = targetFramework
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProj);
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
             assertValue("TargetPlatformDisplayName", $"{expectedTargetPlatformIdentifier} {expectedTargetPlatformVersion}");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_fails_on_unsupported_os()
         {
             TestProject testProject = new TestProject()

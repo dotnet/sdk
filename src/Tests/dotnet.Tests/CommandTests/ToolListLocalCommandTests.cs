@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestInspectorItPrintsTheTable()
         {
             _defaultToolListLocalCommand.Execute();
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Contain(l => l.Contains("package-name"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestInspectorWhenCalledFromRedirectCommandItPrintsTheTable()
         {
             var command = new ToolListCommand(_appliedCommand,

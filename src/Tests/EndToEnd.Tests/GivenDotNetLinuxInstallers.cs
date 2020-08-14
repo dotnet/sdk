@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItHasExpectedDependencies()
         {
             var installerFile = Environment.GetEnvironmentVariable("SDK_INSTALLER_FILE");

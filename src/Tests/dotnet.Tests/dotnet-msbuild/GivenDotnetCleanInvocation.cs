@@ -14,10 +14,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m -verbosity:normal -target:Clean";
 
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetCleanInvocation));
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItAddsProjectToMsbuildInvocation()
         {
             var msbuildPath = "<msbuildpath>";
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .GetProcessStartInfo().Arguments.Should().Be("exec <msbuildpath> -maxcpucount -verbosity:m -verbosity:normal <project> -target:Clean");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { }, "")]
         [InlineData(new string[] { "-o", "<output>" }, "-property:OutputPath=<cwd><output>")]
         [InlineData(new string[] { "--output", "<output>" }, "-property:OutputPath=<cwd><output>")]

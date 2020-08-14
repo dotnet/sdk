@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void VerifyWindows()
         {
             Assert.Equal(Platform.Windows, RuntimeEnvironment.OperatingSystemPlatform);
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             Assert.Equal(-1, osVersion.Revision);
         }
 
-        [MacOsOnlyFact]
+        [MacOsOnlyFact(Skip = "Test few tests")]
         public void VerifyMacOs()
         {
             Assert.Equal(Platform.Darwin, RuntimeEnvironment.OperatingSystemPlatform);
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             Assert.Equal(-1, osVersion.Revision);
         }
 
-        [LinuxOnlyFact]
+        [LinuxOnlyFact(Skip = "Test few tests")]
         public void VerifyLinux()
         {
             Assert.Equal(Platform.Linux, RuntimeEnvironment.OperatingSystemPlatform);

@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_builds_nondesktop_library_successfully_on_all_platforms()
         {
             var testAsset = _testAssetsManager
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void It_builds_desktop_library_successfully_on_windows()
         {
             var testAsset = _testAssetsManager
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("1", "win7-x86", "win7-x86;win7-x64", "win10-arm", "win7-x86;linux;WIN7-X86;unix", "osx-10.12", "win8-arm;win8-arm-aot",
             "win7-x86;win7-x64;win10-arm;linux;unix;osx-10.12;win8-arm;win8-arm-aot")]
         public void It_combines_inner_rids_for_restore(

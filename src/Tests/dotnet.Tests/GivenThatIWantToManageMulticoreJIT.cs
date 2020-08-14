@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvokedThenDotnetWritesOptimizationDataToTheProfileRoot()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory();
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Tests
                          .Which.Should().BeOnOrAfter(testStartTime, "Because dotnet CLI was executed after that time");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvokedWithMulticoreJitDisabledThenDotnetDoesNotWriteOptimizationDataToTheProfileRoot()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory();
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Tests
                 .Should().BeFalse("Because multicore JIT is disabled");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenCliRepoBuildsThenDotnetWritesOptimizationDataToTheDefaultProfileRoot()
         {
             var optimizationProfileFilePath = GetOptimizationProfileFilePath();

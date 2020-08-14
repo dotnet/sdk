@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.InstallationScript.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenJsonFileIsPassedToInstallScripts()
         {
             var installationScriptTestsJsonFile = Path.Combine(_testAssetsManager.TestAssetsRoot,
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.InstallationScript.Tests
             commandResult.Should().HaveStdOutContaining("1.0.0-beta.19463.3");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("-nopath", "")]
         [InlineData("-verbose", "")]
         [InlineData("-nocdn", "")]
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.InstallationScript.Tests
             commandResult.Should().HaveStdOutContainingIgnoreCase(parameter);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("-runtime", "dotnet")]
         [InlineData("-runtime", "aspnetcore")]
         [InlineData("-sharedruntime", "dotnet")]
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.InstallationScript.Tests
             commandResult.Should().HaveStdOutContainingIgnoreCase(runtimeType);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("1.0", "dotnet")]
         [InlineData("1.1", "dotnet")]
         [InlineData("2.0", "dotnet")]
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.InstallationScript.Tests
             commandResult.Should().HaveStdOutContainingIgnoreCase("-version");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("1.0")]
         [InlineData("1.1")]
         [InlineData("2.0")]

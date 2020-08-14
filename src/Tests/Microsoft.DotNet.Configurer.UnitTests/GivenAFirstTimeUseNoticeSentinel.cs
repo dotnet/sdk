@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             FirstTimeUseNoticeSentinel.SENTINEL.Should().Contain($"{Product.Version}");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsTrueIfTheSentinelExists()
         {
             _fileSystemMockBuilder.AddFiles(DOTNET_USER_PROFILE_FOLDER_PATH, FirstTimeUseNoticeSentinel.SENTINEL);
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             firstTimeUseNoticeSentinel.Exists().Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsFalseIfTheSentinelDoesNotExist()
         {
             var fileSystemMock = _fileSystemMockBuilder.Build();
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             firstTimeUseNoticeSentinel.Exists().Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCreatesTheSentinelInTheDotnetUserProfileFolderPathIfItDoesNotExistAlready()
         {
             var fileSystemMock = _fileSystemMockBuilder.Build();
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             firstTimeUseNoticeSentinel.Exists().Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotCreateTheSentinelAgainIfItAlreadyExistsInTheDotnetUserProfileFolderPath()
         {
             const string contentToValidateSentinelWasNotReplaced = "some string";
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             fileSystemMock.File.ReadAllText(sentinel).Should().Be(contentToValidateSentinelWasNotReplaced);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCreatesTheDotnetUserProfileFolderIfItDoesNotExistAlreadyWhenCreatingTheSentinel()
         {
             var fileSystemMock = _fileSystemMockBuilder.Build();
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             directoryMock.CreateDirectoryInvoked.Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotAttemptToCreateTheDotnetUserProfileFolderIfItAlreadyExistsWhenCreatingTheSentinel()
         {
             var fileSystemMock = _fileSystemMockBuilder.Build();

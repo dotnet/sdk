@@ -63,13 +63,13 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
-            
+
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
             var runCommand = new RunExeCommand(Log, outputDirectory.File("UseComReferences.exe").FullName);
             runCommand.Execute().Should().Pass();
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "Test few tests")]
         public void COMReferenceProperlyPublish()
         {
             var targetFramework = "netcoreapp3.0";

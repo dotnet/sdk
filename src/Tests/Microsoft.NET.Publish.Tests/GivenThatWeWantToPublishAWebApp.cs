@@ -19,7 +19,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_publishes_as_framework_dependent_by_default()
         {
             var testAsset = _testAssetsManager
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_should_publish_self_contained_for_2x()
         {
             var tfm = "netcoreapp2.2";
@@ -115,7 +115,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("Microsoft.AspNetCore.App")]
         [InlineData("Microsoft.AspNetCore.All")]
         public void It_should_publish_framework_dependent_for_2x(string platformLibrary)
@@ -159,7 +159,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null, null)]
         [InlineData(false, null)]
         [InlineData(true, null)]

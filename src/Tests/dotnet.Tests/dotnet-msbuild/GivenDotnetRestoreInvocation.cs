@@ -14,10 +14,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         private const string ExpectedPrefix =
             "exec <msbuildpath> -maxcpucount -verbosity:m -nologo -target:Restore";
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetRestoreInvocation));
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { }, "")]
         [InlineData(new string[] { "-s", "<source>" }, "-property:RestoreSources=<source>")]
         [InlineData(new string[] { "--source", "<source>" }, "-property:RestoreSources=<source>")]

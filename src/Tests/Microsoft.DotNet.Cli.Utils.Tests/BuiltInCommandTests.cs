@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// Tests that BuiltInCommand.Execute returns the correct exit code and a
         /// valid StartInfo FileName and Arguments.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void TestExecute()
         {
             Func<string[], int> testCommand = args => args.Length;
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// Tests that BuiltInCommand.Execute raises the OnOutputLine and OnErrorLine
         /// the correct number of times and with the correct content.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void TestOnOutputLines()
         {
             const int exitCode = 29;

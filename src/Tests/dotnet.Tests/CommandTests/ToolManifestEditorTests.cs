@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _testDirectoryRoot = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileItCanAddEntryToIt()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileWithoutToolsEntryItCanAddEntryToIt()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileWhenAddingTheSamePackageIdToolItThrows()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileWhenAddingTheSamePackageIdSameVersionSameCommandsItDoesNothing()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenAnInvalidManifestFileWhenAddItThrows()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonWithInvalidField);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenAnMissingManifestFileVersionItShouldNotThrow()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -184,7 +184,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.ShouldNotThrow<ToolManifestException>();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileItCanRemoveEntryFromIt()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -210,7 +210,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileWhenRemoveNonExistPackageIdToolItThrows()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenAnInvalidManifestFileWhenRemoveItThrows()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -250,7 +250,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonWithInvalidField);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileWhenEditNonExistPackageIdItThrows()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);
@@ -268,7 +268,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileItCanEditEntry()
         {
             string manifestFile = Path.Combine(_testDirectoryRoot, _manifestFilename);

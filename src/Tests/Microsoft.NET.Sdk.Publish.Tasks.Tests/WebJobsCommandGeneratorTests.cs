@@ -6,7 +6,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
 {
     public class WebJobsCommandGeneratorTests
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("c:/test/WebApplication1.dll", false, ".exe", "dotnet WebApplication1.dll %*")]
 
         [InlineData("c:/test/WebApplication1.dll", true, ".exe", "WebApplication1.exe %*")]

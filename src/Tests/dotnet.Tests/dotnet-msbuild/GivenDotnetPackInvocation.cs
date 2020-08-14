@@ -17,10 +17,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m -restore -target:pack";
         const string ExpectedNoBuildPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m -target:pack";
 
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPackInvocation));
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { }, "")]
         [InlineData(new string[] { "-o", "<packageoutputpath>" }, "-property:PackageOutputPath=<cwd><packageoutputpath>")]
         [InlineData(new string[] { "--output", "<packageoutputpath>" }, "-property:PackageOutputPath=<cwd><packageoutputpath>")]

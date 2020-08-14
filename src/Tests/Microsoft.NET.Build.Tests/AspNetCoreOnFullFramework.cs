@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData("1.1.2")]
         [InlineData("2.0.4")]
         public void It_discovers_assembly_parts(string aspnetVersion)
@@ -57,7 +57,7 @@ public class Program
                 IsExe = false
             };
 
-            
+
             referencedProjectWithPart.References.Add("System.ServiceModel");
 
             referencedProjectWithPart.SourceFiles["Class1.cs"] = @"

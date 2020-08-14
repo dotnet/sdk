@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
     {
         private const string TelemetryOptout = "DOTNET_CLI_TELEMETRY_OPTOUT";
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("true", true)]
         [InlineData("1", true)]
         [InlineData("yes", true)]

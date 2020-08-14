@@ -11,7 +11,7 @@ namespace dotnet.Tests.ToolSearchTests
     {
         private readonly Uri _domainAndPathOverride = new Uri("https://azuresearch-usnc.nuget.org/query");
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassedInRequestParametersItCanConstructTheUrl()
         {
             NugetToolSearchApiRequest.ConstructUrl("mytool", 3, 4, true, _domainAndPathOverride)
@@ -21,7 +21,7 @@ namespace dotnet.Tests.ToolSearchTests
                     "https://azuresearch-usnc.nuget.org/query?q=mytool&packageType=dotnettool&semVerLevel=2.0.0&skip=3&take=4&prerelease=true");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassedWithoutParameterItCanConstructTheUrl()
         {
             NugetToolSearchApiRequest.ConstructUrl(domainAndPathOverride:_domainAndPathOverride)

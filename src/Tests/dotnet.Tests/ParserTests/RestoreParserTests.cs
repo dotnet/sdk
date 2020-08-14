@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             this.output = output;
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void RestoreCapturesArgumentsToForwardToMSBuildWhenTargetIsSpecified()
         {
             var parser = Parser.Instance;
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 .BeEquivalentTo(@".\some.csproj", @"/p:SkipInvalidConfigurations=true");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void RestoreCapturesArgumentsToForwardToMSBuildWhenTargetIsNotSpecified()
         {
             var parser = Parser.Instance;
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 .BeEquivalentTo(@"/p:SkipInvalidConfigurations=true");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void RestoreDistinguishesRepeatSourceArgsFromCommandArgs()
         {
             var restore =

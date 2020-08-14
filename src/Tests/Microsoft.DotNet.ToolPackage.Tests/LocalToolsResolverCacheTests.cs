@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             return (nuGetGlobalPackagesFolder, localToolsResolverCache);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenExecutableIdentifierItCanSaveAndCannotLoadWithMismatches()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 .Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenExecutableIdentifierItCanSaveAndLoad()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             tool2.ShouldBeEquivalentTo(restoredCommands[1]);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenExecutableIdentifierItCanSaveMultipleSameAndLoadContainsOnlyOne()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             tool2.ShouldBeEquivalentTo(restoredCommands[1]);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCanSaveMultipleSameAndLoadTheHighestFromVersionRange()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             loadedResolverCache.ShouldBeEquivalentTo(restoredCommandsV1[0]);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsFalseWhenFailedToLoadVersionRange()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             loadSuccess.Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenExecutableIdentifierItCanSaveMultipleVersionAndLoad()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -277,7 +277,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             tool2Newer.ShouldBeEquivalentTo(restoredCommandsNewer[1]);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTheCacheIsCorruptedByAppendingLineItShouldLoadAsEmpty()
         {
             WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
@@ -287,7 +287,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             );
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTheCacheIsCorruptedByNotAJsonItShouldLoadAsEmpty()
         {
             WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
@@ -299,7 +299,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             );
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTheCacheIsCorruptedItShouldNotAffectNextSaveAndLoad()
         {
             IFileSystem fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();

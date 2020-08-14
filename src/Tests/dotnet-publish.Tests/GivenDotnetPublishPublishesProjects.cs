@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItPublishesARunnablePortableApp()
         {
             var testAppName = "MSBuildTestApp";
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                          .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItImplicitlyRestoresAProjectWhenPublishing()
         {
             var testAppName = "MSBuildTestApp";
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCanPublishAMultiTFMProjectWithImplicitRestore()
         {
             var testInstance = _testAssetsManager.CopyTestAsset(
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotImplicitlyRestoreAProjectWhenPublishingWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("project.assets.json");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null)]
         [InlineData("--self-contained")]
         [InlineData("--self-contained=true")]
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--self-contained=false")]
         [InlineData("--no-self-contained")]
         public void ItPublishesFrameworkDependentWithRid(string args)
@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--self-contained=false")]
         [InlineData(null)]
         [InlineData("--no-self-contained")]
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--self-contained --no-self-contained")]
         [InlineData("--self-contained=true --no-self-contained")]
         public void ItFailsToPublishWithConflictingArgument(string args)
@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             return new DirectoryInfo(Path.Combine(testProjectDirectory, "bin", configuration, "netcoreapp3.1", rid ?? "", "publish"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItPublishesAppWhenRestoringToSpecificPackageDirectory()
         {
             string dir = "pkgs";
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItFailsToPublishWithNoBuildIfNotPreviouslyBuilt()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
@@ -244,7 +244,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("MSB3030"); // "Could not copy ___ because it was not found."
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void ItPublishesSuccessfullyWithNoBuildIfPreviouslyBuilt(bool selfContained)
@@ -279,7 +279,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItFailsToPublishWithNoBuildIfPreviouslyBuiltWithoutRid()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
@@ -299,7 +299,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .Fail();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void DotnetPublishDoesNotPrintCopyrightInfo()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")

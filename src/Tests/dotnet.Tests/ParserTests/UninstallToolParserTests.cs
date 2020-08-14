@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             this.output = output;
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UninstallToolParserCanGetPackageId()
         {
             var command = Parser.Instance;
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             packageId.Should().Be("console.test.app");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UninstallToolParserCanGetGlobalOption()
         {
             var result = Parser.Instance.Parse("dotnet tool uninstall -g console.test.app");
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<bool>("global").Should().Be(true);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UninstallToolParserCanParseToolPathOption()
         {
             var result =
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.SingleArgumentOrDefault("tool-path").Should().Be(@"C:\Tools");
         }
         
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UninstallToolParserCanParseLocalOption()
         {
             var result =
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             appliedOptions.ValueOrDefault<bool>("local").Should().Be(true);
         }
         
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UninstallToolParserCanParseToolManifestOption()
         {
             var result =

@@ -19,7 +19,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_publishes_and_runs_self_contained_web_app()
         {
             var testProject = new TestProject()

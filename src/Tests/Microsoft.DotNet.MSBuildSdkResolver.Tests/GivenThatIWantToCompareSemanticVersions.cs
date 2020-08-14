@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     public class GivenThatWeWantToCompareFXVersions
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("2.0.0", "1.0.0", 1)]
         [InlineData("1.1.0", "1.0.0", 1)]
         [InlineData("1.0.1", "1.0.0", 1)]
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             public bool Same;
         };
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void OrderingMatchesSemVer200Rules()
         {
             TestCase [] orderedCases = new TestCase []

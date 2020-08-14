@@ -31,7 +31,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         </system.webServer>
 </configuration>");
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null, null)]
         [InlineData("", null)]
         public void GetEnvironmentVariables_HandlesNullAndEmpty(string value, object expected)
@@ -39,27 +39,27 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             // Arrange
             GenerateEnvTransform env = new GenerateEnvTransform();
 
-            // Act 
+            // Act
             var envVariables = env.GetEnvironmentVariables(value);
 
             // Assert
             Assert.Equal(expected, envVariables);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GenerateEnvTransformDocument_HandlesNullAndEmpty()
         {
             // Arrange
             GenerateEnvTransform env = new GenerateEnvTransform();
 
-            // Act 
+            // Act
             XDocument transformDoc = env.GenerateEnvTransformDocument(null, null);
 
             // Assert
             Assert.Null(transformDoc);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null, true)]
         [InlineData("", true)]
         public void Execute_DoesnotFail_IfEnvVarIsNullOrEmpty(string envVariable, bool expected)
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                 WebConfigEnvironmentVariables = envVariable
             };
 
-            // Act 
+            // Act
             bool isSuccess = env.Execute();
 
             // Assert
@@ -78,7 +78,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("envname=envvalue", 1)]
         [InlineData("envname=envvalue;envname2=envvalue2", 2)]
         [InlineData("envname=", 1)]
@@ -93,14 +93,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             // Arrange
             GenerateEnvTransform env = new GenerateEnvTransform();
 
-            // Act 
+            // Act
             var envVariables = env.GetEnvironmentVariables(value);
 
             // Assert
             Assert.Equal(expectedCount, envVariables.Count);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("envname=envvalue", 1)]
         [InlineData("envname=envvalue;envname2=envvalue2", 2)]
         [InlineData("envname=", 1)]
@@ -127,7 +127,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("envname=envvalue", 1)]
         [InlineData("envname=envvalue;envname2=envvalue2", 2)]
         [InlineData("envname=", 1)]
@@ -193,7 +193,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("envname=envvalue", 1)]
         [InlineData("envname=envvalue;envname2=envvalue2", 2)]
         [InlineData("envname=", 1)]
@@ -254,7 +254,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("envname=envvalue", 1)]
         [InlineData("envname=envvalue;envname2=envvalue2", 2)]
         [InlineData("envname=", 1)]

@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Clean.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCleansAProjectBuiltWithRuntimeIdentifier()
         {
             var testAppName = "MSBuildTestApp";

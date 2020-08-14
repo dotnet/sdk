@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeHaveAPpContentFile(ITestOutputHelper log) : base(log)
         {}
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_copies_to_output_successfully()
         {
             var packageReference = GetPackageReference();

@@ -26,7 +26,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             get { return testData; }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(ConnectionStringsData))]
         public void TransformAppSettings_NoAppSettingsInSourceFolder(ITaskItem[] connectionStringData)
         {
@@ -73,7 +73,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         }
 
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(ConnectionStringsData))]
         public void TransformAppSettings_FailsIfPublishDirectoryDoesNotExist(ITaskItem[] connectionStringData)
         {
@@ -96,7 +96,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             Assert.False(result);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(ConnectionStringsData))]
         public void TransformAppSettings_OverrideSourceAppSettingsName(ITaskItem[] connectionStringData)
         {
@@ -144,7 +144,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(ConnectionStringsData))]
         public void TransformAppSettings_OverrideDestinationAppSettingsName(ITaskItem[] connectionStringData)
         {

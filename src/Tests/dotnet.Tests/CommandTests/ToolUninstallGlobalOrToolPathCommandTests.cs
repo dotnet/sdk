@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, _shimsDirectory);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenANonExistentPackageItErrors()
         {
             var packageId = "does.not.exist";
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(string.Format(LocalizableStrings.ToolNotInstalled, packageId));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenAPackageItUninstalls()
         {
             CreateInstallCommand($"-g {PackageId}").Execute().Should().Be(0);
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(shimPath).Should().BeFalse();
         }
         
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenAPackageWhenCallFromUninstallRedirectCommandItUninstalls()
         {
             CreateInstallCommand($"-g {PackageId}").Execute().Should().Be(0);
@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(shimPath).Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenAFailureToUninstallItLeavesItInstalled()
         {
             CreateInstallCommand($"-g {PackageId}").Execute().Should().Be(0);
@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(shimPath).Should().BeTrue();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenAnInvalidToolPathItThrowsException()
         {
             var toolPath = "tool-path-does-not-exist";

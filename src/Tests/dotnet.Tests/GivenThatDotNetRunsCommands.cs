@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved. 
-// Licensed under the MIT license. See LICENSE file in the project root for full license information. 
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.IO;
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void UnresolvedPlatformReferencesFailAsExpected()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithUnresolvedPlatformDependency", testAssetSubdirectory: "NonRestoredTestProjects")
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Tests
                      .And.HaveStdErrContaining(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-crash"));
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("")]
         [InlineData(null)]
         public void GivenAMissingHomeVariableItPrintsErrorMessage(string value)
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Tests
                 .HaveStdErrContaining(CliFolderPathCalculator.DotnetHomeVariableName);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenASpecifiedDotnetCliHomeVariableItPrintsUsageMessage()
         {
             var home = _testAssetsManager.CreateTestDirectory(identifier: "DOTNET_HOME").Path;

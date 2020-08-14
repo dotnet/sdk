@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunsSpecifiedTargetsWithPropertiesCorrectly()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("MSBuildBareBonesProject")
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             result.StdOut.Should().Contain(MSBuildHelpText);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("/p")]
         [InlineData("/property")]
         [InlineData("-p")]
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             result.StdOut.Should().ContainVisuallySameFragment("NU1101");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDotnetRunHelpIsInvokedAppArgumentsTextIsIncludedInOutput()
         {
             string AppArgumentsText = "Arguments passed to the application that is being run.";
@@ -125,8 +125,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
 
 
-        
+
     }
 
-    
+
 }

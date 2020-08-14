@@ -15,7 +15,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_does_not_publish_to_the_publish_folder()
         {
             var helloWorldAsset = _testAssetsManager

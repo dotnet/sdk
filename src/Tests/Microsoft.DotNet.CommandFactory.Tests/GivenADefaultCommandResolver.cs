@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tests
 {
     public class GivenADefaultCommandResolver
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_contains_resolvers_in_the_right_order()
         {
             var defaultCommandResolver = DefaultCommandResolverPolicy.Create();

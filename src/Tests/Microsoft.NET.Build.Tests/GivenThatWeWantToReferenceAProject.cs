@@ -48,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
             FailsBuild
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netstandard1.2", true, "netstandard1.5", true, false, false)]
         [InlineData("netcoreapp1.1", true, "net45;netstandard1.5", true, true, true)]
         [InlineData("netcoreapp1.1", true, "net45;net46", true, false, false)]
@@ -262,7 +262,7 @@ namespace Microsoft.NET.Build.Tests
             testProjectC.AdditionalProperties.Add("DisableTransitiveProjectReferences", "true");
             testProjectC.ReferencedProjects.Add(testProjectB);
             var testAsset = _testAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
-            { 
+            {
                 if (path.Contains(testProjectA.Name))
                 {
                     var ns = p.Root.Name.Namespace;

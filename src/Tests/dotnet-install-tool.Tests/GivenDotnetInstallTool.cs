@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Install.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunsWithQuietVerbosityByDefault()
         {
             var result = new DotnetToolCommand(Log)
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli.Install.Tests
                 .NotHaveStdOutContaining("Restoring");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunsWithTheSpecifiedVerbosity()
         {
             var result = new DotnetToolCommand(Log)

@@ -20,7 +20,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_cleans_before_single_file_publish()
         {
             var testProject = new TestProject()
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_cleans_between_renames()
         {
             var testProject = new TestProject()
@@ -95,7 +95,7 @@ namespace Microsoft.NET.Publish.Tests
                 expectedSingleExeFileExtensions.Select(ending => testProject.Name + ending));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_cleans_between_single_file_publishes()
         {
             var testProject = new TestProject()
@@ -129,7 +129,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append(testProject.Name + ".dll"), null);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_cleans_before_trimmed_single_file_publish()
         {
             var testProject = new TestProject()
@@ -201,7 +201,7 @@ namespace Microsoft.NET.Publish.Tests
             Directory.Exists(Path.Combine(publishDir, "wwwroot"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_cleans_with_custom_output_dir()
         {
             var testProject = new TestProject()
@@ -237,7 +237,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_cleans_with_multiple_output_dirs()
         {
             var testProject = new TestProject()

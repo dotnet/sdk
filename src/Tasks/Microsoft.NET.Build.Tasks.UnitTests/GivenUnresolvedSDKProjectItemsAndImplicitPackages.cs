@@ -11,7 +11,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenUnresolvedSDKProjectItemsAndImplicitPackages
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItShouldCombineSdkReferencesWithImplicitPackageReferences()
         {
             // Arrange 

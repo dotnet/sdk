@@ -55,7 +55,7 @@ Commands:
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--help")]
         [InlineData("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
@@ -65,7 +65,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(ListProjectReferenceCommandHelpText);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("")]
         [InlineData("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
@@ -77,7 +77,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(ListCommandHelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
             var cmd = new DotnetCommand(Log, "list one two three reference".Split())
@@ -87,7 +87,7 @@ Commands:
 {string.Format(CommandLine.LocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("idontexist.csproj")]
         [InlineData("ihave?inv@lid/char\\acters")]
         public void WhenNonExistingProjectIsPassedItPrintsErrorAndUsage(string projName)
@@ -103,7 +103,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(ListReferenceCommandHelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenBrokenProjectIsPassedItPrintsErrorAndUsage()
         {
             string projName = "Broken/Broken.csproj";
@@ -111,14 +111,14 @@ Commands:
 
             var cmd = new ListReferenceCommand(Log)
                     .WithProject(projName)
-                    .WithWorkingDirectory(setup.TestRoot)                    
+                    .WithWorkingDirectory(setup.TestRoot)
                     .Execute(setup.ValidRefCsprojPath);
             cmd.ExitCode.Should().NotBe(0);
             cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.ProjectIsInvalid, "Broken/Broken.csproj"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(ListReferenceCommandHelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMoreThanOneProjectExistsInTheDirectoryItPrintsErrorAndUsage()
         {
             var setup = Setup();
@@ -132,7 +132,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(ListReferenceCommandHelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNoProjectsExistsInTheDirectoryItPrintsErrorAndUsage()
         {
             var setup = Setup();
@@ -145,7 +145,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(ListReferenceCommandHelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNoProjectReferencesArePresentInTheProjectItPrintsError()
         {
             var lib = NewLib(_testAssetsManager.CreateTestDirectory().Path);
@@ -157,7 +157,7 @@ Commands:
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.NoReferencesFound, CommonLocalizableStrings.P2P, lib.CsProjPath));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItPrintsSingleReference()
         {
             string OutputText = CommonLocalizableStrings.ProjectReferenceOneOrMore;
@@ -178,7 +178,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItPrintsMultipleReferences()
         {
             string OutputText = CommonLocalizableStrings.ProjectReferenceOneOrMore;

@@ -9,10 +9,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 {
     public class AppSettingsTransformTests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GenerateDefaultAppSettingsJsonFile_CreatesCorrectDefaultFile()
         {
-            // Act 
+            // Act
             string resultFile = AppSettingsTransform.GenerateDefaultAppSettingsJsonFile();
 
             // Assert
@@ -22,7 +22,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
         }
 
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
         [InlineData("EmptyConnection", @"")]
         [InlineData("", @"SomeConnectionStringValue")]
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 
             string appsettingsFile = AppSettingsTransform.GenerateDefaultAppSettingsJsonFile();
 
-            // Act 
+            // Act
             AppSettingsTransform.UpdateDestinationConnectionStringEntries(appsettingsFile, taskItemArray);
 
             // Assert
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
         [InlineData("EmptyConnection", @"")]
         [InlineData("", @"SomeConnectionStringValue")]
@@ -64,7 +64,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             string appsettingsFile = AppSettingsTransform.GenerateDefaultAppSettingsJsonFile();
             File.WriteAllText(appsettingsFile, "{}");
 
-            // Act 
+            // Act
             bool succeed = AppSettingsTransform.UpdateDestinationConnectionStringEntries(appsettingsFile, taskItemArray);
 
             // Assert
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             get { return testData; }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(ConnectionStringsData), MemberType=typeof(AppSettingsTransformTests))]
         public void AppSettingsTransform_UpdatesMultipleConnectionStrings(ITaskItem[] values)
         {
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("DefaultConnection", @"Server=(localdb)\mssqllocaldb;Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true")]
         [InlineData("EmptyConnection", @"")]
         [InlineData("", @"SomeConnectionStringValue")]
@@ -130,7 +130,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
             var appsettingsFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             File.WriteAllText(appsettingsFile, "{}");
 
-            // Act 
+            // Act
             AppSettingsTransform.UpdateDestinationConnectionStringEntries(appsettingsFile, taskItemArray);
 
             // Assert

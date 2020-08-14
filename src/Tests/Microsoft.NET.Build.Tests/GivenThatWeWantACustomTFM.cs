@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeWantACustomTFM(ITestOutputHelper log) : base(log)
         {}
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_imports_custom_parsing_targets()
         {
             var targetFramework = "netcoreapp3.0";

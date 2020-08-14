@@ -14,10 +14,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m -target:ComposeStore <project>";
         static readonly string[] ArgsPrefix = { "--manifest", "<project>" };
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetStoreInvocation));
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("-m")]
         [InlineData("--manifest")]
         public void ItAddsProjectToMsbuildInvocation(string optionName)
@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .GetProcessStartInfo().Arguments.Should().Be($"{ExpectedPrefix}");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { "-f", "<tfm>" }, @"-property:TargetFramework=<tfm>")]
         [InlineData(new string[] { "--framework", "<tfm>" }, @"-property:TargetFramework=<tfm>")]
         [InlineData(new string[] { "-r", "<rid>" }, @"-property:RuntimeIdentifier=<rid>")]
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("-o")]
         [InlineData("--output")]
         public void ItAddsOutputPathToMsBuildInvocation(string optionName)

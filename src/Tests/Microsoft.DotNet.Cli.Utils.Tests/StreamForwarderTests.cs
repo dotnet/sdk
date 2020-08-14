@@ -42,7 +42,7 @@ namespace StreamForwarderTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("123")]
         [InlineData("123\n")]
         public void TestNoForwardingNoCapture(string inputStr)
@@ -50,7 +50,7 @@ namespace StreamForwarderTests
             TestCapturingAndForwardingHelper(ForwardOptions.None, inputStr, null, new string[0]);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(ForwardingTheoryVariations))]
         public void TestForwardingOnly(string inputStr, string[] expectedWrites)
         {
@@ -62,7 +62,7 @@ namespace StreamForwarderTests
             TestCapturingAndForwardingHelper(ForwardOptions.WriteLine, inputStr, null, expectedWrites);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(ForwardingTheoryVariations))]
         public void TestCaptureOnly(string inputStr, string[] expectedWrites)
         {
@@ -76,7 +76,7 @@ namespace StreamForwarderTests
             TestCapturingAndForwardingHelper(ForwardOptions.Capture, inputStr, expectedCaptured, new string[0]);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(ForwardingTheoryVariations))]
         public void TestCaptureAndForwardingTogether(string inputStr, string[] expectedWrites)
         {

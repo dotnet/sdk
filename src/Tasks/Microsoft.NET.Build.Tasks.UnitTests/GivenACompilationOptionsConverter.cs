@@ -17,8 +17,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             .Assembly
             .GetType("Microsoft.NET.Build.Tasks.CompilationOptionsConverter")
             .GetMethod("ConvertFrom");
-        
-        [Theory]
+
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(CompilerOptionsData))]
         public void ItConvertsFromITaskItemsCorrectly(ITaskItem taskItem, CompilationOptions expectedOptions)
         {

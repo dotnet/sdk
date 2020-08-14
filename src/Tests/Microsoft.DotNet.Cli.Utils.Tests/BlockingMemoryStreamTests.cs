@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <summary>
         /// Tests reading a bigger buffer than what is available.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReadBiggerBuffer()
         {
             using (var stream = new BlockingMemoryStream())
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <summary>
         /// Tests reading smaller buffers than what is available.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ReadSmallerBuffers()
         {
             using (var stream = new BlockingMemoryStream())
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <summary>
         /// Tests reading will block until the stream is written to.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void TestReadBlocksUntilWrite()
         {
             using (var stream = new BlockingMemoryStream())

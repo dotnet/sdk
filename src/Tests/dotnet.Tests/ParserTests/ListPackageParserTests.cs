@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 {
     public class ListPackageParserTests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ListPackageCanForwardInteractiveFlag()
         {
             var command = Parser.Instance;
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.Errors.Should().BeEmpty();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--verbosity", "foo")]
         [InlineData("--verbosity", "")]
         [InlineData("-v", "foo")]
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.Errors.Should().Contain(e => e.Option != null && e.Option.Name == "verbosity");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--verbosity", "q")]
         [InlineData("--verbosity", "quiet")]
         [InlineData("--verbosity", "m")]
@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.Errors.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ListPackageDoesNotForwardVerbosityByDefault()
         {
             var command = Parser.Instance;

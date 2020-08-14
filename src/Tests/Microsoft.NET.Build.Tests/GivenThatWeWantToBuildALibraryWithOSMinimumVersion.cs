@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPropertiesAreNotSetItShouldNotGenerateMinimumOSPlatformAttribute()
         {
             TestProject testProject = SetUpProject();
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass().And.HaveStdOutContaining("NO ATTRIBUTE");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPropertiesAreSetItCanGenerateMinimumOSPlatformAttribute()
         {
             TestProject testProject = SetUpProject();
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass().And.HaveStdOutContaining("PlatformName:iOS13.2");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMinimumOSPlatformISNotSetTargetPlatformVersionIsSetItCanGenerateMinimumOSPlatformAttribute()
         {
             TestProject testProject = SetUpProject();
@@ -72,7 +72,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass().And.HaveStdOutContaining("PlatformName:iOS13.2");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMinimumOSPlatformIsHigherThanTargetPlatformVersionItShouldError()
         {
             TestProject testProject = SetUpProject();

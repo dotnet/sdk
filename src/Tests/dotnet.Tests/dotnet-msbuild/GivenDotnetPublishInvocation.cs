@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     public class GivenDotnetPublishInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPublishInvocation));
         private readonly ITestOutputHelper output;
 
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m";
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { }, "")]
         [InlineData(new string[] { "-r", "<rid>" }, "-property:RuntimeIdentifier=<rid>")]
         [InlineData(new string[] { "--runtime", "<rid>" }, "-property:RuntimeIdentifier=<rid>")]
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { "-f", "<tfm>" }, "-property:TargetFramework=<tfm>")]
         [InlineData(new string[] { "--framework", "<tfm>" }, "-property:TargetFramework=<tfm>")]
         public void MsbuildInvocationIsCorrectForSeparateRestore(string[] args, string expectedAdditionalArgs)
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                    .Be($"{ExpectedPrefix} -nologo -target:Publish{expectedAdditionalArgs}");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void MsbuildInvocationIsCorrectForNoBuild()
         {
             var msbuildPath = "<msbuildpath>";
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                    .Be($"{ExpectedPrefix} -target:Publish -property:NoBuild=true");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { }, "")]
         [InlineData(new string[] { "-f", "<tfm>" }, "-property:TargetFramework=<tfm>")]
         [InlineData(new string[] { "--framework", "<tfm>" }, "-property:TargetFramework=<tfm>")]

@@ -426,7 +426,7 @@ Global
 EndGlobal
 ";
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--help")]
         [InlineData("-h")]
         [InlineData("-?")]
@@ -439,7 +439,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("")]
         [InlineData("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
@@ -451,7 +451,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(SlnCommandHelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
             var cmd = new DotnetCommand(Log)
@@ -462,7 +462,7 @@ EndGlobal
 {CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd}");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("idontexist.sln")]
         [InlineData("ihave?invalidcharacters")]
         [InlineData("ihaveinv@lidcharacters")]
@@ -477,7 +477,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -494,7 +494,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvalidSolutionIsFoundAddPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -512,7 +512,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNoProjectIsPassedItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -529,7 +529,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNoSolutionExistsInTheDirectoryAddPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -546,7 +546,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMoreThanOneSolutionExistsInTheDirectoryItPrintsErrorAndUsage()
         {
             var projectDirectory = _testAssetsManager
@@ -563,7 +563,7 @@ EndGlobal
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNestedProjectIsAddedSolutionFoldersAreCreated()
         {
             var projectDirectory = _testAssetsManager
@@ -583,7 +583,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainingProjectIsGivenProjectIsAdded()
         {
             var projectDirectory = _testAssetsManager
@@ -602,7 +602,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation()
         {
             var projectDirectory = _testAssetsManager
@@ -627,7 +627,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation()
         {
             var projectDirectory = _testAssetsManager
@@ -652,7 +652,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenProjectDirectoryIsAddedSolutionFoldersAreNotCreated()
         {
             var projectDirectory = _testAssetsManager
@@ -673,7 +673,7 @@ EndGlobal
             slnFile.Sections.GetSection("NestedProjects").Should().BeNull();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(".")]
         [InlineData("")]
         public void WhenSolutionFolderExistsItDoesNotGetAdded(string firstComponent)
@@ -711,7 +711,7 @@ EndGlobal
                 .Should().Be(newlyAddedSrcFolder.Id);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("TestAppWithSlnAndCsprojFiles", ExpectedSlnFileAfterAddingLibProj, "")]
         [InlineData("TestAppWithSlnAndCsprojProjectGuidFiles", ExpectedSlnFileAfterAddingLibProj, "{84A45D44-B677-492D-A6DA-B3A71135AB8E}")]
         [InlineData("TestAppWithEmptySln", ExpectedSlnFileAfterAddingLibProjToEmptySln, "")]
@@ -742,7 +742,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("TestAppWithSlnAndCsprojFiles")]
         [InlineData("TestAppWithSlnAndCsprojProjectGuidFiles")]
         [InlineData("TestAppWithEmptySln")]
@@ -763,7 +763,7 @@ EndGlobal
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenProjectIsAddedSolutionHasUTF8BOM()
         {
             var projectDirectory = _testAssetsManager
@@ -787,7 +787,7 @@ EndGlobal
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("TestAppWithSlnAndCsprojFiles")]
         [InlineData("TestAppWithSlnAndCsprojProjectGuidFiles")]
         [InlineData("TestAppWithEmptySln")]
@@ -813,7 +813,7 @@ EndGlobal
             slnFile.Projects.Count().Should().Be(expectedNumberOfProjects);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("TestAppWithSlnAndCsprojFiles")]
         [InlineData("TestAppWithSlnAndCsprojProjectGuidFiles")]
         [InlineData("TestAppWithEmptySln")]
@@ -860,7 +860,7 @@ EndGlobal
                 .Count().Should().Be(1, $"Lib {reasonString}");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("TestAppWithSlnAndExistingCsprojReferences")]
         [InlineData("TestAppWithSlnAndExistingCsprojReferencesWithEscapedDirSep")]
         public void WhenSolutionAlreadyContainsProjectItDoesntDuplicate(string testAsset)
@@ -880,7 +880,7 @@ EndGlobal
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassedMultipleProjectsAndOneOfthemDoesNotExistItCancelsWholeOperation()
         {
             var projectDirectory = _testAssetsManager
@@ -924,7 +924,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
         [InlineData("SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
         [InlineData("SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
@@ -956,7 +956,7 @@ EndGlobal
             nonSolutionFolderProjects.Single().TypeGuid.Should().Be(expectedTypeGuid);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassedAProjectWithoutATypeGuidItErrors()
         {
             var solutionDirectory = _testAssetsManager
@@ -983,7 +983,7 @@ EndGlobal
                 .BeVisuallyEquivalentTo(contentBefore);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         private void WhenSlnContainsSolutionFolderWithDifferentCasingItDoesNotCreateDuplicate()
         {
             var projectDirectory = _testAssetsManager
@@ -1003,7 +1003,7 @@ EndGlobal
             solutionFolderProjects.Count().Should().Be(1);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenProjectWithoutMatchingConfigurationsIsAddedSolutionMapsToFirstAvailable()
         {
             var slnDirectory = _testAssetsManager
@@ -1022,7 +1022,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(ExpectedSlnFileAfterAddingProjectWithoutMatchingConfigs);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenProjectWithMatchingConfigurationsIsAddedSolutionMapsAll()
         {
             var slnDirectory = _testAssetsManager
@@ -1041,7 +1041,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(ExpectedSlnFileAfterAddingProjectWithMatchingConfigs);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenProjectWithAdditionalConfigurationsIsAddedSolutionDoesNotMapThem()
         {
             var slnDirectory = _testAssetsManager
@@ -1060,7 +1060,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(ExpectedSlnFileAfterAddingProjectWithAdditionalConfigs);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItAddsACSharpProjectThatIsMultitargeted()
         {
             var solutionDirectory = _testAssetsManager
@@ -1079,7 +1079,7 @@ EndGlobal
                 .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItAddsAVisualBasicProjectThatIsMultitargeted()
         {
             var solutionDirectory = _testAssetsManager
@@ -1098,7 +1098,7 @@ EndGlobal
                 .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItAddsAnFSharpProjectThatIsMultitargeted()
         {
             var solutionDirectory = _testAssetsManager
@@ -1118,7 +1118,7 @@ EndGlobal
                 .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNestedProjectIsAddedAndInRootOptionIsPassedNoSolutionFoldersAreCreated()
         {
             var projectDirectory = _testAssetsManager
@@ -1138,7 +1138,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenSolutionFolderIsPassedProjectsAreAddedThere()
         {
             var projectDirectory = _testAssetsManager
@@ -1158,7 +1158,7 @@ EndGlobal
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenSolutionFolderAndInRootIsPassedItFails()
         {
             var solutionDirectory = _testAssetsManager

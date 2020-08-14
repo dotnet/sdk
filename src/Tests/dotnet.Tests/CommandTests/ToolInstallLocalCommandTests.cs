@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     1);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertDefaultInstallSuccess();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNoManifestFileItShouldThrow()
         {
             _fileSystem.File.Delete(_manifestFilePath);
@@ -125,7 +125,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Contain(ToolManifest.LocalizableStrings.CannotFindAManifestFile);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNoManifestFileItShouldThrowAndContainNoManifestGuide()
         {
             _fileSystem.File.Delete(_manifestFilePath);
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .And.VerboseMessage.Should().Contain(string.Format(ToolManifest.LocalizableStrings.ListOfSearched, ""));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithExplicitManifestFileItShouldAddEntryToExplicitManifestFile()
         {
             var explicitManifestFilePath = Path.Combine(_temporaryDirectory, "subdirectory", "dotnet-tools.json");
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _toolManifestFinder.Find(new FilePath(explicitManifestFilePath)).Should().HaveCount(1);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertDefaultInstallSuccess();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _manifestFilePath).Green());
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldNotChangeManifestFile()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install non-exist");
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(_jsonContent, "Manifest file should not be changed");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestFileConflictItShouldNotAddToCache()
         {
             _toolManifestEditor.Add(
@@ -266,7 +266,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithExactVersionItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse(
@@ -289,7 +289,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertDefaultInstallSuccess();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse(

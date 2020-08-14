@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp1.1")]
         [InlineData("netcoreapp3.0")]
         public void GenerateBuildRuntimeConfigurationFiles_runs_incrementally(string targetFramework)
@@ -42,11 +42,11 @@ namespace Microsoft.NET.Build.Tests
             runtimeConfigDevJsonSecondModifiedTime.Should().Be(runtimeConfigDevJsonFirstModifiedTime);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp1.1")]
         [InlineData("netcoreapp3.0")]
         public void ResolvePackageAssets_runs_incrementally(string targetFramework)
-        { 
+        {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()

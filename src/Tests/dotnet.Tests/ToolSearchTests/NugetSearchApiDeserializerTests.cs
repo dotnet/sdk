@@ -11,7 +11,7 @@ namespace dotnet.Tests.ToolSearchTests
 {
     public class NugetSearchApiDeserializerTests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCanDeserialize()
         {
             var json = File.ReadAllText("queryResultSample.json");

@@ -27,7 +27,7 @@ Options:
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--help")]
         [InlineData("-h")]
         [InlineData("-?")]

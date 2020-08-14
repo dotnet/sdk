@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
                 .Callback(() => _deleteCount++);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenServerReturn503TransmissionWillBeRetried()
         {
             int peekCounts = 0;
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
                 "delete is not expected to be called on 503, request is expected to be send forever.");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenServerReturn400IntervalWillBe10Seconds()
         {
             int peekCounts = 0;
@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
             _deleteCount.Should().Be(10, "400 should not be retried so delete should always be called.");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void DisposeDoesNotThrow()
         {
             new Sender(StorageBaseMock.Object,
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
                 .Dispose();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenServerReturnDnsErrorRequestWillBeRetried()
         {
             int peekCounts = 0;

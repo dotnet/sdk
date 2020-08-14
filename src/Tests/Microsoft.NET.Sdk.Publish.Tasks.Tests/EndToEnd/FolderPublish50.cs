@@ -24,7 +24,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
             _testOutputHelper = testOutputHelper;
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("net5.0", "Release", "core")]
         [InlineData("net5.0", "Debug", "core")]
         public void EmptyWebCore(string templateFramework, string configuration, string msBuildType)
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
         }
 
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("net5.0", "Release", "core")]
         [InlineData("net5.0", "Debug", "core")]
         public void WebAPICore(string templateFramework, string configuration, string msBuildType)
@@ -60,7 +60,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
             Publish(testFolder, projectName, configuration, msBuildType, isStandAlone:false, resultUrl:"http://localhost:5000/api/Values");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("net5.0", "Release", "core", "none", "false")]
         [InlineData("net5.0", "Debug", "core", "none", "false")]
         [InlineData("net5.0", "Release", "core", "Individual", "false")]
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.EndToEnd
             Publish(testFolder, projectName, configuration, msBuildType);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("net5.0", "Release", "core", "none", "false")]
         [InlineData("net5.0", "Debug", "core", "none", "false")]
         [InlineData("net5.0", "Release", "core", "Individual", "false")]

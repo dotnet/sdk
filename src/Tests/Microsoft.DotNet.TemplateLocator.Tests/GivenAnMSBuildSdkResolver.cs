@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItShouldReturnListOfTemplates()
         {
             var resolver = new TemplateLocator();

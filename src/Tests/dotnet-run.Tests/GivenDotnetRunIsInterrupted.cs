@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
         // This test is Unix only for the same reason that CoreFX does not test Console.CancelKeyPress on Windows
         // See https://github.com/dotnet/corefx/blob/a10890f4ffe0fadf090c922578ba0e606ebdd16c/src/System.Console/tests/CancelKeyPress.Unix.cs#L63-L67
-        [UnixOnlyFact]
+        [UnixOnlyFact(Skip = "Test few tests")]
         public void ItIgnoresSIGINT()
         {
             var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             killed.Should().BeTrue();
         }
 
-        [UnixOnlyFact]
+        [UnixOnlyFact(Skip = "Test few tests")]
         public void ItPassesSIGTERMToChild()
         {
             var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void ItTerminatesTheChildWhenKilled()
         {
             var asset = _testAssetsManager.CopyTestAsset("TestAppThatWaits")

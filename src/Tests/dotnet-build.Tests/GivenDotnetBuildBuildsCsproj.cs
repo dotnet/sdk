@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItBuildsARunnableOutput()
         {
             var testAppName = "MSBuildTestApp";
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItBuildsOnlyTheSpecifiedTarget()
         {
             var testAppName = "NonDefaultTarget";
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItImplicitlyRestoresAProjectWhenBuilding()
         {
             var testAppName = "MSBuildTestApp";
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCanBuildAMultiTFMProjectWithImplicitRestore()
         {
             var testInstance = _testAssetsManager.CopyTestAsset(
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotImplicitlyRestoreAProjectWhenBuildingWithTheNoRestoreOption()
         {
             var testAppName = "MSBuildTestApp";
@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .And.HaveStdOutContaining("project.assets.json");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunsWhenRestoringToSpecificPackageDir()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("TestAppSimple")
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                      .And.HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItPrintsBuildSummary()
         {
             var testAppName = "MSBuildTestApp";
@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(expectedBuildSummary);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void DotnetBuildDoesNotPrintCopyrightInfo()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")

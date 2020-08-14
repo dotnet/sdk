@@ -5,7 +5,7 @@ namespace XUnitTestProject1
 {
     public class UnitTest1
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void Test1()
         {
 

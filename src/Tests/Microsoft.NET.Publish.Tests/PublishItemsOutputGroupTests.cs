@@ -30,7 +30,7 @@ namespace Microsoft.NET.Publish.Tests
             "WindowsBase.dll",
         };
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true, false)]
         [InlineData(true, true)]
         [InlineData(false, false)]
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GroupBuildsWithoutPublish()
         {
             var testProject = this.SetupProject();

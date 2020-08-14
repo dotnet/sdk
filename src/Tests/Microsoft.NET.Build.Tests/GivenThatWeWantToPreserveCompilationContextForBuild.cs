@@ -21,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_supports_copylocal_false_references(bool withoutCopyingRefs)
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("PreserveCompilationContext", "true");
 
             if (withoutCopyingRefs)
-            { 
+            {
                 testProject.AdditionalProperties.Add("PreserveCompilationReferences", "false");
             }
 
@@ -87,7 +87,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_does_not_treat_nuget_refs_as_copylocal_false()
         {
             var testProject = new TestProject()

@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenValidPackageIsPassedBeforeVersionItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                     new object[] { new string[] { "1.0.0-preview.1", "1.0.0-preview.2", "1.0.0-preview.3" }, "1.0.0-preview.3" },
             };
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(AddPkg_PackageVersionsLatestPrereleaseSucessData))]
         public void WhenPrereleaseOptionIsPassed(string[] inputVersions, string expectedVersion)
         {
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e)).ToArray(); 
+            var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e)).ToArray();
 
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + Path.GetDirectoryName(packages[0]));
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPrereleaseAndVersionOptionIsPassedFails()
         {
             var projectDirectory = _testAssetsManager
@@ -95,8 +95,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.HaveStdOutContaining("The --prerelease and --version options are not supported in the same command.");
         }
 
-        [Fact]
-        public void 
+        [Fact(Skip = "Test few tests")]
+        public void
             WhenValidProjectAndPackageArePassedItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void
             WhenValidProjectAndPackageWithPackageDirectoryContainingSpaceArePassedItGetsAdded()
         {
@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithSource()
                 .Path;
 
-            var packageDirectory = Path.Combine(projectDirectory, "local packages"); 
+            var packageDirectory = Path.Combine(projectDirectory, "local packages");
 
             var csproj = $"{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj";
             var packageName = "Newtonsoft.Json";
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             Assert.True(packageDirectoryExists);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenValidPackageIsPassedAfterVersionItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenValidPackageIsPassedWithFrameworkItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenValidPackageIsPassedMSBuildDoesNotPrintVersionHeader()
         {
             var testAsset = "TestAppSimple";
@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.NotHaveStdErr();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMultiplePackagesArePassedCommandFails()
         {
             var projectDirectory = _testAssetsManager
@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .And.HaveStdErrContaining(LocalizableStrings.SpecifyExactlyOnePackageReference);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenNoPackageisPassedCommandFails()
         {
             var projectDirectory = _testAssetsManager

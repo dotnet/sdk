@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAAllowEmptyTelemetry
     {
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("Property1")]
         [InlineData("Property1=")]
         public void WhenInvokeWithoutValueItSendValueAsNull(string eventData)
@@ -33,7 +33,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             engine.Log.Should().Contain("'Property1' = 'null'");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvokeWithDuplicatedEventDataItKeepsTheLastOne()
         {
             var engine = new MockBuildEngine5();
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             engine.Log.Should().Contain("4ADE3D2622CA400B8B95A039DF540037");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvokeWithInvalidEventDataItThrows()
         {
             var engine = new MockBuildEngine5();
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             a.ShouldThrow<ArgumentException>();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenInvokeWithNoEventDataItSendsEvents()
         {
             var engine = new MockBuildEngine5();

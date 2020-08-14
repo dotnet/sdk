@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tests
 {
     public class GivenACompositeCommandResolver
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_iterates_through_all_added_resolvers_in_order_when_they_return_null()
         {
             var compositeCommandResolver = new CompositeCommandResolver();
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Tests
 
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_stops_iterating_through_added_resolvers_when_one_returns_nonnull()
         {
             var compositeCommandResolver = new CompositeCommandResolver();

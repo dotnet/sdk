@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netstandard1.5")]
         [InlineData("netcoreapp2.1")]
         [InlineData("netcoreapp3.0")]
@@ -55,7 +55,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_builds_the_library_twice_in_a_row()
         {
             var testAsset = _testAssetsManager
@@ -78,10 +78,10 @@ namespace Microsoft.NET.Build.Tests
             ITestOutputHelper log,
             TestAssetsManager testAssetsManager,
             string itemTypeOrPropertyName,
-            Action<GetValuesCommand> setup = null, 
+            Action<GetValuesCommand> setup = null,
             string[] msbuildArgs = null,
-            GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item, 
-            [CallerMemberName] string callingMethod = "", 
+            GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item,
+            [CallerMemberName] string callingMethod = "",
             Action<XDocument> projectChanges = null)
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
@@ -151,7 +151,7 @@ namespace Microsoft.NET.Build.Tests
             return testAsset;
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("cs")]
         [InlineData("vb")]
         public void It_creates_a_documentation_file(string language)
@@ -183,7 +183,7 @@ namespace Microsoft.NET.Build.Tests
             }, SearchOption.TopDirectoryOnly);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("cs", true)]
         [InlineData("cs", false)]
         [InlineData("vb", true)]
@@ -226,7 +226,7 @@ namespace Microsoft.NET.Build.Tests
             new DirectoryInfo(libraryProjectDirectory).Should().OnlyHaveFiles(expectedProjectDirectoryFiles, SearchOption.TopDirectoryOnly);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("cs", true)]
         [InlineData("cs", false)]
         [InlineData("vb", true)]
@@ -260,7 +260,7 @@ namespace Microsoft.NET.Build.Tests
             }, SearchOption.TopDirectoryOnly);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void Restore_succeeds_even_if_the_project_extension_is_for_a_different_language()
         {
             var testAsset = _testAssetsManager
@@ -282,7 +282,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("Debug", "DEBUG")]
         [InlineData("Release", "RELEASE")]
         [InlineData("CustomConfiguration", "CUSTOMCONFIGURATION")]
@@ -311,7 +311,7 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { expectedDefine, "TRACE", "NETSTANDARD", "NETSTANDARD1_5" });
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD", "NETSTANDARD1_0" }, false)]
         [InlineData("netstandard1.3", new[] { "NETSTANDARD", "NETSTANDARD1_3" }, false)]
         [InlineData("netstandard1.6", new[] { "NETSTANDARD", "NETSTANDARD1_6" }, false)]
@@ -371,7 +371,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 shouldCompile = false;
             }
-            
+
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
             var getValuesCommand = new GetValuesCommand(Log, libraryProjectDirectory,
@@ -420,7 +420,7 @@ namespace Microsoft.NET.Build.Tests
             AssertDefinedConstantsOutput(testAsset, targetFramework, new[] { "NETCOREAPP", "NET"}.Concat(expectedDefines).ToArray());
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("ios", "1.1", new[] { "IOS", "IOS1_1" })]
         [InlineData("android", "2.2", new[] { "ANDROID", "ANDROID2_2" })]
         [InlineData("windows", "7.0", new[] { "WINDOWS", "WINDOWS7_0" })]
@@ -451,7 +451,7 @@ namespace Microsoft.NET.Build.Tests
             AssertDefinedConstantsOutput(testAsset, targetFramework, new[] { "NETCOREAPP", "NET", "NET5_0", "NETCOREAPP3_1" }.Concat(expectedDefines).ToArray());
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new[] { "1.0", "1.1" }, "ios", "1.1", new[] { "IOS", "IOS1_1", "IOS1_0" })]
         [InlineData(new[] { "11.11", "12.12", "13.13" }, "android", "12.12", new[] { "ANDROID", "ANDROID11_11", "ANDROID12_12" })]
         [InlineData(new string[] { /* Use the built in SupportedTargetPlatform items */}, "windows", "10.0.19041", new[] { "WINDOWS", "WINDOWS7_0", "WINDOWS8_0", "WINDOWS10_0_17763", "WINDOWS10_0_18362", "WINDOWS10_0_19041" })]
@@ -510,7 +510,7 @@ namespace Microsoft.NET.Build.Tests
             definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.1", new[] { "NETCOREAPP", "NETCOREAPP3_1" })]
         [InlineData("net5.0", new[] { "NETCOREAPP", "NETCOREAPP3_1", "NET", "NET5_0", "WINDOWS", "WINDOWS7_0" }, "windows", "7.0")]
         public void It_can_use_implicitly_defined_compilation_constants(string targetFramework, string[] expectedOutput, string targetPlatformIdentifier = null, string targetPlatformVersion = null)
@@ -575,7 +575,7 @@ class Program
             stdOut.Should().BeEquivalentTo(expectedOutput);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_is_empty(bool useSolution)
@@ -585,7 +585,7 @@ class Program
                 $"The TargetFramework value '{targetFramework}' was not recognized");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_is_invalid(bool useSolution)
@@ -595,7 +595,7 @@ class Program
                 $"The TargetFramework value '{targetFramework}' was not recognized");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(false)]
         [InlineData(true)]
         public void It_fails_gracefully_if_targetframework_should_be_targetframeworks(bool useSolution)
@@ -642,7 +642,7 @@ class Program
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("net5.0")]
         [InlineData("netcoreapp3.1")]
         public void It_defines_windows_version_default_correctly(string targetFramework)
@@ -740,7 +740,7 @@ class Program
                 .And.NotHaveStdOutContaining(">="); // old error about comparing empty string to version when TargetFramework was blank;
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp5.1")]
         [InlineData("netstandard2.2")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
@@ -771,7 +771,7 @@ class Program
                 .And.HaveStdOutContaining("The current .NET SDK does not support targeting");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_passes_ridless_target_to_compiler()
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid("netcoreapp2.0");
@@ -818,7 +818,7 @@ class Program
                 .Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_can_target_uwp_using_sdk_extras()
         {
             var testAsset = _testAssetsManager
@@ -832,7 +832,7 @@ class Program
                 .Pass();
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(null)]
         [InlineData(true)]
         [InlineData(false)]
@@ -882,7 +882,7 @@ class Program
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp2.2", null, false, null, false)]
         [InlineData("netcoreapp3.0", null, true, null, true)]
         [InlineData("netcoreapp3.0", "LatestMajor", true, null, true)]
@@ -950,7 +950,7 @@ class Program
 
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp3.1")]
         [InlineData("netcoreapp5.0")]
         public void It_makes_RootNamespace_safe_when_project_name_has_spaces(string targetFramework)

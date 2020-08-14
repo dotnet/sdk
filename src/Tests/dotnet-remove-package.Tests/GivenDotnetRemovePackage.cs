@@ -42,7 +42,7 @@ Commands:
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("--help")]
         [InlineData("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
@@ -52,7 +52,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("")]
         [InlineData("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
@@ -64,7 +64,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(RemoveCommandHelpText);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenReferencedPackageIsPassedItGetsRemoved()
         {
             var projectDirectory = _testAssetsManager
@@ -76,7 +76,7 @@ Commands:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("add", "package", packageName);
             add.Should().Pass();
-          
+
 
             var remove = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)

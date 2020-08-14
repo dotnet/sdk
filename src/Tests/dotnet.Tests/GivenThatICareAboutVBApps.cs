@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests
         }
 
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ICanBuildVBApps()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("VBTestApp")
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ICanRunVBApps()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("VBTestApp")
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ICanPublicAndRunVBApps()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("VBTestApp")

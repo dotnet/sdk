@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("AppWithDirectAndToolDep")]
         [InlineData("AppWithToolDependency")]
         public void TestProjectToolIsAvailableThroughDriver(string appName)
@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Tests
                 .Execute()
                 .Should()
                 .Pass();
-            
+
             var result = new DotnetCommand(Log)
                     .WithWorkingDirectory(testInstance.Path)
                     .Execute("portable-v1");
@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.Tests
                 .And.HaveStdOutContaining("I'm running on shared framework version 1.1.2!");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Tests
                      .And.Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItShowsErrorWhenToolIsNotRestored()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithNonExistingToolDependency", testAssetSubdirectory: "NonRestoredTestProjects")
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Tests
                     .And.HaveStdErrContaining(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-nonexistingtool"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRunsToolRestoredToSpecificPackageDir()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("ToolWithRandomPackageName", testAssetSubdirectory: "NonRestoredTestProjects")
@@ -228,7 +228,7 @@ namespace Microsoft.DotNet.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void TestProjectDependencyIsNotAvailableThroughDriver()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithDirectDep")
@@ -247,8 +247,8 @@ namespace Microsoft.DotNet.Tests
                 .Execute();
 
             result.StdErr.Should().Contain(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-hello"));
-            
-            result.Should().Fail();        
+
+            result.Should().Fail();
         }
 
         private void SetGeneratedPackageName(FileInfo project, string packageName)

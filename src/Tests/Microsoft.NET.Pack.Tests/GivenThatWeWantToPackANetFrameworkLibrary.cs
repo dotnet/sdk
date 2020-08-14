@@ -23,7 +23,7 @@ namespace Microsoft.NET.Pack.Tests
         {
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void ImplicitReferencesAreNotIncludedAsFrameworkReferences()
         {
             TestProject testProject = new TestProject()
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Pack.Tests
             frameworkAssemblies.Should().BeNull();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void ExplicitReferencesAreIncludedAsFrameworkReferences()
         {
             TestProject testProject = new TestProject()
@@ -97,7 +97,7 @@ namespace Microsoft.NET.Pack.Tests
 
             string nuspecPath = packCommand.GetIntermediateNuspecPath();
             return nuspecPath;
-           
+
         }
     }
 }

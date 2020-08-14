@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// This is a critical scenario for the driver.
         /// </summary>
         /// <param name="testUserArgument"></param>
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(@"""abc"" d e")]
         [InlineData(@"""ábc"" d é")]
         [InlineData(@"""abc""      d e")]
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// This is a critical scenario for the driver.
         /// </summary>
         /// <param name="testUserArgument"></param>
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData(@"""abc"" d e")]
         [InlineData(@"""abc""      d e")]
         [InlineData("\"abc\"\t\td\te")]
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             }
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData(@"a\""b c d")]
         [InlineData(@"a\\\""b c d")]
         [InlineData(@"""\a\"" \\""\\\ b c")]

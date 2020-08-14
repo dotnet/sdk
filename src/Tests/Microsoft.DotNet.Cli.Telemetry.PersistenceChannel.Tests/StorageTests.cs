@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void EnqueuedContentIsEqualToPeekedContent()
         {
             // Setup
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
             enqueuedContent.Should().Be(peekedContent);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void DeletedItemIsNotReturnedInCallsToPeek()
         {
             // Setup - create a storage with one item
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
             secondPeekedTransmission.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void PeekedItemIsOnlyReturnedOnce()
         {
             // Setup - create a storage with one item
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
             secondPeekedTransmission.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void PeekedItemIsReturnedAgainAfterTheItemInTheFirstCallToPeekIsDisposed()
         {
             // Setup - create a storage with one item
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
             secondPeekedTransmission.Should().NotBeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenStorageHasTwoItemsThenTwoCallsToPeekReturns2DifferentItems()
         {
             // Setup - create a storage with 2 items
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
             first.Should().NotBe(second);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMaxFilesIsOneThenSecondTransmissionIsDropped()
         {
             // Setup
@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
             storage.Peek().Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenMaxSizeIsReachedThenEnqueuedTransmissionsAreDropped()
         {
             // Setup - create a storage with 2 items

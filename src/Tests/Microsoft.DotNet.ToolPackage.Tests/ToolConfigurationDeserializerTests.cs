@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
 {
     public class ToolConfigurationDeserializerTests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenXmlPathItShouldGetToolConfiguration()
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsGolden.xml");
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             toolConfiguration.ToolAssemblyEntryPoint.Should().Be("console.dll");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenMalformedPathItThrows()
         {
             Action a = () => ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMalformed.xml");
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 .Contain(string.Format(CommonLocalizableStrings.ToolSettingsInvalidXml, string.Empty));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenMissingContentItThrows()
         {
             Action a = () => ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMissing.xml");
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                 .Contain(CommonLocalizableStrings.ToolSettingsMissingCommandName);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenMissingVersionItHasWarningReflectIt()
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMissingVersion.xml");
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             toolConfiguration.Warnings.First().Should().Be(CommonLocalizableStrings.FormatVersionIsMissing);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenMajorHigherVersionItHasWarningReflectIt()
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMajorHigherVersion.xml");
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             toolConfiguration.Warnings.First().Should().Be(CommonLocalizableStrings.FormatVersionIsHigher);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenMinorHigherVersionItHasNoWarning()
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsGolden.xml");
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
             toolConfiguration.Warnings.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenInvalidCharAsFileNameItThrows()
         {
             var invalidCommandName = "na\0me";
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.ToolPackage.Tests
                         string.Join(", ", Path.GetInvalidFileNameChars().Select(c => $"'{c}'"))));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenALeadingDotAsFileNameItThrows()
         {
             var invalidCommandName = ".mytool";

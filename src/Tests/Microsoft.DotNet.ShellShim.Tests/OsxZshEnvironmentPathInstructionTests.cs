@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 {
     public class OsxZshEnvironmentPathInstructionTests
     {
-        [UnixOnlyFact]
+        [UnixOnlyFact(Skip = "Test few tests")]
         public void GivenPathNotSetItPrintsManualInstructions()
         {
             BufferedReporter reporter = new BufferedReporter();
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                     toolsPath.Path));
         }
 
-        [UnixOnlyTheory]
+        [UnixOnlyTheory(Skip = "Test few tests")]
         [InlineData("/home/user/.dotnet/tools")]
         public void GivenPathSetItPrintsNothing(string toolsDirectoryOnPath)
         {
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             reporter.Lines.Should().BeEmpty();
         }
 
-        [UnixOnlyTheory]
+        [UnixOnlyTheory(Skip = "Test few tests")]
         [InlineData("~/.dotnet/tools")]
         public void GivenPathSetItPrintsInstruction(string toolsDirectoryOnPath)
         {

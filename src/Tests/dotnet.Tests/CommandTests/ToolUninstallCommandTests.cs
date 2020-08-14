@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter = new BufferedReporter();
         }
         
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var result = Parser.Instance.Parse($"dotnet tool uninstall -g --tool-path /tmp/folder {PackageId}");
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     "global tool-path"));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
             var result = Parser.Instance.Parse($"dotnet tool uninstall --local --tool-path /tmp/folder {PackageId}");
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         "local tool-path"));
         }
         
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
         {
             var result =
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithToolPathAndToolManifestShowErrorMessage()
         {
             var result =

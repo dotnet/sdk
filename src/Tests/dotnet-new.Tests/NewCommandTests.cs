@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.New.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenSwitchIsSkippedThenItPrintsError()
         {
             var cmd = new DotnetCommand(Log).Execute("new", "Web1.1");

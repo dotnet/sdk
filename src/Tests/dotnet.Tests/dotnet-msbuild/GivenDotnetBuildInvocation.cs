@@ -13,10 +13,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         const string ExpectedPrefix = "exec <msbuildpath> -maxcpucount -verbosity:m";
 
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { }, "")]
         [InlineData(new string[] { "-o", "foo" }, "-property:OutputPath=<cwd>foo")]
         [InlineData(new string[] { "-property:Verbosity=diag" }, "-property:Verbosity=diag")]
@@ -53,14 +53,14 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(new string[] { "-f", "tfm" }, "-target:Restore", "-property:TargetFramework=tfm")]
         [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
                                   "-target:Restore -property:OutputPath=<cwd>myoutput -verbosity:diag /ArbitrarySwitchForMSBuild",
                                   "-property:OutputPath=<cwd>myoutput -property:TargetFramework=tfm -verbosity:diag /ArbitrarySwitchForMSBuild")]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
-            string[] args, 
-            string expectedAdditionalArgsForRestore, 
+            string[] args,
+            string expectedAdditionalArgsForRestore,
             string expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>

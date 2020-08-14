@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             };
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassSeveralCompatibleRuntimeIdentifiersItOutMostFitRid()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             mostFitRid.Should().Be("win");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassSeveralCompatibleRuntimeIdentifiersItOutMostFitRid2()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             mostFitRid.Should().Be("win");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassSeveralCompatibleRuntimeIdentifiersAndCurrentRuntimeIdentifierIsNullReturnsFalse()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassSeveralCompatibleRuntimeIdentifiersItOutMostFitRidWithCasingPreserved()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             mostFitRid.Should().Be("Win");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassSeveralCompatibleRuntimeIdentifiersWithDuplicationItOutMostFitRid()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             mostFitRid.Should().Be("win");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassSeveralCompatibleRuntimeIdentifiersAndDuplicationItOutMostFitRidWithCasingPreservedTheFirstIsFavorited()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             mostFitRid.Should().Be("Win");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenPassSeveralNonCompatibleRuntimeIdentifiersItReturnsFalse()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenCurrentRuntimeIdentifierIsNotSupportedItUsesAlternative()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             mostFitRid.Should().Be("win");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenCurrentRuntimeIdentifierIsNotSupportedSoIsTheAlternativeItReturnsFalse()
         {
             FrameworkDependencyFile.TryGetMostFitRuntimeIdentifier(

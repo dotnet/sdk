@@ -51,7 +51,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 </configuration>");
 
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void XmlTransform_AppliesRemoveAllTransform()
         {
             // Arrange
@@ -96,7 +96,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         }
 
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void XmlTransform_AppliesAdd()
         {
             // Arrange

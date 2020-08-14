@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsNullWhenCommandNameIsNull()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsNullWhenProjectDirectoryIsNull()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsNullWhenProjectDirectoryDoesNotContainAProjectFile()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsNullWhenCommandNameDoesNotExistInProjectTools()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsACommandSpecWithDOTNETAsFileNameAndCommandNameInArgsWhenCommandNameExistsInProjectTools()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Contain(commandResolverArguments.CommandName);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItEscapesCommandArgumentsWhenReturningACommandSpec()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Contain("\"arg with space\"");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsACommandSpecWithArgsContainingCommandPathWhenReturningACommandSpecAndCommandArgumentsAreNull()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Tests
             commandPath.Should().Contain("dotnet-portable.dll");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItReturnsACommandSpecWithArgsContainingCommandPathWhenInvokingAToolReferencedWithADifferentCasing()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.Tests
             commandPath.Should().Contain("dotnet-prefercliruntime.dll");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItWritesADepsJsonFileNextToTheLockfile()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -266,7 +266,7 @@ namespace Microsoft.DotNet.Tests
                 .Should().HaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GenerateDepsJsonMethodDoesntOverwriteWhenDepsFileAlreadyExists()
         {
             var testInstance = _testAssetsManager.CopyTestAsset(TestProjectName)
@@ -302,7 +302,7 @@ namespace Microsoft.DotNet.Tests
             File.Delete(depsJsonFile);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotAddFxVersionAsAParamWhenTheToolDoesNotHaveThePrefercliruntimeFile()
         {
             var projectToolsCommandResolver = SetupProjectToolsCommandResolver();
@@ -328,7 +328,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().NotContain("--fx-version");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItFindsToolsLocatedInTheNuGetFallbackFolder()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithFallbackFolderToolDependency")
@@ -352,7 +352,7 @@ namespace Microsoft.DotNet.Tests
                 .Execute($"fallbackfoldertool").Should().Pass();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItShowsAnErrorWhenTheToolDllIsNotFound()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithFallbackFolderToolDependency")

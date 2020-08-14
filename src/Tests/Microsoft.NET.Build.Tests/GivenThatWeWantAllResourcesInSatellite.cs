@@ -22,7 +22,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_retrieves_strings_successfully()
         {
             TestSatelliteResources(Log, _testAssetsManager);

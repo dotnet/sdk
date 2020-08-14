@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItGivesAnErrorWhenAttemptingToUseALaunchProfileThatDoesNotExistWhenThereIsNoLaunchSettingsFile()
         {
             var testAppName = "VBTestApp";
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                          .And.HaveStdErrContaining(LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItUsesLaunchProfileOfTheSpecifiedName()
         {
             var testAppName = "VbAppWithLaunchSettings";
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "VbAppWithLaunchSettings";
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItPrintsUsingLaunchSettingsMessageWhenNotQuiet()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("VbAppWithLaunchSettings")
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItGivesAnErrorWhenTheLaunchProfileNotFound()
         {
             var testAppName = "VbAppWithLaunchSettings";

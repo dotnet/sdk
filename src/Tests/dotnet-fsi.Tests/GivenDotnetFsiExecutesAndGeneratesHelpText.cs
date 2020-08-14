@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Fsi.Tests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItRuns()
         {
             new DotnetCommand(Log, "fsi")

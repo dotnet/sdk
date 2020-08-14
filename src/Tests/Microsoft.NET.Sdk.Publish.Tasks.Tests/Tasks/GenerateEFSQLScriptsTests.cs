@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         }
 
 #if NET472
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [MemberData(nameof(EFMigrations))]
         public void GenerateEFScripts_ReturnsFalse_forInValidContexts(ITaskItem[] efMigrationsData)
         {

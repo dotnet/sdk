@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdItShouldUpdateFromManifestFile()
         {
             _toolRestoreCommand.Execute();
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertUpdateSuccess();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunFromDirectorWithPackageIdItShouldUpdateFromManifestFile()
         {
             _toolRestoreCommand.Execute();
@@ -153,7 +153,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertUpdateSuccess();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNoRestoredManifestWhenRunWithPackageIdItShouldUpdateFromManifestFile()
         {
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertUpdateSuccess();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenManifestDoesNotHavePackageWhenRunWithPackageIdItShouldUpdate()
         {
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertUpdateSuccess();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenNoManifestFileItShouldThrow()
         {
             _fileSystem.File.Delete(_manifestFilePath);
@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .And.VerboseMessage.Should().Contain(string.Format(ToolManifest.LocalizableStrings.ListOfSearched, ""));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithExplicitManifestFileItShouldUpdateFromExplicitManifestFile()
         {
             string explicitManifestFilePath = Path.Combine(_temporaryDirectory, "subdirectory", "dotnet-tools.json");
@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             AssertUpdateSuccess(new FilePath(explicitManifestFilePath));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunFromToolUpdateRedirectCommandWithPackageIdItShouldUpdateFromManifestFile()
         {
             ParseResult parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()}");
@@ -243,7 +243,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolUpdateCommand.Execute().Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
             _toolRestoreCommand.Execute();
@@ -262,7 +262,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _manifestFilePath).Green());
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenParentDirHasManifestWithSamePackageIdWhenRunWithPackageIdItShouldOnlyChangTheClosestOne()
         {
             var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
@@ -279,7 +279,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.ReadAllText(parentManifestFilePath).Should().Be(_jsonContent, "no change");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenParentDirHasManifestWithSamePackageIdWhenRunWithPackageIdItShouldWarningTheOtherManifests()
         {
             var parentManifestFilePath = Path.Combine(_temporaryDirectoryParent, "dotnet-tools.json");
@@ -295,7 +295,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines[0].Should().NotContain(_manifestFilePath);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenFeedVersionIsTheSameWhenRunWithPackageIdItShouldShowDifferentSuccessMessage()
         {
             _toolRestoreCommand.Execute();
@@ -314,7 +314,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _manifestFilePath));
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenFeedVersionIsLowerRunPackageIdItShouldThrow()
         {
             _toolRestoreCommand.Execute();

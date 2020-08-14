@@ -19,14 +19,14 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
 {
     public class VBCSCompilerServerTests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenAZeroExitShutdownDoesNotThrow()
         {
             var server = new VBCSCompilerServer(CreateCommandFactoryMock().Object);
             server.Shutdown();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void GivenANonZeroExitCodeShutdownThrows()
         {
             const string ErrorMessage = "failed!";

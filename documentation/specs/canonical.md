@@ -253,7 +253,7 @@ namespace tests
 {
     public class Tests
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void AssertTrue() {
             Assert.True(true);
         }        

@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Restore.Test
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void ItRestoresAppToSpecificDirectory(bool useStaticGraphEvaluation)
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Restore.Test
             Directory.EnumerateFiles(fullPath, "*.dll", SearchOption.AllDirectories).Count().Should().BeGreaterThan(0);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void ItRestoresLibToSpecificDirectory(bool useStaticGraphEvaluation)
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Restore.Test
             dllCount.Should().BeGreaterThan(0);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void ItRestoresTestAppToSpecificDirectory(bool useStaticGraphEvaluation)
@@ -125,7 +125,7 @@ namespace Microsoft.DotNet.Restore.Test
             Directory.EnumerateFiles(fullPath, "*.dll", SearchOption.AllDirectories).Count().Should().BeGreaterThan(0);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true)]
         [InlineData(false)]
         public void ItRestoresWithTheSpecifiedVerbosity(bool useStaticGraphEvaluation)
@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Restore.Test
         }
 
         private static string[] HandleStaticGraphEvaluation(bool useStaticGraphEvaluation, string[] args) =>
-            useStaticGraphEvaluation ? 
+            useStaticGraphEvaluation ?
                 args.Append("/p:RestoreUseStaticGraphEvaluation=true").ToArray() :
                 args;
     }

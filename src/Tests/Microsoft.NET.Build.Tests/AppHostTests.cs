@@ -94,7 +94,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netcoreapp2.1")]
         [InlineData("netcoreapp2.2")]
         [InlineData("netcoreapp3.0")] // only on macOS
@@ -127,7 +127,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyTheory]
+        [WindowsOnlyTheory(Skip = "Test few tests")]
         [InlineData("x86")]
         [InlineData("x64")]
         [InlineData("AnyCPU")]
@@ -165,7 +165,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip = "Test few tests")]
         public void AppHost_contains_resources_from_the_managed_dll()
         {
             var targetFramework = "netcoreapp2.0";
@@ -230,7 +230,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void If_UseAppHost_is_false_it_does_not_try_to_find_an_AppHost()
         {
             var testProject = new TestProject()
@@ -255,7 +255,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [WindowsOnlyFact] // Windows-only due to https://github.com/dotnet/corefx/issues/42455
+        [WindowsOnlyFact(Skip = "Test few tests")] // Windows-only due to https://github.com/dotnet/corefx/issues/42455
         public void It_retries_on_failure_to_create_apphost()
         {
             const string TFM = "netcoreapp3.0";
@@ -267,7 +267,7 @@ namespace Microsoft.NET.Build.Tests
                 IsSdkProject = true,
                 IsExe = true,
             };
-            
+
             // enable generating apphost even on macOS
             testProject.AdditionalProperties.Add("UseApphost", "true");
 

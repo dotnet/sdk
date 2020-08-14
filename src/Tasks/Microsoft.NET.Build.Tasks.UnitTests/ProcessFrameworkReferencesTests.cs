@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     {"RuntimePackRuntimeIdentifiers", "win-x64"},
                 });
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_resolves_FrameworkReferences()
         {
             var task = new ProcessFrameworkReferences();
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void Given_targetPlatform_and_targetPlatform_version_It_resolves_FrameworkReferences_()
         {
             var task = new ProcessFrameworkReferences();
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_does_not_resolve_FrameworkReferences_if_targetframework_doesnt_match()
         {
             var task = new ProcessFrameworkReferences();
@@ -146,7 +146,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void Given_KnownFrameworkReferences_with_RuntimePackAlwaysCopyLocal_It_resolves_FrameworkReferences()
         {
             const string minimalRuntimeGraphPathContent =
@@ -217,7 +217,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePacks[0].GetMetadata(MetadataKeys.RuntimePackAlwaysCopyLocal).Should().Be("true");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void It_resolves_self_contained_FrameworkReferences_to_download()
         {
             const string minimalRuntimeGraphPathContent =
@@ -266,7 +266,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void Given_reference_to_NETCoreApp_It_should_not_resolve_runtime_pack()
         {
             const string minimalRuntimeGraphPathContent =

@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     public class GivenMSBuildLogger
     {
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItBlocksTelemetryThatIsNotInTheList()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Should().BeNull();
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotMasksExceptionTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["detail"].Should().Be("Exception detail");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotMaskPublishPropertiesTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["otherProperty"].Should().Be("otherProperty value");
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItDoesNotMaskReadyToRunTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         // Reproduce https://github.com/dotnet/sdk/issues/3868
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ItCanSendProperties()
         {
             var fakeTelemetry = new FakeTelemetry();

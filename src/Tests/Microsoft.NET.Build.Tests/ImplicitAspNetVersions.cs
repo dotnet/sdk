@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("Microsoft.AspNetCore.App")]
         [InlineData("Microsoft.AspNetCore.All")]
         public void AspNetCoreVersionIsSetImplicitly(string aspnetPackageName)
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tests
             aspnetVersion.ToString().Should().Be("2.1.1");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("Microsoft.AspNetCore.App")]
         [InlineData("Microsoft.AspNetCore.All")]
         public void AspNetCoreVersionRollsForward(string aspnetPackageName)
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netcoreapp2.1",
                 IsSdkProject = true,
                 IsExe = true,
-                
+
             };
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Build.Tests
             aspnetVersion.CompareTo(new SemanticVersion(2, 1, 1)).Should().BeGreaterThan(0);
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("Microsoft.AspNetCore.App")]
         [InlineData("Microsoft.AspNetCore.All")]
         public void ExplicitVersionsOfAspNetCoreWarn(string aspnetPackageName)
@@ -121,7 +121,7 @@ namespace Microsoft.NET.Build.Tests
             aspnetVersion.ToString().Should().Be(explicitVersion);
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void MultipleWarningsAreGeneratedForMultipleExplicitReferences()
         {
             var testProject = new TestProject()
@@ -158,7 +158,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1023");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true, null)]
         [InlineData(true, "2.1.1")]
         [InlineData(false, null)]
@@ -194,7 +194,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1079");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData(true, null)]
         [InlineData(true, "2.1.1")]
         [InlineData(false, null)]

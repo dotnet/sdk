@@ -14,7 +14,7 @@ namespace EndToEnd
         {
         }
 
-        [Fact]
+        [Fact(Skip = "Test few tests")]
         public void ThenOneDotnetToolsCanBeCalled()
         {
             new DotnetCommand(Log)

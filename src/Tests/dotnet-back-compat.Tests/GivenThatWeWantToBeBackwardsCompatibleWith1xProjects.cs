@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
+        [Theory(Skip = "Test few tests")]
         [InlineData("netstandard1.3")]
         [InlineData("netstandard1.6")]
         public void ItRestoresBuildsAndPacks(string target)
