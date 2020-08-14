@@ -12,21 +12,6 @@
         <target state="translated">Добавить атрибут Serializable</target>
         <note />
       </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">PreserveSigAttribute указывает, что метод возвратит HRESULT, а не выдаст исключение. Поэтому важно использовать результат HRESULT, возвращенный этим методом, чтобы можно было обнаружить ошибки. В общем случае для этого служит вызов Marshal.ThrowExceptionForHR.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">Используйте HRESULT, возвращенный методом "{0}", и вызовите Marshal.ThrowExceptionForHR.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">Всегда используйте значение, которое возвращают методы, помеченные атрибутом PreserveSigAttribute</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">Проверьте используемый режим шифрования с экспертами по криптографии</target>
@@ -48,18 +33,48 @@
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</source>
-        <target state="translated">В конструкторе "{0}" измените аргумент "{1}", который сейчас равен "{2}", на значение, обеспечивающее правильный анализ в качестве "{3}".</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'</source>
+        <target state="needs-review-translation">В конструкторе "{0}" измените аргумент "{1}", который сейчас равен "{2}", на значение, обеспечивающее правильный анализ в качестве "{3}".</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</source>
-        <target state="translated">В конструкторе "{0}" измените аргумент "{1}", который сейчас равен пустой строке (""), на значение, обеспечивающее правильный анализ в качестве "{2}".</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'</source>
+        <target state="needs-review-translation">В конструкторе "{0}" измените аргумент "{1}", который сейчас равен пустой строке (""), на значение, обеспечивающее правильный анализ в качестве "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
         <source>Attribute string literals should parse correctly</source>
         <target state="translated">Синтаксический анализ строковых литералов атрибута должен осуществляться правильно</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
+        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
+        <target state="new">'{0}' will throw for assemblies embedded in a single-file app</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
+        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
+        <target state="new">'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
+        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
+        <target state="new">Avoid using accessing Assembly file path when publishing as a single-file</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
+        <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
+        <target state="new">Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersMessage">
+        <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</source>
+        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersTitle">
+        <source>Avoid 'StringBuilder' parameters for P/Invokes</source>
+        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
@@ -83,8 +98,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
-        <source>Avoid zero-length array allocations.</source>
-        <target state="translated">Старайтесь не выделять массивы нулевой длины.</target>
+        <source>Avoid zero-length array allocations</source>
+        <target state="needs-review-translation">Старайтесь не выделять массивы нулевой длины.</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -348,8 +363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
-        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</source>
-        <target state="translated">Убедитесь, что метод "{0}" вызывает "{1}" во всех возможных путях потока управления.</target>
+        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths</source>
+        <target state="needs-review-translation">Убедитесь, что метод "{0}" вызывает "{1}" во всех возможных путях потока управления.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
@@ -373,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
-        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</source>
-        <target state="translated">Вызовите System.IDisposable.Dispose для объекта, созданного "{0}", прежде чем все ссылки на него будут вне области действия.</target>
+        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope</source>
+        <target state="needs-review-translation">Вызовите System.IDisposable.Dispose для объекта, созданного "{0}", прежде чем все ссылки на него будут вне области действия.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
@@ -428,8 +443,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
-        <target state="translated">При десериализации экземпляра класса {0} метод {1} может вызывать опасный метод {2}.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
+        <target state="needs-review-translation">При десериализации экземпляра класса {0} метод {1} может вызывать опасный метод {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -472,6 +487,26 @@
         <target state="translated">Не перехватывайте исключения поврежденного состояния в общих обработчиках.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
+        <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
+        <target state="translated">TaskCompletionSource содержит конструкторы, которые принимают TaskCreationOptions, управляющие базовой задачей, и конструкторы, принимающие состояние объекта, которое хранится в задаче. Случайная передача TaskContinuationOptions вместо TaskCreationOptions приведет к вызову, обрабатывающему параметры как состояние.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
+        <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
+        <target state="translated">Замените TaskContinuationOptions на TaskCreationOptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum</source>
+        <target state="needs-review-translation">Аргумент содержит перечисление TaskContinuationsOptions вместо TaskCreationOptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</source>
+        <target state="needs-review-translation">Аргумент, переданный в конструктор TaskCompletionSource, должен быть перечислением TaskCreationOptions вместо TaskContinuationOptions.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
         <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
         <target state="translated">Не создавайте задачи, если не используете одну из перегрузок, принимающих TaskScheduler. По умолчанию расписание составляется с использованием TaskScheduler.Current, что приведет к взаимоблокировкам. Используйте TaskScheduler.Default при составлении расписания для пула потоков либо явно передайте TaskScheduler.Current, чтобы прояснить свои намерения.</target>
@@ -485,6 +520,21 @@
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
         <source>Do not create tasks without passing a TaskScheduler</source>
         <target state="translated">Не создавайте задачи без передачи TaskScheduler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="translated">Добавление метода завершения в тип, производный от MemoryManager&lt;T&gt;, может привести к тому, что будет разрешено освобождение памяти, пока эта память еще используется Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;</source>
+        <target state="needs-review-translation">Добавление метода завершения в тип, производный от MemoryManager&lt;T&gt;, может привести к тому, что будет разрешено освобождение памяти, пока эта память еще используется Span&lt;T&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="translated">Не определяйте методы завершения для типов, производных от MemoryManager&lt;T&gt;</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -633,13 +683,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
-        <source>Exception type {0} is reserved by the runtime.</source>
-        <target state="translated">Тип исключения {0} зарезервирован средой выполнения.</target>
+        <source>Exception type {0} is reserved by the runtime</source>
+        <target state="needs-review-translation">Тип исключения {0} зарезервирован средой выполнения.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
-        <source>Exception type {0} is not sufficiently specific.</source>
-        <target state="translated">Тип исключения {0} является недостаточно определенным.</target>
+        <source>Exception type {0} is not sufficiently specific</source>
+        <target state="needs-review-translation">Тип исключения {0} является недостаточно определенным.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
@@ -658,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
-        <source>Pointer field {0} on serializable type.</source>
-        <target state="translated">Поле указателя {0} для сериализуемого типа.</target>
+        <source>Pointer field {0} on serializable type</source>
+        <target state="needs-review-translation">Поле указателя {0} для сериализуемого типа.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
@@ -698,8 +748,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
-        <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="translated">{0}() используется там, где можно было бы использовать AnyAsync() для повышения производительности.</target>
+        <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
+        <target state="needs-review-translation">{0}() используется там, где можно было бы использовать AnyAsync() для повышения производительности.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -713,8 +763,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
-        <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="translated">{0}() используется там, где можно было бы использовать Any() для повышения производительности.</target>
+        <source>{0}() is used where Any() could be used instead to improve performance</source>
+        <target state="needs-review-translation">{0}() используется там, где можно было бы использовать Any() для повышения производительности.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
@@ -753,8 +803,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDSAMessage">
-        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</source>
-        <target state="translated">Алгоритм асимметричного шифрования {0} является ненадежным. Перейдите на алгоритм RSA с размером ключа не менее 2048 бит или на алгоритмы ECDH или ECDSA</target>
+        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
+        <target state="needs-review-translation">Алгоритм асимметричного шифрования {0} является ненадежным. Перейдите на алгоритм RSA с размером ключа не менее 2048 бит или на алгоритмы ECDH или ECDSA</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -763,13 +813,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">Не используйте метод Enumerable для индексируемых коллекций. Вместо этого используйте непосредственно коллекцию</target>
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly.</source>
+        <target state="needs-review-translation">Не используйте метод Enumerable для индексируемых коллекций. Вместо этого используйте непосредственно коллекцию</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">Не используйте метод Enumerable для индексируемых коллекций. Вместо этого используйте непосредственно коллекцию</target>
+        <source>Do not use Enumerable methods on indexable collections</source>
+        <target state="needs-review-translation">Не используйте метод Enumerable для индексируемых коллекций. Вместо этого используйте непосредственно коллекцию</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomness">
@@ -783,8 +833,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
-        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</source>
-        <target state="translated">{0} является небезопасным генератором случайных чисел. Если случайные числа требуются для обеспечения безопасности, используйте криптографически безопасные генераторы случайных чисел.</target>
+        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
+        <target state="needs-review-translation">{0} является небезопасным генератором случайных чисел. Если случайные числа требуются для обеспечения безопасности, используйте криптографически безопасные генераторы случайных чисел.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseMD5">
@@ -812,6 +862,41 @@
         <target state="translated">Вызов устаревшей функции формирования ключа {0}.{1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersDescription">
+        <source>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</source>
+        <target state="new">String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
+        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</source>
+        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
+        <source>Do not use 'OutAttribute' on string parameters for P/Invokes</source>
+        <target state="new">Do not use 'OutAttribute' on string parameters for P/Invokes</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">Не передавайте аргумент с типом значения "{0}" методу "Equals" в "ReferenceEqualityComparer". Из-за упаковки-преобразования значения этот вызов "Equals" будет всегда возвращать "false".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">При каждом вызове этого метода отдельно выполняется упаковка-преобразование типизированных аргументов типа значения. Поэтому результат всегда равен false.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">Не передавайте аргумент с типом значения "{0}" в "ReferenceEquals". Из-за упаковки-преобразования значения этот вызов "ReferenceEquals" будет всегда возвращать "false".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">Не используйте ReferenceEquals с типами значений</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">Не используйте небезопасный алгоритм шифрования SHA1.</target>
@@ -820,6 +905,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">Этот тип реализует криптографически небезопасную хэш-функцию SHA1. С точки зрения вычислений для алгоритмов SHA-1 и SHA-0 возможны хэш-конфликты. Замените на хэш-алгоритм из семейства SHA-2 (SHA512, SHA384, SHA256).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="translated">Место в стеке, выделенное stackalloc, освобождается только в конце вызова текущего метода. Использование его в цикле может привести к неограниченному увеличению стека и в конечном итоге к переполнению стека.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="translated">Потенциальное переполнение стека. Переместите stackalloc за пределы цикла.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops</source>
+        <target state="needs-review-translation">Не используйте stackalloc в циклах.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -878,8 +978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
-        <target state="translated">{0} создан со слабым хэш-алгоритмом. Для создания надежного ключа из пароля используйте алгоритмы SHA256, SHA384 или SHA512.</target>
+        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0} создан со слабым хэш-алгоритмом. Для создания надежного ключа из пароля используйте алгоритмы SHA256, SHA384 или SHA512.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
@@ -910,6 +1010,21 @@
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerTitle">
         <source>Finalizers should call base class finalizer</source>
         <target state="translated">Методы завершения должны вызывать метод завершения базового класса</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
+        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="translated">Перенаправьте параметр "CancellationToken" в методы, которые его принимают, чтобы обеспечить правильное распространение уведомлений об отмене операции, или передайте "CancellationToken.None" явным образом, чтобы намеренно указать запрет на распространение токена.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
+        <source>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</source>
+        <target state="translated">Перенаправьте параметр "{0}" в метод "{1}" или передайте "CancellationToken.None" явным образом, чтобы намеренно указать запрет на распространение токена.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
+        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
+        <target state="translated">Перенаправьте параметр "CancellationToken" в методы, которые его принимают.</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -943,18 +1058,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}.</source>
-        <target state="translated">Добавьте реализацию GetObjectData к типу {0}.</target>
+        <source>Add an implementation of GetObjectData to type {0}</source>
+        <target state="needs-review-translation">Добавьте реализацию GetObjectData к типу {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable.</source>
-        <target state="translated">Сделайте {0}.GetObjectData виртуальным и переопределяемым.</target>
+        <source>Make {0}.GetObjectData virtual and overridable</source>
+        <target state="needs-review-translation">Сделайте {0}.GetObjectData виртуальным и переопределяемым.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</source>
-        <target state="translated">Увеличьте уровень доступности {0}.GetObjectData, чтобы он был видим для производных типов.</target>
+        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
+        <target state="needs-review-translation">Увеличьте уровень доступности {0}.GetObjectData, чтобы он был видим для производных типов.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyTitle">
@@ -998,28 +1113,28 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, измените его сигнатуру так, чтобы он более не был универсальным.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
+        <target state="needs-review-translation">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, измените его сигнатуру так, чтобы он более не был универсальным.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, измените его сигнатуру так, чтобы он принимал единственный параметр типа "System.Runtime.Serialization.StreamingContext".</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
+        <target state="needs-review-translation">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, измените его сигнатуру так, чтобы он принимал единственный параметр типа "System.Runtime.Serialization.StreamingContext".</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, замените тип его возвращаемого значения с {1} на void (Sub в Visual Basic).</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
+        <target state="needs-review-translation">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, замените тип его возвращаемого значения с {1} на void (Sub в Visual Basic).</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, сделайте его не статическим методом (Shared в Visual Basic), а методом экземпляра.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
+        <target state="needs-review-translation">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, сделайте его не статическим методом (Shared в Visual Basic), а методом экземпляра.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, замените его доступность частной.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
+        <target state="needs-review-translation">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, замените его доступность частной.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
@@ -1052,9 +1167,19 @@
         <target state="translated">Используйте встроенную инициализацию статических полей типов значений</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="translated">Измените код так, чтобы вызывался конструктор с двумя аргументами, и передайте null в аргументе сообщения.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">Выполняется вызов конструктора по умолчанию (без параметров) для типа исключения, который является ArgumentException или производным от него, либо в параметризованный конструктор для типа исключения, который является ArgumentException или производным от него, передается неправильный строковый аргумент.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="translated">Измените порядок аргументов</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1068,8 +1193,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
-        <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">Вызывайте конструктор {0}, который содержит сообщение и (или) параметр paramName.</target>
+        <source>Call the {0} constructor that contains a message and/or paramName parameter</source>
+        <target state="needs-review-translation">Вызывайте конструктор {0}, который содержит сообщение и (или) параметр paramName.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1333,8 +1458,8 @@
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
-        <source>In method '{0}', replace the call to '{1}' with '{2}'.</source>
-        <target state="translated">В методе "{0}" замените вызов "{1}" на "{2}".</target>
+        <source>In method '{0}', replace the call to '{1}' with '{2}'</source>
+        <target state="needs-review-translation">В методе "{0}" замените вызов "{1}" на "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseTitle">
@@ -1389,17 +1514,117 @@
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
         <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>
-        <target state="new">Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</target>
+        <target state="translated">Проверьте код, который обрабатывает недоверенные десериализованные данные, на наличие обработки непредвиденного зацикливания ссылок. Непредвиденное зацикливание ссылок не должно приводить к переводу кода в бесконечный цикл. В противном случае непредвиденное зацикливание ссылок может позволить злоумышленнику провести атаку типа "отказ в обслуживании" или исчерпать память процесса при десериализации недоверенных данных.</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphMessage">
         <source>{0} participates in a potential reference cycle</source>
-        <target state="new">{0} participates in a potential reference cycle</target>
+        <target state="translated">{0} участвует в потенциальном ссылочном цикле</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphTitle">
         <source>Potential reference cycle in deserialized object graph</source>
-        <target state="new">Potential reference cycle in deserialized object graph</target>
+        <target state="translated">Потенциальное зацикливание ссылок в графе десериализованного объекта</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
+        <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
+        <target state="translated">"Stream" содержит перегрузку "ReadAsync", которая принимает в качестве первого аргумента "Memory&lt;Byte&gt;", и перегрузку "WriteAsync", которая принимает в качестве первого аргумента "ReadOnlyMemory&lt;Byte&gt;". Старайтесь использовать перегрузки на основе памяти, которые являются более эффективными.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountDescription">
+        <source>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</source>
+        <target state="translated">Чтобы определить, содержит ли объект другие элементы, старайтесь использовать свойство "IsEmpty" вместо того, чтобы определять число элементов с помощью свойства "Count" и сравнивать его с 0 или 1.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountMessage">
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
+        <target state="needs-review-translation">Старайтесь использовать "IsEmpty" вместо "Count", чтобы определить, содержит ли объект другие элементы</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountTitle">
+        <source>Prefer IsEmpty over Count</source>
+        <target state="translated">Старайтесь использовать "IsEmpty" вместо "Count"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>Change the '{0}' method call to use the '{1}' overload</source>
+        <target state="translated">Измените вызов метода "{0}", так чтобы он использовал перегрузку "{1}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
+        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
+        <target state="translated">Старайтесь использовать перегрузки на основе памяти для "ReadAsync" и "WriteAsync"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfDescription">
+        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
+        <target state="needs-review-translation">Вызовы "string.IndexOf", в которых результат используется для проверки наличия или отсутствия подстроки, можно заменить на "string.Contains"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfMessage">
+        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
+        <target state="translated">Используйте "string.Contains" вместо "string.IndexOf" для улучшения читаемости.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfTitle">
+        <source>Consider using 'string.Contains' instead of 'string.IndexOf'</source>
+        <target state="translated">Попробуйте использовать "string.Contains" вместо "string.IndexOf"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
+        <target state="translated">StringBuilder.Append и StringBuilder.Insert предоставляют перегрузки для нескольких типов наряду с System.String. Если это возможно, рекомендуется использовать строго типизированные перегрузки и перегрузки на основе строк вместо метода ToString().</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
+        <target state="needs-review-translation">Удалите вызов ToString и используйте строго типизированную перегрузку StringBuilder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
+        <source>Remove the ToString call</source>
+        <target state="translated">Удалите вызов ToString</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder</source>
+        <target state="needs-review-translation">Рекомендуется использовать строго типизированные перегрузки методов Append и Insert в StringBuilder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
+        <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
+        <target state="translated">Если строка представляет собой одиночный символ, то метод "StringBuilder.Append(char)" более эффективен по сравнению с методом "StringBuilder.Append(string)". При вызове метода "Append" с константой рекомендуется использовать символьную константу, а не строковую константу, содержащую один символ.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string</source>
+        <target state="needs-review-translation">Если строка представляет собой константу, используйте метод "StringBuilder.Append(char)" вместо "StringBuilder.Append(string)".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
+        <source>Consider using 'StringBuilder.Append(char)' when applicable</source>
+        <target state="needs-review-translation">Старайтесь использовать метод "StringBuilder.Append(char)" там, где это требуется.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
+        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
+        <target state="translated">Метод "Enum.HasFlag" предполагает, что аргумент "enum" имеет тот же тип "enum", что и экземпляр, на котором вызывается метод, и что этот тип "enum" помечен как "System.FlagsAttribute". Если типы "enum" отличаются, будет выдано необработанное исключение во время выполнения. Если тип "enum" не помечен как "System.FlagsAttribute", вызов будет всегда возвращать "false" во время выполнения.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
+        <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
+        <target state="translated">Тип аргумента "{0}" не совпадает с типом перечисления "{1}".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
+        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
+        <target state="translated">Этот вызов будет всегда возвращать "false", так как тип перечисления "{0}" не помечен как "FlagsAttribute"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
+        <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
+        <target state="translated">Укажите правильный аргумент "enum" для "Enum.HasFlag"</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1423,13 +1648,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</source>
-        <target state="translated">Добавьте метод "private void OnDeserialized(StreamingContext)" к типу {0} и присвойте ему атрибут System.Runtime.Serialization.OnDeserializedAttribute.</target>
+        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
+        <target state="needs-review-translation">Добавьте метод "private void OnDeserialized(StreamingContext)" к типу {0} и присвойте ему атрибут System.Runtime.Serialization.OnDeserializedAttribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</source>
-        <target state="translated">Добавьте метод "private void OnDeserializing(StreamingContext)" к типу {0} и присвойте ему атрибут System.Runtime.Serialization.OnDeserializingAttribute.</target>
+        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
+        <target state="needs-review-translation">Добавьте метод "private void OnDeserializing(StreamingContext)" к типу {0} и присвойте ему атрибут System.Runtime.Serialization.OnDeserializingAttribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
@@ -1583,8 +1808,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
-        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input.</source>
-        <target state="translated">Проверьте, принимает ли строка запроса, переданная в "{0}" в "{1}", вводимые пользователем сведения.</target>
+        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input</source>
+        <target state="needs-review-translation">Проверьте, принимает ли строка запроса, переданная в "{0}" в "{1}", вводимые пользователем сведения.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
@@ -1638,8 +1863,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
-        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</source>
-        <target state="translated">Метод или конструктор вызывает один или несколько элементов, которые имеют перегрузки, принимающие параметр System.IFormatProvider, при этом данный метод или конструктор не вызывает перегрузку, принимающую параметр IFormatProvider. Если объект System.Globalization.CultureInfo или IFormatProvider не задан, значение по умолчанию, предоставленное перегруженным элементом, может не оказывать требуемое вам воздействие для всех языковых стандартов. Если результат зависит от вводимых пользователям данных или предоставляемых ему выходных данных, укажите "CultureInfo.CurrentCulture" в качестве параметра "IFormatProvider". В противном случае, если результат сохраняется и используется программным обеспечением, например при загрузке его с диска или из базы данных и при сохранении в этих расположениях, укажите "CultureInfo.InvariantCulture".</target>
+        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
+        <target state="needs-review-translation">Метод или конструктор вызывает один или несколько элементов, которые имеют перегрузки, принимающие параметр System.IFormatProvider, при этом данный метод или конструктор не вызывает перегрузку, принимающую параметр IFormatProvider. Если объект System.Globalization.CultureInfo или IFormatProvider не задан, значение по умолчанию, предоставленное перегруженным элементом, может не оказывать требуемое вам воздействие для всех языковых стандартов. Если результат зависит от вводимых пользователям данных или предоставляемых ему выходных данных, укажите "CultureInfo.CurrentCulture" в качестве параметра "IFormatProvider". В противном случае, если результат сохраняется и используется программным обеспечением, например при загрузке его с диска или из базы данных и при сохранении в этих расположениях, укажите "CultureInfo.InvariantCulture".</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -1718,8 +1943,8 @@
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
-        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</source>
-        <target state="translated">Проверяйте наличие пустых строк, используя свойство "string.Length" или метод "string.IsNullOrEmpty" вместо проверки равенства.</target>
+        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check</source>
+        <target state="needs-review-translation">Проверяйте наличие пустых строк, используя свойство "string.Length" или метод "string.IsNullOrEmpty" вместо проверки равенства.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
@@ -1745,6 +1970,41 @@
       <trans-unit id="UseArrayEmpty">
         <source>Use Array.Empty</source>
         <target state="translated">Используйте Array.Empty</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
+        <target state="translated">Основанный на диапазонах индексатор для значений массива создает копию запрошенной части массива. Эта копия часто нежелательна, если она неявно используется в качестве значения Span или Memory. Используйте метод AsSpan, чтобы избежать копирования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
+        <target state="needs-review-translation">Используйте "{0}" вместо индексатора на основе "{1}" в "{2}", чтобы избежать создания ненужных копий данных.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on a string</source>
+        <target state="translated">Используйте "{0}" вместо индексаторов на основе диапазона в строке</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on an array</source>
+        <target state="translated">Используйте "{0}" вместо индексаторов на основе диапазона в массиве</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
+        <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
+        <target state="translated">При необходимости используйте AsSpan или AsMemory вместо индексаторов на основе диапазонов</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
+        <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="translated">Основанный на диапазонах индексатор для строковых значений создает копию запрошенной части строки. Эта копия обычно не требуется, если она неявно используется в качестве значения ReadOnlySpan или ReadOnlyMemory. Используйте метод AsSpan, чтобы избежать ненужного копирования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="translated">Основанный на диапазонах индексатор для значений массива создает копию запрошенной части массива. Эта копия обычно не требуется, если она неявно используется в качестве значения ReadOnlySpan или ReadOnlyMemory. Используйте метод AsSpan, чтобы избежать ненужного копирования.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
@@ -1773,8 +2033,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</source>
-        <target state="translated">Если возможно, попробуйте использовать управление доступом на основе ролей Azure, а не подписанный URL-адрес (SAS). Если все-таки требуется использовать SAS, при его создании примените политику доступа на уровне контейнера.</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS.</source>
+        <target state="needs-review-translation">Если возможно, попробуйте использовать управление доступом на основе ролей Azure, а не подписанный URL-адрес (SAS). Если все-таки требуется использовать SAS, при его создании примените политику доступа на уровне контейнера.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
@@ -1790,6 +2050,26 @@
       <trans-unit id="UseDefaultDllImportSearchPathsAttributeMessage">
         <source>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</source>
         <target state="translated">Метод {0} не использовал атрибут DefaultDllImportSearchPaths для P/Invokes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdDescription">
+        <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
+        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdFix">
+        <source>Use 'Environment.ProcessId'</source>
+        <target state="new">Use 'Environment.ProcessId'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdMessage">
+        <source>Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</source>
+        <target state="new">Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdTitle">
+        <source>Use 'Environment.ProcessId'</source>
+        <target state="new">Use 'Environment.ProcessId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -1838,8 +2118,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
-        <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="translated">Используйте свойство "{0}" вместо Enumerable.Count().</target>
+        <source>Use the "{0}" property instead of Enumerable.Count()</source>
+        <target state="needs-review-translation">Используйте свойство "{0}" вместо Enumerable.Count().</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
@@ -1878,8 +2158,38 @@
         <note />
       </trans-unit>
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
-        <target state="translated">Если возможно, попробуйте использовать управление доступом на основе ролей Azure, а не подписанный URL-адрес (SAS). Если все-таки требуется использовать SAS, укажите SharedAccessProtocol.HttpsOnly.</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
+        <target state="needs-review-translation">Если возможно, попробуйте использовать управление доступом на основе ролей Azure, а не подписанный URL-адрес (SAS). Если все-таки требуется использовать SAS, укажите SharedAccessProtocol.HttpsOnly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="translated">ValueTask, возвращаемые в результате вызова членов, должны ожидаться напрямую. Попытки использовать ValueTask несколько раз или получить прямой доступ к результату, прежде чем он будет получен, могут привести к выдаче исключения или повреждению данных. Пропуск такого ValueTask, вероятно, свидетельствует о функциональной ошибке и может привести к снижению производительности.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="translated">Прямой доступ к результатам экземпляров ValueTask не должен осуществляться, если обработка экземпляра не была завершена. В отличие от Tasks, вызов Result или GetAwaiter().GetResult() для ValueTask может не блокироваться до завершения операции. Если вы не можете просто ожидать экземпляр, проверьте свойство IsCompleted экземпляра (или убедитесь, что оно имеет значение true, если оно должно иметь такое значение).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="translated">Экземпляры ValueTask следует использовать только один раз, например через await. Использование одного и того же экземпляра ValueTask несколько раз может привести к выдаче исключений и повреждению данных.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="translated">Экземпляры ValueTask, возвращаемые из вызовов методов, необходимо непосредственно ожидать, возвращать или передавать в качестве аргумента в другой вызов метода. Другое использование экземпляров (например, сохранение экземпляра в локальной переменной или в поле), вероятно, свидетельствует об ошибке, так как экземпляры ValueTask всегда должны использоваться только один раз.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="translated">Экземпляры ValueTask, возвращаемые из вызовов методов, всегда должны использоваться (как правило, они должны ожидаться). Если они не используются, это часто является функциональной ошибкой, но, даже если ошибки нет, это может привести к снижению производительности, если целевой метод добавляет экземпляры ValueTasks в пулы объектов для использования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="translated">Используйте ValueTasks правильно</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

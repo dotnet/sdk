@@ -107,6 +107,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                                 bool excludeThisParameterOption = operationBlockContext.Options.GetBoolOptionValue(
                                     optionName: EditorConfigOptionNames.ExcludeExtensionMethodThisParameter,
                                     rule: Rule,
+                                    containingMethod,
+                                    operationBlockContext.Compilation,
                                     defaultValue: false,
                                     cancellationToken: operationBlockContext.CancellationToken);
                                 if (excludeThisParameterOption)

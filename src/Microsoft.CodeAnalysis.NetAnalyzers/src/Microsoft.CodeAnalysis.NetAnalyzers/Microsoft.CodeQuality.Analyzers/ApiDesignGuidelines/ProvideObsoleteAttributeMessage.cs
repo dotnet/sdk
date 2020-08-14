@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeSymbol(SymbolAnalysisContext context, INamedTypeSymbol obsoleteAttributeType)
         {
             // FxCop compat: only analyze externally visible symbols by default
-            if (!context.Symbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+            if (!context.Symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
             {
                 return;
             }
@@ -75,7 +75,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (attribute.ConstructorArguments.IsEmpty ||
                         string.IsNullOrEmpty(attribute.ConstructorArguments.First().Value as string))
                     {
-                        SyntaxNode node = attribute.ApplicationSyntaxReference.GetSyntax();
+                        SyntaxNode node = attribute.ApplicationSyntaxReference.GetSyntax(context.CancellationToken);
                         context.ReportDiagnostic(node.CreateDiagnostic(Rule, context.Symbol.Name));
                     }
                 }

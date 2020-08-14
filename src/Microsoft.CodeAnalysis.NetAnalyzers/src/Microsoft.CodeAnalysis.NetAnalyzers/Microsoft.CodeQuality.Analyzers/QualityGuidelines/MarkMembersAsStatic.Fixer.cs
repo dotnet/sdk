@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,15 +58,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Update definition to add static modifier.
-            var syntaxGenerator = SyntaxGenerator.GetGenerator(document);
-            var madeStatic = syntaxGenerator.WithModifiers(node, DeclarationModifiers.Static).WithAdditionalAnnotations(s_annotationForFixedDeclaration);
-            document = document.WithSyntaxRoot(root.ReplaceNode(node, madeStatic));
+            // Add syntax annotation to definition to be made static so we can update it after fixing references.
+            document = document.WithSyntaxRoot(root.ReplaceNode(node, node.WithAdditionalAnnotations(s_annotationForFixedDeclaration)));
             var solution = document.Project.Solution;
 
             // Update references, if any.
             root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            node = root.DescendantNodes().Single(n => n.SpanStart == node.SpanStart && n.Span.Length == madeStatic.Span.Length);
+            node = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();
             var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var symbol = semanticModel.GetDeclaredSymbol(node, cancellationToken);
             if (symbol != null)
@@ -76,12 +75,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 if (!allReferencesFixed)
                 {
                     // We could not fix all references, so add a warning annotation that users need to manually fix these.
-                    document = await AddWarningAnnotation(solution.GetDocument(document.Id), symbol, cancellationToken).ConfigureAwait(false);
+                    document = await AddWarningAnnotation(solution.GetDocument(document.Id)!, symbol, cancellationToken).ConfigureAwait(false);
                     solution = document.Project.Solution;
                 }
             }
 
-            return solution;
+            // Update definition to add static modifier.
+            document = solution.GetDocument(document.Id)!;
+            root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            node = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();
+            var syntaxGenerator = SyntaxGenerator.GetGenerator(document);
+            var oldModifiersAndStatic = syntaxGenerator.GetModifiers(node).WithIsStatic(true);
+            var newNode = syntaxGenerator.WithModifiers(node, oldModifiersAndStatic);
+            return document.WithSyntaxRoot(root.ReplaceNode(node, newNode)).Project.Solution;
         }
 
         /// <summary>
@@ -111,7 +117,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 // Skip references in projects with different language.
                 // https://github.com/dotnet/roslyn-analyzers/issues/1986 tracks handling them.
-                if (!document.Project.Language.Equals(symbol.Language, StringComparison.Ordinal))
+                if (document == null ||
+                    !document.Project.Language.Equals(symbol.Language, StringComparison.Ordinal))
                 {
                     allReferencesFixed = false;
                     continue;
@@ -134,13 +141,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     var operation = semanticModel.GetOperationWalkingUpParentChain(referenceNode, cancellationToken);
-                    SyntaxNode? nodeToReplaceOpt = null;
+                    SyntaxNode? nodeToReplace = null;
                     switch (operation)
                     {
                         case IMemberReferenceOperation memberReference:
                             if (IsReplacableOperation(memberReference.Instance))
                             {
-                                nodeToReplaceOpt = GetSyntaxNodeToReplace(memberReference);
+                                nodeToReplace = GetSyntaxNodeToReplace(memberReference);
                             }
 
                             break;
@@ -148,13 +155,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         case IInvocationOperation invocation:
                             if (IsReplacableOperation(invocation.Instance))
                             {
-                                nodeToReplaceOpt = GetExpressionOfInvocation(invocation.Syntax);
+                                nodeToReplace = GetExpressionOfInvocation(invocation.Syntax);
                             }
 
                             break;
                     }
 
-                    if (nodeToReplaceOpt == null)
+                    if (nodeToReplace == null)
                     {
                         allReferencesFixed = false;
                         continue;
@@ -162,7 +169,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                     // Fetch the symbol for the node to replace - note that this might be
                     // different from the original symbol due to generic type arguments.
-                    var symbolForNodeToReplace = GetSymbolForNodeToReplace(nodeToReplaceOpt, semanticModel);
+                    var symbolForNodeToReplace = GetSymbolForNodeToReplace(nodeToReplace, semanticModel);
                     if (symbolForNodeToReplace == null)
                     {
                         allReferencesFixed = false;
@@ -170,19 +177,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     SyntaxNode memberName;
-                    var typeArgumentsOpt = GetTypeArguments(referenceNode);
-                    memberName = typeArgumentsOpt != null ?
-                        editor.Generator.GenericName(symbolForNodeToReplace.Name, typeArgumentsOpt) :
+                    var typeArguments = GetTypeArguments(referenceNode);
+                    memberName = typeArguments != null ?
+                        editor.Generator.GenericName(symbolForNodeToReplace.Name, typeArguments) :
                         editor.Generator.IdentifierName(symbolForNodeToReplace.Name);
 
                     var newNode = editor.Generator.MemberAccessExpression(
                             expression: editor.Generator.TypeExpression(symbolForNodeToReplace.ContainingType),
                             memberName: memberName)
-                        .WithLeadingTrivia(nodeToReplaceOpt.GetLeadingTrivia())
-                        .WithTrailingTrivia(nodeToReplaceOpt.GetTrailingTrivia())
+                        .WithLeadingTrivia(nodeToReplace.GetLeadingTrivia())
+                        .WithTrailingTrivia(nodeToReplace.GetTrailingTrivia())
                         .WithAdditionalAnnotations(Formatter.Annotation);
 
-                    editor.ReplaceNode(nodeToReplaceOpt, newNode);
+                    editor.ReplaceNode(nodeToReplace, newNode);
                 }
 
                 document = document.WithSyntaxRoot(editor.GetChangedRoot());
@@ -194,23 +201,27 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             // Local functions.
             static bool IsReplacableOperation(IOperation operation)
             {
-                // We only replace reference operations whose removal cannot change semantics.
-                if (operation != null)
+                if (operation == null)
                 {
-                    switch (operation.Kind)
-                    {
-                        case OperationKind.InstanceReference:
-                        case OperationKind.ParameterReference:
-                        case OperationKind.LocalReference:
-                            return true;
-
-                        case OperationKind.FieldReference:
-                        case OperationKind.PropertyReference:
-                            return IsReplacableOperation(((IMemberReferenceOperation)operation).Instance);
-                    }
+                    // Null instance is replacable. For example, null instance for a static field/property reference which is used to invoke an instance member, say "SomeType.StaticField.InstanceMethod();"
+                    return true;
                 }
 
-                return false;
+                // We only replace reference operations whose removal cannot change semantics.
+                switch (operation.Kind)
+                {
+                    case OperationKind.InstanceReference:
+                    case OperationKind.ParameterReference:
+                    case OperationKind.LocalReference:
+                        return true;
+
+                    case OperationKind.FieldReference:
+                    case OperationKind.PropertyReference:
+                        return IsReplacableOperation(((IMemberReferenceOperation)operation).Instance);
+
+                    default:
+                        return false;
+                }
             }
 
             ISymbol? GetSymbolForNodeToReplace(SyntaxNode nodeToReplace, SemanticModel semanticModel)
@@ -231,10 +242,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         private static async Task<Document> AddWarningAnnotation(Document document, ISymbol symbolFromEarlierSnapshot, CancellationToken cancellationToken)
         {
-            var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var fixedDeclaration = root.DescendantNodes().Single(n => n.HasAnnotation(s_annotationForFixedDeclaration));
-            var annotation = WarningAnnotation.Create(string.Format(MicrosoftCodeQualityAnalyzersResources.MarkMembersAsStaticCodeFix_WarningAnnotation, symbolFromEarlierSnapshot.Name));
+            var fixedDeclaration = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();
+            var annotation = WarningAnnotation.Create(string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.MarkMembersAsStaticCodeFix_WarningAnnotation, symbolFromEarlierSnapshot.Name));
             return document.WithSyntaxRoot(root.ReplaceNode(fixedDeclaration, fixedDeclaration.WithAdditionalAnnotations(annotation)));
         }
 

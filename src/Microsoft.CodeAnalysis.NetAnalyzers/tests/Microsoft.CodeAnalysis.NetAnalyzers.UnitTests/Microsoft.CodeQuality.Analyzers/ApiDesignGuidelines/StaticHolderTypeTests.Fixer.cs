@@ -16,14 +16,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             const string Code = @"
 public class [|C|]
 {
-    public static void Foo() { }
+    public static void SomeMethod() { }
 }
 ";
 
             const string FixedCode = @"
 public static class C
 {
-    public static void Foo() { }
+    public static void SomeMethod() { }
 }
 ";
 
@@ -37,14 +37,14 @@ public static class C
 public class [|C|]
 {
     public C() { }
-    public static void Foo() { }
+    public static void SomeMethod() { }
 }
 ";
 
             const string FixedCode = @"
 public static class C
 {
-    public static void Foo() { }
+    public static void SomeMethod() { }
 }
 ";
 
@@ -58,14 +58,14 @@ public static class C
 public class [|C|]
 {
     protected C() { }
-    public static void Foo() { }
+    public static void SomeMethod() { }
 }
 ";
 
             const string FixedCode = @"
 public static class C
 {
-    public static void Foo() { }
+    public static void SomeMethod() { }
 }
 ";
 
@@ -79,14 +79,14 @@ public static class C
 public class [|C|]
 {
     private C() { }
-    public static void Foo() { }
+    public static void SomeMethod() { }
 }
 ";
 
             const string FixedCode = @"
 public static class C
 {
-    public static void Foo() { }
+    public static void SomeMethod() { }
 }
 ";
 
@@ -104,7 +104,7 @@ public class C
     public class [|CInner|]
     {
         public CInner() { }
-        public static void Foo() { }
+        public static void SomeMethod() { }
     }
 }
 ";
@@ -116,7 +116,7 @@ public class C
 
     public static class CInner
     {
-        public static void Foo() { }
+        public static void SomeMethod() { }
     }
 }
 ";

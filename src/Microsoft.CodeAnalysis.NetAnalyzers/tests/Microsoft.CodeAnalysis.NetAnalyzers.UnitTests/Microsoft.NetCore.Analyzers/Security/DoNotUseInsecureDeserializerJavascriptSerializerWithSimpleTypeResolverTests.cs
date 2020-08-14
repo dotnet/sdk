@@ -376,7 +376,6 @@ namespace Blah
                GetCSharpResultAt(11, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-
         [Fact]
         public async Task Deserialize_InLocalFunction_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnostic()
         {
@@ -553,7 +552,6 @@ namespace Blah
                   GetCSharpResultAt(23, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-
         [Fact]
         public async Task DeserializeObject_InOtherMethod_CustomTypeResolver_MaybeDiagnostic()
         {
@@ -601,7 +599,7 @@ namespace Blah
         [InlineData(@"dotnet_code_quality.CA2321.excluded_symbol_names = D
                       dotnet_code_quality.CA2322.excluded_symbol_names = D")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = D")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var test = new VerifyCS.Test
             {

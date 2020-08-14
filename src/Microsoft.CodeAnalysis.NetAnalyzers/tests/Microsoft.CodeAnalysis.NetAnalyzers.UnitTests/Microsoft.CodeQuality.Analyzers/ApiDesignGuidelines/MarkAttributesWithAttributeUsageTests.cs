@@ -1,28 +1,24 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public partial class MarkAttributesWithAttributeUsageTests : DiagnosticAnalyzerTestBase
+    public partial class MarkAttributesWithAttributeUsageTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new MarkAttributesWithAttributeUsageAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new MarkAttributesWithAttributeUsageAnalyzer();
-        }
-
         [Fact]
-        public void TestCSSimpleAttributeClass()
+        public async Task TestCSSimpleAttributeClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 class C : Attribute
@@ -32,9 +28,9 @@ class C : Attribute
         }
 
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
-        public void TestCSInheritedAttributeClass()
+        public async Task TestCSInheritedAttributeClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 [AttributeUsage(AttributeTargets.Method)]
@@ -48,9 +44,9 @@ class D : C
         }
 
         [Fact]
-        public void TestCSAbstractAttributeClass()
+        public async Task TestCSAbstractAttributeClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 abstract class C : Attribute
@@ -60,9 +56,9 @@ abstract class C : Attribute
         }
 
         [Fact]
-        public void TestVBSimpleAttributeClass()
+        public async Task TestVBSimpleAttributeClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Class C
@@ -72,9 +68,9 @@ End Class
         }
 
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
-        public void TestVBInheritedAttributeClass()
+        public async Task TestVBInheritedAttributeClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 <AttributeUsage(AttributeTargets.Method)>
@@ -88,9 +84,9 @@ End Class
         }
 
         [Fact]
-        public void TestVBAbstractAttributeClass()
+        public async Task TestVBAbstractAttributeClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 MustInherit Class C
@@ -100,13 +96,13 @@ End Class
         }
 
         private static DiagnosticResult GetCA1018CSharpResultAt(int line, int column, string objectName)
-        {
-            return GetCSharpResultAt(line, column, MarkAttributesWithAttributeUsageAnalyzer.Rule, objectName);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(objectName);
 
         private static DiagnosticResult GetCA1018BasicResultAt(int line, int column, string objectName)
-        {
-            return GetBasicResultAt(line, column, MarkAttributesWithAttributeUsageAnalyzer.Rule, objectName);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(objectName);
     }
 }

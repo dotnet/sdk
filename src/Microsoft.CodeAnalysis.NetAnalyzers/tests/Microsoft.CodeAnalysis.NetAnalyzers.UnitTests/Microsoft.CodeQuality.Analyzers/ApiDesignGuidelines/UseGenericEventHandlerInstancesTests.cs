@@ -1,29 +1,24 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Test.Utilities;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseGenericEventHandlerInstancesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseGenericEventHandlerInstancesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class UseGenericEventHandlerTests : DiagnosticAnalyzerTestBase
+    public class UseGenericEventHandlerTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicUseGenericEventHandlerInstancesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpUseGenericEventHandlerInstancesAnalyzer();
-        }
-
         [Fact]
-        public void TestAlreadyUsingGenericEventHandlerCSharp()
+        public async Task TestAlreadyUsingGenericEventHandlerCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public event System.EventHandler<System.EventArgs> E1;
@@ -33,9 +28,9 @@ public class C
         }
 
         [Fact]
-        public void TestAlreadyUsingGenericEventHandlerBasic()
+        public async Task TestAlreadyUsingGenericEventHandlerBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public Event E1 As System.EventHandler(Of System.EventArgs)
     Public Event E2 As System.EventHandler
@@ -44,9 +39,9 @@ End Class
         }
 
         [Fact]
-        public void TestUsingStructAsEventArgsForOptimizationCSharp()
+        public async Task TestUsingStructAsEventArgsForOptimizationCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public struct SpecialCaseStructEventArgs
 {
 }
@@ -66,9 +61,9 @@ public class C
         }
 
         [Fact]
-        public void TestUsingStructAsEventArgsForOptimizationBasic()
+        public async Task TestUsingStructAsEventArgsForOptimizationBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure SpecialCaseStructEventArgs
 End Structure
 
@@ -85,9 +80,9 @@ End Class
         }
 
         [Fact]
-        public void TestGeneratedEventHandlersBasic()
+        public async Task TestGeneratedEventHandlersBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public Event E1()
     Public Event E2(args As System.EventArgs)
@@ -106,9 +101,9 @@ End Class
         }
 
         [Fact]
-        public void TestNonPublicEventAndNonPublicDelegate()
+        public async Task TestNonPublicEventAndNonPublicDelegate()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal delegate void BadEventHandler(object senderId, System.EventArgs e);
 
 public class EventsClass
@@ -119,9 +114,9 @@ public class EventsClass
         }
 
         [Fact]
-        public void TestNonPublicEventButPublicDelegate()
+        public async Task TestNonPublicEventButPublicDelegate()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void BadEventHandler(object senderId, System.EventArgs e);
 
 public class EventsClass
@@ -134,9 +129,9 @@ public class EventsClass
         }
 
         [Fact]
-        public void TestNonPublicEventAndPublicInvalidDelegate()
+        public async Task TestNonPublicEventAndPublicInvalidDelegate()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void BadEventHandler(object senderId);
 
 public class EventsClass
@@ -147,9 +142,9 @@ public class EventsClass
         }
 
         [Fact]
-        public void TestIgnoreEventsThatAreInterfaceImplementations()
+        public async Task TestIgnoreEventsThatAreInterfaceImplementations()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public delegate void BadEventHandler(object senderId, EventArgs e);
@@ -182,9 +177,9 @@ public class EventsClassExplicit : ITest
         }
 
         [Fact]
-        public void TestOverrideEvent()
+        public async Task TestOverrideEvent()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void BadHandler();
 
 public class C
@@ -202,9 +197,9 @@ public class D : C
         }
 
         [Fact]
-        public void TestComSourceInterfaceEvent()
+        public async Task TestComSourceInterfaceEvent()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void BadHandler();
 
 [System.Runtime.InteropServices.ComSourceInterfaces(""C"")]
@@ -216,9 +211,9 @@ public class C
         }
 
         [Fact]
-        public void TestViolatingEventsCSharp()
+        public async Task TestViolatingEventsCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public delegate void BadHandler1();
@@ -252,9 +247,9 @@ public class C
         }
 
         [Fact]
-        public void TestViolatingEventsBasic()
+        public async Task TestViolatingEventsBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Delegate Sub BadHandler(sender As Object, args As System.EventArgs)
 
 Public Class C
@@ -273,5 +268,15 @@ End Structure
             // Test0.vb(7,18): warning CA1003: Change the event 'E3' to use a generic EventHandler by defining the event type explicitly, for e.g. Event MyEvent As EventHandler(Of MyEventArgs).
             GetBasicResultAt(7, 18, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents2, "E3"));
         }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+            => VerifyCS.Diagnostic(rule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+            => VerifyVB.Diagnostic(rule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
     }
 }
