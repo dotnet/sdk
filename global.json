@@ -7,7 +7,7 @@
       ]
     },
     "vs-opt": {
-      "version": "16.8-preview2"
+      "version": "16.9"
     },
     "xcopy-msbuild": "16.8.0-preview2.1"
   },
