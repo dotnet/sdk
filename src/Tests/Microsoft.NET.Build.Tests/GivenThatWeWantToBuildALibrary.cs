@@ -950,7 +950,7 @@ class Program
 
         }
 
-        [Theory(Skip = "Test few tests")]
+        [Theory]
         [InlineData("netcoreapp3.1")]
         [InlineData("netcoreapp5.0")]
         public void It_makes_RootNamespace_safe_when_project_name_has_spaces(string targetFramework)

@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [WindowsOnlyTheory(Skip = "Test few tests")]
+        [WindowsOnlyTheory]
         [InlineData("netcoreapp3.1", ".NETCoreApp", "v3.1", "Windows", "7.0")] // Default values pre-5.0
         [InlineData("net5.0", ".NETCoreApp", "v5.0", "", "")]
         [InlineData("net5.0-Windows7.0", ".NETCoreApp", "v5.0", "Windows", "7.0")]
