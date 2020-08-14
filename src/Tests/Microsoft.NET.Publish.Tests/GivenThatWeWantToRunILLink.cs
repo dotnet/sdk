@@ -222,10 +222,9 @@ namespace Microsoft.NET.Publish.Tests
                 // trim analysis warnings are disabled
                 .And.NotHaveStdOutContaining("warning IL2075")
                 .And.NotHaveStdOutContaining("warning IL2026")
-                // warnings about invalid attributes still show up
-                .And.HaveStdOutContaining("warning IL2043")
-                .And.HaveStdOutContaining("warning IL2046")
-                .And.HaveStdOutContaining("warning IL2093");
+                .And.NotHaveStdOutContaining("warning IL2043")
+                .And.NotHaveStdOutContaining("warning IL2046")
+                .And.NotHaveStdOutContaining("warning IL2093");
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
