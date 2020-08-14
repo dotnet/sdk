@@ -75,7 +75,7 @@
   <String Id="InstallationNoteTitle">インストール メモ</String>
   <String Id="InstallationNote">コマンドはインストール処理中に実行されるので、プロジェクトの復元速度が向上し、オフラインでアクセスできます。完了するまでに最大 1 分かかります。
   </String>
-  <String Id="VisualStudioWarning">.NET 5.0 を Visual Studio と共に使用する場合は、Visual Studio 2019 16.6 以降が必要です。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;詳細情報&lt;/A&gt;。
+  <String Id="VisualStudioWarning">.NET 5.0 を Visual Studio と共に使用する場合は、Visual Studio 2019 16.8 以降が必要です。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;詳細情報&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">[インストール] をクリックすると、次の条項に同意したものと見なされます。</String>
 </WixLocalization>
