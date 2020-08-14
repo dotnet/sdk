@@ -3390,7 +3390,7 @@ public class MyController : Controller
         new SqlCommand(input.ToString());
     }
 }",
-                GetCSharpResultAt(14, 9, 14, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(ISomething input)", "ISomething input", "void MyController.DoSomething(ISomething input)"));
+                GetCSharpResultAt(14, 9, 12, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(ISomething input)", "ISomething input", "void MyController.DoSomething(ISomething input)"));
         }
 
         [Fact]
@@ -3412,8 +3412,8 @@ public class MyController : Controller
         new SqlCommand(input.ToString());
     }
 }",
-                GetCSharpResultAt(9, 9, 9, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething1(string input)", "string input", "void MyController.DoSomething1(string input)"),
-                GetCSharpResultAt(14, 9, 14, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething2(string input)", "string input", "void MyController.DoSomething2(string input)"));
+                GetCSharpResultAt(9, 9, 7, 30, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething1(string input)", "string input", "void MyController.DoSomething1(string input)"),
+                GetCSharpResultAt(14, 9, 12, 30, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething2(string input)", "string input", "void MyController.DoSomething2(string input)"));
         }
 
         [Fact]
@@ -3585,7 +3585,7 @@ public class My
         new SqlCommand(input);
     }
 }",
-                GetCSharpResultAt(10, 9, 10, 24, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
+                GetCSharpResultAt(10, 9, 8, 29, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
         }
 
         [Fact]
@@ -3606,7 +3606,7 @@ public class My : Controller
         new SqlCommand(input);
     }
 }",
-                GetCSharpResultAt(13, 9, 13, 24, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
+                GetCSharpResultAt(13, 9, 11, 29, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
         }
 
         [Fact]
@@ -3623,7 +3623,24 @@ public class MyController
         new SqlCommand(input);
     }
 }",
-                GetCSharpResultAt(9, 9, 9, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
+                GetCSharpResultAt(9, 9, 7, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_Reassignment_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController
+{
+    public void DoSomething(string input)
+    {
+        input = """";
+        new SqlCommand(input);
+    }
+}");
         }
 
         [Fact]
@@ -3691,7 +3708,7 @@ public class MyController : Controller
         new SqlCommand(x);
     }
 }",
-                GetCSharpResultAt(9, 9, 9, 24, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
+                GetCSharpResultAt(9, 9, 7, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
         }
 
         [Fact]
