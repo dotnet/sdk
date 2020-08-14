@@ -106,28 +106,31 @@ namespace Microsoft.CodeAnalysis.Tools
                     }
                 }
 
-                var runtimeVersion = GetRuntimeVersion();
-
-                logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
-
-                // Load MSBuild
-                Environment.CurrentDirectory = workspaceDirectory;
-
-                if (!TryGetDotNetCliVersion(out var dotnetVersion))
+                if (workspaceType != WorkspaceType.Folder)
                 {
-                    logger.LogError(Resources.Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH);
-                    return UnableToLocateDotNetCliExitCode;
+                    var runtimeVersion = GetRuntimeVersion();
+
+                    logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
+
+                    // Load MSBuild
+                    Environment.CurrentDirectory = workspaceDirectory;
+
+                    if (!TryGetDotNetCliVersion(out var dotnetVersion))
+                    {
+                        logger.LogError(Resources.Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH);
+                        return UnableToLocateDotNetCliExitCode;
+                    }
+
+                    logger.LogTrace(Resources.The_dotnet_CLI_version_is_0, dotnetVersion);
+
+                    if (!TryLoadMSBuild(out var msBuildPath))
+                    {
+                        logger.LogError(Resources.Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer);
+                        return UnableToLocateMSBuildExitCode;
+                    }
+
+                    logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
                 }
-
-                logger.LogTrace(Resources.The_dotnet_CLI_version_is_0, dotnetVersion);
-
-                if (!TryLoadMSBuild(out var msBuildPath))
-                {
-                    logger.LogError(Resources.Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer);
-                    return UnableToLocateMSBuildExitCode;
-                }
-
-                logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
 
                 var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
 
@@ -225,7 +228,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var logger = serviceProvider.GetService<ILogger<Program>>();
 
-            return logger;
+            return logger!;
         }
 
         private static bool TryGetDotNetCliVersion([NotNullWhen(returnValue: true)] out string? dotnetVersion)
