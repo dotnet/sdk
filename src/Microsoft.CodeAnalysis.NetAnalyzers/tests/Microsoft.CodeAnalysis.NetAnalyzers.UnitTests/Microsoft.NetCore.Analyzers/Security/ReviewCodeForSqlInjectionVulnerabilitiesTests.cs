@@ -3711,6 +3711,50 @@ public class MyController : Controller
                 GetCSharpResultAt(9, 9, 7, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
         }
 
+        [Theory]
+        [InlineData("st.Append(id);")]
+        [InlineData("st.AppendFormat(id, \"1\");")]
+        [InlineData("st.AppendFormat(\"{0}\", id);")]
+        [InlineData("st.AppendFormat(\"{0}{1}\", \"\", id);")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}\", \"\", \"\", id);")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}{3}\", \"\", \"\", \"\", id);")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}{3}{4}\", \"\", \"\", \"\", \"\", id);")]
+        [InlineData("st.AppendLine(id);")]
+        [InlineData("st.Append(id); st.CopyTo(0, arr, 0, 10)", true, "new string(arr)")]
+        [InlineData("st.Insert(0, id);")]
+        [InlineData("st.Replace(\"\", id);")]
+        [InlineData("st.Append(id); st.Clear()", false)]
+        public async Task TaintThis_StringBuilder(string payload, bool warn = true, string sinkArg = "st.ToString()")
+        {
+            string code = $@"
+using System.Data.SqlClient;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController
+{{
+    public void DoSomething(string id)
+    {{
+        var st = new StringBuilder();
+        var arr = new char[100];
+        {payload};
+        new SqlCommand({sinkArg});
+    }}
+}}";
+            if (warn)
+            {
+                await VerifyCSharpWithDependenciesAsync(
+                     code,
+                     GetCSharpResultAt(13, 9, 8, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string id)", "string id", "void MyController.DoSomething(string id)"));
+            }
+            else
+            {
+                await VerifyCSharpWithDependenciesAsync(code);
+            }
+
+
+        }
+
         [Fact]
         public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_WrongSanitizer()
         {
