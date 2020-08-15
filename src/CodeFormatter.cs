@@ -9,8 +9,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Build.Logging;
-using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Utilities;
@@ -150,14 +148,17 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        private static async Task<Workspace> OpenFolderWorkspaceAsync(string workspacePath, Matcher fileMatcher, CancellationToken cancellationToken)
+        private static Task<Workspace> OpenFolderWorkspaceAsync(string workspacePath, Matcher fileMatcher, CancellationToken cancellationToken)
         {
-            var folderWorkspace = FolderWorkspace.Create();
-            await folderWorkspace.OpenFolder(workspacePath, fileMatcher, cancellationToken).ConfigureAwait(false);
-            return folderWorkspace;
+            return Task.Run<Workspace>(() =>
+            {
+                var folderWorkspace = FolderWorkspace.Create();
+                folderWorkspace.OpenFolder(workspacePath, fileMatcher);
+                return folderWorkspace;
+            }, cancellationToken);
         }
 
-        private static async Task<Workspace?> OpenMSBuildWorkspaceAsync(
+        private static Task<Workspace?> OpenMSBuildWorkspaceAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
             bool createBinaryLog,
@@ -165,72 +166,7 @@ namespace Microsoft.CodeAnalysis.Tools
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var properties = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                // This property ensures that XAML files will be compiled in the current AppDomain
-                // rather than a separate one. Any tasks isolated in AppDomains or tasks that create
-                // AppDomains will likely not work due to https://github.com/Microsoft/MSBuildLocator/issues/16.
-                { "AlwaysCompileMarkupFilesInSeparateDomain", bool.FalseString },
-            };
-
-            var workspace = MSBuildWorkspace.Create(properties);
-
-            Build.Framework.ILogger? binlog = null;
-            if (createBinaryLog)
-            {
-                binlog = new BinaryLogger()
-                {
-                    Parameters = Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog"),
-                    Verbosity = Build.Framework.LoggerVerbosity.Diagnostic,
-                };
-            }
-
-            if (workspaceType == WorkspaceType.Solution)
-            {
-                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
-            }
-            else
-            {
-                try
-                {
-                    await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
-                }
-                catch (InvalidOperationException)
-                {
-                    logger.LogError(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, solutionOrProjectPath);
-                    workspace.Dispose();
-                    return null;
-                }
-            }
-
-            LogWorkspaceDiagnostics(logger, logWorkspaceWarnings, workspace.Diagnostics);
-
-            return workspace;
-
-            static void LogWorkspaceDiagnostics(ILogger logger, bool logWorkspaceWarnings, ImmutableList<WorkspaceDiagnostic> diagnostics)
-            {
-                if (!logWorkspaceWarnings)
-                {
-                    if (diagnostics.Count > 0)
-                    {
-                        logger.LogWarning(Resources.Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings);
-                    }
-
-                    return;
-                }
-
-                foreach (var diagnostic in diagnostics)
-                {
-                    if (diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
-                    {
-                        logger.LogError(diagnostic.Message);
-                    }
-                    else
-                    {
-                        logger.LogWarning(diagnostic.Message);
-                    }
-                }
-            }
+            return MSBuildWorkspaceLoader.LoadAsync(solutionOrProjectPath, workspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken);
         }
 
         private static async Task<Solution> RunCodeFormattersAsync(

@@ -10,23 +10,23 @@
     <MicrosoftBuildVersion>15.3.409</MicrosoftBuildVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
     <MicrosoftNETCoreCompilersPackageVersion>3.8.0-2.20414.4</MicrosoftNETCoreCompilersPackageVersion>
-    <MicrosoftExtensionsVersion>3.1.1</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsVersion>5.0.0-preview.7.20364.11</MicrosoftExtensionsVersion>
   </PropertyGroup>
   <!--
     Other Dependency versions
   -->
   <PropertyGroup>
-    <SystemCommandLineVersion>2.0.0-beta1.20303.1</SystemCommandLineVersion>
-    <SystemCommandLineRenderingVersion>0.3.0-alpha.20303.1</SystemCommandLineRenderingVersion>
+    <SystemCommandLineVersion>2.0.0-beta1.20371.2</SystemCommandLineVersion>
+    <SystemCommandLineRenderingVersion>0.3.0-alpha.20371.2</SystemCommandLineRenderingVersion>
     <MicrosoftBuildFrameworkVersion>$(MicrosoftBuildVersion)</MicrosoftBuildFrameworkVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
-    <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.0.1-beta1.20114.4</MicrosoftCodeAnalysisAnalyzerTestingVersion>
+    <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.0.1-beta1.20413.3</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsFileSystemGlobbingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingVersion>$(MicrosoftExtensionsVersion)</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftCodeAnalysisAnalyzersVersion>3.0.0</MicrosoftCodeAnalysisAnalyzersVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>3.3.0</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftCodeAnalysisVersion>$(MicrosoftNETCoreCompilersPackageVersion)</MicrosoftCodeAnalysisVersion>
-    <SystemTextJsonVersion>4.7.0</SystemTextJsonVersion>
+    <SystemTextJsonVersion>$(MicrosoftExtensionsVersion)</SystemTextJsonVersion>
     <!--
       Workaround for the inability to load the NugetSdkResolver from the .NET 5 SDK
       https://github.com/microsoft/MSBuildLocator/issues/88

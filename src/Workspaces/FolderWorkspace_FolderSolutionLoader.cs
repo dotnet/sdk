@@ -2,8 +2,7 @@
 
 using System.Collections.Immutable;
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
@@ -15,18 +14,21 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             private static ImmutableArray<ProjectLoader> ProjectLoaders
                 => ImmutableArray.Create<ProjectLoader>(new CSharpProjectLoader(), new VisualBasicProjectLoader());
 
-            public static async Task<SolutionInfo> LoadSolutionInfoAsync(string folderPath, Matcher fileMatcher, CancellationToken cancellationToken)
+            public static SolutionInfo LoadSolutionInfo(string folderPath, Matcher fileMatcher)
             {
                 var absoluteFolderPath = Path.IsPathFullyQualified(folderPath)
                     ? folderPath
                     : Path.GetFullPath(folderPath, Directory.GetCurrentDirectory());
+
+                var filePaths = fileMatcher.GetResultsInFullPath(absoluteFolderPath).ToImmutableArray();
+                var editorConfigPaths = EditorConfigFinder.GetEditorConfigPaths(folderPath);
 
                 var projectInfos = ImmutableArray.CreateBuilder<ProjectInfo>(ProjectLoaders.Length);
 
                 // Create projects for each of the supported languages.
                 foreach (var loader in ProjectLoaders)
                 {
-                    var projectInfo = await loader.LoadProjectInfoAsync(folderPath, fileMatcher, cancellationToken).ConfigureAwait(false);
+                    var projectInfo = loader.LoadProjectInfo(folderPath, filePaths, editorConfigPaths);
                     if (projectInfo is null)
                     {
                         continue;

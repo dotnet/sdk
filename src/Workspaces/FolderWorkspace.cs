@@ -3,8 +3,6 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
@@ -23,7 +21,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
         public static FolderWorkspace Create()
         {
-            return Create(MSBuildMefHostServices.DefaultServices);
+            return Create(MefHostServices.DefaultHost);
         }
 
         public static FolderWorkspace Create(HostServices hostServices)
@@ -31,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             return new FolderWorkspace(hostServices);
         }
 
-        public async Task<Solution> OpenFolder(string folderPath, Matcher fileMatcher, CancellationToken cancellationToken)
+        public Solution OpenFolder(string folderPath, Matcher fileMatcher)
         {
             if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
             {
@@ -40,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
             ClearSolution();
 
-            var solutionInfo = await FolderSolutionLoader.LoadSolutionInfoAsync(folderPath, fileMatcher, cancellationToken).ConfigureAwait(false);
+            var solutionInfo = FolderSolutionLoader.LoadSolutionInfo(folderPath, fileMatcher);
 
             OnSolutionAdded(solutionInfo);
 
