@@ -68,7 +68,7 @@ Running 3rd party analysis requires the use of a MSBuild solution or project fil
 
 ### Filter files to format
 
-You can further narrow the list of files to be formatted by limiting to set of included files that are not excluded. File globbing is supported.
+You can further narrow the list of files to be formatted by specifying a list of paths to include or exclude. When specifying folder paths the path must end with a directory separator. File globbing is supported.
 
 - `--include` - A list of relative file or folder paths to include in formatting.
 - `--exclude` - A list of relative file or folder paths to exclude from formatting.
