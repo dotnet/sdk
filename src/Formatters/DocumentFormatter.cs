@@ -59,9 +59,9 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         {
             var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<(SourceText originalText, SourceText? formattedText)>)>(formattableDocuments.Length);
 
-            foreach (var documentId in formattableDocuments)
+            for (var index = 0; index < formattableDocuments.Length; index++)
             {
-                var document = solution.GetDocument(documentId);
+                var document = solution.GetDocument(formattableDocuments[index]);
                 if (document is null)
                     continue;
 
@@ -82,7 +82,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 formattedDocuments.Add((document, formatTask));
             }
 
-            return formattedDocuments.ToImmutableArray();
+            return formattedDocuments.ToImmutable();
         }
 
         /// <summary>
@@ -117,8 +117,9 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         {
             var formattedSolution = solution;
 
-            foreach (var (document, formatTask) in formattedDocuments)
+            for (var index = 0; index < formattedDocuments.Length; index++)
             {
+                var (document, formatTask) = formattedDocuments[index];
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return formattedSolution;
@@ -144,19 +145,22 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             return formattedSolution;
         }
 
-        private IEnumerable<FileChange> GetFileChanges(FormatOptions formatOptions, string workspacePath, string filePath, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
+        private ImmutableArray<FileChange> GetFileChanges(FormatOptions formatOptions, string workspacePath, string filePath, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
         {
-            var fileChanges = new List<FileChange>();
             var workspaceFolder = Path.GetDirectoryName(workspacePath);
-            var changes = formattedText.GetChangeRanges(originalText);
             if (workspaceFolder is null)
             {
                 throw new Exception($"Unable to find directory name for '{workspacePath}'");
             }
 
-            foreach (var change in changes)
+            var fileChanges = ImmutableArray.CreateBuilder<FileChange>();
+            var changes = formattedText.GetChangeRanges(originalText);
+
+            for (var index = 0; index < changes.Count; index++)
             {
+                var change = changes[index];
                 var changePosition = originalText.Lines.GetLinePosition(change.Span.Start);
+
                 var fileChange = new FileChange(changePosition, FormatWarningDescription);
                 fileChanges.Add(fileChange);
 
@@ -166,7 +170,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 }
             }
 
-            return fileChanges;
+            return fileChanges.ToImmutable();
         }
 
         private static void LogFormattingChanges(string filePath, bool changesAreErrors, ILogger logger, string workspaceFolder, FileChange fileChange)

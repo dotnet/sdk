@@ -2,7 +2,6 @@
 
 using System.Collections.Immutable;
 using System.IO;
-using System.Linq;
 
 namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
@@ -10,6 +9,8 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
     {
         public static ImmutableArray<string> GetEditorConfigPaths(string path)
         {
+            // If the path is to a file then remove the file name and process the
+            // folder path.
             var startPath = Directory.Exists(path)
                 ? path
                 : Path.GetDirectoryName(path);
@@ -19,22 +20,30 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
                 return ImmutableArray<string>.Empty;
             }
 
+            var editorConfigPaths = ImmutableArray.CreateBuilder<string>(16);
+
             var directory = new DirectoryInfo(path);
 
-            var editorConfigPaths = directory.GetFiles(".editorconfig", SearchOption.AllDirectories)
-                .Select(file => file.FullName)
-                .ToList();
+            // Find .editorconfig files contained unders the folder path.
+            var files = directory.GetFiles(".editorconfig", SearchOption.AllDirectories);
+            for (var index = 0; index < files.Length; index++)
+            {
+                editorConfigPaths.Add(files[index].FullName);
+            }
 
+            // Walk from the folder path up to the drive root addings .editorconfig files.
             while (directory.Parent != null)
             {
                 directory = directory.Parent;
 
-                editorConfigPaths.AddRange(
-                    directory.GetFiles(".editorconfig", SearchOption.TopDirectoryOnly)
-                        .Select(file => file.FullName));
+                files = directory.GetFiles(".editorconfig", SearchOption.TopDirectoryOnly);
+                if (files.Length == 1)
+                {
+                    editorConfigPaths.Add(files[0].FullName);
+                }
             }
 
-            return editorConfigPaths.ToImmutableArray();
+            return editorConfigPaths.ToImmutable();
         }
     }
 }

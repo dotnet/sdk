@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools
@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public DiagnosticSeverity AnalyzerSeverity { get; }
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
-        public Matcher FileMatcher { get; }
+        public SourceFileMatcher FileMatcher { get; }
         public string? ReportPath { get; }
         public bool IncludeGeneratedFiles { get; }
 
@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.Tools
             DiagnosticSeverity analyzerSeverity,
             bool saveFormattedFiles,
             bool changesAreErrors,
-            Matcher fileMatcher,
+            SourceFileMatcher fileMatcher,
             string? reportPath,
             bool includeGeneratedFiles)
         {
@@ -58,7 +58,7 @@ namespace Microsoft.CodeAnalysis.Tools
             out DiagnosticSeverity analyzerSeverity,
             out bool saveFormattedFiles,
             out bool changesAreErrors,
-            out Matcher fileMatcher,
+            out SourceFileMatcher fileMatcher,
             out string? reportPath,
             out bool includeGeneratedFiles)
         {
