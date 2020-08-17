@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -6,6 +7,18 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
+
+    public sealed class SkipOnNonEnUsLocale : FactAttribute
+    {
+        public SkipOnNonEnUsLocale(string displayName, string message) {
+            DisplayName = displayName;
+            if (!CultureInfo.CurrentCulture.Name.Equals("en-US"))
+            {
+                Skip = "Skipped : non en-US locale. " + message;
+            }
+        }
+    }
+
     public partial class ConditionalTests
     {
         [Fact(DisplayName=nameof(VerifyIfEndifTrueCondition))]
@@ -1395,7 +1408,7 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [Fact(DisplayName = nameof(VerifyIfElseEndifConditionUsesDouble))]
+        [SkipOnNonEnUsLocale(nameof(VerifyIfElseEndifConditionUsesDouble), "The test is temporarily disabled, tracked in issue #2436.")]
         public void VerifyIfElseEndifConditionUsesDouble()
         {
             string value = @"Hello
