@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     s_builder.Clear();
                 }
 
-                s_builder.Append($"[{eventData.TimeStamp}] Event={eventData.EventSource.Name}/{eventData.EventName} ThreadID={eventData.OSThreadId}\t ");
+                s_builder.Append($"[{eventData.TimeStamp.ToString("MM/dd/yyyy H:mm:ss.ffffff")}] Event={eventData.EventSource.Name}/{eventData.EventName} ThreadID={eventData.OSThreadId}\t ");
                 for (int i = 0; i < eventData.PayloadNames.Count; i++)
                 {
                     s_builder.Append($"{eventData.PayloadNames[i]}=\"{eventData.Payload[i]}\" ");
