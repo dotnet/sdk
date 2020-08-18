@@ -80,6 +80,7 @@ GetCA1307CSharpResultsAt(12, 16, "string.StartsWith(string)",
                                  "string.StartsWith(string, System.StringComparison)"));
         }
 
+#if NETCOREAPP // EndsWith(char) and StartsWith(char) overloads don't exist in .NET Framework 4.7.2
         [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
         public async Task CA1307_StringWithCharTests_CSharp()
         {
@@ -96,6 +97,7 @@ public class StringComparisonTests
     }
 }");
         }
+#endif
 
         [Fact]
         public async Task CA1307_StringIndexOfStringTests_CSharp()
