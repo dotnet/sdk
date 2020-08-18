@@ -3751,8 +3751,6 @@ public class MyController
             {
                 await VerifyCSharpWithDependenciesAsync(code);
             }
-
-
         }
 
         [Fact]
