@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         // Checks if the argument in the specified index has a name. If it doesn't, returns that arguments. If it does, then looks for the argument using the specified name, and returns it, or null if not found.
         protected abstract IArgumentOperation? GetArgumentByPositionOrName(ImmutableArray<IArgumentOperation> args, int index, string name, out bool isNamed);
+
+        // Verifies if a namespace has already been added to the usings/imports list.
+        protected abstract bool IsSystemNamespaceImported(IReadOnlyList<SyntaxNode> importList);
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(PreferStreamAsyncMemoryOverloads.RuleId);
@@ -100,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.Diagnostics);
         }
 
-        private static Task<Document> FixInvocation(Document doc, SyntaxNode root, IInvocationOperation invocation, string methodName,
+        private Task<Document> FixInvocation(Document doc, SyntaxNode root, IInvocationOperation invocation, string methodName,
             SyntaxNode bufferValueNode, bool isBufferNamed,
             SyntaxNode offsetValueNode, bool isOffsetNamed,
             SyntaxNode countValueNode, bool isCountNamed,
@@ -145,11 +149,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
             SyntaxNode newInvocationExpression = generator.InvocationExpression(asyncMethodNode, nodeArguments).WithTriviaFrom(streamInstanceNode);
 
+            bool containsSystemImport = IsSystemNamespaceImported(generator.GetNamespaceImports(root));
+
+            // The invocation needs to be replaced before adding the import/using, it won't work the other way around
             SyntaxNode newRoot = generator.ReplaceNode(root, invocation.Syntax, newInvocationExpression.WithTriviaFrom(invocation.Syntax));
-            return Task.FromResult(doc.WithSyntaxRoot(newRoot));
+            SyntaxNode newRootWithImports = containsSystemImport ? newRoot : generator.AddNamespaceImports(newRoot, generator.NamespaceImportDeclaration(nameof(System)));
+
+            return Task.FromResult(doc.WithSyntaxRoot(newRootWithImports));
         }
 
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192) 
+        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
         private class MyCodeAction : DocumentChangeAction
         {
             public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
