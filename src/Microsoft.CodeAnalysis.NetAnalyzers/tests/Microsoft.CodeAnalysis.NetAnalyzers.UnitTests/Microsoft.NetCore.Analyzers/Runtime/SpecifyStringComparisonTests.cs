@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SpecifyStringComparisonAnalyzer,
@@ -55,7 +56,7 @@ GetCA1307CSharpResultsAt(14, 18, $"string.Compare({StringArgType}, int, {StringA
         }
 
         [Fact]
-        public async Task CA1307_StringWithTests_CSharp()
+        public async Task CA1307_StringWithStringTests_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -79,8 +80,27 @@ GetCA1307CSharpResultsAt(12, 16, "string.StartsWith(string)",
                                  "string.StartsWith(string, System.StringComparison)"));
         }
 
+#if NETCOREAPP // EndsWith(char) and StartsWith(char) overloads don't exist in .NET Framework 4.7.2
+        [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
+        public async Task CA1307_StringWithCharTests_CSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Globalization;
+
+public class StringComparisonTests
+{
+    public bool StringWith(string strA, char chA, char chB)
+    {
+        var x = strA.EndsWith(chA);
+        return strA.StartsWith(chB);
+    }
+}");
+        }
+#endif
+
         [Fact]
-        public async Task CA1307_StringIndexOfTests_CSharp()
+        public async Task CA1307_StringIndexOfStringTests_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -105,6 +125,40 @@ GetCA1307CSharpResultsAt(11, 18, "string.IndexOf(string, int)",
 GetCA1307CSharpResultsAt(12, 16, "string.IndexOf(string, int, int)",
                                  "StringComparisonTests.StringIndexOf()",
                                  "string.IndexOf(string, int, int, System.StringComparison)"));
+        }
+
+        [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
+        public async Task CA1307_StringIndexOfCharTests_CSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Globalization;
+
+public class StringComparisonTests
+{
+    public int StringIndexOf(string strA, char chA)
+    {
+        var x1 = strA.IndexOf(chA);
+        var x2 = strA.IndexOf(chA, 0);
+        return strA.IndexOf(chA, 0, 1);
+    }
+}");
+        }
+
+        [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
+        public async Task CA1307_StringGetHashCodeTests_CSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Globalization;
+
+public class StringGetHashCodeTests
+{
+    public int StringGetHashCode(string strA)
+    {
+        return strA.GetHashCode();
+    }
+}");
         }
 
         [Fact]
@@ -141,7 +195,7 @@ GetCA1307CSharpResultsAt(12, 20, $"string.CompareTo({ObjectArgType})",
         }
 
         [Fact]
-        public async Task CA1307_OverloadTests_CSharp()
+        public async Task CA1307_OverloadTests_StringFirstParam_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -170,6 +224,34 @@ public class StringComparisonTests
 GetCA1307CSharpResultsAt(9, 9, "StringComparisonTests.DoNothing(string)",
                                "StringComparisonTests.NonString()",
                                "StringComparisonTests.DoNothing<T>(string, System.StringComparison)"));
+        }
+
+        [Theory, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
+        [InlineData("char")]
+        [InlineData("int")]
+        [InlineData("object")]
+        [InlineData("StringComparisonTests")]
+        public async Task CA1307_OverloadTests_NonStringFirstParam_CSharp(string firstParamType)
+        {
+            await VerifyCS.VerifyAnalyzerAsync($@"
+using System;
+using System.Globalization;
+
+public class StringComparisonTests
+{{
+    public void NonString({firstParamType} p)
+    {{
+        [|DoNothing(p)|];
+    }}
+
+    public void DoNothing({firstParamType} p)
+    {{
+    }}
+
+    public void DoNothing({firstParamType} p, StringComparison strCompare)
+    {{
+    }}
+}}");
         }
 
         [Fact]
