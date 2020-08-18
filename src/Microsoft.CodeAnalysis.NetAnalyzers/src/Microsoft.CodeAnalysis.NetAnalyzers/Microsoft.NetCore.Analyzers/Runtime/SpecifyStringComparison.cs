@@ -102,6 +102,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
+                    // First check if this is known method with a recommended alternate overload that must be flagged.
                     if (!overloadMap.IsEmpty && overloadMap.ContainsKey(targetMethod))
                     {
                         ReportDiagnostic(
@@ -111,6 +112,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             overloadMap[targetMethod]);
 
                         return;
+                    }
+
+                    // Otherwise, we want to generically flag any method that has an additional overload with the exact same parameter list,
+                    // plus as additional StringComparison parameter at the end.
+
+                    if (targetMethod.ContainingType.SpecialType == SpecialType.System_String)
+                    {
+                        // We do not want to generically report for methods on 'string' type where the first parameter is not a 'string' type.
+                        // For non-string related comparisons, this can lead to the rule being very noisy as such overloads have 
+                        // StringComparison.Ordinal as the default, and that is desirable majority of times.
+                        // See https://github.com/dotnet/roslyn-analyzers/issues/2581 for details
+                        if (targetMethod.Parameters.IsEmpty || targetMethod.Parameters[0].Type.SpecialType != SpecialType.System_String)
+                        {
+                            return;
+                        }
                     }
 
                     IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>();
