@@ -16,6 +16,7 @@ using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.Tools.Help;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
+using Command = Microsoft.DotNet.Cli.Utils.Command;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
@@ -40,6 +41,7 @@ namespace Microsoft.DotNet.Cli
                 new MulticoreJitActivator().TryActivateMulticoreJit();
 
                 PerformanceLogEventSource.Log.LogStartUpInformation(mainTimeStamp);
+                PerformanceLogEventSource.Log.CLIStart();
 
                 if (Env.GetEnvironmentVariableAsBool("DOTNET_CLI_CAPTURE_TIMING", false))
                 {
@@ -89,6 +91,8 @@ namespace Microsoft.DotNet.Cli
                         Reporter.Output.WriteLine("Performance Summary:");
                         PerfTraceOutput.Print(Reporter.Output, PerfTrace.GetEvents());
                     }
+
+                    PerformanceLogEventSource.Log.CLIStop();
                 }
             }
         }
@@ -151,6 +155,8 @@ namespace Microsoft.DotNet.Cli
                             command = "help";
                         }
 
+                        PerformanceLogEventSource.Log.FirstTimeConfigurationStart();
+
                         var environmentProvider = new EnvironmentProvider();
 
                         bool generateAspNetCertificate =
@@ -188,6 +194,8 @@ namespace Microsoft.DotNet.Cli
                             dotnetFirstRunConfiguration,
                             environmentProvider);
 
+                        PerformanceLogEventSource.Log.FirstTimeConfigurationStop();
+
                         break;
                     }
                 }
@@ -197,12 +205,16 @@ namespace Microsoft.DotNet.Cli
                     return 1;
                 }
 
+                PerformanceLogEventSource.Log.TelemetryRegistrationStart();
+
                 if (telemetryClient == null)
                 {
                     telemetryClient = new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
                 }
                 TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
                 TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+
+                PerformanceLogEventSource.Log.TelemetryRegistrationStop();
             }
 
             IEnumerable<string> appArgs =
@@ -215,18 +227,27 @@ namespace Microsoft.DotNet.Cli
                 Console.WriteLine($"Telemetry is: {(telemetryClient.Enabled ? "Enabled" : "Disabled")}");
             }
 
+            PerformanceLogEventSource.Log.TelemetrySendIfEnabledStart();
             TelemetryEventEntry.SendFiltered(topLevelCommandParserResult);
+            PerformanceLogEventSource.Log.TelemetrySendIfEnabledStop();
 
             int exitCode;
             if (BuiltInCommandsCatalog.Commands.TryGetValue(topLevelCommandParserResult.Command, out var builtIn))
             {
+                PerformanceLogEventSource.Log.BuiltInCommandParserStart();
                 var parseResult = Parser.Instance.ParseFrom($"dotnet {topLevelCommandParserResult.Command}", appArgs.ToArray());
+                PerformanceLogEventSource.Log.BuiltInCommandParserStop();
+
                 if (!parseResult.Errors.Any())
                 {
+                    PerformanceLogEventSource.Log.TelemetrySendIfEnabledStart();
                     TelemetryEventEntry.SendFiltered(parseResult);
+                    PerformanceLogEventSource.Log.TelemetrySendIfEnabledStop();
                 }
 
+                PerformanceLogEventSource.Log.BuiltInCommandStart();
                 exitCode = builtIn.Command(appArgs.ToArray());
+                PerformanceLogEventSource.Log.BuiltInCommandStop();
             }
             else if (string.IsNullOrEmpty(topLevelCommandParserResult.Command))
             {
@@ -234,15 +255,24 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                CommandResult result = CommandFactoryUsingResolver.Create(
+                PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
+                Command resolvedCommand = CommandFactoryUsingResolver.Create(
                         "dotnet-" + topLevelCommandParserResult.Command,
                         appArgs,
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15)
-                    .Execute();
+                        FrameworkConstants.CommonFrameworks.NetStandardApp15);
+                PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
+
+                PerformanceLogEventSource.Log.ExtensibleCommandStart();
+                CommandResult result = resolvedCommand.Execute();
+                PerformanceLogEventSource.Log.ExtensibleCommandStop();
+                
                 exitCode = result.ExitCode;
             }
 
+            PerformanceLogEventSource.Log.TelemetryClientFlushStart();
             telemetryClient.Flush();
+            PerformanceLogEventSource.Log.TelemetryClientFlushStop();
+
             return exitCode;
         }
 
