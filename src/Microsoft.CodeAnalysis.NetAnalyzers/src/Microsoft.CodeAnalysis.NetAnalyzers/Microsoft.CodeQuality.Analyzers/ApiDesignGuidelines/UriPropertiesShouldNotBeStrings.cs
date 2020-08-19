@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -71,7 +71,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var property = (IPropertySymbol)context.Symbol;
 
                 // check basic stuff that FxCop checks.
-                if (property.IsOverride || property.IsFromMscorlib(context.Compilation))
+                if (property.IsOverride || property.IsFromMscorlib(context.Compilation) || property.IsImplementationOfAnyInterfaceMember())
                 {
                     // Methods defined within mscorlib are excluded from this rule,
                     // since mscorlib cannot depend on System.Uri, which is defined
@@ -79,7 +79,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                if (!property.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+                if (!property.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
                 {
                     // only apply to methods that are exposed outside by default
                     return;

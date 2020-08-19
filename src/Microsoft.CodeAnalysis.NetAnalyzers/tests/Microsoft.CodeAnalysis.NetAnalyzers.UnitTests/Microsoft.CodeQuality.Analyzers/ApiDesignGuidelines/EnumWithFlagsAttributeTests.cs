@@ -1,38 +1,35 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumWithFlagsAttributeAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumWithFlagsAttributeFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumWithFlagsAttributeAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumWithFlagsAttributeFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class EnumWithFlagsAttributeTests : DiagnosticAnalyzerTestBase
+    public class EnumWithFlagsAttributeTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new EnumWithFlagsAttributeAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new EnumWithFlagsAttributeAnalyzer();
-        }
-
         private static string GetCSharpCode_EnumWithFlagsAttributes(string code, bool hasFlags)
         {
             string stringToReplace = hasFlags ? "[System.Flags]" : "";
-            return string.Format(code, stringToReplace);
+            return string.Format(CultureInfo.CurrentCulture, code, stringToReplace);
         }
 
         private static string GetBasicCode_EnumWithFlagsAttributes(string code, bool hasFlags)
         {
             string stringToReplace = hasFlags ? "<System.Flags>" : "";
-            return string.Format(code, stringToReplace);
+            return string.Format(CultureInfo.CurrentCulture, code, stringToReplace);
         }
 
         [Fact]
-        public void CSharp_EnumWithFlagsAttributes_SimpleCase()
+        public async Task CSharp_EnumWithFlagsAttributes_SimpleCase()
         {
             var code = @"{0}
 public enum SimpleFlagsEnumClass
@@ -54,17 +51,17 @@ public enum HexFlagsEnumClass
 
             // Verify CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyCSharp(codeWithoutFlags,
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags,
                 GetCA1027CSharpResultAt(2, 13, "SimpleFlagsEnumClass"),
                 GetCA1027CSharpResultAt(11, 13, "HexFlagsEnumClass"));
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyCSharp(codeWithFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharp_EnumWithFlagsAttributes_SimpleCase_Internal()
+        public async Task CSharp_EnumWithFlagsAttributes_SimpleCase_Internal()
         {
             var code = @"{0}
 internal enum SimpleFlagsEnumClass
@@ -89,18 +86,18 @@ internal class OuterClass
 
             // Verify no CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyCSharp(codeWithoutFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags);
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyCSharp(codeWithFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact]
-        public void CSharp_EnumWithFlagsAttributes_SimpleCaseWithScope()
+        public async Task CSharp_EnumWithFlagsAttributes_SimpleCaseWithScope()
         {
             var code = @"{0}
-public enum SimpleFlagsEnumClass
+public enum {{|CA1027:SimpleFlagsEnumClass|}}
 {{
     Zero = 0,
     One = 1,
@@ -109,22 +106,22 @@ public enum SimpleFlagsEnumClass
 }}
 
 {0}
-[|public enum HexFlagsEnumClass
+public enum HexFlagsEnumClass
 {{
     One = 0x1,
     Two = 0x2,
     Four = 0x4,
     All = 0x7
-}}|]";
+}}";
 
             // Verify CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyCSharp(codeWithoutFlags,
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags,
                 GetCA1027CSharpResultAt(11, 13, "HexFlagsEnumClass"));
         }
 
         [Fact]
-        public void VisualBasic_EnumWithFlagsAttributes_SimpleCase()
+        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCase()
         {
             var code = @"{0}
 Public Enum SimpleFlagsEnumClass
@@ -144,17 +141,17 @@ End Enum";
 
             // Verify CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyBasic(codeWithoutFlags,
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags,
                 GetCA1027BasicResultAt(2, 13, "SimpleFlagsEnumClass"),
                 GetCA1027BasicResultAt(10, 13, "HexFlagsEnumClass"));
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyBasic(codeWithFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void VisualBasic_EnumWithFlagsAttributes_SimpleCase_Internal()
+        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCase_Internal()
         {
             var code = @"{0}
 Friend Enum SimpleFlagsEnumClass
@@ -176,18 +173,18 @@ End Class";
 
             // Verify no CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyBasic(codeWithoutFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags);
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyBasic(codeWithFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact]
-        public void VisualBasic_EnumWithFlagsAttributes_SimpleCaseWithScope()
+        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCaseWithScope()
         {
             var code = @"{0}
-Public Enum SimpleFlagsEnumClass
+Public Enum {{|CA1027:SimpleFlagsEnumClass|}}
     Zero = 0
     One = 1
     Two = 2
@@ -195,21 +192,21 @@ Public Enum SimpleFlagsEnumClass
 End Enum
 
 {0}
-[|Public Enum HexFlagsEnumClass
+Public Enum HexFlagsEnumClass
     One = &H1
     Two = &H2
     Four = &H4
     All = &H7
-End Enum|]";
+End Enum";
 
             // Verify CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyBasic(codeWithoutFlags,
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags,
                 GetCA1027BasicResultAt(10, 13, "HexFlagsEnumClass"));
         }
 
         [Fact]
-        public void CSharp_EnumWithFlagsAttributes_DuplicateValues()
+        public async Task CSharp_EnumWithFlagsAttributes_DuplicateValues()
         {
             string code = @"{0}
 public enum DuplicateValuesEnumClass
@@ -225,16 +222,16 @@ public enum DuplicateValuesEnumClass
 
             // Verify CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyCSharp(codeWithoutFlags,
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags,
                 GetCA1027CSharpResultAt(2, 13, "DuplicateValuesEnumClass"));
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyCSharp(codeWithFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact]
-        public void VisualBasic_EnumWithFlagsAttributes_DuplicateValues()
+        public async Task VisualBasic_EnumWithFlagsAttributes_DuplicateValues()
         {
             string code = @"{0}
 Public Enum DuplicateValuesEnumClass
@@ -249,16 +246,16 @@ End Enum
 
             // Verify CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyBasic(codeWithoutFlags,
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags,
                 GetCA1027BasicResultAt(2, 13, "DuplicateValuesEnumClass"));
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyBasic(codeWithFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact]
-        public void CSharp_EnumWithFlagsAttributes_MissingPowerOfTwo()
+        public async Task CSharp_EnumWithFlagsAttributes_MissingPowerOfTwo()
         {
             string code = @"
 {0}
@@ -283,17 +280,17 @@ public enum MultipleMissingPowerOfTwoEnumClass
 
             // Verify CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyCSharp(codeWithoutFlags,
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags,
                 GetCA1027CSharpResultAt(3, 13, "MissingPowerOfTwoEnumClass"),
                 GetCA1027CSharpResultAt(13, 13, "MultipleMissingPowerOfTwoEnumClass"));
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyCSharp(codeWithFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact]
-        public void CSharp_EnumWithFlagsAttributes_IncorrectNumbers()
+        public async Task CSharp_EnumWithFlagsAttributes_IncorrectNumbers()
         {
             string code = @"
 {0}
@@ -307,16 +304,16 @@ public enum AnotherTestValue
 
             // Verify no CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyCSharp(codeWithoutFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags);
 
             // Verify CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyCSharp(codeWithFlags,
+            await VerifyCS.VerifyAnalyzerAsync(codeWithFlags,
                 GetCA2217CSharpResultAt(3, 13, "AnotherTestValue", "2"));
         }
 
         [Fact]
-        public void VisualBasic_EnumWithFlagsAttributes_MissingPowerOfTwo()
+        public async Task VisualBasic_EnumWithFlagsAttributes_MissingPowerOfTwo()
         {
             string code = @"
 {0}
@@ -340,17 +337,17 @@ End Enum
 
             // Verify CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyBasic(codeWithoutFlags,
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags,
                 GetCA1027BasicResultAt(3, 13, "MissingPowerOfTwoEnumClass"),
                 GetCA1027BasicResultAt(12, 13, "MultipleMissingPowerOfTwoEnumClass"));
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyBasic(codeWithFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact]
-        public void VisualBasic_EnumWithFlagsAttributes_IncorrectNumbers()
+        public async Task VisualBasic_EnumWithFlagsAttributes_IncorrectNumbers()
         {
             string code = @"
 {0}
@@ -364,16 +361,16 @@ End Enum
 
             // Verify no CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyBasic(codeWithoutFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags);
 
             // Verify CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyBasic(codeWithFlags,
+            await VerifyVB.VerifyAnalyzerAsync(codeWithFlags,
                 GetCA2217BasicResultAt(3, 13, "AnotherTestValue", "2"));
         }
 
         [Fact]
-        public void CSharp_EnumWithFlagsAttributes_ContiguousValues()
+        public async Task CSharp_EnumWithFlagsAttributes_ContiguousValues()
         {
             var code = @"
 {0}
@@ -419,15 +416,15 @@ public enum ShortUnderlyingType: short
 
             // Verify no CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyCSharp(codeWithoutFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags);
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyCSharp(codeWithFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact]
-        public void VisualBasic_EnumWithFlagsAttributes_ContiguousValues()
+        public async Task VisualBasic_EnumWithFlagsAttributes_ContiguousValues()
         {
             var code = @"
 {0}
@@ -470,15 +467,15 @@ End Enum
 
             // Verify no CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyBasic(codeWithoutFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags);
 
             // Verify no CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyBasic(codeWithFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         [Fact]
-        public void CSharp_EnumWithFlagsAttributes_NonSimpleFlags()
+        public async Task CSharp_EnumWithFlagsAttributes_NonSimpleFlags()
         {
             var code = @"
 {0}
@@ -514,18 +511,18 @@ public enum LabelsClass
 
             // Verify no CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyCSharp(codeWithoutFlags);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags);
 
             // Verify CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyCSharp(codeWithFlags,
+            await VerifyCS.VerifyAnalyzerAsync(codeWithFlags,
                 GetCA2217CSharpResultAt(3, 13, "NonSimpleFlagEnumClass", "4, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648, 4294967296, 8589934592, 17179869184, 34359738368, 68719476736, 137438953472, 274877906944, 549755813888, 1099511627776, 2199023255552, 4398046511104, 8796093022208, 17592186044416, 35184372088832, 70368744177664, 140737488355328, 281474976710656, 562949953421312, 1125899906842624, 2251799813685248, 4503599627370496, 9007199254740992, 18014398509481984, 36028797018963968, 72057594037927936, 144115188075855872, 288230376151711744, 576460752303423488, 1152921504606846976, 2305843009213693952, 4611686018427387904, 9223372036854775808"),
                 GetCA2217CSharpResultAt(14, 13, "BitValuesClass", "4"),
                 GetCA2217CSharpResultAt(24, 13, "LabelsClass", "2"));
         }
 
         [Fact]
-        public void VisualBasic_EnumWithFlagsAttributes_NonSimpleFlags()
+        public async Task VisualBasic_EnumWithFlagsAttributes_NonSimpleFlags()
         {
             var code = @"
 {0}
@@ -559,34 +556,34 @@ End Enum
 
             // Verify no CA1027: Mark enums with FlagsAttribute
             string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
-            VerifyBasic(codeWithoutFlags);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags);
 
             // Verify CA2217: Do not mark enums with FlagsAttribute
             string codeWithFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: true);
-            VerifyBasic(codeWithFlags,
+            await VerifyVB.VerifyAnalyzerAsync(codeWithFlags,
                 GetCA2217BasicResultAt(3, 13, "NonSimpleFlagEnumClass", "4, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648, 4294967296, 8589934592, 17179869184, 34359738368, 68719476736, 137438953472, 274877906944, 549755813888, 1099511627776, 2199023255552, 4398046511104, 8796093022208, 17592186044416, 35184372088832, 70368744177664, 140737488355328, 281474976710656, 562949953421312, 1125899906842624, 2251799813685248, 4503599627370496, 9007199254740992, 18014398509481984, 36028797018963968, 72057594037927936, 144115188075855872, 288230376151711744, 576460752303423488, 1152921504606846976, 2305843009213693952, 4611686018427387904, 9223372036854775808"),
                 GetCA2217BasicResultAt(13, 13, "BitValuesClass", "4"),
                 GetCA2217BasicResultAt(22, 13, "LabelsClass", "2"));
         }
 
         private static DiagnosticResult GetCA1027CSharpResultAt(int line, int column, string enumTypeName)
-        {
-            return GetCSharpResultAt(line, column, EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags, string.Format(MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsMessage, enumTypeName));
-        }
+            => VerifyCS.Diagnostic(EnumWithFlagsAttributeAnalyzer.Rule1027)
+                .WithLocation(line, column)
+                .WithArguments(enumTypeName);
 
         private static DiagnosticResult GetCA1027BasicResultAt(int line, int column, string enumTypeName)
-        {
-            return GetBasicResultAt(line, column, EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags, string.Format(MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsMessage, enumTypeName));
-        }
+            => VerifyVB.Diagnostic(EnumWithFlagsAttributeAnalyzer.Rule1027)
+                .WithLocation(line, column)
+                .WithArguments(enumTypeName);
 
         private static DiagnosticResult GetCA2217CSharpResultAt(int line, int column, string enumTypeName, string missingValuesString)
-        {
-            return GetCSharpResultAt(line, column, EnumWithFlagsAttributeAnalyzer.RuleIdDoNotMarkEnumsWithFlags, string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsMessage, enumTypeName, missingValuesString));
-        }
+            => VerifyCS.Diagnostic(EnumWithFlagsAttributeAnalyzer.Rule2217)
+                .WithLocation(line, column)
+                .WithArguments(enumTypeName, missingValuesString);
 
         private static DiagnosticResult GetCA2217BasicResultAt(int line, int column, string enumTypeName, string missingValuesString)
-        {
-            return GetBasicResultAt(line, column, EnumWithFlagsAttributeAnalyzer.RuleIdDoNotMarkEnumsWithFlags, string.Format(MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsMessage, enumTypeName, missingValuesString));
-        }
+            => VerifyVB.Diagnostic(EnumWithFlagsAttributeAnalyzer.Rule2217)
+                .WithLocation(line, column)
+                .WithArguments(enumTypeName, missingValuesString);
     }
 }

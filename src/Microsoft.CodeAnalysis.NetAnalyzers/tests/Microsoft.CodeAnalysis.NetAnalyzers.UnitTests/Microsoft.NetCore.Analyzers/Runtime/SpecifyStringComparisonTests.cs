@@ -1,28 +1,30 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.SpecifyStringComparisonAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpSpecifyStringComparisonFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.SpecifyStringComparisonAnalyzer,
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicSpecifyStringComparisonFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public class SpecifyStringComparisonTests : DiagnosticAnalyzerTestBase
+    public class SpecifyStringComparisonTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new SpecifyStringComparisonAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new SpecifyStringComparisonAnalyzer();
-        }
-
         [Fact]
-        public void CA1307_StringCompareTests_CSharp()
+        public async Task CA1307_StringCompareTests_CSharp()
         {
-            VerifyCSharp(@"
+#if !NETCOREAPP
+            const string StringArgType = "string";
+#else
+            const string StringArgType = "string?";
+#endif
+
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -39,24 +41,24 @@ public class StringComparisonTests
         return 0;
     }
 }",
-GetCA1307CSharpResultsAt(11, 18, "string.Compare(string, string)",
+GetCA1307CSharpResultsAt(11, 18, $"string.Compare({StringArgType}, {StringArgType})",
                                  "StringComparisonTests.StringCompare()",
-                                 "string.Compare(string, string, System.StringComparison)"),
-GetCA1307CSharpResultsAt(12, 18, "string.Compare(string, string, bool)",
+                                 $"string.Compare({StringArgType}, {StringArgType}, System.StringComparison)"),
+GetCA1307CSharpResultsAt(12, 18, $"string.Compare({StringArgType}, {StringArgType}, bool)",
                                  "StringComparisonTests.StringCompare()",
-                                 "string.Compare(string, string, System.StringComparison)"),
-GetCA1307CSharpResultsAt(13, 18, "string.Compare(string, int, string, int, int)",
+                                 $"string.Compare({StringArgType}, {StringArgType}, System.StringComparison)"),
+GetCA1307CSharpResultsAt(13, 18, $"string.Compare({StringArgType}, int, {StringArgType}, int, int)",
                                  "StringComparisonTests.StringCompare()",
-                                 "string.Compare(string, int, string, int, int, System.StringComparison)"),
-GetCA1307CSharpResultsAt(14, 18, "string.Compare(string, int, string, int, int, bool)",
+                                 $"string.Compare({StringArgType}, int, {StringArgType}, int, int, System.StringComparison)"),
+GetCA1307CSharpResultsAt(14, 18, $"string.Compare({StringArgType}, int, {StringArgType}, int, int, bool)",
                                  "StringComparisonTests.StringCompare()",
-                                 "string.Compare(string, int, string, int, int, System.StringComparison)"));
+                                 $"string.Compare({StringArgType}, int, {StringArgType}, int, int, System.StringComparison)"));
         }
 
         [Fact]
-        public void CA1307_StringWithTests_CSharp()
+        public async Task CA1307_StringWithStringTests_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -78,10 +80,29 @@ GetCA1307CSharpResultsAt(12, 16, "string.StartsWith(string)",
                                  "string.StartsWith(string, System.StringComparison)"));
         }
 
-        [Fact]
-        public void CA1307_StringIndexOfTests_CSharp()
+#if NETCOREAPP // EndsWith(char) and StartsWith(char) overloads don't exist in .NET Framework 4.7.2
+        [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
+        public async Task CA1307_StringWithCharTests_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Globalization;
+
+public class StringComparisonTests
+{
+    public bool StringWith(string strA, char chA, char chB)
+    {
+        var x = strA.EndsWith(chA);
+        return strA.StartsWith(chB);
+    }
+}");
+        }
+#endif
+
+        [Fact]
+        public async Task CA1307_StringIndexOfStringTests_CSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -106,10 +127,52 @@ GetCA1307CSharpResultsAt(12, 16, "string.IndexOf(string, int, int)",
                                  "string.IndexOf(string, int, int, System.StringComparison)"));
         }
 
-        [Fact]
-        public void CA1307_StringCompareToTests_CSharp()
+        [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
+        public async Task CA1307_StringIndexOfCharTests_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Globalization;
+
+public class StringComparisonTests
+{
+    public int StringIndexOf(string strA, char chA)
+    {
+        var x1 = strA.IndexOf(chA);
+        var x2 = strA.IndexOf(chA, 0);
+        return strA.IndexOf(chA, 0, 1);
+    }
+}");
+        }
+
+        [Fact, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
+        public async Task CA1307_StringGetHashCodeTests_CSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Globalization;
+
+public class StringGetHashCodeTests
+{
+    public int StringGetHashCode(string strA)
+    {
+        return strA.GetHashCode();
+    }
+}");
+        }
+
+        [Fact]
+        public async Task CA1307_StringCompareToTests_CSharp()
+        {
+#if !NETCOREAPP
+            const string ObjectArgType = "object";
+            const string StringArgType = "string";
+#else
+            const string ObjectArgType = "object?";
+            const string StringArgType = "string?";
+#endif
+
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -123,18 +186,18 @@ public class StringComparisonTests
             return """".CompareTo(new object());
     }
 }",
-GetCA1307CSharpResultsAt(11, 22, "string.CompareTo(string)",
+GetCA1307CSharpResultsAt(11, 22, $"string.CompareTo({StringArgType})",
                                  "StringComparisonTests.StringCompareTo()",
-                                 "string.Compare(string, string, System.StringComparison)"),
-GetCA1307CSharpResultsAt(12, 20, "string.CompareTo(object)",
+                                 $"string.Compare({StringArgType}, {StringArgType}, System.StringComparison)"),
+GetCA1307CSharpResultsAt(12, 20, $"string.CompareTo({ObjectArgType})",
                                  "StringComparisonTests.StringCompareTo()",
-                                 "string.Compare(string, string, System.StringComparison)"));
+                                 $"string.Compare({StringArgType}, {StringArgType}, System.StringComparison)"));
         }
 
         [Fact]
-        public void CA1307_OverloadTests_CSharp()
+        public async Task CA1307_OverloadTests_StringFirstParam_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -163,10 +226,38 @@ GetCA1307CSharpResultsAt(9, 9, "StringComparisonTests.DoNothing(string)",
                                "StringComparisonTests.DoNothing<T>(string, System.StringComparison)"));
         }
 
-        [Fact]
-        public void CA1307_OverloadWithMismatchRefKind_CSharp()
+        [Theory, WorkItem(2581, "https://github.com/dotnet/roslyn-analyzers/issues/2581")]
+        [InlineData("char")]
+        [InlineData("int")]
+        [InlineData("object")]
+        [InlineData("StringComparisonTests")]
+        public async Task CA1307_OverloadTests_NonStringFirstParam_CSharp(string firstParamType)
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync($@"
+using System;
+using System.Globalization;
+
+public class StringComparisonTests
+{{
+    public void NonString({firstParamType} p)
+    {{
+        [|DoNothing(p)|];
+    }}
+
+    public void DoNothing({firstParamType} p)
+    {{
+    }}
+
+    public void DoNothing({firstParamType} p, StringComparison strCompare)
+    {{
+    }}
+}}");
+        }
+
+        [Fact]
+        public async Task CA1307_OverloadWithMismatchRefKind_CSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Globalization;
 
@@ -198,9 +289,9 @@ public class StringComparisonTests
         }
 
         [Fact]
-        public void CA1307_StringCompareTests_VisualBasic()
+        public async Task CA1307_StringCompareTests_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
@@ -230,9 +321,9 @@ GetCA1307BasicResultsAt(12, 18, "String.Compare(String, Integer, String, Integer
         }
 
         [Fact]
-        public void CA1307_StringWithTests_VisualBasic()
+        public async Task CA1307_StringWithTests_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
@@ -253,9 +344,9 @@ GetCA1307BasicResultsAt(10, 16, "String.StartsWith(String)",
         }
 
         [Fact]
-        public void CA1307_StringIndexOfTests_VisualBasic()
+        public async Task CA1307_StringIndexOfTests_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
@@ -279,9 +370,9 @@ GetCA1307BasicResultsAt(10, 16, "String.IndexOf(String, Integer, Integer)",
         }
 
         [Fact]
-        public void CA1307_StringCompareToTests_VisualBasic()
+        public async Task CA1307_StringCompareToTests_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
@@ -302,9 +393,9 @@ GetCA1307BasicResultsAt(10, 16, "String.CompareTo(Object)",
         }
 
         [Fact]
-        public void CA1307_OverloadTests_VisualBasic()
+        public async Task CA1307_OverloadTests_VisualBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Globalization
 
@@ -329,26 +420,14 @@ GetCA1307BasicResultsAt(7, 9, "StringComparisonTests.DoNothing(String)",
                               "StringComparisonTests.DoNothing(Of T)(String, System.StringComparison)"));
         }
 
-        private DiagnosticResult GetCA1307CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return GetCSharpResultAt(
-                line,
-                column,
-                SpecifyStringComparisonAnalyzer.Rule,
-                arg1,
-                arg2,
-                arg3);
-        }
+        private static DiagnosticResult GetCA1307CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(arg1, arg2, arg3);
 
-        private DiagnosticResult GetCA1307BasicResultsAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return GetBasicResultAt(
-                line,
-                column,
-                SpecifyStringComparisonAnalyzer.Rule,
-                arg1,
-                arg2,
-                arg3);
-        }
+        private static DiagnosticResult GetCA1307BasicResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
+            VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(arg1, arg2, arg3);
     }
 }
