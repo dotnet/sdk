@@ -31,7 +31,7 @@ public class NeatCode
     {
     }
 }
-");
+", DiagnosticResult.CompilerError("CS1001").WithLocation(4, 35));
         }
 
         [Fact]
