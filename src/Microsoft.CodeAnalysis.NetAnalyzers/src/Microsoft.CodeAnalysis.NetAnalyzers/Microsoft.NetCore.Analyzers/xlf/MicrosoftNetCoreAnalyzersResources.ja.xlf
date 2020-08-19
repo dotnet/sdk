@@ -1922,19 +1922,34 @@
         <target state="translated">P/Invoke 文字列引数に対してマーシャリングを指定します</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonDescription">
-        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="translated">文字列比較操作では、StringComparison パラメーターを設定しないメソッド オーバーロードを使用します。結果がユーザーに表示される場合 (リスト ボックスに表示するために項目のリストを並べ替える場合など) は、'StringComparison' パラメーターとして 'StringComparison.CurrentCulture' または 'StringComparison.CurrentCultureIgnoreCase' を指定します。大文字と小文字が区別されない識別子 (ファイル パス、環境変数、レジストリのキーと値など) を比較する場合は、'StringComparison.OrdinalIgnoreCase' を指定します。そうではなく、大文字と小文字が区別される識別子を比較する場合は、'StringComparison.Ordinal' を指定します。</target>
+      <trans-unit id="SpecifyStringComparisonCA1307Description">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonMessage">
+      <trans-unit id="SpecifyStringComparisonCA1307Message">
+        <source>'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</source>
+        <target state="new">'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1307Title">
+        <source>Specify StringComparison for clarity</source>
+        <target state="new">Specify StringComparison for clarity</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1310Description">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1310Message">
         <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
-        <target state="translated">'{0}' の動作は、現在のユーザーのロケール設定によって異なる場合があります。'{1}' 内のこの呼び出しを '{2}' への呼び出しに置き換えてください。</target>
+        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonTitle">
-        <source>Specify StringComparison</source>
-        <target state="translated">StringComparison を指定します</target>
+      <trans-unit id="SpecifyStringComparisonCA1310Title">
+        <source>Specify StringComparison for correctness</source>
+        <target state="new">Specify StringComparison for correctness</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">

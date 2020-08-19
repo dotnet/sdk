@@ -1922,19 +1922,34 @@
         <target state="translated">Specificare il marshalling per gli argomenti stringa P/Invoke</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonDescription">
-        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="translated">In un'operazione di confronto di stringhe si usa un overload del metodo che non imposta un parametro StringComparison. Se il risultato verrà visualizzato all'utente, ad esempio quando si ordina un elenco di elementi per la visualizzazione in una casella di riepilogo, specificare 'StringComparison.CurrentCulture' o 'StringComparison.CurrentCultureIgnoreCase' come parametro di 'StringComparison'. Se si confrontano identificatori che non fanno distinzione tra maiuscole/minuscole, ad esempio percorsi file, variabili di ambiente o chiavi e valori del Registro di sistema, specificare 'StringComparison.OrdinalIgnoreCase'. Se invece si confrontano identificatori che fanno distinzione tra maiuscole e minuscole, specificare 'StringComparison.Ordinal'.</target>
+      <trans-unit id="SpecifyStringComparisonCA1307Description">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonMessage">
+      <trans-unit id="SpecifyStringComparisonCA1307Message">
+        <source>'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</source>
+        <target state="new">'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1307Title">
+        <source>Specify StringComparison for clarity</source>
+        <target state="new">Specify StringComparison for clarity</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1310Description">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1310Message">
         <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
-        <target state="translated">Il comportamento di '{0}' potrebbe variare a seconda delle impostazioni locali dell'utente corrente. Sostituire questa chiamata in '{1}' con una chiamata a '{2}'.</target>
+        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonTitle">
-        <source>Specify StringComparison</source>
-        <target state="translated">Specificare StringComparison</target>
+      <trans-unit id="SpecifyStringComparisonCA1310Title">
+        <source>Specify StringComparison for correctness</source>
+        <target state="new">Specify StringComparison for correctness</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
