@@ -3734,6 +3734,8 @@ public class MyController : Controller
 
         [InlineData("st.Replace(\"\", stringParam);", true, "string stringParam")]
 
+        [InlineData("st[0] = charParam;", true, "char charParam", 117)]
+
         [InlineData("st.Append(stringParam); st.CopyTo(0, arr, 0, 10)", true, "string stringParam", 36, "new string(arr)")]
         [InlineData("st.Append(stringParam); st.Clear()", false)]
         public async Task TaintThis_StringBuilder(string payload, bool warn, string source = "", int sourceColumn = 36, string sinkArg = "st.ToString()")
