@@ -130,7 +130,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             // Report diagnostics for unused parameters.
             foreach (var (parameter, used) in parameterUsageMap)
             {
-                if (used)
+                if (used || parameter.Name.Length == 0)
                 {
                     continue;
                 }

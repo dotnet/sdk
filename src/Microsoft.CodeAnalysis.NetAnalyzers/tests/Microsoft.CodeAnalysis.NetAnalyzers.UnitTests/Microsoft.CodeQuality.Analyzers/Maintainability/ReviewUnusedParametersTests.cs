@@ -20,6 +20,19 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public class ReviewUnusedParametersTests
     {
         #region Unit tests for no analyzer diagnostic
+        [Fact]
+        [WorkItem(4039, "https://github.com/dotnet/roslyn-analyzers/issues/4039")]
+        public async Task NoDiagnosticForUnnamedParameterTest()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class NeatCode
+{
+    public void DoSomething(string)
+    {
+    }
+}
+", DiagnosticResult.CompilerError("CS1001").WithLocation(4, 35));
+        }
 
         [Fact]
         [WorkItem(459, "https://github.com/dotnet/roslyn-analyzers/issues/459")]
