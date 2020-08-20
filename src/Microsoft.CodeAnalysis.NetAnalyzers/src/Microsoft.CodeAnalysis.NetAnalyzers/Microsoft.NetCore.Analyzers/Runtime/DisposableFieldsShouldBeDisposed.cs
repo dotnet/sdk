@@ -275,7 +275,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
                 finally
                 {
-                    fieldDisposeValueMap.Free();
+                    fieldDisposeValueMap.Free(symbolEndContext.CancellationToken);
                 }
             }
         }

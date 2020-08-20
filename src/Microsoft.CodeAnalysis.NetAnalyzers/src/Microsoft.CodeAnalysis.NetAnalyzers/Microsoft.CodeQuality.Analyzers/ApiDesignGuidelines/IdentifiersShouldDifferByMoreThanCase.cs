@@ -177,7 +177,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     addDiagnostic(symbol.CreateDiagnostic(Rule, Member, GetSymbolDisplayString(membersWithName)));
                 }
 
-                membersWithName.Free();
+                membersWithName.Dispose();
             }
         }
 
@@ -256,7 +256,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     context.ReportNoLocationDiagnostic(Rule, Type, GetSymbolDisplayString(typesWithName));
                 }
 
-                typesWithName.Free();
+                typesWithName.Dispose();
             }
         }
 
@@ -288,7 +288,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     context.ReportNoLocationDiagnostic(Rule, Namespace, GetSymbolDisplayString(namespacesWithName));
                 }
 
-                namespacesWithName.Free();
+                namespacesWithName.Dispose();
             }
         }
 
