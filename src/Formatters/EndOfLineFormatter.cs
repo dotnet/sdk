@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     var lineEndingSpan = new TextSpan(line.End, line.EndIncludingLineBreak - line.End);
 
                     // Check for end of file
-                    if (lineEndingSpan.Length == 0)
+                    if (lineEndingSpan.IsEmpty)
                     {
                         break;
                     }

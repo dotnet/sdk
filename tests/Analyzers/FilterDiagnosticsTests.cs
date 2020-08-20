@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             Assert.Empty(analyzers);
         }
 
-        private async Task<ImmutableArray<DiagnosticAnalyzer>> GetAnalyzersAsync()
+        private static async Task<ImmutableArray<DiagnosticAnalyzer>> GetAnalyzersAsync()
         {
             var assemblies = new[]
             {

@@ -49,6 +49,10 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             }
 
             var formattedDocument = await RemoveUnnecessaryImportsHelper.RemoveUnnecessaryImportsAsync(document, cancellationToken).ConfigureAwait(false);
+            if (formattedDocument is null)
+            {
+                return sourceText;
+            }
 
             var isSameVersion = await IsSameDocumentAndVersionAsync(document, formattedDocument, cancellationToken).ConfigureAwait(false);
             if (isSameVersion)

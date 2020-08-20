@@ -70,7 +70,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             {
                 // Next see if this assembly has already been loaded into our context.
                 var assemblyName = AssemblyLoadContext.GetAssemblyName(path);
-                return AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName.Name));
+                if (assemblyName?.Name != null)
+                {
+                    return AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(assemblyName.Name));
+                }
             }
             catch { }
 
