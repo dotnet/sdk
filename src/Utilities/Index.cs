@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. See the LICENSE file in the project root for more information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Runtime.CompilerServices;
 
@@ -100,7 +100,7 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetOffset(int length)
         {
-            int offset = _value;
+            var offset = _value;
             if (IsFromEnd)
             {
                 // offset = length - (~value)
