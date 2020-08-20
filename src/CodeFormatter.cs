@@ -42,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var workspaceStopwatch = Stopwatch.StartNew();
 
             using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
-                ? OpenFolderWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
+                ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
                 : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
 
             if (workspace is null)
@@ -111,7 +111,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return new WorkspaceFormatResult(filesFormatted, fileCount, exitCode);
         }
 
-        private static Workspace OpenFolderWorkspaceAsync(string workspacePath, SourceFileMatcher fileMatcher)
+        private static Workspace OpenFolderWorkspace(string workspacePath, SourceFileMatcher fileMatcher)
         {
             var folderWorkspace = FolderWorkspace.Create();
             folderWorkspace.OpenFolder(workspacePath, fileMatcher);
