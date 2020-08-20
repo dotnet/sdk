@@ -7,7 +7,6 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using Microsoft.CodeAnalysis.Tools.Utilities;
-using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Perf
@@ -19,7 +18,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
         private const string UnformattedSolutionFilePath = UnformattedFolderFilePath + "ProjectSystem.sln";
 
         private static EmptyLogger EmptyLogger => new EmptyLogger();
-        private static Matcher AllFileMatcher => SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>());
+        private static SourceFileMatcher AllFileMatcher => SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>());
 
         [IterationSetup]
         public void RealWorldSolutionIterationSetup()

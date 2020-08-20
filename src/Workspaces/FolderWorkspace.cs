@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.CodeAnalysis.Tools.Utilities;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             return new FolderWorkspace(hostServices);
         }
 
-        public Solution OpenFolder(string folderPath, Matcher fileMatcher)
+        public Solution OpenFolder(string folderPath, SourceFileMatcher fileMatcher)
         {
             if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
             {

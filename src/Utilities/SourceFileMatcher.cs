@@ -2,21 +2,37 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Immutable;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
-    internal static class SourceFileMatcher
+    internal sealed class SourceFileMatcher
     {
-        private static IEnumerable<string> AllFilesList => new[] { @"**/*.*" };
+        private static string[] AllFilesList => new[] { @"**/*.*" };
 
-        public static Matcher CreateMatcher(IEnumerable<string> include, IEnumerable<string> exclude)
+        public static SourceFileMatcher CreateMatcher(string[] include, string[] exclude)
+            => new SourceFileMatcher(include.Length > 0 ? include : AllFilesList, exclude);
+
+        private readonly Matcher _matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+
+        public ImmutableArray<string> Include { get; }
+        public ImmutableArray<string> Exclude { get; }
+
+        private SourceFileMatcher(string[] include, string[] exclude)
         {
-            var fileMatcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-            fileMatcher.AddIncludePatterns(include.Any() ? include : AllFilesList);
-            fileMatcher.AddExcludePatterns(exclude);
-            return fileMatcher;
+            Include = include.ToImmutableArray();
+            Exclude = exclude.ToImmutableArray();
+
+            _matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+            _matcher.AddIncludePatterns(Include);
+            _matcher.AddExcludePatterns(Exclude);
         }
+
+        public PatternMatchingResult Match(string filePath)
+            => _matcher.Match(filePath);
+
+        public IEnumerable<string> GetResultsInFullPath(string directoryPath)
+            => _matcher.GetResultsInFullPath(directoryPath);
     }
 }

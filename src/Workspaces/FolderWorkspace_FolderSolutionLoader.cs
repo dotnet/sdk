@@ -3,7 +3,6 @@
 using System.Collections.Immutable;
 using System.IO;
 using Microsoft.CodeAnalysis.Tools.Utilities;
-using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
@@ -14,13 +13,11 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             private static ImmutableArray<ProjectLoader> ProjectLoaders
                 => ImmutableArray.Create<ProjectLoader>(new CSharpProjectLoader(), new VisualBasicProjectLoader());
 
-            public static SolutionInfo LoadSolutionInfo(string folderPath, Matcher fileMatcher)
+            public static SolutionInfo LoadSolutionInfo(string folderPath, SourceFileMatcher fileMatcher)
             {
-                var absoluteFolderPath = Path.IsPathFullyQualified(folderPath)
-                    ? folderPath
-                    : Path.GetFullPath(folderPath, Directory.GetCurrentDirectory());
+                var absoluteFolderPath = Path.GetFullPath(folderPath, Directory.GetCurrentDirectory());
 
-                var filePaths = fileMatcher.GetResultsInFullPath(absoluteFolderPath).ToImmutableArray();
+                var filePaths = GetMatchingFilePaths(absoluteFolderPath, fileMatcher);
                 var editorConfigPaths = EditorConfigFinder.GetEditorConfigPaths(folderPath);
 
                 var projectInfos = ImmutableArray.CreateBuilder<ProjectInfo>(ProjectLoaders.Length);
@@ -43,6 +40,49 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                     version: default,
                     absoluteFolderPath,
                     projectInfos);
+            }
+
+            private static ImmutableArray<string> GetMatchingFilePaths(string folderPath, SourceFileMatcher fileMatcher)
+            {
+                // If only file paths were given to be included, then avoid matching against all
+                // the files beneath the folderPath and instead check if the specified files exist.
+                if (fileMatcher.Exclude.IsDefaultOrEmpty && AreAllFilePaths(fileMatcher.Include))
+                {
+                    return ValidateFilePaths(folderPath, fileMatcher.Include);
+                }
+
+                return fileMatcher.GetResultsInFullPath(folderPath).ToImmutableArray();
+
+                static bool AreAllFilePaths(ImmutableArray<string> globs)
+                {
+                    for (var index = 0; index < globs.Length; index++)
+                    {
+                        // The FileSystemGlobbing.Matcher only supports the '*' wildcard and paths
+                        // ending in a directory separator are treated as folder paths.
+                        if (globs[index].Contains('*') ||
+                            globs[index].EndsWith('\\') ||
+                            globs[index].EndsWith('/'))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                static ImmutableArray<string> ValidateFilePaths(string folderPath, ImmutableArray<string> paths)
+                {
+                    var filePaths = ImmutableArray.CreateBuilder<string>(paths.Length);
+                    for (var index = 0; index < paths.Length; index++)
+                    {
+                        var filePath = Path.GetFullPath(paths[index], folderPath);
+                        if (File.Exists(filePath))
+                        {
+                            filePaths.Add(filePath);
+                        }
+                    }
+                    return filePaths.ToImmutable();
+                }
             }
         }
     }

@@ -4,24 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
-using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools
 {
     internal static class CodeFormatter
     {
-        private static readonly ImmutableArray<ICodeFormatter> s_codeFormatters = new ICodeFormatter[]
-        {
+        private static readonly ImmutableArray<ICodeFormatter> s_codeFormatters = ImmutableArray.Create<ICodeFormatter>(
             new WhitespaceFormatter(),
             new FinalNewlineFormatter(),
             new EndOfLineFormatter(),
@@ -29,8 +25,7 @@ namespace Microsoft.CodeAnalysis.Tools
             new OrganizeImportsFormatter(),
             new UnnecessaryImportsFormatter(),
             new AnalyzerFormatter(Resources.Code_Style, new CodeStyleInformationProvider(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
-            new AnalyzerFormatter(Resources.Analyzer_Reference, new AnalyzerReferenceInformationProvider(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
-        }.ToImmutableArray();
+            new AnalyzerFormatter(Resources.Analyzer_Reference, new AnalyzerReferenceInformationProvider(), new AnalyzerRunner(), new SolutionCodeFixApplier()));
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
             FormatOptions formatOptions,
@@ -47,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var workspaceStopwatch = Stopwatch.StartNew();
 
             using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
-                ? await OpenFolderWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher, cancellationToken).ConfigureAwait(false)
+                ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
                 : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken).ConfigureAwait(false);
 
             if (workspace is null)
@@ -56,7 +51,7 @@ namespace Microsoft.CodeAnalysis.Tools
             }
 
             var loadWorkspaceMS = workspaceStopwatch.ElapsedMilliseconds;
-            logger.LogTrace(Resources.Complete_in_0_ms, workspaceStopwatch.ElapsedMilliseconds);
+            logger.LogTrace(Resources.Complete_in_0_ms, loadWorkspaceMS);
 
             var projectPath = formatOptions.WorkspaceType == WorkspaceType.Project ? formatOptions.WorkspaceFilePath : string.Empty;
             var solution = workspace.CurrentSolution;
@@ -64,14 +59,14 @@ namespace Microsoft.CodeAnalysis.Tools
             logger.LogTrace(Resources.Determining_formattable_files);
 
             var (fileCount, formatableFiles) = await DetermineFormattableFilesAsync(
-                solution, projectPath, formatOptions.FileMatcher, formatOptions.IncludeGeneratedFiles, logger, cancellationToken).ConfigureAwait(false);
+                solution, projectPath, formatOptions, logger, cancellationToken).ConfigureAwait(false);
 
             var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
             logger.LogTrace(Resources.Complete_in_0_ms, determineFilesMS);
 
             logger.LogTrace(Resources.Running_formatters);
 
-            var formattedFiles = new List<FormattedFile>();
+            var formattedFiles = new List<FormattedFile>(fileCount);
             var formattedSolution = await RunCodeFormattersAsync(
                 solution, formatableFiles, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
 
@@ -106,22 +101,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             if (exitCode == 0 && !string.IsNullOrWhiteSpace(formatOptions.ReportPath))
             {
-                var reportFilePath = GetReportFilePath(formatOptions.ReportPath!); // IsNullOrEmpty is not annotated on .NET Core 2.1
-                var reportFolderPath = Path.GetDirectoryName(reportFilePath);
-
-                if (!Directory.Exists(reportFolderPath))
-                {
-                    Directory.CreateDirectory(reportFolderPath);
-                }
-
-                logger.LogInformation(Resources.Writing_formatting_report_to_0, reportFilePath);
-                var seralizerOptions = new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                };
-                var formattedFilesJson = JsonSerializer.Serialize(formattedFiles, seralizerOptions);
-
-                File.WriteAllText(reportFilePath, formattedFilesJson);
+                ReportWriter.Write(formatOptions.ReportPath!, formattedFiles, logger);
             }
 
             logger.LogDebug(Resources.Formatted_0_of_1_files, filesFormatted, fileCount);
@@ -131,31 +111,11 @@ namespace Microsoft.CodeAnalysis.Tools
             return new WorkspaceFormatResult(filesFormatted, fileCount, exitCode);
         }
 
-        private static string GetReportFilePath(string reportPath)
+        private static Workspace OpenFolderWorkspace(string workspacePath, SourceFileMatcher fileMatcher)
         {
-            var defaultReportName = "format-report.json";
-            if (reportPath.EndsWith(".json"))
-            {
-                return reportPath;
-            }
-            else if (reportPath == ".")
-            {
-                return Path.Combine(Environment.CurrentDirectory, defaultReportName);
-            }
-            else
-            {
-                return Path.Combine(reportPath, defaultReportName);
-            }
-        }
-
-        private static Task<Workspace> OpenFolderWorkspaceAsync(string workspacePath, Matcher fileMatcher, CancellationToken cancellationToken)
-        {
-            return Task.Run<Workspace>(() =>
-            {
-                var folderWorkspace = FolderWorkspace.Create();
-                folderWorkspace.OpenFolder(workspacePath, fileMatcher);
-                return folderWorkspace;
-            }, cancellationToken);
+            var folderWorkspace = FolderWorkspace.Create();
+            folderWorkspace.OpenFolder(workspacePath, fileMatcher);
+            return folderWorkspace;
         }
 
         private static Task<Workspace?> OpenMSBuildWorkspaceAsync(
@@ -179,9 +139,9 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             var formattedSolution = solution;
 
-            foreach (var codeFormatter in s_codeFormatters)
+            for (var index = 0; index < s_codeFormatters.Length; index++)
             {
-                formattedSolution = await codeFormatter.FormatAsync(formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+                formattedSolution = await s_codeFormatters[index].FormatAsync(formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
             }
 
             return formattedSolution;
@@ -190,8 +150,7 @@ namespace Microsoft.CodeAnalysis.Tools
         internal static async Task<(int, ImmutableArray<DocumentId>)> DetermineFormattableFilesAsync(
             Solution solution,
             string projectPath,
-            Matcher fileMatcher,
-            bool includeGeneratedFiles,
+            FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -237,8 +196,9 @@ namespace Microsoft.CodeAnalysis.Tools
 
                     addedFilePaths.Add(document.FilePath);
 
-                    if (!fileMatcher.Match(document.FilePath).HasMatches ||
-                        !document.SupportsSyntaxTree)
+                    var isFileIncluded = formatOptions.WorkspaceType == WorkspaceType.Folder ||
+                        formatOptions.FileMatcher.Match(document.FilePath).HasMatches;
+                    if (!isFileIncluded || !document.SupportsSyntaxTree)
                     {
                         continue;
                     }
@@ -249,7 +209,7 @@ namespace Microsoft.CodeAnalysis.Tools
                         throw new Exception($"Unable to get a syntax tree for '{document.Name}'");
                     }
 
-                    if (!includeGeneratedFiles &&
+                    if (!formatOptions.IncludeGeneratedFiles &&
                         await GeneratedCodeUtilities.IsGeneratedCodeAsync(syntaxTree, cancellationToken).ConfigureAwait(false))
                     {
                         continue;
@@ -277,8 +237,8 @@ namespace Microsoft.CodeAnalysis.Tools
             // If no files are covered by an editorconfig, then return them all. Otherwise only return
             // files that are covered by an editorconfig.
             return documentsCoveredByEditorConfig.Count == 0
-                ? (projectFileCount, documentsNotCoveredByEditorConfig.ToImmutableArray())
-                : (projectFileCount, documentsCoveredByEditorConfig.ToImmutableArray());
+                ? (projectFileCount, documentsNotCoveredByEditorConfig.ToImmutable())
+                : (projectFileCount, documentsCoveredByEditorConfig.ToImmutable());
         }
     }
 }

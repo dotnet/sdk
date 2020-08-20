@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -32,7 +31,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private const string CodeStyleSolutionPath = "for_code_formatter/codestyle_solution/";
         private const string CodeStyleSolutionFilePath = CodeStyleSolutionPath + "codestyle_solution.sln";
 
-        private static IEnumerable<string> EmptyFilesList => Array.Empty<string>();
+        private static string[] EmptyFilesList => Array.Empty<string>();
 
         private Regex FindFormattingLogLine => new Regex(@"((.*)\(\d+,\d+\): (.*))\r|((.*)\(\d+,\d+\): (.*))");
 
@@ -415,8 +414,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
         public async Task<string> TestFormatWorkspaceAsync(
             string workspaceFilePath,
-            IEnumerable<string> include,
-            IEnumerable<string> exclude,
+            string[] include,
+            string[] exclude,
             bool includeGenerated,
             int expectedExitCode,
             int expectedFilesFormatted,
