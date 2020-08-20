@@ -193,8 +193,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 context.ReportDiagnostic(variableNameAndLocation.Value.CreateDiagnostic(Rule));
                             }
                         }
-                        variableNameToOperationsMap.Free();
-                        localsToBailOut.Free();
+                        variableNameToOperationsMap.Free(context.CancellationToken);
+                        localsToBailOut.Free(context.CancellationToken);
                     }
 
                     bool IsDesiredTargetMethod(IMethodSymbol targetMethod) =>

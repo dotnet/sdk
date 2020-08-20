@@ -143,7 +143,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
                 finally
                 {
-                    platformSpecificOperations.Free();
+                    platformSpecificOperations.Free(context.CancellationToken);
                 }
 
                 return;
