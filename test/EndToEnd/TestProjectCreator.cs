@@ -25,6 +25,8 @@ namespace EndToEnd
 
         public string RuntimeIdentifier { get; set; }
 
+        public Dictionary<string, string> AdditionalProperties { get; } = new Dictionary<string, string>();
+
         public TestProjectCreator([CallerMemberName] string testName = null, string identifier = "")
         {
             TestName = testName;
@@ -54,7 +56,11 @@ namespace EndToEnd
                 project.Root.Element(ns + "PropertyGroup")
                     .Add(new XElement(ns + "RuntimeIdentifier", RuntimeIdentifier));
             }
-            
+
+            foreach (var additionalProperty in AdditionalProperties)
+            {
+                project.Root.Element(ns + "PropertyGroup").Add(new XElement(ns + additionalProperty.Key, additionalProperty.Value));
+            }
 
             if (PackageName != NETCorePackageName)
             {
