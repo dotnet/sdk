@@ -256,7 +256,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     }
                                     finally
                                     {
-                                        rootOperationsNeedingAnalysis.Free();
+                                        rootOperationsNeedingAnalysis.Free(compilationContext.CancellationToken);
                                     }
                                 });
                         });

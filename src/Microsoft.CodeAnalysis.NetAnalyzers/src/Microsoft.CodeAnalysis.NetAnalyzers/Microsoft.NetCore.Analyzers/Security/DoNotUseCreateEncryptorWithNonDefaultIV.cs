@@ -200,8 +200,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                             }
                             finally
                             {
-                                rootOperationsNeedingAnalysis.Free();
-                                allResults?.Free();
+                                rootOperationsNeedingAnalysis.Free(compilationAnalysisContext.CancellationToken);
+                                allResults?.Free(compilationAnalysisContext.CancellationToken);
                             }
                         });
 
