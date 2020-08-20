@@ -22,8 +22,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         static Extensions()
         {
             MicrosoftCodeAnalysisFeaturesAssembly = Assembly.Load(new AssemblyName("Microsoft.CodeAnalysis.Features"));
-            IDEDiagnosticIdToOptionMappingHelperType = MicrosoftCodeAnalysisFeaturesAssembly.GetType("Microsoft.CodeAnalysis.Diagnostics.IDEDiagnosticIdToOptionMappingHelper");
-            TryGetMappedOptionsMethod = IDEDiagnosticIdToOptionMappingHelperType.GetMethod("TryGetMappedOptions", BindingFlags.Static | BindingFlags.Public);
+            IDEDiagnosticIdToOptionMappingHelperType = MicrosoftCodeAnalysisFeaturesAssembly.GetType("Microsoft.CodeAnalysis.Diagnostics.IDEDiagnosticIdToOptionMappingHelper")!;
+            TryGetMappedOptionsMethod = IDEDiagnosticIdToOptionMappingHelperType.GetMethod("TryGetMappedOptions", BindingFlags.Static | BindingFlags.Public)!;
         }
 
         public static bool Any(this SolutionChanges solutionChanges)
@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 var defaultCtor = type.GetConstructor(
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
                     binder: null,
-                    new Type[] { },
+                    Array.Empty<Type>(),
                     modifiers: null);
 
                 instance = defaultCtor != null
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
                         binder: null,
                         args: null,
-                        culture: null)
+                        culture: null)!
                     : null;
 
                 return instance != null;
@@ -160,7 +160,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 severity = DiagnosticSeverity.Hidden;
 
                 var parameters = new object?[] { descriptor.Id, compilation.Language, null };
-                var result = (bool)TryGetMappedOptionsMethod.Invoke(null, parameters);
+                var result = (bool)(TryGetMappedOptionsMethod.Invoke(null, parameters) ?? false);
 
                 if (!result)
                 {
@@ -170,7 +170,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 var codeStyleOptions = (IEnumerable)parameters[2]!;
                 foreach (var codeStyleOptionObj in codeStyleOptions)
                 {
-                    var codeStyleOption = (IOption)codeStyleOptionObj;
+                    var codeStyleOption = (IOption)codeStyleOptionObj!;
                     var option = options.GetOption(new OptionKey(codeStyleOption, codeStyleOption.IsPerLanguage ? compilation.Language : null));
                     if (option is null)
                     {
@@ -184,9 +184,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     }
 
                     var notification = notificationProperty.GetValue(option);
-                    var reportDiagnostic = (ReportDiagnostic)notification.GetType().GetProperty("Severity").GetValue(notification);
-                    var codeStyleSeverity = ToSeverity(reportDiagnostic);
+                    var reportDiagnosticValue = notification?.GetType().GetProperty("Severity")?.GetValue(notification);
+                    if (reportDiagnosticValue is null)
+                    {
+                        continue;
+                    }
 
+                    var codeStyleSeverity = ToSeverity((ReportDiagnostic)reportDiagnosticValue);
                     if (codeStyleSeverity > severity)
                     {
                         severity = codeStyleSeverity;

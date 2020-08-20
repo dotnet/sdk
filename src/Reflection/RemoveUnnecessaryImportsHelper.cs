@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools.Reflection
         private static readonly Type? s_abstractRemoveUnnecessaryImportsCodeFixProviderType = s_microsoftCodeAnalysisFeaturesAssembly?.GetType("Microsoft.CodeAnalysis.RemoveUnnecessaryImports.AbstractRemoveUnnecessaryImportsCodeFixProvider");
         private static readonly MethodInfo? s_removeUnnecessaryImportsAsyncMethod = s_abstractRemoveUnnecessaryImportsCodeFixProviderType?.GetMethod("RemoveUnnecessaryImportsAsync", BindingFlags.Static | BindingFlags.NonPublic);
 
-        public static async Task<Document> RemoveUnnecessaryImportsAsync(Document document, CancellationToken cancellationToken)
+        public static async Task<Document?> RemoveUnnecessaryImportsAsync(Document document, CancellationToken cancellationToken)
         {
             if (s_removeUnnecessaryImportsAsyncMethod is null)
             {

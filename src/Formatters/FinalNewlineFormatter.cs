@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -35,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 endOfLine = Environment.NewLine;
             }
 
-            var lastLine = sourceText.Lines.Last();
+            var lastLine = sourceText.Lines[^1];
             var hasFinalNewline = lastLine.Span.IsEmpty;
 
             if (insertFinalNewline && !hasFinalNewline)
@@ -49,12 +48,12 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 // In the case of empty files where there is a single empty line, there is nothing to remove.
                 while (sourceText.Lines.Count > 1 && hasFinalNewline)
                 {
-                    var lineBeforeLast = sourceText.Lines[sourceText.Lines.Count - 2];
+                    var lineBeforeLast = sourceText.Lines[^2];
                     var finalNewlineSpan = new TextSpan(lineBeforeLast.End, lineBeforeLast.EndIncludingLineBreak - lineBeforeLast.End);
                     var removeNewlineChange = new TextChange(finalNewlineSpan, string.Empty);
                     sourceText = sourceText.WithChanges(removeNewlineChange);
 
-                    lastLine = sourceText.Lines.Last();
+                    lastLine = sourceText.Lines[^1];
                     hasFinalNewline = lastLine.Span.IsEmpty;
                 }
             }

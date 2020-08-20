@@ -9,9 +9,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
     /// <summary>
     /// This test fixture sets the <see cref="Environment.CurrentDirectory" /> to the dotnet-format test projects folder path.
     /// </summary>
-    public class TestProjectsPathFixture : IDisposable
+    public sealed class TestProjectsPathFixture : IDisposable
     {
-        private static int s_registered = 0;
+        private static int s_registered;
         private static string s_currentDirectory;
 
         public void SetCurrentDirectory()

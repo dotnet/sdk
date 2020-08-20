@@ -101,7 +101,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             foreach (var project in solution.Projects)
             {
                 var analyzers = projectAnalyzers[project];
-                if (analyzers.Length == 0)
+                if (analyzers.IsEmpty)
                 {
                     continue;
                 }
@@ -116,13 +116,18 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             static void LogDiagnosticLocations(Solution solution, IEnumerable<Diagnostic> diagnostics, string workspacePath, bool changesAreErrors, ILogger logger, List<FormattedFile> formattedFiles)
             {
-                var workspaceFolder = Path.GetDirectoryName(workspacePath);
+                var workspaceFolder = Path.GetDirectoryName(workspacePath) ?? workspacePath;
 
                 foreach (var diagnostic in diagnostics)
                 {
                     var message = $"{diagnostic.GetMessage()} ({diagnostic.Id})";
-                    var filePath = diagnostic.Location.SourceTree?.FilePath;
                     var document = solution.GetDocument(diagnostic.Location.SourceTree);
+                    if (document is null)
+                    {
+                        continue;
+                    }
+
+                    var filePath = document.FilePath ?? document.Name;
 
                     var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
                     var changePosition = mappedLineSpan.StartLinePosition;
@@ -252,7 +257,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 {
                     // Always run naming style analyzers because we cannot determine potential severity.
                     // The reported diagnostics will be filtered by severity when they are run.
-                    if (analyzer.GetType().FullName.EndsWith("NamingStyleDiagnosticAnalyzer"))
+                    if (analyzer.GetType().FullName?.EndsWith("NamingStyleDiagnosticAnalyzer") == true)
                     {
                         analyzers.Add(analyzer);
                         continue;

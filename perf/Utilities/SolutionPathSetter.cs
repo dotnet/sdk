@@ -8,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
 {
     public static class SolutionPathSetter
     {
-        private static int s_registered = 0;
+        private static int s_registered;
         private static string s_currentDirectory;
         public static string RepositoryRootDirectory => Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.Parent.Parent.Parent.Parent.Parent.FullName;
 

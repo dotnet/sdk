@@ -8,7 +8,7 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
 {
     public static class MSBuildRegister
     {
-        private static int s_registered = 0;
+        private static int s_registered;
 
         public static void RegisterInstance()
         {

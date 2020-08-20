@@ -11,9 +11,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
     /// <summary>
     /// This test fixture ensures that MSBuild is loaded.
     /// </summary>
-    public class MSBuildFixture : IDisposable
+    public sealed class MSBuildFixture : IDisposable
     {
-        private static int s_registered = 0;
+        private static int s_registered;
 
         public void RegisterInstance(ITestOutputHelper output)
         {

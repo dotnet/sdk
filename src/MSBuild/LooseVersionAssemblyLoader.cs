@@ -69,10 +69,13 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
                     }
                     catch
                     {
-                        // We were unable to load the assembly from the file path. It is likely that
-                        // a different version of the assembly has already been loaded into the context.
-                        // Be forgiving and attempt to load assembly by name without specifying a version.
-                        return context.LoadFromAssemblyName(new AssemblyName(assemblyName.Name));
+                        if (assemblyName.Name != null)
+                        {
+                            // We were unable to load the assembly from the file path. It is likely that
+                            // a different version of the assembly has already been loaded into the context.
+                            // Be forgiving and attempt to load assembly by name without specifying a version.
+                            return context.LoadFromAssemblyName(new AssemblyName(assemblyName.Name));
+                        }
                     }
                 }
             }

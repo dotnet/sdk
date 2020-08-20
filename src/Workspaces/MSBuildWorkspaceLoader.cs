@@ -67,7 +67,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             {
                 if (!logWorkspaceWarnings)
                 {
-                    if (diagnostics.Count > 0)
+                    if (diagnostics.IsEmpty)
                     {
                         logger.LogWarning(Resources.Warnings_were_encountered_while_loading_the_workspace_Set_the_verbosity_option_to_the_diagnostic_level_to_log_warnings);
                     }

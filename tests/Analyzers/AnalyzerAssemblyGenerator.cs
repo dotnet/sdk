@@ -88,24 +88,23 @@ public class {typeName} : DiagnosticAnalyzer
             references.AddRange(netstandardMetaDataReferences);
             var compilation = CSharpCompilation.Create(assemblyName, trees, references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-            using (var ms = new MemoryStream())
-            {
-                var result = compilation.Emit(ms);
-                if (!result.Success)
-                {
-                    var failures = result.Diagnostics.Where(diagnostic =>
-                        diagnostic.IsWarningAsError ||
-                        diagnostic.Severity == DiagnosticSeverity.Error)
-                        .Select(diagnostic => $"{diagnostic.Id}: {diagnostic.GetMessage()}");
 
-                    throw new Exception(string.Join(Environment.NewLine, failures));
-                }
-                else
-                {
-                    ms.Seek(0, SeekOrigin.Begin);
-                    var assembly = Assembly.Load(ms.ToArray());
-                    return assembly;
-                }
+            using var ms = new MemoryStream();
+            var result = compilation.Emit(ms);
+            if (!result.Success)
+            {
+                var failures = result.Diagnostics.Where(diagnostic =>
+                    diagnostic.IsWarningAsError ||
+                    diagnostic.Severity == DiagnosticSeverity.Error)
+                    .Select(diagnostic => $"{diagnostic.Id}: {diagnostic.GetMessage()}");
+
+                throw new Exception(string.Join(Environment.NewLine, failures));
+            }
+            else
+            {
+                ms.Seek(0, SeekOrigin.Begin);
+                var assembly = Assembly.Load(ms.ToArray());
+                return assembly;
             }
         }
     }
