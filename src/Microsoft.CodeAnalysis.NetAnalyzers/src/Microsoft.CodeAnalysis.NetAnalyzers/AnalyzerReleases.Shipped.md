@@ -58,7 +58,7 @@ CA1303 | Globalization | Disabled | DoNotPassLiteralsAsLocalizedParameters, [Doc
 CA1304 | Globalization | Hidden | SpecifyCultureInfoAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1304)
 CA1305 | Globalization | Hidden | SpecifyIFormatProviderAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1305)
 CA1306 | Globalization | Disabled | SetLocaleForDataTypesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1306)
-CA1307 | Globalization | Hidden | SpecifyStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1307)
+CA1307 | Globalization | Disabled | SpecifyStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1307)
 CA1308 | Globalization | Disabled | NormalizeStringsToUppercaseAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1308)
 CA1309 | Globalization | Hidden | UseOrdinalStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1309)
 CA1310 | Globalization | Hidden | SpecifyStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1310)
