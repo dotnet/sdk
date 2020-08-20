@@ -408,13 +408,22 @@
   <data name="SpecifyIFormatProviderMessageUICulture" xml:space="preserve">
     <value>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</value>
   </data>
-  <data name="SpecifyStringComparisonTitle" xml:space="preserve">
-    <value>Specify StringComparison</value>
+  <data name="SpecifyStringComparisonCA1307Title" xml:space="preserve">
+    <value>Specify StringComparison for clarity</value>
   </data>
-  <data name="SpecifyStringComparisonDescription" xml:space="preserve">
-    <value>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</value>
+  <data name="SpecifyStringComparisonCA1307Description" xml:space="preserve">
+    <value>A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</value>
   </data>
-  <data name="SpecifyStringComparisonMessage" xml:space="preserve">
+  <data name="SpecifyStringComparisonCA1307Message" xml:space="preserve">
+    <value>'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</value>
+  </data>
+  <data name="SpecifyStringComparisonCA1310Title" xml:space="preserve">
+    <value>Specify StringComparison for correctness</value>
+  </data>
+  <data name="SpecifyStringComparisonCA1310Description" xml:space="preserve">
+    <value>A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</value>
+  </data>
+  <data name="SpecifyStringComparisonCA1310Message" xml:space="preserve">
     <value>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</value>
   </data>
   <data name="NormalizeStringsToUppercaseTitle" xml:space="preserve">

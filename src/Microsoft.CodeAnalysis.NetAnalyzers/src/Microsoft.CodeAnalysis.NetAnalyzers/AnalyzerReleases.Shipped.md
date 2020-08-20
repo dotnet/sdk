@@ -61,6 +61,7 @@ CA1306 | Globalization | Disabled | SetLocaleForDataTypesAnalyzer, [Documentatio
 CA1307 | Globalization | Hidden | SpecifyStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1307)
 CA1308 | Globalization | Disabled | NormalizeStringsToUppercaseAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1308)
 CA1309 | Globalization | Hidden | UseOrdinalStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1309)
+CA1310 | Globalization | Hidden | SpecifyStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1310)
 CA1401 | Interoperability | Info | PInvokeDiagnosticAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1401)
 CA1414 | Interoperability | Disabled | MarkBooleanPInvokeArgumentsWithMarshalAsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1414)
 CA1416 | Interoperability | Info | RuntimePlatformCheckAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
