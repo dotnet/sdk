@@ -38,8 +38,12 @@
     
     <ItemGroup>
       <RoslynFiles Include="$(SdkOutputDirectory)Roslyn\bincore\**\*" />
-      <FSharpFiles Include="$(SdkOutputDirectory)FSharp\**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll" />
-      <RemainingFiles Include="$(SdkOutputDirectory)**\*" Exclude="@(RoslynFiles);@(FSharpFiles)" />
+
+      <FSharpFilesRuntimes Include="$(SdkOutputDirectory)FSharp\runtimes\**\*" />
+      <FSharpFilesRoot Include="$(SdkOutputDirectory)FSharp\**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(FSharpFilesRuntimes)" />
+      <FSharpFiles Include="@(FSharpFilesRuntimes);@(FSharpFilesRoot)" />
+
+      <RemainingFiles Include="$(SdkOutputDirectory)**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
 
       <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error -->
       <RemainingFiles Remove="$(SdkOutputDirectory)TestHost*\**\*" />
