@@ -3708,6 +3708,67 @@ public class MyController : Controller
                 GetCSharpResultAt(9, 9, 7, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
         }
 
+        [Theory]
+        [InlineData("st.Append(stringParam);", true, "string stringParam")]
+        [InlineData("st.Append(intParam);", false)]
+        [InlineData("st.Append(charArrayParam);", true, "char[] charArrayParam", 70)]
+        [InlineData("st.Append(charPointerParam, 10);", true, "char* charPointerParam", 93)]
+        [InlineData("st.Append(charParam);", true, "char charParam", 117)]
+
+        [InlineData("st.AppendFormat(stringParam, \"1\");", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}\", stringParam);", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}{1}\", \"\", stringParam);", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}\", \"\", \"\", stringParam);", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}{3}\", \"\", \"\", \"\", stringParam);", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}{3}{4}\", \"\", \"\", \"\", \"\", stringParam);", true, "string stringParam")]
+
+        [InlineData("st.AppendLine(stringParam);", true, "string stringParam")]
+
+        [InlineData("st.Insert(0, stringParam);", true, "string stringParam")]
+        [InlineData("st.Insert(0, intParam);", false)]
+        [InlineData("st.Insert(0, charArrayParam);", true, "char[] charArrayParam", 70)]
+        [InlineData("st.Insert(0, charParam);", true, "char charParam", 117)]
+
+        [InlineData("st.Replace(\"\", stringParam);", true, "string stringParam")]
+
+        [InlineData("st[0] = charParam;", true, "char charParam", 117)]
+
+        [InlineData("st.Append(stringParam); st.CopyTo(0, arr, 0, 10)", true, "string stringParam", 36, "new string(arr)")]
+        [InlineData("st.Append(stringParam); st.Clear()", false)]
+        public async Task TaintThis_StringBuilder(string payload, bool warn, string source = "", int sourceColumn = 36, string sinkArg = "st.ToString()")
+        {
+            string code = $@"
+using System.Data.SqlClient;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController
+{{
+    public unsafe void DoSomething(string stringParam, int intParam, char[] charArrayParam, char* charPointerParam, char charParam)
+    {{
+        var st = new StringBuilder();
+        var arr = new char[100];
+        {payload};
+        new SqlCommand({sinkArg});
+    }}
+}}";
+            if (warn)
+            {
+                await VerifyCSharpWithDependenciesAsync(
+                     code,
+                     GetCSharpResultAt(
+                         13, 9, 8, sourceColumn,
+                         "SqlCommand.SqlCommand(string cmdText)",
+                         "void MyController.DoSomething(string stringParam, int intParam, char[] charArrayParam, char* charPointerParam, char charParam)",
+                         source,
+                         "void MyController.DoSomething(string stringParam, int intParam, char[] charArrayParam, char* charPointerParam, char charParam)"));
+            }
+            else
+            {
+                await VerifyCSharpWithDependenciesAsync(code);
+            }
+        }
+
         [Fact]
         public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_WrongSanitizer()
         {
