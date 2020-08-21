@@ -1,6 +1,7 @@
 ## Release 5.0
 
 ### New Rules
+
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 CA1000 | Design | Hidden | DoNotDeclareStaticMembersOnGenericTypesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1000)
@@ -260,5 +261,5 @@ CA5400 | Security | Disabled | DoNotDisableHttpClientCRLCheck, [Documentation](h
 CA5401 | Security | Disabled | DoNotUseCreateEncryptorWithNonDefaultIV, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5401)
 CA5402 | Security | Disabled | DoNotUseCreateEncryptorWithNonDefaultIV, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5402)
 CA5403 | Security | Disabled | DoNotHardCodeCertificate, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5403)
-IL3000 | Publish | Warning | AvoidAssemblyLocationInSingleFile
-IL3001 | Publish | Warning | AvoidAssemblyLocationInSingleFile
+IL3000 | Publish | Warning | AvoidAssemblyLocationInSingleFile, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/il3000)
+IL3001 | Publish | Warning | AvoidAssemblyLocationInSingleFile, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/il3001)
