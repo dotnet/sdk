@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
+  </ItemGroup>
+  
+  <PropertyGroup>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\netcoreapp2.0\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="CreateLightCommandPackageDrop" AssemblyFile="$(MicrosoftDotNetBuildTasksInstallersTaskAssembly)" />
+  
   <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
@@ -34,6 +45,11 @@
       <SdkMSBuildExtensionsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
+
+      <!-- Temp directory for light command layouts -->
+      <LightCommandObjDir>$(ArtifactsObjDir)/LightCommandPackages</LightCommandObjDir>
+      <!-- Directory for the zipped up light command package -->
+      <LightCommandPackagesDir>$(ArtifactsNonShippingPackagesDir)</LightCommandPackagesDir>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -173,6 +189,27 @@
                       '$(Architecture)' ^
                       '$(SdkStableFileIdForApphostTransform)' ^
                       -InformationAction Continue" />
+    <ItemGroup>
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnet.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\registrykeys.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\install-files.wixobj" />
+    </ItemGroup>
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      Out="$(SdkMSIInstallerFile)"
+      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
+      WixSrcFiles="@(SdkMsiWixSrcFiles)">
+      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+    <MakeDir Directories="$(LightCommandPackagesDir)" />
+
+    <ZipDirectory
+      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
+      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
+      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateSdkPlaceholderMsi"
@@ -192,27 +229,67 @@
                       '$(SdkPlaceholderDependencyKeyName)' ^
                       '$(Architecture)' ^
                       -InformationAction Continue" />
+    <ItemGroup>
+        <SdkPlaceholdMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
+        <SdkPlaceholdMsiWixSrcFiles Include="$(WixRoot)\sdkplaceholder.wixobj" />
+    </ItemGroup>
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      Out="$(SdkPlaceholderMSIInstallerFile)"
+      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
+      WixSrcFiles="@(SdkPlaceholdMsiWixSrcFiles)"
+      AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging/windows/clisdk">
+      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+    <MakeDir Directories="$(LightCommandPackagesDir)" />
+
+    <ZipDirectory
+      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
+      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
+      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateTemplatesMsis"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo;SetupTemplatesMsis"
           Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))"
-          Inputs="@(TemplatesMsiComponent->'%(LayoutPath)');
-                    $(TemplatesGenerateMsiPowershellScript)"
-          Outputs="@(TemplatesMsiComponent->'%(MSIInstallerFile)')">
+          Inputs="@(TemplatesMsiComponent);$(TemplatesGenerateMsiPowershellScript)"
+          Outputs="%(TemplatesMsiComponent.MSIInstallerFile)">
 
     <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
                       '%(TemplatesMsiComponent.LayoutPath)' ^
-                      '@(TemplatesMsiComponent->'%(MSIInstallerFile)')' ^
+                      '%(TemplatesMsiComponent.MSIInstallerFile)' ^
                       '$(WixRoot)' ^
-                      '@(TemplatesMsiComponent->'%(BrandName)')' ^
-                      '@(TemplatesMsiComponent->'%(MsiVersion)')' ^
-                      '@(TemplatesMsiComponent->'%(MsiVersion)')' ^
+                      '%(TemplatesMsiComponent.BrandName)' ^
+                      '%(TemplatesMsiComponent.MsiVersion)' ^
+                      '%(TemplatesMsiComponent.MsiVersion)' ^
                       '$(FullNugetVersion)' ^
-                      '@(TemplatesMsiComponent->'%(UpgradeCode)')' ^
-                      '@(TemplatesMsiComponent->'%(DependencyKeyName)')' ^
+                      '%(TemplatesMsiComponent.UpgradeCode)' ^
+                      '%(TemplatesMsiComponent.DependencyKeyName)' ^
                       '$(Architecture)' ^
                       -InformationAction Continue" />
+    <ItemGroup>
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\templates.wixobj" />
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\template-install-files.wixobj" />
+    </ItemGroup>
+
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      Out="%(TemplatesMsiComponent.MSIInstallerFile)"
+      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
+      WixSrcFiles="@(TemplatesMsiWixSrcFiles)">
+      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+    <MakeDir Directories="$(LightCommandPackagesDir)" />
+
+    <ZipDirectory
+      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
+      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
+      Overwrite="true" />
   </Target>
 
   <Target Name="SetupTemplatesMsis">
@@ -296,6 +373,26 @@
                       '$(MicrosoftAspNetCoreAppRuntimePackageVersion)' ^
                       '$(CliProductBandVersion)' ^
                       -InformationAction Continue " />
+    <ItemGroup>
+        <BundleMsiWixSrcFiles Include="$(WixRoot)\bundle.wixobj" />
+        <BundleMsiWixSrcFiles Include="$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxWixLibFileName)" />
+    </ItemGroup>
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      Out="$(CombinedFrameworkSdkHostMSIInstallerFile)"
+      WixExtensions="WixBalExtension;WixUtilExtension;WixTagExtension"
+      WixSrcFiles="@(BundleMsiWixSrcFiles)"
+      AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging/windows/clisdk">
+      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+    <MakeDir Directories="$(LightCommandPackagesDir)" />
+
+    <ZipDirectory
+      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
+      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
+      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateToolsetNupkg"

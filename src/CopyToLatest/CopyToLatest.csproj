@@ -3,9 +3,9 @@
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <Channel>$(SourceBranch.Replace('refs/heads/', ''))</Channel>
   </PropertyGroup>
 
-  <Import Project="targets\BranchInfo.props" />
   <Import Project="..\redist\targets\BuildCoreSdkTasks.targets" />
   <Import Project="..\redist\targets\GetRuntimeInformation.targets" />
   <Import Project="..\redist\targets\Versions.targets" />

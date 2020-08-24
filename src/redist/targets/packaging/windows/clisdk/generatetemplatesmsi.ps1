@@ -54,7 +54,7 @@ function RunCandle
 
     $candleOutput = .\candle.exe -nologo `
         -dDotnetSrc="$inputDir" `
-        -dMicrosoftEula="$PSScriptRoot\clisdk\dummyeula.rtf" `
+        -dMicrosoftEula="$PSScriptRoot\dummyeula.rtf" `
         -dProductMoniker="$ProductMoniker" `
         -dBuildVersion="$DotnetMSIVersion" `
         -dSDKBundleVersion="$SDKBundleVersion" `
