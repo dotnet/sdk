@@ -244,6 +244,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return true;
             }
 
+            // Ignore type generated for holding top level statements
+            if (type.IsTopLevelStatementsEntryPointType())
+            {
+                return true;
+            }
+
             // The type containing the assembly's entry point is OK.
             if (ContainsEntryPoint(type, compilation))
             {

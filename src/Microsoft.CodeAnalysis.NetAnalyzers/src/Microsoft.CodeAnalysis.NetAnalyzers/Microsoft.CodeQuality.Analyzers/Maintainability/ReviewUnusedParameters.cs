@@ -233,6 +233,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return false;
             }
 
+            // Ignore generated method for top level statements
+            if (method.IsTopLevelStatementsEntryPointMethod())
+            {
+                return false;
+            }
+
             return true;
         }
     }
