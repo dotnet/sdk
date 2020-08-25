@@ -459,6 +459,25 @@ public class C
 }");
         }
 
+        [Fact, WorkItem(4052, "https://github.com/dotnet/roslyn-analyzers/issues/4052")]
+        public async Task CA1720_TopLevelStatements_NoDiagnostic()
+        {
+            await new VerifyCS.Test()
+            {
+                TestCode = @"int x = 0;",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        project = project.WithCompilationOptions(project.CompilationOptions.WithOutputKind(CodeAnalysis.OutputKind.ConsoleApplication));
+                        return project.Solution;
+                    },
+                }
+            }.RunAsync();
+        }
+
         #region Helpers
 
         private static DiagnosticResult GetCA1720CSharpResultAt(int line, int column, string identifierName)
