@@ -1,7 +1,7 @@
 {
     "sign": [
         {
-            "certificate": "Microsoft402",
+            "certificate": "Microsoft400",
             "strongName": "MsSharedLib72",
             "values": [
                 "bin/Sdks/Microsoft.NET.Sdk/tools/*/Microsoft.NET.Build.Tasks.dll",
