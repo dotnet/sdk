@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
@@ -73,15 +74,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 // AssemblyDependencyResolver which resolves depenendency assembly paths
                 // from AssemblyName by using the .deps.json.
 
-                // We will instead do the simplest thing by looking for the requested assembly
-                // by name in the same folder as the assembly being loaded.
-                var possibleAssemblyFileName = $"{assemblyName.Name}.dll";
-                var possibleAssemblyPath = Path.Combine(_assemblyFolderPath, possibleAssemblyFileName);
                 try
                 {
-                    if (File.Exists(possibleAssemblyPath))
+                    // Search for assembly based on assembly name and culture within the analyzer folder.
+                    var assembly = AssemblyResolver.TryResolveAssemblyFromPaths(this, assemblyName, _assemblyFolderPath);
+
+                    if (assembly != null)
                     {
-                        return LoadFromAssemblyPath(possibleAssemblyPath);
+                        return assembly;
                     }
                 }
                 catch { }
