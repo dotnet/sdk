@@ -138,7 +138,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 codeStyleSeverity,
                 fixAnalyzers,
                 analyzerSeverity,
-                saveFormattedFiles: false,
+                saveFormattedFiles: true,
                 changesAreErrors: false,
                 fileMatcher,
                 reportPath: string.Empty,

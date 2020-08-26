@@ -73,22 +73,12 @@ namespace Microsoft.CodeAnalysis.Tools
             var formatterRanMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS - determineFilesMS;
             logger.LogTrace(Resources.Complete_in_0_ms, formatterRanMS);
 
-            var solutionChanges = formattedSolution.GetChanges(solution);
-
-            var filesFormatted = 0;
-            foreach (var projectChanges in solutionChanges.GetProjectChanges())
+            var documentsWithErrors = formattedFiles.Select(file => file.DocumentId).Distinct().ToImmutableArray();
+            foreach (var documentId in documentsWithErrors)
             {
-                foreach (var changedDocumentId in projectChanges.GetChangedDocuments())
-                {
-                    var changedDocument = solution.GetDocument(changedDocumentId);
-                    if (changedDocument?.FilePath is null)
-                    {
-                        continue;
-                    }
+                var documnentWithError = solution.GetDocument(documentId);
 
-                    logger.LogInformation(Resources.Formatted_code_file_0, changedDocument.FilePath);
-                    filesFormatted++;
-                }
+                logger.LogInformation(Resources.Formatted_code_file_0, documnentWithError!.FilePath);
             }
 
             var exitCode = 0;
@@ -104,11 +94,11 @@ namespace Microsoft.CodeAnalysis.Tools
                 ReportWriter.Write(formatOptions.ReportPath!, formattedFiles, logger);
             }
 
-            logger.LogDebug(Resources.Formatted_0_of_1_files, filesFormatted, fileCount);
+            logger.LogDebug(Resources.Formatted_0_of_1_files, documentsWithErrors.Length, fileCount);
 
             logger.LogInformation(Resources.Format_complete_in_0_ms, workspaceStopwatch.ElapsedMilliseconds);
 
-            return new WorkspaceFormatResult(filesFormatted, fileCount, exitCode);
+            return new WorkspaceFormatResult(documentsWithErrors.Length, fileCount, exitCode);
         }
 
         private static Workspace OpenFolderWorkspace(string workspacePath, SourceFileMatcher fileMatcher)
