@@ -7,13 +7,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.ShellShim;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
     internal sealed class PerformanceLogManager
     {
-        private const string PerfLogRootEnvVar = "DOTNET_PERFLOG_ROOT";
+        internal const string PerfLogDirEnvVar = "DOTNET_PERFLOG_DIR";
         private const string PerfLogRoot = "PerformanceLogs";
         private const int NumLogsToKeep = 10;
 
@@ -33,12 +34,25 @@ namespace Microsoft.DotNet.Cli.Utils
             if(Instance == null)
             {
                 Instance = new PerformanceLogManager(fileSystem);
-                Instance.CreateLogDirectory();
 
-                Task.Factory.StartNew(() =>
+                // Check to see if this instance is part of an already running chain of processes.
+                string perfLogDir = Env.GetEnvironmentVariable(PerfLogDirEnvVar);
+                if (!string.IsNullOrEmpty(perfLogDir) && fileSystem.Directory.Exists(perfLogDir))
                 {
-                    Instance.CleanupOldLogs();
-                });
+                    // This process has been provided with a log directory, so use it.
+                    Instance.UseExistingLogDirectory(perfLogDir);
+                }
+                else
+                {
+                    // This process was not provided with a log root, so make a new one.
+                    Instance._perfLogRoot = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, PerfLogRoot);
+                    Instance.CreateLogDirectory();
+
+                    Task.Factory.StartNew(() =>
+                    {
+                        Instance.CleanupOldLogs();
+                    });
+                }
             }
         }
 
@@ -46,7 +60,6 @@ namespace Microsoft.DotNet.Cli.Utils
         {
             _initializationTime = DateTime.Now;
             _fileSystem = fileSystem;
-            _perfLogRoot = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, PerfLogRoot);
         }
 
         internal string CurrentLogDirectory
@@ -65,6 +78,11 @@ namespace Microsoft.DotNet.Cli.Utils
             // Create a new perf log directory.
             _currentLogDir = Path.Combine(_perfLogRoot, Guid.NewGuid().ToString("N"));
             _fileSystem.Directory.CreateDirectory(_currentLogDir);
+        }
+
+        private void UseExistingLogDirectory(string logDirectory)
+        {
+            _currentLogDir = logDirectory;
         }
 
         private void CleanupOldLogs()
@@ -100,13 +118,13 @@ namespace Microsoft.DotNet.Cli.Utils
             }
         }
 
-        internal void AddLogRoot(ProcessStartInfo startInfo)
+        internal void AddLogDir(ProcessStartInfo startInfo)
         {
             Debug.Assert(_currentLogDir != null);
 
             if (_perfLogRoot != null)
             {
-                startInfo.EnvironmentVariables.Add(PerfLogRootEnvVar, _currentLogDir);
+                startInfo.EnvironmentVariables.Add(PerfLogDirEnvVar, _currentLogDir);
             }
         }
     }
