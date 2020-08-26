@@ -1592,6 +1592,25 @@ Friend NotInheritable Class [|C1|]
 End Class");
         }
 
+        [Fact, WorkItem(4052, "https://github.com/dotnet/roslyn-analyzers/issues/4052")]
+        public async Task CA1812_CSharp_TopLevelStatements_NoDiagnostic()
+        {
+            await new VerifyCS.Test()
+            {
+                TestCode = @"int x = 0;",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        project = project.WithCompilationOptions(project.CompilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
+                        return project.Solution;
+                    },
+                }
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
