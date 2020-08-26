@@ -1512,6 +1512,36 @@
         <target state="translated">I metodi P/Invoke non devono essere visibili</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlatformCompatabilityCheckDescription">
+        <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
+        <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatabilityCheckTitle">
+        <source>Validate platform compatibility</source>
+        <target state="new">Validate platform compatibility</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatabilityCheckUnsupportedOsMessage">
+        <source>'{0}' is unsupported on '{1}'</source>
+        <target state="new">'{0}' is unsupported on '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatabilityCheckUnsupportedOsVersionMessage">
+        <source>'{0}' is unsupported on '{1}' {2} and later</source>
+        <target state="new">'{0}' is unsupported on '{1}' {2} and later</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckSupportedOsMessage">
+        <source>'{0}' is supported on '{1}'</source>
+        <target state="new">'{0}' is supported on '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckSupportedOsVersionMessage">
+        <source>'{0}' is supported on '{1}' {2} and later</source>
+        <target state="new">'{0}' is supported on '{1}' {2} and later</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
         <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>
         <target state="translated">Rivedere il codice che elabora dati deserializzati non attendibili per la gestione di cicli di riferimento imprevisti. Un ciclo di riferimento imprevisto non deve causare un ciclo infinito del codice. Un ciclo di riferimento imprevisto può invece consentire attacchi di tipo DoS da parte di un utente malintenzionato o l'esaurimento della memoria del processo durante la deserializzazione di dati non attendibili.</target>
