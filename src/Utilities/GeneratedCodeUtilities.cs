@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
@@ -90,6 +91,20 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
             }
 
             return false;
+        }
+
+        internal static bool? GetIsGeneratedCodeFromOptions(AnalyzerConfigOptions options)
+        {
+            // Check for explicit user configuration for generated code.
+            //     generated_code = true | false
+            if (options.TryGetValue("generated_code", out var optionValue) &&
+                bool.TryParse(optionValue, out var boolValue))
+            {
+                return boolValue;
+            }
+
+            // Either no explicit user configuration or we don't recognize the option value.
+            return null;
         }
     }
 }

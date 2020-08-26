@@ -219,7 +219,11 @@ namespace Microsoft.CodeAnalysis.Tools
                     var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
                     if (analyzerConfigOptions != null)
                     {
-                        documentsCoveredByEditorConfig.Add(document.Id);
+                        if (formatOptions.IncludeGeneratedFiles ||
+                            GeneratedCodeUtilities.GetIsGeneratedCodeFromOptions(analyzerConfigOptions) != true)
+                        {
+                            documentsCoveredByEditorConfig.Add(document.Id);
+                        }
                     }
                     else
                     {
