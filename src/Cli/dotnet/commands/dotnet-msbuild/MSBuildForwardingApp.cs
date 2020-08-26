@@ -49,6 +49,9 @@ namespace Microsoft.DotNet.Tools.MSBuild
             _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
                 ConcatTelemetryLogger(argsToForward),
                 msbuildPath);
+
+            // Add the performance log location to the environment of the target process.
+            EnvironmentVariable(PerformanceLogManager.PerfLogDirEnvVar, PerformanceLogManager.Instance.CurrentLogDirectory);
         }
 
         public void EnvironmentVariable(string name, string value)
