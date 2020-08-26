@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.Cli.Utils
         };
 
         private const char EventDelimiter = '\n';
+        private string _processIDStr;
         private StreamWriter _writer;
 
         [ThreadStatic]
@@ -67,8 +68,8 @@ namespace Microsoft.DotNet.Cli.Utils
         internal void Initialize(IFileSystem fileSystem, string logDirectory)
         {
             // TODO: Should we choose something that is guaranteed to be unique?
-            int pid = Process.GetCurrentProcess().Id;
-            string logFilePath = Path.Combine(logDirectory, $"perf-{pid}.log");
+            _processIDStr = Process.GetCurrentProcess().Id.ToString();
+            string logFilePath = Path.Combine(logDirectory, $"perf-{_processIDStr}.log");
 
             Stream outputStream = fileSystem.File.OpenFile(
                 logFilePath,
@@ -129,7 +130,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     s_builder.Clear();
                 }
 
-                s_builder.Append($"[{eventData.TimeStamp.ToString("MM/dd/yyyy H:mm:ss.ffffff")}] Event={eventData.EventSource.Name}/{eventData.EventName} ThreadID={eventData.OSThreadId}\t ");
+                s_builder.Append($"[{DateTime.UtcNow.ToString("o")}] Event={eventData.EventSource.Name}/{eventData.EventName} ProcessID={_processIDStr} ThreadID={System.Threading.Thread.CurrentThread.ManagedThreadId}\t ");
                 for (int i = 0; i < eventData.PayloadNames.Count; i++)
                 {
                     s_builder.Append($"{eventData.PayloadNames[i]}=\"{eventData.Payload[i]}\" ");
