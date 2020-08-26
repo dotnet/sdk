@@ -1,7 +1,7 @@
 # Integrations
 Collection of advice how to auto check/format. Every sample expects dotnet format installed as local tool.
 
-# Pre-commit hook to reformat
+## Pre-commit hook to reformat
 
 Create file `.git/pre-commit` with following contents 
 ```sh
@@ -22,7 +22,9 @@ exit 0
 ```
 
 
-# Check on PR in Azure Dev Ops
+## Check on PR in Azure Dev Ops
+
+Add following to your build file:
 
 ```yaml
 - task: DotNetCoreCLI@2
