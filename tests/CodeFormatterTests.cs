@@ -31,6 +31,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private const string CodeStyleSolutionPath = "for_code_formatter/codestyle_solution/";
         private const string CodeStyleSolutionFilePath = CodeStyleSolutionPath + "codestyle_solution.sln";
 
+        private const string AnalyzersSolutionPath = "for_code_formatter/analyzers_solution/";
+        private const string AnalyzersSolutionFilePath = AnalyzersSolutionPath + "analyzers_solution.sln";
+
         private static string[] EmptyFilesList => Array.Empty<string>();
 
         private Regex FindFormattingLogLine => new Regex(@"((.*)\(\d+,\d+\): (.*))\r|((.*)\(\d+,\d+\): (.*))");
@@ -410,6 +413,35 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 6,
                 fixCodeStyle: true,
                 codeStyleSeverity: DiagnosticSeverity.Warning);
+        }
+
+        [Fact]
+        public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
+        {
+            await TestFormatWorkspaceAsync(
+                AnalyzersSolutionFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 6,
+                fixAnalyzers: false);
+        }
+
+        [Fact]
+        public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
+        {
+            await TestFormatWorkspaceAsync(
+                AnalyzersSolutionFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 1,
+                expectedFileCount: 7,
+                fixAnalyzers: true,
+                analyzerSeverity: DiagnosticSeverity.Error);
         }
 
         public async Task<string> TestFormatWorkspaceAsync(
