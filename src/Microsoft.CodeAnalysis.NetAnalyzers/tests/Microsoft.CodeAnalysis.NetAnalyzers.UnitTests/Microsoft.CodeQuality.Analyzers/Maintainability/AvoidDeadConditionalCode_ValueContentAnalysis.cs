@@ -2855,6 +2855,50 @@ public class Test
             }.RunAsync();
         }
 
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task TestNegationPattern_ExplicitConversionInFlowCapture_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch ((bool)t)
+        {
+            case not true:
+                result = t == false;
+                break;
+            default:
+                result = t == true;
+                break;
+        }
+
+        return result;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(22,26): warning CA1508: 't == false' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(22, 26, "t == false", "true"),
+                    // Test0.cs(25,26): warning CA1508: 't == true' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(25, 26, "t == true", "true")
+                }
+            }.RunAsync();
+        }
+
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
         public async Task TestRelationalPattern()
         {
