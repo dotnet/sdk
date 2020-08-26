@@ -21,6 +21,8 @@ exit 0
 
 ```
 
+These instructions originally authored by [randulakoralage82](https://medium.com/@randulakoralage82/format-your-net-code-with-git-hooks-a0dc33f68048).
+
 
 ## Check on PR in Azure Dev Ops
 
@@ -41,3 +43,6 @@ Add following to your build file:
     custom: 'format'
     arguments: '--check'
 ```
+
+
+These instructions originally authored by [leotsarev](https://github.com/joinrpg/joinrpg-net/).
