@@ -1,4 +1,4 @@
-namespace console_project
+﻿namespace console_project
 {
     public enum MyTypes
     {

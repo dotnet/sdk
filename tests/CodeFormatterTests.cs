@@ -425,7 +425,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 6,
+                expectedFileCount: 7,
                 fixAnalyzers: false);
         }
 
