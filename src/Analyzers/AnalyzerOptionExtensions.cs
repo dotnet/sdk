@@ -35,18 +35,6 @@ namespace Microsoft.CodeAnalysis.Diagnostics
             DiagnosticDescriptor descriptor,
             out ReportDiagnostic severity)
         {
-            // Analyzer bulk configuration does not apply to:
-            //  1. Disabled by default diagnostics
-            //  2. Compiler diagnostics
-            //  3. Non-configurable diagnostics
-            if (analyzerOptions == null ||
-                !descriptor.IsEnabledByDefault ||
-                descriptor.CustomTags.Any(tag => tag == WellKnownDiagnosticTags.Compiler || tag == WellKnownDiagnosticTags.NotConfigurable))
-            {
-                severity = default;
-                return false;
-            }
-
             // If user has explicitly configured severity for this diagnostic ID, that should be respected.
             if (compilation.Options.SpecificDiagnosticOptions.TryGetValue(descriptor.Id, out severity))
             {
@@ -58,6 +46,18 @@ namespace Microsoft.CodeAnalysis.Diagnostics
             if (compilation.Options.SyntaxTreeOptionsProvider?.TryGetDiagnosticValue(tree, descriptor.Id, out severity) == true)
             {
                 return true;
+            }
+
+            // Analyzer bulk configuration does not apply to:
+            //  1. Disabled by default diagnostics
+            //  2. Compiler diagnostics
+            //  3. Non-configurable diagnostics
+            if (analyzerOptions == null ||
+                !descriptor.IsEnabledByDefault ||
+                descriptor.CustomTags.Any(tag => tag == WellKnownDiagnosticTags.Compiler || tag == WellKnownDiagnosticTags.NotConfigurable))
+            {
+                severity = default;
+                return false;
             }
 
             var analyzerConfigOptions = analyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(tree);
