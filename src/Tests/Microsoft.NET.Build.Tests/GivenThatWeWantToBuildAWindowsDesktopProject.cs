@@ -144,6 +144,12 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.Execute()
                 .Should()
                 .Pass();
+            getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "10.0.18362.0" });
+
+            getValuesCommand = new GetValuesCommand(testAsset, "NormalizedTargetPlatformVersion");
+            getValuesCommand.Execute()
+                .Should()
+                .Pass();
             getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "10.0.18362" });
         }
 

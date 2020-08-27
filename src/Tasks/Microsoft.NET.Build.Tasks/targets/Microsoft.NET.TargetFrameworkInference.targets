@@ -208,7 +208,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <PropertyGroup>
-      <TargetPlatformVersion Condition="'@(_ValidTargetPlatformVersion)' != '' and '@(_ValidTargetPlatformVersion->Count())' == '1' and '@(_ValidTargetPlatformVersion)' != '$(TargetPlatformVersion)'">@(_ValidTargetPlatformVersion)</TargetPlatformVersion>
+      <NormalizedTargetPlatformVersion Condition="'@(_ValidTargetPlatformVersion)' != '' and '@(_ValidTargetPlatformVersion->Count())' == '1' and '@(_ValidTargetPlatformVersion)' != '$(TargetPlatformVersion)'">@(_ValidTargetPlatformVersion)</NormalizedTargetPlatformVersion>
     </PropertyGroup>
   </Target>
 
