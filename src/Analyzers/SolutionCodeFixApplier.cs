@@ -29,18 +29,22 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return solution;
             }
 
-            var project = solution.Projects.FirstOrDefault();
-            if (project == null)
+            var document = result.Diagnostics
+                .SelectMany(kvp => kvp.Value)
+                .Select(diagnostic => solution.GetDocument(diagnostic.Location.SourceTree))
+                .FirstOrDefault();
+
+            if (document is null)
             {
-                throw new InvalidOperationException(string.Format(Resources.Solution_0_has__no_projects, solution));
+                return solution;
             }
 
             var fixAllContext = new FixAllContext(
-                project: project,
+                document: document,
                 codeFixProvider: codeFix,
                 scope: FixAllScope.Solution,
                 codeActionEquivalenceKey: null,
-                diagnosticIds: codeFix.FixableDiagnosticIds,
+                diagnosticIds: new[] { diagnosticId },
                 fixAllDiagnosticProvider: new DiagnosticProvider(result),
                 cancellationToken: cancellationToken);
 
