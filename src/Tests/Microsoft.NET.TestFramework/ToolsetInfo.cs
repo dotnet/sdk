@@ -65,6 +65,10 @@ namespace Microsoft.NET.TestFramework
 
         public string FullFrameworkMSBuildPath { get; set; }
 
+        public string SdkResolverPath { get; set; }
+
+        public bool ShouldUseSdkResolverPath { get; set; }
+
         public ToolsetInfo(string dotNetRoot)
         {
             DotNetRoot = dotNetRoot;
@@ -144,7 +148,7 @@ namespace Microsoft.NET.TestFramework
 
         public void AddTestEnvironmentVariables(SdkCommandSpec command)
         {
-            if (ShouldUseFullFrameworkMSBuild)
+            if (ShouldUseFullFrameworkMSBuild && !ShouldUseSdkResolverPath)
             {
                 string sdksPath = Path.Combine(DotNetRoot, "sdk", SdkVersion, "Sdks");
                 command.Environment["DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR"] = sdksPath;
@@ -247,15 +251,6 @@ namespace Microsoft.NET.TestFramework
             }
 
             var ret = new ToolsetInfo(dotnetRoot);
-            
-            // if (!string.IsNullOrWhiteSpace(commandLine.MSBuildSDKsPath))
-            // {
-            //     ret.SdksPath = commandLine.MSBuildSDKsPath;
-            // }
-            // else if (repoRoot != null)
-            // {
-            //     ret.SdksPath = Path.Combine(repoArtifactsDir, "bin", configuration, "Sdks");
-            // }
 
             if (!string.IsNullOrEmpty(commandLine.FullFrameworkMSBuildPath))
             {
@@ -274,10 +269,16 @@ namespace Microsoft.NET.TestFramework
                 ret.MicrosoftNETBuildExtensionsPathOverride = Path.Combine(buildExtensionsSdkPath, "msbuildExtensions", "Microsoft", "Microsoft.NET.Build.Extensions");
             }
 
+            if (ret.ShouldUseFullFrameworkMSBuild)
+            {
+                // Find path to MSBuildSdkResolver for full framework
+                ret.SdkResolverPath = Path.Combine(repoArtifactsDir, "bin", "Microsoft.DotNet.MSBuildSdkResolver", configuration, "net472");
+            }
+
             if (repoRoot != null)
             {
                 ret.CliHomePath = Path.Combine(repoArtifactsDir, "tmp", configuration);
-            }            
+            }
 
             return ret;
         }
