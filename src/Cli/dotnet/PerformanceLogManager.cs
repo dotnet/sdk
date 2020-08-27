@@ -37,10 +37,10 @@ namespace Microsoft.DotNet.Cli.Utils
 
                 // Check to see if this instance is part of an already running chain of processes.
                 string perfLogDir = Env.GetEnvironmentVariable(PerfLogDirEnvVar);
-                if (!string.IsNullOrEmpty(perfLogDir) && fileSystem.Directory.Exists(perfLogDir))
+                if (!string.IsNullOrEmpty(perfLogDir))
                 {
-                    // This process has been provided with a log directory, so use it.
-                    Instance.UseExistingLogDirectory(perfLogDir);
+                        // This process has been provided with a log directory, so use it.
+                        Instance.UseExistingLogDirectory(perfLogDir);
                 }
                 else
                 {
