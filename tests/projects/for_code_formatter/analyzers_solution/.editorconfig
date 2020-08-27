@@ -32,9 +32,6 @@ indent_size = 2
 
 # Dotnet code style settings:
 [*.{cs,vb}]
-# Enum should use [Flags] when values conform
-dotnet_diagnostic.CA1027.severity = error
-
 # Sort using and Import directives with System.* appearing first
 dotnet_sort_system_directives_first = true
 # Avoid "this." and "Me." if not necessary
@@ -213,3 +210,9 @@ dotnet_diagnostic.IDE0060.severity = warning
 
 # IDE0005: Using directive is unnecessary
 dotnet_diagnostic.IDE0005.severity = warning
+
+# CA1027: Mark enums with FlagsAttribute
+dotnet_diagnostic.CA1027.severity = error
+
+# CA1028: Enum storage should be Int32
+# dotnet_diagnostic.CA1028.severity = error
