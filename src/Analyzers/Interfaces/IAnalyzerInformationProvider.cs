@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
     {
         DiagnosticSeverity GetSeverity(FormatOptions formatOptions);
 
-        ImmutableDictionary<Project, AnalyzersAndFixers> GetAnalyzersAndFixers(
+        ImmutableDictionary<ProjectId, AnalyzersAndFixers> GetAnalyzersAndFixers(
             Solution solution,
             FormatOptions formatOptions,
             ILogger logger);

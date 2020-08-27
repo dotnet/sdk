@@ -65,7 +65,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var severity = _informationProvider.GetSeverity(formatOptions);
 
             // Filter to analyzers that report diagnostics with equal or greater severity.
-            var projectAnalyzers = await FilterBySeverityAsync(projectAnalyzersAndFixers, formattablePaths, severity, cancellationToken).ConfigureAwait(false);
+            var projectAnalyzers = await FilterBySeverityAsync(solution, projectAnalyzersAndFixers, formattablePaths, severity, cancellationToken).ConfigureAwait(false);
 
             // Determine which diagnostics are being reported for each project.
             var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, includeCompilerDiagnostics, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
@@ -88,7 +88,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         private async Task<ImmutableDictionary<ProjectId, ImmutableHashSet<string>>> GetProjectDiagnosticsAsync(
             Solution solution,
-            ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>> projectAnalyzers,
+            ImmutableDictionary<ProjectId, ImmutableArray<DiagnosticAnalyzer>> projectAnalyzers,
             ImmutableHashSet<string> formattablePaths,
             FormatOptions options,
             DiagnosticSeverity severity,
@@ -100,7 +100,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var result = new CodeAnalysisResult();
             foreach (var project in solution.Projects)
             {
-                var analyzers = projectAnalyzers[project];
+                var analyzers = projectAnalyzers[project.Id];
                 if (analyzers.IsEmpty)
                 {
                     continue;
@@ -149,7 +149,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         private async Task<Solution> FixDiagnosticsAsync(
             Solution solution,
-            ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>> projectAnalyzers,
+            ImmutableDictionary<ProjectId, ImmutableArray<DiagnosticAnalyzer>> projectAnalyzers,
             ImmutableArray<CodeFixProvider> allFixers,
             ImmutableDictionary<ProjectId, ImmutableHashSet<string>> projectDiagnostics,
             ImmutableHashSet<string> formattablePaths,
@@ -189,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         continue;
                     }
 
-                    var analyzers = projectAnalyzers[project]
+                    var analyzers = projectAnalyzers[project.Id]
                         .Where(analyzer => analyzer.SupportedDiagnostics.Any(descriptor => descriptor.Id == diagnosticId))
                         .ToImmutableArray();
                     await _runner.RunCodeAnalysisAsync(result, analyzers, project, formattablePaths, severity, includeCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
@@ -223,21 +223,28 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
         }
 
-        internal static async Task<ImmutableDictionary<Project, ImmutableArray<DiagnosticAnalyzer>>> FilterBySeverityAsync(
-            ImmutableDictionary<Project, AnalyzersAndFixers> projectAnalyzersAndFixers,
+        internal static async Task<ImmutableDictionary<ProjectId, ImmutableArray<DiagnosticAnalyzer>>> FilterBySeverityAsync(
+            Solution solution,
+            ImmutableDictionary<ProjectId, AnalyzersAndFixers> projectAnalyzersAndFixers,
             ImmutableHashSet<string> formattablePaths,
             DiagnosticSeverity minimumSeverity,
             CancellationToken cancellationToken)
         {
             // We only want to run analyzers for each project that have the potential for reporting a diagnostic with
             // a severity equal to or greater than specified.
-            var projectAnalyzers = ImmutableDictionary.CreateBuilder<Project, ImmutableArray<DiagnosticAnalyzer>>();
-            foreach (var project in projectAnalyzersAndFixers.Keys)
+            var projectAnalyzers = ImmutableDictionary.CreateBuilder<ProjectId, ImmutableArray<DiagnosticAnalyzer>>();
+            foreach (var projectId in projectAnalyzersAndFixers.Keys)
             {
+                var project = solution.GetProject(projectId);
+                if (project is null)
+                {
+                    continue;
+                }
+
                 var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
 
                 // Filter analyzers by project's language
-                var filteredAnalyzer = projectAnalyzersAndFixers[project].Analyzers
+                var filteredAnalyzer = projectAnalyzersAndFixers[projectId].Analyzers
                     .Where(analyzer => DoesAnalyzerSupportLanguage(analyzer, project.Language));
                 foreach (var analyzer in filteredAnalyzer)
                 {
@@ -256,7 +263,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     }
                 }
 
-                projectAnalyzers.Add(project, analyzers.ToImmutableArray());
+                projectAnalyzers.Add(projectId, analyzers.ToImmutableArray());
             }
 
             return projectAnalyzers.ToImmutableDictionary();

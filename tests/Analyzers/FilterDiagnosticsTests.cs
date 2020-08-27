@@ -20,11 +20,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterWarning()
         {
-            var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync();
-            var project = projectAnalyzersAndFixers.Keys.First();
+            var solution = GetSolution();
+            var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
+            var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Warning;
             var result = await AnalyzerFormatter.FilterBySeverityAsync(
+                solution,
                 projectAnalyzersAndFixers,
                 formattablePaths,
                 minimumSeverity,
@@ -36,11 +38,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterError()
         {
-            var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync();
-            var project = projectAnalyzersAndFixers.Keys.First();
+            var solution = GetSolution();
+            var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
+            var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
             var minimumSeverity = DiagnosticSeverity.Error;
             var result = await AnalyzerFormatter.FilterBySeverityAsync(
+                solution,
                 projectAnalyzersAndFixers,
                 formattablePaths,
                 minimumSeverity,
@@ -61,19 +65,24 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
         }
 
-        private async Task<ImmutableDictionary<Project, AnalyzersAndFixers>> GetProjectAnalyzersAndFixersAsync()
+        private Solution GetSolution()
         {
             var text = SourceText.From("");
             TestState.Sources.Add(text);
 
-            var solution = GetSolution(TestState.Sources.ToArray(),
-                                       TestState.AdditionalFiles.ToArray(),
-                                       TestState.AdditionalReferences.ToArray(),
-                                       "root = true");
+            return GetSolution(
+                TestState.Sources.ToArray(),
+                TestState.AdditionalFiles.ToArray(),
+                TestState.AdditionalReferences.ToArray(),
+                "root = true");
+        }
+
+        private async Task<ImmutableDictionary<ProjectId, AnalyzersAndFixers>> GetProjectAnalyzersAndFixersAsync(Solution solution)
+        {
             var analyzersAndFixers = await GetAnalyzersAndFixersAsync();
 
             return solution.Projects
-                .ToImmutableDictionary(project => project, project => analyzersAndFixers);
+                .ToImmutableDictionary(project => project.Id, project => analyzersAndFixers);
         }
 
         private protected override ICodeFormatter Formatter { get; }

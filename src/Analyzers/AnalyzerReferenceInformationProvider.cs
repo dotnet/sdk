@@ -12,18 +12,18 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal class AnalyzerReferenceInformationProvider : IAnalyzerInformationProvider
     {
-        public ImmutableDictionary<Project, AnalyzersAndFixers> GetAnalyzersAndFixers(
+        public ImmutableDictionary<ProjectId, AnalyzersAndFixers> GetAnalyzersAndFixers(
             Solution solution,
             FormatOptions formatOptions,
             ILogger logger)
         {
             if (!formatOptions.FixAnalyzers)
             {
-                return ImmutableDictionary<Project, AnalyzersAndFixers>.Empty;
+                return ImmutableDictionary<ProjectId, AnalyzersAndFixers>.Empty;
             }
 
             return solution.Projects
-                .ToImmutableDictionary(project => project, GetAnalyzersAndFixers);
+                .ToImmutableDictionary(project => project.Id, GetAnalyzersAndFixers);
         }
 
         private AnalyzersAndFixers GetAnalyzersAndFixers(Project project)
