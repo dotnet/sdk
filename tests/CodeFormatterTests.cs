@@ -418,6 +418,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
         {
+            var restoreExitCode = await PerformNuGetRestore(AnalyzersSolutionFilePath);
+            Assert.Equal(0, restoreExitCode);
+
             await TestFormatWorkspaceAsync(
                 AnalyzersSolutionFilePath,
                 include: EmptyFilesList,
@@ -432,6 +435,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
         {
+            var restoreExitCode = await PerformNuGetRestore(AnalyzersSolutionFilePath);
+            Assert.Equal(0, restoreExitCode);
+
             await TestFormatWorkspaceAsync(
                 AnalyzersSolutionFilePath,
                 include: EmptyFilesList,
@@ -442,6 +448,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 7,
                 fixAnalyzers: true,
                 analyzerSeverity: DiagnosticSeverity.Error);
+        }
+
+        public async Task<int> PerformNuGetRestore(string workspaceFilePath)
+        {
+            var processInfo = ProcessRunner.CreateProcess("dotnet", $"restore \"{workspaceFilePath}\"", captureOutput: true, displayWindow: false);
+            var restoreResult = await processInfo.Result;
+
+            return restoreResult.ExitCode;
         }
 
         public async Task<string> TestFormatWorkspaceAsync(
