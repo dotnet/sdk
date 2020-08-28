@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,9 +27,11 @@ namespace Microsoft.DotNet.Cli
             DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
             string commitSha = versionFile.CommitSha ?? "N/A";
 
+            LogMachineConfiguration();
             OSInfo(RuntimeEnvironment.OperatingSystem, RuntimeEnvironment.OperatingSystemVersion, RuntimeEnvironment.OperatingSystemPlatform.ToString());
             SDKInfo(Product.Version, commitSha, GetDisplayRid(versionFile), AppContext.BaseDirectory);
             EnvironmentInfo(Environment.CommandLine);
+            LogDrives();
 
             TimeSpan latency = mainTimeStamp - currentProcess.StartTime;
             HostLatency(latency.TotalMilliseconds);
@@ -179,6 +182,45 @@ namespace Microsoft.DotNet.Cli
         internal void TelemetryClientFlushStop()
         {
             WriteEvent(22);
+        }
+
+        [NonEvent]
+        internal void LogMachineConfiguration()
+        {
+            if(IsEnabled())
+            {
+                MachineConfiguration(Environment.MachineName, Environment.ProcessorCount);
+            }
+        }
+
+        [Event(23)]
+        internal void MachineConfiguration(string MachineName, int ProcessorCount)
+        {
+            WriteEvent(23, MachineName, ProcessorCount);
+        }
+
+        [NonEvent]
+        internal void LogDrives()
+        {
+            if (IsEnabled())
+            {
+                foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
+                {
+                    try
+                    {
+                        DriveConfiguration(driveInfo.Name, driveInfo.DriveFormat, driveInfo.DriveType.ToString(), (double)driveInfo.TotalSize/1024/1024, (double)driveInfo.AvailableFreeSpace/1024/1024);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+        }
+
+        [Event(24)]
+        internal void DriveConfiguration(string Name, string Format, string Type, double TotalSizeMB, double AvailableFreeSpaceMB)
+        {
+            WriteEvent(24, Name, Format, Type, TotalSizeMB, AvailableFreeSpaceMB);
         }
     }
 }
