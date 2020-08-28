@@ -93,8 +93,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    if (!(paramsArgument.Value is IArrayCreationOperation arrayCreation) ||
-                        !(arrayCreation.GetElementType() is ITypeSymbol elementType) ||
+                    if (paramsArgument.Value is not IArrayCreationOperation arrayCreation ||
+                        arrayCreation.GetElementType() is not ITypeSymbol elementType ||
                         !object.Equals(elementType, formatInfo.Object) ||
                         arrayCreation.DimensionSizes.Length != 1)
                     {

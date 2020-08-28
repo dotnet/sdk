@@ -94,9 +94,11 @@ namespace Microsoft.NetCore.Analyzers.Data
                             return;
                         }
 
+                        M();
                         AnalyzeMethodCall(operationContext, invocation.TargetMethod, symbol, invocation.Arguments, invocation.Syntax, isInDbCommandConstructor, isInDataAdapterConstructor, iDbCommandType, iDataAdapterType);
                     }, OperationKind.Invocation);
 
+                    static bool M() => true;
                     operationBlockStartContext.RegisterOperationAction(operationContext =>
                     {
                         var propertyReference = (IPropertyReferenceOperation)operationContext.Operation;
@@ -108,7 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Data
                         }
 
                         // Make sure we're in assignment statement
-                        if (!(propertyReference.Parent is IAssignmentOperation assignment))
+                        if (propertyReference.Parent is not IAssignmentOperation assignment)
                         {
                             return;
                         }

@@ -335,9 +335,9 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                     {
                         if (knownTypeAttributeData.AttributeConstructor.Parameters.Length != 1
                             || knownTypeAttributeData.ConstructorArguments.Length != 1
-                            || !(knownTypeAttributeData.ConstructorArguments[0] is TypedConstant typedConstant)
+                            || knownTypeAttributeData.ConstructorArguments[0] is not TypedConstant typedConstant
                             || typedConstant.Kind != TypedConstantKind.Type    // Not handling the string methodName overload
-                            || !(typedConstant.Value is ITypeSymbol typedConstantTypeSymbol))
+                            || typedConstant.Value is not ITypeSymbol typedConstantTypeSymbol)
                         {
                             continue;
                         }
@@ -366,9 +366,9 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                     {
                         if (xmlIncludeAttributeData.AttributeConstructor.Parameters.Length != 1
                           || xmlIncludeAttributeData.ConstructorArguments.Length != 1
-                          || !(xmlIncludeAttributeData.ConstructorArguments[0] is TypedConstant typedConstant)
+                          || xmlIncludeAttributeData.ConstructorArguments[0] is not TypedConstant typedConstant
                           || typedConstant.Kind != TypedConstantKind.Type
-                          || !(typedConstant.Value is ITypeSymbol typedConstantTypeSymbol))
+                          || typedConstant.Value is not ITypeSymbol typedConstantTypeSymbol)
                         {
                             continue;
                         }

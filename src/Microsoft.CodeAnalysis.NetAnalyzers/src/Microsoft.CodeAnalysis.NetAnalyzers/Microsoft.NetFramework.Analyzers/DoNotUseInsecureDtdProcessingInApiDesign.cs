@@ -114,7 +114,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SyntaxNode node = context.Node;
                 SemanticModel model = context.SemanticModel;
 
-                if (!(SyntaxNodeHelper.GetDeclaredSymbol(node, model) is IMethodSymbol methodSymbol) ||
+                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
                     methodSymbol.MethodKind != MethodKind.Constructor ||
                     !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true)))
                 {
@@ -166,7 +166,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SyntaxNode node = context.Node;
                 SemanticModel model = context.SemanticModel;
 
-                if (!(SyntaxNodeHelper.GetDeclaredSymbol(node, model) is IMethodSymbol methodSymbol) ||
+                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
                     // skip constructors since we report on the absence of secure assignment in AnalyzeNodeForXmlDocumentDerivedTypeConstructorDecl
                     methodSymbol.MethodKind == MethodKind.Constructor ||
                     !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true)))
@@ -212,7 +212,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SyntaxNode node = context.Node;
                 SemanticModel model = context.SemanticModel;
 
-                if (!(SyntaxNodeHelper.GetDeclaredSymbol(node, model) is IMethodSymbol methodSymbol) ||
+                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
                     methodSymbol.MethodKind != MethodKind.Constructor ||
                     !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true)))
                 {
@@ -281,7 +281,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SyntaxNode node = context.Node;
                 SemanticModel model = context.SemanticModel;
 
-                if (!(SyntaxNodeHelper.GetDeclaredSymbol(node, model) is IMethodSymbol methodSymbol) ||
+                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
                    !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true)))
                 {
                     return;

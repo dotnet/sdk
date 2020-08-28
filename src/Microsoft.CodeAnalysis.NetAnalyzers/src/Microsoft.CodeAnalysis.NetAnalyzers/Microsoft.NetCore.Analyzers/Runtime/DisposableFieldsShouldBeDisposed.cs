@@ -124,7 +124,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 RoslynDebug.Assert(disposeAnalysisHelper != null);
 
-                if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod))
+                if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod)
                 {
                     return;
                 }

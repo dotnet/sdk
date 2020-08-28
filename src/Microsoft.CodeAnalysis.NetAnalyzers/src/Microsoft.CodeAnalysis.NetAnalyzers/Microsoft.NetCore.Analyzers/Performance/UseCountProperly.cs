@@ -225,7 +225,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (isAsync)
             {
                 // Only report awaited calls.
-                if (!(parentOperation is IAwaitOperation awaitOperation))
+                if (parentOperation is not IAwaitOperation awaitOperation)
                 {
                     return;
                 }

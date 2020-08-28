@@ -41,7 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             analysisContext.RegisterCompilationStartAction(context =>
             {
-                if (!(context.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree) ||
+                if (context.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree ||
                     !context.Options.GetOutputKindsOption(Rule, tree, context.Compilation, context.CancellationToken).Contains(context.Compilation.Options.OutputKind))
                 {
                     // Configured to skip analysis for the compilation's output kind

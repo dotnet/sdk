@@ -125,7 +125,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
             analysisContext.RegisterCompilationAction(compilationContext =>
             {
-                if (!(compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
+                if (compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
                 }

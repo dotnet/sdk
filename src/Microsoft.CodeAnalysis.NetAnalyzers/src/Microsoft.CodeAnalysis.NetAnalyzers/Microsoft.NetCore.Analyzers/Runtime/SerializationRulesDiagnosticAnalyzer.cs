@@ -231,7 +231,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     foreach (ISymbol member in namedTypeSymbol.GetMembers())
                     {
                         // Only process field members
-                        if (!(member is IFieldSymbol field))
+                        if (member is not IFieldSymbol field)
                         {
                             continue;
                         }

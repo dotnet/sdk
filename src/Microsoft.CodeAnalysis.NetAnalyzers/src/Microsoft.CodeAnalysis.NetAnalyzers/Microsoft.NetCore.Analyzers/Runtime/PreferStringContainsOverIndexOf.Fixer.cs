@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             Document doc = context.Document;
             CancellationToken cancellationToken = context.CancellationToken;
             SyntaxNode root = await doc.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            if (!(root.FindNode(context.Span) is SyntaxNode expression))
+            if (root.FindNode(context.Span) is not SyntaxNode expression)
             {
                 return;
             }
@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var operation = semanticModel.GetOperation(expression, cancellationToken);
 
             // Not offering a code-fix for the variable declaration case
-            if (!(operation is IBinaryOperation binaryOperation))
+            if (operation is not IBinaryOperation binaryOperation)
             {
                 return;
             }

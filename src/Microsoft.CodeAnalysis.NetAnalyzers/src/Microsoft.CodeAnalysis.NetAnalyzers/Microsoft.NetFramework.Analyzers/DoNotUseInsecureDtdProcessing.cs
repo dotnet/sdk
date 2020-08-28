@@ -306,7 +306,7 @@ namespace Microsoft.NetFramework.Analyzers
 
             private void AnalyzeObjectCreationInternal(OperationAnalysisContext context, ISymbol variable, IOperation valueOpt)
             {
-                if (!(valueOpt is IObjectCreationOperation objCreation))
+                if (valueOpt is not IObjectCreationOperation objCreation)
                 {
                     return;
                 }
@@ -368,7 +368,7 @@ namespace Microsoft.NetFramework.Analyzers
                         if (init is IAssignmentOperation assign)
                         {
                             var propValue = assign.Value;
-                            if (!(assign.Target is IPropertyReferenceOperation propertyReference))
+                            if (assign.Target is not IPropertyReferenceOperation propertyReference)
                             {
                                 continue;
                             }
@@ -376,7 +376,7 @@ namespace Microsoft.NetFramework.Analyzers
                             var prop = propertyReference.Property;
                             if (prop.MatchPropertyDerivedByName(_xmlTypes.XmlDocument, "XmlResolver"))
                             {
-                                if (!(propValue is IConversionOperation operation))
+                                if (propValue is not IConversionOperation operation)
                                 {
                                     return;
                                 }
@@ -445,7 +445,7 @@ namespace Microsoft.NetFramework.Analyzers
                         if (init is IAssignmentOperation assign)
                         {
                             var propValue = assign.Value;
-                            if (!(assign.Target is IPropertyReferenceOperation propertyReference))
+                            if (assign.Target is not IPropertyReferenceOperation propertyReference)
                             {
                                 continue;
                             }
@@ -514,7 +514,7 @@ namespace Microsoft.NetFramework.Analyzers
                         if (init is IAssignmentOperation assign)
                         {
                             var propValue = assign.Value;
-                            if (!(assign.Target is IPropertyReferenceOperation propertyReference))
+                            if (assign.Target is not IPropertyReferenceOperation propertyReference)
                             {
                                 continue;
                             }
@@ -526,7 +526,7 @@ namespace Microsoft.NetFramework.Analyzers
                                 )
                             {
 
-                                if (!(propValue is IConversionOperation operation))
+                                if (propValue is not IConversionOperation operation)
                                 {
                                     return;
                                 }
@@ -619,7 +619,7 @@ namespace Microsoft.NetFramework.Analyzers
             {
                 var assignment = (IAssignmentOperation)context.Operation;
 
-                if (!(assignment.Target is IPropertyReferenceOperation propRef)) // A variable/field assignment
+                if (assignment.Target is not IPropertyReferenceOperation propRef) // A variable/field assignment
                 {
                     var symbolAssignedTo = assignment.Target.GetReferencedMemberOrLocalOrParameter();
                     if (symbolAssignedTo != null)

@@ -117,8 +117,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         var binaryOperation = (IBinaryOperation)operation;
                                         PredicateValueKind predicateKind = GetPredicateKind(binaryOperation);
                                         if (predicateKind != PredicateValueKind.Unknown &&
-                                            (!(binaryOperation.LeftOperand is IBinaryOperation leftBinary) || GetPredicateKind(leftBinary) == PredicateValueKind.Unknown) &&
-                                            (!(binaryOperation.RightOperand is IBinaryOperation rightBinary) || GetPredicateKind(rightBinary) == PredicateValueKind.Unknown))
+                                            (binaryOperation.LeftOperand is not IBinaryOperation leftBinary || GetPredicateKind(leftBinary) == PredicateValueKind.Unknown) &&
+                                            (binaryOperation.RightOperand is not IBinaryOperation rightBinary || GetPredicateKind(rightBinary) == PredicateValueKind.Unknown))
                                         {
                                             ReportAlwaysTrueFalseOrNullDiagnostic(operation, predicateKind);
                                         }

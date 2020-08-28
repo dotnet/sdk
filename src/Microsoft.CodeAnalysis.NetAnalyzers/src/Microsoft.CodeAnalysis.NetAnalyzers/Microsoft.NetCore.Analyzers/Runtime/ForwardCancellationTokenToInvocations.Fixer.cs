@@ -47,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             CancellationToken ct = context.CancellationToken;
             SyntaxNode root = await doc.GetSyntaxRootAsync(ct).ConfigureAwait(false);
 
-            if (!(root.FindNode(context.Span, getInnermostNodeForTie: true) is SyntaxNode node))
+            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode node)
             {
                 return;
             }

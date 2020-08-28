@@ -49,14 +49,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             CancellationToken ct = context.CancellationToken;
             SyntaxNode root = await doc.GetSyntaxRootAsync(ct).ConfigureAwait(false);
 
-            if (!(root.FindNode(context.Span, getInnermostNodeForTie: true) is SyntaxNode node))
+            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode node)
             {
                 return;
             }
 
             SemanticModel model = await doc.GetSemanticModelAsync(ct).ConfigureAwait(false);
 
-            if (!(model.GetOperation(node, ct) is IInvocationOperation invocation))
+            if (model.GetOperation(node, ct) is not IInvocationOperation invocation)
             {
                 return;
             }

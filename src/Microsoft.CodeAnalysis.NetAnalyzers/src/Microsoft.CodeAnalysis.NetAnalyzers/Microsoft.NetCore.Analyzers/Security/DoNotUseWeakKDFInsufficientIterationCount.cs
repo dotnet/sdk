@@ -75,7 +75,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 {
                     if (!compilationStartAnalysisContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSecurityCryptographyRfc2898DeriveBytes,
                             out var rfc2898DeriveBytesTypeSymbol) ||
-                        !(compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
+                        compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                     {
                         return;
                     }

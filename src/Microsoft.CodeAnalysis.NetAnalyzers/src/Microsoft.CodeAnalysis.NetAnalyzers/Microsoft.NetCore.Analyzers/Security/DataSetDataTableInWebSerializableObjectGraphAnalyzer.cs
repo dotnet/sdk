@@ -81,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             foreach (ISymbol? memberSymbol in namedTypeSymbol.GetMembers())
                             {
-                                if (!(memberSymbol is IMethodSymbol methodSymbol))
+                                if (memberSymbol is not IMethodSymbol methodSymbol)
                                 {
                                     continue;
                                 }

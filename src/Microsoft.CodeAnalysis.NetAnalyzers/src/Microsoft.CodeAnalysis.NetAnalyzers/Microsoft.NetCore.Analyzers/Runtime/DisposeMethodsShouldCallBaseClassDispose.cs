@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
-                    if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
+                    if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         containingMethod.OverriddenMethod == null ||
                         containingMethod.OverriddenMethod.IsAbstract)
                     {
