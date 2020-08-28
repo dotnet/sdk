@@ -333,15 +333,13 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                     // Look through [KnownType(typeof(Whatev))] attributes.
                     foreach (AttributeData knownTypeAttributeData in typeSymbol.GetAttributes(this.KnownTypeAttributeTypeSymbol))
                     {
+#pragma warning disable IDE0083 // Use pattern matching - applying the fix leads to a compiler error.
                         if (knownTypeAttributeData.AttributeConstructor.Parameters.Length != 1
-                            || knownTypeAttributeData.ConstructorArguments.Length != 1)
-                        {
-                            continue;
-                        }
-
-                        TypedConstant typedConstant = knownTypeAttributeData.ConstructorArguments[0];
-                        if (typedConstant.Kind != TypedConstantKind.Type    // Not handling the string methodName overload
+                            || knownTypeAttributeData.ConstructorArguments.Length != 1
+                            || !(knownTypeAttributeData.ConstructorArguments[0] is TypedConstant typedConstant)
+                            || typedConstant.Kind != TypedConstantKind.Type    // Not handling the string methodName overload
                             || typedConstant.Value is not ITypeSymbol typedConstantTypeSymbol)
+#pragma warning restore IDE0083 // Use pattern matching
                         {
                             continue;
                         }
@@ -368,15 +366,13 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                     foreach (AttributeData xmlIncludeAttributeData
                         in typeSymbol.GetAttributes(this.XmlSerializationAttributeTypes.XmlIncludeAttribute))
                     {
+#pragma warning disable IDE0083 // Use pattern matching - applying the fix leads to a compiler error.
                         if (xmlIncludeAttributeData.AttributeConstructor.Parameters.Length != 1
-                            || xmlIncludeAttributeData.ConstructorArguments.Length != 1)
-                        {
-                            continue;
-                        }
-
-                        TypedConstant typedConstant = xmlIncludeAttributeData.ConstructorArguments[0];
-                        if (typedConstant.Kind != TypedConstantKind.Type
+                            || xmlIncludeAttributeData.ConstructorArguments.Length != 1
+                            || !(xmlIncludeAttributeData.ConstructorArguments[0] is TypedConstant typedConstant)
+                            || typedConstant.Kind != TypedConstantKind.Type
                             || typedConstant.Value is not ITypeSymbol typedConstantTypeSymbol)
+#pragma warning restore IDE0083 // Use pattern matching
                         {
                             continue;
                         }
