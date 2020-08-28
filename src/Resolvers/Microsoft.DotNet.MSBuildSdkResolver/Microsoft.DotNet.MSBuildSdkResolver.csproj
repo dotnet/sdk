@@ -19,6 +19,16 @@
     </ItemGroup>
   </Target>
 
+  <!-- Output dll in a format that can be used by the resolver loader -->
+  <Target Name="CopyResolverOutput" AfterTargets="Build">
+   <ItemGroup>
+        <_ResolverOutputToCopy Include="$(OutputPath)*.*" />
+    </ItemGroup>
+    <Copy
+        SourceFiles="@(_ResolverOutputToCopy)"
+        DestinationFolder="$(OutputPath)Resolver\Microsoft.DotNet.MSBuildSdkResolver" />
+  </Target>
+
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
   </ItemGroup>
