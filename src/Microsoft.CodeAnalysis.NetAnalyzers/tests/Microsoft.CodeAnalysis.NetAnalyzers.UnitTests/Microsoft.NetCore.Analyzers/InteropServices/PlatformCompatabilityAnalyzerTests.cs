@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.PlatformCompatabilityAnalyzer,
@@ -180,6 +181,106 @@ public class Test
             await VerifyAnalyzerAsyncCs(source);
         }
 
+        [Fact, WorkItem(4071, "https://github.com/dotnet/roslyn-analyzers/issues/4071")]
+        public async Task OsDependentPropertyGetterSetterCalledWarns()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+
+public class Test
+{
+    [SupportedOSPlatform(""windows"")]
+    public static bool WindowsOnlyProperty
+    {   
+        get { return true; }
+        set { }
+    }
+    public static bool WindowsOnlyPropertyGetter
+    {
+        [SupportedOSPlatform(""windows"")]
+        get { return true; }
+        set { }
+    }
+
+    public static bool WindowsOnlyPropertySetter
+    {
+        get { return true; }
+        [SupportedOSPlatform(""windows"")]
+        set { }
+    }
+
+    public void M1()
+    {
+        WindowsOnlyPropertyGetter = true;
+        var s = [|WindowsOnlyPropertyGetter|];
+        [|WindowsOnlyPropertyGetter|] |= true;
+        [|WindowsOnlyPropertySetter|] &= false;
+        [|WindowsOnlyPropertySetter|] = false;
+        s = WindowsOnlyPropertySetter;
+        M2([|WindowsOnlyPropertyGetter|]);
+        M2(WindowsOnlyPropertySetter);
+        var name = nameof(WindowsOnlyPropertyGetter);
+        name = nameof(WindowsOnlyPropertySetter);
+        name = nameof([|WindowsOnlyProperty|]);
+    }
+    public bool M2(bool option)
+    {
+        return option;
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(source);
+
+            var vbSource = @"
+Imports System.Runtime.Versioning
+
+Public Class Test
+    <SupportedOSPlatform(""windows"")>
+    Public Shared Property WindowsOnlyProperty As Boolean
+        Get
+            Return True
+        End Get
+        Set(ByVal value As Boolean)
+        End Set
+    End Property
+
+    Public Shared Property WindowsOnlyPropertyGetter As Boolean
+        <SupportedOSPlatform(""windows"")>
+        Get
+            Return True
+        End Get
+        Set(ByVal value As Boolean)
+        End Set
+    End Property
+
+    Public Shared Property WindowsOnlyPropertySetter As Boolean
+        Get
+            Return True
+        End Get
+        < SupportedOSPlatform(""windows"") >
+        Set(ByVal value As Boolean)
+        End Set
+    End Property
+
+    Public Sub M1()
+        WindowsOnlyPropertyGetter = True
+        Dim s = [|WindowsOnlyPropertyGetter|]
+        WindowsOnlyPropertyGetter = [|WindowsOnlyPropertyGetter|] Or True
+        [|WindowsOnlyPropertySetter|] = WindowsOnlyPropertySetter And False
+        [|WindowsOnlyPropertySetter|] = False
+        s = WindowsOnlyPropertySetter
+        M2([|WindowsOnlyPropertyGetter|])
+        Dim name = NameOf(WindowsOnlyPropertyGetter)
+    End Sub
+
+    Public Function M2(ByVal[option] As Boolean) As Boolean
+        Return[option]
+    End Function
+End Class
+" + MockAttributesVbSource;
+            await VerifyAnalyzerAsyncVb(vbSource);
+        }
+
         [Theory]
         [MemberData(nameof(Create_AttributeProperty_WithCondtions))]
         public async Task OsDependentPropertyConditionalCheckWarns(string attribute, string property, string condition, string setter, string getter)
@@ -319,7 +420,7 @@ public class Test
     [SupportedOSPlatform(""Windows10.1.1.1"")]
     string WindowsStringField;
     [SupportedOSPlatform(""Windows10.1.1.1"")]
-    public int WindowsIntField { get; set; }
+    public int WindowsIntField;
     public void M1()
     {
         Test test = new Test();
@@ -677,6 +778,53 @@ Public Class Test
 End Class"
 + MockAttributesVbSource;
             await VerifyAnalyzerAsyncVb(vbSource);
+        }
+
+        [Fact]
+        public async Task OsDependentEventAddRemoveAccessedWarns()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+public class Test
+{
+    [SupportedOSPlatform(""windows"")]
+    public static event EventHandler WindowsOnlyEvent
+    {
+        add { }
+        remove { }
+    }
+
+    public static event EventHandler WindowsOnlyEventAdd
+    {
+        [SupportedOSPlatform(""windows"")]
+        add { }
+        remove { }
+    }
+
+    public static event EventHandler WindowsOnlyEventRemove
+    {
+        add { }
+        [SupportedOSPlatform(""windows"")]
+        remove { }
+    }
+
+    public static void WindowsEventHandler(object sender, EventArgs e) { }
+
+    public void M1()
+    {
+        [|WindowsOnlyEvent|] += WindowsEventHandler;
+        [|WindowsOnlyEventAdd|] += WindowsEventHandler;
+        WindowsOnlyEventRemove += WindowsEventHandler;
+
+        [|WindowsOnlyEvent|] -= WindowsEventHandler;
+        WindowsOnlyEventAdd -= WindowsEventHandler;
+        [|WindowsOnlyEventRemove|] -= WindowsEventHandler;
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(source);
         }
 
         [Fact]

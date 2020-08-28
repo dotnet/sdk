@@ -1109,17 +1109,28 @@ public class Test
 {
     [UnsupportedOSPlatform(""Windows8.1"")]
     public string RemovedProperty { get; set;}
+
+    public static bool WindowsOnlyPropertyGetter
+    {
+        [SupportedOSPlatform(""windows"")]
+        get { return true; }
+        set { }
+    }
     
     public void M1()
     {
         if(OperatingSystemHelper.IsWindows() && !OperatingSystemHelper.IsWindowsVersionAtLeast(8, 0, 19222)) 
         {
+            WindowsOnlyPropertyGetter = true;
+            var val = WindowsOnlyPropertyGetter;
             RemovedProperty = ""Hello"";
             string s = RemovedProperty;
             M2(RemovedProperty);
         }
         else
         {
+            WindowsOnlyPropertyGetter = true;
+            var val = [|WindowsOnlyPropertyGetter|];
             [|RemovedProperty|] = ""Hello"";
             string s = [|RemovedProperty|];
             M2([|RemovedProperty|]);
@@ -1972,7 +1983,7 @@ Class Test
 End Class
 " + MockRuntimeApiSourceVb + MockAttributesVbSource;
             await VerifyAnalyzerAsyncVb(vbSource, s_msBuildPlatforms,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(10, 13).WithMessage("'Test.M2()' is unsupported on 'Windows'"));
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(10, 13).WithMessage("'Private Sub M2()' is unsupported on 'Windows'"));
         }
 
         [Fact]
@@ -2026,23 +2037,33 @@ class Test
         public async Task GuardedWith_DebugAssertAnalysisTest()
         {
             var source = @"
+using System;
 using System.Diagnostics;
 using System.Runtime.Versioning;
-using System;
+using System.Runtime.InteropServices;
 
 class Test
 {
     void M1()
     {
+        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+        M3();
+
+        // Should still warn for Windows10.1.2.3 
         [|M2()|];
 
         Debug.Assert(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 10, 2));
-
         M2();
+        M3();
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2()
+    {
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    void M3()
     {
     }
 }" + MockAttributesCsSource + MockOperatingSystemApiSource;
