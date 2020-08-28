@@ -381,7 +381,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 1);
+                expectedFileCount: 3);
         }
 
         [Fact]
@@ -393,8 +393,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 exclude: EmptyFilesList,
                 includeGenerated: true,
                 expectedExitCode: 0,
-                expectedFilesFormatted: 1,
-                expectedFileCount: 1);
+                expectedFilesFormatted: 3,
+                expectedFileCount: 3);
         }
 
         [Fact]
