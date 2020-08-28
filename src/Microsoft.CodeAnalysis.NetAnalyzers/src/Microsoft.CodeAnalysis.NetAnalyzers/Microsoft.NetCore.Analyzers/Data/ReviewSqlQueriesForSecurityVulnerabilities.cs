@@ -94,11 +94,9 @@ namespace Microsoft.NetCore.Analyzers.Data
                             return;
                         }
 
-                        M();
                         AnalyzeMethodCall(operationContext, invocation.TargetMethod, symbol, invocation.Arguments, invocation.Syntax, isInDbCommandConstructor, isInDataAdapterConstructor, iDbCommandType, iDataAdapterType);
                     }, OperationKind.Invocation);
 
-                    static bool M() => true;
                     operationBlockStartContext.RegisterOperationAction(operationContext =>
                     {
                         var propertyReference = (IPropertyReferenceOperation)operationContext.Operation;
