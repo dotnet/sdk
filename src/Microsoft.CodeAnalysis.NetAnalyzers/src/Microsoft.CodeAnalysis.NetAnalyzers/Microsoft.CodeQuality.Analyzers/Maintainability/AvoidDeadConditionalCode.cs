@@ -154,8 +154,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         }
 
                                         var originalOperation = operationRoot.SemanticModel.GetOperation(operation.Syntax, operationBlockContext.CancellationToken);
-                                        if (originalOperation is IAssignmentOperation ||
-                                            originalOperation is IVariableDeclaratorOperation)
+                                        if (originalOperation is IAssignmentOperation or
+                                            IVariableDeclaratorOperation)
                                         {
                                             // Skip compiler generated IsNull operation for assignment/variable declaration within a using.
                                             continue;
@@ -171,10 +171,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                             PredicateValueKind GetPredicateKind(IOperation operation)
                             {
-                                Debug.Assert(operation.Kind == OperationKind.BinaryOperator ||
-                                             operation.Kind == OperationKind.Invocation ||
-                                             operation.Kind == OperationKind.IsNull ||
-                                             operation.Kind == OperationKind.IsPattern);
+                                Debug.Assert(operation.Kind is OperationKind.BinaryOperator or
+                                             OperationKind.Invocation or
+                                             OperationKind.IsNull or
+                                             OperationKind.IsPattern);
                                 RoslynDebug.Assert(pointsToAnalysisResult != null);
                                 RoslynDebug.Assert(valueContentAnalysisResult != null);
 

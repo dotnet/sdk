@@ -73,8 +73,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                         (SymbolAnalysisContext symbolAnalysisContext) =>
                         {
                             INamedTypeSymbol namedTypeSymbol = (INamedTypeSymbol)symbolAnalysisContext.Symbol;
-                            if (namedTypeSymbol.TypeKind != TypeKind.Interface
-                                && namedTypeSymbol.TypeKind != TypeKind.Class)
+                            if (namedTypeSymbol.TypeKind is not TypeKind.Interface
+                                and not TypeKind.Class)
                             {
                                 return;
                             }

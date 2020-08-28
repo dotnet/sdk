@@ -95,7 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 else
                 {
                     int stringOrCharArgumentIndex, ordinalArgumentIndex;
-                    if (indexOfMethodArguments[0].Value.Type.SpecialType == SpecialType.System_String || indexOfMethodArguments[0].Value.Type.SpecialType == SpecialType.System_Char)
+                    if (indexOfMethodArguments[0].Value.Type.SpecialType is SpecialType.System_String or SpecialType.System_Char)
                     {
                         stringOrCharArgumentIndex = 0;
                         ordinalArgumentIndex = 1;

@@ -247,7 +247,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             var propertyReferenceOperation = (IPropertyReferenceOperation)context.Operation;
 
             string propertyName = propertyReferenceOperation.Member.Name;
-            if (propertyName != Count && propertyName != Length)
+            if (propertyName is not Count and not Length)
             {
                 return;
             }
@@ -691,7 +691,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 _ => -1
             };
 
-            return constant == 0 || constant == 1;
+            return constant is 0 or 1;
         }
 
         private static bool IsPropertyGetOfIsEmptyUsingThisInstance(OperationAnalysisContext context, IOperation operation, ISymbol isEmptyPropertySymbol)

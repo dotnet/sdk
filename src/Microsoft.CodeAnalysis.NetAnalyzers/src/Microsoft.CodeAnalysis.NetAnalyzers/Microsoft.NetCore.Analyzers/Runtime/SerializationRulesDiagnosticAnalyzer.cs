@@ -174,7 +174,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public void AnalyzeSymbol(SymbolAnalysisContext context)
             {
                 var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
-                if (namedTypeSymbol.TypeKind == TypeKind.Delegate || namedTypeSymbol.TypeKind == TypeKind.Interface)
+                if (namedTypeSymbol.TypeKind is TypeKind.Delegate or TypeKind.Interface)
                 {
                     return;
                 }

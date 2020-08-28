@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             // Last and Count code fix need the Count property so we want to ensure it exists before registration
-            if (method == LastPropertyName || method == CountPropertyName)
+            if (method is LastPropertyName or CountPropertyName)
             {
                 var typeSymbol = semanticModel.GetTypeInfo(collectionSyntax).Type;
                 if (!typeSymbol.HasAnyCollectionCountProperty(WellKnownTypeProvider.GetOrCreate(semanticModel.Compilation)))

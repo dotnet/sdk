@@ -306,9 +306,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         {
             // If this type doesn't live in an application assembly (.exe), it can't contain
             // the entry point.
-            if (compilation.Options.OutputKind != OutputKind.ConsoleApplication &&
-                compilation.Options.OutputKind != OutputKind.WindowsApplication &&
-                compilation.Options.OutputKind != OutputKind.WindowsRuntimeApplication)
+            if (compilation.Options.OutputKind is not OutputKind.ConsoleApplication and
+                not OutputKind.WindowsApplication and
+                not OutputKind.WindowsRuntimeApplication)
             {
                 return false;
             }

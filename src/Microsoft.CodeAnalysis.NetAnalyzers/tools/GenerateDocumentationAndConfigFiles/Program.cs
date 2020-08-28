@@ -221,11 +221,11 @@ $@"<Project>
                 {
                     if (!string.IsNullOrEmpty(propsFileToDisableNetAnalyzersInNuGetPackageName))
                     {
-                        Debug.Assert(analyzerPackageName == "Microsoft.CodeAnalysis.NetAnalyzers" ||
-                            analyzerPackageName == "Microsoft.CodeAnalysis.FxCopAnalyzers" ||
-                            analyzerPackageName == "Microsoft.NetCore.Analyzers" ||
-                            analyzerPackageName == "Microsoft.NetFramework.Analyzers" ||
-                            analyzerPackageName == "Microsoft.CodeQuality.Analyzers");
+                        Debug.Assert(analyzerPackageName is "Microsoft.CodeAnalysis.NetAnalyzers" or
+                            "Microsoft.CodeAnalysis.FxCopAnalyzers" or
+                            "Microsoft.NetCore.Analyzers" or
+                            "Microsoft.NetFramework.Analyzers" or
+                            "Microsoft.CodeQuality.Analyzers");
 
                         return $@"
   <!-- 

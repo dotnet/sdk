@@ -125,7 +125,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             {
                                 Debug.Assert(!stringContentValue.LiteralValues.IsEmpty);
 
-                                if (stringContentValue.LiteralValues.Any(l => !(l is string)))
+                                if (stringContentValue.LiteralValues.Any(l => l is not string))
                                 {
                                     return;
                                 }

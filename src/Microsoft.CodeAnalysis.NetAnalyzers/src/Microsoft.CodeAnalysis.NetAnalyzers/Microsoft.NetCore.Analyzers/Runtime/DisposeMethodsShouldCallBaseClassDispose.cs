@@ -100,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             // Ensure that method '{0}' calls '{1}' in all possible control flow paths.
                             var arg1 = containingMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                             var baseKeyword = containingMethod.Language == LanguageNames.CSharp ? "base" : "MyBase";
-                            var disposeMethodParam = (disposeMethodKind == DisposeMethodKind.DisposeBool || disposeMethodKind == DisposeMethodKind.DisposeCoreAsync) ?
+                            var disposeMethodParam = (disposeMethodKind is DisposeMethodKind.DisposeBool or DisposeMethodKind.DisposeCoreAsync) ?
                                 containingMethod.Language == LanguageNames.CSharp ? "bool" : "Boolean" :
                                 string.Empty;
                             var disposeMethodName = disposeMethodKind == DisposeMethodKind.DisposeBool ?

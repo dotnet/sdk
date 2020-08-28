@@ -87,7 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     // ensure argument is an array
                     IArgumentOperation paramsArgument = invocation.Arguments[info.FormatStringIndex + 1];
-                    if (paramsArgument.ArgumentKind != ArgumentKind.ParamArray && paramsArgument.ArgumentKind != ArgumentKind.Explicit)
+                    if (paramsArgument.ArgumentKind is not ArgumentKind.ParamArray and not ArgumentKind.Explicit)
                     {
                         // wrong format
                         return;
@@ -234,7 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         ch = format[pos];
                     }
 
-                    if (ch < '0' || ch > '9')
+                    if (ch is < '0' or > '9')
                     {
                         // wrong format after "-"
                         return -1;
