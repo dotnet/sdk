@@ -113,7 +113,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return true;
                 }
 
-                platformName = methodName.Substring(2);
+                platformName = methodName[2..];
                 return true;
             }
 

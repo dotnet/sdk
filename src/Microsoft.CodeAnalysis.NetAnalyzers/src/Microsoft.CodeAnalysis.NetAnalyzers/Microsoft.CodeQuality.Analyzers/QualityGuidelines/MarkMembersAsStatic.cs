@@ -92,9 +92,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 void OnOperationBlockStart(OperationBlockStartAnalysisContext blockStartContext)
                 {
-#pragma warning disable IDE0083 // Use pattern matching - need new compiler
                     if (blockStartContext.OwningSymbol is not IMethodSymbol methodSymbol)
-#pragma warning restore IDE0083 // Use pattern matching
                     {
                         return;
                     }

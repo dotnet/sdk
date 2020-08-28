@@ -86,7 +86,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             else if (symbol.Kind == SymbolKind.Method && symbol.Name.StartsWith(Get, StringComparison.Ordinal))
             {
                 // Want to look for properties named the same as the method sans 'Get'
-                identifier = symbol.Name.Substring(3);
+                identifier = symbol.Name[3..];
             }
             else
             {
