@@ -13,6 +13,7 @@ using System.Text;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using static GenerateDocumentationAndConfigFiles.CommonPropertyNames;
 
 namespace GenerateDocumentationAndConfigFiles
 {
@@ -201,6 +202,8 @@ $@"<Project>
 
                 if (!string.IsNullOrEmpty(disableNetAnalyzersImport))
                 {
+                    Debug.Assert(Version.TryParse(analyzerVersion, out _));
+
                     fileWithPath = Path.Combine(directory.FullName, propsFileToDisableNetAnalyzersInNuGetPackageName);
                     fileContents =
 $@"<Project>
@@ -210,6 +213,7 @@ $@"<Project>
   -->
   <PropertyGroup>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <{NetAnalyzersNugetAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersNugetAssemblyVersionPropertyName}>
   </PropertyGroup>
 </Project>";
                     File.WriteAllText(fileWithPath, fileContents);
@@ -221,11 +225,11 @@ $@"<Project>
                 {
                     if (!string.IsNullOrEmpty(propsFileToDisableNetAnalyzersInNuGetPackageName))
                     {
-                        Debug.Assert(analyzerPackageName is "Microsoft.CodeAnalysis.NetAnalyzers" or
-                            "Microsoft.CodeAnalysis.FxCopAnalyzers" or
-                            "Microsoft.NetCore.Analyzers" or
-                            "Microsoft.NetFramework.Analyzers" or
-                            "Microsoft.CodeQuality.Analyzers");
+                        Debug.Assert(analyzerPackageName is NetAnalyzersPackageName or
+                            FxCopAnalyzersPackageName or
+                            NetCoreAnalyzersPackageName or
+                            NetFrameworkAnalyzersPackageName or
+                            CodeQualityAnalyzersPackageName);
 
                         return $@"
   <!-- 
@@ -233,6 +237,14 @@ $@"<Project>
     This additional props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
   -->
   <Import Project=""{propsFileToDisableNetAnalyzersInNuGetPackageName}"" Condition=""Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')"" />
+
+  <!--
+    PropertyGroup to set the NetAnalyzers version installed in the SDK.
+    We rely on the additional props file '{propsFileToDisableNetAnalyzersInNuGetPackageName}' not being present in the SDK.
+  -->
+  <PropertyGroup Condition=""!Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')"">
+    <{NetAnalyzersSDKAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersSDKAssemblyVersionPropertyName}>
+  </PropertyGroup>
 ";
                     }
 
