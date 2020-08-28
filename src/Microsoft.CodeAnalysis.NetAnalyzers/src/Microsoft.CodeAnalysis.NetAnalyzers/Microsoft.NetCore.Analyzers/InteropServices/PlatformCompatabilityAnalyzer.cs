@@ -210,7 +210,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     // Do not free in presence of cancellation.
                     if (!context.CancellationToken.IsCancellationRequested)
                     {
-                        platformSpecificOperations.Free();
+                        platformSpecificOperations.Free(context.CancellationToken);
                     }
                 }
 
