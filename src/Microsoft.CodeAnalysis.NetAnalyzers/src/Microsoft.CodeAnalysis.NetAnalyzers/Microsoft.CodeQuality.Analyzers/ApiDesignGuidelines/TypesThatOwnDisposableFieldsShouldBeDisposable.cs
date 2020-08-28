@@ -60,12 +60,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             private readonly DisposeAnalysisHelper _disposeAnalysisHelper;
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             public DisposableFieldAnalyzer(Compilation compilation)
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
             {
                 DisposeAnalysisHelper.TryGetOrCreate(compilation, out _disposeAnalysisHelper!);
-                Debug.Assert(_disposeAnalysisHelper != null);
+                RoslynDebug.Assert(_disposeAnalysisHelper != null);
             }
 
             public void AnalyzeSymbol(SymbolAnalysisContext symbolContext)
