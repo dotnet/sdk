@@ -2,7 +2,7 @@
 
 namespace console_project
 {
-    public enum DaysEnumNeedsFlags
+    public enum DaysEnumNeedsFlags : uint
     {
         None = 0,
         Monday = 1,

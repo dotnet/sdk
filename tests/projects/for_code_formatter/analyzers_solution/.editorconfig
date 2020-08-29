@@ -215,4 +215,4 @@ dotnet_diagnostic.IDE0005.severity = warning
 dotnet_diagnostic.CA1027.severity = error
 
 # CA1028: Enum storage should be Int32
-# dotnet_diagnostic.CA1028.severity = error
+dotnet_diagnostic.CA1028.severity = error
