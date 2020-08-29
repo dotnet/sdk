@@ -73,12 +73,12 @@ namespace Microsoft.CodeAnalysis.Tools
             var formatterRanMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS - determineFilesMS;
             logger.LogTrace(Resources.Complete_in_0_ms, formatterRanMS);
 
-            var documentsWithErrors = formattedFiles.Select(file => file.DocumentId).Distinct().ToImmutableArray();
-            foreach (var documentId in documentsWithErrors)
+            var documentIdsWithErrors = formattedFiles.Select(file => file.DocumentId).Distinct().ToImmutableArray();
+            foreach (var documentId in documentIdsWithErrors)
             {
-                var documnentWithError = solution.GetDocument(documentId);
+                var documentWithError = solution.GetDocument(documentId);
 
-                logger.LogInformation(Resources.Formatted_code_file_0, documnentWithError!.FilePath);
+                logger.LogInformation(Resources.Formatted_code_file_0, documentWithError!.FilePath);
             }
 
             var exitCode = 0;
@@ -94,11 +94,11 @@ namespace Microsoft.CodeAnalysis.Tools
                 ReportWriter.Write(formatOptions.ReportPath!, formattedFiles, logger);
             }
 
-            logger.LogDebug(Resources.Formatted_0_of_1_files, documentsWithErrors.Length, fileCount);
+            logger.LogDebug(Resources.Formatted_0_of_1_files, documentIdsWithErrors.Length, fileCount);
 
             logger.LogInformation(Resources.Format_complete_in_0_ms, workspaceStopwatch.ElapsedMilliseconds);
 
-            return new WorkspaceFormatResult(documentsWithErrors.Length, fileCount, exitCode);
+            return new WorkspaceFormatResult(documentIdsWithErrors.Length, fileCount, exitCode);
         }
 
         private static Workspace OpenFolderWorkspace(string workspacePath, SourceFileMatcher fileMatcher)
