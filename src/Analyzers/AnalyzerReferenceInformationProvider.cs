@@ -28,15 +28,17 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         private AnalyzersAndFixers GetAnalyzersAndFixers(Project project)
         {
+            var context = new AnalyzerLoadContext();
+
             var analyzerAssemblies = project.AnalyzerReferences
-                .Select(reference => TryLoadAssemblyFrom(reference.FullPath))
+                .Select(reference => TryLoadAssemblyFrom(reference.FullPath, context))
                 .OfType<Assembly>()
                 .ToImmutableArray();
 
             return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(analyzerAssemblies);
         }
 
-        private Assembly? TryLoadAssemblyFrom(string? path)
+        private Assembly? TryLoadAssemblyFrom(string? path, AnalyzerLoadContext context)
         {
             // Since we are not deploying these assemblies we need to ensure the files exist.
             if (path is null || !File.Exists(path))
@@ -46,7 +48,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             try
             {
-                var context = new AnalyzerLoadContext(Path.GetDirectoryName(path));
+                context.AssemblyFolderPath = Path.GetDirectoryName(path);
 
                 // First try loading the assembly from disk.
                 return context.LoadFromAssemblyPath(path);
@@ -61,12 +63,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         internal sealed class AnalyzerLoadContext : AssemblyLoadContext
         {
-            private readonly string _assemblyFolderPath;
-
-            public AnalyzerLoadContext(string assemblyFolderPath)
-            {
-                _assemblyFolderPath = assemblyFolderPath;
-            }
+            internal string AssemblyFolderPath { get; set; } = string.Empty;
 
             protected override Assembly Load(AssemblyName assemblyName)
             {
@@ -77,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 try
                 {
                     // Search for assembly based on assembly name and culture within the analyzer folder.
-                    var assembly = AssemblyResolver.TryResolveAssemblyFromPaths(this, assemblyName, _assemblyFolderPath);
+                    var assembly = AssemblyResolver.TryResolveAssemblyFromPaths(this, assemblyName, AssemblyFolderPath);
 
                     if (assembly != null)
                     {
