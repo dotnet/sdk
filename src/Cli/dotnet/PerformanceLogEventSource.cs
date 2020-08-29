@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
@@ -20,7 +21,7 @@ namespace Microsoft.DotNet.Cli
         }
 
         [NonEvent]
-        internal void LogStartUpInformation(DateTime mainTimeStamp)
+        internal void LogStartUpInformation(PerformanceLogStartupInformation startupInfo)
         {
             Process currentProcess = Process.GetCurrentProcess();
 
@@ -33,7 +34,12 @@ namespace Microsoft.DotNet.Cli
             EnvironmentInfo(Environment.CommandLine);
             LogDrives();
 
-            TimeSpan latency = mainTimeStamp - currentProcess.StartTime;
+            if(startupInfo.TimedAssembly != null)
+            {
+                AssemblyLoad(startupInfo.TimedAssembly.GetName().Name, startupInfo.AssemblyLoadTime.TotalMilliseconds);
+            }
+
+            TimeSpan latency = startupInfo.MainTimeStamp - currentProcess.StartTime;
             HostLatency(latency.TotalMilliseconds);
         }
 
@@ -194,9 +200,9 @@ namespace Microsoft.DotNet.Cli
         }
 
         [Event(23)]
-        internal void MachineConfiguration(string MachineName, int ProcessorCount)
+        internal void MachineConfiguration(string machineName, int processorCount)
         {
-            WriteEvent(23, MachineName, ProcessorCount);
+            WriteEvent(23, machineName, processorCount);
         }
 
         [NonEvent]
@@ -218,9 +224,72 @@ namespace Microsoft.DotNet.Cli
         }
 
         [Event(24)]
-        internal void DriveConfiguration(string Name, string Format, string Type, double TotalSizeMB, double AvailableFreeSpaceMB)
+        internal void DriveConfiguration(string name, string format, string type, double totalSizeMB, double availableFreeSpaceMB)
         {
-            WriteEvent(24, Name, Format, Type, TotalSizeMB, AvailableFreeSpaceMB);
+            WriteEvent(24, name, format, type, totalSizeMB, availableFreeSpaceMB);
+        }
+
+        [Event(25)]
+        internal void AssemblyLoad(string assemblyName, double timeInMs)
+        {
+            WriteEvent(25, assemblyName, timeInMs);
+        }
+    }
+
+    internal class PerformanceLogStartupInformation
+    {
+        public PerformanceLogStartupInformation(DateTime mainTimeStamp)
+        {
+            // Save the main timestamp.
+            MainTimeStamp = mainTimeStamp;
+
+            // Attempt to load an assembly.
+            // Ideally, we've picked one that we'll already need, so we're not adding additional overhead.
+            MeasureModuleLoad();
+        }
+
+        internal DateTime MainTimeStamp { get; private set; }
+        internal Assembly TimedAssembly { get; private set; }
+        internal TimeSpan AssemblyLoadTime { get; private set; }
+
+        private void MeasureModuleLoad()
+        {
+            // Make sure the assembly hasn't been loaded yet.
+            string assemblyName = "Microsoft.DotNet.Configurer";
+            try
+            {
+                foreach (Assembly loadedAssembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (loadedAssembly.GetName().Name.Equals(assemblyName))
+                    {
+                        // If the assembly is already loaded, then bail.
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // If we fail to enumerate, just bail.
+                return;
+            }
+
+            Stopwatch stopWatch = Stopwatch.StartNew();
+            Assembly assembly = null;
+            try
+            {
+                assembly = Assembly.Load(assemblyName);
+            }
+            catch
+            {
+                return;
+            }
+            stopWatch.Stop();
+            if (assembly != null)
+            {
+                // Save the results.
+                TimedAssembly = assembly;
+                AssemblyLoadTime = stopWatch.Elapsed;
+            }
         }
     }
 }

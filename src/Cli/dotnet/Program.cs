@@ -28,19 +28,17 @@ namespace Microsoft.DotNet.Cli
 
         public static int Main(string[] args)
         {
-            // TODO: Capture the current timestamp for "Host to CLI main" timing.
-
             DebugHelper.HandleDebugSwitch(ref args);
 
-            // Keep track of the time we entered Main.
-            DateTime mainTimeStamp = DateTime.Now;
+            // Initialize the performance log start-up information.
+            PerformanceLogStartupInformation startupInfo = new PerformanceLogStartupInformation(DateTime.Now);
 
             PerformanceLogManager.Initialize(FileSystemWrapper.Default);
             using (PerformanceLogEventListener eventListener = PerformanceLogEventListener.Create(FileSystemWrapper.Default, PerformanceLogManager.Instance.CurrentLogDirectory))
             {
                 new MulticoreJitActivator().TryActivateMulticoreJit();
 
-                PerformanceLogEventSource.Log.LogStartUpInformation(mainTimeStamp);
+                PerformanceLogEventSource.Log.LogStartUpInformation(startupInfo);
                 PerformanceLogEventSource.Log.CLIStart();
 
                 if (Env.GetEnvironmentVariableAsBool("DOTNET_CLI_CAPTURE_TIMING", false))
