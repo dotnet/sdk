@@ -450,7 +450,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 analyzerSeverity: DiagnosticSeverity.Error);
         }
 
-        public async Task<int> PerformNuGetRestore(string workspaceFilePath)
+        internal async Task<int> PerformNuGetRestore(string workspaceFilePath)
         {
             var processInfo = ProcessRunner.CreateProcess("dotnet", $"restore \"{workspaceFilePath}\"", captureOutput: true, displayWindow: false);
             var restoreResult = await processInfo.Result;
@@ -458,7 +458,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             return restoreResult.ExitCode;
         }
 
-        public async Task<string> TestFormatWorkspaceAsync(
+        internal async Task<string> TestFormatWorkspaceAsync(
             string workspaceFilePath,
             string[] include,
             string[] exclude,
