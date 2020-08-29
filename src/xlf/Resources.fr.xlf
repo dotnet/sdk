@@ -232,9 +232,19 @@
         <target state="translated">Fichier de code '{0}' mis en forme.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action">
+        <source>Unable to fix {0}. Code fix {1} didn't return a Fix All action.</source>
+        <target state="new">Unable to fix {0}. Code fix {1} didn't return a Fix All action.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_doesnt_support_Fix_All_in_Solution">
         <source>Unable to fix {0}. Code fix {1} doesn't support Fix All in Solution.</source>
         <target state="translated">Impossible de corriger {0}. Le correctif de code {1} ne prend pas en charge la fonctionnalité Tout corriger dans la solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation">
+        <source>Unable to fix {0}. Code fix {1} returned an unexpected operation.</source>
+        <target state="new">Unable to fix {0}. Code fix {1} returned an unexpected operation.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_No_associated_code_fix_found">

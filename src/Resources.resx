@@ -282,4 +282,10 @@
   <data name="Remove_unnecessary_import" xml:space="preserve">
     <value>Remove unnecessary import.</value>
   </data>
+  <data name="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action" xml:space="preserve">
+    <value>Unable to fix {0}. Code fix {1} didn't return a Fix All action.</value>
+  </data>
+  <data name="Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation" xml:space="preserve">
+    <value>Unable to fix {0}. Code fix {1} returned an unexpected operation.</value>
+  </data>
 </root>

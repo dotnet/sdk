@@ -51,11 +51,21 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             try
             {
                 var action = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
-                var operations = action != null
-                    ? await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false)
-                    : ImmutableArray<CodeActionOperation>.Empty;
+                if (action is null)
+                {
+                    logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action, diagnosticId, codeFix.GetType().Name);
+                    return solution;
+                }
+
+                var operations = await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false);
                 var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();
-                return applyChangesOperation?.ChangedSolution ?? solution;
+                if (action is null)
+                {
+                    logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation, diagnosticId, codeFix.GetType().Name);
+                    return solution;
+                }
+
+                return applyChangesOperation.ChangedSolution;
             }
             catch (Exception ex)
             {
