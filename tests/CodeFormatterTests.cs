@@ -28,6 +28,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private const string FSharpProjectPath = "for_code_formatter/fsharp_project/";
         private const string FSharpProjectFilePath = FSharpProjectPath + "fsharp_project.fsproj";
 
+        private const string GeneratedProjectPath = "for_code_formatter/generated_project/";
+        private const string GeneratedProjectFilePath = GeneratedProjectPath + "generated_project.csproj";
+
         private const string CodeStyleSolutionPath = "for_code_formatter/codestyle_solution/";
         private const string CodeStyleSolutionFilePath = CodeStyleSolutionPath + "codestyle_solution.sln";
 
@@ -366,6 +369,32 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 5);
+        }
+
+        [Fact]
+        public async Task NoFilesFormattedInGeneratedProject_WhenNotIncludingGeneratedCode()
+        {
+            await TestFormatWorkspaceAsync(
+                GeneratedProjectFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 3);
+        }
+
+        [Fact]
+        public async Task FilesFormattedInGeneratedProject_WhenIncludingGeneratedCode()
+        {
+            await TestFormatWorkspaceAsync(
+                GeneratedProjectFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: true,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 3,
+                expectedFileCount: 3);
         }
 
         [Fact]
