@@ -2153,8 +2153,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
-        <source>Use ordinal stringcomparison</source>
-        <target state="translated">Usare StringComparison.Ordinal</target>
+        <source>Use ordinal string comparison</source>
+        <target state="needs-review-translation">Usare StringComparison.Ordinal</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">

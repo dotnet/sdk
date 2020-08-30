@@ -208,7 +208,7 @@
     <value>Mark assemblies with NeutralResourcesLanguageAttribute</value>
   </data>
   <data name="UseOrdinalStringComparisonTitle" xml:space="preserve">
-    <value>Use ordinal stringcomparison</value>
+    <value>Use ordinal string comparison</value>
   </data>
   <data name="UseOrdinalStringComparisonDescription" xml:space="preserve">
     <value>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</value>

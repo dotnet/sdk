@@ -2154,8 +2154,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
-        <source>Use ordinal stringcomparison</source>
-        <target state="translated">Użyj operacji porównywania ciągów opartej na porównywaniu wartości</target>
+        <source>Use ordinal string comparison</source>
+        <target state="needs-review-translation">Użyj operacji porównywania ciągów opartej na porównywaniu wartości</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
