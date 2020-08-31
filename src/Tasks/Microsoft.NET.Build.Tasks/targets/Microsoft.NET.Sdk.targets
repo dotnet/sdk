@@ -929,9 +929,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_BlockWinMDsOnUnsupportedTFMs"
           AfterTargets="PreBuildEvent"
-          DependsOnTargets="ResolveReferences"
+          DependsOnTargets="FindReferenceAssembliesForReferences"
           Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '5.0'))">
-    <NETSdkError Condition="'%(ReferencePath.Extension)' == '.winmd'"
+    <NETSdkError Condition="'%(ReferencePathWithRefAssemblies.Extension)' == '.winmd'"
       ResourceName="WinMDReferenceNotSupportedOnTargetFramework"
       FormatArguments="$(TargetFrameworkMoniker)" />
     <NETSdkError Condition="'$(OutputType)' == 'winmdobj'"
