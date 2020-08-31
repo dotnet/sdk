@@ -28,7 +28,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                             isEnabledByDefaultInAggressiveMode: false);
         internal static DiagnosticDescriptor ParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageParameter,
@@ -37,7 +38,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                             isEnabledByDefaultInAggressiveMode: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
         //ImmutableArray.Create(LocalRule, ParameterRule);

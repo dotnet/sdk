@@ -29,7 +29,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                             isEnabledByDefaultInAggressiveMode: false);
         internal static DiagnosticDescriptor MakeVisibleRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageMakeVisible,
@@ -38,7 +39,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                             isEnabledByDefaultInAggressiveMode: false);
         internal static DiagnosticDescriptor MakeOverridableRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageMakeOverridable,
@@ -47,7 +49,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                             isEnabledByDefaultInAggressiveMode: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
         //DiagnosticHelpers.EnabledByDefaultIfNotBuildingVSIX ? ImmutableArray.Create(DefaultRule, MakeVisibleRule, MakeOverridableRule) : ImmutableArray<DiagnosticDescriptor>.Empty;

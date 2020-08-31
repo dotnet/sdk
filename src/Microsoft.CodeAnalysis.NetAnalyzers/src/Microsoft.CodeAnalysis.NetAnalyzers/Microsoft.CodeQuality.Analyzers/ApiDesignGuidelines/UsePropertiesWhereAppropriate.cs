@@ -31,7 +31,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          description: s_localizableDescription,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false,
-                                                                         isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                         isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                         isEnabledByDefaultInAggressiveMode: false);
         private const string GetHashCodeName = "GetHashCode";
         private const string GetEnumeratorName = "GetEnumerator";
 

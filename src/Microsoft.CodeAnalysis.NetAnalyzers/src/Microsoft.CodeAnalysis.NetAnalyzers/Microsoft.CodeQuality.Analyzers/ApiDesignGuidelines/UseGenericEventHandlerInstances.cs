@@ -41,7 +41,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             description: s_localizableDescriptionForDelegate,
             isPortedFxCopRule: true,
             isDataflowRule: false,
-            isEnabledByDefaultInFxCopAnalyzers: false);
+            isEnabledByDefaultInFxCopAnalyzers: false,
+            isEnabledByDefaultInAggressiveMode: false);
 
         internal static DiagnosticDescriptor RuleForEvents = DiagnosticDescriptorHelper.Create(
             RuleId,
@@ -52,7 +53,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             description: s_localizableDescriptionForEvent,
             isPortedFxCopRule: true,
             isDataflowRule: false,
-            isEnabledByDefaultInFxCopAnalyzers: false);
+            isEnabledByDefaultInFxCopAnalyzers: false,
+            isEnabledByDefaultInAggressiveMode: false);
 
         internal static DiagnosticDescriptor RuleForEvents2 = DiagnosticDescriptorHelper.Create(
             RuleId,

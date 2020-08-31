@@ -79,7 +79,8 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 descriptionResourceStringName != null ? GetResourceString(resourceSource, descriptionResourceStringName) : null,
                 isPortedFxCopRule,
                 isDataflowRule,
-                isEnabledByDefaultInFxCopAnalyzers: ruleLevel != RuleLevel.Disabled);
+                isEnabledByDefaultInFxCopAnalyzers: ruleLevel != RuleLevel.Disabled,
+                isEnabledByDefaultInAggressiveMode: ruleLevel != RuleLevel.Disabled);
         }
 
         /// <summary>

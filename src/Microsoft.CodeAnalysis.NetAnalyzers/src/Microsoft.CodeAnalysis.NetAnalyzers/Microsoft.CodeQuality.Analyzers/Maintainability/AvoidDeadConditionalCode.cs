@@ -37,7 +37,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              description: null,
                                                                              isPortedFxCopRule: false,
                                                                              isDataflowRule: true,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                             isEnabledByDefaultInAggressiveMode: false);
 
         internal static DiagnosticDescriptor NeverNullRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
@@ -47,7 +48,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              description: null,
                                                                              isPortedFxCopRule: false,
                                                                              isDataflowRule: true,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                             isEnabledByDefaultInAggressiveMode: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AlwaysTrueFalseOrNullRule, NeverNullRule);
 
