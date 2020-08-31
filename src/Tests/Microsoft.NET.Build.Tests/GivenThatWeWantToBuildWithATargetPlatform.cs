@@ -63,6 +63,28 @@ namespace Microsoft.NET.Build.Tests
             assertValue("TargetPlatformDisplayName", $"{expectedTargetPlatformIdentifier} {expectedTargetPlatformVersion}");
         }
 
+        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0.41402")]
+        public void It_defines_target_platform_from_target_framework_with_explicit_version()
+        {
+            var targetPlatformVersion = "";
+            var targetFramework = "net5.0-windows";
+            var testProj = new TestProject()
+            {
+                Name = "TargetPlatformTests",
+                IsSdkProject = true,
+                TargetFrameworks = targetFramework
+            };
+            testProj.AdditionalProperties["TargetPlatformVersion"] = targetPlatformVersion;
+            var testAsset = _testAssetsManager.CreateTestProject(testProj);
+
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProj.Name), targetFramework, "TargetPlatformIdentifier");
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+            getValuesCommand.GetValues().ShouldBeEquivalentTo(new[] { "Windows" });
+        }
+
         [Fact]
         public void It_fails_on_unsupported_os()
         {
