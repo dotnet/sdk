@@ -97,6 +97,35 @@ class TestClass
         }
 
         [Fact]
+        public async Task TestPropertyInitializerGroupPolicyIdentifierOfBlobNamespaceNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS { get; } = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, ""foo"", null, null);
+}");
+        }
+
+        [Fact]
+        public async Task TestFieldInitializerGroupPolicyIdentifierOfBlobNamespaceNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string GroupPolicyIdentifier;
+    public string SAS = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, ""foo"", null, null);
+}");
+        }
+
+        [Fact]
         public async Task TestAccessPolicyIdentifierOfTableNamespaceIsNullDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
