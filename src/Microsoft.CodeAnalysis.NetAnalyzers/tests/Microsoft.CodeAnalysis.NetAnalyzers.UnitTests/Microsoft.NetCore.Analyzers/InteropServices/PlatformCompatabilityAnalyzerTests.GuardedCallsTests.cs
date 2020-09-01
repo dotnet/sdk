@@ -1523,6 +1523,171 @@ public class Test
         }
 
         [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside local function escaped as delegate.
+        void LocalFunction()
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        M3(LocalFunction);
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside local function escaped as delegate indirectly from another local function.
+        void LocalFunction()
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        }
+
+        void LocalFunction2()
+        {
+            // Escaped inside another local function.
+            M3(LocalFunction);
+        }
+
+        LocalFunction2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside local function escaped as delegate indirectly from a lambda invoked inside a local function.
+        void LocalFunction()
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        }
+
+        Action a = () =>
+        {
+            // Escaped inside a lambda invoked inside another local function.
+            M3(LocalFunction);
+        };
+
+        void LocalFunction2()
+        {
+            a();
+        }
+
+        LocalFunction2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn inside unused local function.
+        void LocalFunction()
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                M2();
+            }
+        };
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
         public async Task LambdaCallsOsDependentMember_GuardedCall_SimpleIfElse()
         {
             var source = @"
@@ -1556,6 +1721,360 @@ public class Test
             }
         };
         action.Invoke();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact, WorkItem(4090, "https://github.com/dotnet/roslyn-analyzers/issues/4090")]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_DirectlyPassedAsArgument()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped as delegate argument.
+        M3(a: () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        });
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped as delegate.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        M3(a);
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped as delegate indirectly from another lambda.
+        Action a1 = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        Action a2 = () =>
+        {
+            // Escaped inside another local function.
+            M3(a1);
+        };
+
+        a2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped as delegate indirectly from a local function invoked inside a lambda.
+        Action a1 = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        void LocalFunction()
+        {
+            // Escaped inside a local function invoked inside another lambda.
+            M3(a1);
+        }
+
+        Action a2 = () =>
+        {
+            LocalFunction();
+        };
+
+        a2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    private Action _field;
+
+    public void M1()
+    {
+        // Warn inside lambda escaped via field.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        _field = a;
+        M3();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3() { _field(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_05()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public Action M1()
+    {
+        // Warn inside lambda escaped via return value.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        return a;
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_06()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped via conversion.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        var x = (object)a;
+        M3(x);
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(object a) { ((Action)a)(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_07()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1(out Action result)
+    {
+        // Warn inside lambda escaped via out argument.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        result = a;
+        return;
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn inside unused lambda.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                M2();
+            }
+        };
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]

@@ -196,7 +196,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         var value = analysisResult[platformSpecificOperation.Kind, platformSpecificOperation.Syntax];
 
                         if ((value.Kind == GlobalFlowStateAnalysisValueSetKind.Known && IsKnownValueGuarded(attributes, value)) ||
-                           (value.Kind == GlobalFlowStateAnalysisValueSetKind.Unknown && HasInterproceduralResult(platformSpecificOperation, attributes, analysisResult)))
+                           (value.Kind == GlobalFlowStateAnalysisValueSetKind.Unknown && HasGuardedInterproceduralResult(platformSpecificOperation, attributes, analysisResult)))
                         {
                             continue;
                         }
@@ -220,26 +220,36 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             });
         }
 
-        private static bool HasInterproceduralResult(IOperation platformSpecificOperation, SmallDictionary<string, PlatformAttributes> attributes,
+        private static bool HasGuardedInterproceduralResult(IOperation platformSpecificOperation, SmallDictionary<string, PlatformAttributes> attributes,
             DataFlowAnalysisResult<GlobalFlowStateBlockAnalysisResult, GlobalFlowStateAnalysisValueSet> analysisResult)
         {
-            if (platformSpecificOperation.IsWithinLambdaOrLocalFunction())
+            if (!platformSpecificOperation.IsWithinLambdaOrLocalFunction())
             {
-                var results = analysisResult.TryGetInterproceduralResults();
-                if (results != null)
+                return false;
+            }
+
+            var results = analysisResult.TryGetInterproceduralResults();
+            if (!results.Any())
+            {
+                // Do not flag code inside unused lambda/local functions.
+                return true;
+            }
+
+            var hasKnownValue = false;
+            foreach (var localResult in results)
+            {
+                var localValue = localResult[platformSpecificOperation.Kind, platformSpecificOperation.Syntax];
+                if (localValue.Kind == GlobalFlowStateAnalysisValueSetKind.Known)
                 {
-                    foreach (var localResult in results)
+                    hasKnownValue = true;
+                    if (!IsKnownValueGuarded(attributes, localValue))
                     {
-                        var localValue = localResult[platformSpecificOperation.Kind, platformSpecificOperation.Syntax];
-                        if (localValue.Kind == GlobalFlowStateAnalysisValueSetKind.Known && IsKnownValueGuarded(attributes, localValue))
-                        {
-                            return true;
-                        }
+                        return false;
                     }
                 }
             }
 
-            return false;
+            return hasKnownValue;
         }
 
         private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods)
