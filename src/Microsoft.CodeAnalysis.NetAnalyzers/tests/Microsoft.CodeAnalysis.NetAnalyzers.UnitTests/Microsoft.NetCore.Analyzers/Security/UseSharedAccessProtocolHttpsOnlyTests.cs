@@ -96,6 +96,33 @@ class TestClass
             GetCSharpResultAt(8, 25));
         }
 
+        [Fact]
+        public async Task TestPropertyInitializerGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.File;
+
+class TestClass
+{
+    public string SAS { get; } = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOnly, null);
+}");
+        }
+
+        [Fact]
+        public async Task TestFieldInitializerGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.File;
+
+class TestClass
+{
+    public string SAS = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOnly, null);
+}");
+        }
 
         [Fact]
         public async Task TestGetSharedAccessSignatureNotFromCloudStorageAccountWithoutProtocolsParameterNoDiagnostic()
