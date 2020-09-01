@@ -276,7 +276,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (invocationOperation.Arguments.Length != 1 ||
                 !invocationOperation.Arguments[0].Value.ConstantValue.HasValue ||
-                !(invocationOperation.Arguments[0].Value.ConstantValue.Value is string format))
+                invocationOperation.Arguments[0].Value.ConstantValue.Value is not string format)
             {
                 return false;
             }

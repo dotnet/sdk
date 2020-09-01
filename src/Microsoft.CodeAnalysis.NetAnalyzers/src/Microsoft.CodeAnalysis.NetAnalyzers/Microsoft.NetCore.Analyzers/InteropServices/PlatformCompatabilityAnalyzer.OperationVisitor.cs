@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
-    public sealed partial class RuntimePlatformCheckAnalyzer
+    public sealed partial class PlatformCompatabilityAnalyzer
     {
         private sealed class OperationVisitor : GlobalFlowStateDataFlowOperationVisitor
         {
@@ -34,15 +34,38 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 var value = base.VisitInvocation_NonLambdaOrDelegateOrLocalFunction(method, visitedInstance, visitedArguments, invokedAsDelegate, originalOperation, defaultValue);
 
-                if (_platformCheckMethods.Contains(method.OriginalDefinition) &&
-                    !visitedArguments.IsEmpty)
+                if (_platformCheckMethods.Contains(method.OriginalDefinition))
                 {
-                    return RuntimeOSPlatformInfo.TryDecode(method, visitedArguments, DataFlowAnalysisContext.ValueContentAnalysisResultOpt, _osPlatformType, out var platformInfo) ?
+                    return PlatformMethodValue.TryDecode(method, visitedArguments, DataFlowAnalysisContext.ValueContentAnalysisResult, _osPlatformType, out var platformInfo) ?
                         new GlobalFlowStateAnalysisValueSet(platformInfo) :
                         GlobalFlowStateAnalysisValueSet.Unknown;
                 }
 
                 return GetValueOrDefault(value);
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitPropertyReference(IPropertyReferenceOperation operation, object? argument)
+            {
+                return GetValueOrDefault(base.VisitPropertyReference(operation, argument));
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitFieldReference(IFieldReferenceOperation operation, object? argument)
+            {
+                return GetValueOrDefault(base.VisitFieldReference(operation, argument));
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitObjectCreation(IObjectCreationOperation operation, object? argument)
+            {
+                return GetValueOrDefault(base.VisitObjectCreation(operation, argument));
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitEventReference(IEventReferenceOperation operation, object? argument)
+            {
+                return GetValueOrDefault(base.VisitEventReference(operation, argument));
+            }
+            public override GlobalFlowStateAnalysisValueSet VisitMethodReference(IMethodReferenceOperation operation, object? argument)
+            {
+                return GetValueOrDefault(base.VisitMethodReference(operation, argument));
             }
         }
     }

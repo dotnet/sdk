@@ -155,12 +155,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return;
                     }
 
-                    if (!(indexerArgument is IRangeOperation rangeOperation))
+                    if (indexerArgument is not IRangeOperation rangeOperation)
                     {
                         return;
                     }
 
-                    if (!(operationContext.Operation.Parent is IConversionOperation conversionOperation))
+                    if (operationContext.Operation.Parent is not IConversionOperation conversionOperation)
                     {
                         return;
                     }

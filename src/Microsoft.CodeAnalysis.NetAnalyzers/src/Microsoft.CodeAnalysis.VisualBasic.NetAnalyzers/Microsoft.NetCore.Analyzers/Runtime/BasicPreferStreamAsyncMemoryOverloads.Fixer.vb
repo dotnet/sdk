@@ -32,5 +32,32 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 End If
             End If
         End Function
+
+        Protected Overrides Function IsSystemNamespaceImported(importList As IReadOnlyList(Of SyntaxNode)) As Boolean
+
+            For Each import As SyntaxNode In importList
+
+                Dim importsStatement As ImportsStatementSyntax = TryCast(import, ImportsStatementSyntax)
+                If importsStatement IsNot Nothing Then
+
+                    For Each clause As ImportsClauseSyntax In importsStatement.ImportsClauses
+
+                        Dim simpleClause As SimpleImportsClauseSyntax = TryCast(clause, SimpleImportsClauseSyntax)
+                        If simpleClause IsNot Nothing Then
+
+                            Dim identifier As IdentifierNameSyntax = TryCast(simpleClause.Name, IdentifierNameSyntax)
+                            If identifier IsNot Nothing AndAlso identifier.Identifier.Text = "System" Then
+                                Return True
+                            End If
+
+                        End If
+                    Next
+                End If
+            Next
+
+            Return False
+
+        End Function
+
     End Class
 End Namespace

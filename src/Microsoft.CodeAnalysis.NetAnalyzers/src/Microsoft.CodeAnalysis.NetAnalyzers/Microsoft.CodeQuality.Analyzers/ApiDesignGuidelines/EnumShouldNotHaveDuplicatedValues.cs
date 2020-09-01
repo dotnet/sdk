@@ -162,7 +162,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static IEnumerable<IOperation> GetFilteredDescendants(IOperation operation, Func<IOperation, bool> descendIntoOperation)
         {
-            var stack = ArrayBuilder<IEnumerator<IOperation>>.GetInstance();
+            using var stack = ArrayBuilder<IEnumerator<IOperation>>.GetInstance();
             stack.Add(operation.Children.GetEnumerator());
 
             while (stack.Any())
@@ -180,8 +180,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
                 }
             }
-
-            stack.Free();
         }
     }
 }

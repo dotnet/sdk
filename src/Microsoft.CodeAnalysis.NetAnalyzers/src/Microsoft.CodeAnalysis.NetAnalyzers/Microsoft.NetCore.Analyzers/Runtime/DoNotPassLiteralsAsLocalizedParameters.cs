@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
-                    if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
+                    if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         containingMethod.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options,
                             Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
                     {
@@ -125,7 +125,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             {
                                 Debug.Assert(!stringContentValue.LiteralValues.IsEmpty);
 
-                                if (stringContentValue.LiteralValues.Any(l => !(l is string)))
+                                if (stringContentValue.LiteralValues.Any(l => l is not string))
                                 {
                                     return;
                                 }

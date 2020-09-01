@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             analysisContext.RegisterOperationBlockStartAction(context =>
             {
-                if (!(context.OwningSymbol is IMethodSymbol method) ||
+                if (context.OwningSymbol is not IMethodSymbol method ||
                     !method.IsStatic ||
                     method.MethodKind != MethodKind.StaticConstructor)
                 {

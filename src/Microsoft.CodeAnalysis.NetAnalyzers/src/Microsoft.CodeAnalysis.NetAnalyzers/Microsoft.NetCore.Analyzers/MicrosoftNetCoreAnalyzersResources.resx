@@ -208,7 +208,7 @@
     <value>Mark assemblies with NeutralResourcesLanguageAttribute</value>
   </data>
   <data name="UseOrdinalStringComparisonTitle" xml:space="preserve">
-    <value>Use ordinal stringcomparison</value>
+    <value>Use ordinal string comparison</value>
   </data>
   <data name="UseOrdinalStringComparisonDescription" xml:space="preserve">
     <value>A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.</value>
@@ -408,13 +408,22 @@
   <data name="SpecifyIFormatProviderMessageUICulture" xml:space="preserve">
     <value>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</value>
   </data>
-  <data name="SpecifyStringComparisonTitle" xml:space="preserve">
-    <value>Specify StringComparison</value>
+  <data name="SpecifyStringComparisonCA1307Title" xml:space="preserve">
+    <value>Specify StringComparison for clarity</value>
   </data>
-  <data name="SpecifyStringComparisonDescription" xml:space="preserve">
-    <value>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</value>
+  <data name="SpecifyStringComparisonCA1307Description" xml:space="preserve">
+    <value>A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</value>
   </data>
-  <data name="SpecifyStringComparisonMessage" xml:space="preserve">
+  <data name="SpecifyStringComparisonCA1307Message" xml:space="preserve">
+    <value>'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</value>
+  </data>
+  <data name="SpecifyStringComparisonCA1310Title" xml:space="preserve">
+    <value>Specify StringComparison for correctness</value>
+  </data>
+  <data name="SpecifyStringComparisonCA1310Description" xml:space="preserve">
+    <value>A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</value>
+  </data>
+  <data name="SpecifyStringComparisonCA1310Message" xml:space="preserve">
     <value>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</value>
   </data>
   <data name="NormalizeStringsToUppercaseTitle" xml:space="preserve">
@@ -1425,6 +1434,18 @@
   <data name="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on an array</value>
   </data>
+  <data name="PlatformCompatabilityCheckTitle" xml:space="preserve">
+    <value>Validate platform compatibility</value>
+  </data>
+  <data name="PlatformCompatabilityCheckDescription" xml:space="preserve">
+    <value>Using platform dependent API on a component makes the code no longer work across all platforms.</value>
+  </data>
+  <data name="PlatformCompatibilityCheckSupportedOsVersionMessage" xml:space="preserve">
+    <value>'{0}' is supported on '{1}' {2} and later</value>
+  </data>
+  <data name="PlatformCompatabilityCheckUnsupportedOsVersionMessage" xml:space="preserve">
+    <value>'{0}' is unsupported on '{1}' {2} and later</value>
+  </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersDescription" xml:space="preserve">
     <value>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</value>
   </data>
@@ -1438,7 +1459,7 @@
     <value>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</value>
   </data>
   <data name="AvoidStringBuilderPInvokeParametersMessage" xml:space="preserve">
-    <value>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a 'char' buffer from 'ArrayPool' instead.</value>
+    <value>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</value>
   </data>
   <data name="AvoidStringBuilderPInvokeParametersTitle" xml:space="preserve">
     <value>Avoid 'StringBuilder' parameters for P/Invokes</value>
@@ -1451,5 +1472,11 @@
   </data>
   <data name="AvoidAssemblyGetFilesInSingleFileMessage" xml:space="preserve">
     <value>'{0}' will throw for assemblies embedded in a single-file app</value>
+  </data>
+  <data name="PlatformCompatabilityCheckUnsupportedOsMessage" xml:space="preserve">
+    <value>'{0}' is unsupported on '{1}'</value>
+  </data>
+  <data name="PlatformCompatibilityCheckSupportedOsMessage" xml:space="preserve">
+    <value>'{0}' is supported on '{1}'</value>
   </data>
 </root>

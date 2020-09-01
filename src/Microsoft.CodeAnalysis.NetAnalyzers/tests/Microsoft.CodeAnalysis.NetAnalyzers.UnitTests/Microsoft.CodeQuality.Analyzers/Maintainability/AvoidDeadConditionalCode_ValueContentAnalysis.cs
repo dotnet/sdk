@@ -2760,5 +2760,276 @@ namespace TestNamespace
             // Test0.cs(33,17): warning CA1508: 't.A.IntProperty == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(33, 17, "t.A.IntProperty == 1", "true"));
         }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestNegationPattern()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+        if (input is not 10)
+        {
+            return input == 10;
+        }
+
+        if (t is not null)
+        {
+            return t != null;
+        }
+
+        return true;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(14,20): warning CA1508: 't != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(14, 20, "t != null", "true")
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestNegationPattern_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch (input)
+        {
+            case not 10:
+                result = false;
+                break;
+            default:
+                result = true;
+                break;
+        }
+
+        switch (t)
+        {
+            case not null:
+                result = t != null;
+                break;
+            default:
+                result = t == null;
+                break;
+        }
+
+        return result;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(22,26): warning CA1508: 't != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(22, 26, "t != null", "true"),
+                    // Test0.cs(25,26): warning CA1508: 't == null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(25, 26, "t == null", "true")
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestRelationalPattern()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        if (t is 10)
+        {
+            return (int)t == 10;
+        }
+
+        if (t is > 10)
+        {
+            return (int)t > 10;
+        }
+
+        return true;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(10,20): warning CA1508: '(int)t == 10' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(10, 20, "(int)t == 10", "true")
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestRelationalPattern_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch (input)
+        {
+            case > 10:
+                result = false;
+                break;
+            default:
+                result = true;
+                break;
+        }
+
+        return result;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestNegationAndRelationalPattern()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        if (input is not > 10)
+        {
+            return input > 10;  // No range analysis to flag this as dead code.
+        }
+
+        return true;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestNegationAndRelationalPattern_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch (input)
+        {
+            case not > 10:
+                result = false;
+                break;
+            default:
+                result = true;
+                break;
+        }
+
+        return result;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestBinaryPattern()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        if (t is Test or not null)
+        {
+            return t != null;   // In future, we might flag this as always 'true'.
+        }
+
+        return true;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
     }
 }

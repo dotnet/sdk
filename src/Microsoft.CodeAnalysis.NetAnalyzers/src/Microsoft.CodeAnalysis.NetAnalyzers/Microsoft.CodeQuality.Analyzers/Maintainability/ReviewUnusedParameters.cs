@@ -130,7 +130,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             // Report diagnostics for unused parameters.
             foreach (var (parameter, used) in parameterUsageMap)
             {
-                if (used)
+                if (used || parameter.Name.Length == 0)
                 {
                     continue;
                 }
@@ -229,6 +229,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             // Check to see if the method just throws a NotImplementedException/NotSupportedException
             // We shouldn't warn about parameters in that case
             if (startOperationBlockContext.IsMethodNotImplementedOrSupported())
+            {
+                return false;
+            }
+
+            // Ignore generated method for top level statements
+            if (method.IsTopLevelStatementsEntryPointMethod())
             {
                 return false;
             }

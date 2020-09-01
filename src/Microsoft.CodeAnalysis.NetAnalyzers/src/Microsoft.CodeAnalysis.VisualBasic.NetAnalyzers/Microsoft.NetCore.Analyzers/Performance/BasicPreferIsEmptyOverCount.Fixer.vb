@@ -21,36 +21,36 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             Select Case operationKey
                 Case UseCountProperlyAnalyzer.OperationBinaryLeft
                     Dim binaryExpression = TryCast(node, BinaryExpressionSyntax)
-                    If Not binaryExpression Is Nothing Then
+                    If binaryExpression IsNot Nothing Then
                         countNode = binaryExpression.Left
                     End If
 
                 Case UseCountProperlyAnalyzer.OperationBinaryRight
                     Dim binaryExpression = TryCast(node, BinaryExpressionSyntax)
-                    If Not binaryExpression Is Nothing Then
+                    If binaryExpression IsNot Nothing Then
                         countNode = binaryExpression.Right
                     End If
 
                 Case UseCountProperlyAnalyzer.OperationEqualsArgument
                     Dim invocationExpression = TryCast(node, InvocationExpressionSyntax)
-                    If Not invocationExpression Is Nothing Then
+                    If invocationExpression IsNot Nothing Then
                         countNode = invocationExpression.ArgumentList.Arguments(0).GetExpression()
                     End If
 
                 Case UseCountProperlyAnalyzer.OperationEqualsInstance
                     Dim invocationExpression2 = TryCast(node, InvocationExpressionSyntax)
-                    If Not invocationExpression2 Is Nothing Then
+                    If invocationExpression2 IsNot Nothing Then
                         Dim equalsMemberAccess = invocationExpression2.Expression
 
                         Dim memberAccess = TryCast(equalsMemberAccess, MemberAccessExpressionSyntax)
-                        If Not memberAccess Is Nothing Then
+                        If memberAccess IsNot Nothing Then
                             countNode = memberAccess.Expression
                         End If
                     End If
 
             End Select
 
-            RoslynDebug.Assert(Not countNode Is Nothing)
+            RoslynDebug.Assert(countNode IsNot Nothing)
 
             Dim isParenthesizedOrCastExpression As Boolean
             Do
@@ -68,18 +68,18 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             Loop While isParenthesizedOrCastExpression
 
             Dim invocationExpression3 = TryCast(countNode, InvocationExpressionSyntax)
-            If Not invocationExpression3 Is Nothing Then
+            If invocationExpression3 IsNot Nothing Then
                 countNode = invocationExpression3.Expression
             End If
 
             Dim objectNode As SyntaxNode = Nothing
 
             Dim memberAccess2 = TryCast(countNode, MemberAccessExpressionSyntax)
-            If Not memberAccess2 Is Nothing Then
+            If memberAccess2 IsNot Nothing Then
                 objectNode = memberAccess2.Expression
             End If
 
-            RoslynDebug.Assert(Not objectNode Is Nothing Or TypeOf countNode Is IdentifierNameSyntax)
+            RoslynDebug.Assert(objectNode IsNot Nothing OrElse TypeOf countNode Is IdentifierNameSyntax)
 
             Return objectNode
         End Function
