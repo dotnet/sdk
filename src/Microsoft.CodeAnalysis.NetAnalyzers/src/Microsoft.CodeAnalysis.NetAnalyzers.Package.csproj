@@ -11,8 +11,12 @@
     <ReleaseNotes>Diagnostic analyzers for the Microsoft .NET Compiler Platform (Roslyn)</ReleaseNotes>
     <PackageTags>Roslyn CodeAnalysis Compiler CSharp VB VisualBasic Diagnostic Analyzers Syntax Semantics</PackageTags>
     <ContainsPortedFxCopRules>true</ContainsPortedFxCopRules>
-	<AnalyzerDocumentationFileDir>$(RepoRoot)src\NetAnalyzers</AnalyzerDocumentationFileDir>
+	  <AnalyzerDocumentationFileDir>$(RepoRoot)src\NetAnalyzers</AnalyzerDocumentationFileDir>
     <AnalyzerSarifFileDir>$(RepoRoot)src\NetAnalyzers</AnalyzerSarifFileDir>
+
+    <!-- Override the version prefix and label for NetAnalyzers projects -->
+    <VersionPrefix>$(NetAnalyzersVersionPrefix)</VersionPrefix>
+    <PreReleaseVersionLabel>$(NetAnalyzersPreReleaseVersionLabel)</PreReleaseVersionLabel>
   </PropertyGroup>
   
   <ItemGroup>

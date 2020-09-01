@@ -52,7 +52,7 @@ This section documents the list of supported .editorconfig key-value options for
 
 Option Name: `api_surface`
 
-Configurable Rules: 
+Configurable Rules:
 [CA1000](https://docs.microsoft.com/visualstudio/code-quality/ca1000),
 [CA1002](https://docs.microsoft.com/visualstudio/code-quality/ca1002),
 [CA1003](https://docs.microsoft.com/visualstudio/code-quality/ca1003),
@@ -71,6 +71,7 @@ Configurable Rules:
 [CA1043](https://docs.microsoft.com/visualstudio/code-quality/ca1043),
 [CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044),
 [CA1045](https://docs.microsoft.com/visualstudio/code-quality/ca1045),
+[CA1046](https://docs.microsoft.com/visualstudio/code-quality/ca1046),
 [CA1047](https://docs.microsoft.com/visualstudio/code-quality/ca1047),
 [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051),
 [CA1052](https://docs.microsoft.com/visualstudio/code-quality/ca1052),
@@ -79,7 +80,9 @@ Configurable Rules:
 [CA1056](https://docs.microsoft.com/visualstudio/code-quality/ca1056),
 [CA1058](https://docs.microsoft.com/visualstudio/code-quality/ca1058),
 [CA1063](https://docs.microsoft.com/visualstudio/code-quality/ca1063),
+[CA1070](https://docs.microsoft.com/visualstudio/code-quality/ca1070),
 [CA1700](https://docs.microsoft.com/visualstudio/code-quality/ca1700),
+[CA1707](https://docs.microsoft.com/visualstudio/code-quality/ca1707),
 [CA1708](https://docs.microsoft.com/visualstudio/code-quality/ca1708),
 [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710),
 [CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711),
@@ -477,7 +480,7 @@ Option Name: `max_interprocedural_lambda_or_local_function_call_chain`
 
 Option Values: Unsigned integer
 
-Default Value: 10
+Default Value: 3
 
 Example: `dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 5`
 

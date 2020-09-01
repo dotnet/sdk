@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
@@ -578,6 +576,42 @@ class C
                                         "(new byte[s.Length]).AsMemory(0, (int)s.Length), new CancellationToken()" };
         }
 
+        [Fact]
+        public Task CS_Fixer_Diagnostic_EnsureSystemNamespaceAutoAdded()
+        {
+            string originalCode = @"
+using System.IO;
+using System.Threading;
+class C
+{
+    public async void M()
+    {
+        using (FileStream s = new FileStream(""path.txt"", FileMode.Create))
+        {
+            byte[] buffer = new byte[s.Length];
+            await s.ReadAsync(new byte[s.Length], 0, (int)s.Length);
+        }
+    }
+}";
+            string fixedCode = @"
+using System.IO;
+using System.Threading;
+using System;
+
+class C
+{
+    public async void M()
+    {
+        using (FileStream s = new FileStream(""path.txt"", FileMode.Create))
+        {
+            byte[] buffer = new byte[s.Length];
+            await s.ReadAsync((new byte[s.Length]).AsMemory(0, (int)s.Length));
+        }
+    }
+}";
+            return CSharpVerifyExpectedCodeFixDiagnosticsAsync(originalCode, fixedCode, GetCSharpResult(11, 19, 11, 68));
+        }
+
         [Theory]
         [MemberData(nameof(CSharpUnnamedArgumentsTestData))]
         [MemberData(nameof(CSharpNamedArgumentsTestData))]
@@ -758,6 +792,38 @@ End Module
                                         @"(New Byte(s.Length - 1) {}).AsMemory(0, s.Length)" };
             yield return new object[] { @"New Byte(s.Length - 1) {}, 0, s.Length, New CancellationToken()",
                                         @"(New Byte(s.Length - 1) {}).AsMemory(0, s.Length), New CancellationToken()" };
+        }
+
+        [Fact]
+        public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceAutoAdded()
+        {
+            string originalCode = @"
+Imports System.IO
+Imports System.Threading
+Class C
+    Public Async Sub M()
+        Using s As FileStream = New FileStream(""path.txt"", FileMode.Create)
+            Dim buffer As Byte() = New Byte(s.Length - 1) {}
+            Await s.ReadAsync(New Byte(s.Length - 1) {}, 0, s.Length)
+        End Using
+    End Sub
+End Class
+";
+            string fixedCode = @"
+Imports System.IO
+Imports System.Threading
+Imports System
+
+Class C
+    Public Async Sub M()
+        Using s As FileStream = New FileStream(""path.txt"", FileMode.Create)
+            Dim buffer As Byte() = New Byte(s.Length - 1) {}
+            Await s.ReadAsync((New Byte(s.Length - 1) {}).AsMemory(0, s.Length))
+        End Using
+    End Sub
+End Class
+";
+            return VisualBasicVerifyExpectedCodeFixDiagnosticsAsync(originalCode, fixedCode, GetVisualBasicResult(8, 19, 8, 70));
         }
 
         [Theory]

@@ -125,7 +125,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
             analysisContext.RegisterCompilationAction(compilationContext =>
             {
-                if (!(compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
+                if (compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
                 }
@@ -312,7 +312,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
                         CA1505RuleId => 10,
 
-                        CA1506RuleId => symbolKind == SymbolKind.NamedType ? 95 : (uint)40,
+                        CA1506RuleId => symbolKind == SymbolKind.NamedType ? 95 : 40,
 
                         _ => throw new NotImplementedException(),
                     };

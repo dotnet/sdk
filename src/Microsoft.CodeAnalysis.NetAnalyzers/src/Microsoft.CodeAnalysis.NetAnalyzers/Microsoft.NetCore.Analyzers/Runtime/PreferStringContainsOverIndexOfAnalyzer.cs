@@ -91,7 +91,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
                 {
-                    if (!(context.OwningSymbol is IMethodSymbol method))
+                    if (context.OwningSymbol is not IMethodSymbol method)
                     {
                         return;
                     }
@@ -193,8 +193,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 context.ReportDiagnostic(variableNameAndLocation.Value.CreateDiagnostic(Rule));
                             }
                         }
-                        variableNameToOperationsMap.Free();
-                        localsToBailOut.Free();
+                        variableNameToOperationsMap.Free(context.CancellationToken);
+                        localsToBailOut.Free(context.CancellationToken);
                     }
 
                     bool IsDesiredTargetMethod(IMethodSymbol targetMethod) =>

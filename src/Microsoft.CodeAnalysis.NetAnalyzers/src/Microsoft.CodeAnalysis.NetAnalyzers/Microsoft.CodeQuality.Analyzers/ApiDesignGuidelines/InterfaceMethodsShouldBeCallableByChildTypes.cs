@@ -63,7 +63,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
 
                 // Analyze IBlockOperation blocks.
-                if (!(operationBlocks[0] is IBlockOperation block))
+                if (operationBlocks[0] is not IBlockOperation block)
                 {
                     return true;
                 }

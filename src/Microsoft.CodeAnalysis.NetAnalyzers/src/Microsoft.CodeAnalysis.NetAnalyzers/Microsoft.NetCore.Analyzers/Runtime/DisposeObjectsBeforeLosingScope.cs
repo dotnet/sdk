@@ -81,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var reportedLocations = new ConcurrentDictionary<Location, bool>();
                 compilationContext.RegisterOperationBlockAction(operationBlockContext =>
                 {
-                    if (!(operationBlockContext.OwningSymbol is IMethodSymbol containingMethod) ||
+                    if (operationBlockContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         !disposeAnalysisHelper.HasAnyDisposableCreationDescendant(operationBlockContext.OperationBlocks, containingMethod) ||
                         operationBlockContext.Options.IsConfiguredToSkipAnalysis(NotDisposedRule, containingMethod, operationBlockContext.Compilation, operationBlockContext.CancellationToken))
                     {
@@ -105,54 +105,47 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         operationBlockContext.CancellationToken, out var disposeAnalysisResult, out var pointsToAnalysisResult,
                         interproceduralAnalysisPredicate))
                     {
-                        var notDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
-                        var mayBeNotDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
-                        try
-                        {
-                            // Compute diagnostics for undisposed objects at exit block for non-exceptional exit paths.
-                            var exitBlock = disposeAnalysisResult.ControlFlowGraph.GetExit();
-                            var disposeDataAtExit = disposeAnalysisResult.ExitBlockOutput.Data;
-                            ComputeDiagnostics(disposeDataAtExit,
-                                notDisposedDiagnostics, mayBeNotDisposedDiagnostics, disposeAnalysisResult, pointsToAnalysisResult,
-                                disposeAnalysisKind, isDisposeDataForExceptionPaths: false);
+                        using var notDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
+                        using var mayBeNotDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
 
-                            if (trackExceptionPaths)
+                        // Compute diagnostics for undisposed objects at exit block for non-exceptional exit paths.
+                        var exitBlock = disposeAnalysisResult.ControlFlowGraph.GetExit();
+                        var disposeDataAtExit = disposeAnalysisResult.ExitBlockOutput.Data;
+                        ComputeDiagnostics(disposeDataAtExit,
+                            notDisposedDiagnostics, mayBeNotDisposedDiagnostics, disposeAnalysisResult, pointsToAnalysisResult,
+                            disposeAnalysisKind, isDisposeDataForExceptionPaths: false);
+
+                        if (trackExceptionPaths)
+                        {
+                            // Compute diagnostics for undisposed objects at handled exception exit paths.
+                            var disposeDataAtHandledExceptionPaths = disposeAnalysisResult.ExceptionPathsExitBlockOutput!.Data;
+                            ComputeDiagnostics(disposeDataAtHandledExceptionPaths,
+                                notDisposedDiagnostics, mayBeNotDisposedDiagnostics, disposeAnalysisResult, pointsToAnalysisResult,
+                                disposeAnalysisKind, isDisposeDataForExceptionPaths: true);
+
+                            // Compute diagnostics for undisposed objects at unhandled exception exit paths, if any.
+                            var disposeDataAtUnhandledExceptionPaths = disposeAnalysisResult.MergedStateForUnhandledThrowOperations?.Data;
+                            if (disposeDataAtUnhandledExceptionPaths != null)
                             {
-                                // Compute diagnostics for undisposed objects at handled exception exit paths.
-                                var disposeDataAtHandledExceptionPaths = disposeAnalysisResult.ExceptionPathsExitBlockOutput!.Data;
-                                ComputeDiagnostics(disposeDataAtHandledExceptionPaths,
+                                ComputeDiagnostics(disposeDataAtUnhandledExceptionPaths,
                                     notDisposedDiagnostics, mayBeNotDisposedDiagnostics, disposeAnalysisResult, pointsToAnalysisResult,
                                     disposeAnalysisKind, isDisposeDataForExceptionPaths: true);
-
-                                // Compute diagnostics for undisposed objects at unhandled exception exit paths, if any.
-                                var disposeDataAtUnhandledExceptionPaths = disposeAnalysisResult.MergedStateForUnhandledThrowOperations?.Data;
-                                if (disposeDataAtUnhandledExceptionPaths != null)
-                                {
-                                    ComputeDiagnostics(disposeDataAtUnhandledExceptionPaths,
-                                        notDisposedDiagnostics, mayBeNotDisposedDiagnostics, disposeAnalysisResult, pointsToAnalysisResult,
-                                        disposeAnalysisKind, isDisposeDataForExceptionPaths: true);
-                                }
-                            }
-
-                            if (!notDisposedDiagnostics.Any() && !mayBeNotDisposedDiagnostics.Any())
-                            {
-                                return;
-                            }
-
-                            // Report diagnostics preferring *not* disposed diagnostics over may be not disposed diagnostics
-                            // and avoiding duplicates.
-                            foreach (var diagnostic in notDisposedDiagnostics.Concat(mayBeNotDisposedDiagnostics))
-                            {
-                                if (reportedLocations.TryAdd(diagnostic.Location, true))
-                                {
-                                    operationBlockContext.ReportDiagnostic(diagnostic);
-                                }
                             }
                         }
-                        finally
+
+                        if (!notDisposedDiagnostics.Any() && !mayBeNotDisposedDiagnostics.Any())
                         {
-                            notDisposedDiagnostics.Free();
-                            mayBeNotDisposedDiagnostics.Free();
+                            return;
+                        }
+
+                        // Report diagnostics preferring *not* disposed diagnostics over may be not disposed diagnostics
+                        // and avoiding duplicates.
+                        foreach (var diagnostic in notDisposedDiagnostics.Concat(mayBeNotDisposedDiagnostics))
+                        {
+                            if (reportedLocations.TryAdd(diagnostic.Location, true))
+                            {
+                                operationBlockContext.ReportDiagnostic(diagnostic);
+                            }
                         }
                     }
                 });

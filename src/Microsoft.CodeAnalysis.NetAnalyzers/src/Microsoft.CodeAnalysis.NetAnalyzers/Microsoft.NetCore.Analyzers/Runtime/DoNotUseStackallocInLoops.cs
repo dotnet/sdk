@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             static bool ShouldWarn(IOperation? op, SyntaxNode node)
                             {
                                 // Walk up the operation tree, looking at all blocks until we find a loop.
-                                for (; op != null && !(op is ILoopOperation); op = op.Parent)
+                                for (; op is not null and not ILoopOperation; op = op.Parent)
                                 {
                                     // If we hit a block, iterate through all operations in the block
                                     // after the node's position, and see if it's something that will

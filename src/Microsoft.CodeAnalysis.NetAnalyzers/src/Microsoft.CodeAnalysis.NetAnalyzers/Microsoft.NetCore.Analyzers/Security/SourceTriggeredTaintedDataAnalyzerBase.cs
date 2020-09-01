@@ -140,6 +140,23 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 },
                                 OperationKind.PropertyReference);
 
+                            if (sourceInfoSymbolMap.RequiresParameterReferenceAnalysis)
+                            {
+                                operationBlockStartContext.RegisterOperationAction(
+                                    operationAnalysisContext =>
+                                    {
+                                        IParameterReferenceOperation parameterReferenceOperation = (IParameterReferenceOperation)operationAnalysisContext.Operation;
+                                        if (sourceInfoSymbolMap.IsSourceParameter(parameterReferenceOperation.Parameter, wellKnownTypeProvider))
+                                        {
+                                            lock (rootOperationsNeedingAnalysis)
+                                            {
+                                                rootOperationsNeedingAnalysis.Add(parameterReferenceOperation.GetRoot());
+                                            }
+                                        }
+                                    },
+                                    OperationKind.ParameterReference);
+                            }
+
                             operationBlockStartContext.RegisterOperationAction(
                                 operationAnalysisContext =>
                                 {
@@ -239,7 +256,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     }
                                     finally
                                     {
-                                        rootOperationsNeedingAnalysis.Free();
+                                        rootOperationsNeedingAnalysis.Free(compilationContext.CancellationToken);
                                     }
                                 });
                         });

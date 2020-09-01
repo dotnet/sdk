@@ -218,7 +218,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
                 return false;
             }
             SyntaxKind kind = node.Kind();
-            return kind == SyntaxKind.InvocationExpression || kind == SyntaxKind.ObjectCreationExpression;
+            return kind is SyntaxKind.InvocationExpression or SyntaxKind.ObjectCreationExpression;
         }
 
         public override IMethodSymbol? GetCalleeMethodSymbol(SyntaxNode? node, SemanticModel semanticModel)
