@@ -120,7 +120,6 @@ using Microsoft.WindowsAzure.Storage.Blob;
 
 class TestClass
 {
-    public string GroupPolicyIdentifier;
     public string SAS = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, ""foo"", null, null);
 }");
         }
