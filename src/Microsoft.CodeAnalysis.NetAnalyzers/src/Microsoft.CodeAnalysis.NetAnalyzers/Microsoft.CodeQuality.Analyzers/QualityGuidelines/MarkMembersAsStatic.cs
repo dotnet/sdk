@@ -92,7 +92,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 void OnOperationBlockStart(OperationBlockStartAnalysisContext blockStartContext)
                 {
-                    if (!(blockStartContext.OwningSymbol is IMethodSymbol methodSymbol))
+                    if (blockStartContext.OwningSymbol is not IMethodSymbol methodSymbol)
                     {
                         return;
                     }
@@ -179,10 +179,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         }
                     }
 
-                    propertyOrEventCandidates.Free();
-                    accessorCandidates.Free();
-                    methodCandidates.Free();
-                    methodsUsedAsDelegates.Free();
+                    propertyOrEventCandidates.Free(symbolEndContext.CancellationToken);
+                    accessorCandidates.Free(symbolEndContext.CancellationToken);
+                    methodCandidates.Free(symbolEndContext.CancellationToken);
+                    methodsUsedAsDelegates.Free(symbolEndContext.CancellationToken);
                 }
             }
         }
@@ -254,7 +254,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            return true;
+            // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
+            return !methodSymbol.IsAutoPropertyAccessor();
         }
 
         private static bool IsExplicitlyVisibleFromCom(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)

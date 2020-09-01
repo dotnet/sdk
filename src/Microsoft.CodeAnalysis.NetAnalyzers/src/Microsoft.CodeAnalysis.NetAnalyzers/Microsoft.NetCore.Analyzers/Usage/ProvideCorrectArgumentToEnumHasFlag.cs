@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
                         invocation.Arguments.Length != 1 ||
                         invocation.Instance == null ||
                         invocation.TargetMethod.Name != "HasFlag" ||
-                        !(invocation.Arguments[0].Value is IConversionOperation conversion))
+                        invocation.Arguments[0].Value is not IConversionOperation conversion)
                     {
                         return;
                     }

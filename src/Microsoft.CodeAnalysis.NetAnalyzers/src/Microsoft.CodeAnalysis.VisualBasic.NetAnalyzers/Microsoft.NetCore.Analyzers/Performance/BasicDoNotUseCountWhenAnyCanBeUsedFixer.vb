@@ -32,11 +32,11 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     Dim invocation = TryCast(node, InvocationExpressionSyntax)
 
-                    If Not invocation Is Nothing Then
+                    If invocation IsNot Nothing Then
 
                         Dim member = TryCast(invocation.Expression, MemberAccessExpressionSyntax)
 
-                        If Not member Is Nothing Then
+                        If member IsNot Nothing Then
 
                             GetExpressionAndInvocationArguments(
                                 sourceExpression:=member.Expression,
@@ -54,7 +54,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     Dim invocation = TryCast(node, InvocationExpressionSyntax)
 
-                    If Not invocation Is Nothing AndAlso invocation.ArgumentList.Arguments.Count = 1 Then
+                    If invocation IsNot Nothing AndAlso invocation.ArgumentList.Arguments.Count = 1 Then
 
                         GetExpressionAndInvocationArguments(
                             sourceExpression:=invocation.ArgumentList.Arguments(0).GetExpression(),
@@ -70,7 +70,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     Dim binary = TryCast(node, BinaryExpressionSyntax)
 
-                    If Not binary Is Nothing Then
+                    If binary IsNot Nothing Then
 
                         GetExpressionAndInvocationArguments(
                             sourceExpression:=binary.Left,
@@ -86,7 +86,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     Dim binary = TryCast(node, BinaryExpressionSyntax)
 
-                    If Not binary Is Nothing Then
+                    If binary IsNot Nothing Then
 
                         GetExpressionAndInvocationArguments(
                             sourceExpression:=binary.Right,
@@ -108,7 +108,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
             Dim parenthesizedExpression = TryCast(sourceExpression, ParenthesizedExpressionSyntax)
 
-            While Not parenthesizedExpression Is Nothing
+            While parenthesizedExpression IsNot Nothing
 
                 sourceExpression = parenthesizedExpression.Expression
                 parenthesizedExpression = TryCast(sourceExpression, ParenthesizedExpressionSyntax)
@@ -121,7 +121,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                 Dim awaitExpressionSyntax = TryCast(sourceExpression, AwaitExpressionSyntax)
 
-                If Not awaitExpressionSyntax Is Nothing Then
+                If awaitExpressionSyntax IsNot Nothing Then
 
                     invocationExpression = TryCast(awaitExpressionSyntax.Expression, InvocationExpressionSyntax)
 

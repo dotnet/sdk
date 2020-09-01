@@ -117,8 +117,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         var binaryOperation = (IBinaryOperation)operation;
                                         PredicateValueKind predicateKind = GetPredicateKind(binaryOperation);
                                         if (predicateKind != PredicateValueKind.Unknown &&
-                                            (!(binaryOperation.LeftOperand is IBinaryOperation leftBinary) || GetPredicateKind(leftBinary) == PredicateValueKind.Unknown) &&
-                                            (!(binaryOperation.RightOperand is IBinaryOperation rightBinary) || GetPredicateKind(rightBinary) == PredicateValueKind.Unknown))
+                                            (binaryOperation.LeftOperand is not IBinaryOperation leftBinary || GetPredicateKind(leftBinary) == PredicateValueKind.Unknown) &&
+                                            (binaryOperation.RightOperand is not IBinaryOperation rightBinary || GetPredicateKind(rightBinary) == PredicateValueKind.Unknown))
                                         {
                                             ReportAlwaysTrueFalseOrNullDiagnostic(operation, predicateKind);
                                         }
@@ -154,8 +154,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         }
 
                                         var originalOperation = operationRoot.SemanticModel.GetOperation(operation.Syntax, operationBlockContext.CancellationToken);
-                                        if (originalOperation is IAssignmentOperation ||
-                                            originalOperation is IVariableDeclaratorOperation)
+                                        if (originalOperation is IAssignmentOperation or
+                                            IVariableDeclaratorOperation)
                                         {
                                             // Skip compiler generated IsNull operation for assignment/variable declaration within a using.
                                             continue;
@@ -171,10 +171,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                             PredicateValueKind GetPredicateKind(IOperation operation)
                             {
-                                Debug.Assert(operation.Kind == OperationKind.BinaryOperator ||
-                                             operation.Kind == OperationKind.Invocation ||
-                                             operation.Kind == OperationKind.IsNull ||
-                                             operation.Kind == OperationKind.IsPattern);
+                                Debug.Assert(operation.Kind is OperationKind.BinaryOperator or
+                                             OperationKind.Invocation or
+                                             OperationKind.IsNull or
+                                             OperationKind.IsPattern);
                                 RoslynDebug.Assert(pointsToAnalysisResult != null);
                                 RoslynDebug.Assert(valueContentAnalysisResult != null);
 

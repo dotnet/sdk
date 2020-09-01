@@ -6198,6 +6198,74 @@ public class Class1
             }.RunAsync();
         }
 
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task IsNullPatternInConditionalExpression_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Class1
+{
+    public int X { get; }
+    public static void M1(object input)
+    {
+        if (input is null)
+        {
+            return;
+        }
+
+        input.ToString();
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task NegationPatternInConditionalExpression_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Class1
+{
+    public int X { get; }
+    public static void M1(object input)
+    {
+        if (input is not null)
+        {
+            input.ToString();
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task RelationalPatternInConditionalExpression_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Class1
+{
+    public int X { get; }
+    public static void M1(object input)
+    {
+        if (input is > 10)
+        {
+            input.ToString();
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
         [Fact, WorkItem(3049, "https://github.com/dotnet/roslyn-analyzers/issues/3049")]
         public async Task SwitchStatement_PatternMatchingNullCheck()
         {
@@ -6240,6 +6308,80 @@ public class Test
 }
 ",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task SwitchStatement_PatternMatchingNotNullCheck()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+public class Test
+{
+    public static string M(Test test)
+    {
+        switch (test)
+        {
+            case not null:
+                return test.ToString();
+            default:
+                throw new ArgumentNullException(nameof(test));
+        }
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task SwitchExpression_PatternMatchingNotNullCheck()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+public class Test
+{
+    public static string M(Test test)
+    {
+        return test switch
+        {
+            not null => test.ToString(),
+            _ => throw new ArgumentNullException(nameof(test))
+        };
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task SwitchExpression_PatternMatchingRelationalPatternCheck()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+public class Test
+{
+    public static string M(object test)
+    {
+        return test switch
+        {
+            > 10 => test.ToString(),
+            _ => throw new ArgumentNullException(nameof(test))
+        };
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9
             }.RunAsync();
         }
 

@@ -261,7 +261,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             actualMethod = null;
 
             // The await should have a known operation child, check its kind
-            if (!(awaitOperation.Operation is IInvocationOperation awaitedInvocation))
+            if (awaitOperation.Operation is not IInvocationOperation awaitedInvocation)
             {
                 return false;
             }

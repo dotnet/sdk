@@ -41,7 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 compilationContext.RegisterOperationBlockAction(operationBlockContext =>
                 {
                     // Analyze externally visible methods with reference type parameters.
-                    if (!(operationBlockContext.OwningSymbol is IMethodSymbol containingMethod) ||
+                    if (operationBlockContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         !containingMethod.IsExternallyVisible() ||
                         !containingMethod.Parameters.Any(p => p.Type.IsReferenceType) ||
                         containingMethod.IsConfiguredToSkipAnalysis(operationBlockContext.Options,

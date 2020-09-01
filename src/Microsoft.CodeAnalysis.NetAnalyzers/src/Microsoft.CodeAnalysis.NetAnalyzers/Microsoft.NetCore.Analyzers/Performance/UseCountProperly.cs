@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         // CA1827
         private static readonly LocalizableString s_localizableTitle_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessag_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessage_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         // CA1828
@@ -69,7 +69,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         internal static readonly DiagnosticDescriptor s_rule_CA1827 = DiagnosticDescriptorHelper.Create(
             CA1827,
             s_localizableTitle_CA1827,
-            s_localizableMessag_CA1827,
+            s_localizableMessage_CA1827,
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
             description: s_localizableDescription_CA1827,
@@ -225,7 +225,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (isAsync)
             {
                 // Only report awaited calls.
-                if (!(parentOperation is IAwaitOperation awaitOperation))
+                if (parentOperation is not IAwaitOperation awaitOperation)
                 {
                     return;
                 }
@@ -247,7 +247,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             var propertyReferenceOperation = (IPropertyReferenceOperation)context.Operation;
 
             string propertyName = propertyReferenceOperation.Member.Name;
-            if (propertyName != Count && propertyName != Length)
+            if (propertyName is not Count and not Length)
             {
                 return;
             }
@@ -691,7 +691,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 _ => -1
             };
 
-            return constant == 0 || constant == 1;
+            return constant is 0 or 1;
         }
 
         private static bool IsPropertyGetOfIsEmptyUsingThisInstance(OperationAnalysisContext context, IOperation operation, ISymbol isEmptyPropertySymbol)

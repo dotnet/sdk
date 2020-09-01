@@ -65,7 +65,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context, INamedTypeSymbol equatableType)
         {
-            if (!(context.Symbol is INamedTypeSymbol namedType)
+            if (context.Symbol is not INamedTypeSymbol namedType
                 || (namedType.TypeKind != TypeKind.Struct && namedType.TypeKind != TypeKind.Class)
                 || (namedType.TypeKind == TypeKind.Struct && namedType.IsRefLikeType))
             {
@@ -90,7 +90,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 //       class A<T> : IEquatable<T>
                 //          where T: A<T>
                 //       { ... }
-                if (!(constructedEquatable.GetMembers("Equals").FirstOrDefault() is IMethodSymbol equatableEqualsMethod) ||
+                if (constructedEquatable.GetMembers("Equals").FirstOrDefault() is not IMethodSymbol equatableEqualsMethod ||
                     !Equals(namedType, namedType.FindImplementationForInterfaceMember(equatableEqualsMethod)?.ContainingType))
                 {
                     return;

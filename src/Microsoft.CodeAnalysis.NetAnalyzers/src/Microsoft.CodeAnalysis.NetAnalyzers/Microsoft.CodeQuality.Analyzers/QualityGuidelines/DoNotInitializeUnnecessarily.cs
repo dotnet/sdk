@@ -82,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
 
                 // Then if this isn't a literal, it's not the default.
-                if (!(value is ILiteralOperation literal) || !literal.ConstantValue.HasValue)
+                if (value is not ILiteralOperation literal || !literal.ConstantValue.HasValue)
                 {
                     return false;
                 }
