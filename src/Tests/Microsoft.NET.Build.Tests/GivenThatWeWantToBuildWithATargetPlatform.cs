@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyRequiresMSBuildVersionFact("16.8.0.41402")]
         public void It_defines_target_platform_from_target_framework_with_explicit_version()
         {
-            var targetPlatformVersion = "";
+            var targetPlatformVersion = "10.0.19041.0";
             var targetFramework = "net5.0-windows";
             var testProj = new TestProject()
             {
