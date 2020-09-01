@@ -281,7 +281,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
-                              TargetFramework="net5.0-windows10.0.17763"
+                              TargetFramework="net5.0-windows10.0.17763.0"
                               RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
@@ -294,7 +294,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
-                              TargetFramework="net5.0-windows10.0.18362"
+                              TargetFramework="net5.0-windows10.0.18362.0"
                               RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
@@ -307,7 +307,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
-                              TargetFramework="net5.0-windows10.0.19041"
+                              TargetFramework="net5.0-windows10.0.19041.0"
                               RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
