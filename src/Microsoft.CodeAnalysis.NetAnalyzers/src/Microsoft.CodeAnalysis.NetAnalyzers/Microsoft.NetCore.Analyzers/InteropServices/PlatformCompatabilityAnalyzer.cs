@@ -173,13 +173,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         return;
                     }
 
-                    if (guardMethods.IsEmpty || !(context.OperationBlocks.GetControlFlowGraph(out var topmostBlock) is { } cfg))
+                    if (guardMethods.IsEmpty || !(context.OperationBlocks.GetControlFlowGraph() is { } cfg))
                     {
                         ReportDiagnosticsForAll(platformSpecificOperations, context);
                         return;
                     }
 
-                    var performValueContentAnalysis = ComputeNeedsValueContentAnalysis(topmostBlock!, guardMethods);
+                    var performValueContentAnalysis = ComputeNeedsValueContentAnalysis(cfg.OriginalOperation, guardMethods);
                     var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
                     var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
                         cfg, context.OwningSymbol, CreateOperationVisitor, wellKnownTypeProvider,
@@ -242,7 +242,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return false;
         }
 
-        private static bool ComputeNeedsValueContentAnalysis(IBlockOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods)
+        private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods)
         {
             foreach (var operation in operationBlock.Descendants())
             {

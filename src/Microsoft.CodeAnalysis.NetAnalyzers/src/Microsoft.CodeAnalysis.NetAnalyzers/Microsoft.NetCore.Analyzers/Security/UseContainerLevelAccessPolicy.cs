@@ -137,8 +137,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                 if (argumentOperation != null)
                                 {
-                                    var cfg = invocationOperation.GetTopmostParentBlock()?.GetEnclosingControlFlowGraph();
-                                    if (cfg != null)
+                                    if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
                                     {
                                         var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
                                                                                 operationAnalysisContext.Options,

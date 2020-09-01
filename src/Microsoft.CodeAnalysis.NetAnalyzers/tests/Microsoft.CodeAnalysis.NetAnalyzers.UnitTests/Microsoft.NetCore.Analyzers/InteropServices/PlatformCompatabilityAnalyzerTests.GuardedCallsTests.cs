@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Test.Utilities;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -1130,6 +1131,86 @@ public class Test
     {
         return option;
     }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
+        public async Task OsDependentPropertyWithInitializer_NoDiagnostic()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class C
+{
+    public static object Property { get; } = OperatingSystemHelper.IsWindows() ? null : new A();
+}
+
+[UnsupportedOSPlatform(""windows"")]
+class A
+{
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
+        public async Task OsDependentPropertyWithInitializer_Diagnostic()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class C
+{
+    public static object Property { get; } = OperatingSystemHelper.IsWindows() ? [|new A()|] : null;
+}
+
+[UnsupportedOSPlatform(""windows"")]
+class A
+{
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
+        public async Task OsDependentFieldWithInitializer_NoDiagnostic()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class C
+{
+    private static object _field = OperatingSystemHelper.IsWindows() ? null : new A();
+}
+
+[UnsupportedOSPlatform(""windows"")]
+class A
+{
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
+        public async Task OsDependentFieldWithInitializer_Diagnostic()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class C
+{
+    private static object _field = OperatingSystemHelper.IsWindows() ? [|new A()|] : null;
+}
+
+[UnsupportedOSPlatform(""windows"")]
+class A
+{
 }
 " + MockAttributesCsSource + MockOperatingSystemApiSource;
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
