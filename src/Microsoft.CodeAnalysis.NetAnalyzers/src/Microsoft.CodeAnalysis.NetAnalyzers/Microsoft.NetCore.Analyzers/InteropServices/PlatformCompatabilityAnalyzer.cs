@@ -97,10 +97,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 var typeName = WellKnownTypeNames.SystemOperatingSystem;
 
+                // TODO: remove 'typeName + "Helper"' after tests able to consume the real new APIs
                 if (!context.Compilation.TryGetOrCreateTypeByMetadataName(typeName + "Helper", out var operatingSystemType))
                 {
-                    // TODO: remove 'typeName + "Helper"' after tests able to consume the real new APIs
-                    operatingSystemType = context.Compilation.GetOrCreateTypeByMetadataName(typeName);
+                    if (!context.Compilation.TryGetOrCreateTypeByMetadataName(typeName, out operatingSystemType))
+                    {
+                        return;
+                    }
                 }
                 if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOSPlatform, out var osPlatformType) ||
                     !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesRuntimeInformation, out var runtimeInformationType))
