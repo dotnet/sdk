@@ -199,7 +199,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         var value = analysisResult[platformSpecificOperation.Kind, platformSpecificOperation.Syntax];
 
                         if ((value.Kind == GlobalFlowStateAnalysisValueSetKind.Known && IsKnownValueGuarded(attributes, value)) ||
-                           (value.Kind == GlobalFlowStateAnalysisValueSetKind.Unknown && HasInterproceduralResult(platformSpecificOperation, attributes, analysisResult)))
+                           (value.Kind == GlobalFlowStateAnalysisValueSetKind.Unknown && HasGuardedLambdaOrLocalFunctionResult(platformSpecificOperation, attributes, analysisResult)))
                         {
                             continue;
                         }
@@ -223,26 +223,34 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             });
         }
 
-        private static bool HasInterproceduralResult(IOperation platformSpecificOperation, SmallDictionary<string, PlatformAttributes> attributes,
+        private static bool HasGuardedLambdaOrLocalFunctionResult(IOperation platformSpecificOperation, SmallDictionary<string, PlatformAttributes> attributes,
             DataFlowAnalysisResult<GlobalFlowStateBlockAnalysisResult, GlobalFlowStateAnalysisValueSet> analysisResult)
         {
-            if (platformSpecificOperation.IsWithinLambdaOrLocalFunction())
+            if (!platformSpecificOperation.IsWithinLambdaOrLocalFunction(out var containingLambdaOrLocalFunctionOperation))
             {
-                var results = analysisResult.TryGetInterproceduralResults();
-                if (results != null)
+                return false;
+            }
+
+            var results = analysisResult.TryGetLambdaOrLocalFunctionResults(containingLambdaOrLocalFunctionOperation);
+            Debug.Assert(results.Any(), "Expected at least one analysis result for lambda/local function");
+
+            foreach (var localResult in results)
+            {
+                Debug.Assert(localResult.ControlFlowGraph.OriginalOperation == containingLambdaOrLocalFunctionOperation);
+
+                var localValue = localResult[platformSpecificOperation.Kind, platformSpecificOperation.Syntax];
+
+                // Value must be known and guarded in all analysis contexts.
+                // NOTE: IsKnownValueGuarded mutates the input values, so we pass in cloned values
+                // to ensure that evaluation of each result is independent of evaluation of other parts.
+                if (localValue.Kind != GlobalFlowStateAnalysisValueSetKind.Known ||
+                    !IsKnownValueGuarded(CopyAttributes(attributes), localValue))
                 {
-                    foreach (var localResult in results)
-                    {
-                        var localValue = localResult[platformSpecificOperation.Kind, platformSpecificOperation.Syntax];
-                        if (localValue.Kind == GlobalFlowStateAnalysisValueSetKind.Known && IsKnownValueGuarded(attributes, localValue))
-                        {
-                            return true;
-                        }
-                    }
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
         private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods)

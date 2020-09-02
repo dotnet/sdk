@@ -566,6 +566,62 @@ public class Test
         }
 
         [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMemberWarns()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        void Test()
+        {
+            [|M2()|];
+        }
+
+        M3(Test);
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionUnusedCallsOsDependentMemberWarns()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        void Test()
+        {
+            [|M2()|];
+        }
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
         public async Task LambdaCallsOsDependentMemberWarns()
         {
             var source = @"
@@ -612,6 +668,62 @@ public class C
         Action action = () =>
         {
             M2();
+        };
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMemberWarns()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        Action a = () =>
+        {
+            [|M2()|];
+        };
+
+        M3(a);
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaUnusedCallsOsDependentMemberWarns()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        Action a = () =>
+        {
+            [|M2()|];
         };
     }
 
