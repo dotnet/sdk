@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 
 namespace Microsoft.CodeAnalysis.Diagnostics
@@ -55,7 +56,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
 
             // If user has explicitly configured severity for this diagnostic ID, that should be respected.
             // For example, 'dotnet_diagnostic.CA1000.severity = error'
-            if (compilation.Options.SyntaxTreeOptionsProvider?.TryGetDiagnosticValue(tree, descriptor.Id, out severity) == true)
+            if (compilation.Options.SyntaxTreeOptionsProvider?.TryGetDiagnosticValue(tree, descriptor.Id, CancellationToken.None, out severity) == true)
             {
                 return true;
             }
@@ -89,7 +90,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
         public static bool IsDiagnosticSeverityConfigured(this AnalyzerConfigOptions analyzerConfigOptions, Project project, SyntaxTree tree, string diagnosticId, string? diagnosticCategory)
         {
             var optionsProvider = project.CompilationOptions?.SyntaxTreeOptionsProvider;
-            return (optionsProvider != null && optionsProvider.TryGetDiagnosticValue(tree, diagnosticId, out _))
+            return (optionsProvider != null && optionsProvider.TryGetDiagnosticValue(tree, diagnosticId, CancellationToken.None, out _))
                 || (diagnosticCategory != null && analyzerConfigOptions.TryGetValue(GetCategoryBasedDotnetAnalyzerDiagnosticSeverityKey(diagnosticCategory), out _))
                 || analyzerConfigOptions.TryGetValue(DotnetAnalyzerDiagnosticSeverityKey, out _);
         }
@@ -130,7 +131,7 @@ namespace Microsoft.CodeAnalysis.Diagnostics
             // For example, 'dotnet_diagnostic.CA1000.severity = error'
             var optionsProvider = project.CompilationOptions?.SyntaxTreeOptionsProvider;
             if (optionsProvider != null &&
-                optionsProvider.TryGetDiagnosticValue(tree, diagnosticId, out severity))
+                optionsProvider.TryGetDiagnosticValue(tree, diagnosticId, CancellationToken.None, out severity))
             {
                 return true;
             }
