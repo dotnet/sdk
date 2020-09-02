@@ -1747,6 +1747,54 @@ public class Test
         }
 
         [Fact]
+        public async Task LocalFunctionMultipleCalls_DifferentOrder_OsDependentMember_MixedGuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        void LocalFunction()
+        {
+            [|WindowsOnly()|];
+        }
+
+        // Unguarded call before guarded call - should warn.
+        LocalFunction();
+        if(OperatingSystemHelper.IsWindows())
+        {
+            LocalFunction();
+        }
+    }
+
+    public void M2()
+    {
+        void LocalFunction()
+        {
+            [|WindowsOnly()|];
+        }
+
+        // Guarded call before unguarded call - should warn.
+        LocalFunction();
+        if(OperatingSystemHelper.IsWindows())
+        {
+            LocalFunction();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    public void WindowsOnly()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
         public async Task LocalFunctionWithUnrelatedLocalFunctionCallsOsDependentMember_GuardedCalls()
         {
             var source = @"
