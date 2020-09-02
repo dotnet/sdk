@@ -43,22 +43,30 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 ImmutableArray<IArgumentOperation> arguments,
                 ValueContentAnalysisResult? valueContentAnalysisResult,
                 INamedTypeSymbol osPlatformType,
-                [NotNullWhen(returnValue: true)] out PlatformMethodValue? info)
+                ArrayBuilder<PlatformMethodValue> infosBuilder)
             {
                 // Accelerators like OperatingSystem.IsPlatformName()
                 if (arguments.IsEmpty)
                 {
                     if (TryExtractPlatformName(invokedPlatformCheckMethod.Name, out var platformName))
                     {
-                        info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, new Version(0, 0), negated: false);
+                        var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, new Version(0, 0), negated: false);
+                        infosBuilder.Add(info);
                         return true;
                     }
                 }
                 else
                 {
-                    if (TryDecodeRuntimeInformationIsOSPlatform(arguments[0].Value, osPlatformType, out string? osPlatformName))
+                    using var osPlatformNamesBuilder = ArrayBuilder<string>.GetInstance();
+                    if (TryDecodeRuntimeInformationIsOSPlatform(arguments[0].Value, osPlatformType, valueContentAnalysisResult, osPlatformNamesBuilder))
                     {
-                        info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, osPlatformName, new Version(0, 0), negated: false);
+                        Debug.Assert(osPlatformNamesBuilder.Count > 0);
+                        for (var i = 0; i < osPlatformNamesBuilder.Count; i++)
+                        {
+                            var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, osPlatformNamesBuilder[i], new Version(0, 0), negated: false);
+                            infosBuilder.Add(info);
+                        }
+
                         return true;
                     }
 
@@ -71,14 +79,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (invokedPlatformCheckMethod.Name == IsOSPlatform &&
                                 TryParsePlatformNameAndVersion(literal.ConstantValue.Value.ToString(), out string platformName, out Version? version))
                             {
-                                info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, version, negated: false);
+                                var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, version, negated: false);
+                                infosBuilder.Add(info);
                                 return true;
                             }
                             else if (TryDecodeOSVersion(arguments, valueContentAnalysisResult, out version, 1))
                             {
                                 // OperatingSystem.IsOSPlatformVersionAtLeast(string platform, int major, int minor = 0, int build = 0, int revision = 0)
                                 Debug.Assert(invokedPlatformCheckMethod.Name == "IsOSPlatformVersionAtLeast");
-                                info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, literal.ConstantValue.Value.ToString(), version, negated: false);
+                                var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, literal.ConstantValue.Value.ToString(), version, negated: false);
+                                infosBuilder.Add(info);
                                 return true;
                             }
                         }
@@ -88,14 +98,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (TryExtractPlatformName(invokedPlatformCheckMethod.Name, out var platformName) &&
                                 TryDecodeOSVersion(arguments, valueContentAnalysisResult, out var version))
                             {
-                                info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, version, negated: false);
+                                var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, version, negated: false);
+                                infosBuilder.Add(info);
                                 return true;
                             }
                         }
                     }
                 }
 
-                info = default;
                 return false;
             }
 
@@ -120,16 +130,31 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             private static bool TryDecodeRuntimeInformationIsOSPlatform(
                 IOperation argumentValue,
                 INamedTypeSymbol osPlatformType,
-                [NotNullWhen(returnValue: true)] out string? osPlatformName)
+                ValueContentAnalysisResult? valueContentAnalysisResult,
+                ArrayBuilder<string> decodedOsPlatformNamesBuilder)
             {
+                if (!argumentValue.Type.Equals(osPlatformType))
+                {
+                    return false;
+                }
+
                 if ((argumentValue is IPropertyReferenceOperation propertyReference) &&
                     propertyReference.Property.ContainingType.Equals(osPlatformType))
                 {
-                    osPlatformName = propertyReference.Property.Name;
+                    decodedOsPlatformNamesBuilder.Add(propertyReference.Property.Name);
                     return true;
                 }
 
-                osPlatformName = null;
+                if (valueContentAnalysisResult != null)
+                {
+                    var valueContentValue = valueContentAnalysisResult[argumentValue];
+                    if (valueContentValue.IsLiteralState)
+                    {
+                        decodedOsPlatformNamesBuilder.AddRange(valueContentValue.LiteralValues.OfType<string>());
+                        return decodedOsPlatformNamesBuilder.Count > 0;
+                    }
+                }
+
                 return false;
             }
 

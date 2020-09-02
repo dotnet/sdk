@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -36,9 +37,19 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 if (_platformCheckMethods.Contains(method.OriginalDefinition))
                 {
-                    return PlatformMethodValue.TryDecode(method, visitedArguments, DataFlowAnalysisContext.ValueContentAnalysisResult, _osPlatformType, out var platformInfo) ?
-                        new GlobalFlowStateAnalysisValueSet(platformInfo) :
-                        GlobalFlowStateAnalysisValueSet.Unknown;
+                    using var infosBuilder = ArrayBuilder<PlatformMethodValue>.GetInstance();
+                    if (PlatformMethodValue.TryDecode(method, visitedArguments, DataFlowAnalysisContext.ValueContentAnalysisResult, _osPlatformType, infosBuilder))
+                    {
+                        for (var i = 0; i < infosBuilder.Count; i++)
+                        {
+                            var newValue = new GlobalFlowStateAnalysisValueSet(infosBuilder[i]);
+                            value = i == 0 ? newValue : new GlobalFlowStateAnalysisValueSet(value, newValue);
+                        }
+
+                        return value;
+                    }
+
+                    return GlobalFlowStateAnalysisValueSet.Unknown;
                 }
 
                 return GetValueOrDefault(value);

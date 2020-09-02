@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
@@ -111,6 +112,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     return;
                 }
 
+                var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
+                if (stringType == null)
+                {
+                    return;
+                }
+
                 var msBuildPlatforms = GetSupportedPlatforms(context.Options, context.Compilation, context.CancellationToken);
                 var runtimeIsOSPlatformMethod = runtimeInformationType.GetMembers().OfType<IMethodSymbol>().Where(m =>
                     IsOSPlatform == m.Name &&
@@ -121,8 +128,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 var guardMethods = GetOperatingSystemGuardMethods(runtimeIsOSPlatformMethod, operatingSystemType!);
                 var platformSpecificMembers = new ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?>();
+                var osPlatformTypeArray = ImmutableArray.Create(osPlatformType);
+                var osPlatformCreateMethod = osPlatformType.GetMembers("Create").OfType<IMethodSymbol>().Where(m =>
+                    m.IsStatic &&
+                    m.ReturnType.Equals(osPlatformType) &&
+                    m.Parameters.Length == 1 &&
+                    m.Parameters[0].Type.SpecialType == SpecialType.System_String).FirstOrDefault();
 
-                context.RegisterOperationBlockStartAction(context => AnalyzeOperationBlock(context, guardMethods, osPlatformType, platformSpecificMembers, msBuildPlatforms));
+                context.RegisterOperationBlockStartAction(
+                    context => AnalyzeOperationBlock(context, guardMethods, runtimeIsOSPlatformMethod, osPlatformCreateMethod,
+                                    osPlatformTypeArray, stringType, platformSpecificMembers, msBuildPlatforms));
             });
 
             static ImmutableArray<IMethodSymbol> GetOperatingSystemGuardMethods(IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol operatingSystemType)
@@ -150,10 +165,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private void AnalyzeOperationBlock(
             OperationBlockStartAnalysisContext context,
             ImmutableArray<IMethodSymbol> guardMethods,
-            INamedTypeSymbol osPlatformType,
+            IMethodSymbol? runtimeIsOSPlatformMethod,
+            IMethodSymbol? osPlatformCreateMethod,
+            ImmutableArray<INamedTypeSymbol> osPlatformTypeArray,
+            INamedTypeSymbol stringType,
             ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers,
             ImmutableArray<string> msBuildPlatforms)
         {
+            var osPlatformType = osPlatformTypeArray[0];
             var platformSpecificOperations = PooledConcurrentDictionary<IOperation, SmallDictionary<string, PlatformAttributes>>.GetInstance();
 
             context.RegisterOperationAction(context =>
@@ -182,12 +201,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         return;
                     }
 
-                    var performValueContentAnalysis = ComputeNeedsValueContentAnalysis(cfg.OriginalOperation, guardMethods);
+                    var performValueContentAnalysis = ComputeNeedsValueContentAnalysis(cfg.OriginalOperation, guardMethods, runtimeIsOSPlatformMethod, osPlatformType);
                     var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
                     var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
                         cfg, context.OwningSymbol, CreateOperationVisitor, wellKnownTypeProvider,
                         context.Options, SupportedOsRule, performValueContentAnalysis,
-                        context.CancellationToken, out var valueContentAnalysisResult);
+                        context.CancellationToken, out var valueContentAnalysisResult,
+                        additionalSupportedValueTypes: osPlatformTypeArray,
+                        getValueContentValueForAdditionalSupportedValueTypeOperation: GetValueContentValue);
 
                     if (analysisResult == null)
                     {
@@ -219,7 +240,24 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 return;
 
-                OperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context) => new OperationVisitor(guardMethods, osPlatformType, context);
+                OperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context) => new OperationVisitor(guardMethods, osPlatformTypeArray[0], context);
+
+                ValueContentAbstractValue GetValueContentValue(IOperation operation)
+                {
+                    Debug.Assert(operation.Type.Equals(osPlatformType));
+                    if (operation is IInvocationOperation invocation &&
+                        invocation.TargetMethod.Equals(osPlatformCreateMethod) &&
+                        invocation.Arguments.Length == 1 &&
+                        invocation.Arguments[0].Value is { } argument &&
+                        argument.ConstantValue.HasValue &&
+                        argument.ConstantValue.Value is string platformName &&
+                        platformName.Length > 0)
+                    {
+                        return ValueContentAbstractValue.Create(platformName, stringType);
+                    }
+
+                    return ValueContentAbstractValue.MayBeContainsNonLiteralState;
+                }
             });
         }
 
@@ -253,20 +291,36 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return true;
         }
 
-        private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods)
+        private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods, IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol osPlatformType)
         {
+            Debug.Assert(runtimeIsOSPlatformMethod == null || guardMethods.Contains(runtimeIsOSPlatformMethod));
+
             foreach (var operation in operationBlock.Descendants())
             {
-                if (operation is IInvocationOperation invocation &&
-                    guardMethods.Contains(invocation.TargetMethod))
+                if (operation is IInvocationOperation invocation)
                 {
-                    // Check if any integral parameter to guard method invocation has non-constant value.
-                    foreach (var argument in invocation.Arguments)
+                    if (invocation.TargetMethod.Equals(runtimeIsOSPlatformMethod))
                     {
-                        if (argument.Parameter.Type.SpecialType == SpecialType.System_Int32 &&
-                            !argument.Value.ConstantValue.HasValue)
+                        if (invocation.Arguments.Length == 1 &&
+                            invocation.Arguments[0].Value is IPropertyReferenceOperation propertyReference &&
+                            propertyReference.Property.ContainingType.Equals(osPlatformType))
                         {
-                            return true;
+                            // "OSPlatform.Platform" property reference does not need value content analysis.
+                            continue;
+                        }
+
+                        return true;
+                    }
+                    else if (guardMethods.Contains(invocation.TargetMethod))
+                    {
+                        // Check if any integral parameter to guard method invocation has non-constant value.
+                        foreach (var argument in invocation.Arguments)
+                        {
+                            if (argument.Parameter.Type.SpecialType == SpecialType.System_Int32 &&
+                                !argument.Value.ConstantValue.HasValue)
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
