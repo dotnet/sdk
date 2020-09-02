@@ -2351,6 +2351,80 @@ public class Test
         }
 
         [Fact]
+        public async Task LambdaContaingLocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 10, 2, 1))
+            {
+                LocalFunction();
+            }
+
+            void LocalFunction()
+            {
+                // Should not warn here as all callsites to 'LocalFunction' are guarded.
+                M2();
+            }
+        };
+
+        a();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionContainingLambdaCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        void LocalFunction()
+        {
+            Action a = () =>
+            {
+                // Should not warn here as all callsites to 'a' are guarded.
+                M2();
+            };
+
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 10, 2, 1))
+            {
+                a();
+            }
+        }
+
+        LocalFunction();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
         public async Task OsDependentEventAccessed_GuardedCall_SimpleIfElse()
         {
             var source = @"
