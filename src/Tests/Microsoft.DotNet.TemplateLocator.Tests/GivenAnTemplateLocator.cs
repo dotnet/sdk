@@ -21,14 +21,16 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
             _resolver = new TemplateLocator();
             _fakeDotnetRootDirectory =
                 Path.Combine(TestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
-            _manifestDirectory = Path.Combine(_fakeDotnetRootDirectory, "workloadmanifests", "5.0.100");
+            _manifestDirectory = Path.Combine(_fakeDotnetRootDirectory, "sdk-manifests", "5.0.100");
             Directory.CreateDirectory(_manifestDirectory);
         }
 
         [Fact]
         public void ItShouldReturnListOfTemplates()
         {
-            File.WriteAllText(Path.Combine(_manifestDirectory, "WorkloadManifest.xml"), fakeManifest);
+            Directory.CreateDirectory(Path.Combine(_manifestDirectory, "Android"));
+            File.Copy(Path.Combine("Manifests", "AndroidWorkloadManifest.json"), Path.Combine(_manifestDirectory, "Android", "WorkloadManifest.json"));
+
             var result = _resolver.GetDotnetSdkTemplatePackages("5.0.102", _fakeDotnetRootDirectory);
 
             result.First().Path.Should().Be(Path.Combine(_fakeDotnetRootDirectory, "template-packs",
