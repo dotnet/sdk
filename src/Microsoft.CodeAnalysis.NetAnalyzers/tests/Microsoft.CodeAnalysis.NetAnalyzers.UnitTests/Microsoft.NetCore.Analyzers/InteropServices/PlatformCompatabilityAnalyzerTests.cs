@@ -596,7 +596,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LocalFunctionUnusedCallsOsDependentMemberDoesNotWarn()
+        public async Task LocalFunctionUnusedCallsOsDependentMemberWarns()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -608,7 +608,7 @@ public class Test
     {
         void Test()
         {
-            M2();
+            [|M2()|];
         }
     }
 
@@ -711,7 +711,7 @@ public class Test
         }
 
         [Fact]
-        public async Task LambdaUnusedCallsOsDependentMemberDoesNotWarn()
+        public async Task LambdaUnusedCallsOsDependentMemberWarns()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -723,7 +723,7 @@ public class Test
     {
         Action a = () =>
         {
-            M2();
+            [|M2()|];
         };
     }
 

@@ -1544,7 +1544,7 @@ public class Test
             {
                 [|M2()|];
             }
-        };
+        }
 
         M3(LocalFunction);
     }
@@ -1654,6 +1654,138 @@ public class Test
         }
 
         [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside local function when escaped as delegate + invoked directly from guarded context.
+        void LocalFunction()
+        {
+            [|M2()|];
+        }
+
+        // Escaped as delegate, can potentially be invoked from unguarded context.
+        M3(LocalFunction);
+
+        if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+        {
+            // Invoked directly from guarded context.
+            LocalFunction();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionMultipleCallsOsDependentMember_MixedGuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn 'WindowsOnly' inside local function, all calls from guarded context.
+        // Warn on 'Windows10OrLaterOnly' inside local function, some calls are from unguarded context.
+        void LocalFunction()
+        {
+            WindowsOnly();
+            [|Windows10OrLaterOnly()|];
+        }
+
+        void LocalFunction2()
+        {
+            LocalFunction();
+        }
+
+        if(OperatingSystemHelper.IsWindows())
+        {
+            if (OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                // Invoked multiple times directly from guarded context.
+                LocalFunction();
+                LocalFunction();
+
+                // Invoked indirectly via another local function, but from guarded context.
+                LocalFunction2();
+            }
+
+            // No Windows10 guard.
+            LocalFunction();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    public void WindowsOnly()
+    {
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void Windows10OrLaterOnly()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionWithUnrelatedLocalFunctionCallsOsDependentMember_GuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn inside local function, all calls from guarded context.
+        void LocalFunction()
+        {
+            M2();
+        }
+
+        void LocalFunction2()
+        {
+        }
+
+        if (OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+        {
+            LocalFunction();
+        }
+
+        // Unrelated 'LocalFunction2' call from unguarded context should not affect analysis of 'LocalFunction'
+        LocalFunction2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
         public async Task LocalFunctionUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
         {
             var source = @"
@@ -1673,7 +1805,7 @@ public class Test
             }
             else
             {
-                M2();
+                [|M2()|];
             }
         };
     }
@@ -2053,6 +2185,44 @@ public class Test
         }
 
         [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_08()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda when escaped as delegate + invoked directly from guarded context.
+        Action a = () =>
+        {
+            [|M2()|];
+        };
+
+        // Escaped as delegate, can potentially be invoked from unguarded context.
+        M3(a);
+
+        if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+        {
+            // Invoked directly from guarded context.
+            a();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
         public async Task LambdaUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
         {
             var source = @"
@@ -2063,7 +2233,7 @@ public class Test
 {
     public void M1()
     {
-        // Do not warn inside unused lambda.
+        // Warn inside unused lambda.
         Action a = () =>
         {
             if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
@@ -2072,9 +2242,103 @@ public class Test
             }
             else
             {
-                M2();
+                [|M2()|];
             }
         };
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaMultipleCallsOsDependentMember_MixedGuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn 'WindowsOnly' inside lambda, all calls from guarded context.
+        // Warn on 'Windows10OrLaterOnly' inside lambda, some calls are from unguarded context.
+        Action a = () =>
+        {
+            WindowsOnly();
+            [|Windows10OrLaterOnly()|];
+        };
+
+        if(OperatingSystemHelper.IsWindows())
+        {
+            if (OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                // Invoked multiple times directly from guarded context.
+                a();
+                a();
+
+                // Invoked indirectly via local function, but from guarded context.
+                LocalFunction();
+            }
+
+            // No Windows10 guard.
+            a();
+        }
+
+        void LocalFunction()
+        {
+            a();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    public void WindowsOnly()
+    {
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void Windows10OrLaterOnly()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaWithUnrelatedLambdaCallsOsDependentMember_GuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn inside lambda, all calls from guarded context.
+        Action a = () =>
+        {
+            M2();
+        };
+
+        Action a2 = () =>
+        {
+        };
+
+        if (OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+        {
+            a();
+        }
+
+        // Unrelated lambda call from unguarded context should not affect analysis of 'a'
+        a2();
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
