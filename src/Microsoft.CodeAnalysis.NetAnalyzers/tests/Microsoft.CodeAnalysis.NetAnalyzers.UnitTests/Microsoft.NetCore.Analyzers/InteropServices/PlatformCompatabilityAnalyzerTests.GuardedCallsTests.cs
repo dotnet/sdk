@@ -837,7 +837,7 @@ using System.Runtime.InteropServices;
 
 class Test
 {
-    void M1(bool isWindows)
+    void M1(bool isWindows, OSPlatform? unknown)
     {
         var windowsPlatform = OSPlatform.Create(""Windows"");
         var linuxPlatform = OSPlatform.Create(""Linux"");
@@ -859,6 +859,24 @@ class Test
         {
             {|#1:M2()|};
         }
+
+        if (unknown.HasValue)
+        {
+            platform = unknown.Value;
+        }
+        else
+        {
+            platform = OSPlatform.Create(""Browser"");
+        }
+
+        if(RuntimeInformation.IsOSPlatform(platform))
+        {
+            {|#2:M2()|};
+        }
+        else
+        {
+            {|#3:M2()|};
+        }
     }
 
     [SupportedOSPlatform(""Windows"")]
@@ -872,7 +890,11 @@ class Test
                 VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(0).WithArguments("Test.M2()", "Linux"),
                 VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(0).WithArguments("Test.M2()", "Windows"),
                 VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(1).WithArguments("Test.M2()", "Linux"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(1).WithArguments("Test.M2()", "Windows")
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(1).WithArguments("Test.M2()", "Windows"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(2).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(2).WithArguments("Test.M2()", "Windows"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(3).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(3).WithArguments("Test.M2()", "Windows")
             );
         }
 
