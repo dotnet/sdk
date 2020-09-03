@@ -86,7 +86,11 @@
 
     <ItemGroup>
       <!-- External files -->
-      <LayoutFilesToSign Include="$(SdkOutputDirectory)**/Newtonsoft.Json.dll">
+      <LayoutFilesToSign Include="$(SdkOutputDirectory)**/Newtonsoft.Json.dll;
+                            $(SdkOutputDirectory)**/MessagePack.Annotations.dll;
+                            $(SdkOutputDirectory)**/MessagePack.dll;
+                            $(SdkOutputDirectory)**/Nerdbank.Streams.dll;
+                            $(SdkOutputDirectory)**/StreamJsonRpc.dll">
         <CertificateName>$(ExternalCertificateId)</CertificateName>
       </LayoutFilesToSign>
       <!-- Built binaries -->
