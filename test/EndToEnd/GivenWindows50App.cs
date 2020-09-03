@@ -13,9 +13,9 @@ namespace EndToEnd
     public class GivenWindows50App : TestBase
     {
         [WindowsOnlyTheory]
-        [InlineData("10.0.17763")]
-        [InlineData("10.0.18362")]
-        [InlineData("10.0.19041")]
+        [InlineData("10.0.17763.0")]
+        [InlineData("10.0.18362.0")]
+        [InlineData("10.0.19041.0")]
         public void ItCanBuildAndRun(string targetPlatformVersion)
         {
             var testInstance = TestAssets.Get(TestAssetKinds.TestProjects, "UseCswinrt")
