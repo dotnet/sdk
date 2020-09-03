@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Build.Framework;
@@ -37,14 +37,29 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             OSPlatform targetOS = RuntimeIdentifier.StartsWith("win") ? OSPlatform.Windows :
-                                  RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX : OSPlatform.Linux;
+                                  RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX :
+                                  RuntimeIdentifier.StartsWith("linux") ? OSPlatform.Linux :
+                                  throw new ArgumentException(nameof (RuntimeIdentifier));
+
+            Architecture targetArch = RuntimeIdentifier.EndsWith("x64") ? Architecture.X64 :
+                                      RuntimeIdentifier.EndsWith("x86") ? Architecture.X86 :
+                                      RuntimeIdentifier.EndsWith("arm64") ? Architecture.Arm64 :
+                                      RuntimeIdentifier.EndsWith("arm") ? Architecture.Arm :
+                                      throw new ArgumentException(nameof (RuntimeIdentifier));
 
             BundleOptions options = BundleOptions.None;
             options |= IncludeNativeLibraries ? BundleOptions.BundleNativeBinaries : BundleOptions.None;
             options |= IncludeAllContent ? BundleOptions.BundleAllContent : BundleOptions.None;
             options |= IncludeSymbols ? BundleOptions.BundleSymbolFiles : BundleOptions.None;
 
-            var bundler = new Bundler(AppHostName, OutputDir, options, targetOS, new Version(TargetFrameworkVersion), ShowDiagnosticOutput);
+            var bundler = new Bundler(
+                AppHostName,
+                OutputDir,
+                options,
+                targetOS,
+                targetArch,
+                new Version(TargetFrameworkVersion),
+                ShowDiagnosticOutput);
 
             var fileSpec = new List<FileSpec>(FilesToBundle.Length);
 
