@@ -103,4 +103,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       Include="$(MSBuildThisFileDirectory)..\codestyle\vb\Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.dll"
       IsImplicitlyDefined="true" />
   </ItemGroup>
+  
+  <!-- Build Properties Exposed to CodeStyle Analyzers -->
+  <ItemGroup Condition="$(EnforceCodeStyleInBuild)>
+    <CompilerVisibleProperty Include="RootNamespace" />
+	  <CompilerVisibleProperty Include="ProjectDir" />
+  </ItemGroup>
 </Project>
