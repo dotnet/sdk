@@ -105,8 +105,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
   
   <!-- Build Properties Exposed to CodeStyle Analyzers -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(Language)' == 'C#' Or '$(Language)' == 'VB'">
     <CompilerVisibleProperty Include="RootNamespace" />
-	  <CompilerVisibleProperty Include="ProjectDir" />
+    <CompilerVisibleProperty Include="ProjectDir" />
   </ItemGroup>
 </Project>
