@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using FluentAssertions;
 using System.IO;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.NET.TestFramework;
 using System.Linq;
+using Microsoft.DotNet.DotNetSdkResolver;
 
 namespace Microsoft.DotNet.TemplateLocator.Tests
 {
@@ -18,7 +20,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
 
         public GivenAnTemplateLocator(ITestOutputHelper logger) : base(logger)
         {
-            _resolver = new TemplateLocator();
+            _resolver = new TemplateLocator(Environment.GetEnvironmentVariable, VSSettings.Ambient, null, null);
             _fakeDotnetRootDirectory =
                 Path.Combine(TestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
             _manifestDirectory = Path.Combine(_fakeDotnetRootDirectory, "sdk-manifests", "5.0.100");
@@ -30,18 +32,19 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
         {
             Directory.CreateDirectory(Path.Combine(_manifestDirectory, "Android"));
             File.Copy(Path.Combine("Manifests", "AndroidWorkloadManifest.json"), Path.Combine(_manifestDirectory, "Android", "WorkloadManifest.json"));
-
+            // the nupkg need to exist to be considered installed
+            string templatePacksDirectory = Path.Combine(_fakeDotnetRootDirectory, "template-packs");
+            Directory.CreateDirectory(templatePacksDirectory);
+            string templateNupkgPath = Path.Combine(templatePacksDirectory, "xamarin.android.templates.1.0.3.nupkg");
+            File.WriteAllText(templateNupkgPath, ""); 
+            
             var result = _resolver.GetDotnetSdkTemplatePackages("5.0.102", _fakeDotnetRootDirectory);
+            
+            result.First().Path.Should().Be(templateNupkgPath);
+            result.First().TemplatePackageId.Should().Be("Xamarin.Android.Templates");
+            result.First().TemplateVersion.Should().Be("1.0.3");
 
-            result.First().Path.Should().Be(Path.Combine(_fakeDotnetRootDirectory, "template-packs",
-                "xamarin.android.templates.2.0.1.nupkg"));
-            result.First().TemplatePackageId.Should().Be("xamarin.android.templates");
-            result.First().TemplateVersion.Should().Be("2.0.1");
-
-            result.Skip(1).First().Path.Should().Be(Path.Combine(_fakeDotnetRootDirectory, "template-packs",
-                "xamarin.ios.templates.4.0.1.nupkg"));
-            result.Skip(1).First().TemplatePackageId.Should().Be("xamarin.ios.templates");
-            result.Skip(1).First().TemplateVersion.Should().Be("4.0.1");
+            result.Should().HaveCount(1);
         }
 
         [Fact]
