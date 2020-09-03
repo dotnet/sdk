@@ -767,6 +767,137 @@ class Test
             await VerifyAnalyzerAsyncCs(source);
         }
 
+        [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1()
+    {
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Create(""Windows"")))
+        {
+            M2();
+        }
+        else
+        {
+            [|M2()|];
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    void M2()
+    {
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_ValueCachedInLocal_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1(bool isWindows)
+    {
+        var windowsPlatform = OSPlatform.Create(""Windows"");
+        if(RuntimeInformation.IsOSPlatform(windowsPlatform))
+        {
+            M2();
+        }
+        else
+        {
+            [|M2()|];
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    void M2()
+    {
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_MultipleValuesCachedWithConditionalLogic()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1(bool isWindows, OSPlatform? unknown)
+    {
+        var windowsPlatform = OSPlatform.Create(""Windows"");
+        var linuxPlatform = OSPlatform.Create(""Linux"");
+        var platform = isWindows ? windowsPlatform : linuxPlatform;
+        if(RuntimeInformation.IsOSPlatform(platform))
+        {
+            M2();
+        }
+        else
+        {
+            {|#0:M2()|};
+        }
+
+        if(RuntimeInformation.IsOSPlatform(windowsPlatform))
+        {
+            M2();
+        }
+        else
+        {
+            {|#1:M2()|};
+        }
+
+        if (unknown.HasValue)
+        {
+            platform = unknown.Value;
+        }
+        else
+        {
+            platform = OSPlatform.Create(""Browser"");
+        }
+
+        if(RuntimeInformation.IsOSPlatform(platform))
+        {
+            {|#2:M2()|};
+        }
+        else
+        {
+            {|#3:M2()|};
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    [SupportedOSPlatform(""Linux"")]
+    void M2()
+    {
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source,
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(0).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(0).WithArguments("Test.M2()", "Windows"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(1).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(1).WithArguments("Test.M2()", "Windows"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(2).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(2).WithArguments("Test.M2()", "Windows"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(3).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(3).WithArguments("Test.M2()", "Windows")
+            );
+        }
+
         [Fact]
         public async Task GuardedCalled_SimpleIfElse_VersionNotMatch_Warns()
         {
@@ -2839,6 +2970,37 @@ public class Test
         else
         {
             [|M2()|];
+        }
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAndNegation()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        if (!(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 10, 2) ||
+           OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11)))
+        {
+            [|M2()|];
+        }
+        else
+        {
+            M2();
         }
     }
 
