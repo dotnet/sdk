@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Build.Framework;
@@ -41,10 +41,10 @@ namespace Microsoft.NET.Build.Tasks
                                   RuntimeIdentifier.StartsWith("linux") ? OSPlatform.Linux :
                                   throw new ArgumentException(nameof (RuntimeIdentifier));
 
-            Architecture targetArch = RuntimeIdentifier.EndsWith("x64") ? Architecture.X64 :
-                                      RuntimeIdentifier.EndsWith("x86") ? Architecture.X86 :
-                                      RuntimeIdentifier.EndsWith("arm64") ? Architecture.Arm64 :
-                                      RuntimeIdentifier.EndsWith("arm") ? Architecture.Arm :
+            Architecture targetArch = RuntimeIdentifier.EndsWith("-x64") || RuntimeIdentifier.Contains("-x64-") ? Architecture.X64 :
+                                      RuntimeIdentifier.EndsWith("-x86") || RuntimeIdentifier.Contains("-x86-") ? Architecture.X86 :
+                                      RuntimeIdentifier.EndsWith("-arm64") || RuntimeIdentifier.Contains("-arm64-") ? Architecture.Arm64 :
+                                      RuntimeIdentifier.EndsWith("-arm") || RuntimeIdentifier.Contains("-arm-") ? Architecture.Arm :
                                       throw new ArgumentException(nameof (RuntimeIdentifier));
 
             BundleOptions options = BundleOptions.None;
