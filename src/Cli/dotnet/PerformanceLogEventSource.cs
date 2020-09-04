@@ -5,9 +5,12 @@ using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Common;
+using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -32,6 +35,7 @@ namespace Microsoft.DotNet.Cli
             OSInfo(RuntimeEnvironment.OperatingSystem, RuntimeEnvironment.OperatingSystemVersion, RuntimeEnvironment.OperatingSystemPlatform.ToString());
             SDKInfo(Product.Version, commitSha, GetDisplayRid(versionFile), AppContext.BaseDirectory);
             EnvironmentInfo(Environment.CommandLine);
+            LogMemoryConfiguration();
             LogDrives();
 
             if(startupInfo.TimedAssembly != null)
@@ -234,6 +238,27 @@ namespace Microsoft.DotNet.Cli
         {
             WriteEvent(25, assemblyName, timeInMs);
         }
+
+        [NonEvent]
+        internal void LogMemoryConfiguration()
+        {
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Interop.MEMORYSTATUSEX memoryStatusEx = new Interop.MEMORYSTATUSEX();
+                memoryStatusEx.dwLength = (uint)Marshal.SizeOf(memoryStatusEx);
+
+                if(Interop.GlobalMemoryStatusEx(ref memoryStatusEx))
+                {
+                    MemoryConfiguration((int)memoryStatusEx.dwMemoryLoad, (int)(memoryStatusEx.ullAvailPhys / 1024 / 1024), (int)(memoryStatusEx.ullTotalPhys / 1024 / 1024));
+                }
+            }
+        }
+
+        [Event(26)]
+        internal void MemoryConfiguration(int memoryLoad, int availablePhysicalMB, int totalPhysicalMB)
+        {
+            WriteEvent(26, memoryLoad, availablePhysicalMB, totalPhysicalMB);
+        }
     }
 
     internal class PerformanceLogStartupInformation
@@ -291,5 +316,26 @@ namespace Microsoft.DotNet.Cli
                 AssemblyLoadTime = stopWatch.Elapsed;
             }
         }
+    }
+
+    internal static class Interop
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct MEMORYSTATUSEX
+        {
+            // The length field must be set to the size of this data structure.
+            internal uint dwLength;
+            internal uint dwMemoryLoad;
+            internal ulong ullTotalPhys;
+            internal ulong ullAvailPhys;
+            internal ulong ullTotalPageFile;
+            internal ulong ullAvailPageFile;
+            internal ulong ullTotalVirtual;
+            internal ulong ullAvailVirtual;
+            internal ulong ullAvailExtendedVirtual;
+        }
+
+        [DllImport("kernel32.dll")]
+        internal static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
     }
 }
