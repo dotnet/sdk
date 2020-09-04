@@ -1140,7 +1140,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="ComputeResolvedFilesToPublishList;
                             _ComputeFilesToBundle">
     <ItemGroup>
-      <FilesCopiedToPublishDir Include="@(ResolvedFileToPublish)"/>
+      <FilesCopiedToPublishDir Include="@(ResolvedFileToPublish->'$(PublishDir)%(relativePath)')"/>
       <FilesCopiedToPublishDir Include="$(PublishedSingleFilePath)" RelativePath="$(PublishedSingleFileName)" IsKeyOutput="true" Condition="'$(PublishSingleFile)' == 'true'"/>
 
       <!-- Wapproj handles adding the correct deps.json file, so remove it here to avoid duplicates. -->
