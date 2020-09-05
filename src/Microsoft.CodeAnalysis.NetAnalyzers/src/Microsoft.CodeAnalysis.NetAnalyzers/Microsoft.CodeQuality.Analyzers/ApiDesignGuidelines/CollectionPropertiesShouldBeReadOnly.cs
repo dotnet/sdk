@@ -44,8 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                     RuleLevel.Disabled, // Guidance needs to be improved to be more clear
                                                                     description: s_localizableDescription,
                                                                     isPortedFxCopRule: true,
-                                                                    isDataflowRule: false,
-                                                                    isEnabledByDefaultInAggressiveMode: false);
+                                                                    isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
