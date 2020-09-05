@@ -2153,8 +2153,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
-        <source>Use ordinal stringcomparison</source>
-        <target state="translated">Используйте stringcomparison по порядковым номерам</target>
+        <source>Use ordinal string comparison</source>
+        <target state="needs-review-translation">Используйте stringcomparison по порядковым номерам</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">

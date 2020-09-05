@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis;
 
@@ -14,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
     {
         internal const string RuleId = "CA2001";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidCallingProblematicMethodsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        /*private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidCallingProblematicMethodsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
         private static readonly LocalizableString s_localizableMessageSystemGCCollect = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidCallingProblematicMethodsMessageSystemGCCollect), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageSystemThreadingThreadResume = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidCallingProblematicMethodsMessageSystemThreadingThreadResume), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -36,8 +35,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor SystemThreadingThreadResumeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSystemThreadingThreadResume,
@@ -46,8 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor SystemThreadingThreadSuspendRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSystemThreadingThreadSuspend,
@@ -56,8 +53,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor SystemTypeInvokeMemberRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSystemTypeInvokeMember,
@@ -66,8 +62,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor CoInitializeSecurityRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageCoInitializeSecurity,
@@ -76,8 +71,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor CoSetProxyBlanketRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageCoSetProxyBlanket,
@@ -86,8 +80,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor SystemRuntimeInteropServicesSafeHandleDangerousGetHandleRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle,
@@ -96,8 +89,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor SystemReflectionAssemblyLoadFromRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSystemReflectionAssemblyLoadFrom,
@@ -106,8 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor SystemReflectionAssemblyLoadFileRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSystemReflectionAssemblyLoadFile,
@@ -116,8 +107,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
         internal static DiagnosticDescriptor SystemReflectionAssemblyLoadWithPartialNameRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSystemReflectionAssemblyLoadWithPartialName,
@@ -126,8 +116,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false,
-                                                                             isEnabledByDefaultInAggressiveMode: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);*/
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
         // ImmutableArray.Create(SystemGCCollectRule, SystemThreadingThreadResumeRule, SystemThreadingThreadSuspendRule, SystemTypeInvokeMemberRule, CoInitializeSecurityRule, CoSetProxyBlanketRule, SystemRuntimeInteropServicesSafeHandleDangerousGetHandleRule, SystemReflectionAssemblyLoadFromRule, SystemReflectionAssemblyLoadFileRule, SystemReflectionAssemblyLoadWithPartialNameRule);

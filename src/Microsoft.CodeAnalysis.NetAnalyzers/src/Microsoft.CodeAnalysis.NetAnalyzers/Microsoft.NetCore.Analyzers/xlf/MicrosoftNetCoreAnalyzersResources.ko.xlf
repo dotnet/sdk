@@ -2153,8 +2153,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
-        <source>Use ordinal stringcomparison</source>
-        <target state="translated">서수 stringcomparison을 사용하세요.</target>
+        <source>Use ordinal string comparison</source>
+        <target state="needs-review-translation">서수 stringcomparison을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
