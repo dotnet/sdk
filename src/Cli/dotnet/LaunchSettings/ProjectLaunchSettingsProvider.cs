@@ -4,7 +4,7 @@
 using System;
 using System.Text.Json;
 
-namespace Microsoft.DotNet.Tools.Run.LaunchSettings
+namespace Microsoft.DotNet.LaunchSettings
 {
     internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
     {

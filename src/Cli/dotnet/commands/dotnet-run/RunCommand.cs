@@ -8,7 +8,7 @@ using System.Linq;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Run.LaunchSettings;
+using Microsoft.DotNet.LaunchSettings;
 using Microsoft.DotNet.CommandFactory;
 
 namespace Microsoft.DotNet.Tools.Run

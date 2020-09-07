@@ -22,16 +22,6 @@
         <target state="translated">Der Pfad zur auszuführenden Projektdatei (standardmäßig das aktuelle Verzeichnis, falls nur ein einzelnes Projekt vorhanden ist).</target>
         <note />
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">Der Wert der Eigenschaft "{0}" konnte nicht in einen booleschen Wert konvertiert werden.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">Der Wert der Eigenschaft "{0}" konnte nicht in eine Zeichenfolge konvertiert werden.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="new">Building...</target>
@@ -112,37 +102,10 @@ Ein ausführbares Projekt muss ein ausführbares TFM (z. B. netcoreapp2.0) und d
         <target state="translated">Die Starteinstellungen von {0} werden verwendet…</target>
         <note />
       </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name could not be found or is not a valid JSON object.</source>
-        <target state="translated">Ein Profil mit dem angegebenen Namen wurde nicht gefunden oder ist kein gültiges JSON-Objekt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Der Startprofiltyp "{0}" wird nicht unterstützt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Es wurde kein verwendbares Startprofil gefunden.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
         <source>An unexpected exception occurred while processing launch settings:
 {0}</source>
         <target state="translated">Beim Verarbeiten der Starteinstellungen ist ein unerwarteter Fehler aufgetreten:
-{0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">Die Eigenschaft "Profile" des Starteigenschaftendokuments ist kein JSON-Objekt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">Beim Lesen von "launchSettings.json" ist ein Fehler aufgetreten.
 {0}</target>
         <note />
       </trans-unit>
@@ -164,11 +127,6 @@ Ein ausführbares Projekt muss ein ausführbares TFM (z. B. netcoreapp2.0) und d
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to run for.</source>
         <target state="translated">Die Zielruntime, für die die Ausführung erfolgt.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">Die Eigenschaft "{0}" muss ein Objekt sein, sofern angegeben.</target>
         <note />
       </trans-unit>
     </body>

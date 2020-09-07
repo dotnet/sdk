@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.DotNet.Tools.Run.LaunchSettings
+namespace Microsoft.DotNet.LaunchSettings
 {
     public class ProjectLaunchSettingsModel
     {

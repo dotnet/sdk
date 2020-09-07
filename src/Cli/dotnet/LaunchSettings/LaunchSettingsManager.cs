@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Run.LaunchSettings
+namespace Microsoft.DotNet.LaunchSettings
 {
     internal class LaunchSettingsManager
     {

@@ -22,16 +22,6 @@
         <target state="translated">実行するプロジェクト ファイルへのパス (プロジェクトが 1 つのみの場合、既定は現在のディレクトリです)。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">プロパティ ' {0} ' の値をブール値に変換できませんでした。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">プロパティ '{0}' の値を文字列に変換できませんでした。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="new">Building...</target>
@@ -112,37 +102,10 @@ The current {1} is '{2}'.</source>
         <target state="translated">{0} からの起動設定を使用中...</target>
         <note />
       </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name could not be found or is not a valid JSON object.</source>
-        <target state="translated">指定された名前のプロファイルは見つからないか、有効な JSON オブジェクトではありません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">起動プロファイルの種類 '{0}' はサポートされていません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">使用可能な起動プロファイルが見つかりませんでした。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
         <source>An unexpected exception occurred while processing launch settings:
 {0}</source>
         <target state="translated">起動設定の処理中に予期しない例外が発生しました:
-{0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">起動設定のドキュメントの 'profiles' プロパティが JSON オブジェクトではありません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">launchSettings.json を読み取るときにエラーが発生しました。
 {0}</target>
         <note />
       </trans-unit>
@@ -164,11 +127,6 @@ The current {1} is '{2}'.</source>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to run for.</source>
         <target state="translated">実行対象のターゲット ランタイム。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">プロパティ ' {0} ' は、指定されている場合はオブジェクトである必要があります。</target>
         <note />
       </trans-unit>
     </body>

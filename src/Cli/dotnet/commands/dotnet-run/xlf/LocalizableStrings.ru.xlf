@@ -22,16 +22,6 @@
         <target state="translated">Путь к выполняемому файлу проекта (по умолчанию — текущий каталог, если имеется только один проект).</target>
         <note />
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">Не удалось преобразовать значение свойства "{0}" в логическое значение.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">Не удалось преобразовать значение свойства "{0}" в строку.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="new">Building...</target>
@@ -112,37 +102,10 @@ The current {1} is '{2}'.</source>
         <target state="translated">Используются параметры запуска из {0}...</target>
         <note />
       </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name could not be found or is not a valid JSON object.</source>
-        <target state="translated">Не удается найти профиль с указанным именем, или он не является допустимым объектом JSON.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">Тип профиля запуска "{0}" не поддерживается.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">Не удалось найти подходящий для использования профиль запуска.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
         <source>An unexpected exception occurred while processing launch settings:
 {0}</source>
         <target state="translated">При обработке параметров запуска возникло непредвиденное исключение:
-{0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">Свойство "profiles" документа параметров запуска не является объектом JSON.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">При чтении launchSettings.json обнаружена ошибка.
 {0}</target>
         <note />
       </trans-unit>
@@ -164,11 +127,6 @@ The current {1} is '{2}'.</source>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to run for.</source>
         <target state="translated">Целевая среда выполнения.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">Если свойство "{0}" задано, оно должно быть объектом.</target>
         <note />
       </trans-unit>
     </body>

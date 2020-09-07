@@ -22,16 +22,6 @@
         <target state="translated">要執行之專案檔的路徑 (如果只有一個專案，預設為目前的目錄)。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CouldNotConvertToBoolean">
-        <source>Could not convert the value of property '{0}' to a boolean.</source>
-        <target state="translated">無法將屬性 '{0}' 的值轉換為布林值。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConvertToString">
-        <source>Could not convert the value of property '{0}' to a string.</source>
-        <target state="translated">無法將屬性 '{0}' 的值轉換為字串。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunCommandBuilding">
         <source>Building...</source>
         <target state="new">Building...</target>
@@ -112,37 +102,10 @@ The current {1} is '{2}'.</source>
         <target state="translated">使用來自 {0} 的啟動設定...</target>
         <note />
       </trans-unit>
-      <trans-unit id="LaunchProfileIsNotAJsonObject">
-        <source>A profile with the specified name could not be found or is not a valid JSON object.</source>
-        <target state="translated">找不到具有指定名稱的設定檔，或不是有效的 JSON 物件。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
-        <source>The launch profile type '{0}' is not supported.</source>
-        <target state="translated">不支援啟動設定檔類型 '{0}'。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsableLaunchProfileCannotBeLocated">
-        <source>A usable launch profile could not be located.</source>
-        <target state="translated">找不到可用的啟動設定檔。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
         <source>An unexpected exception occurred while processing launch settings:
 {0}</source>
         <target state="translated">處理啟動設定時發生未預期的例外狀況: 
-{0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
-        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
-        <target state="translated">啟動設定文件的 'profiles' 屬性並非 JSON 物件。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DeserializationExceptionMessage">
-        <source>An error was encountered when reading launchSettings.json.
-{0}</source>
-        <target state="translated">讀取 launchSettings.json 時發生錯誤。
 {0}</target>
         <note />
       </trans-unit>
@@ -164,11 +127,6 @@ The current {1} is '{2}'.</source>
       <trans-unit id="RuntimeOptionDescription">
         <source>The target runtime to run for.</source>
         <target state="translated">測試標的之目標執行階段。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ValueMustBeAnObject">
-        <source>The property '{0}' must be an object if it is specified.</source>
-        <target state="translated">如果屬性 '{0}' 受到指定，則其必須為物件。</target>
         <note />
       </trans-unit>
     </body>
