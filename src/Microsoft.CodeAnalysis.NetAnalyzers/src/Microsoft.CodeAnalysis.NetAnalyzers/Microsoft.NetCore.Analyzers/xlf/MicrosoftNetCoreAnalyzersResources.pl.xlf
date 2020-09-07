@@ -1588,6 +1588,11 @@
         <target state="translated">Preferuj „przeciążanie oparte na elemencie „Memory” dla elementów „ReadAsync” i „WriteAsync”</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
         <target state="needs-review-translation">Wywołania elementu „string.IndexOf”, w przypadku których wynik jest używany do sprawdzania obecności/nieobecności podciągu, mogą zostać zastąpione przez wyrażenie „string.Contains”</target>

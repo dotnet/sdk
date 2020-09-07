@@ -1587,6 +1587,11 @@
         <target state="translated">建議針對 'ReadAsync' 和 'WriteAsync' 使用採用 'Memory' 的多載</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
         <target state="needs-review-translation">呼叫 'String.IndexOf' 的結果，將用於確認有無子字串可由 'String.Contains' 取代</target>

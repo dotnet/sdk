@@ -1587,6 +1587,11 @@
         <target state="translated">'ReadAsync' 및 'WriteAsync'에 '메모리' 기반 오버로드 사용</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
         <target state="needs-review-translation">결과가 하위 문자열의 존재 여부를 확인하는 데 사용되는 'string.IndexOf' 호출은 'string.Contains'로 바꿀 수 있습니다.</target>
