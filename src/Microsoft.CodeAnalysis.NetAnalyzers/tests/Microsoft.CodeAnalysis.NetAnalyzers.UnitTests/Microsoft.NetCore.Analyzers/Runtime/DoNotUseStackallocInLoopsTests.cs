@@ -89,6 +89,28 @@ class TestClass {
         }
 
         [Fact]
+        public async Task NoDiagnostics_StackallocInLoopButInsideALambda()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+using System;
+class TestClass {
+    private static void StackallocInLoopButInsideALambda() {
+        while (true) {
+            Action a = () => {
+                Span<int> tmp = stackalloc int[10];
+                Console.WriteLine(tmp[0]);
+            };
+            a();
+        }
+    }
+}"
+            }.RunAsync();
+        }
+
+        [Fact]
         public async Task Diagnostics_LoopsWithStackallocPtr()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
