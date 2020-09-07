@@ -261,4 +261,18 @@ This option is currently supported only on Windows together with netcoreapp2.1 a
   <data name="HangTimeoutArgumentName" xml:space="preserve">
     <value>TIMESPAN</value>
   </data>
+  <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
+    <value>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE1=VALUE1
+-e ANOTHER_VARIABLE="VALUE WITH SPACES"
+-e ANOTHER_VARIABLE="VALUE;seperated with;semicolons"</value>
+  </data>
+  <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
+    <value>NAME="VALUE"</value>
+  </data>
 </root>
