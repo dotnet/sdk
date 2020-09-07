@@ -39,6 +39,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // We found a stackalloc.  Walk up from it to see if it's in a loop at any level.
                 for (SyntaxNode node = ctx.Node; node != null; node = node.Parent)
                 {
+                    // Don't warn of the stackalloc is in anonymous function.
+                    if (ctx.SemanticModel.GetOperation(node, ctx.CancellationToken)?.Kind == OperationKind.AnonymousFunction)
+                    {
+                        return;
+                    }
+
                     switch (node.Kind())
                     {
                         // Don't warn if a local function containing stackalloc is inside a loop.
