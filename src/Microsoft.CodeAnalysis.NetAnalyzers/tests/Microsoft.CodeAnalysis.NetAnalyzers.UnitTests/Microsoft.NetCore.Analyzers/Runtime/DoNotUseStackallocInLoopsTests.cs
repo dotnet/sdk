@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotUseStackallocInLoopsAnalyzer,
@@ -61,6 +62,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         while (true);
                     }
                 }");
+        }
+
+        [Fact]
+        public async Task NoDiagnostics_StackallocInLoopButInsideALocalFunction()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+using System;
+class TestClass {
+    private static void StackAllocInLoopButInsideLocalFunction() {
+        while (true) {
+            XX();
+
+            static void XX()
+            {
+                Span<int> tmp = stackalloc int[10];
+                Console.WriteLine(tmp[0]);
+            }
+        }
+    }
+}"
+            }.RunAsync();
         }
 
         [Fact]
