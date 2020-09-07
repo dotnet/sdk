@@ -545,22 +545,61 @@ construct_download_link() {
     local channel="$2"
     local normalized_architecture="$3"
     local specific_version="${4//[$'\t\r\n']}"
+    local specific_product_version="$(get_specific_product_version "$1" "$4")"
 
     local osname
     osname="$(get_current_os_name)" || return 1
 
     local download_link=null
     if [[ "$runtime" == "dotnet" ]]; then
-        download_link="$azure_feed/Runtime/$specific_version/dotnet-runtime-$specific_version-$osname-$normalized_architecture.tar.gz"
+        download_link="$azure_feed/Runtime/$specific_version/dotnet-runtime-$specific_product_version-$osname-$normalized_architecture.tar.gz"
     elif [[ "$runtime" == "aspnetcore" ]]; then
-        download_link="$azure_feed/aspnetcore/Runtime/$specific_version/aspnetcore-runtime-$specific_version-$osname-$normalized_architecture.tar.gz"
+        download_link="$azure_feed/aspnetcore/Runtime/$specific_version/aspnetcore-runtime-$specific_product_version-$osname-$normalized_architecture.tar.gz"
     elif [ -z "$runtime" ]; then
-        download_link="$azure_feed/Sdk/$specific_version/dotnet-sdk-$specific_version-$osname-$normalized_architecture.tar.gz"
+        download_link="$azure_feed/Sdk/$specific_version/dotnet-sdk-$specific_product_version-$osname-$normalized_architecture.tar.gz"
     else
         return 1
     fi
 
     echo "$download_link"
+    return 0
+}
+
+# args:
+# azure_feed - $1
+# specific_version - $2
+get_specific_product_version() {
+    # If we find a 'productVersion.txt' at the root of any folder, we'll use its contents 
+    # to resolve the version of what's in the folder, superseding the specified version.
+    eval $invocation
+
+    local azure_feed="$1"
+    local specific_version="${2//[$'\t\r\n']}"
+    local specific_product_version=$specific_version
+
+    local download_link=null
+    if [[ "$runtime" == "dotnet" ]]; then
+        download_link="$azure_feed/Runtime/$specific_version/productVersion.txt${feed_credential}"
+    elif [[ "$runtime" == "aspnetcore" ]]; then
+        download_link="$azure_feed/aspnetcore/Runtime/$specific_version/productVersion.txt${feed_credential}"
+    elif [ -z "$runtime" ]; then
+        download_link="$azure_feed/Sdk/$specific_version/productVersion.txt${feed_credential}"
+    else
+        return 1
+    fi
+
+    specific_product_version=$(curl -s --fail "$download_link")
+    if [ $? -ne 0 ]
+    then
+      specific_product_version=$(wget -qO- "$download_link")
+      if [ $? -ne 0 ]
+      then
+        specific_product_version=$specific_version
+      fi
+    fi
+    specific_product_version="${specific_product_version//[$'\t\r\n']}"
+
+    echo "$specific_product_version"
     return 0
 }
 
@@ -728,7 +767,7 @@ downloadcurl() {
     # Append feed_credential as late as possible before calling curl to avoid logging feed_credential
     remote_path="${remote_path}${feed_credential}"
 
-    local curl_options="--retry 20 --retry-delay 2 --connect-timeout 15 -sSL -f --create-dirs"
+    local curl_options="--retry 20 --retry-delay 2 --connect-timeout 15 -sSL -f --create-dirs "
     local failed=false
     if [ -z "$out_path" ]; then
         curl $curl_options "$remote_path" || failed=true
@@ -749,7 +788,7 @@ downloadwget() {
 
     # Append feed_credential as late as possible before calling wget to avoid logging feed_credential
     remote_path="${remote_path}${feed_credential}"
-    local wget_options="--tries 20 --waitretry 2 --connect-timeout 15"
+    local wget_options="--tries 20 --waitretry 2 --connect-timeout 15 "
     local failed=false
     if [ -z "$out_path" ]; then
         wget -q $wget_options -O - "$remote_path" || failed=true
@@ -771,6 +810,7 @@ calculate_vars() {
     say_verbose "normalized_architecture=$normalized_architecture"
 
     specific_version="$(get_specific_version_from_version "$azure_feed" "$channel" "$normalized_architecture" "$version" "$json_file")"
+    specific_product_version="$(get_specific_product_version "$azure_feed" "$specific_version")"
     say_verbose "specific_version=$specific_version"
     if [ -z "$specific_version" ]; then
         say_err "Could not resolve version information."
@@ -856,8 +896,6 @@ install_dotnet() {
     extract_dotnet_package "$zip_path" "$install_root"
 
     #  Check if the SDK version is installed; if not, fail the installation.
-    is_asset_installed=false
-
     # if the version contains "RTM" or "servicing"; check if a 'release-type' SDK version is installed.
     if [[ $specific_version == *"rtm"* || $specific_version == *"servicing"* ]]; then
         IFS='-'
@@ -865,21 +903,19 @@ install_dotnet() {
         release_version="${verArr[0]}"
         unset IFS;
         say_verbose "Checking installation: version = $release_version"
-        is_asset_installed="$(is_dotnet_package_installed "$install_root" "$asset_relative_path" "$release_version")"
+        if is_dotnet_package_installed "$install_root" "$asset_relative_path" "$release_version"; then
+            return 0
+        fi
     fi
 
-    #  Check if the SDK version is installed.
-    if [ "$is_asset_installed" = false ]; then
-        say_verbose "Checking installation: version = $specific_version"
-        is_asset_installed="$(is_dotnet_package_installed "$install_root" "$asset_relative_path" "$specific_version")"
+    #  Check if the standard SDK version is installed.
+    say_verbose "Checking installation: version = $specific_product_version"
+    if is_dotnet_package_installed "$install_root" "$asset_relative_path" "$specific_product_version"; then
+        return 0
     fi
 
-    if [ "$is_asset_installed" = false ]; then
-        say_err "\`$asset_name\` with version = $specific_version failed to install with an unknown error."
-        return 1
-    fi
-
-    return 0
+    say_err "\`$asset_name\` with version = $specific_product_version failed to install with an unknown error."
+    return 1
 }
 
 args=("$@")

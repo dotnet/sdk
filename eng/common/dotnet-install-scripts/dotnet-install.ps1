@@ -3,6 +3,8 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 #
 
+# Copied from https://dot.net/v1/dotnet-install.ps1 on 8/26/2020
+
 <#
 .SYNOPSIS
     Installs dotnet cli
@@ -69,6 +71,8 @@
 .PARAMETER ProxyUseDefaultCredentials
     Default: false
     Use default credentials, when using proxy address.
+.PARAMETER ProxyBypassList
+    If set with ProxyAddress, will provide the list of comma separated urls that will bypass the proxy
 .PARAMETER SkipNonVersionedFiles
     Default: false
     Skips installing non-versioned files if they already exist, such as dotnet.exe.
@@ -96,6 +100,7 @@ param(
    [string]$FeedCredential,
    [string]$ProxyAddress,
    [switch]$ProxyUseDefaultCredentials,
+   [string[]]$ProxyBypassList=@(),
    [switch]$SkipNonVersionedFiles,
    [switch]$NoCdn
 )
@@ -119,11 +124,27 @@ $VersionRegEx="/\d+\.\d+[^/]+/"
 $OverrideNonVersionedFiles = !$SkipNonVersionedFiles
 
 function Say($str) {
-    Write-Host "dotnet-install: $str"
+    try
+    {
+        Write-Host "dotnet-install: $str"
+    }
+    catch
+    {
+        # Some platforms cannot utilize Write-Host (Azure Functions, for instance). Fall back to Write-Output
+        Write-Output "dotnet-install: $str"
+    }
 }
 
 function Say-Verbose($str) {
-    Write-Verbose "dotnet-install: $str"
+    try
+    {
+        Write-Verbose "dotnet-install: $str"
+    }
+    catch
+    {
+        # Some platforms cannot utilize Write-Verbose (Azure Functions, for instance). Fall back to Write-Output
+        Write-Output "dotnet-install: $str"
+    }
 }
 
 function Say-Invocation($Invocation) {
@@ -154,7 +175,16 @@ function Invoke-With-Retry([ScriptBlock]$ScriptBlock, [int]$MaxAttempts = 3, [in
 function Get-Machine-Architecture() {
     Say-Invocation $MyInvocation
 
-    # possible values: amd64, x64, x86, arm64, arm
+    # On PS x86, PROCESSOR_ARCHITECTURE reports x86 even on x64 systems.
+    # To get the correct architecture, we need to use PROCESSOR_ARCHITEW6432.
+    # PS x64 doesn't define this, so we fall back to PROCESSOR_ARCHITECTURE.
+    # Possible values: amd64, x64, x86, arm64, arm
+
+    if( $ENV:PROCESSOR_ARCHITEW6432 -ne $null )
+    {    
+        return $ENV:PROCESSOR_ARCHITEW6432
+    }
+
     return $ENV:PROCESSOR_ARCHITECTURE
 }
 
@@ -228,7 +258,11 @@ function GetHTTPResponse([Uri] $Uri)
 
             if($ProxyAddress) {
                 $HttpClientHandler = New-Object System.Net.Http.HttpClientHandler
-                $HttpClientHandler.Proxy =  New-Object System.Net.WebProxy -Property @{Address=$ProxyAddress;UseDefaultCredentials=$ProxyUseDefaultCredentials}
+                $HttpClientHandler.Proxy =  New-Object System.Net.WebProxy -Property @{
+                    Address=$ProxyAddress;
+                    UseDefaultCredentials=$ProxyUseDefaultCredentials;
+                    BypassList = $ProxyBypassList;
+                }
                 $HttpClient = New-Object System.Net.Http.HttpClient -ArgumentList $HttpClientHandler
             }
             else {
@@ -363,17 +397,20 @@ function Get-Specific-Version-From-Version([string]$AzureFeed, [string]$Channel,
 function Get-Download-Link([string]$AzureFeed, [string]$SpecificVersion, [string]$CLIArchitecture) {
     Say-Invocation $MyInvocation
 
+    # If anything fails in this lookup it will default to $SpecificVersion
+    $SpecificProductVersion = Get-Product-Version -AzureFeed $AzureFeed -SpecificVersion $SpecificVersion
+
     if ($Runtime -eq "dotnet") {
-        $PayloadURL = "$AzureFeed/Runtime/$SpecificVersion/dotnet-runtime-$SpecificVersion-win-$CLIArchitecture.zip"
+        $PayloadURL = "$AzureFeed/Runtime/$SpecificVersion/dotnet-runtime-$SpecificProductVersion-win-$CLIArchitecture.zip"
     }
     elseif ($Runtime -eq "aspnetcore") {
-        $PayloadURL = "$AzureFeed/aspnetcore/Runtime/$SpecificVersion/aspnetcore-runtime-$SpecificVersion-win-$CLIArchitecture.zip"
+        $PayloadURL = "$AzureFeed/aspnetcore/Runtime/$SpecificVersion/aspnetcore-runtime-$SpecificProductVersion-win-$CLIArchitecture.zip"
     }
     elseif ($Runtime -eq "windowsdesktop") {
-        $PayloadURL = "$AzureFeed/Runtime/$SpecificVersion/windowsdesktop-runtime-$SpecificVersion-win-$CLIArchitecture.zip"
+        $PayloadURL = "$AzureFeed/Runtime/$SpecificVersion/windowsdesktop-runtime-$SpecificProductVersion-win-$CLIArchitecture.zip"
     }
     elseif (-not $Runtime) {
-        $PayloadURL = "$AzureFeed/Sdk/$SpecificVersion/dotnet-sdk-$SpecificVersion-win-$CLIArchitecture.zip"
+        $PayloadURL = "$AzureFeed/Sdk/$SpecificVersion/dotnet-sdk-$SpecificProductVersion-win-$CLIArchitecture.zip"
     }
     else {
         throw "Invalid value for `$Runtime"
@@ -381,7 +418,7 @@ function Get-Download-Link([string]$AzureFeed, [string]$SpecificVersion, [string
 
     Say-Verbose "Constructed primary named payload URL: $PayloadURL"
 
-    return $PayloadURL
+    return $PayloadURL, $SpecificProductVersion
 }
 
 function Get-LegacyDownload-Link([string]$AzureFeed, [string]$SpecificVersion, [string]$CLIArchitecture) {
@@ -400,6 +437,51 @@ function Get-LegacyDownload-Link([string]$AzureFeed, [string]$SpecificVersion, [
     Say-Verbose "Constructed legacy named payload URL: $PayloadURL"
 
     return $PayloadURL
+}
+
+function Get-Product-Version([string]$AzureFeed, [string]$SpecificVersion) {
+    Say-Invocation $MyInvocation
+
+    if ($Runtime -eq "dotnet") {
+        $ProductVersionTxtURL = "$AzureFeed/Runtime/$SpecificVersion/productVersion.txt"
+    }
+    elseif ($Runtime -eq "aspnetcore") {
+        $ProductVersionTxtURL = "$AzureFeed/aspnetcore/Runtime/$SpecificVersion/productVersion.txt"
+    }
+    elseif ($Runtime -eq "windowsdesktop") {
+        $ProductVersionTxtURL = "$AzureFeed/Runtime/$SpecificVersion/productVersion.txt"
+    }
+    elseif (-not $Runtime) {
+        $ProductVersionTxtURL = "$AzureFeed/Sdk/$SpecificVersion/productVersion.txt"
+    }
+    else {
+        throw "Invalid value specified for `$Runtime"
+    }
+
+    Say-Verbose "Checking for existence of $ProductVersionTxtURL"
+
+    try {
+        $productVersionResponse = GetHTTPResponse($productVersionTxtUrl)
+
+        if ($productVersionResponse.StatusCode -eq 200) {
+            $productVersion = $productVersionResponse.Content.ReadAsStringAsync().Result.Trim()
+            if ($productVersion -ne $SpecificVersion)
+            {
+                Say "Using alternate version $productVersion found in $ProductVersionTxtURL"
+            }
+
+            return $productVersion
+        }
+        else {
+            Say-Verbose "Got StatusCode $($productVersionResponse.StatusCode) trying to get productVersion.txt at $productVersionTxtUrl, so using default value of $SpecificVersion"
+            $productVersion = $SpecificVersion
+        }
+    } catch {
+        Say-Verbose "Could not read productVersion.txt at $productVersionTxtUrl, so using default value of $SpecificVersion"
+        $productVersion = $SpecificVersion
+    }
+
+    return $productVersion
 }
 
 function Get-User-Share-Path() {
@@ -557,7 +639,7 @@ function Prepend-Sdk-InstallRoot-To-Path([string]$InstallRoot, [string]$BinFolde
 
 $CLIArchitecture = Get-CLIArchitecture-From-Architecture $Architecture
 $SpecificVersion = Get-Specific-Version-From-Version -AzureFeed $AzureFeed -Channel $Channel -Version $Version -JSonFile $JSonFile
-$DownloadLink = Get-Download-Link -AzureFeed $AzureFeed -SpecificVersion $SpecificVersion -CLIArchitecture $CLIArchitecture
+$DownloadLink, $EffectiveVersion = Get-Download-Link -AzureFeed $AzureFeed -SpecificVersion $SpecificVersion -CLIArchitecture $CLIArchitecture
 $LegacyDownloadLink = Get-LegacyDownload-Link -AzureFeed $AzureFeed -SpecificVersion $SpecificVersion -CLIArchitecture $CLIArchitecture
 
 $InstallRoot = Resolve-Installation-Path $InstallDir
@@ -583,7 +665,7 @@ if ($DryRun) {
         }
     }
     Say "Repeatable invocation: $RepeatableCommand"
-    return
+    exit 0
 }
 
 if ($Runtime -eq "dotnet") {
@@ -606,12 +688,18 @@ else {
     throw "Invalid value for `$Runtime"
 }
 
+if ($SpecificVersion -ne $EffectiveVersion)
+{
+   Say "Performing installation checks for effective version: $EffectiveVersion"
+   $SpecificVersion = $EffectiveVersion
+}
+
 #  Check if the SDK version is already installed.
 $isAssetInstalled = Is-Dotnet-Package-Installed -InstallRoot $InstallRoot -RelativePathToPackage $dotnetPackageRelativePath -SpecificVersion $SpecificVersion
 if ($isAssetInstalled) {
     Say "$assetName version $SpecificVersion is already installed."
     Prepend-Sdk-InstallRoot-To-Path -InstallRoot $InstallRoot -BinFolderRelativePath $BinFolderRelativePath
-    return
+    exit 0
 }
 
 New-Item -ItemType Directory -Force -Path $InstallRoot | Out-Null
@@ -620,7 +708,7 @@ $installDrive = $((Get-Item $InstallRoot).PSDrive.Name);
 $diskInfo = Get-PSDrive -Name $installDrive
 if ($diskInfo.Free / 1MB -le 100) {
     Say "There is not enough disk space on drive ${installDrive}:"
-    return
+    exit 0
 }
 
 $ZipPath = [System.IO.Path]::combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
@@ -683,3 +771,4 @@ Remove-Item $ZipPath
 Prepend-Sdk-InstallRoot-To-Path -InstallRoot $InstallRoot -BinFolderRelativePath $BinFolderRelativePath
 
 Say "Installation finished"
+exit 0
