@@ -1587,6 +1587,11 @@
         <target state="translated">Старайтесь использовать перегрузки на основе памяти для "ReadAsync" и "WriteAsync"</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
         <target state="needs-review-translation">Вызовы "string.IndexOf", в которых результат используется для проверки наличия или отсутствия подстроки, можно заменить на "string.Contains"</target>

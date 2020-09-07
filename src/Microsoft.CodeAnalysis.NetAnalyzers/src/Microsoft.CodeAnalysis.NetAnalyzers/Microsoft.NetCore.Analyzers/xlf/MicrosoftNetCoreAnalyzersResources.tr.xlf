@@ -1587,6 +1587,11 @@
         <target state="translated">'ReadAsync' ve 'WriteAsync' için 'Memory' tabanlı aşırı yüklemeleri tercih et</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
         <target state="needs-review-translation">Sonucu, bir alt dizenin varlığını/yokluğunu denetlemek için kullanılan 'string.IndexOf' çağrıları 'string.Contains' ile değiştirilebilir</target>

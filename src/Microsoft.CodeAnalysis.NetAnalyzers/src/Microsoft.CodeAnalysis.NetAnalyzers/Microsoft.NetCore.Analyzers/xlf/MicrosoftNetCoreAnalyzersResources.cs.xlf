@@ -1587,6 +1587,11 @@
         <target state="translated">Pro ReadAsync a WriteAsync upřednostňovat přetížení založená na Memory</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
         <target state="needs-review-translation">Volání metody string.IndexOf, kde se pomocí výsledku kontroluje přítomnost nebo nepřítomnost podřetězce, se dá nahradit metodou string.Contains.</target>

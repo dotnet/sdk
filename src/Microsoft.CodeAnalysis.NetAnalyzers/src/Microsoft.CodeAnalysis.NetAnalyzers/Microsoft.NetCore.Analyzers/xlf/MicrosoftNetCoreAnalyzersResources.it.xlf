@@ -1587,6 +1587,11 @@
         <target state="translated">Preferire gli overload basati su 'Memory' per 'ReadAsync' e 'WriteAsync'</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
         <target state="needs-review-translation">Le chiamate a 'string.IndexOf' in cui il risultato viene usato per verificare la presenza/assenza di una sottostringa possono essere sostituite da 'string.Contains'</target>

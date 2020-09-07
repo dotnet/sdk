@@ -65,9 +65,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             context.RegisterCodeFix(
                 CodeAction.Create(
-                    title: MicrosoftNetCoreAnalyzersResources.PreferStringContainsOverIndexOfTitle,
+                    title: MicrosoftNetCoreAnalyzersResources.PreferStringContainsOverIndexOfCodeFixTitle,
                     createChangedDocument: c => ReplaceBinaryOperationWithContains(doc, instanceOperation.Syntax, invocationOperation.Arguments, binaryOperation, c),
-                    equivalenceKey: MicrosoftNetCoreAnalyzersResources.PreferStringContainsOverIndexOfTitle),
+                    equivalenceKey: MicrosoftNetCoreAnalyzersResources.PreferStringContainsOverIndexOfCodeFixTitle),
                 context.Diagnostics);
             return;
 
