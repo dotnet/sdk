@@ -73,13 +73,17 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var projectDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, projectDiagnosticsMS);
 
-            logger.LogTrace(Resources.Fixing_diagnostics);
+            // Only run code fixes when we are saving changes.
+            if (formatOptions.SaveFormattedFiles)
+            {
+                logger.LogTrace(Resources.Fixing_diagnostics);
 
-            // Run each analyzer individually and apply fixes if possible.
-            solution = await FixDiagnosticsAsync(solution, projectAnalyzers, allFixers, projectDiagnostics, formattablePaths, severity, includeCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
+                // Run each analyzer individually and apply fixes if possible.
+                solution = await FixDiagnosticsAsync(solution, projectAnalyzers, allFixers, projectDiagnostics, formattablePaths, severity, includeCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
 
-            var fixDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds - projectDiagnosticsMS;
-            logger.LogTrace(Resources.Complete_in_0_ms, fixDiagnosticsMS);
+                var fixDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds - projectDiagnosticsMS;
+                logger.LogTrace(Resources.Complete_in_0_ms, fixDiagnosticsMS);
+            }
 
             logger.LogTrace(Resources.Analysis_complete_in_0ms_, analysisStopwatch.ElapsedMilliseconds);
 
