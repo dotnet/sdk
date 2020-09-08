@@ -36,6 +36,13 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 return sourceText;
             }
 
+            // If we are not saving files, do not make changes in this formatter. They will be
+            // reported by their diagnostic id when the analyzer formatter runs.
+            if (!formatOptions.SaveFormattedFiles)
+            {
+                return sourceText;
+            }
+
             var tree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
             if (tree is null)
             {
