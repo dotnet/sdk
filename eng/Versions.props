@@ -100,7 +100,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
-    <MicrosoftTemplateEngineCliPackageVersion>6.0.0-alpha.1.20457.1</MicrosoftTemplateEngineCliPackageVersion>
+    <MicrosoftTemplateEngineCliPackageVersion>6.0.0-alpha.1.20458.1</MicrosoftTemplateEngineCliPackageVersion>
     <MicrosoftTemplateEngineAbstractionsPackageVersion>$(MicrosoftTemplateEngineCliPackageVersion)</MicrosoftTemplateEngineAbstractionsPackageVersion>
     <MicrosoftTemplateEngineCliLocalizationPackageVersion>$(MicrosoftTemplateEngineCliPackageVersion)</MicrosoftTemplateEngineCliLocalizationPackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>$(MicrosoftTemplateEngineCliPackageVersion)</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
@@ -109,7 +109,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/visualfsharp -->
-    <MicrosoftFSharpCompilerPackageVersion>11.0.0-beta.20454.1</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>11.0.0-beta.20457.3</MicrosoftFSharpCompilerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
