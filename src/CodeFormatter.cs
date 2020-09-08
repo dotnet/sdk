@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -187,7 +188,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     addedFilePaths.Add(document.FilePath);
 
                     var isFileIncluded = formatOptions.WorkspaceType == WorkspaceType.Folder ||
-                        formatOptions.FileMatcher.Match(document.FilePath).HasMatches;
+                        (formatOptions.FileMatcher.Match(document.FilePath).HasMatches && File.Exists(document.FilePath));
                     if (!isFileIncluded || !document.SupportsSyntaxTree)
                     {
                         continue;
