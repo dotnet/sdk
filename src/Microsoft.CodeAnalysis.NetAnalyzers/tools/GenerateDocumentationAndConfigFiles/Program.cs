@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -279,10 +280,11 @@ $@"<Project>
 
                 var builder = new StringBuilder();
 
-                var title = Path.GetFileNameWithoutExtension(analyzerDocumentationFileName);
-                builder.AppendLine($"# {title}");
+                var fileTitle = Path.GetFileNameWithoutExtension(analyzerDocumentationFileName);
+                builder.AppendLine($"# {fileTitle}");
                 builder.AppendLine();
 
+                var isFirstEntry = true;
                 foreach (var ruleById in allRulesById)
                 {
                     string ruleId = ruleById.Key;
@@ -294,7 +296,33 @@ $@"<Project>
                         ruleIdWithHyperLink = $"[{ruleIdWithHyperLink}]({descriptor.HelpLinkUri})";
                     }
 
-                    builder.AppendLine($"## {ruleIdWithHyperLink}: {descriptor.Title}");
+                    var title = descriptor.Title.ToString(CultureInfo.InvariantCulture).Trim();
+                    // Escape generic arguments to ensure they are not considered as HTML elements
+                    title = Regex.Replace(title, "(<.+?>)", "\\$1");
+
+                    if (!isFirstEntry)
+                    {
+                        // Add separation line only when reaching next entry to avoid useless empty line at the end
+                        builder.AppendLine();
+                    }
+
+                    isFirstEntry = false;
+                    builder.AppendLine($"## {ruleIdWithHyperLink}: {title}");
+                    builder.AppendLine();
+
+                    var description = descriptor.Description.ToString(CultureInfo.InvariantCulture);
+                    if (string.IsNullOrWhiteSpace(description))
+                    {
+                        description = descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    // Double the line breaks to ensure they are rendered properly in markdown
+                    description = Regex.Replace(description, "(\r?\n)", "$1$1");
+                    // Escape generic arguments to ensure they are not considered as HTML elements
+                    description = Regex.Replace(description, "(<.+?>)", "\\$1");
+                    description = description.Trim();
+
+                    builder.AppendLine(description);
                     builder.AppendLine();
 
                     builder.AppendLine("|Item|Value|");
@@ -304,22 +332,7 @@ $@"<Project>
                     builder.AppendLine($"|Severity|{descriptor.DefaultSeverity}|");
                     var hasCodeFix = fixableDiagnosticIds.Contains(descriptor.Id);
                     builder.AppendLine($"|CodeFix|{hasCodeFix}|");
-                    builder.AppendLine();
-
-                    builder.AppendLine($"### Rule description");
-                    builder.AppendLine();
-
-                    var description = descriptor.Description.ToString(CultureInfo.InvariantCulture);
-                    if (string.IsNullOrWhiteSpace(description))
-                    {
-                        description = descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture);
-                    }
-
-                    // Replace line breaks with HTML breaks so that new
-                    // lines don't break the markdown table formatting.
-                    description = System.Text.RegularExpressions.Regex.Replace(description, "\r?\n", "<br>");
-                    builder.AppendLine(description);
-                    builder.AppendLine();
+                    builder.AppendLine("---");
                 }
 
                 File.WriteAllText(fileWithPath, builder.ToString());
@@ -462,7 +475,7 @@ $@"<Project>
                 var fileWithPath = Path.Combine(directory.FullName, "RulesMissingDocumentation.md");
 
                 var builder = new StringBuilder();
-                builder.Append(@"## Rules without documentation
+                builder.Append(@"# Rules without documentation
 
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|

@@ -1,6 +1,5 @@
-## Rules without documentation
+# Rules without documentation
 
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|
 CA1416 | https://docs.microsoft.com/visualstudio/code-quality/ca1416 | Validate platform compatibility |
-CA1834 | https://docs.microsoft.com/visualstudio/code-quality/ca1834 | Consider using 'StringBuilder.Append(char)' when applicable |
