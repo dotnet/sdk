@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
-    public sealed partial class PlatformCompatabilityAnalyzer
+    public sealed partial class PlatformCompatibilityAnalyzer
     {
         private sealed class OperationVisitor : GlobalFlowStateDataFlowOperationVisitor
         {

@@ -61,7 +61,7 @@ CA1308 | Globalization | Disabled | NormalizeStringsToUppercaseAnalyzer, [Docume
 CA1309 | Globalization | Hidden | UseOrdinalStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1309)
 CA1310 | Globalization | Hidden | SpecifyStringComparisonAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1310)
 CA1401 | Interoperability | Info | PInvokeDiagnosticAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1401)
-CA1416 | Interoperability | Warning | PlatformCompatabilityAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
+CA1416 | Interoperability | Warning | PlatformCompatibilityAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
 CA1417 | Interoperability | Warning | DoNotUseOutAttributeStringPInvokeParametersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1417)
 CA1501 | Maintainability | Disabled | CodeMetricsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1501)
 CA1502 | Maintainability | Disabled | CodeMetricsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1502)

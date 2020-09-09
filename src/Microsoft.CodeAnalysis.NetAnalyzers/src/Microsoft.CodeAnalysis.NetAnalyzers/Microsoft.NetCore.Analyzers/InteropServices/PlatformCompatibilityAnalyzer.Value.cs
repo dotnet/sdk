@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     using ValueContentAnalysisResult = DataFlowAnalysisResult<ValueContentBlockAnalysisResult, ValueContentAbstractValue>;
 
-    public sealed partial class PlatformCompatabilityAnalyzer
+    public sealed partial class PlatformCompatibilityAnalyzer
     {
         private readonly struct PlatformMethodValue : IAbstractAnalysisValue, IEquatable<PlatformMethodValue>
         {
