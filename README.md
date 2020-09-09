@@ -61,7 +61,39 @@ dotnet tool install -g dotnet-format --version 5.0.135301 --add-source https://d
 
 ### How To Use
 
+#### Latest release v4.1.131201
+
 By default `dotnet-format` will look in the current directory for a project or solution file and use that as the workspace to format. If more than one project or solution file is present in the current directory you will need to specify the workspace to format using the `-w` or `-f` options. You can control how verbose the output will be by using the `-v` option.
+
+```sh
+Usage:
+  dotnet-format <project> [options]
+
+Options:
+  --folder, -f                    Whether to treat the `<project>` path as a folder of files.
+  --include <INCLUDE>             A list of relative file or folder paths to include in formatting. All files are formatted if empty.
+  --exclude <EXCLUDE>             A list of relative file or folder paths to exclude from formatting.
+  --check <CHECK>                 Formats files without saving changes to disk. Terminates with a non-zero exit code if any files were formatted.
+  --report <REPORT>               Accepts a file path, which if provided, will produce a json report in the given directory.
+  --verbosity, -v <VERBOSITY>     Set the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+  --version                       Display version information
+```
+
+Add `format` after `dotnet` and before the command arguments that you want to run:
+
+| Examples                                                   | Description                                                                                   |
+| ---------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
+| dotnet **format**                                          | Formats the project or solution in the current directory.                                     |
+| dotnet **format** &lt;workspace&gt;                        | Formats a specific project or solution.                                                       |
+| dotnet **format** &lt;folder&gt; -f                        | Formats a particular folder and subfolders.                                                   |
+| dotnet **format** -v diag                                  | Formats with very verbose logging.                                                            |
+| dotnet **format** --include Programs.cs Utility\Logging.cs | Formats the files Program.cs and Utility\Logging.cs                                           |
+| dotnet **format** --check                                  | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
+| dotnet **format** --report &lt;report-path&gt;             | Formats and saves a json report file to the given directory.                                  |
+
+#### Development builds v5.x
+
+By default `dotnet-format` will look in the current directory for a project or solution file and use that as the workspace to format. If more than one project or solution file is present in the current directory, you will need to specify the workspace to format. You can control how verbose the output will be by using the `-v` option.
 
 ```console
 Usage:
