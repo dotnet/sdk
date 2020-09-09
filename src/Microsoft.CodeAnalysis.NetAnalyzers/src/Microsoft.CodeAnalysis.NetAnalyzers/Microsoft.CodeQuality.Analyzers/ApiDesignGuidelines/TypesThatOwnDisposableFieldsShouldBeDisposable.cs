@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Analyzer.Utilities;
@@ -43,7 +42,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             analysisContext.RegisterCompilationStartAction(compilationContext =>
             {
-                if (!compilationContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable, out var disposableType))
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationContext.Compilation);
+                if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable, out _))
                 {
                     return;
                 }
@@ -62,7 +62,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             public DisposableFieldAnalyzer(Compilation compilation)
             {
                 DisposeAnalysisHelper.TryGetOrCreate(compilation, out _disposeAnalysisHelper!);
-                Debug.Assert(_disposeAnalysisHelper != null);
+                RoslynDebug.Assert(_disposeAnalysisHelper != null);
             }
 
             public void AnalyzeSymbol(SymbolAnalysisContext symbolContext)

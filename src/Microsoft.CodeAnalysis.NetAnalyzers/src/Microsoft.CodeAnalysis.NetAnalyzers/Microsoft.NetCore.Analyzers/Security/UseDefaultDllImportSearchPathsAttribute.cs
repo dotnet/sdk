@@ -56,7 +56,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
 
                 if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol) ||
-                    !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol))
+                    !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol) ||
+                    compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
                 }
@@ -65,6 +66,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                 var unsafeDllImportSearchPathBits = compilationStartAnalysisContext.Options.GetUnsignedIntegralOptionValue(
                     optionName: EditorConfigOptionNames.UnsafeDllImportSearchPathBits,
                     rule: DoNotUseUnsafeDllImportSearchPathRule,
+                    tree,
+                    compilationStartAnalysisContext.Compilation,
                     defaultValue: UnsafeBits,
                     cancellationToken: cancellationToken);
                 var defaultDllImportSearchPathsAttributeOnAssembly = compilation.Assembly.GetAttributes().FirstOrDefault(o => o.AttributeClass.Equals(defaultDllImportSearchPathsAttributeTypeSymbol));

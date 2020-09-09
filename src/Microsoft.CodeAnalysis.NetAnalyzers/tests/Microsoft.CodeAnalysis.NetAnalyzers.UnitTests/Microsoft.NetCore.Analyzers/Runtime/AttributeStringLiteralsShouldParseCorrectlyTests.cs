@@ -1,34 +1,23 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.AttributeStringLiteralsShouldParseCorrectlyAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Runtime.AttributeStringLiteralsShouldParseCorrectlyAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
-    public class AttributeStringLiteralsShouldParseCorrectlyTests : DiagnosticAnalyzerTestBase
+    public class AttributeStringLiteralsShouldParseCorrectlyTests
     {
-        public AttributeStringLiteralsShouldParseCorrectlyTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new AttributeStringLiteralsShouldParseCorrectlyAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new AttributeStringLiteralsShouldParseCorrectlyAnalyzer();
-        }
-
         [Fact]
-        public void CA2243_BadAttributeStringLiterals_CSharp()
+        public async Task CA2243_BadAttributeStringLiterals_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public sealed class BadAttributeStringLiterals
@@ -70,9 +59,9 @@ CA2243CSharpDefaultResultAt(31, 6, "BadAttributeStringLiterals.MyLiteralsAttribu
         }
 
         [Fact]
-        public void CA2243_BadGuids_CSharp()
+        public async Task CA2243_BadGuids_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 [GuidAttribute(GUID = ""bad-guid"")]
@@ -147,9 +136,9 @@ CA2243CSharpEmptyResultAt(39, 2, "GuidAttribute", "ThisIsAGuid", "Guid"));
         }
 
         [Fact]
-        public void CA2243_MiscSymbolsWithBadGuid_CSharp()
+        public async Task CA2243_MiscSymbolsWithBadGuid_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 [assembly: GuidAttribute(GUID = ""bad-guid"")]
@@ -204,9 +193,9 @@ CA2243CSharpDefaultResultAt(21, 20, "GuidAttribute", "GuidAttribute.GUID", "bad-
         }
 
         [Fact]
-        public void CA2243_NoDiagnostics_CSharp()
+        public async Task CA2243_NoDiagnostics_CSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public sealed class GoodAttributeStringLiterals
@@ -288,9 +277,9 @@ public static class ClassWithExceptionForUri
         }
 
         [Fact]
-        public void CA2243_BadAttributeStringLiterals_Basic()
+        public async Task CA2243_BadAttributeStringLiterals_Basic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public NotInheritable Class BadAttributeStringLiterals
@@ -362,9 +351,9 @@ CA2243BasicDefaultResultAt(12, 28, "BadAttributeStringLiterals.MyLiteralsAttribu
         }
 
         [Fact]
-        public void CA2243_BadGuids_Basic()
+        public async Task CA2243_BadGuids_Basic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 <GuidAttribute(GUID := ""bad-guid"")> _
@@ -432,9 +421,9 @@ CA2243BasicEmptyResultAt(32, 2, "GuidAttribute", "ThisIsAGuid", "Guid"));
         }
 
         [Fact]
-        public void CA2243_MiscSymbolsWithBadGuid_Basic()
+        public async Task CA2243_MiscSymbolsWithBadGuid_Basic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 <Assembly: GuidAttribute(GUID := ""bad-guid"")>
@@ -446,7 +435,7 @@ Public Class MiscClass
         Get
             Return Nothing
         End Get
-        
+
         Set
         End Set
     End Property
@@ -456,14 +445,14 @@ End Class
 Public NotInheritable Class GuidAttribute
     Inherits Attribute
     Private m_guid As String
-    
+
     Public Sub New()
     End Sub
-    
+
     Public Sub New(ThisIsAGuid As String)
         m_guid = ThisIsAGuid
     End Sub
-    
+
     Public Property GUID() As String
         Get
             Return m_guid
@@ -480,9 +469,9 @@ CA2243BasicDefaultResultAt(9, 35, "GuidAttribute", "GuidAttribute.GUID", "bad-gu
         }
 
         [Fact]
-        public void CA2243_NoDiagnostics_Basic()
+        public async Task CA2243_NoDiagnostics_Basic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public NotInheritable Class GoodAttributeStringLiterals
@@ -598,24 +587,24 @@ End Class
 ");
         }
 
-        private DiagnosticResult CA2243CSharpDefaultResultAt(int line, int column, string arg1, string arg2, string arg3, string arg4)
-        {
-            return GetCSharpResultAt(line, column, AttributeStringLiteralsShouldParseCorrectlyAnalyzer.DefaultRule, arg1, arg2, arg3, arg4);
-        }
+        private DiagnosticResult CA2243CSharpDefaultResultAt(int line, int column, params string[] arguments)
+           => VerifyCS.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.DefaultRule)
+               .WithLocation(line, column)
+               .WithArguments(arguments);
 
-        private DiagnosticResult CA2243CSharpEmptyResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return GetCSharpResultAt(line, column, AttributeStringLiteralsShouldParseCorrectlyAnalyzer.EmptyRule, arg1, arg2, arg3);
-        }
+        private DiagnosticResult CA2243BasicDefaultResultAt(int line, int column, params string[] arguments)
+            => VerifyVB.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
 
-        private DiagnosticResult CA2243BasicDefaultResultAt(int line, int column, string arg1, string arg2, string arg3, string arg4)
-        {
-            return GetBasicResultAt(line, column, AttributeStringLiteralsShouldParseCorrectlyAnalyzer.DefaultRule, arg1, arg2, arg3, arg4);
-        }
+        private DiagnosticResult CA2243CSharpEmptyResultAt(int line, int column, params string[] arguments)
+           => VerifyCS.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.EmptyRule)
+               .WithLocation(line, column)
+               .WithArguments(arguments);
 
-        private DiagnosticResult CA2243BasicEmptyResultAt(int line, int column, string arg1, string arg2, string arg3)
-        {
-            return GetBasicResultAt(line, column, AttributeStringLiteralsShouldParseCorrectlyAnalyzer.EmptyRule, arg1, arg2, arg3);
-        }
+        private DiagnosticResult CA2243BasicEmptyResultAt(int line, int column, params string[] arguments)
+            => VerifyVB.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.EmptyRule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
     }
 }

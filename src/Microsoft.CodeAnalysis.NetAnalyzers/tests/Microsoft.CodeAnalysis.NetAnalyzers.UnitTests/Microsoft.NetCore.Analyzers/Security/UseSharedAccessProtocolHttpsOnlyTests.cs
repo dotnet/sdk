@@ -67,6 +67,64 @@ class TestClass
         }
 
         [Fact]
+        public async Task TestPropertyInitializerGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.File;
+
+class TestClass
+{
+    public string SAS { get; } = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOrHttp, null);
+}",
+            GetCSharpResultAt(8, 34));
+        }
+
+        [Fact]
+        public async Task TestFieldInitializerGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.File;
+
+class TestClass
+{
+    public string SAS = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOrHttp, null);
+}",
+            GetCSharpResultAt(8, 25));
+        }
+
+        [Fact]
+        public async Task TestPropertyInitializerGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.File;
+
+class TestClass
+{
+    public string SAS { get; } = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOnly, null);
+}");
+        }
+
+        [Fact]
+        public async Task TestFieldInitializerGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.File;
+
+class TestClass
+{
+    public string SAS = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOnly, null);
+}");
+        }
+
+        [Fact]
         public async Task TestGetSharedAccessSignatureNotFromCloudStorageAccountWithoutProtocolsParameterNoDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -183,7 +241,7 @@ class TestClass
         [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality." + UseSharedAccessProtocolHttpsOnly.DiagnosticId + ".excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)

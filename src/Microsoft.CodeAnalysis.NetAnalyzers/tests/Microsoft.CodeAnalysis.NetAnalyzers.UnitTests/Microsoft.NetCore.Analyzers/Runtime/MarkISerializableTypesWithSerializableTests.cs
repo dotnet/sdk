@@ -3,10 +3,10 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.MarkTypesWithSerializableFixer>;
-using VerifyVB = Microsoft.CodeAnalysis.VisualBasic.Testing.XUnit.CodeFixVerifier<
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.MarkTypesWithSerializableFixer>;
 
@@ -90,13 +90,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }
 
                 [Serializable]
-                public class {|CA2229:CA2237SerializableProper|} : ISerializable
+                public class CA2237SerializableProper : ISerializable
                 {
                     public void GetObjectData(SerializationInfo info, StreamingContext context)
                     {
                         throw new NotImplementedException();
                     }
-                }");
+                }",
+                GetCA2229DefaultCSharpResultAt(14, 30, "CA2237SerializableProper"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
                 Imports System
@@ -114,13 +115,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 End Class
 
                 <Serializable>
-                Public Class {|CA2229:CA2237SerializableProper|} 
+                Public Class CA2237SerializableProper
                     Implements ISerializable
 
                     Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
                         throw new NotImplementedException()
                     End Sub
-                End Class");
+                End Class",
+                GetCA2229DefaultBasicResultAt(17, 30, "CA2237SerializableProper"));
         }
 
         [Fact]
@@ -226,14 +228,24 @@ Public Interface I
 End Interface");
         }
 
-        private static DiagnosticResult GetCA2237CSharpResultAt(int line, int column, string objectName)
-        {
-            return new DiagnosticResult(SerializationRulesDiagnosticAnalyzer.RuleCA2237).WithLocation(line, column).WithArguments(objectName);
-        }
+        private static DiagnosticResult GetCA2237CSharpResultAt(int line, int column, string objectName) =>
+            VerifyCS.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2237)
+                .WithLocation(line, column)
+                .WithArguments(objectName);
 
-        private static DiagnosticResult GetCA2237BasicResultAt(int line, int column, string objectName)
-        {
-            return new DiagnosticResult(SerializationRulesDiagnosticAnalyzer.RuleCA2237).WithLocation(line, column).WithArguments(objectName);
-        }
+        private static DiagnosticResult GetCA2237BasicResultAt(int line, int column, string objectName) =>
+            VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2237)
+                .WithLocation(line, column)
+                .WithArguments(objectName);
+
+        private static DiagnosticResult GetCA2229DefaultCSharpResultAt(int line, int column, string objectName) =>
+            VerifyCS.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Default)
+                .WithLocation(line, column)
+                .WithArguments(objectName);
+
+        private static DiagnosticResult GetCA2229DefaultBasicResultAt(int line, int column, string objectName) =>
+            VerifyVB.Diagnostic(SerializationRulesDiagnosticAnalyzer.RuleCA2229Default)
+                .WithLocation(line, column)
+                .WithArguments(objectName);
     }
 }

@@ -108,13 +108,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // FxCop compat: only fire on externally visible types by default.
-            if (!symbol.MatchesConfiguredVisibility(context.Options, RuleMultipleZero, context.CancellationToken))
+            if (!symbol.MatchesConfiguredVisibility(context.Options, RuleMultipleZero, context.Compilation, context.CancellationToken))
             {
                 return;
             }
 
-            Debug.Assert(symbol.MatchesConfiguredVisibility(context.Options, RuleNoZero, context.CancellationToken));
-            Debug.Assert(symbol.MatchesConfiguredVisibility(context.Options, RuleRename, context.CancellationToken));
+            Debug.Assert(symbol.MatchesConfiguredVisibility(context.Options, RuleNoZero, context.Compilation, context.CancellationToken));
+            Debug.Assert(symbol.MatchesConfiguredVisibility(context.Options, RuleRename, context.Compilation, context.CancellationToken));
 
             ImmutableArray<IFieldSymbol> zeroValuedFields = GetZeroValuedFields(symbol).ToImmutableArray();
 

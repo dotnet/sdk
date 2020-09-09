@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -14,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2239";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideDeserializationMethodsForOptionalFieldsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        /*private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideDeserializationMethodsForOptionalFieldsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         private static readonly LocalizableString s_localizableMessageOnDeserialized = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageOnDeserializing = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
@@ -37,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isEnabledByDefaultInFxCopAnalyzers: false);*/
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
         //ImmutableArray.Create(OnDeserializedRule, OnDeserializingRule);

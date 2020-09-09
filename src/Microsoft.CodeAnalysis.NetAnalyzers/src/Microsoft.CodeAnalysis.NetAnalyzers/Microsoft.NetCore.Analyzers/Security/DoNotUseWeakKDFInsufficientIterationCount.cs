@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -73,7 +74,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                 (CompilationStartAnalysisContext compilationStartAnalysisContext) =>
                 {
                     if (!compilationStartAnalysisContext.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSecurityCryptographyRfc2898DeriveBytes,
-                            out var rfc2898DeriveBytesTypeSymbol))
+                            out var rfc2898DeriveBytesTypeSymbol) ||
+                        compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                     {
                         return;
                     }
@@ -82,6 +84,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                     var sufficientIterationCount = compilationStartAnalysisContext.Options.GetUnsignedIntegralOptionValue(
                         optionName: EditorConfigOptionNames.SufficientIterationCountForWeakKDFAlgorithm,
                         rule: DefinitelyUseWeakKDFInsufficientIterationCountRule,
+                        tree,
+                        compilationStartAnalysisContext.Compilation,
                         defaultValue: 100000,
                         cancellationToken: cancellationToken);
                     var constructorMapper = new ConstructorMapper(
@@ -95,7 +99,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 if (constructorMethod.Parameters[2].Name == "iterations" &&
                                     constructorMethod.Parameters[2].Type.SpecialType == SpecialType.System_Int32)
                                 {
-                                    kind = PropertySetCallbacks.EvaluateLiteralValues(argumentValueContentAbstractValues[2], o => Convert.ToInt32(o) < sufficientIterationCount);
+                                    kind = PropertySetCallbacks.EvaluateLiteralValues(argumentValueContentAbstractValues[2], o => Convert.ToInt32(o, CultureInfo.InvariantCulture) < sufficientIterationCount);
                                 }
                             }
 
@@ -106,7 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                             "IterationCount",
                             (ValueContentAbstractValue valueContentAbstractValue) =>
                             {
-                                return PropertySetCallbacks.EvaluateLiteralValues(valueContentAbstractValue, o => Convert.ToInt32(o) < sufficientIterationCount);
+                                return PropertySetCallbacks.EvaluateLiteralValues(valueContentAbstractValue, o => Convert.ToInt32(o, CultureInfo.InvariantCulture) < sufficientIterationCount);
                             }));
                     var rootOperationsNeedingAnalysis = PooledHashSet<(IOperation, ISymbol)>.GetInstance();
 
@@ -179,6 +183,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,
                                             SupportedDiagnostics,
+                                            tree,
+                                            compilationStartAnalysisContext.Compilation,
                                             defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
                                             cancellationToken: cancellationToken));
                                 }

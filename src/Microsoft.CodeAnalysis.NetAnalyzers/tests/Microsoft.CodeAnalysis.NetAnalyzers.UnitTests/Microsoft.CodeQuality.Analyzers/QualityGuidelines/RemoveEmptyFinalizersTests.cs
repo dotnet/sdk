@@ -1,30 +1,27 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines;
+using Microsoft.CodeAnalysis.VisualBasic;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
-    public partial class RemoveEmptyFinalizersTests : DiagnosticAnalyzerTestBase
+    public class RemoveEmptyFinalizersTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicRemoveEmptyFinalizersAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpRemoveEmptyFinalizersAnalyzer();
-        }
-
         [Fact]
-        public void CA1821CSharpTestNoWarning()
+        public async Task CA1821CSharpTestNoWarning()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
 
 public class Class1
@@ -100,9 +97,9 @@ public class Class7
         }
 
         [Fact]
-        public void CA1821CSharpTestRemoveEmptyFinalizers()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizers()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
 	// Violation occurs because the finalizer is empty.
@@ -125,36 +122,33 @@ public class Class2
         }
 
         [Fact]
-        public void CA1821CSharpTestRemoveEmptyFinalizersWithScope()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithScope()
         {
-            VerifyCSharp(@"
-[|
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
 	// Violation occurs because the finalizer is empty.
-	~Class1()
+	~[|Class1|]()
 	{
 	}
 }
-|]
 
 public class Class2
 {
 	// Violation occurs because the finalizer is empty.
-	~Class2()
+	~[|Class2|]()
 	{
         //// Comments here
 	}
 }
 
-",
-                GetCA1821CSharpResultAt(6, 3));
+");
         }
 
         [Fact]
-        public void CA1821CSharpTestRemoveEmptyFinalizersWithDebugFail()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFail()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
 
 public class Class1
@@ -174,9 +168,9 @@ public class Class1
         }
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public void CA1821CSharpTestRemoveEmptyFinalizersWithDebugFail_ExpressionBody()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFail_ExpressionBody()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
 
 public class Class1
@@ -192,10 +186,12 @@ public class Class1
             GetCA1821CSharpResultAt(11, 3));
         }
 
-        [Fact]
-        public void CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAndDirective()
+        [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
+        public async Task CA1821_DebugFailAndDebugDirective_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestCode = @"
 public class Class1
 {
 #if DEBUG
@@ -209,13 +205,105 @@ public class Class1
     }
 #endif
 }
-");
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((CSharpParseOptions)project.ParseOptions).WithPreprocessorSymbols("DEBUG");
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Public Class Class1
+#If DEBUG Then
+	Protected Overrides Sub Finalize()
+		System.Diagnostics.Debug.Fail(""Finalizer called!"")
+    End Sub
+#End If
+End Class
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((VisualBasicParseOptions)project.ParseOptions).WithPreprocessorSymbols(new KeyValuePair<string, object>("DEBUG", true));
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
+        public async Task CA1821_DebugFailAndReleaseDirective_NoDiagnostic_FalsePositive()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+public class Class1
+{
+#if RELEASE
+	// There should be a diagnostic because in release the finalizer will be empty.
+	~Class1()
+	{
+		System.Diagnostics.Debug.Fail(""Finalizer called!"");
+    }
+#endif
+}
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((CSharpParseOptions)project.ParseOptions).WithPreprocessorSymbols("RELEASE");
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Public Class Class1
+#If RELEASE Then
+    ' There should be a diagnostic because in release the finalizer will be empty.
+	Protected Overrides Sub Finalize()
+		System.Diagnostics.Debug.Fail(""Finalizer called!"")
+    End Sub
+#End If
+End Class
+",
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var project = solution.GetProject(projectId);
+                        var parseOptions = ((VisualBasicParseOptions)project.ParseOptions).WithPreprocessorSymbols(new KeyValuePair<string, object>("RELEASE", true));
+
+                        return project.WithParseOptions(parseOptions)
+                            .Solution;
+                    },
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public void CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAndDirectiveAroundStatements()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAndDirectiveAroundStatements()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
 
 public class Class1
@@ -233,10 +321,10 @@ public class Class2
 	~Class2()
 	{
 		Debug.Fail(""Class2 finalizer called!"");
-        Foo();
+        SomeMethod();
     }
 
-    void Foo()
+    void SomeMethod()
     {
     }
 }
@@ -246,9 +334,9 @@ public class Class2
 
         [WorkItem(820941, "DevDiv")]
         [Fact]
-        public void CA1821CSharpTestRemoveEmptyFinalizersWithNonInvocationBody()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithNonInvocationBody()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
     ~Class1()
@@ -265,9 +353,9 @@ public class Class2
         }
 
         [Fact]
-        public void CA1821BasicTestNoWarning()
+        public async Task CA1821BasicTestNoWarning()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Diagnostics
 
 Public Class Class1
@@ -313,9 +401,9 @@ End Class
         }
 
         [Fact]
-        public void CA1821BasicTestRemoveEmptyFinalizers()
+        public async Task CA1821BasicTestRemoveEmptyFinalizers()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Diagnostics
 
 Public Class Class1
@@ -345,39 +433,38 @@ End Class
         }
 
         [Fact]
-        public void CA1821BasicTestRemoveEmptyFinalizersWithScope()
+        public async Task CA1821BasicTestRemoveEmptyFinalizersWithScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Diagnostics
 
 Public Class Class1
     '  Violation occurs because the finalizer is empty.
-    Protected Overrides Sub Finalize()
+    Protected Overrides Sub [|Finalize|]()
 
     End Sub
 End Class
 
-[|Public Class Class2
+Public Class Class2
     '  Violation occurs because the finalizer is empty.
-    Protected Overrides Sub Finalize()
+    Protected Overrides Sub [|Finalize|]()
         ' Comments
     End Sub
-End Class|]
+End Class
 
 Public Class Class3
     '  Violation occurs because Debug.Fail is a conditional method.
-    Protected Overrides Sub Finalize()
+    Protected Overrides Sub [|Finalize|]()
         Debug.Fail(""Finalizer called!"")
     End Sub
 End Class
-",
-                GetCA1821BasicResultAt(13, 29));
+");
         }
 
         [Fact]
-        public void CA1821BasicTestRemoveEmptyFinalizersWithDebugFail()
+        public async Task CA1821BasicTestRemoveEmptyFinalizersWithDebugFail()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Diagnostics
 
 Public Class Class1
@@ -399,9 +486,9 @@ End Class
         }
 
         [Fact]
-        public void CA1821CSharpTestRemoveEmptyFinalizersWithThrowStatement()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithThrowStatement()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
     ~Class1()
@@ -413,9 +500,9 @@ public class Class1
         }
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public void CA1821CSharpTestRemoveEmptyFinalizersWithThrowExpression()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithThrowExpression()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
 {
     ~Class1() => throw new System.Exception();
@@ -424,9 +511,9 @@ public class Class1
         }
 
         [Fact]
-        public void CA1821BasicTestRemoveEmptyFinalizersWithThrowStatement()
+        public async Task CA1821BasicTestRemoveEmptyFinalizersWithThrowStatement()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
 	' Violation occurs because Debug.Fail is a conditional method.
     Protected Overrides Sub Finalize()
@@ -438,50 +525,47 @@ End Class
         }
 
         [Fact, WorkItem(1211, "https://github.com/dotnet/roslyn-analyzers/issues/1211")]
-        public void CA1821CSharpRemoveEmptyFinalizersInvalidInvocationExpression()
+        public async Task CA1821CSharpRemoveEmptyFinalizersInvalidInvocationExpression()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C1
 {
     ~C1()
     {
-        a
+        {|CS0103:a|}{|CS1002:|}
     }
 }
-",
-                TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public void CA1821CSharpRemoveEmptyFinalizers_ErrorCodeWithBothBlockAndExpressionBody()
+        public async Task CA1821CSharpRemoveEmptyFinalizers_ErrorCodeWithBothBlockAndExpressionBody()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C1
 {
-    ~C1() { }
-    => ;
+    {|CS8057:~C1() { }
+    => {|CS1525:;|}|}
 }
-",
-                TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Fact, WorkItem(1211, "https://github.com/dotnet/roslyn-analyzers/issues/1211")]
-        public void CA1821BasicRemoveEmptyFinalizersInvalidInvocationExpression()
+        public async Task CA1821BasicRemoveEmptyFinalizersInvalidInvocationExpression()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
     Protected Overrides Sub Finalize()
-        a
+        {|BC30451:a|}
     End Sub
 End Class
-",
-                TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public void CA1821CSharpRemoveEmptyFinalizers_ExpressionBodiedImpl()
+        public async Task CA1821CSharpRemoveEmptyFinalizers_ExpressionBodiedImpl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
@@ -508,13 +592,11 @@ public class SomeTestClass : IDisposable
         }
 
         private static DiagnosticResult GetCA1821CSharpResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, AbstractRemoveEmptyFinalizersAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.RemoveEmptyFinalizers);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
         private static DiagnosticResult GetCA1821BasicResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, AbstractRemoveEmptyFinalizersAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.RemoveEmptyFinalizers);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

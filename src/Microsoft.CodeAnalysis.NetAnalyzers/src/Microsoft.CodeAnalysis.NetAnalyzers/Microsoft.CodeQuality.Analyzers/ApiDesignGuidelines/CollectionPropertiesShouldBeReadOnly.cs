@@ -56,31 +56,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.RegisterCompilationStartAction(
                 (context) =>
                 {
-                    INamedTypeSymbol? iCollectionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsICollection);
-                    INamedTypeSymbol? genericICollectionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1);
-                    INamedTypeSymbol? arrayType = context.Compilation.GetSpecialType(SpecialType.System_Array);
-                    INamedTypeSymbol? dataMemberAttribute = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationDataMemberAttribute);
-                    ImmutableHashSet<INamedTypeSymbol> immutableInterfaces = GetIImmutableInterfaces(context.Compilation);
+                    var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+                    var knownTypes = new KnownTypes(wellKnownTypeProvider);
 
-                    if (iCollectionType == null ||
-                        genericICollectionType == null ||
-                        arrayType == null)
+                    if (knownTypes.ICollectionType == null ||
+                        knownTypes.GenericICollectionType == null ||
+                        knownTypes.ArrayType == null)
                     {
                         return;
                     }
 
-                    context.RegisterSymbolAction(c => AnalyzeSymbol(c, iCollectionType, genericICollectionType, arrayType, dataMemberAttribute, immutableInterfaces), SymbolKind.Property);
+                    context.RegisterSymbolAction(c => AnalyzeSymbol(c, knownTypes), SymbolKind.Property);
                 });
         }
 
-        public static void AnalyzeSymbol(
-            SymbolAnalysisContext context,
-            INamedTypeSymbol iCollectionType,
-            INamedTypeSymbol genericICollectionType,
-            INamedTypeSymbol arrayType,
-            INamedTypeSymbol? dataMemberAttribute,
-            ImmutableHashSet<INamedTypeSymbol> immutableInterfaces)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, KnownTypes knownTypes)
         {
+            RoslynDebug.Assert(knownTypes.ICollectionType != null &&
+                knownTypes.GenericICollectionType != null &&
+                knownTypes.ArrayType != null);
+
             var property = (IPropertySymbol)context.Symbol;
 
             // check whether it has a public setter
@@ -97,29 +92,37 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // make sure return type is NOT array
-            if (Inherits(property.Type, arrayType))
+            if (Inherits(property.Type, knownTypes.ArrayType))
             {
                 return;
             }
 
             // make sure property type implements ICollection or ICollection<T>
-            if (!Inherits(property.Type, iCollectionType) && !Inherits(property.Type, genericICollectionType))
+            if (!Inherits(property.Type, knownTypes.ICollectionType) && !Inherits(property.Type, knownTypes.GenericICollectionType))
             {
                 return;
             }
 
             // exclude Immutable collections
             // see https://github.com/dotnet/roslyn-analyzers/issues/1900 for details
-            if (!immutableInterfaces.IsEmpty &&
-                property.Type.AllInterfaces.Any(i => immutableInterfaces.Contains(i.OriginalDefinition)))
+            if (!knownTypes.ImmutableInterfaces.IsEmpty &&
+                property.Type.AllInterfaces.Any(i => knownTypes.ImmutableInterfaces.Contains(i.OriginalDefinition)))
             {
                 return;
             }
 
-            if (dataMemberAttribute != null)
+            // exclude readonly collections
+            if (property.Type.OriginalDefinition.Equals(knownTypes.ReadonlyCollection) ||
+                property.Type.OriginalDefinition.Equals(knownTypes.ReadonlyDictionary) ||
+                property.Type.OriginalDefinition.Equals(knownTypes.ReadonlyObservableCollection))
+            {
+                return;
+            }
+
+            if (knownTypes.DataMemberAttribute != null)
             {
                 // Special case: the DataContractSerializer requires that a public setter exists.
-                bool hasDataMemberAttribute = property.GetAttributes().Any(a => a.AttributeClass.Equals(dataMemberAttribute));
+                bool hasDataMemberAttribute = property.GetAttributes().Any(a => a.AttributeClass.Equals(knownTypes.DataMemberAttribute));
                 if (hasDataMemberAttribute)
                 {
                     return;
@@ -135,23 +138,38 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return symbol?.OriginalDefinition.Inherits(baseType) ?? false;
         }
 
-        private static ImmutableHashSet<INamedTypeSymbol> GetIImmutableInterfaces(Compilation compilation)
+        private sealed class KnownTypes
         {
-            var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
-            AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableDictionary2));
-            AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableList1));
-            AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableQueue1));
-            AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableSet1));
-            AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableStack1));
-            return builder.ToImmutable();
-
-            // Local functions.
-            void AddIfNotNull(INamedTypeSymbol? type)
+            public KnownTypes(WellKnownTypeProvider wellKnownTypeProvider)
             {
-                if (type != null)
-                {
-                    builder.Add(type);
-                }
+                ICollectionType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsICollection);
+                GenericICollectionType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1);
+                ArrayType = wellKnownTypeProvider.Compilation.GetSpecialType(SpecialType.System_Array);
+                DataMemberAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationDataMemberAttribute);
+                ImmutableInterfaces = GetIImmutableInterfaces(wellKnownTypeProvider);
+                ReadonlyCollection = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyCollection1);
+                ReadonlyDictionary = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyDictionary2);
+                ReadonlyObservableCollection = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsObjectModelReadOnlyObservableCollection1);
+            }
+
+            public INamedTypeSymbol? ICollectionType { get; }
+            public INamedTypeSymbol? GenericICollectionType { get; }
+            public INamedTypeSymbol? ArrayType { get; }
+            public INamedTypeSymbol? DataMemberAttribute { get; }
+            public ImmutableHashSet<INamedTypeSymbol> ImmutableInterfaces { get; }
+            public INamedTypeSymbol? ReadonlyCollection { get; }
+            public INamedTypeSymbol? ReadonlyDictionary { get; }
+            public INamedTypeSymbol? ReadonlyObservableCollection { get; }
+
+            private static ImmutableHashSet<INamedTypeSymbol> GetIImmutableInterfaces(WellKnownTypeProvider wellKnownTypeProvider)
+            {
+                var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
+                builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableDictionary2));
+                builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableList1));
+                builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableQueue1));
+                builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableSet1));
+                builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsImmutableIImmutableStack1));
+                return builder.ToImmutable();
             }
         }
     }

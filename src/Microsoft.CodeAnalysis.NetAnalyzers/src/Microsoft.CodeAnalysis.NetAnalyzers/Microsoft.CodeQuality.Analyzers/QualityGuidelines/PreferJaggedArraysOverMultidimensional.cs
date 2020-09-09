@@ -76,33 +76,39 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         {
             var property = (IPropertySymbol)context.Symbol;
 
-            // If its an override then don't report it as it can only be fixed in the base type.
-            if (!property.IsOverride)
+            // Bail-out when override as it can only be fixed in the base type.
+            if (property.IsOverride)
             {
-                if (IsMultiDimensionalArray(property.Type))
-                {
-                    context.ReportDiagnostic(property.CreateDiagnostic(DefaultRule, property.Name));
-                }
-
-                AnalyzeParameters(context, property.Parameters);
+                return;
             }
+
+            if (IsMultiDimensionalArray(property.Type) &&
+                !property.IsImplementationOfAnyInterfaceMember())
+            {
+                context.ReportDiagnostic(property.CreateDiagnostic(DefaultRule, property.Name));
+            }
+
+            AnalyzeParameters(context, property, property.Parameters);
         }
 
         private static void AnalyzeMethod(SymbolAnalysisContext context)
         {
             var method = (IMethodSymbol)context.Symbol;
 
-            // If its an override then don't report it as it can only be fixed in the base type.
+            // Bail-out when override as it can only be fixed in the base type.
             // If its a getter\setter then we will report on the property instead so skip analyzing the method.
-            if (!method.IsOverride && method.AssociatedSymbol == null)
+            if (method.IsOverride || method.AssociatedSymbol != null)
             {
-                if (IsMultiDimensionalArray(method.ReturnType))
-                {
-                    context.ReportDiagnostic(method.CreateDiagnostic(ReturnRule, method.Name, method.ReturnType));
-                }
-
-                AnalyzeParameters(context, method.Parameters);
+                return;
             }
+
+            if (IsMultiDimensionalArray(method.ReturnType) &&
+                !method.IsImplementationOfAnyInterfaceMember())
+            {
+                context.ReportDiagnostic(method.CreateDiagnostic(ReturnRule, method.Name, method.ReturnType));
+            }
+
+            AnalyzeParameters(context, method, method.Parameters);
         }
 
         private static void AnalyzeObjectCreation(OperationAnalysisContext context)
@@ -115,11 +121,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
         }
 
-        private static void AnalyzeParameters(SymbolAnalysisContext context, ImmutableArray<IParameterSymbol> parameters)
+        private static void AnalyzeParameters(SymbolAnalysisContext context, ISymbol containingSymbol, ImmutableArray<IParameterSymbol> parameters)
         {
             foreach (IParameterSymbol parameter in parameters)
             {
-                if (IsMultiDimensionalArray(parameter.Type))
+                if (IsMultiDimensionalArray(parameter.Type) &&
+                    !containingSymbol.IsImplementationOfAnyInterfaceMember())
                 {
                     context.ReportDiagnostic(parameter.CreateDiagnostic(DefaultRule, parameter.Name));
                 }

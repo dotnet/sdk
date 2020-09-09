@@ -1,4 +1,4 @@
-## Release 2.9.8
+## Release 5.0
 
 ### New Rules
 Rule ID | Category | Severity | Notes

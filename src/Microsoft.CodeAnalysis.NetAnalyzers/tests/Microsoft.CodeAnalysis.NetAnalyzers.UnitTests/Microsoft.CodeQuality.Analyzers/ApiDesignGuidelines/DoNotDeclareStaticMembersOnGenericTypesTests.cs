@@ -1,27 +1,24 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareStaticMembersOnGenericTypesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareStaticMembersOnGenericTypesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class DoNotDeclareStaticMembersOnGenericTypesTests : DiagnosticAnalyzerTestBase
+    public class DoNotDeclareStaticMembersOnGenericTypesTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotDeclareStaticMembersOnGenericTypesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotDeclareStaticMembersOnGenericTypesAnalyzer();
-        }
-
         [Fact]
-        public void CSharp_CA1000_ShouldGenerate()
+        public async Task CSharp_CA1000_ShouldGenerate()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class GenericType1<T>
@@ -53,17 +50,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             get { return string.Empty; }
         }
     }",
-    GetCSharpResultAt(10, 28, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
-    GetCSharpResultAt(15, 30, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
-    GetCSharpResultAt(23, 28, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
-    GetCSharpResultAt(28, 30, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule)
+    GetCSharpResultAt(10, 28),
+    GetCSharpResultAt(15, 30),
+    GetCSharpResultAt(23, 28),
+    GetCSharpResultAt(28, 30)
     );
         }
 
         [Fact]
-        public void Basic_CA1000_ShouldGenerate()
+        public async Task Basic_CA1000_ShouldGenerate()
         {
-            VerifyBasic(@"Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"Imports System
 Public Class GenericType1(Of T)
     Private Sub New()
     End Sub
@@ -90,17 +87,17 @@ Public NotInheritable Class GenericType2(Of T)
         End Get
     End Property
 End Class",
-    GetBasicResultAt(6, 23, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
-    GetBasicResultAt(10, 37, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
-    GetBasicResultAt(18, 23, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule),
-    GetBasicResultAt(22, 37, DoNotDeclareStaticMembersOnGenericTypesAnalyzer.Rule)
+    GetBasicResultAt(6, 23),
+    GetBasicResultAt(10, 37),
+    GetBasicResultAt(18, 23),
+    GetBasicResultAt(22, 37)
     );
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharp_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisible()
+        public async Task CSharp_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisible()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     internal class GenericType1<T>
@@ -136,9 +133,9 @@ End Class",
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void Basic_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisible()
+        public async Task Basic_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisible()
         {
-            VerifyBasic(@"Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"Imports System
 Friend Class GenericType1(Of T)
     Private Sub New()
     End Sub
@@ -168,9 +165,9 @@ End Class");
         }
 
         [Fact]
-        public void CSharp_CA1000_ShouldNotGenerate_MemberIsNotPublicStatic()
+        public async Task CSharp_CA1000_ShouldNotGenerate_MemberIsNotPublicStatic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class GenericType1<T>
@@ -263,9 +260,9 @@ public sealed class ClosedType : OpenType<String>
         }
 
         [Fact]
-        public void Basic_CA1000_ShouldNotGenerate_MemberIsNotPublicStatic()
+        public async Task Basic_CA1000_ShouldNotGenerate_MemberIsNotPublicStatic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class GenericType1(Of T)
@@ -350,9 +347,9 @@ End Class");
         }
 
         [Fact]
-        public void CSharp_CA1000_ShouldNotGenerate_ConversionOperator()
+        public async Task CSharp_CA1000_ShouldNotGenerate_ConversionOperator()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1<T>
 {
     public static implicit operator Class1<T>(T value) => new Class1<T>();
@@ -362,9 +359,9 @@ public class Class1<T>
         }
 
         [Fact]
-        public void Basic_CA1000_ShouldNotGenerate_ConversionOperator()
+        public async Task Basic_CA1000_ShouldNotGenerate_ConversionOperator()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1(Of T)
     Public Shared Narrowing Operator CType(value As T) As Class1(Of T)
         Return New Class1(Of T)()
@@ -378,9 +375,9 @@ End Class
         }
 
         [Fact, WorkItem(1791, "https://github.com/dotnet/roslyn-analyzers/issues/1791")]
-        public void CSharp_CA1000_ShouldNotGenerate_OperatorOverloads()
+        public async Task CSharp_CA1000_ShouldNotGenerate_OperatorOverloads()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<TestObject<T2>>
@@ -430,5 +427,11 @@ public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<T
 }
 ");
         }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column)
+            => VerifyCS.Diagnostic().WithLocation(line, column);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic().WithLocation(line, column);
     }
 }
