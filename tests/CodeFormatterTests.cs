@@ -34,6 +34,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private const string CodeStyleSolutionPath = "for_code_formatter/codestyle_solution/";
         private const string CodeStyleSolutionFilePath = CodeStyleSolutionPath + "codestyle_solution.sln";
 
+        private const string AnalyzersSolutionPath = "for_code_formatter/analyzers_solution/";
+        private const string AnalyzersSolutionFilePath = AnalyzersSolutionPath + "analyzers_solution.sln";
+
         private static string[] EmptyFilesList => Array.Empty<string>();
 
         private Regex FindFormattingLogLine => new Regex(@"((.*)\(\d+,\d+\): (.*))\r|((.*)\(\d+,\d+\): (.*))");
@@ -441,7 +444,50 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 codeStyleSeverity: DiagnosticSeverity.Warning);
         }
 
-        public async Task<string> TestFormatWorkspaceAsync(
+        [Fact]
+        public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
+        {
+            var restoreExitCode = await PerformNuGetRestore(AnalyzersSolutionFilePath);
+            Assert.Equal(0, restoreExitCode);
+
+            await TestFormatWorkspaceAsync(
+                AnalyzersSolutionFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 7,
+                fixAnalyzers: false);
+        }
+
+        [Fact]
+        public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
+        {
+            var restoreExitCode = await PerformNuGetRestore(AnalyzersSolutionFilePath);
+            Assert.Equal(0, restoreExitCode);
+
+            await TestFormatWorkspaceAsync(
+                AnalyzersSolutionFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 1,
+                expectedFileCount: 7,
+                fixAnalyzers: true,
+                analyzerSeverity: DiagnosticSeverity.Error);
+        }
+
+        internal async Task<int> PerformNuGetRestore(string workspaceFilePath)
+        {
+            var processInfo = ProcessRunner.CreateProcess("dotnet", $"restore \"{workspaceFilePath}\"", captureOutput: true, displayWindow: false);
+            var restoreResult = await processInfo.Result;
+
+            return restoreResult.ExitCode;
+        }
+
+        internal async Task<string> TestFormatWorkspaceAsync(
             string workspaceFilePath,
             string[] include,
             string[] exclude,

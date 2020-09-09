@@ -29,29 +29,43 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return solution;
             }
 
-            var project = solution.Projects.FirstOrDefault();
-            if (project == null)
+            var document = result.Diagnostics
+                .SelectMany(kvp => kvp.Value)
+                .Select(diagnostic => solution.GetDocument(diagnostic.Location.SourceTree))
+                .FirstOrDefault();
+
+            if (document is null)
             {
-                throw new InvalidOperationException(string.Format(Resources.Solution_0_has__no_projects, solution));
+                return solution;
             }
 
             var fixAllContext = new FixAllContext(
-                project: project,
+                document: document,
                 codeFixProvider: codeFix,
                 scope: FixAllScope.Solution,
                 codeActionEquivalenceKey: null,
-                diagnosticIds: codeFix.FixableDiagnosticIds,
+                diagnosticIds: new[] { diagnosticId },
                 fixAllDiagnosticProvider: new DiagnosticProvider(result),
                 cancellationToken: cancellationToken);
 
             try
             {
                 var action = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
-                var operations = action != null
-                    ? await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false)
-                    : ImmutableArray<CodeActionOperation>.Empty;
+                if (action is null)
+                {
+                    logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action, diagnosticId, codeFix.GetType().Name);
+                    return solution;
+                }
+
+                var operations = await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false);
                 var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();
-                return applyChangesOperation?.ChangedSolution ?? solution;
+                if (action is null)
+                {
+                    logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation, diagnosticId, codeFix.GetType().Name);
+                    return solution;
+                }
+
+                return applyChangesOperation.ChangedSolution;
             }
             catch (Exception ex)
             {
