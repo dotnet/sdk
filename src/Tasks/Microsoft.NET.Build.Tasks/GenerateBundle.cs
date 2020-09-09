@@ -37,9 +37,7 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             OSPlatform targetOS = RuntimeIdentifier.StartsWith("win") ? OSPlatform.Windows :
-                                  RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX :
-                                  RuntimeIdentifier.StartsWith("linux") ? OSPlatform.Linux :
-                                  throw new ArgumentException(nameof (RuntimeIdentifier));
+                                  RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX : OSPlatform.Linux;
 
             Architecture targetArch = RuntimeIdentifier.EndsWith("-x64") || RuntimeIdentifier.Contains("-x64-") ? Architecture.X64 :
                                       RuntimeIdentifier.EndsWith("-x86") || RuntimeIdentifier.Contains("-x86-") ? Architecture.X86 :
