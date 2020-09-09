@@ -207,6 +207,11 @@
         <target state="translated">La solution {0} n'a aucun projet</target>
         <note />
       </trans-unit>
+      <trans-unit id="Standard_input_used_multiple_times">
+        <source>Standard input markers ('/dev/stdin', '-') can only be used either with `--include` or `--exclude`, but not both.</source>
+        <target state="new">Standard input markers ('/dev/stdin', '-') can only be used either with `--include` or `--exclude`, but not both.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_dotnet_CLI_version_is_0">
         <source>The dotnet CLI version is '{0}'.</source>
         <target state="translated">La version de l'interface CLI dotnet est '{0}'.</target>

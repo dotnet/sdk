@@ -85,19 +85,25 @@ Options:
 
 Add `format` after `dotnet` and before the command arguments that you want to run:
 
-| Examples                                                         | Description                                                                                   |
-| ---------------------------------------------------------------- |---------------------------------------------------------------------------------------------- |
-| dotnet **format**                                                | Formats the project or solution in the current directory.                                     |
-| dotnet **format** &lt;workspace&gt;                              | Formats a specific project or solution.                                                       |
-| dotnet **format** &lt;workspace&gt; -f                           | Formats a particular folder and subfolders.                                                   |
-| dotnet **format** &lt;workspace&gt; --fix-style warn             | Fixes only codestyle analyzer warnings.                                                            |
-| dotnet **format** &lt;workspace&gt; --fix-whitespace --fix-style | Formats and fixes codestyle analyzer errors.                                                  |
-| dotnet **format** &lt;workspace&gt; --fix-analyzers              | Fixes only 3rd party analyzer errors.                                                              |
-| dotnet **format** &lt;workspace&gt; -wsa                         | Formats, fixes codestyle errors, and fixes 3rd party analyzer errors.                         |
-| dotnet **format** -v diag                                        | Formats with very verbose logging.                                                            |
-| dotnet **format** --include Programs.cs Utility\Logging.cs       | Formats the files Program.cs and Utility\Logging.cs                                           |
-| dotnet **format** --check                                        | Formats but does not save. Returns a non-zero exit code if any files would have been changed. |
-| dotnet **format** --report &lt;report-path&gt;                   | Formats and saves a json report file to the given directory.                                  |
+| Examples                                                         | Description                                                                                        |
+| ---------------------------------------------------------------- |--------------------------------------------------------------------------------------------------- |
+| `dotnet format`                                                  | Formats the project or solution in the current directory.                                          |
+| `dotnet format <workspace>`                                      | Formats a specific project or solution.                                                            |
+| `dotnet format <workspace> -f`                                   | Formats a particular folder and subfolders.                                                        |
+| `dotnet format <workspace> --fix-style warn`                     | Fixes only codestyle analyzer warnings.                                                            |
+| `dotnet format <workspace> --fix-whitespace --fix-style`         | Formats and fixes codestyle analyzer errors.                                                       |
+| `dotnet format <workspace> --fix-analyzers`                      | Fixes only 3rd party analyzer errors.                                                              |
+| `dotnet format <workspace> -wsa                                  | Formats, fixes codestyle errors, and fixes 3rd party analyzer errors.                              |
+| `dotnet format -v diag`                                          | Formats with very verbose logging.                                                                 |
+| `dotnet format --include Programs.cs Utility\Logging.cs`         | Formats the files Program.cs and Utility\Logging.cs                                                |
+| `dotnet format --check`                                          | Formats but does not save. Returns a non-zero exit code if any files would have been changed.      |
+| `dotnet format --report <report-path>`                           | Formats and saves a json report file to the given directory.                                       |
+| `dotnet format --include test/Utilities/*.cs --folder`           | Formats the files expanded from native shell globbing (e.g. bash). Space-separated list of         |
+|                                                                  | files are fed to formatter in this case. Also applies to `--exclude` option.                       |
+| `dotnet format --include 'test/Utilities/*.cs' --folder`         | With single quotes, formats the files expanded from built-in glob expansion. A single file         |
+|                                                                  | pattern is fed to formatter, which gets expanded internally. Also applies to `--exclude` option.   |
+| `ls tests/Utilities/*.cs \| dotnet format --include - --folder`  | Formats the list of files redirected from pipeline via standard input. Formatter will iterate over |
+|                                                                  | `Console.In` to read the list of files. Also applies to `--exclude` option.                        |
 
 ### How To Uninstall
 
