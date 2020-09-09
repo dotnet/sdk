@@ -11,6 +11,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     internal interface ICodeFormatter
     {
         /// <summary>
+        /// Gets the fix category this formatter belongs to.
+        /// </summary>
+        FixCategory Category { get; }
+
+        /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>.
         /// </summary>
         Task<Solution> FormatAsync(

@@ -21,13 +21,17 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         private readonly IAnalyzerRunner _runner;
         private readonly ICodeFixApplier _applier;
 
+        public FixCategory Category { get; }
+
         public AnalyzerFormatter(
             string name,
+            FixCategory category,
             IAnalyzerInformationProvider informationProvider,
             IAnalyzerRunner runner,
             ICodeFixApplier applier)
         {
             _name = name;
+            Category = category;
             _informationProvider = informationProvider;
             _runner = runner;
             _applier = applier;

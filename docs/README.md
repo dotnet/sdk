@@ -32,6 +32,22 @@ Format the code files from the  `./src` folder.
 dotnet-format ./src --folder
 ```
 
+### Whitespace formatting
+
+Whitespace formatting includes the core .editorconfig settings along with the placement of spaces and newlines. The whitespace formatter is run by default when not running analysis. When you want to run analysis and fix formatting issues you must specify both.
+
+Whitespace formatting run by default.
+
+```console
+dotnet-format ./format.sln
+```
+
+Running the whitespace formatter along with code-style analysis.
+
+```console
+dotnet-format ./format.sln --fix-whitespace --fix-style
+```
+
 ### Running analysis
 
 #### CodeStyle analysis
@@ -42,7 +58,7 @@ Running codestyle analysis requires the use of a MSBuild solution or project fil
 
 *Example:*
 
-Run analysis against the format solution and fix errors.
+Run code-style analysis against the format solution and fix errors.
 
 ```console
 dotnet-format ./format.sln --fix-style

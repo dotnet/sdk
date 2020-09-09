@@ -91,12 +91,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             string code,
             IReadOnlyDictionary<string, string> editorConfig,
             Encoding encoding = null,
-            bool fixCodeStyle = false,
+            FixCategory fixCategory = FixCategory.Whitespace,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            bool fixAnalyzers = false,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            return AssertCodeChangedAsync(code, code, ToEditorConfig(editorConfig), encoding, fixCodeStyle, codeStyleSeverity, fixAnalyzers, analyzerSeverity);
+            return AssertCodeChangedAsync(code, code, ToEditorConfig(editorConfig), encoding, fixCategory, codeStyleSeverity, analyzerSeverity);
         }
 
         private protected Task<SourceText> AssertCodeChangedAsync(
@@ -104,12 +103,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             string expectedCode,
             IReadOnlyDictionary<string, string> editorConfig,
             Encoding encoding = null,
-            bool fixCodeStyle = false,
+            FixCategory fixCategory = FixCategory.Whitespace,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            bool fixAnalyzers = false,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            return AssertCodeChangedAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding, fixCodeStyle, codeStyleSeverity, fixAnalyzers, analyzerSeverity);
+            return AssertCodeChangedAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding, fixCategory, codeStyleSeverity, analyzerSeverity);
         }
 
         private protected async Task<SourceText> AssertCodeChangedAsync(
@@ -117,9 +115,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             string expectedCode,
             string editorConfig,
             Encoding encoding = null,
-            bool fixCodeStyle = false,
+            FixCategory fixCategory = FixCategory.Whitespace,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            bool fixAnalyzers = false,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
             var text = SourceText.From(testCode, encoding ?? Encoding.UTF8);
@@ -134,9 +131,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 workspaceFilePath: project.FilePath,
                 workspaceType: WorkspaceType.Folder,
                 logLevel: LogLevel.Trace,
-                fixCodeStyle,
+                fixCategory,
                 codeStyleSeverity,
-                fixAnalyzers,
                 analyzerSeverity,
                 saveFormattedFiles: true,
                 changesAreErrors: false,

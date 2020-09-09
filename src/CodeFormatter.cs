@@ -25,8 +25,8 @@ namespace Microsoft.CodeAnalysis.Tools
             new CharsetFormatter(),
             new OrganizeImportsFormatter(),
             new UnnecessaryImportsFormatter(),
-            new AnalyzerFormatter(Resources.Code_Style, new CodeStyleInformationProvider(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
-            new AnalyzerFormatter(Resources.Analyzer_Reference, new AnalyzerReferenceInformationProvider(), new AnalyzerRunner(), new SolutionCodeFixApplier()));
+            new AnalyzerFormatter(Resources.Code_Style, FixCategory.CodeStyle, new CodeStyleInformationProvider(), new AnalyzerRunner(), new SolutionCodeFixApplier()),
+            new AnalyzerFormatter(Resources.Analyzer_Reference, FixCategory.Analyzers, new AnalyzerReferenceInformationProvider(), new AnalyzerRunner(), new SolutionCodeFixApplier()));
 
         public static async Task<WorkspaceFormatResult> FormatWorkspaceAsync(
             FormatOptions formatOptions,
@@ -132,6 +132,12 @@ namespace Microsoft.CodeAnalysis.Tools
 
             for (var index = 0; index < s_codeFormatters.Length; index++)
             {
+                // Only run the formatter if it belongs to one of the categories being fixed.
+                if (!formatOptions.FixCategory.HasFlag(s_codeFormatters[index].Category))
+                {
+                    continue;
+                }
+
                 formattedSolution = await s_codeFormatters[index].FormatAsync(formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
             }
 

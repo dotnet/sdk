@@ -62,7 +62,7 @@ try {
 
             if ($stage -eq "format-workspace") {
                 Write-Output "$(Get-Date) - $solutionFile - Formatting Workspace"
-                $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- $solution --fix-style --fix-analyzers -v diag --check | Out-String
+                $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- $solution -wsa -v diag --check | Out-String
                 Write-Output $output.TrimEnd()
 
                 # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.

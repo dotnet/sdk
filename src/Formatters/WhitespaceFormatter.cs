@@ -17,6 +17,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
     {
         protected override string FormatWarningDescription => Resources.Fix_whitespace_formatting;
 
+        public override FixCategory Category => FixCategory.Whitespace;
+
         internal override async Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,

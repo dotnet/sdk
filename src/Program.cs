@@ -40,8 +40,9 @@ namespace Microsoft.CodeAnalysis.Tools
         public static async Task<int> Run(
             string? workspace,
             bool folder,
-            string? fixStyle,
-            string? fixAnalyzers,
+            bool whitespace,
+            string? style,
+            string? analyzers,
             string? verbosity,
             bool check,
             string[] include,
@@ -131,16 +132,31 @@ namespace Microsoft.CodeAnalysis.Tools
                     logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
                 }
 
+                var fixType = FixCategory.None;
+                if (s_parseResult.WasOptionUsed("--fix-style", "-s"))
+                {
+                    fixType |= FixCategory.CodeStyle;
+                }
+
+                if (s_parseResult.WasOptionUsed("--fix-analyzers", "-a"))
+                {
+                    fixType |= FixCategory.Analyzers;
+                }
+
+                if (fixType == FixCategory.None || whitespace)
+                {
+                    fixType |= FixCategory.Whitespace;
+                }
+
                 var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
 
                 var formatOptions = new FormatOptions(
                     workspacePath,
                     workspaceType,
                     logLevel,
-                    fixCodeStyle: s_parseResult.WasOptionUsed("--fix-style", "-fs"),
-                    codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
-                    fixAnalyzers: s_parseResult.WasOptionUsed("--fix-analyzers", "-fa"),
-                    analyzerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
+                    fixType,
+                    codeStyleSeverity: GetSeverity(style ?? FixSeverity.Error),
+                    analyzerSeverity: GetSeverity(analyzers ?? FixSeverity.Error),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
                     fileMatcher,

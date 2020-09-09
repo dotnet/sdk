@@ -20,6 +20,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
         protected override string FormatWarningDescription => Resources.Remove_unnecessary_import;
 
+        public override FixCategory Category => FixCategory.CodeStyle;
+
         internal override async Task<SourceText> FormatFileAsync(
             Document document,
             SourceText sourceText,
@@ -31,10 +33,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         {
             // If we are fixing CodeStyle and the 'IDE0005' diagnostic is configured, then
             // see if we can remove unused imports.
-            if (!formatOptions.FixCodeStyle)
-            {
-                return sourceText;
-            }
 
             // If we are not saving files, do not make changes in this formatter. They will be
             // reported by their diagnostic id when the analyzer formatter runs.

@@ -10,9 +10,8 @@ namespace Microsoft.CodeAnalysis.Tools
         public string WorkspaceFilePath { get; }
         public WorkspaceType WorkspaceType { get; }
         public LogLevel LogLevel { get; }
-        public bool FixCodeStyle { get; }
+        public FixCategory FixCategory { get; }
         public DiagnosticSeverity CodeStyleSeverity { get; }
-        public bool FixAnalyzers { get; }
         public DiagnosticSeverity AnalyzerSeverity { get; }
         public bool SaveFormattedFiles { get; }
         public bool ChangesAreErrors { get; }
@@ -24,9 +23,8 @@ namespace Microsoft.CodeAnalysis.Tools
             string workspaceFilePath,
             WorkspaceType workspaceType,
             LogLevel logLevel,
-            bool fixCodeStyle,
+            FixCategory fixCategory,
             DiagnosticSeverity codeStyleSeverity,
-            bool fixAnalyzers,
             DiagnosticSeverity analyzerSeverity,
             bool saveFormattedFiles,
             bool changesAreErrors,
@@ -37,9 +35,8 @@ namespace Microsoft.CodeAnalysis.Tools
             WorkspaceFilePath = workspaceFilePath;
             WorkspaceType = workspaceType;
             LogLevel = logLevel;
-            FixCodeStyle = fixCodeStyle;
+            FixCategory = fixCategory;
             CodeStyleSeverity = codeStyleSeverity;
-            FixAnalyzers = fixAnalyzers;
             AnalyzerSeverity = analyzerSeverity;
             SaveFormattedFiles = saveFormattedFiles;
             ChangesAreErrors = changesAreErrors;
@@ -52,9 +49,8 @@ namespace Microsoft.CodeAnalysis.Tools
             out string workspaceFilePath,
             out WorkspaceType workspaceType,
             out LogLevel logLevel,
-            out bool fixCodeStyle,
+            out FixCategory fixCategory,
             out DiagnosticSeverity codeStyleSeverity,
-            out bool fixAnalyzers,
             out DiagnosticSeverity analyzerSeverity,
             out bool saveFormattedFiles,
             out bool changesAreErrors,
@@ -65,9 +61,8 @@ namespace Microsoft.CodeAnalysis.Tools
             workspaceFilePath = WorkspaceFilePath;
             workspaceType = WorkspaceType;
             logLevel = LogLevel;
-            fixCodeStyle = FixCodeStyle;
+            fixCategory = FixCategory;
             codeStyleSeverity = CodeStyleSeverity;
-            fixAnalyzers = FixAnalyzers;
             analyzerSeverity = AnalyzerSeverity;
             saveFormattedFiles = SaveFormattedFiles;
             changesAreErrors = ChangesAreErrors;

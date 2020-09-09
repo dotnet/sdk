@@ -18,14 +18,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         public ImmutableDictionary<ProjectId, AnalyzersAndFixers> GetAnalyzersAndFixers(
             Solution solution,
-            FormatOptions options,
+            FormatOptions formatOptions,
             ILogger logger)
         {
-            if (!options.FixCodeStyle)
-            {
-                return ImmutableDictionary<ProjectId, AnalyzersAndFixers>.Empty;
-            }
-
             var assemblies = new[]
             {
                 _featuresPath,

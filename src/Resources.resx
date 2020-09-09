@@ -288,4 +288,7 @@
   <data name="Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation" xml:space="preserve">
     <value>Unable to fix {0}. Code fix {1} returned an unexpected operation.</value>
   </data>
+  <data name="Run_whitespace_formatting_Run_by_default_when_not_applying_fixes" xml:space="preserve">
+    <value>Run whitespace formatting. Run by default when not applying fixes.</value>
+  </data>
 </root>

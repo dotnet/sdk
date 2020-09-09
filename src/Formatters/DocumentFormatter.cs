@@ -21,6 +21,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         protected abstract string FormatWarningDescription { get; }
 
         /// <summary>
+        /// Gets the fix category this formatter belongs to.
+        /// </summary>
+        public abstract FixCategory Category { get; }
+
+        /// <summary>
         /// Applies formatting and returns a formatted <see cref="Solution"/>
         /// </summary>
         public async Task<Solution> FormatAsync(

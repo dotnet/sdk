@@ -29,7 +29,7 @@ class C
 
             var editorConfig = new Dictionary<string, string>();
 
-            await AssertCodeUnchangedAsync(code, editorConfig, fixCodeStyle: false, codeStyleSeverity: DiagnosticSeverity.Info);
+            await AssertCodeUnchangedAsync(code, editorConfig, fixCategory: FixCategory.Whitespace, codeStyleSeverity: DiagnosticSeverity.Info);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ class C
 
             var editorConfig = new Dictionary<string, string>();
 
-            await AssertCodeUnchangedAsync(code, editorConfig, fixCodeStyle: true, codeStyleSeverity: DiagnosticSeverity.Info);
+            await AssertCodeUnchangedAsync(code, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Info);
         }
 
         [Theory]
@@ -68,7 +68,7 @@ class C
                 [key] = severity
             };
 
-            await AssertCodeUnchangedAsync(code, editorConfig, fixCodeStyle: true, codeStyleSeverity: DiagnosticSeverity.Error);
+            await AssertCodeUnchangedAsync(code, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Error);
         }
 
         [Theory]
@@ -97,7 +97,7 @@ class C
                 [key] = severity
             };
 
-            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCodeStyle: true, codeStyleSeverity: DiagnosticSeverity.Warning);
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning);
         }
     }
 }

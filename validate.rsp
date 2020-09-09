@@ -1,4 +1,5 @@
 ./format.sln
+--fix-whitespace
 --fix-style
 --fix-analyzers
 --exclude

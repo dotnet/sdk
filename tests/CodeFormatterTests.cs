@@ -95,6 +95,21 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
+        public async Task NoFilesFormattedInUnformattedProjectWhenFixingCodeStyle()
+        {
+            await TestFormatWorkspaceAsync(
+                UnformattedProjectFilePath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                fixCategory: FixCategory.CodeStyle,
+                codeStyleSeverity: DiagnosticSeverity.Error,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 5);
+        }
+
+        [Fact]
         public async Task GeneratedFilesFormattedInUnformattedProject()
         {
             var log = await TestFormatWorkspaceAsync(
@@ -411,7 +426,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 6,
-                fixCodeStyle: false);
+                fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle);
         }
 
         [Fact]
@@ -425,7 +440,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 6,
-                fixCodeStyle: true,
+                fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle,
                 codeStyleSeverity: DiagnosticSeverity.Error);
         }
 
@@ -440,7 +455,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
                 expectedFileCount: 6,
-                fixCodeStyle: true,
+                fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle,
                 codeStyleSeverity: DiagnosticSeverity.Warning);
         }
 
@@ -458,7 +473,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
                 expectedFileCount: 7,
-                fixAnalyzers: false);
+                fixCategory: FixCategory.Whitespace);
         }
 
         [Fact]
@@ -475,7 +490,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
                 expectedFileCount: 7,
-                fixAnalyzers: true,
+                fixCategory: FixCategory.Whitespace | FixCategory.Analyzers,
                 analyzerSeverity: DiagnosticSeverity.Error);
         }
 
@@ -495,9 +510,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             int expectedExitCode,
             int expectedFilesFormatted,
             int expectedFileCount,
-            bool fixCodeStyle = false,
+            FixCategory fixCategory = FixCategory.Whitespace,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
-            bool fixAnalyzers = false,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
             var workspacePath = Path.GetFullPath(workspaceFilePath);
@@ -520,9 +534,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 workspacePath,
                 workspaceType,
                 LogLevel.Trace,
-                fixCodeStyle,
+                fixCategory,
                 codeStyleSeverity,
-                fixAnalyzers,
                 analyzerSeverity,
                 saveFormattedFiles: false,
                 changesAreErrors: false,

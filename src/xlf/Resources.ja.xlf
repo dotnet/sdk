@@ -172,6 +172,11 @@
         <target state="translated">コード スタイル アナライザーを実行し、修正プログラムを適用します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Run_whitespace_formatting_Run_by_default_when_not_applying_fixes">
+        <source>Run whitespace formatting. Run by default when not applying fixes.</source>
+        <target state="new">Run whitespace formatting. Run by default when not applying fixes.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Running_0_analysis">
         <source>Running {0} analysis.</source>
         <target state="translated">{0} 分析を実行しています。</target>

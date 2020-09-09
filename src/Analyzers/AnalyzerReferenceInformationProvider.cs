@@ -17,11 +17,6 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             FormatOptions formatOptions,
             ILogger logger)
         {
-            if (!formatOptions.FixAnalyzers)
-            {
-                return ImmutableDictionary<ProjectId, AnalyzersAndFixers>.Empty;
-            }
-
             return solution.Projects
                 .ToImmutableDictionary(project => project.Id, GetAnalyzersAndFixers);
         }
