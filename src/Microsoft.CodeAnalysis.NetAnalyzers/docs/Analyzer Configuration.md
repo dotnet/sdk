@@ -741,3 +741,15 @@ Configurable Rules: [CA1711](https://docs.microsoft.com/visualstudio/code-qualit
 Option Values: List (separated by '|') of allowed suffixes
 
 Example: `dotnet_code_quality.CA1711.allowed_suffixes = Flag|Flags`
+
+### Enable platform compatibility analyzer for TFMs <= net5.0
+
+Option Name: `enable_platform_analyzer_on_pre_net5_target`
+
+Configurable Rules: [CA14016](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
+
+Option Values: Boolean values
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.enable_platform_analyzer_on_pre_net5_target = true` or `dotnet_code_quality.CA1416.enable_platform_analyzer_on_pre_net5_target = true`

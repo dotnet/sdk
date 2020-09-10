@@ -49,6 +49,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private const string IsOSPlatform = nameof(IsOSPlatform);
         private const string IsPrefix = "Is";
         private const string OptionalSuffix = "VersionAtLeast";
+        private const string Net = "net";
 
         internal static DiagnosticDescriptor SupportedOsVersionRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       s_localizableTitle,
@@ -96,6 +97,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             context.RegisterCompilationStartAction(context =>
             {
+                if (!PlatformAnalysisAllowed(context.Options, context.Compilation, context.CancellationToken))
+                {
+                    return;
+                }
+
                 var typeName = WellKnownTypeNames.SystemOperatingSystem;
 
                 // TODO: remove 'typeName + "Helper"' after tests able to consume the real new APIs
@@ -152,6 +158,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     return methods.Add(runtimeIsOSPlatformMethod);
                 }
+
                 return methods;
             }
 
@@ -161,6 +168,27 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             static bool NameAndParametersValid(IMethodSymbol method) => method.Name.StartsWith(IsPrefix, StringComparison.Ordinal) &&
                     (method.Parameters.Length == 0 || method.Name.EndsWith(OptionalSuffix, StringComparison.Ordinal));
         }
+
+        private static bool PlatformAnalysisAllowed(AnalyzerOptions options, Compilation compilation, CancellationToken token)
+        {
+            var tfmString = options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.TargetFramework, compilation, token);
+
+            if (tfmString?.Length >= 4 &&
+                tfmString.StartsWith(Net, StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(tfmString[3].ToString(), out var major) &&
+                major >= 5)
+            {
+                return true;
+            }
+            else
+            {
+                return LowerTargetsEnabled(options, compilation, token);
+            }
+        }
+
+        private static bool LowerTargetsEnabled(AnalyzerOptions options, Compilation compilation, CancellationToken cancellationToken) =>
+            compilation.SyntaxTrees.FirstOrDefault() is { } tree &&
+            options.GetBoolOptionValue(EditorConfigOptionNames.EnablePlatformAnalyzerOnPreNet5Target, SupportedOsRule, tree, compilation, false, cancellationToken);
 
         private void AnalyzeOperationBlock(
             OperationBlockStartAnalysisContext context,

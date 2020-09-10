@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
     public partial class PlatformCompatabilityAnalyzerTests
     {
-        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser, ios";
+        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser, ios;\nbuild_property.TargetFramework=net5.0";
 
         [Fact(Skip = "TODO need to be fixed: Test for for wrong arguments, not sure how to report the Compiler error diagnostic")]
         public async Task TestOsPlatformAttributesWithNonStringArgument()
@@ -39,6 +39,95 @@ public class Test
 " + MockAttributesCsSource;
 
             await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        public static IEnumerable<object[]> Create_DifferentTfms()
+        {
+            yield return new object[] { "build_property.TargetFramework = net472", false };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0", false };
+            yield return new object[] { "build_property.TargetFramework = dotnet", false };
+            yield return new object[] { "build_property.TargetFramework = uap10.0", false };
+            yield return new object[] { "build_property.TargetFramework = netstandard2.1", false };
+            yield return new object[] { "build_property.TargetFramework = net5", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0-windows", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0-ios14.0", true };
+            yield return new object[] { "build_property.TargetFramework = Net99", true };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp5", false };
+        }
+
+        [Theory]
+        [MemberData(nameof(Create_DifferentTfms))]
+        public async Task Net5OrHigherTfmWarns_LowerThanNet5NotWarn(string tfm, bool warn)
+        {
+            var invocation = warn ? "[|Target.WindowsOnlyMethod()|]" : "Target.WindowsOnlyMethod()";
+            var source = @"
+using System.Runtime.Versioning;
+
+namespace CallerTargetsBelow5_0
+{
+    class Caller
+    {
+        public static void TestWindowsOnlyMethod()
+        {
+            " + invocation + @";
+        }
+    }
+
+    class Target
+    {
+        [SupportedOSPlatform(""windows"")]
+        public static void WindowsOnlyMethod() { }
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(source, tfm);
+        }
+
+        public static IEnumerable<object[]> Create_DifferentTfmsWithOption()
+        {
+            yield return new object[] { "build_property.TargetFramework = net472\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
+            yield return new object[] { "build_property.TargetFramework = net472\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0\ndotnet_code_quality.CA1416.enable_platform_analyzer_on_pre_net5_target=false", false };
+            yield return new object[] { "build_property.TargetFramework = dotnet\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
+            yield return new object[] { "build_property.TargetFramework = uap10.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
+            yield return new object[] { "build_property.TargetFramework = netstandard2.1\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
+            yield return new object[] { "build_property.TargetFramework = netstandard2.1\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
+            yield return new object[] { "build_property.TargetFramework = net5\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0-windows\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0-ios14.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = net6.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp5\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
+        }
+
+        [Theory]
+        [MemberData(nameof(Create_DifferentTfmsWithOption))]
+        public async Task Net5OrHigherTfmWarns_LowerThanNet5WarnsIfEnabled(string tfmAndOption, bool warn)
+        {
+            var invocation = warn ? "[|Target.WindowsOnlyMethod()|]" : "Target.WindowsOnlyMethod()";
+            var source = @"
+using System.Runtime.Versioning;
+
+namespace CallerTargetsBelow5_0
+{
+    class Caller
+    {
+        public static void TestWindowsOnlyMethod()
+        {
+            " + invocation + @";
+        }
+    }
+
+    class Target
+    {
+        [SupportedOSPlatform(""windows"")]
+        public static void WindowsOnlyMethod() { }
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(source, tfmAndOption);
         }
 
         [Fact]
@@ -1710,7 +1799,7 @@ namespace PlatformCompatDemo.SupportedUnupported
         }
 
         private static async Task VerifyAnalyzerAsyncCs(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
-            => await PopulateTestCs(sourceCode, expectedDiagnostics).RunAsync();
+            => await VerifyAnalyzerAsyncCs(sourceCode, "build_property.TargetFramework = net5", expectedDiagnostics);
 
         private static async Task VerifyAnalyzerAsyncCs(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
@@ -1727,7 +1816,7 @@ namespace PlatformCompatDemo.SupportedUnupported
         }
 
         private static async Task VerifyAnalyzerAsyncVb(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
-            => await PopulateTestVb(sourceCode, expectedDiagnostics).RunAsync();
+            => await VerifyAnalyzerAsyncVb(sourceCode, "build_property.TargetFramework = net5", expectedDiagnostics);
 
         private static async Task VerifyAnalyzerAsyncVb(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
