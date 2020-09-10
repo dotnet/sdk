@@ -703,8 +703,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Overload operator equals on overriding value type Equals</source>
-        <target state="translated">重写值类型的 Equals 方法时应重载相等运算符</target>
+        <source>Implement the equality operators and make their behavior identical to that of Equals method.</source>
+        <target state="needs-review-translation">重写值类型的 Equals 方法时应重载相等运算符</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
