@@ -113,9 +113,6 @@
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop31RuntimePackRids)" />
-      <!-- TODO: remove this once WPF is available on ARM64 and replace usage
-            of this group for WindowsDesktopRuntimePackRids. -->
-      <WindowsDesktopRuntimePackWinformsRids Include="@(WindowsDesktopRuntimePackRids);win-arm64" />
     </ItemGroup>
 
     <!--
@@ -264,7 +261,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackWinformsRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
                               IsWindowsOnly="true"
                               Profile="WindowsForms"
                               />
