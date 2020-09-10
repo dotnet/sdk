@@ -184,7 +184,7 @@
 
   <Target Name="LayoutTemplatesFor50MSI"
           DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
-          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
+          Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
     <Copy SourceFiles="%(Bundled50Templates.RestoredNupkgPath)"
           DestinationFolder="$(Templates50LayoutPath)templates/$(BundledTemplates50InstallPath)"/>
   </Target>
