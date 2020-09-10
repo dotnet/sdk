@@ -36,10 +36,10 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
             string templatePacksDirectory = Path.Combine(_fakeDotnetRootDirectory, "template-packs");
             Directory.CreateDirectory(templatePacksDirectory);
             string templateNupkgPath = Path.Combine(templatePacksDirectory, "xamarin.android.templates.1.0.3.nupkg");
-            File.WriteAllText(templateNupkgPath, ""); 
-            
+            File.WriteAllText(templateNupkgPath, "");
+
             var result = _resolver.GetDotnetSdkTemplatePackages("5.0.102", _fakeDotnetRootDirectory);
-            
+
             result.First().Path.Should().Be(templateNupkgPath);
             result.First().TemplatePackageId.Should().Be("Xamarin.Android.Templates");
             result.First().TemplateVersion.Should().Be("1.0.3");
