@@ -108,7 +108,8 @@
       <Crossgen2SupportedRids Include="linux-musl-x64;linux-x64;win-x64" />
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
-      <AspNetCoreRuntimePackRids Include="@(AspNetCore31RuntimePackRids)" />
+      <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);win-arm64" />
+      <AspNetCoreRuntimePackRids Include="@(AspNetCore50RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
@@ -274,7 +275,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCore50RuntimePackRids, '%3B')"
                               />
 
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
