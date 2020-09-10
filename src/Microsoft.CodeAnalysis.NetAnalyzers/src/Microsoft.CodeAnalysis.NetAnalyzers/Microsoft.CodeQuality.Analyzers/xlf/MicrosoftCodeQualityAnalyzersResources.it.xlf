@@ -703,7 +703,7 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Implement the equality operators and make their behavior identical to that of Equals method.</source>
+        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
         <target state="needs-review-translation">Eseguire l'overload dell'operatore di uguaglianza all'override del tipo valore Equals</target>
         <note />
       </trans-unit>
