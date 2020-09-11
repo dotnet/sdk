@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -22,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 ICreationPathModel pathModel = new CreationPathModel()
                 {
-                    PathOriginal = pathInfo.ToString("path"),
+                    PathOriginal = pathInfo.ToString("path").NormalizePath(),
                     Condition = pathInfo.ToString("condition")
                 };
 

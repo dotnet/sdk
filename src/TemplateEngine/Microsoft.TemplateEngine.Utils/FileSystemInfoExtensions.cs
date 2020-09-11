@@ -27,6 +27,11 @@ namespace Microsoft.TemplateEngine.Utils
             }
         }
 
+        public static string NormalizePath(this string path)
+        {
+            return path.Replace('\\', '/');
+        }
+
         public static string CombinePaths(this string basePath, params string[] paths)
         {
             Stack<string> partStack = new Stack<string>();
