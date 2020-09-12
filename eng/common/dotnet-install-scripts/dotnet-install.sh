@@ -270,7 +270,7 @@ check_pre_reqs() {
         [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep zlib)" ] && say_warning "Unable to locate zlib. Probable prerequisite missing; install zlib."
         [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep ssl)" ] && say_warning "Unable to locate libssl. Probable prerequisite missing; install libssl."
         [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep libicu)" ] && say_warning "Unable to locate libicu. Probable prerequisite missing; install libicu."
-        [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep lttng)" ] && say_warning "Unable to locate liblttng. Probable prerequisite missing; install libcurl."
+        [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep lttng)" ] && say_warning "Unable to locate liblttng. Probable prerequisite missing; install liblttng."
         [ -z "$($LDCONFIG_COMMAND 2>/dev/null | grep libcurl)" ] && say_warning "Unable to locate libcurl. Probable prerequisite missing; install libcurl."
     fi
 
