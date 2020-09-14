@@ -77,8 +77,9 @@ using Microsoft.WindowsAzure.Storage.File;
 class TestClass
 {
     public string SAS { get; } = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOrHttp, null);
-}",
-            GetCSharpResultAt(8, 34));
+}"
+            /* , GetCSharpResultAt(8, 34)    // Can't get CFG in 2.9.x => don't warn */
+            );
         }
 
         [Fact]
@@ -92,8 +93,9 @@ using Microsoft.WindowsAzure.Storage.File;
 class TestClass
 {
     public string SAS = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOrHttp, null);
-}",
-            GetCSharpResultAt(8, 25));
+}"
+            /* , GetCSharpResultAt(8, 25)    // Can't get CFG in 2.9.x => don't warn */
+            );
         }
 
         [Fact]
