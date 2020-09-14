@@ -403,15 +403,27 @@
     <PropertyGroup>
       <ReplacementPattern>"version": ".*"</ReplacementPattern>
       <ReplacementString>"version": "$(MicrosoftNETCoreAppRuntimePackageVersion)"</ReplacementString>
+      <AspNetCoreRuntimeReplacementString>"version": "$(MicrosoftAspNetCoreAppRuntimePackageVersion)"</AspNetCoreRuntimeReplacementString>
     </PropertyGroup>
     <ItemGroup>
       <ToolRuntimeConfigPath Include="$(RedistLayoutPath)sdk/$(Version)/**/*.runtimeconfig.json" />
     </ItemGroup>
+
+    <!-- Update runtimeconfig files that target Microsoft.NETCore.App -->
     <ReplaceFileContents
       InputFiles="@(ToolRuntimeConfigPath)"
       DestinationFiles="@(ToolRuntimeConfigPath)"
       ReplacementPatterns="$(ReplacementPattern)"
-      ReplacementStrings="$(ReplacementString)" />
+      ReplacementStrings="$(ReplacementString)"
+      FileMustContainText="Microsoft.NETCore.App" />
+
+    <!-- Update runtimeconfig files that target Microsoft.AspNetCore.App -->
+    <ReplaceFileContents
+      InputFiles="@(ToolRuntimeConfigPath)"
+      DestinationFiles="@(ToolRuntimeConfigPath)"
+      ReplacementPatterns="$(ReplacementPattern)"
+      ReplacementStrings="$(AspNetCoreRuntimeReplacementString)"
+      FileMustContainText="Microsoft.AspNetCore.App" />
   </Target>
 
   <Target Name="GenerateVersionFile"

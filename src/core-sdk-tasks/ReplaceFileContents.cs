@@ -12,18 +12,18 @@ namespace Microsoft.DotNet.Cli.Build
 {
     /// <summary>
     /// Reads contents of an input file, and searches for each replacement passed in.
-    /// 
+    ///
     /// When ReplacementItems is matched, it will replace the Include/ItemSpec with the corresponding
     /// ReplacementString metadata value. This can be useful if the ReplacementString is a value that
     /// cannot be represented by ITaskItem.ItemSpec (like string.Empty).
-    /// 
-    /// When a ReplacementPattern is matched it will replace it with the string of the corresponding (by index) 
+    ///
+    /// When a ReplacementPattern is matched it will replace it with the string of the corresponding (by index)
     /// item in ReplacementStrings.
-    /// 
-    /// For example, if 2 ReplacementPatterns are passed in, 2 ReplacementStrings must also passed in and the first 
+    ///
+    /// For example, if 2 ReplacementPatterns are passed in, 2 ReplacementStrings must also passed in and the first
     /// pattern will be replaced with the first string, and the second pattern replaced with the second string.
-    /// 
-    /// ReplacementPattern could easily be a regex, but it isn't needed for current use cases, so leaving this 
+    ///
+    /// ReplacementPattern could easily be a regex, but it isn't needed for current use cases, so leaving this
     /// as just a string that will be replaced.
     /// </summary>
     public class ReplaceFileContents : Task
@@ -39,6 +39,11 @@ namespace Microsoft.DotNet.Cli.Build
         public ITaskItem[] ReplacementPatterns { get; set; }
 
         public ITaskItem[] ReplacementStrings { get; set; }
+
+        /// <summary>
+        /// Gets or sets a string that a file must contain for the replacement to be performed.
+        /// </summary>
+        public string FileMustContainText { get; set; }
 
         public override bool Execute()
         {
@@ -81,6 +86,12 @@ namespace Microsoft.DotNet.Cli.Build
         public void ReplaceContents(string inputFile, string destinationFile)
         {
             string inputFileText = File.ReadAllText(inputFile);
+            if (!string.IsNullOrEmpty(FileMustContainText) && !inputFileText.Contains(FileMustContainText))
+            {
+                Log.LogMessage(MessageImportance.Low, $"Skipping replacement on `{inputFile}` because it does not contain the text '{FileMustContainText}'.");
+                return;
+            }
+
             string outputFileText = ReplacePatterns(inputFileText);
 
             WriteOutputFile(destinationFile, outputFileText);
