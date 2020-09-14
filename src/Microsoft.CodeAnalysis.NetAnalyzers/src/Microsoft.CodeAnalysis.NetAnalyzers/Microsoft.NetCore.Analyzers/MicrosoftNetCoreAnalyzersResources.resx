@@ -1012,22 +1012,22 @@
     <value>Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.</value>
   </data>
   <data name="UseXmlReaderForDataSetReadXml" xml:space="preserve">
-    <value>Use XmlReader For DataSet Read Xml</value>
+    <value>Use XmlReader for DataSet.ReadXml()</value>
   </data>
   <data name="UseXmlReaderForDeserialize" xml:space="preserve">
-    <value>Use XmlReader For Deserialize</value>
+    <value>Use XmlReader for XmlSerializer.Deserialize()</value>
   </data>
   <data name="UseXmlReaderForSchemaRead" xml:space="preserve">
-    <value>Use XmlReader For Schema Read</value>
+    <value>Use XmlReader for XmlSchema.Read()</value>
   </data>
   <data name="UseXmlReaderForValidatingReader" xml:space="preserve">
-    <value>Use XmlReader For Validating Reader</value>
+    <value>Use XmlReader for XmlValidatingReader constructor</value>
   </data>
   <data name="UseXmlReaderForXPathDocument" xml:space="preserve">
-    <value>Use XmlReader For XPathDocument</value>
+    <value>Use XmlReader for XPathDocument constructor</value>
   </data>
   <data name="UseXmlReaderMessage" xml:space="preserve">
-    <value>This overload of the {0}.{1} method is potentially unsafe, use an overload that takes a XmlReader instance instead</value>
+    <value>This overload of the {0}.{1} method is potentially unsafe. It enables Document Type Definition (DTD) which can be vulnerable to denial of service attacks. and uses an XmlResolver, which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead.</value>
   </data>
   <data name="UseRSAWithSufficientKeySize" xml:space="preserve">
     <value>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</value>
