@@ -139,34 +139,36 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 if (argumentOperation != null)
                                 {
                                     var cfg = invocationOperation.GetTopmostParentBlock()?.GetEnclosingControlFlowGraph();
-                                    if (cfg != null)
+                                    if (cfg == null)
                                     {
-                                        var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
-                                                                                operationBlockStartContext.Options,
-                                                                                SupportedDiagnostics,
-                                                                                defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
-                                                                                cancellationToken: operationBlockStartContext.CancellationToken,
-                                                                                defaultMaxInterproceduralMethodCallChain: 1);
-                                        var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(
-                                                                        cfg,
-                                                                        owningSymbol,
-                                                                        operationBlockStartContext.Options,
-                                                                        wellKnownTypeProvider,
-                                                                        PointsToAnalysisKind.Complete,
-                                                                        interproceduralAnalysisConfig,
-                                                                        interproceduralAnalysisPredicateOpt: null,
-                                                                        false);
-                                        if (pointsToAnalysisResult == null)
-                                        {
-                                            return;
-                                        }
+                                        return;
+                                    }
 
-                                        var pointsToAbstractValue = pointsToAnalysisResult[argumentOperation.Kind, argumentOperation.Syntax];
+                                    var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
+                                                                            operationBlockStartContext.Options,
+                                                                            SupportedDiagnostics,
+                                                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
+                                                                            cancellationToken: operationBlockStartContext.CancellationToken,
+                                                                            defaultMaxInterproceduralMethodCallChain: 1);
+                                    var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(
+                                                                    cfg,
+                                                                    owningSymbol,
+                                                                    operationBlockStartContext.Options,
+                                                                    wellKnownTypeProvider,
+                                                                    PointsToAnalysisKind.Complete,
+                                                                    interproceduralAnalysisConfig,
+                                                                    interproceduralAnalysisPredicateOpt: null,
+                                                                    false);
+                                    if (pointsToAnalysisResult == null)
+                                    {
+                                        return;
+                                    }
 
-                                        if (pointsToAbstractValue.NullState != NullAbstractValue.Null)
-                                        {
-                                            return;
-                                        }
+                                    var pointsToAbstractValue = pointsToAnalysisResult[argumentOperation.Kind, argumentOperation.Syntax];
+
+                                    if (pointsToAbstractValue.NullState != NullAbstractValue.Null)
+                                    {
+                                        return;
                                     }
                                 }
 

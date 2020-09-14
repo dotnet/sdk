@@ -77,8 +77,9 @@ using Microsoft.WindowsAzure.Storage.Blob;
 class TestClass
 {
     public string SAS { get; } = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, null, null, null);
-}",
-            GetCSharpResultAt(8, 34));
+}"
+            /* ,  GetCSharpResultAt(8, 34)    // Can't find a CFG in 2.9.x => don't report */
+            );
         }
 
         [Fact]
@@ -92,8 +93,9 @@ using Microsoft.WindowsAzure.Storage.Blob;
 class TestClass
 {
     public string SAS = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, null, null, null);
-}",
-            GetCSharpResultAt(8, 25));
+}"
+            /*, GetCSharpResultAt(8, 25)    // Can't find a CFG in 2.9.x => don't report */
+            );
         }
 
         [Fact]
