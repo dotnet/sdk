@@ -139,7 +139,7 @@
             Inputs="@(GenerateSdkPkgInputs)"
             Outputs="$(SdkPKGInstallerFile)"
             DependsOnTargets="GenerateLayout;SetupPkgInputsOutputs"
-            Condition=" '$(OSName)' == 'osx' ">
+            Condition=" '$(OSName)' == 'osx' and '$(DotNetBuildFromSource)' != 'true' ">
 
       <ItemGroup>
         <TemplateFiles Include="$(RedistLayoutPath)templates/**/*" />
@@ -190,7 +190,7 @@
             Inputs="@(GenerateSdkProductArchiveInputs)"
             Outputs="$(CombinedFrameworkSdkHostPKGInstallerFile)"
             DependsOnTargets="GenerateSdkPkg"
-            Condition=" '$(OSName)' == 'osx' ">
+            Condition=" '$(OSName)' == 'osx' and '$(DotNetBuildFromSource)' != 'true' ">
       <ItemGroup>
         <PkgComponentsSourceFiles Include="$(SdkPKGInstallerFile);
                                 $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName);
