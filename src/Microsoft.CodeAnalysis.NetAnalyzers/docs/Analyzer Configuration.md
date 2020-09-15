@@ -753,3 +753,15 @@ Option Values: Boolean values
 Default Value: `false`
 
 Example: `dotnet_code_quality.enable_platform_analyzer_on_pre_net5_target = true` or `dotnet_code_quality.CA1416.enable_platform_analyzer_on_pre_net5_target = true`
+
+### Exclude structs
+
+Option Name: `exclude_structs`
+
+Configurable Rules: [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051)
+
+Option Values: Boolean values
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1051.exclude_structs = true`
