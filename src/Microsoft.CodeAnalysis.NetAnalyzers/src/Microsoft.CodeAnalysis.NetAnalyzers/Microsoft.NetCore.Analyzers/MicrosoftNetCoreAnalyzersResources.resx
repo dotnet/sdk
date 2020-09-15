@@ -1027,7 +1027,7 @@
     <value>Use XmlReader for XPathDocument constructor</value>
   </data>
   <data name="UseXmlReaderMessage" xml:space="preserve">
-    <value>This overload of the {0}.{1} method is potentially unsafe. It enables Document Type Definition (DTD) which can be vulnerable to denial of service attacks. and uses an XmlResolver, which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead.</value>
+    <value>This overload of the {0}.{1} method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks. or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</value>
   </data>
   <data name="UseRSAWithSufficientKeySize" xml:space="preserve">
     <value>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</value>
