@@ -1888,33 +1888,33 @@
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXml">
-        <source>Use XmlReader For DataSet Read Xml</source>
-        <target state="translated">XmlReader zum Lesen von DataSet-XML verwenden</target>
+        <source>Use XmlReader for 'DataSet.ReadXml()'</source>
+        <target state="needs-review-translation">XmlReader zum Lesen von DataSet-XML verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDeserialize">
-        <source>Use XmlReader For Deserialize</source>
-        <target state="translated">XmlReader zum Deserialisieren verwenden</target>
+        <source>Use XmlReader for 'XmlSerializer.Deserialize()'</source>
+        <target state="needs-review-translation">XmlReader zum Deserialisieren verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForSchemaRead">
-        <source>Use XmlReader For Schema Read</source>
-        <target state="translated">XmlReader zum Lesen von Schemas verwenden</target>
+        <source>Use XmlReader for 'XmlSchema.Read()'</source>
+        <target state="needs-review-translation">XmlReader zum Lesen von Schemas verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForValidatingReader">
-        <source>Use XmlReader For Validating Reader</source>
-        <target state="translated">XmlReader zum Überprüfen von Reader verwenden</target>
+        <source>Use XmlReader for XmlValidatingReader constructor</source>
+        <target state="needs-review-translation">XmlReader zum Überprüfen von Reader verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForXPathDocument">
-        <source>Use XmlReader For XPathDocument</source>
-        <target state="translated">XmlReader für XPathDocument verwenden</target>
+        <source>Use XmlReader for XPathDocument constructor</source>
+        <target state="needs-review-translation">XmlReader für XPathDocument verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderMessage">
-        <source>This overload of the {0}.{1} method is potentially unsafe, use an overload that takes a XmlReader instance instead</source>
-        <target state="translated">Diese Überladung der {0}.{1}-Methode ist möglicherweise unsicher. Verwenden Sie eine Überladung, die stattdessen eine XmlReader-Instanz akzeptiert.</target>
+        <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
+        <target state="needs-review-translation">Diese Überladung der {0}.{1}-Methode ist möglicherweise unsicher. Verwenden Sie eine Überladung, die stattdessen eine XmlReader-Instanz akzeptiert.</target>
         <note />
       </trans-unit>
     </body>
