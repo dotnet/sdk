@@ -1888,17 +1888,17 @@
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXml">
-        <source>Use XmlReader for DataSet.ReadXml()</source>
+        <source>Use XmlReader for 'DataSet.ReadXml()'</source>
         <target state="needs-review-translation">데이터 세트 읽기 Xml에 XmlReader 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDeserialize">
-        <source>Use XmlReader for XmlSerializer.Deserialize()</source>
+        <source>Use XmlReader for 'XmlSerializer.Deserialize()'</source>
         <target state="needs-review-translation">Deserialize에 XmlReader 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForSchemaRead">
-        <source>Use XmlReader for XmlSchema.Read()</source>
+        <source>Use XmlReader for 'XmlSchema.Read()'</source>
         <target state="needs-review-translation">스키마 읽기에 XmlReader 사용</target>
         <note />
       </trans-unit>
@@ -1913,7 +1913,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderMessage">
-        <source>This overload of the {0}.{1} method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks. or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
+        <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
         <target state="needs-review-translation">{0}.{1} 메서드의 이 오버로드는 안전하지 않을 수 있으므로 대신 XmlReader 인스턴스를 사용하는 오버로드를 사용하세요.</target>
         <note />
       </trans-unit>

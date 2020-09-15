@@ -1888,17 +1888,17 @@
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXml">
-        <source>Use XmlReader for DataSet.ReadXml()</source>
+        <source>Use XmlReader for 'DataSet.ReadXml()'</source>
         <target state="needs-review-translation">Usar XmlReader para XML da Leitura do Conjunto de Dados</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDeserialize">
-        <source>Use XmlReader for XmlSerializer.Deserialize()</source>
+        <source>Use XmlReader for 'XmlSerializer.Deserialize()'</source>
         <target state="needs-review-translation">Usar XmlReader para Desserializar</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForSchemaRead">
-        <source>Use XmlReader for XmlSchema.Read()</source>
+        <source>Use XmlReader for 'XmlSchema.Read()'</source>
         <target state="needs-review-translation">Usar XmlReader para Leitura de Esquema</target>
         <note />
       </trans-unit>
@@ -1913,7 +1913,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderMessage">
-        <source>This overload of the {0}.{1} method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks. or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
+        <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
         <target state="needs-review-translation">Esta sobrecarga do método {0}.{1} é potencialmente insegura. Use uma sobrecarga que utiliza uma instância de XmlReader</target>
         <note />
       </trans-unit>
