@@ -13,8 +13,8 @@ namespace Microsoft.DotNet.Cli
     {
         private const string VstestAppName = "vstest.console.dll";
 
-        public VSTestForwardingApp(IEnumerable<string> argsToForward)
-            : base(GetVSTestExePath(), argsToForward)
+        public VSTestForwardingApp(IEnumerable<string> argsToForward, Dictionary<string, string> environmentVariables)
+            : base(GetVSTestExePath(), argsToForward, environmentVariables: environmentVariables)
         {
         }
 

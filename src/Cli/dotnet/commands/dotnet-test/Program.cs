@@ -74,10 +74,12 @@ namespace Microsoft.DotNet.Tools.Test
                 noRestore,
                 msbuildPath);
 
-            var rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
-            if (Environment.GetEnvironmentVariable(rootVariableName) == null)
+            // Set DOTNET_PATH if it isn't already set in the environment as it is required
+            // by the testhost which uses the apphost feature (Windows only).
+            var (hasRootVariable, rootVariableName, rootValue) = GetRootVariable();
+            if (!hasRootVariable)
             {
-                testCommand.EnvironmentVariable(rootVariableName, Path.GetDirectoryName(new Muxer().MuxerPath));
+                testCommand.EnvironmentVariable(rootVariableName, rootValue);
             }
 
             return testCommand;
@@ -106,7 +108,14 @@ namespace Microsoft.DotNet.Tools.Test
                 // one more time, there is no extra hop via msbuild
                 convertedArgs.AddRange(settings);
 
-                return new VSTestForwardingApp(convertedArgs).Execute();
+                // Set DOTNET_PATH if it isn't already set in the environment as it is required
+                // by the testhost which uses the apphost feature (Windows only).
+                var (hasRootVariable, rootVariableName, rootValue) = GetRootVariable();
+                Dictionary<string, string> environmentVariables = hasRootVariable ?
+                    null :
+                    new Dictionary<string, string>() { { rootVariableName, rootValue } };
+
+                return new VSTestForwardingApp(convertedArgs, environmentVariables).Execute();
             }
 
             // Workaround for https://github.com/Microsoft/vstest/issues/1503
@@ -164,6 +173,15 @@ namespace Microsoft.DotNet.Tools.Test
         {
             DefaultHelpViewText.Synopsis.AdditionalArguments = " [[--] <RunSettings arguments>...]]";
             DefaultHelpViewText.AdditionalArgumentsSection = LocalizableStrings.RunSettingsArgumentsDescription;
+        }
+
+        private static (bool hasRootVariable, string rootVariableName, string rootValue) GetRootVariable()
+        {
+            string rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
+            bool hasRootVariable = Environment.GetEnvironmentVariable(rootVariableName) != null;
+            string rootValue = hasRootVariable ? null : Path.GetDirectoryName(new Muxer().MuxerPath);
+
+            return (hasRootVariable, rootVariableName, rootValue);
         }
     }
 }
