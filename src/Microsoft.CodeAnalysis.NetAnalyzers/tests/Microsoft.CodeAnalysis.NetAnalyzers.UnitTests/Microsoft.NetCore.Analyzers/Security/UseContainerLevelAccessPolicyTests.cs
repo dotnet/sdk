@@ -67,6 +67,66 @@ class TestClass
         }
 
         [Fact]
+        public async Task TestPropertyInitializerGroupPolicyIdentifierOfBlobNamespaceIsNullDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS { get; } = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, null, null, null);
+}"
+            /* ,  GetCSharpResultAt(8, 34)    // Can't find a CFG in 2.9.x => don't report */
+            );
+        }
+
+        [Fact]
+        public async Task TestFieldInitializerGroupPolicyIdentifierOfBlobNamespaceIsNullDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, null, null, null);
+}"
+            /*, GetCSharpResultAt(8, 25)    // Can't find a CFG in 2.9.x => don't report */
+            );
+        }
+
+        [Fact]
+        public async Task TestPropertyInitializerGroupPolicyIdentifierOfBlobNamespaceNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS { get; } = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, ""foo"", null, null);
+}");
+        }
+
+        [Fact]
+        public async Task TestFieldInitializerGroupPolicyIdentifierOfBlobNamespaceNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, ""foo"", null, null);
+}");
+        }
+
+        [Fact]
         public async Task TestAccessPolicyIdentifierOfTableNamespaceIsNullDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
