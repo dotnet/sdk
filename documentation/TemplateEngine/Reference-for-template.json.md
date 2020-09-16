@@ -81,7 +81,7 @@ There are 3 places from which a symbol can acquire its value:
 ### Output Management
 |Name|Description|Default|
 |---|---|--|
-|sourceName| The name in the source tree to replace with the name the user specifies. The value to be replaced with can be given using the `-n` `--name` options while running a template. The template engine will look for any occurrance of the name present in the config file and replace it in file names and file contents. If no name is specified by the host, the current directory is used.|| 
+|sourceName| The name in the source tree to replace with the name the user specifies. The value to be replaced with can be given using the `-n` `--name` options while running a template. The template engine will look for any occurrance of the name present in the config file and replace it in file names and file contents. If no name is specified by the host, the current directory is used. The value of the `sourceName` is available in built-in `name` symbol and can be used as the source for creating other symbols and condition expressions. || 
 |placeholderFilename|A filename that will be completely ignored expect to indicate that its containing directory should be copied. This allows creation of empty directory in the created template, by having a corresponding source directory containing just the placeholder file. Completely empty directories are ignored.|If not specified, a default value of `"-.-"` is used.|
 |primaryOutputs|A list of important output paths created during template generation. These paths need to be added to the newly created project at the end of template creation. It's defined as an array of [Primary Output](#primary-output-definition)||
 
