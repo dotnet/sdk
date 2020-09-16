@@ -195,6 +195,55 @@ class Student {
 }
 ```
 
+### Ignore conditions expressions in language files
+Template engine attempts to process all conditional statements in language files. In case conditions should not be processed by template engine, this should be explicitly specified.
+
+There are two ways to do it:
+- disable processing for the whole file
+- disable processing for the part of the file
+
+If the file should never be processed by template engine, it can be specified as `copyOnly` in the `sources` section of the `template.json`. For example:
+
+```
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "copyOnly": [ "Directory.Build.props" ]
+        }
+      ]
+    }
+  ],
+```
+
+If template engine should not process only part of the file, but other parts should be processed, the conditional processing can be turned off for the section that should not be processed by using directives:
+
+`//-:cnd:noEmit`
+
+`//+:cnd:noEmit`
+
+The part `//` is the prefix to use for turning operations on and off in language files. The name `cnd` is the name of the operation to turn on/off. The `-` and `+` near the beginning of these lines indicate that the operation should be turned off, and on, respectively. The `noEmit` part tells templating to not process this line.
+
+For example:
+
+```
+#if DEBUG
+Comet.Reload.Init();
+#endif
+//-:cnd:noEmit
+#if DEBUG
+Xamarin.Calabash.Start();
+#endif
+//+:cnd:noEmit
+```
+When invoking the template with the above content, the output looks like this:
+```
+#if DEBUG
+Xamarin.Calabash.Start();
+#endif
+```
+The first expression is not emitted because it is processed, and the condition evaluated to `false`. The second expression is copied as-is because the conditional processing is turned off for that part of the file. 
+
 ### Related
 [Sample](https://github.com/dotnet/templating/blob/rel/vs2017/3-Preview3/template_feed/Microsoft.DotNet.Web.ProjectTemplates.2.0/content/WebApi-CSharp/Startup.cs)
 
@@ -313,6 +362,64 @@ In this sample, we can see that if the **TargetFrameworkOverride** symbol is def
     <None Update="Company.WebApplication1.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 ```
+
+### Ignore conditions expressions in MSBuild files
+
+ Template engine attempts to process all conditional statements in MSBuild files. In case conditions should not be processed by template engine, this should be explicitly specified.
+
+There are two ways to do it:
+- disable processing for the whole file
+- disable processing for the part of the file
+
+If the file should never be processed by template engine, it can be specified as `copyOnly` in the `sources` section of the `template.json`. For example:
+
+```
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "copyOnly": [ "Directory.Build.props" ]
+        }
+      ]
+    }
+  ],
+```
+
+If template engine should not process only part of the file, but other parts should be processed, the conditional processing can be turned off for the section that should not be processed by using directives:
+
+`<!--/-:msbuild-conditional:noEmit -->`
+
+`<!--/+:msbuild-conditional:noEmit -->`
+
+The part `<!--/` is the prefix to use for turning operations on and off in msbuild style files. The name `msbuild-conditional` is the name of the operation to turn on/off. The `-` and `+` near the beginning of these lines indicate that the operation should be turned off, and on, respectively. The `noEmit` part tells templating to not process this line.
+
+For example, consider this modified version of `Directory.Build.props`:
+
+```
+<Project>
+    <PropertyGroup>
+<!--/-:msbuild-conditional:noEmit -->
+        <Foo Condition="'$(OS)' != 'Windows_NT'">Bar</Foo>
+<!--/+:msbuild-conditional:noEmit -->
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Foo Condition="'$(OS)' != 'Windows_NT'">Bar</Foo>
+    </PropertyGroup>
+</Project>
+```
+When invoking the template with the above content in `Directory.Build.props`, the output looks like this:
+```
+<Project>
+    <PropertyGroup>
+        <Foo Condition="'$(OS)' != 'Windows_NT'">Bar</Foo>
+    </PropertyGroup>
+
+    <PropertyGroup>
+    </PropertyGroup>
+</Project>
+```
+The first `<Foo Condition...` is copied as-is because the `msbuild-conditional` processing is turned off for that part of the file. But the second one is not emitted because it is processed, and the condition evaluated to `false`.
 
 ### Related
 
