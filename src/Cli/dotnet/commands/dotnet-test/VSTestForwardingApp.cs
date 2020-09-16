@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli
             return Path.Combine(AppContext.BaseDirectory, VstestAppName);
         }
 
-        private static (bool hasRootVariable, string rootVariableName, string rootValue) GetRootVariable()
+        internal static (bool hasRootVariable, string rootVariableName, string rootValue) GetRootVariable()
         {
             string rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
             bool hasRootVariable = Environment.GetEnvironmentVariable(rootVariableName) != null;

@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             // Set DOTNET_PATH if it isn't already set in the environment as it is required
             // by the testhost which uses the apphost feature (Windows only).
-            var (hasRootVariable, rootVariableName, rootValue) = GetRootVariable();
+            (bool hasRootVariable, string rootVariableName, string rootValue) = VSTestForwardingApp.GetRootVariable();
             if (!hasRootVariable)
             {
                 testCommand.EnvironmentVariable(rootVariableName, rootValue);
@@ -166,15 +166,6 @@ namespace Microsoft.DotNet.Tools.Test
         {
             DefaultHelpViewText.Synopsis.AdditionalArguments = " [[--] <RunSettings arguments>...]]";
             DefaultHelpViewText.AdditionalArgumentsSection = LocalizableStrings.RunSettingsArgumentsDescription;
-        }
-
-        private static (bool hasRootVariable, string rootVariableName, string rootValue) GetRootVariable()
-        {
-            string rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
-            bool hasRootVariable = Environment.GetEnvironmentVariable(rootVariableName) != null;
-            string rootValue = hasRootVariable ? null : Path.GetDirectoryName(new Muxer().MuxerPath);
-
-            return (hasRootVariable, rootVariableName, rootValue);
         }
     }
 }
