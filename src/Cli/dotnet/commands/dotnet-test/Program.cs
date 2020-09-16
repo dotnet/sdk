@@ -108,14 +108,7 @@ namespace Microsoft.DotNet.Tools.Test
                 // one more time, there is no extra hop via msbuild
                 convertedArgs.AddRange(settings);
 
-                // Set DOTNET_PATH if it isn't already set in the environment as it is required
-                // by the testhost which uses the apphost feature (Windows only).
-                var (hasRootVariable, rootVariableName, rootValue) = GetRootVariable();
-                Dictionary<string, string> environmentVariables = hasRootVariable ?
-                    null :
-                    new Dictionary<string, string>() { { rootVariableName, rootValue } };
-
-                return new VSTestForwardingApp(convertedArgs, environmentVariables).Execute();
+                return new VSTestForwardingApp(convertedArgs).Execute();
             }
 
             // Workaround for https://github.com/Microsoft/vstest/issues/1503
