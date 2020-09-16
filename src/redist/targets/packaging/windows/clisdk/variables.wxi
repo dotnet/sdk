@@ -27,7 +27,7 @@
   <?define Program_Files="ProgramFiles64Folder"?>
   <?define Win64AttributeValue=yes?>
   <?elseif $(var.Platform)=arm64?>
-  <?define PlatformToken="arm64"?>
+  <?define PlatformToken="ARM64"?>
   <?define WixQuietExec="WixQuietExec64"?>
   <?define Program_Files="ProgramFiles64Folder"?>
   <?define Win64AttributeValue=yes?>
