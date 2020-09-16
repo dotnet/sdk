@@ -46,6 +46,10 @@
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
 
+      <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/Debug</VSTemplateLocatorLayoutPath>
+      <VSTemplateLocatorNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
+      <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
+
       <!-- Temp directory for light command layouts -->
       <LightCommandObjDir>$(ArtifactsObjDir)/LightCommandPackages</LightCommandObjDir>
       <!-- Directory for the zipped up light command package -->
@@ -197,19 +201,14 @@
     </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="$(SdkMSIInstallerFile)"
+      InstallerFile="$(SdkMSIInstallerFile)"
       WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
       WixSrcFiles="@(SdkMsiWixSrcFiles)">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(LightCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateSdkPlaceholderMsi"
@@ -235,20 +234,15 @@
     </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="$(SdkPlaceholderMSIInstallerFile)"
+      InstallerFile="$(SdkPlaceholderMSIInstallerFile)"
       WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
       WixSrcFiles="@(SdkPlaceholdMsiWixSrcFiles)"
       AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging/windows/clisdk">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(LightCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateTemplatesMsis"
@@ -277,19 +271,14 @@
 
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="%(TemplatesMsiComponent.MSIInstallerFile)"
+      InstallerFile="%(TemplatesMsiComponent.MSIInstallerFile)"
       WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
       WixSrcFiles="@(TemplatesMsiWixSrcFiles)">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(LightCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
   <Target Name="SetupTemplatesMsis">
@@ -382,20 +371,15 @@
     </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="$(CombinedFrameworkSdkHostMSIInstallerFile)"
+      InstallerFile="$(CombinedFrameworkSdkHostMSIInstallerFile)"
       WixExtensions="WixBalExtension;WixUtilExtension;WixTagExtension"
       WixSrcFiles="@(BundleMsiWixSrcFiles)"
       AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging/windows/clisdk">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(LightCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateToolsetNupkg"
@@ -534,6 +518,23 @@
 
   </Target>
 
+  <Target Name="GenerateVSTemplateLocatorNupkg"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
+          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
+          Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
+                    $(VSTemplateLocatorNuspecFile);
+                    $(GenerateNupkgPowershellScript)"
+          Outputs="$(VSTemplateLocatorNupkgFile)">
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ArtifactsDir)' ^
+                      '$(VSTemplateLocatorLayoutPath.TrimEnd('\'))' ^
+                      '$(FullNugetVersion)' ^
+                      '$(VSTemplateLocatorNuspecFile)' ^
+                      '$(VSTemplateLocatorNupkgFile)'" />
+
+  </Target>
+
   <Target Name="GenerateMsis"
         DependsOnTargets="GenerateLayout;
                             MsiTargetsSetupInputOutputs;
@@ -551,7 +552,8 @@
                             GenerateSdkPlaceholderNupkg;
                             GenerateVSToolsNupkg;
                             GenerateVSToolsResolverNupkg;
-                            GenerateSdkMSBuildExtensionsNupkg"
+                            GenerateSdkMSBuildExtensionsNupkg;
+                            GenerateVSTemplateLocatorNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />
 
 
