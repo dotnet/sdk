@@ -12,6 +12,7 @@
                         />
 
     <ProjectReference Include="..\SdkResolver\SdkResolver.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\VSTemplateLocator\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
