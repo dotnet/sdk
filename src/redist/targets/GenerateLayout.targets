@@ -168,29 +168,30 @@
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedSharedFrameworkInstallerFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedSharedFrameworkInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedSharedHostInstallerFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedSharedHostInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedHostFxrInstallerFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedHostFxrInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedNetCoreAppTargetingPackInstallerFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(CoreSetupRootUrl)$(NETCoreAppTargetingPackBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
+      <!-- TODO: Should we somehow obtain a .NET Standard ARM64 package? -->
       <BundledInstallerComponent Include="DownloadedNetStandardTargetingPackInstallerFile"
                            Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(CoreSetupRootUrl)$(NETCoreAppTargetingPackBlobVersion)</BaseUrl>
@@ -199,7 +200,7 @@
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedNetCoreAppHostPackInstallerFile"
-                     Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                     Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedNetCoreAppHostPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
@@ -252,19 +253,19 @@
       </BundledLayoutComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
-                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreTargetingPackBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
-                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxWixLibFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetCoreSharedFxWixLibFileName)</DownloadFileName>
       </BundledInstallerComponent>
@@ -276,7 +277,7 @@
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="AspNetCoreSharedFxBaseRuntimeVersionFile"
-                                 Condition="!$(Architecture.StartsWith('arm'))">
+                                 Condition="!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64'">
         <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobVersion)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxBaseRuntimeVersionFileName)</DownloadFileName>
       </BundledInstallerComponent>
@@ -284,7 +285,7 @@
 
     <PropertyGroup>
       <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' AND '$(Architecture)' == 'arm'">false</IncludeWpfAndWinForms>
-      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT'">true</IncludeWpfAndWinForms>
+      <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT' AND '$(Architecture)' != 'arm64' ">true</IncludeWpfAndWinForms>
       <IncludeWpfAndWinForms Condition=" '$(IncludeWpfAndWinForms)' == '' ">false</IncludeWpfAndWinForms>
     </PropertyGroup>
 

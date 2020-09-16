@@ -63,6 +63,21 @@
     • SDK 설명서 https://aka.ms/dotnet-sdk-docs
     • 릴리스 정보 https://aka.ms/dotnet5-release-notes
     • 자습서 https://aka.ms/dotnet-tutorials</String>
+  <String Id="FirstTimeWelcomeMessageArm64">설치가 완료되었습니다.
+
+다음이 '[DOTNETHOME]'에 설치되었습니다.
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET 런타임 [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core 런타임 [ASPNETCOREVERSION]
+
+이 제품은 사용량 현황 데이터를 수집합니다.
+    • 추가 정보 및 옵트아웃 https://aka.ms/dotnet-cli-telemetry
+
+리소스
+    • .NET 설명서 https://aka.ms/dotnet-docs
+    • SDK 설명서 https://aka.ms/dotnet-sdk-docs
+    • 릴리스 정보 https://aka.ms/dotnet5-release-notes
+    • 자습서 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     .NET SDK는 .NET 애플리케이션을 빌드, 실행 및 테스트하는 데 사용됩니다. 여러 언어, 편집기 및 개발자 도구 중에서 선택하고 대규모 라이브러리 에코시스템을 활용하여 웹, 모바일, 데스크톱, 게임 및 IoT용 앱을 빌드할 수 있습니다. .NET SDK를 유용하게 사용하시길 바랍니다.</String>

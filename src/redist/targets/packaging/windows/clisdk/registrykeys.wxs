@@ -15,6 +15,12 @@
           <RegistryValue Action="write" Name="WpfWinformsTemplates" Type="integer" Value="1" KeyPath="yes"/>
         </RegistryKey>
       </Component>
+      <Component Id="DotnetInstallLocation_arm64" Directory="TARGETDIR" Win64="no">
+        <Condition>VersionNT64 AND DOTNETHOME_ARM64</Condition>
+        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\arm64">
+          <RegistryValue Action="write" Name="InstallLocation" Type="string" Value="[DOTNETHOME_ARM64]" KeyPath="yes"/>
+        </RegistryKey>
+      </Component>
       <Component Id="DotnetInstallLocation_x64" Directory="TARGETDIR" Win64="no">
         <Condition>VersionNT64 AND DOTNETHOME_X64</Condition>
         <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64">
