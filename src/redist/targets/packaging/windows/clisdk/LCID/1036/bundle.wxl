@@ -63,6 +63,21 @@ Ressources
     • Documentation de kit SDK sur https://aka.ms/dotnet-sdk-docs
     • Notes de publication sur https://aka.ms/dotnet5-release-notes
     • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
+  <String Id="FirstTimeWelcomeMessageArm64">L'installation a réussi.
+
+Les éléments suivants ont été installés sur : '[DOTNETHOME]'
+    • Kit SDK .NET [DOTNETSDKVERSION]
+    • Runtime .NET [DOTNETRUNTIMEVERSION]
+    • Runtime ASP.NET Core [ASPNETCOREVERSION]
+
+Ce produit collecte des données d'utilisation
+    • Plus informations et refus d'adhésion sur https://aka.ms/dotnet-cli-telemetry
+
+Ressources
+    • Documentation .NET sur https://aka.ms/dotnet-docs
+    • Documentation de kit SDK sur https://aka.ms/dotnet-sdk-docs
+    • Notes de publication sur https://aka.ms/dotnet5-release-notes
+    • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">SDK .NET</String>
   <String Id="WelcomeDescription">
     Le kit SDK .NET permet de générer, d'exécuter et de tester des applications .NET. Vous pouvez choisir parmi plusieurs langages, éditeurs et outils de développement. De plus, vous pouvez bénéficier d'un vaste écosystème de bibliothèques afin de générer des applications pour le web, les appareils mobiles, les ordinateurs de bureau, les jeux et l'IoT. Nous espérons que vous l'apprécierez !</String>

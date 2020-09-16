@@ -195,7 +195,15 @@
 
   <Fragment>
     <PayloadGroup Id="DotnetCoreBAPayloads">
+      <!-- This theme is dupped with a slight change: It uses a modified version of FirstTimeWelcomeMessageArm64
+      for SuccessInstallHeader to account for ARM64's lack of support for WPF/WinForms. Once they converge, remove
+      this and remove FirstTimeWelcomeMessageArm64 from the wxl files. -->
+      <?if $(var.Platform)=arm64?>
+      <Payload Name="thm.xml" Compressed="yes" SourceFile="bundleArm64.thm" />
+      <?else?>
       <Payload Name="thm.xml" Compressed="yes" SourceFile="bundle.thm" />
+      <?endif?>
+
       <!-- Default/Neutral localized content is US English -->
       <Payload Name="thm.wxl" Compressed="yes" SourceFile="LCID\1033\bundle.wxl" />
       <Payload Name="bg.png" Compressed="yes" SourceFile="..\..\osx\clisdk\resources\dotnetbackground.png" />
