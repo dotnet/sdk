@@ -197,19 +197,14 @@
     </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="$(SdkMSIInstallerFile)"
+      InstallerFile="$(SdkMSIInstallerFile)"
       WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
       WixSrcFiles="@(SdkMsiWixSrcFiles)">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(LightCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateSdkPlaceholderMsi"
@@ -235,20 +230,15 @@
     </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="$(SdkPlaceholderMSIInstallerFile)"
+      InstallerFile="$(SdkPlaceholderMSIInstallerFile)"
       WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
       WixSrcFiles="@(SdkPlaceholdMsiWixSrcFiles)"
       AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging/windows/clisdk">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(LightCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateTemplatesMsis"
@@ -277,19 +267,14 @@
 
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="%(TemplatesMsiComponent.MSIInstallerFile)"
+      InstallerFile="%(TemplatesMsiComponent.MSIInstallerFile)"
       WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
       WixSrcFiles="@(TemplatesMsiWixSrcFiles)">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(LightCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
   <Target Name="SetupTemplatesMsis">
@@ -379,20 +364,15 @@
     </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
       NoLogo="true"
       Cultures="en-us"
-      Out="$(CombinedFrameworkSdkHostMSIInstallerFile)"
+      InstallerFile="$(CombinedFrameworkSdkHostMSIInstallerFile)"
       WixExtensions="WixBalExtension;WixUtilExtension;WixTagExtension"
       WixSrcFiles="@(BundleMsiWixSrcFiles)"
       AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging/windows/clisdk">
-      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-    <MakeDir Directories="$(LightCommandPackagesDir)" />
-
-    <ZipDirectory
-      DestinationFile="$(LightCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
-      SourceDirectory="$(LightCommandObjDir)/$(_LightCommandPackageNameOutput)"
-      Overwrite="true" />
   </Target>
 
   <Target Name="GenerateToolsetNupkg"
