@@ -350,6 +350,38 @@ End Class", GetBasicResultAt(3, 22));
         End Class");
         }
 
+        [Fact, WorkItem(4149, "https://github.com/dotnet/roslyn-analyzers/issues/4149")]
+        public async Task TypeWithStructLayoutAttribute_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
+
+[StructLayout(LayoutKind.Sequential)]
+public class C
+{
+    public int F;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public struct S
+{
+    public int F;
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
+
+<StructLayout(LayoutKind.Sequential)>
+Public Class C
+    Public F As Integer
+End Class
+
+<StructLayout(LayoutKind.Sequential)>
+Public Structure S
+    Public F As Integer
+End Structure");
+        }
+
         [Theory, WorkItem(4149, "https://github.com/dotnet/roslyn-analyzers/issues/4149")]
         [InlineData("")]
         [InlineData("dotnet_code_quality.exclude_structs = true")]
