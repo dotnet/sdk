@@ -137,45 +137,42 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                 if (argumentOperation != null)
                                 {
-                                    var cfg = invocationOperation.GetTopmostParentBlock()?.GetEnclosingControlFlowGraph();
-                                    if (cfg == null)
+                                    if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
                                     {
-                                        return;
+                                        var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
+                                                                                operationBlockStartContext.Options,
+                                                                                SupportedDiagnostics,
+                                                                                operationAnalysisContext.Operation.Syntax.SyntaxTree,
+                                                                                operationBlockStartContext.Compilation,
+                                                                                defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
+                                                                                cancellationToken: operationBlockStartContext.CancellationToken,
+                                                                                defaultMaxInterproceduralMethodCallChain: 1);
+                                        var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(
+                                                                        cfg,
+                                                                        owningSymbol,
+                                                                        operationBlockStartContext.Options,
+                                                                        wellKnownTypeProvider,
+                                                                        PointsToAnalysisKind.Complete,
+                                                                        interproceduralAnalysisConfig,
+                                                                        interproceduralAnalysisPredicate: null,
+                                                                        false);
+                                        if (pointsToAnalysisResult == null)
+                                        {
+                                            return;
+                                        }
+
+                                        var pointsToAbstractValue = pointsToAnalysisResult[argumentOperation.Kind, argumentOperation.Syntax];
+
+                                        if (pointsToAbstractValue.NullState != NullAbstractValue.Null)
+                                        {
+                                            return;
+                                        }
                                     }
 
-                                    var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
-                                                                            operationBlockStartContext.Options,
-                                                                            SupportedDiagnostics,
-                                                                            operationAnalysisContext.Operation.Syntax.SyntaxTree,
-                                                                            operationBlockStartContext.Compilation,
-                                                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
-                                                                            cancellationToken: operationBlockStartContext.CancellationToken,
-                                                                            defaultMaxInterproceduralMethodCallChain: 1);
-                                    var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(
-                                                                    cfg,
-                                                                    owningSymbol,
-                                                                    operationBlockStartContext.Options,
-                                                                    wellKnownTypeProvider,
-                                                                    PointsToAnalysisKind.Complete,
-                                                                    interproceduralAnalysisConfig,
-                                                                    interproceduralAnalysisPredicate: null,
-                                                                    false);
-                                    if (pointsToAnalysisResult == null)
-                                    {
-                                        return;
-                                    }
-
-                                    var pointsToAbstractValue = pointsToAnalysisResult[argumentOperation.Kind, argumentOperation.Syntax];
-
-                                    if (pointsToAbstractValue.NullState != NullAbstractValue.Null)
-                                    {
-                                        return;
-                                    }
+                                    operationAnalysisContext.ReportDiagnostic(
+                                                invocationOperation.CreateDiagnostic(
+                                                    Rule));
                                 }
-
-                                operationAnalysisContext.ReportDiagnostic(
-                                            invocationOperation.CreateDiagnostic(
-                                                Rule));
                             }
                         }
                     }, OperationKind.Invocation);
