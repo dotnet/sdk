@@ -87,92 +87,104 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            if (!(methodSymbol.ContainingSymbol is ITypeSymbol typeSymbol) || methodSymbol.MethodKind != MethodKind.UserDefinedOperator && methodSymbol.MethodKind != MethodKind.Conversion)
+            if (methodSymbol.ContainingSymbol is ITypeSymbol typeSymbol && (methodSymbol.MethodKind == MethodKind.UserDefinedOperator || methodSymbol.MethodKind == MethodKind.Conversion))
             {
-                return;
-            }
-
-            string operatorName = methodSymbol.Name;
-            if (IsPropertyExpected(operatorName) && operatorName != OpFalseText)
-            {
-                // don't report a diagnostic on the `op_False` method because then the user would see two diagnostics for what is really one error
-                // special-case looking for `IsTrue` instance property
-                // named properties can't be overloaded so there will only ever be 0 or 1
-                IPropertySymbol property = typeSymbol.GetMembers(IsTrueText).OfType<IPropertySymbol>().FirstOrDefault();
-                if (property == null || property.Type.SpecialType != SpecialType.System_Boolean)
+                string operatorName = methodSymbol.Name;
+                if (IsPropertyExpected(operatorName) && operatorName != OpFalseText)
                 {
-                    symbolContext.ReportDiagnostic(CreateDiagnostic(PropertyRule, methodSymbol, AddAlternateText, IsTrueText, operatorName));
+                    // don't report a diagnostic on the `op_False` method because then the user would see two diagnostics for what is really one error
+                    // special-case looking for `IsTrue` instance property
+                    // named properties can't be overloaded so there will only ever be 0 or 1
+                    IPropertySymbol property = typeSymbol.GetMembers(IsTrueText).OfType<IPropertySymbol>().FirstOrDefault();
+                    if (property == null || property.Type.SpecialType != SpecialType.System_Boolean)
+                    {
+                        symbolContext.ReportDiagnostic(CreateDiagnostic(PropertyRule, GetSymbolLocation(methodSymbol), AddAlternateText, IsTrueText, operatorName));
+                    }
+                    else if (!property.IsPublic())
+                    {
+                        symbolContext.ReportDiagnostic(CreateDiagnostic(VisibilityRule, GetSymbolLocation(property), FixVisibilityText, IsTrueText, operatorName));
+                    }
                 }
-                else if (!property.IsPublic())
+                else
                 {
-                    symbolContext.ReportDiagnostic(CreateDiagnostic(VisibilityRule, property, FixVisibilityText, IsTrueText, operatorName));
+                    ExpectedAlternateMethodGroup? expectedGroup = GetExpectedAlternateMethodGroup(operatorName, methodSymbol.ReturnType, methodSymbol.Parameters.FirstOrDefault()?.Type);
+                    if (expectedGroup == null)
+                    {
+                        // no alternate methods required
+                        return;
+                    }
+
+                    var matchedMethods = new List<IMethodSymbol>();
+                    var unmatchedMethods = new HashSet<string>() { expectedGroup.AlternateMethod1 };
+                    if (expectedGroup.AlternateMethod2 != null)
+                    {
+                        unmatchedMethods.Add(expectedGroup.AlternateMethod2);
+                    }
+
+                    foreach (IMethodSymbol candidateMethod in typeSymbol.GetMembers().OfType<IMethodSymbol>())
+                    {
+                        if (candidateMethod.Name == expectedGroup.AlternateMethod1 || candidateMethod.Name == expectedGroup.AlternateMethod2)
+                        {
+                            // found an appropriately-named method
+                            matchedMethods.Add(candidateMethod);
+                            unmatchedMethods.Remove(candidateMethod.Name);
+                        }
+                    }
+
+                    // only one public method match is required
+                    if (matchedMethods.Any(m => m.IsPublic()))
+                    {
+                        // at least one public alternate method was found, do nothing
+                    }
+                    else
+                    {
+                        // either we found at least one method that should be public or we didn't find anything
+                        IMethodSymbol notPublicMethod = matchedMethods.FirstOrDefault(m => !m.IsPublic());
+                        if (notPublicMethod != null)
+                        {
+                            // report error for improper visibility directly on the method itself
+                            symbolContext.ReportDiagnostic(CreateDiagnostic(VisibilityRule, GetSymbolLocation(notPublicMethod), FixVisibilityText, notPublicMethod.Name, operatorName));
+                        }
+                        else
+                        {
+                            // report error for missing methods on the operator overload
+                            if (expectedGroup.AlternateMethod2 == null)
+                            {
+                                // only one alternate expected
+                                symbolContext.ReportDiagnostic(CreateDiagnostic(DefaultRule, GetSymbolLocation(methodSymbol), AddAlternateText, expectedGroup.AlternateMethod1, operatorName));
+                            }
+                            else
+                            {
+                                // one of two alternates expected
+                                symbolContext.ReportDiagnostic(CreateDiagnostic(MultipleRule, GetSymbolLocation(methodSymbol), AddAlternateText, expectedGroup.AlternateMethod1, expectedGroup.AlternateMethod2, operatorName));
+                            }
+                        }
+                    }
                 }
-
-                return;
-            }
-
-            ExpectedAlternateMethodGroup? expectedGroup = GetExpectedAlternateMethodGroup(operatorName, methodSymbol.ReturnType, methodSymbol.Parameters.FirstOrDefault()?.Type);
-            if (expectedGroup == null)
-            {
-                // no alternate methods required
-                return;
-            }
-
-            var matchedMethods = new List<IMethodSymbol>();
-            var unmatchedMethods = new HashSet<string>() { expectedGroup.AlternateMethod1 };
-            if (expectedGroup.AlternateMethod2 != null)
-            {
-                unmatchedMethods.Add(expectedGroup.AlternateMethod2);
-            }
-
-            foreach (IMethodSymbol candidateMethod in typeSymbol.GetMembers().OfType<IMethodSymbol>())
-            {
-                if (candidateMethod.Name == expectedGroup.AlternateMethod1 || candidateMethod.Name == expectedGroup.AlternateMethod2)
-                {
-                    // found an appropriately-named method
-                    matchedMethods.Add(candidateMethod);
-                    unmatchedMethods.Remove(candidateMethod.Name);
-                }
-            }
-
-            // only one public method match is required
-            if (matchedMethods.Any(m => m.IsPublic()))
-            {
-                // at least one public alternate method was found, do nothing
-                return;
-            }
-
-            // either we found at least one method that should be public or we didn't find anything
-            IMethodSymbol notPublicMethod = matchedMethods.FirstOrDefault(m => !m.IsPublic());
-            if (notPublicMethod != null)
-            {
-                // report error for improper visibility directly on the method itself
-                symbolContext.ReportDiagnostic(CreateDiagnostic(VisibilityRule, notPublicMethod, FixVisibilityText, notPublicMethod.Name, operatorName));
-                return;
-            }
-
-            // report error for missing methods on the operator overload
-            if (expectedGroup.AlternateMethod2 == null)
-            {
-                // only one alternate expected
-                symbolContext.ReportDiagnostic(CreateDiagnostic(DefaultRule, methodSymbol, AddAlternateText, expectedGroup.AlternateMethod1, operatorName));
-            }
-            else
-            {
-                // one of two alternates expected
-                symbolContext.ReportDiagnostic(CreateDiagnostic(MultipleRule, methodSymbol, AddAlternateText, expectedGroup.AlternateMethod1, expectedGroup.AlternateMethod2, operatorName));
             }
         }
 
-        private static Diagnostic CreateDiagnostic(DiagnosticDescriptor descriptor, ISymbol symbol, string kind, params string[] messageArgs) 
-            => symbol.CreateDiagnostic(descriptor, ImmutableDictionary.Create<string, string?>().Add(DiagnosticKindText, kind), messageArgs);
+        private static Location GetSymbolLocation(ISymbol symbol)
+        {
+            return symbol.OriginalDefinition.Locations.First();
+        }
+
+        private static Diagnostic CreateDiagnostic(DiagnosticDescriptor descriptor, Location location, string kind, params string[] messageArgs)
+        {
+            return Diagnostic.Create(descriptor, location, ImmutableDictionary.Create<string, string>().Add(DiagnosticKindText, kind), messageArgs);
+        }
 
         internal static bool IsPropertyExpected(string operatorName)
-            => operatorName switch
+        {
+            switch (operatorName)
             {
-                OpTrueText => true,
-                _ => false,
-            };
+                case OpTrueText:
+                case OpFalseText:
+                    return true;
+                default:
+                    return false;
+            }
+        }
 
         internal static ExpectedAlternateMethodGroup? GetExpectedAlternateMethodGroup(string operatorName, ITypeSymbol returnType, ITypeSymbol? parameterType)
         {
@@ -180,31 +192,88 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             // the most common case; create a static method with the already specified types
             static ExpectedAlternateMethodGroup createSingle(string methodName) => new ExpectedAlternateMethodGroup(methodName);
-            return operatorName switch
+            switch (operatorName)
             {
-                "op_Addition" => createSingle("Add"),
-                "op_BitwiseAnd" => createSingle("BitwiseAnd"),
-                "op_BitwiseOr" => createSingle("BitwiseOr"),
-                "op_Decrement" => createSingle("Decrement"),
-                "op_Division" => createSingle("Divide"),
-                "op_Equality" => createSingle("Equals"),
-                "op_ExclusiveOr" => createSingle("Xor"),
-                "op_GreaterThan" => new ExpectedAlternateMethodGroup(alternateMethod1: "CompareTo", alternateMethod2: "Compare"),
-                "op_Increment" => createSingle("Increment"),
-                "op_LeftShift" => createSingle("LeftShift"),
-                "op_LogicalAnd" => createSingle("LogicalAnd"),
-                "op_LogicalOr" => createSingle("LogicalOr"),
-                "op_LogicalNot" => createSingle("LogicalNot"),
-                "op_Modulus" => new ExpectedAlternateMethodGroup(alternateMethod1: "Mod", alternateMethod2: "Remainder"),
-                "op_MultiplicationAssignment" => createSingle("Multiply"),
-                "op_OnesComplement" => createSingle("OnesComplement"),
-                "op_RightShift" => createSingle("RightShift"),
-                "op_Subtraction" => createSingle("Subtract"),
-                "op_UnaryNegation" => createSingle("Negate"),
-                "op_UnaryPlus" => createSingle("Plus"),
-                "op_Implicit" => new ExpectedAlternateMethodGroup(alternateMethod1: $"To{returnType.Name}", alternateMethod2: parameterType != null ? $"From{parameterType.Name}" : null),
-                _ => null,
-            };
+                case "op_Addition":
+                case "op_AdditonAssignment":
+                    return createSingle("Add");
+                case "op_BitwiseAnd":
+                case "op_BitwiseAndAssignment":
+                    return createSingle("BitwiseAnd");
+                case "op_BitwiseOr":
+                case "op_BitwiseOrAssignment":
+                    return createSingle("BitwiseOr");
+                case "op_Decrement":
+                    return createSingle("Decrement");
+                case "op_Division":
+                case "op_DivisionAssignment":
+                    return createSingle("Divide");
+                case "op_Equality":
+                case "op_Inequality":
+                    return createSingle("Equals");
+                case "op_ExclusiveOr":
+                case "op_ExclusiveOrAssignment":
+                    return createSingle("Xor");
+                case "op_GreaterThan":
+                case "op_GreaterThanOrEqual":
+                case "op_LessThan":
+                case "op_LessThanOrEqual":
+                    return new ExpectedAlternateMethodGroup(alternateMethod1: "CompareTo", alternateMethod2: "Compare");
+                case "op_Increment":
+                    return createSingle("Increment");
+                case "op_LeftShift":
+                case "op_LeftShiftAssignment":
+                    return createSingle("LeftShift");
+                case "op_LogicalAnd":
+                    return createSingle("LogicalAnd");
+                case "op_LogicalOr":
+                    return createSingle("LogicalOr");
+                case "op_LogicalNot":
+                    return createSingle("LogicalNot");
+                case "op_Modulus":
+                case "op_ModulusAssignment":
+                    return new ExpectedAlternateMethodGroup(alternateMethod1: "Mod", alternateMethod2: "Remainder");
+                case "op_MultiplicationAssignment":
+                case "op_Multiply":
+                    return createSingle("Multiply");
+                case "op_OnesComplement":
+                    return createSingle("OnesComplement");
+                case "op_RightShift":
+                case "op_RightShiftAssignment":
+                case "op_SignedRightShift":
+                case "op_UnsignedRightShift":
+                case "op_UnsignedRightShiftAssignment":
+                    return createSingle("RightShift");
+                case "op_Subtraction":
+                case "op_SubtractionAssignment":
+                    return createSingle("Subtract");
+                case "op_UnaryNegation":
+                    return createSingle("Negate");
+                case "op_UnaryPlus":
+                    return createSingle("Plus");
+                case "op_Implicit":
+                case "op_Explicit":
+                    return new ExpectedAlternateMethodGroup(alternateMethod1: $"To{GetTypeName(returnType)}", alternateMethod2: parameterType != null ? $"From{GetTypeName(parameterType)}" : null);
+                default:
+                    return null;
+            }
+
+            static string GetTypeName(ITypeSymbol typeSymbol)
+            {
+                if (typeSymbol.TypeKind != TypeKind.Array)
+                {
+                    return typeSymbol.Name;
+                }
+
+                var elementType = typeSymbol;
+                do
+                {
+                    elementType = ((IArrayTypeSymbol)elementType).ElementType;
+                }
+                while (elementType.TypeKind == TypeKind.Array);
+
+                return elementType.Name + "Array";
+            }
         }
 
         internal class ExpectedAlternateMethodGroup
