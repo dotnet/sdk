@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -379,6 +380,44 @@ End Class
 Public Structure S
     Public F As Integer
 End Structure");
+        }
+
+        [Theory, WorkItem(4149, "https://github.com/dotnet/roslyn-analyzers/issues/4149")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.exclude_structs = true")]
+        [InlineData("dotnet_code_quality.exclude_structs = false")]
+        [InlineData("dotnet_code_quality.CA1051.exclude_structs = true")]
+        [InlineData("dotnet_code_quality.CA1051.exclude_structs = false")]
+        public async Task PublicFieldOnStruct_AnalyzerOption(string editorConfigText)
+        {
+            var expectsIssue = !editorConfigText.EndsWith("true", StringComparison.OrdinalIgnoreCase);
+
+            var csharpCode = @"
+public struct S
+{
+    public int " + (expectsIssue ? "[|F|]" : "F") + @";
+}";
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { csharpCode },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
+
+            var vbCode = @"
+Public Structure S
+    Public " + (expectsIssue ? "[|F|]" : "F") + @" As Integer
+End Structure";
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { vbCode },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

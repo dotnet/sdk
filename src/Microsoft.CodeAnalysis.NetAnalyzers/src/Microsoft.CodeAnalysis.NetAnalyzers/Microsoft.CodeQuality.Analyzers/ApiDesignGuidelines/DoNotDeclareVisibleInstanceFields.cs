@@ -61,6 +61,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
+                    var excludeStructs = symbolAnalysisContext.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeStructs, Rule,
+                        field, symbolAnalysisContext.Compilation, defaultValue: false, symbolAnalysisContext.CancellationToken);
+                    if (excludeStructs &&
+                        field.ContainingType?.TypeKind == TypeKind.Struct)
+                    {
+                        return;
+                    }
+
                     // Additionally, by default only report externally visible fields for FxCop compat.
                     if (field.MatchesConfiguredVisibility(symbolAnalysisContext.Options, Rule, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
                     {
