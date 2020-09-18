@@ -29,7 +29,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static async Task<int> Main(string[] args)
         {
             var rootCommand = FormatCommand.CreateCommandLineOptions();
-            rootCommand.Handler = CommandHandler.Create(typeof(Program).GetMethod(nameof(Run))!);
+            rootCommand.Handler = CommandHandler.Create(new FormatCommand.Handler(Run));
 
             // Parse the incoming args so we can give warnings when deprecated options are used.
             s_parseResult = rootCommand.Parse(args);

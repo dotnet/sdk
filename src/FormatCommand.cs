@@ -4,16 +4,34 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.CodeAnalysis.Tools
 {
     internal static class FormatCommand
     {
+        // This delegate should be kept in Sync with the FormatCommand options and arguement names
+        // so that values bind correctly.
+        internal delegate Task<int> Handler(
+            string? workspace,
+            bool folder,
+            bool fixWhitespace,
+            string? fixStyle,
+            string? fixAnalyzers,
+            string? verbosity,
+            bool check,
+            string[] include,
+            string[] exclude,
+            string? report,
+            bool includeGenerated,
+            IConsole console);
+
         internal static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
         internal static string[] SeverityLevels => new[] { FixSeverity.Info, FixSeverity.Warn, FixSeverity.Error };
 
         internal static RootCommand CreateCommandLineOptions()
         {
+            // Sync changes to option and argument names with the FormatCommant.Handler above.
             var rootCommand = new RootCommand
             {
                 new Argument<string?>("workspace")
