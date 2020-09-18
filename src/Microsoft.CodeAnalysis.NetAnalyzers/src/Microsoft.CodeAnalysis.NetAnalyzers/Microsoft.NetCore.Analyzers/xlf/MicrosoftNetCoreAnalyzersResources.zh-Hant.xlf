@@ -2248,33 +2248,33 @@
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXml">
-        <source>Use XmlReader For DataSet Read Xml</source>
-        <target state="translated">請為讀取資料集 XML 使用 XmlReader</target>
+        <source>Use XmlReader for 'DataSet.ReadXml()'</source>
+        <target state="needs-review-translation">請為讀取資料集 XML 使用 XmlReader</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDeserialize">
-        <source>Use XmlReader For Deserialize</source>
-        <target state="translated">請為還原序列化使用 XmlReader</target>
+        <source>Use XmlReader for 'XmlSerializer.Deserialize()'</source>
+        <target state="needs-review-translation">請為還原序列化使用 XmlReader</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForSchemaRead">
-        <source>Use XmlReader For Schema Read</source>
-        <target state="translated">請為讀取結構描述使用 XmlReader</target>
+        <source>Use XmlReader for 'XmlSchema.Read()'</source>
+        <target state="needs-review-translation">請為讀取結構描述使用 XmlReader</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForValidatingReader">
-        <source>Use XmlReader For Validating Reader</source>
-        <target state="translated">請為驗證讀取器使用 XmlReader</target>
+        <source>Use XmlReader for XmlValidatingReader constructor</source>
+        <target state="needs-review-translation">請為驗證讀取器使用 XmlReader</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForXPathDocument">
-        <source>Use XmlReader For XPathDocument</source>
-        <target state="translated">請為 XPathDocument 使用 XmlReader</target>
+        <source>Use XmlReader for XPathDocument constructor</source>
+        <target state="needs-review-translation">請為 XPathDocument 使用 XmlReader</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderMessage">
-        <source>This overload of the {0}.{1} method is potentially unsafe, use an overload that takes a XmlReader instance instead</source>
-        <target state="translated">{0}.{1} 方法的此多載有可能不安全，請改為使用接受 XmlReader 執行個體的多載</target>
+        <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
+        <target state="needs-review-translation">{0}.{1} 方法的此多載有可能不安全，請改為使用接受 XmlReader 執行個體的多載</target>
         <note />
       </trans-unit>
     </body>
