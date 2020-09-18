@@ -40,9 +40,9 @@ namespace Microsoft.CodeAnalysis.Tools
         public static async Task<int> Run(
             string? workspace,
             bool folder,
-            bool whitespace,
-            string? style,
-            string? analyzers,
+            bool fixWhitespace,
+            string? fixStyle,
+            string? fixAnalyzers,
             string? verbosity,
             bool check,
             string[] include,
@@ -143,7 +143,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     fixType |= FixCategory.Analyzers;
                 }
 
-                if (fixType == FixCategory.None || whitespace)
+                if (fixType == FixCategory.None || fixWhitespace)
                 {
                     fixType |= FixCategory.Whitespace;
                 }
@@ -155,8 +155,8 @@ namespace Microsoft.CodeAnalysis.Tools
                     workspaceType,
                     logLevel,
                     fixType,
-                    codeStyleSeverity: GetSeverity(style ?? FixSeverity.Error),
-                    analyzerSeverity: GetSeverity(analyzers ?? FixSeverity.Error),
+                    codeStyleSeverity: GetSeverity(fixStyle ?? FixSeverity.Error),
+                    analyzerSeverity: GetSeverity(fixAnalyzers ?? FixSeverity.Error),
                     saveFormattedFiles: !check,
                     changesAreErrors: check,
                     fileMatcher,
