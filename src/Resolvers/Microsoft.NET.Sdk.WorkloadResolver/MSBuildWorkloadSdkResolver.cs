@@ -8,7 +8,7 @@ using System.Linq;
 #if NET
 using Microsoft.DotNet.Cli;
 #else
-using Microsoft.DotNet.MSBuildSdkResolver;
+using Microsoft.DotNet.DotNetSdkResolver;
 #endif
 
 namespace Microsoft.NET.Sdk.WorkloadResolver

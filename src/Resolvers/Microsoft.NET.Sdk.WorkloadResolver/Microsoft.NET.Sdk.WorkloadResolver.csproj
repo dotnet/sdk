@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <ProjectReference Include="..\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.SdkResolver\Microsoft.DotNet.SdkResolver.csproj" />
   </ItemGroup>
 
   <Target Name="WriteFullFrameworkResolverManifest" AfterTargets="AfterBuild" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
