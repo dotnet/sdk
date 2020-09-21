@@ -3443,6 +3443,52 @@ class Test
             await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5");
         }
 
+        [Fact, WorkItem(4182, "https://github.com/dotnet/roslyn-analyzers/issues/4182")]
+        public async Task LoopWithinGuardCheck()
+        {
+            var source = @"
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+
+namespace Repro
+{
+    public static partial class ProcessExtensions
+    {
+        public static int? GetParentProcessId(this Process process)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                foreach (var entry in GetProcesses())
+                {
+                }
+            }
+            else
+            {
+                string line = """";
+                while (true)
+                {
+                    if (line.StartsWith("""", StringComparison.Ordinal))
+                    {
+                        if (true)
+                        {
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        [SupportedOSPlatform(""windows"")]
+        public static IEnumerable<int> GetProcesses() => throw null;
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
         [Fact(Skip = "TODO: Analysis value not returned, needs to be fixed")]
         public async Task InterproceduralAnalysisTest_LogicalOr()
         {
