@@ -10,6 +10,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Always run on the latest runtime installed. -->
+    <RuntimeFrameworkVersion>2.1.0-rc1</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 

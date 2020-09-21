@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             _output = output;
 
             testProjectsPathFixture.SetCurrentDirectory();
-            msBuildFixture.RegisterInstance(_output);
+            msBuildFixture.RegisterInstance();
 
             // For NetStandard projects to resolve framework references, the project.assets.json files must
             // be constructed by a NuGet restore.
@@ -528,8 +528,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                     : WorkspaceType.Project;
             }
 
-            var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
             var logger = new TestLogger();
+            logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, Program.GetRuntimeVersion());
+            logger.LogTrace(Resources.Using_msbuildexe_located_in_0, MSBuildFixture.MSBuildPath);
+
+            var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
             var formatOptions = new FormatOptions(
                 workspacePath,
                 workspaceType,

@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Tools.MSBuild;
-using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
@@ -15,15 +14,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
     {
         private static int s_registered;
 
-        public void RegisterInstance(ITestOutputHelper output)
+        public static string MSBuildPath { get; private set; }
+
+
+        public void RegisterInstance()
         {
             if (Interlocked.Exchange(ref s_registered, 1) == 0)
             {
                 var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances().First();
 
-                output.WriteLine(Resources.Using_msbuildexe_located_in_0, msBuildInstance.MSBuildPath);
+                MSBuildPath = msBuildInstance.MSBuildPath;
 
-                LooseVersionAssemblyLoader.Register(msBuildInstance.MSBuildPath);
+                LooseVersionAssemblyLoader.Register(MSBuildPath);
                 Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
             }
         }

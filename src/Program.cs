@@ -288,7 +288,7 @@ namespace Microsoft.CodeAnalysis.Tools
             }
         }
 
-        private static string GetRuntimeVersion()
+        internal static string GetRuntimeVersion()
         {
             var pathParts = typeof(string).Assembly.Location.Split('\\', '/');
             var netCoreAppIndex = Array.IndexOf(pathParts, "Microsoft.NETCore.App");
