@@ -262,8 +262,9 @@ $@"<Project>
     This property group prevents the rule ids implemented in this package to be bumped to errors when
     the 'CodeAnalysisTreatWarningsAsErrors' = 'false'.
   -->
-  <PropertyGroup Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);{allRuleIds}</WarningsNotAsErrors>
+  <PropertyGroup>
+    <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
+    <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
   </PropertyGroup>";
             }
 
