@@ -137,7 +137,6 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                 if (argumentOperation != null)
                                 {
-
                                     if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
                                     {
                                         var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
@@ -168,12 +167,16 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         {
                                             return;
                                         }
-
-                                        operationAnalysisContext.ReportDiagnostic(
-                                            invocationOperation.CreateDiagnostic(
-                                                Rule));
+                                    }
+                                    else
+                                    {
+                                        return;
                                     }
                                 }
+
+                                operationAnalysisContext.ReportDiagnostic(
+                                    invocationOperation.CreateDiagnostic(
+                                        Rule));
                             }
                         }
                     }, OperationKind.Invocation);
