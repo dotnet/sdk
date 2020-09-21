@@ -2867,7 +2867,7 @@ public class Test
                         @"
 public class Test
 {
-    bool M(int input, object t)
+    void M(int input, object t)
     {
         var x = t?.ToString();
 
@@ -2875,27 +2875,15 @@ public class Test
         switch ((bool)t)
         {
             case not true:
-                result = t == false;
-                break;
-            default:
-                result = t == true;
+                result = (bool)t == false;  // Consider: this should report a diagnostic
                 break;
         }
-
-        return result;
     }
 }
 "
                     }
                 },
-                LanguageVersion = CSharpLanguageVersion.CSharp9,
-                ExpectedDiagnostics =
-                {
-                    // Test0.cs(22,26): warning CA1508: 't == false' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-                    GetCSharpResultAt(22, 26, "t == false", "true"),
-                    // Test0.cs(25,26): warning CA1508: 't == true' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-                    GetCSharpResultAt(25, 26, "t == true", "true")
-                }
+                LanguageVersion = CSharpLanguageVersion.CSharp9
             }.RunAsync();
         }
 
