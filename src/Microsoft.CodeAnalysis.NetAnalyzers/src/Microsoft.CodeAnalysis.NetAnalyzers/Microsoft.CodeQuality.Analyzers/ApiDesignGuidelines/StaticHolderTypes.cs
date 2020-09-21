@@ -27,7 +27,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// even though the title of CA1053 is "Static holder types should not have constructors".
     /// Like FxCop, this analyzer does emit a diagnostic when the type has a private default
     /// constructor, even though the documentation of CA1053 says it should only trigger for public
-    /// or protected default constructor. Like FxCop, this analyzer does not emit a diagnostic when 
+    /// or protected default constructor. Like FxCop, this analyzer does not emit a diagnostic when
     /// class has a base class, however the diagnostic is emitted if class supports empty interface.
     /// </para>
     /// <para>
@@ -73,13 +73,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
             var symbol = (INamedTypeSymbol)context.Symbol;
+
             if (!symbol.IsStatic &&
-                symbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken) &&
+                !symbol.IsAbstract &&
+                !IsSealedAndVisualBasic(symbol) &&
                 symbol.IsStaticHolderType() &&
-                !symbol.IsAbstract)
+                symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
             {
                 context.ReportDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name));
             }
+
+            static bool IsSealedAndVisualBasic(INamedTypeSymbol symbol)
+                => symbol.IsSealed && symbol.Language == LanguageNames.VisualBasic;
         }
     }
 }

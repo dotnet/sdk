@@ -77,9 +77,8 @@ using Microsoft.WindowsAzure.Storage.Blob;
 class TestClass
 {
     public string SAS { get; } = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, null, null, null);
-}"
-            /* ,  GetCSharpResultAt(8, 34)    // Can't find a CFG in 2.9.x => don't report */
-            );
+}",
+            GetCSharpResultAt(8, 34));
         }
 
         [Fact]
@@ -93,9 +92,8 @@ using Microsoft.WindowsAzure.Storage.Blob;
 class TestClass
 {
     public string SAS = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, null, null, null);
-}"
-            /*, GetCSharpResultAt(8, 25)    // Can't find a CFG in 2.9.x => don't report */
-            );
+}",
+            GetCSharpResultAt(8, 25));
         }
 
         [Fact]
@@ -357,7 +355,7 @@ class TestClass
         [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality." + UseContainerLevelAccessPolicy.DiagnosticId + ".excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)

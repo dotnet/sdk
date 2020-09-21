@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
     {
         protected override SyntaxNode? GetFieldDeclaration(SyntaxNode syntaxNode)
         {
-            while (syntaxNode != null && !(syntaxNode is FieldDeclarationSyntax))
+            while (syntaxNode is not null and not FieldDeclarationSyntax)
             {
                 syntaxNode = syntaxNode.Parent;
             }

@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
-        <source>Assigning symbol and its member in the same statement.</source>
-        <target state="translated">Přiřazení symbolu a jeho členu v témže příkazu</target>
+        <source>Assigning symbol and its member in the same statement</source>
+        <target state="needs-review-translation">Přiřazení symbolu a jeho členu v témže příkazu</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -52,19 +52,154 @@
         <target state="translated">Názvy asynchronních metod mají končit na Async.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
+        <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
+        <target state="translated">Čím více parametrů typů obecný typ obsahuje, tím obtížnější bude vědět a zapamatovat si, co jednotlivé parametry typů představují.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
+        <source>Consider a design where '{0}' has no more than {1} type parameters</source>
+        <target state="needs-review-translation">Zvažte návrh, kde {0} nemá více než tento počet parametrů typu: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
+        <source>Avoid excessive parameters on generic types</source>
+        <target state="translated">Vyhněte se nadbytečným parametrům na obecných typech</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
+        <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
+        <target state="translated">Nepřiřazujte vlastnost v její metodě setter. Toto volání může způsobit nekonečnou rekurzi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageSure">
+        <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
+        <target state="translated">Nepřiřazujte vlastnost v její metodě setter. Toto volání způsobí nekonečnou rekurzi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionTitle">
+        <source>Avoid infinite recursion</source>
+        <target state="translated">Zabránit nekonečné rekurzi</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersDescription">
+        <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
+        <target state="translated">Předávání typů podle odkazu (jako out nebo ref) vyžaduje zkušenost s ukazateli, porozumění rozdílu mezi hodnotovými a odkazovými typy a obeznámenost s metodami s více návratovými hodnotami. Navíc není široce rozšířeno chápání rozdílu mezi parametry out a ref.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersMessage">
+        <source>Avoid 'out' parameters as they are not designed for general audience</source>
+        <target state="needs-review-translation">Nenastavujte parametry out, protože nejsou určené pro širokou cílovou skupinu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersTitle">
+        <source>Avoid out parameters</source>
+        <target state="translated">Vyhněte se výstupním parametrům</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
         <target state="translated">Obecná výjimka, třeba System.Exception, System.SystemException, nebo nepovolený typ výjimky se zachytávají příkazem catch nebo se používá obecná klauzule catch. Obecné a nepovolené výjimky by se neměly zachytávat.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
-        <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="translated">Pokud chcete zachytit konkrétnější povolený typ výjimky, upravte {0} nebo výjimku vyvolejte znovu.</target>
+        <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception</source>
+        <target state="needs-review-translation">Pokud chcete zachytit konkrétnější povolený typ výjimky, upravte {0} nebo výjimku vyvolejte znovu.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
         <source>Do not catch general exception types</source>
         <target state="translated">Nezachytávejte obecné typy výjimek</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesDescription">
+        <source>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</source>
+        <target state="translated">Typy deklarují chráněné členy, aby dědící typy k nim měly přístup nebo je mohly přepisovat. Z definice plyne, že ze zapečetěného typu není možné dědit, což znamená, že chráněné metody zapečetěných typů není možné volat.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
+        <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'</source>
+        <target state="needs-review-translation">{0} je nový chráněný člen ve třídě NonInheritable {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
+        <source>Do not declare protected member in sealed type</source>
+        <target state="translated">Nedeklarovat chráněný člen v zapečetěném typu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">{0} volá {1}, ale nepoužívá hodnotu, kterou tato metoda vrací. O metodách Linq se ví, že nemají vedlejší účinky. Použijte výsledek v podmíněném příkazu, přiřaďte výsledek proměnné nebo ho předejte jako argument jiné metodě.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">{0} volá {1}, ale nepoužívá hodnotu, kterou tato metoda vrací. Tato metoda je definovaná jako user-option. Použijte výsledek v podmíněném příkazu, přiřaďte výsledek proměnné nebo ho předejte jako argument jiné metodě.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="translated">Odeberte nepotřebné přiřazení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedDescription">
+        <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
+        <target state="translated">Tato role předpokládá, že člen výčtu s názvem, který obsahuje reserved, se v tuto chvíli nepoužívá, ale představuje zástupný symbol, který se má přejmenovat nebo odebrat v budoucí verzi. Přejmenování nebo odebrání členu je změna způsobující chybu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedMessage">
+        <source>If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</source>
+        <target state="translated">Pokud {0}.{1} není v aktuální implementaci použita, odeberte ji. V opačném případě jí dejte smysluplný název.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedTitle">
+        <source>Do not name enum values 'Reserved'</source>
+        <target state="translated">Nepojmenovávejte výčty hodnot 'Reserved'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsDescription">
+        <source>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</source>
+        <target state="translated">System.Collections.Generic.List&lt;T&gt; je obecná kolekce navržená pro výkon, nikoli dědičnost. List&lt;T&gt; neobsahuje virtuální členy, které by usnadňovaly změnu chování děděných tříd.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsMessage">
+        <source>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</source>
+        <target state="translated">Změňte {0} v {1} tak, aby se používalo Collection&lt;T&gt;, ReadOnlyCollection&lt;T&gt; nebo KeyedCollection&lt;K,V&gt;.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsTitle">
+        <source>Do not expose generic lists</source>
+        <target state="translated">Nezveřejňujte obecné seznamy</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
+        <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="translated">Nedeklarujte virtuální události v základní třídě. Přepsané události v odvozené třídě mají nedefinované chování. Kompilátor jazyka C# tuto situaci nezpracovává správně a je nepředvídatelné, jestli se odběratel odvozené událostí skutečně přihlásí k odběru události základní třídy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
+        <source>Event '{0}' should not be declared virtual</source>
+        <target state="translated">Událost {0} by se neměla deklarovat jako virtuální.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
+        <source>Do not declare event fields as virtual</source>
+        <target state="translated">Nedeklarovat pole událostí jako virtuální</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
+        <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
+        <target state="translated">Pro odkazové typy je výchozí implementace operátoru rovnosti téměř vždy správná. Ve výchozím nastavení jsou dva odkazy stejné jenom v případě, že odkazují na stejný objekt. Pokud operátor poskytuje smysluplnou rovnost hodnot, měl by typ implementovat obecné rozhraní System.IEquatable.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
+        <source>'{0}' should not overload the equality operator</source>
+        <target state="needs-review-translation">{0} by neměl přetížit operátor rovnosti.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
+        <source>Do not overload equality operator on reference types</source>
+        <target state="translated">Nepřetěžujte operátor rovnosti na odkazových typech</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -82,14 +217,29 @@
         <target state="translated">Nepředávejte asynchronní výrazy lambda jako typy delegátů vracející hodnotu Void.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceDescription">
+        <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
+        <target state="translated">Předávání typů podle odkazu (jako out nebo ref) vyžaduje zkušenost s ukazateli, porozumění rozdílu mezi hodnotovými a odkazovými typy a obeznámenost s metodami s více návratovými hodnotami. Navíc není široce rozšířeno chápání rozdílu mezi parametry out a ref.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceMessage">
+        <source>Consider a design that does not require that '{0}' be a reference parameter</source>
+        <target state="needs-review-translation">Zvažte návrh, který nevyžaduje {0} být parametrem odkazu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceTitle">
+        <source>Do not pass types by reference</source>
+        <target state="translated">Nepředávejte typy pomocí odkazu</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
         <source>An enumeration's values should not start with the type name of the enumeration.</source>
         <target state="translated">Hodnoty výčtu by neměly začínat názvem typu výčtu.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameMessage">
-        <source>Do not prefix enum values with the name of the enum type '{0}'. </source>
-        <target state="translated">Nepřidávejte před hodnoty výčtu název typu výčtu {0}.</target>
+        <source>Do not prefix enum values with the name of the enum type '{0}'</source>
+        <target state="needs-review-translation">Nepřidávejte před hodnoty výčtu název typu výčtu {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameTitle">
@@ -110,6 +260,36 @@
       <trans-unit id="DoNotStoreAsyncLambdasAsVoidReturningDelegateTypesMessage">
         <source>Don't Store Async Lambdas as Void Returning Delegate Types</source>
         <target state="translated">Neukládejte asynchronní výrazy lambda jako typy delegátů vracející hodnotu Void.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
+        <source>The field reference '{0}' is duplicated in this bitwise initialization</source>
+        <target state="needs-review-translation">Odkaz na pole {0} je v této bitové inicializaci duplicitní.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
+        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'</source>
+        <target state="needs-review-translation">Člen výčtu {0} má stejnou konstantní hodnotu {1} jako člen {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
+        <source>Enums values should not be duplicated</source>
+        <target state="translated">Hodnoty výčtů by neměly být duplicitní</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixDescription">
+        <source>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</source>
+        <target state="translated">Názvy událostí by měly popisovat akce, které příslušné události vyvolávají. Pokud chcete pojmenovat související události vyvolané v konkrétním pořadí, použijte přítomný nebo minulý čas, pomocí nichž vyjádříte relativní pozici v pořadí akcí. Například při pojmenovávání dvojice událostí, které se vyvolaly při uzavírání prostředku, můžete zvolit názvy Closing a Closed namísto BeforeClose a AfterClose.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixMessage">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="translated">Události by neměly mít předponu Before nebo After.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixTitle">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="translated">Události by neměly mít předponu Before nebo After</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -147,6 +327,11 @@
         <target state="translated">Nekombinujte blokující a asynchronní metody.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
+        <source>Remove redundant element initializer</source>
+        <target state="translated">Odebrat redundantní inicializátor prvků</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
         <source>Types that own disposable fields should be disposable</source>
         <target state="translated">Typy, které vlastní jednoúčelová pole, mají být jednoúčelové.</target>
@@ -178,23 +363,23 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsRename">
-        <source>In enum {0}, change the name of {1} to 'None'.</source>
-        <target state="translated">Ve výčtu {0} změňte název pro {1} na None.</target>
+        <source>In enum {0}, change the name of {1} to 'None'</source>
+        <target state="needs-review-translation">Ve výčtu {0} změňte název pro {1} na None.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsMultipleZeros">
-        <source>Remove all members that have the value zero from {0} except for one member that is named 'None'.</source>
-        <target state="translated">Odeberte z {0} všechny členy, které mají nulovou hodnotu, s výjimkou jednoho člena s názvem None.</target>
+        <source>Remove all members that have the value zero from {0} except for one member that is named 'None'</source>
+        <target state="needs-review-translation">Odeberte z {0} všechny členy, které mají nulovou hodnotu, s výjimkou jednoho člena s názvem None.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue">
-        <source>Add a member to {0} that has a value of zero with a suggested name of 'None'.</source>
-        <target state="translated">Přidejte do {0} člena, který má nulovou hodnotu, s navrženým názvem None.</target>
+        <source>Add a member to {0} that has a value of zero with a suggested name of 'None'</source>
+        <target state="needs-review-translation">Přidejte do {0} člena, který má nulovou hodnotu, s navrženým názvem None.</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
-        <source>Abstract types should not have constructors</source>
-        <target state="translated">Abstraktní typy nemají mít konstruktory.</target>
+        <source>Abstract types should not have public constructors</source>
+        <target state="new">Abstract types should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -203,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
-        <source>Abstract type {0} should not have constructors</source>
-        <target state="translated">Abstraktní typ {0} nemá mít konstruktory.</target>
+        <source>Abstract type '{0}' should not have public constructors</source>
+        <target state="new">Abstract type '{0}' should not have public constructors</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -268,8 +453,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
-        <source>Specify AttributeUsage on {0}.</source>
-        <target state="translated">Určete AttributeUsage pro {0}.</target>
+        <source>Specify AttributeUsage on {0}</source>
+        <target state="needs-review-translation">Určete AttributeUsage pro {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
@@ -288,18 +473,18 @@
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
-        <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}.</source>
-        <target state="translated">Přidejte přístupový objekt veřejné vlastnosti jen pro čtení pro poziční argument {0} atributu {1}.</target>
+        <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
+        <target state="needs-review-translation">Přidejte přístupový objekt veřejné vlastnosti jen pro čtení pro poziční argument {0} atributu {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageRemoveSetter">
-        <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}.</source>
-        <target state="translated">Odeberte z {0} metodu setter nebo omezte její přístupnost, protože odpovídá pozičnímu argumentu {1}.</target>
+        <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}</source>
+        <target state="needs-review-translation">Odeberte z {0} metodu setter nebo omezte její přístupnost, protože odpovídá pozičnímu argumentu {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility">
-        <source>If {0} is the property accessor for positional argument {1}, make it public.</source>
-        <target state="translated">Pokud je {0} přístupový objekt vlastnosti pozičního argumentu {1}, nastavte ho jako veřejný.</target>
+        <source>If {0} is the property accessor for positional argument {1}, make it public</source>
+        <target state="needs-review-translation">Pokud je {0} přístupový objekt vlastnosti pozičního argumentu {1}, nastavte ho jako veřejný.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertiesWhereAppropriateTitle">
@@ -343,8 +528,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesMessage">
-        <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes.</source>
-        <target state="translated">Zapečeťte {0} (rozbíjející změna, pokud se předtím tato třída dodala), implementujte metodu neexplicitně nebo implementujte novou metodu, která zveřejňuje funkčnost {1} a je viditelná pro odvozené třídy.</target>
+        <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes</source>
+        <target state="needs-review-translation">Zapečeťte {0} (rozbíjející změna, pokud se předtím tato třída dodala), implementujte metodu neexplicitně nebo implementujte novou metodu, která zveřejňuje funkčnost {1} a je viditelná pro odvozené třídy.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesTitle">
@@ -358,13 +543,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageEquals">
-        <source>{0} should override Equals since it implements IComparable.</source>
-        <target state="translated">{0} má přepisovat Je rovno, protože implementuje rozhraní IComparable.</target>
+        <source>{0} should override Equals since it implements IComparable</source>
+        <target state="needs-review-translation">{0} má přepisovat Je rovno, protože implementuje rozhraní IComparable.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageOperator">
-        <source>{0} should define operator(s) '{1}' since it implements IComparable.</source>
-        <target state="translated">{0} má definovat operátory {1}, protože implementuje rozhraní IComparable.</target>
+        <source>{0} should define operator(s) '{1}' since it implements IComparable</source>
+        <target state="needs-review-translation">{0} má definovat operátory {1}, protože implementuje rozhraní IComparable.</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
       <trans-unit id="MovePInvokesToNativeMethodsClassTitle">
@@ -393,13 +578,13 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldDifferByMoreThanCaseMessage">
-        <source>Names of '{0}' and '{1}' should differ by more than case.</source>
-        <target state="translated">Názvy {0} a {1} by se měly lišit nejen velikostí písmen.</target>
+        <source>Names of '{0}' and '{1}' should differ by more than case</source>
+        <target state="needs-review-translation">Názvy {0} a {1} by se měly lišit nejen velikostí písmen.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixTitle">
         <source>Identifiers should have correct prefix</source>
-        <target state="translated">Identifikátory mají mít správnou předponu.</target>
+        <target state="needs-review-translation">Identifikátory mají mít správnou předponu.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixDescription">
@@ -408,13 +593,13 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageInterface">
-        <source>Prefix interface name {0} with 'I'.</source>
-        <target state="translated">Vložte před název rozhraní {0} předponu I.</target>
+        <source>Prefix interface name {0} with 'I'</source>
+        <target state="needs-review-translation">Vložte před název rozhraní {0} předponu I.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageTypeParameter">
-        <source>Prefix generic type parameter name {0} with 'T'.</source>
-        <target state="translated">Vložte před název parametru obecného typu {0} předponu T.</target>
+        <source>Prefix generic type parameter name {0} with 'T'</source>
+        <target state="needs-review-translation">Vložte před název parametru obecného typu {0} předponu T.</target>
         <note />
       </trans-unit>
       <trans-unit id="NonConstantFieldsShouldNotBeVisibleTitle">
@@ -458,23 +643,23 @@
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageDefault">
-        <source>Provide a method named '{0}' as a friendly alternate for operator {1}.</source>
-        <target state="translated">Zadejte metodu s názvem {0} jako vhodnou alternativu pro operátor {1}.</target>
+        <source>Provide a method named '{0}' as a friendly alternate for operator {1}</source>
+        <target state="needs-review-translation">Zadejte metodu s názvem {0} jako vhodnou alternativu pro operátor {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageProperty">
-        <source>Provide a property named '{0}' as a friendly alternate for operator {1}.</source>
-        <target state="translated">Zadejte vlastnost s názvem {0} jako vhodnou alternativu pro operátor {1}.</target>
+        <source>Provide a property named '{0}' as a friendly alternate for operator {1}</source>
+        <target state="needs-review-translation">Zadejte vlastnost s názvem {0} jako vhodnou alternativu pro operátor {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageMultiple">
-        <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}.</source>
-        <target state="translated">Zadejte metodu s názvem {0} nebo {1} jako alternativu pro operátor {2}.</target>
+        <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}</source>
+        <target state="needs-review-translation">Zadejte metodu s názvem {0} nebo {1} jako alternativu pro operátor {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageVisibility">
-        <source>Mark {0} as public because it is a friendly alternate for operator {1}.</source>
-        <target state="translated">Označte {0} jako veřejný, protože jde o vhodnou alternativu pro operátor {1}.</target>
+        <source>Mark {0} as public because it is a friendly alternate for operator {1}</source>
+        <target state="needs-review-translation">Označte {0} jako veřejný, protože jde o vhodnou alternativu pro operátor {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsTitle">
@@ -503,8 +688,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyMessage">
-        <source>Change '{0}' to be read-only by removing the property setter.</source>
-        <target state="translated">Odeberte metodu Set vlastnosti {0} a nastavte ji jen pro čtení.</target>
+        <source>Change '{0}' to be read-only by removing the property setter</source>
+        <target state="needs-review-translation">Odeberte metodu Set vlastnosti {0} a nastavte ji jen pro čtení.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle">
@@ -513,13 +698,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsDescription">
-        <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals</source>
-        <target state="translated">Ve většině programovacích jazyků neexistuje výchozí implementace operátoru rovnosti (==) pro typy hodnot. Pokud váš programovací jazyk podporuje přetížení operátorů, měli byste zvážit implementaci operátoru rovnosti. Jeho chování by mělo být identické jako Equals.</target>
+        <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.</source>
+        <target state="needs-review-translation">Ve většině programovacích jazyků neexistuje výchozí implementace operátoru rovnosti (==) pro typy hodnot. Pokud váš programovací jazyk podporuje přetížení operátorů, měli byste zvážit implementaci operátoru rovnosti. Jeho chování by mělo být identické jako Equals.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Overload operator equals on overriding value type Equals</source>
-        <target state="translated">Operátor přetížení je roven přepisující hodnotě typu Equals.</target>
+        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
+        <target state="needs-review-translation">Operátor přetížení je roven přepisující hodnotě typu Equals.</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -533,18 +718,18 @@
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsMessage">
-        <source>Modify '{0}' to call '{1}' instead of '{2}'.</source>
-        <target state="translated">Změňte {0} tak, aby se místo {2} volalo {1}.</target>
+        <source>Modify '{0}' to call '{1}' instead of '{2}'</source>
+        <target state="needs-review-translation">Změňte {0} tak, aby se místo {2} volalo {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
-        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="translated">Typ {0} by měl implementovat rozhraní IEquatable&lt;T&gt;, protože přepisuje metodu Equals</target>
+        <source>Implement IEquatable when overriding Object.Equals</source>
+        <target state="translated">Při přepisu Object.Equals implementujte IEquatable.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
-        <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="translated">Při přepisu Object.Equals implementujte IEquatable.</target>
+        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
+        <target state="translated">Typ {0} by měl implementovat rozhraní IEquatable&lt;T&gt;, protože přepisuje metodu Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">
@@ -603,13 +788,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AddAssemblyLevelComVisibleFalse">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">Protože sestavení {0} zpřístupňuje externě viditelné typy, označte ho pomocí ComVisible(false) na úrovni sestavení a pak označte všechny typy v tomto sestavení, které mají být zpřístupněny klientům modelu COM, pomocí ComVisible(true).</target>
+        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true)</source>
+        <target state="needs-review-translation">Protože sestavení {0} zpřístupňuje externě viditelné typy, označte ho pomocí ComVisible(false) na úrovni sestavení a pak označte všechny typy v tomto sestavení, které mají být zpřístupněny klientům modelu COM, pomocí ComVisible(true).</target>
         <note />
       </trans-unit>
       <trans-unit id="ChangeAssemblyLevelComVisibleToFalse">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">Zvažte změnu atributu ComVisible u sestavení {0} na false a jeho připojení na úrovni typu.</target>
+        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level</source>
+        <target state="needs-review-translation">Zvažte změnu atributu ComVisible u sestavení {0} na false a jeho připojení na úrovni typu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementComparable">
@@ -698,8 +883,8 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Message">
-        <source>If possible, make the underlying type of {0} System.Int32 instead of {1}.</source>
-        <target state="translated">Pokud je to možné, nastavte podkladový typ {0} na System.Int32 místo na {1}.</target>
+        <source>If possible, make the underlying type of {0} System.Int32 instead of {1}</source>
+        <target state="needs-review-translation">Pokud je to možné, nastavte podkladový typ {0} na System.Int32 místo na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEventsWhereAppropriateTitle">
@@ -713,8 +898,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseEventsWhereAppropriateMessage">
-        <source>Consider making '{0}' an event.</source>
-        <target state="translated">Zvažte převedení {0} na událost.</target>
+        <source>Consider making '{0}' an event</source>
+        <target state="needs-review-translation">Zvažte převedení {0} na událost.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsTitle">
@@ -728,8 +913,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
-        <source>Add the following constructor to {0}: {1}.</source>
-        <target state="translated">Přidejte k {0} následující konstruktor: {1}.</target>
+        <source>Add the following constructor to {0}: {1}</source>
+        <target state="needs-review-translation">Přidejte k {0} následující konstruktor: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
@@ -798,13 +983,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageAddGetter">
-        <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method.</source>
-        <target state="translated">Protože vlastnost {0} je jen pro zápis, buď přidejte metodu getter vlastnosti s přístupností, která je větší nebo stejná jako její metoda setter, nebo tuto vlastnost převeďte na metodu.</target>
+        <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method</source>
+        <target state="needs-review-translation">Protože vlastnost {0} je jen pro zápis, buď přidejte metodu getter vlastnosti s přístupností, která je větší nebo stejná jako její metoda setter, nebo tuto vlastnost převeďte na metodu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible">
-        <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter.</source>
-        <target state="translated">Protože metoda getter vlastnosti {0} je méně viditelná než její metoda setter, buď zvyšte přístupnost její metody getter, nebo snižte přístupnost její metody setter.</target>
+        <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter</source>
+        <target state="needs-review-translation">Protože metoda getter vlastnosti {0} je méně viditelná než její metoda setter, buď zvyšte přístupnost její metody getter, nebo snižte přístupnost její metody setter.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeclareTypesInNamespacesTitle">
@@ -838,23 +1023,23 @@
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsTitle">
-        <source>Uri parameters should not be strings</source>
-        <target state="translated">Parametry identifikátoru URI nemají být řetězce.</target>
+        <source>URI-like parameters should not be strings</source>
+        <target state="needs-review-translation">Parametry identifikátoru URI nemají být řetězce.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsDescription">
-        <source>If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.</source>
-        <target state="translated">Pokud metoda přebírá řetězcovou reprezentaci identifikátoru URI, mělo by být zadané odpovídající přetížení přebírající instanci třídy URI, která tyto služby poskytuje zabezpečeným způsobem.</target>
+        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</source>
+        <target state="needs-review-translation">Pokud metoda přebírá řetězcovou reprezentaci identifikátoru URI, mělo by být zadané odpovídající přetížení přebírající instanci třídy URI, která tyto služby poskytuje zabezpečeným způsobem.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsMessage">
-        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object.</source>
-        <target state="translated">Změňte typ parametru {0} metody {1} z řetězce na System.Uri, nebo pro {1} zadejte přetížení, které {0} umožňuje předat jako objekt System.Uri.</target>
+        <source>Change the type of parameter '{0}' of method '{1}' from 'string' to 'System.Uri', or provide an overload to '{1}' that allows '{0}' to be passed as a 'System.Uri' object</source>
+        <target state="needs-review-translation">Změňte typ parametru {0} metody {1} z řetězce na System.Uri, nebo pro {1} zadejte přetížení, které {0} umožňuje předat jako objekt System.Uri.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
-        <source>Uri return values should not be strings</source>
-        <target state="translated">Návratové hodnoty identifikátoru URI nemají být řetězce.</target>
+        <source>URI-like return values should not be strings</source>
+        <target state="needs-review-translation">Návratové hodnoty identifikátoru URI nemají být řetězce.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsDescription">
@@ -863,13 +1048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
-        <source>Change the return type of method {0} from string to System.Uri.</source>
-        <target state="translated">Změňte návratový typ metody {0} z řetězce na System.Uri.</target>
+        <source>Change the return type of method '{0}' from 'string' to 'System.Uri'</source>
+        <target state="needs-review-translation">Změňte návratový typ metody {0} z řetězce na System.Uri.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
-        <source>Uri properties should not be strings</source>
-        <target state="translated">Vlastnosti identifikátoru URI nemají být řetězce.</target>
+        <source>URI-like properties should not be strings</source>
+        <target state="needs-review-translation">Vlastnosti identifikátoru URI nemají být řetězce.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsDescription">
@@ -878,8 +1063,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
-        <source>Change the type of property {0} from string to System.Uri.</source>
-        <target state="translated">Změňte typ vlastnosti {0} z řetězce na System.Uri.</target>
+        <source>Change the type of property '{0}' from 'string' to 'System.Uri'</source>
+        <target state="needs-review-translation">Změňte typ vlastnosti {0} z řetězce na System.Uri.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyTitle">
@@ -893,38 +1078,38 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageIDisposableReimplementation">
-        <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'.</source>
-        <target state="translated">Odebrete IDisposable ze seznamu rozhraní, která implementuje {0}, protože už jej implementuje základní typ {1}.</target>
+        <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'</source>
+        <target state="needs-review-translation">Odebrete IDisposable ze seznamu rozhraní, která implementuje {0}, protože už jej implementuje základní typ {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeOverride">
-        <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.</source>
-        <target state="translated">Odeberte {0}, přepište Dispose(bool disposing) a vložte finalizační logiku do cesty kódu, kde je disposing hodnoty true.</target>
+        <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true</source>
+        <target state="needs-review-translation">Odeberte {0}, přepište Dispose(bool disposing) a vložte finalizační logiku do cesty kódu, kde je disposing hodnoty true.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeSignature">
-        <source>Ensure that '{0}' is declared as public and sealed.</source>
-        <target state="translated">Zajistěte, aby metoda {0} byla deklarovaná jako veřejná a zapečetěná.</target>
+        <source>Ensure that '{0}' is declared as public and sealed</source>
+        <target state="needs-review-translation">Zajistěte, aby metoda {0} byla deklarovaná jako veřejná a zapečetěná.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageRenameDispose">
-        <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed.</source>
-        <target state="translated">Přejmenujte metodu {0} na Dispose a zajistěte, aby byla deklarovaná jako veřejná a zapečetěná.</target>
+        <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed</source>
+        <target state="needs-review-translation">Přejmenujte metodu {0} na Dispose a zajistěte, aby byla deklarovaná jako veřejná a zapečetěná.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeBoolSignature">
-        <source>Ensure that '{0}' is declared as protected, virtual, and unsealed.</source>
-        <target state="translated">Zajistěte, aby metoda {0} byla deklarovaná jako chráněná, virtuální a nezapečetěná.</target>
+        <source>Ensure that '{0}' is declared as protected, virtual, and unsealed</source>
+        <target state="needs-review-translation">Zajistěte, aby metoda {0} byla deklarovaná jako chráněná, virtuální a nezapečetěná.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeImplementation">
-        <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.</source>
-        <target state="translated">Upravte {0} tak, že volá Dispose(true), pak volá GC.SupressFinalize na aktuální instanci objektu (this nebo Me ve Visual Basicu) a potom se vrací.</target>
+        <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns</source>
+        <target state="needs-review-translation">Upravte {0} tak, že volá Dispose(true), pak volá GC.SupressFinalize na aktuální instanci objektu (this nebo Me ve Visual Basicu) a potom se vrací.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeImplementation">
-        <source>Modify '{0}' so that it calls Dispose(false) and then returns.</source>
-        <target state="translated">Upravte {0} tak, že volá Dispose(false) a potom se vrací.</target>
+        <source>Modify '{0}' so that it calls Dispose(false) and then returns</source>
+        <target state="needs-review-translation">Upravte {0} tak, že volá Dispose(false) a potom se vrací.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageProvideDisposeBool">
@@ -983,43 +1168,43 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageAssembly">
-        <source>Remove the underscores from assembly name {0}.</source>
-        <target state="translated">Odeberte podtržítka z názvu sestavení {0}.</target>
+        <source>Remove the underscores from assembly name {0}</source>
+        <target state="needs-review-translation">Odeberte podtržítka z názvu sestavení {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageNamespace">
-        <source>Remove the underscores from namespace name '{0}'.</source>
-        <target state="translated">Odeberte podtržítka z názvu názvového prostoru {0}.</target>
+        <source>Remove the underscores from namespace name '{0}'</source>
+        <target state="needs-review-translation">Odeberte podtržítka z názvu názvového prostoru {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageType">
-        <source>Remove the underscores from type name {0}.</source>
-        <target state="translated">Odeberte podtržítka z názvu typu {0}.</target>
+        <source>Remove the underscores from type name {0}</source>
+        <target state="needs-review-translation">Odeberte podtržítka z názvu typu {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMember">
-        <source>Remove the underscores from member name {0}.</source>
-        <target state="translated">Odeberte podtržítka z názvu člena {0}.</target>
+        <source>Remove the underscores from member name {0}</source>
+        <target state="needs-review-translation">Odeberte podtržítka z názvu člena {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageTypeTypeParameter">
-        <source>On type {0}, remove the underscores from generic type parameter name {1}.</source>
-        <target state="translated">U typu {0} odeberte podtržítka z názvu parametru obecného typu {1}.</target>
+        <source>On type {0}, remove the underscores from generic type parameter name {1}</source>
+        <target state="needs-review-translation">U typu {0} odeberte podtržítka z názvu parametru obecného typu {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMethodTypeParameter">
-        <source>On method {0}, remove the underscores from generic type parameter name {1}.</source>
-        <target state="translated">U metody {0} odeberte podtržítka z názvu parametru obecného typu {1}.</target>
+        <source>On method {0}, remove the underscores from generic type parameter name {1}</source>
+        <target state="needs-review-translation">U metody {0} odeberte podtržítka z názvu parametru obecného typu {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMemberParameter">
-        <source>In member {0}, remove the underscores from parameter name {1}.</source>
-        <target state="translated">U člena {0} odeberte podtržítka z názvu parametru {1}.</target>
+        <source>In member {0}, remove the underscores from parameter name {1}</source>
+        <target state="needs-review-translation">U člena {0} odeberte podtržítka z názvu parametru {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageDelegateParameter">
-        <source>In delegate {0}, remove the underscores from parameter name {1}.</source>
-        <target state="translated">V delegátovi {0} odeberte podtržítka z názvu parametru {1}.</target>
+        <source>In delegate {0}, remove the underscores from parameter name {1}</source>
+        <target state="needs-review-translation">V delegátovi {0} odeberte podtržítka z názvu parametru {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixTitle">
@@ -1033,13 +1218,13 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
-        <source>Rename {0} to end in '{1}'.</source>
-        <target state="translated">Přejmenujte {0} tak, aby název končil na {1}.</target>
+        <source>Rename {0} to end in '{1}'</source>
+        <target state="needs-review-translation">Přejmenujte {0} tak, aby název končil na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
-        <source>Rename {0} to end in either 'Collection' or '{1}'.</source>
-        <target state="translated">Přejmenujte {0} tak, aby název končil buď na Collection, nebo na {1}.</target>
+        <source>Rename {0} to end in either 'Collection' or '{1}'</source>
+        <target state="needs-review-translation">Přejmenujte {0} tak, aby název končil buď na Collection, nebo na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">
@@ -1053,23 +1238,23 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNoAlternate">
-        <source>Rename type name {0} so that it does not end in '{1}'.</source>
-        <target state="translated">Přejmenujte název typu {0} tak, aby nekončil na {1}.</target>
+        <source>Rename type name {0} so that it does not end in '{1}'</source>
+        <target state="needs-review-translation">Přejmenujte název typu {0} tak, aby nekončil na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberNewerVersion">
-        <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces.</source>
-        <target state="translated">Buď nahraďte příponu {0} v názvu člena {1} navrhovanou číselnou alternativou 2, nebo zadejte výstižnější příponu, která ho odliší od člena, kterého nahrazuje.</target>
+        <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces</source>
+        <target state="needs-review-translation">Buď nahraďte příponu {0} v názvu člena {1} navrhovanou číselnou alternativou 2, nebo zadejte výstižnější příponu, která ho odliší od člena, kterého nahrazuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNewerVersion">
-        <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces.</source>
-        <target state="translated">Buď nahraďte příponu {0} v názvu typu {1} navrhovanou číselnou alternativou 2, nebo zadejte výstižnější příponu, která ho odliší od typu, kterého nahrazuje.</target>
+        <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces</source>
+        <target state="needs-review-translation">Buď nahraďte příponu {0} v názvu typu {1} navrhovanou číselnou alternativou 2, nebo zadejte výstižnější příponu, která ho odliší od typu, kterého nahrazuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberWithAlternate">
-        <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely.</source>
-        <target state="translated">Buď nahraďte příponu {0} v názvu člena {1} navrhovanou alternativou {2}, nebo příponu úplně odeberte.</target>
+        <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely</source>
+        <target state="needs-review-translation">Buď nahraďte příponu {0} v názvu člena {1} navrhovanou alternativou {2}, nebo příponu úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
@@ -1178,8 +1363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ParameterNamesShouldMatchBaseDeclarationMessage">
-        <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}.</source>
-        <target state="translated">V členovi {0} změňte název parametru {1} na {2}, aby se shodoval s identifikátorem deklarovaným v {3}.</target>
+        <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}</source>
+        <target state="needs-review-translation">V členovi {0} změňte název parametru {1} na {2}, aby se shodoval s identifikátorem deklarovaným v {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsTitle">
@@ -1193,83 +1378,83 @@
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageAssembly">
-        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">Nahraďte termín {0} v názvu sestavení {1} preferovanou alternativou {2}.</target>
+        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</source>
+        <target state="needs-review-translation">Nahraďte termín {0} v názvu sestavení {1} preferovanou alternativou {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespace">
-        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'.</source>
-        <target state="translated">Nahraďte termín {0} v názvu názvového prostoru {1} preferovanou alternativou {2}.</target>
+        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</source>
+        <target state="needs-review-translation">Nahraďte termín {0} v názvu názvového prostoru {1} preferovanou alternativou {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameter">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">V členovi {0} nahraďte termín {1} v názvu parametru {2} preferovanou alternativou {3}.</target>
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="needs-review-translation">V členovi {0} nahraďte termín {1} v názvu parametru {2} preferovanou alternativou {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageDelegateParameter">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">V delegátovi {0} nahraďte termín {1} v názvu parametru {2} preferovanou alternativou {3}.</target>
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="needs-review-translation">V delegátovi {0} nahraďte termín {1} v názvu parametru {2} preferovanou alternativou {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">U typu {0} nahraďte termín {1} v názvu parametru obecného typu {2} preferovanou alternativou {3}.</target>
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="needs-review-translation">U typu {0} nahraďte termín {1} v názvu parametru obecného typu {2} preferovanou alternativou {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">U metody {0} nahraďte termín {1} v názvu parametru obecného typu {2} preferovanou alternativou {3}.</target>
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="needs-review-translation">U metody {0} nahraďte termín {1} v názvu parametru obecného typu {2} preferovanou alternativou {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageType">
-        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">Nahraďte termín {0} v názvu typu {1} preferovanou alternativou {2}.</target>
+        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</source>
+        <target state="needs-review-translation">Nahraďte termín {0} v názvu typu {1} preferovanou alternativou {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMember">
-        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">Nahraďte termín {0} v názvu člena {1} preferovanou alternativou {2}.</target>
+        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</source>
+        <target state="needs-review-translation">Nahraďte termín {0} v názvu člena {1} preferovanou alternativou {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
-        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">Nahraďte termín {0} v názvu sestavení {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">Nahraďte termín {0} v názvu sestavení {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
-        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">Nahraďte termín {0} v názvu názvového prostoru {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">Nahraďte termín {0} v názvu názvového prostoru {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">V členovi {0} nahraďte termín {1} v názvu parametru {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">V členovi {0} nahraďte termín {1} v názvu parametru {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">V delegátovi {0} nahraďte termín {1} v názvu parametru {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">V delegátovi {0} nahraďte termín {1} v názvu parametru {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">U typu {0} nahraďte termín {1} v názvu parametru obecného typu {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">U typu {0} nahraďte termín {1} v názvu parametru obecného typu {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">U metody {0} nahraďte termín {1} v názvu parametru obecného typu {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">U metody {0} nahraďte termín {1} v názvu parametru obecného typu {2} příslušnou alternativou, nebo ho úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
-        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">Nahraďte termín {0} v názvu typu {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">Nahraďte termín {0} v názvu typu {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
-        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">Nahraďte termín {0} v názvu člena {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
+        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="needs-review-translation">Nahraďte termín {0} v názvu člena {1} příslušnou alternativou, nebo ho úplně odeberte.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
@@ -1283,13 +1468,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageEquals">
-        <source>{0} should override Equals.</source>
-        <target state="translated">{0} má přepsat Equals.</target>
+        <source>{0} should override Equals</source>
+        <target state="needs-review-translation">{0} má přepsat Equals.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageOpEquality">
-        <source>{0} should override the equality (==) and inequality (!=) operators.</source>
-        <target state="translated">{0} má přepsat operátory rovnosti (==) a nerovnosti (!=).</target>
+        <source>{0} should override the equality (==) and inequality (!=) operators</source>
+        <target state="needs-review-translation">{0} má přepsat operátory rovnosti (==) a nerovnosti (!=).</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotReturnArraysTitle">
@@ -1483,8 +1668,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotHideBaseClassMethodsMessage">
-        <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'.</source>
-        <target state="translated">Změňte nebo odeberte {0}, protože skrývá konkrétnější metodu základní třídy: {1}.</target>
+        <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'</source>
+        <target state="needs-review-translation">Změňte nebo odeberte {0}, protože skrývá konkrétnější metodu základní třídy: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHideBaseClassMethodsTitle">
@@ -1493,8 +1678,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
-        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
-        <target state="translated">Odeberte {0} a nahraďte jeho použití obecným EventHandlerem, třeba EventHandler&lt;T&gt;, kde T je platné EventArgs.</target>
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
+        <target state="needs-review-translation">Odeberte {0} a nahraďte jeho použití obecným EventHandlerem, třeba EventHandler&lt;T&gt;, kde T je platné EventArgs.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateDescription">
@@ -1503,8 +1688,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
-        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
-        <target state="translated">Změňte událost {0} tak, aby nahradila typ {1} obecným EventHandlerem, třeba EventHandler&lt;T&gt;, kde T je platné EventArgs.</target>
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
+        <target state="needs-review-translation">Změňte událost {0} tak, aby nahradila typ {1} obecným EventHandlerem, třeba EventHandler&lt;T&gt;, kde T je platné EventArgs.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventDescription">
@@ -1523,8 +1708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageBoth">
-        <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable.</source>
-        <target state="translated">{0} má definovat operátory {1} a Rovná se, protože implementuje rozhraní IComparable.</target>
+        <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable</source>
+        <target state="needs-review-translation">{0} má definovat operátory {1} a Rovná se, protože implementuje rozhraní IComparable.</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsTitle">
@@ -1568,23 +1753,23 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
-        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}.</source>
-        <target state="translated">Odeberte volání do SafeHandle.DangerousGetHandle z {0}.</target>
+        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}</source>
+        <target state="needs-review-translation">Odeberte volání do SafeHandle.DangerousGetHandle z {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
-        <source>Remove the call to Assembly.LoadFrom from {0}.</source>
-        <target state="translated">Odeberte volání do Assembly.LoadFrom z {0}.</target>
+        <source>Remove the call to Assembly.LoadFrom from {0}</source>
+        <target state="needs-review-translation">Odeberte volání do Assembly.LoadFrom z {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
-        <source>Remove the call to Assembly.LoadFile from {0}.</source>
-        <target state="translated">Odeberte volání do Assembly.LoadFile z {0}.</target>
+        <source>Remove the call to Assembly.LoadFile from {0}</source>
+        <target state="needs-review-translation">Odeberte volání do Assembly.LoadFile z {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
-        <source>Remove the call to Assembly.LoadWithPartialName from {0}.</source>
-        <target state="translated">Odeberte volání do Assembly.LoadWithPartialName z {0}.</target>
+        <source>Remove the call to Assembly.LoadWithPartialName from {0}</source>
+        <target state="needs-review-translation">Odeberte volání do Assembly.LoadWithPartialName z {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CategoryReliability">
@@ -1658,8 +1843,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceMessage">
-        <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'</source>
-        <target state="translated">{0} má hierarchii objektů, která v definujícím modulu dosahuje hloubky {1} úrovní. Pokud je to možné, eliminujte v hierarchii základní třídy tak, aby se počet úrovní v hierarchii snížil pod {2}: {3}</target>
+        <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'.</source>
+        <target state="needs-review-translation">{0} má hierarchii objektů, která v definujícím modulu dosahuje hloubky {1} úrovní. Pokud je to možné, eliminujte v hierarchii základní třídy tak, aby se počet úrovní v hierarchii snížil pod {2}: {3}</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceTitle">
@@ -1683,8 +1868,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileDescription">
-        <source>Invalid entry in code metrics rule specification file</source>
-        <target state="translated">Neplatná položka v souboru specifikace pravidel metrik kódu</target>
+        <source>Invalid entry in code metrics rule specification file.</source>
+        <target state="needs-review-translation">Neplatná položka v souboru specifikace pravidel metrik kódu</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileMessage">
@@ -1793,8 +1978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnusedPrivateFieldsMessage">
-        <source>Unused field '{0}'.</source>
-        <target state="translated">Nepoužité pole {0}.</target>
+        <source>Unused field '{0}'</source>
+        <target state="needs-review-translation">Nepoužité pole {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessagePureMethod">
@@ -1818,13 +2003,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidPropertySelfAssignmentMessage">
-        <source>The property {0} should not be assigned to itself.</source>
-        <target state="translated">Vlastnost {0} nesmí být přiřazena sama k sobě.</target>
+        <source>The property {0} should not be assigned to itself</source>
+        <target state="needs-review-translation">Vlastnost {0} nesmí být přiřazena sama k sobě.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPropertySelfAssignmentTitle">
-        <source>Do not assign a property to itself.</source>
-        <target state="translated">Nepřiřazujte vlastnost k ní samotné.</target>
+        <source>Do not assign a property to itself</source>
+        <target state="needs-review-translation">Nepřiřazujte vlastnost k ní samotné.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticCodeFix">
@@ -1863,13 +2048,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">Před spuštění konstruktoru modul CLR (Common Language Runtime) iniciuje u všech polí nastavení výchozích hodnot. Ve většině případů je nastavení pole na výchozí hodnotu v konstruktoru nadbytečné, snižuje výkon a navyšuje náklady na údržbu. Jediným případem, kdy nadbytečné není, je tehdy, když konstruktor volá jiný konstruktor stejné třídy nebo konstruktor základní třídy a ten u pole nastaví nevýchozí hodnotu. V této situaci je změna hodnoty pole zpět na výchozí hodnotu vhodná.</target>
+        <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
+        <target state="translated">Před spuštěním konstruktoru modul runtime .NET inicializuje všechna pole typů odkazů na výchozí hodnoty. Ve většině případů je explicitní inicializace pole na výchozí hodnotu v konstruktoru redundantní, zvyšuje náklady na údržbu, může snižovat výkon (například kvůli většímu sestavení) a dá se odebrat. V některých případech, například u statických polí určených jen pro čtení, která trvale uchovávají svou výchozí hodnotu, zvažte možnost je změnit na konstanty nebo vlastnosti.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">Nepoužívejte inicializaci zbytečně</target>
+        <source>Member '{0}' is explicitly initialized to its default value</source>
+        <target state="needs-review-translation">Člen {0} je explicitně inicializovaný na svou výchozí hodnotu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -1922,13 +2107,8 @@
         <target state="translated">Zjistila se veřejná nebo chráněná metoda zpracování událostí. Metody zpracování událostí by neměly být vystaveny, pokud to není nezbytně nutné.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">Nastavte metodu {0} tak, aby nebyla externě viditelná, nebo se ujistěte, že se jedná o neškodný kód.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
+        <source>Consider making '{0}' not externally visible</source>
         <target state="translated">Nastavte metodu {0} tak, aby nebyla externě viditelná.</target>
         <note />
       </trans-unit>
@@ -1968,13 +2148,13 @@
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Re-throwing caught exception changes stack information.</source>
-        <target state="translated">Opakované vyvolání zachycené výjimky změní informace zásobníku.</target>
+        <source>Re-throwing caught exception changes stack information</source>
+        <target state="needs-review-translation">Opakované vyvolání zachycené výjimky změní informace zásobníku.</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details.</source>
-        <target state="translated">Vyvolejte výjimku znovu, aby se zachovaly detaily zásobníku.</target>
+        <source>Rethrow to preserve stack details</source>
+        <target state="needs-review-translation">Vyvolejte výjimku znovu, aby se zachovaly detaily zásobníku.</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeDeclaringTypeInternal">
@@ -1998,8 +2178,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesMessageFinally">
-        <source>Do not raise an exception from within a finally clause. </source>
-        <target state="translated">Nevyvolávejte výjimku z klauzule finally. </target>
+        <source>Do not raise an exception from within a finally clause</source>
+        <target state="needs-review-translation">Nevyvolávejte výjimku z klauzule finally. </target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesTitle">
@@ -2018,8 +2198,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
-        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
-        <target state="translated">Prvek s indexem [{0}] už je inicializovaný. Předchozí inicializace tohoto prvku mohou být přepsány.</target>
+        <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
+        <target state="translated">Redundantní inicializace prvků na indexu {0}. Inicializátor objektu má další inicializátor prvků se stejným indexem, který tuto hodnotu přepisuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

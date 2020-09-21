@@ -54,7 +54,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// </summary>
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            if (!(context.Symbol is IPropertySymbol property))
+            if (context.Symbol is not IPropertySymbol property)
             {
                 return;
             }
@@ -68,13 +68,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // Only analyze externally visible properties by default
-            if (!property.MatchesConfiguredVisibility(context.Options, AddGetterRule, context.CancellationToken))
+            if (!property.MatchesConfiguredVisibility(context.Options, AddGetterRule, context.Compilation, context.CancellationToken))
             {
-                Debug.Assert(!property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.CancellationToken));
+                Debug.Assert(!property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.Compilation, context.CancellationToken));
                 return;
             }
 
-            Debug.Assert(property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.CancellationToken));
+            Debug.Assert(property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.Compilation, context.CancellationToken));
 
             // We handled the non-CA1044 cases earlier.  Now, we handle CA1044 cases
             // If there is no getter then it is not accessible

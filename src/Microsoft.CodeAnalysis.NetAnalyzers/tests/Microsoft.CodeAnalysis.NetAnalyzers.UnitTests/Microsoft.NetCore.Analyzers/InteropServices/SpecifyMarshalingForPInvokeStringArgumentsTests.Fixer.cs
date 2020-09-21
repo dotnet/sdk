@@ -25,10 +25,10 @@ using System.Text;
 class C
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo1([{|CA2101:MarshalAs(UnmanagedType.LPStr)|}] string s, [{|CA2101:MarshalAs(UnmanagedType.LPStr)|}] StringBuilder t);
+    private static extern void SomeMethod1([{|CA2101:MarshalAs(UnmanagedType.LPStr)|}] string s, [{|CA2101:MarshalAs(UnmanagedType.LPStr)|}] StringBuilder t);
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo2([{|CA2101:MarshalAs((short)0)|}] string s);
+    private static extern void SomeMethod2([{|CA2101:MarshalAs((short)0)|}] string s);
 }
 ", @"
 using System.Runtime.InteropServices;
@@ -37,10 +37,10 @@ using System.Text;
 class C
 {
     [DllImport(""user32.dll"")]
-    private static extern void Foo1([MarshalAs(UnmanagedType.LPWStr)] string s, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder t);
+    private static extern void SomeMethod1([MarshalAs(UnmanagedType.LPWStr)] string s, [MarshalAs(UnmanagedType.LPWStr)] StringBuilder t);
 
     [DllImport(""user32.dll"")]
-    private static extern void Foo2([MarshalAs(UnmanagedType.LPWStr)] string s);
+    private static extern void SomeMethod2([MarshalAs(UnmanagedType.LPWStr)] string s);
 }
 ");
         }
@@ -54,14 +54,14 @@ Imports System.Text
 
 Class C
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo1(<{|CA2101:MarshalAs(UnmanagedType.LPStr)|}> s As String, <{|CA2101:MarshalAs(UnmanagedType.LPStr)|}> t As StringBuilder)
+    Private Shared Sub SomeMethod1(<{|CA2101:MarshalAs(UnmanagedType.LPStr)|}> s As String, <{|CA2101:MarshalAs(UnmanagedType.LPStr)|}> t As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo2(<{|CA2101:MarshalAs(CShort(0))|}> s As String)
+    Private Shared Sub SomeMethod2(<{|CA2101:MarshalAs(CShort(0))|}> s As String)
     End Sub
 
-    Private Declare Sub Foo3 Lib ""user32.dll"" (<{|CA2101:MarshalAs(UnmanagedType.LPStr)|}> s As String)
+    Private Declare Sub SomeMethod3 Lib ""user32.dll"" (<{|CA2101:MarshalAs(UnmanagedType.LPStr)|}> s As String)
 End Class
 ", @"
 Imports System.Runtime.InteropServices
@@ -69,14 +69,14 @@ Imports System.Text
 
 Class C
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo1(<MarshalAs(UnmanagedType.LPWStr)> s As String, <MarshalAs(UnmanagedType.LPWStr)> t As StringBuilder)
+    Private Shared Sub SomeMethod1(<MarshalAs(UnmanagedType.LPWStr)> s As String, <MarshalAs(UnmanagedType.LPWStr)> t As StringBuilder)
     End Sub
 
     <DllImport(""user32.dll"")>
-    Private Shared Sub Foo2(<MarshalAs(UnmanagedType.LPWStr)> s As String)
+    Private Shared Sub SomeMethod2(<MarshalAs(UnmanagedType.LPWStr)> s As String)
     End Sub
 
-    Private Declare Sub Foo3 Lib ""user32.dll"" (<MarshalAs(UnmanagedType.LPWStr)> s As String)
+    Private Declare Sub SomeMethod3 Lib ""user32.dll"" (<MarshalAs(UnmanagedType.LPWStr)> s As String)
 End Class
 ");
         }
@@ -91,10 +91,10 @@ using System.Text;
 class C
 {
     [{|CA2101:DllImport(""user32.dll"")|}]
-    private static extern void Foo1(string s);
+    private static extern void SomeMethod1(string s);
 
     [{|CA2101:DllImport(""user32.dll"", CharSet = CharSet.Ansi)|}]
-    private static extern void Foo2(string s);
+    private static extern void SomeMethod2(string s);
 }
 ", @"
 using System.Runtime.InteropServices;
@@ -103,10 +103,10 @@ using System.Text;
 class C
 {
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
-    private static extern void Foo1(string s);
+    private static extern void SomeMethod1(string s);
 
     [DllImport(""user32.dll"", CharSet = CharSet.Unicode)]
-    private static extern void Foo2(string s);
+    private static extern void SomeMethod2(string s);
 }
 ");
         }
@@ -120,11 +120,11 @@ Imports System.Text
 
 Class C
     <{|CA2101:DllImport(""user32.dll"")|}>
-    Private Shared Sub Foo1(s As String)
+    Private Shared Sub SomeMethod1(s As String)
     End Sub
 
     <{|CA2101:DllImport(""user32.dll"", CharSet:=CharSet.Ansi)|}>
-    Private Shared Sub Foo2(s As String)
+    Private Shared Sub SomeMethod2(s As String)
     End Sub
 End Class
 ", @"
@@ -133,11 +133,11 @@ Imports System.Text
 
 Class C
     <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
-    Private Shared Sub Foo1(s As String)
+    Private Shared Sub SomeMethod1(s As String)
     End Sub
 
     <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
-    Private Shared Sub Foo2(s As String)
+    Private Shared Sub SomeMethod2(s As String)
     End Sub
 End Class
 ");
@@ -150,17 +150,17 @@ End Class
 Imports System.Text
 
 Class C
-    Private Declare Sub {|CA2101:Foo1|} Lib ""user32.dll"" (s As String)
-    Private Declare Ansi Sub {|CA2101:Foo2|} Lib ""user32.dll"" (s As StringBuilder)
-    Private Declare Function {|CA2101:Foo3|} Lib ""user32.dll"" () As String
+    Private Declare Sub {|CA2101:SomeMethod1|} Lib ""user32.dll"" (s As String)
+    Private Declare Ansi Sub {|CA2101:SomeMethod2|} Lib ""user32.dll"" (s As StringBuilder)
+    Private Declare Function {|CA2101:SomeMethod3|} Lib ""user32.dll"" () As String
 End Class
 ", @"
 Imports System.Text
 
 Class C
-    Private Declare Unicode Sub Foo1 Lib ""user32.dll"" (s As String)
-    Private Declare Unicode Sub Foo2 Lib ""user32.dll"" (s As StringBuilder)
-    Private Declare Unicode Function Foo3 Lib ""user32.dll"" () As String
+    Private Declare Unicode Sub SomeMethod1 Lib ""user32.dll"" (s As String)
+    Private Declare Unicode Sub SomeMethod2 Lib ""user32.dll"" (s As StringBuilder)
+    Private Declare Unicode Function SomeMethod3 Lib ""user32.dll"" () As String
 End Class
 ");
         }

@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
         /// <summary>
         /// Configuration file to configure custom threshold values for supported code metrics.
         /// For example, the below entry changes the maximum allowed inheritance depth from the default value of 5 to 10:
-        /// 
+        ///
         ///     # FORMAT:
         ///     # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
         ///
@@ -74,7 +74,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1501,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                     isEnabledByDefaultInAggressiveMode: false);
 
         internal static DiagnosticDescriptor CA1502Rule = DiagnosticDescriptorHelper.Create(CA1502RuleId,
                                                                      s_localizableTitleCA1502,
@@ -84,7 +85,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1502,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                     isEnabledByDefaultInAggressiveMode: false);
 
         internal static DiagnosticDescriptor CA1505Rule = DiagnosticDescriptorHelper.Create(CA1505RuleId,
                                                                      s_localizableTitleCA1505,
@@ -94,7 +96,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1505,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                     isEnabledByDefaultInAggressiveMode: false);
 
         internal static DiagnosticDescriptor CA1506Rule = DiagnosticDescriptorHelper.Create(CA1506RuleId,
                                                                      s_localizableTitleCA1506,
@@ -104,7 +107,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1506,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                     isEnabledByDefaultInAggressiveMode: false);
 
         internal static DiagnosticDescriptor InvalidEntryInCodeMetricsConfigFileRule = DiagnosticDescriptorHelper.Create(CA1509RuleId,
                                                                      s_localizableTitleCA1509,
@@ -114,7 +118,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1509,
                                                                      isPortedFxCopRule: false,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                     isEnabledByDefaultInAggressiveMode: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
 
@@ -125,6 +130,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
             analysisContext.RegisterCompilationAction(compilationContext =>
             {
+                if (compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
+                {
+                    return;
+                }
+
                 // Try read the additional file containing the code metrics configuration.
                 if (!TryGetRuleIdToThresholdMap(
                         compilationContext.Options.AdditionalFiles,
@@ -144,7 +154,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 }
 
                 // Compute code metrics.
-                var computeTask = CodeAnalysisMetricData.ComputeAsync(compilationContext.Compilation, compilationContext.CancellationToken);
+                // For the calculation of the inheritance tree, we are allowing specific exclusions:
+                //   - all types from System namespaces
+                //   - all types/namespaces provided by the user
+                // so that the calculation isn't unfair.
+                // For example inheriting from WPF/WinForms UserControl makes your class over the default threshold, yet there isn't anything you can do about it.
+                var inheritanceExcludedTypes = compilationContext.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule, tree, compilationContext.Compilation,
+                    defaultForcedValue: "N:System.*", compilationContext.CancellationToken);
+
+                var metricsAnalysisContext = new CodeMetricsAnalysisContext(compilationContext.Compilation, compilationContext.CancellationToken,
+                    namedType => inheritanceExcludedTypes.Contains(namedType));
+                var computeTask = CodeAnalysisMetricData.ComputeAsync(metricsAnalysisContext);
                 computeTask.Wait(compilationContext.CancellationToken);
 
                 // Analyze code metrics tree and report diagnostics.
@@ -164,7 +184,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                             var arg1 = symbol.Name;
                             var arg2 = codeAnalysisMetricData.DepthOfInheritance;
                             var arg3 = inheritanceThreshold + 1;
-                            var arg4 = string.Join(", ", ((INamedTypeSymbol)symbol).GetBaseTypes().Select(t => t.Name));
+                            var arg4 = string.Join(", ", ((INamedTypeSymbol)symbol).GetBaseTypes(t => !inheritanceExcludedTypes.Contains(t)).Select(t => t.Name));
                             var diagnostic = symbol.CreateDiagnostic(CA1501Rule, arg1, arg2, arg3, arg4);
                             compilationContext.ReportDiagnostic(diagnostic);
                         }
@@ -297,7 +317,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
                         CA1505RuleId => 10,
 
-                        CA1506RuleId => symbolKind == SymbolKind.NamedType ? 95 : (uint)40,
+                        CA1506RuleId => symbolKind == SymbolKind.NamedType ? 95 : 40,
 
                         _ => throw new NotImplementedException(),
                     };
@@ -379,7 +399,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                 }
                 else
                 {
-                    SymbolKind? symbolKindOpt = null;
+                    SymbolKind? symbolKind = null;
                     string[] keyParts = key.Split('(');
                     switch (keyParts[0])
                     {
@@ -405,29 +425,29 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                         else
                         {
                             // Remove the trailing ')'
-                            var symbolKindStr = keyParts[1].Substring(0, keyParts[1].Length - 1);
+                            var symbolKindStr = keyParts[1][0..^1];
                             switch (symbolKindStr)
                             {
                                 case "Assembly":
-                                    symbolKindOpt = SymbolKind.Assembly;
+                                    symbolKind = SymbolKind.Assembly;
                                     break;
                                 case "Namespace":
-                                    symbolKindOpt = SymbolKind.Namespace;
+                                    symbolKind = SymbolKind.Namespace;
                                     break;
                                 case "Type":
-                                    symbolKindOpt = SymbolKind.NamedType;
+                                    symbolKind = SymbolKind.NamedType;
                                     break;
                                 case "Method":
-                                    symbolKindOpt = SymbolKind.Method;
+                                    symbolKind = SymbolKind.Method;
                                     break;
                                 case "Field":
-                                    symbolKindOpt = SymbolKind.Field;
+                                    symbolKind = SymbolKind.Field;
                                     break;
                                 case "Event":
-                                    symbolKindOpt = SymbolKind.Event;
+                                    symbolKind = SymbolKind.Event;
                                     break;
                                 case "Property":
-                                    symbolKindOpt = SymbolKind.Property;
+                                    symbolKind = SymbolKind.Property;
                                     break;
 
                                 default:
@@ -445,7 +465,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                             builder.Add(keyParts[0], values);
                         }
 
-                        ((List<(SymbolKind?, uint)>)values).Add((symbolKindOpt, threshold));
+                        ((List<(SymbolKind?, uint)>)values).Add((symbolKind, threshold));
                     }
                 }
 

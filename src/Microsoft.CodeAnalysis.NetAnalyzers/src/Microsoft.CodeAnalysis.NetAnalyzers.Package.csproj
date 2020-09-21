@@ -1,7 +1,7 @@
 ﻿<!-- Copyright (c)  Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
 
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -11,15 +11,18 @@
     <ReleaseNotes>Diagnostic analyzers for the Microsoft .NET Compiler Platform (Roslyn)</ReleaseNotes>
     <PackageTags>Roslyn CodeAnalysis Compiler CSharp VB VisualBasic Diagnostic Analyzers Syntax Semantics</PackageTags>
     <ContainsPortedFxCopRules>true</ContainsPortedFxCopRules>
-	<AnalyzerDocumentationFileDir>$(RepoRoot)src\NetAnalyzers</AnalyzerDocumentationFileDir>
+	  <AnalyzerDocumentationFileDir>$(RepoRoot)src\NetAnalyzers</AnalyzerDocumentationFileDir>
     <AnalyzerSarifFileDir>$(RepoRoot)src\NetAnalyzers</AnalyzerSarifFileDir>
+
+    <!-- Override the version prefix and label for NetAnalyzers projects -->
+    <VersionPrefix>$(NetAnalyzersVersionPrefix)</VersionPrefix>
+    <PreReleaseVersionLabel>$(NetAnalyzersPreReleaseVersionLabel)</PreReleaseVersionLabel>
   </PropertyGroup>
   
   <ItemGroup>
     <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.NetAnalyzers.dll" />
     <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
     <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
-    <AnalyzerNupkgAssembly Include="$(NuGetPackageRoot)Humanizer.Core\$(HumanizerVersion)\lib\netstandard1.0\Humanizer.dll" />
 	</ItemGroup>
   
   <ItemGroup>
