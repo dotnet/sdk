@@ -185,7 +185,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 return ExpandWorkload(workload).Select (p => p.ToString());
             }
 
+#nullable disable
             return workload.Packs.Select(p => p.ToString()) ?? Enumerable.Empty<string>();
+#nullable restore
         }
 
         private IEnumerable<WorkloadPackId> ExpandWorkload (WorkloadDefinition workload)

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.Build.Framework;
 
+#nullable disable
+
 namespace Microsoft.DotNet.DotNetSdkResolver
 {
     public class NETCoreSdkResolver
