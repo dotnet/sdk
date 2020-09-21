@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Immutable;
 
 namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 {
@@ -24,29 +25,30 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
                 : base(compilation)
             { }
 
-            protected override bool IsDisposableFieldCreation(SyntaxNode node, SemanticModel model, HashSet<ISymbol> disposableFields, CancellationToken cancellationToken)
+            protected override IEnumerable<IFieldSymbol> GetDisposableFieldCreations(SyntaxNode node, SemanticModel model,
+                HashSet<ISymbol> disposableFields, CancellationToken cancellationToken)
             {
                 if (node is AssignmentExpressionSyntax assignment)
                 {
                     if (assignment.Right is ObjectCreationExpressionSyntax &&
-                        disposableFields.Contains(model.GetSymbolInfo(assignment.Left, cancellationToken).Symbol))
+                        model.GetSymbolInfo(assignment.Left, cancellationToken).Symbol is IFieldSymbol field &&
+                        disposableFields.Contains(field))
                     {
-                        return true;
+                        yield return field;
                     }
                 }
                 else if (node is FieldDeclarationSyntax fieldDeclarationSyntax)
                 {
-                    VariableDeclarationSyntax fieldDecl = fieldDeclarationSyntax.Declaration;
-                    foreach (VariableDeclaratorSyntax fieldInit in fieldDecl.Variables)
+                    foreach (VariableDeclaratorSyntax fieldInit in fieldDeclarationSyntax.Declaration.Variables)
                     {
                         if (fieldInit.Initializer?.Value is ObjectCreationExpressionSyntax &&
-                            disposableFields.Contains(model.GetDeclaredSymbol(fieldInit, cancellationToken)))
+                            model.GetDeclaredSymbol(fieldInit, cancellationToken) is IFieldSymbol field &&
+                            disposableFields.Contains(field))
                         {
-                            return true;
+                            yield return field;
                         }
                     }
                 }
-                return false;
             }
         }
     }
