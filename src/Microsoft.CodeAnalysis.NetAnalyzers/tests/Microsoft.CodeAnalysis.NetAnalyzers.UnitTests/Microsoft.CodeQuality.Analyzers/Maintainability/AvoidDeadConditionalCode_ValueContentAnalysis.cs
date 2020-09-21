@@ -2887,6 +2887,55 @@ public class Test
             }.RunAsync();
         }
 
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task Test_ExplicitConversionInFlowCapture_ConditionalExpression()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    private object M(string str)
+    {
+        int? intVal = int.TryParse(str, out var outInt) ? outInt : (int?)null;
+        return (intVal.HasValue ? (object)intVal.Value : (object)str);
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task Test_ExplicitConversionInFlowCapture_ConditionalExpression_02()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    private object M(Test t, int? intVal)
+    {
+        return (intVal.HasValue ? (object)intVal.Value : (object)t);
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
         public async Task TestRelationalPattern()
         {
