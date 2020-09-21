@@ -1434,16 +1434,16 @@
   <data name="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on an array</value>
   </data>
-  <data name="PlatformCompatabilityCheckTitle" xml:space="preserve">
+  <data name="PlatformCompatibilityCheckTitle" xml:space="preserve">
     <value>Validate platform compatibility</value>
   </data>
-  <data name="PlatformCompatabilityCheckDescription" xml:space="preserve">
+  <data name="PlatformCompatibilityCheckDescription" xml:space="preserve">
     <value>Using platform dependent API on a component makes the code no longer work across all platforms.</value>
   </data>
   <data name="PlatformCompatibilityCheckSupportedOsVersionMessage" xml:space="preserve">
     <value>'{0}' is supported on '{1}' {2} and later</value>
   </data>
-  <data name="PlatformCompatabilityCheckUnsupportedOsVersionMessage" xml:space="preserve">
+  <data name="PlatformCompatibilityCheckUnsupportedOsVersionMessage" xml:space="preserve">
     <value>'{0}' is unsupported on '{1}' {2} and later</value>
   </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersDescription" xml:space="preserve">
@@ -1473,10 +1473,13 @@
   <data name="AvoidAssemblyGetFilesInSingleFileMessage" xml:space="preserve">
     <value>'{0}' will throw for assemblies embedded in a single-file app</value>
   </data>
-  <data name="PlatformCompatabilityCheckUnsupportedOsMessage" xml:space="preserve">
+  <data name="PlatformCompatibilityCheckUnsupportedOsMessage" xml:space="preserve">
     <value>'{0}' is unsupported on '{1}'</value>
   </data>
   <data name="PlatformCompatibilityCheckSupportedOsMessage" xml:space="preserve">
     <value>'{0}' is supported on '{1}'</value>
+  </data>
+  <data name="PreferStringContainsOverIndexOfCodeFixTitle" xml:space="preserve">
+    <value>Replace with 'string.Contains'</value>
   </data>
 </root>

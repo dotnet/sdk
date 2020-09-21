@@ -6,7 +6,7 @@ using Test.Utilities;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.InteropServices.PlatformCompatabilityAnalyzer,
+    Microsoft.NetCore.Analyzers.InteropServices.PlatformCompatibilityAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
@@ -86,7 +86,7 @@ class Test
     }
 }" + MockAttributesCsSource + MockOperatingSystemApiSource;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(15, 9)
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(15, 9)
                 .WithMessage("'Test.Api()' is unsupported on 'windows'"));
         }
 
@@ -210,10 +210,10 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
 }" + MockAttributesCsSource + MockOperatingSystemApiSource;
 
             await VerifyAnalyzerAsyncCs(source,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(15, 17).WithMessage("'Target.SupportedOnWindowsAndBrowser()' is supported on 'windows'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(16, 17).WithMessage("'Target.SupportedOnWindows10AndBrowser()' is supported on 'windows' 10.0 and later"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(24, 17).WithMessage("'Target.SupportedOnWindows10AndBrowser()' is supported on 'browser'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(48, 17).WithMessage("'Target.SupportedOnWindows10AndBrowser()' is supported on 'browser'"));
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(15, 17).WithMessage("'Target.SupportedOnWindowsAndBrowser()' is supported on 'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(16, 17).WithMessage("'Target.SupportedOnWindows10AndBrowser()' is supported on 'windows' 10.0 and later"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(24, 17).WithMessage("'Target.SupportedOnWindows10AndBrowser()' is supported on 'browser'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(48, 17).WithMessage("'Target.SupportedOnWindows10AndBrowser()' is supported on 'browser'"));
         }
 
         [Fact]
@@ -275,13 +275,13 @@ namespace PlatformCompatDemo.SupportedUnupported
 }" + TargetTypesForTest + MockAttributesCsSource + MockOperatingSystemApiSource;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(37, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11()' is unsupported on 'windows'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(38, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12()' is unsupported on 'windows'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(39, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12SupportedOnWindows13()' is unsupported on 'windows'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(42, 17).WithMessage("'TypeUnsupportedOnWindows.TypeUnsupportedOnWindows_FunctionSupportedOnWindows11()' is unsupported on 'windows'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(47, 64).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11' is unsupported on 'windows'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(48, 17).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11.TypeUnsupportedOnWindowsSupportedOnWindows11_FunctionUnsupportedOnWindows12SupportedOnWindows13()' is unsupported on 'windows'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(50, 86).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12' is unsupported on 'windows'"));
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(37, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11()' is unsupported on 'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(38, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12()' is unsupported on 'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(39, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12SupportedOnWindows13()' is unsupported on 'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(42, 17).WithMessage("'TypeUnsupportedOnWindows.TypeUnsupportedOnWindows_FunctionSupportedOnWindows11()' is unsupported on 'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(47, 64).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11' is unsupported on 'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(48, 17).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11.TypeUnsupportedOnWindowsSupportedOnWindows11_FunctionUnsupportedOnWindows12SupportedOnWindows13()' is unsupported on 'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(50, 86).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12' is unsupported on 'windows'"));
         }
 
         [Fact]
@@ -391,10 +391,10 @@ namespace PlatformCompatDemo.SupportedUnupported
 }" + TargetTypesForTest + MockAttributesCsSource + MockOperatingSystemApiSource;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(17, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsAndBrowser()' is unsupported on 'browser'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(24, 17).WithMessage("'TypeUnsupportedOnBrowser.TypeUnsupportedOnBrowser_FunctionUnsupportedOnWindows()' is unsupported on 'browser'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(32, 54).WithMessage("'TypeUnsupportedOnWindowsAndBrowser' is unsupported on 'browser'"),
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(33, 17).WithMessage("'TypeUnsupportedOnWindowsAndBrowser.TypeUnsupportedOnWindowsAndBrowser_FunctionUnsupportedOnWindows11()' is unsupported on 'browser'"));
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(17, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsAndBrowser()' is unsupported on 'browser'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(24, 17).WithMessage("'TypeUnsupportedOnBrowser.TypeUnsupportedOnBrowser_FunctionUnsupportedOnWindows()' is unsupported on 'browser'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(32, 54).WithMessage("'TypeUnsupportedOnWindowsAndBrowser' is unsupported on 'browser'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(33, 17).WithMessage("'TypeUnsupportedOnWindowsAndBrowser.TypeUnsupportedOnWindowsAndBrowser_FunctionUnsupportedOnWindows11()' is unsupported on 'browser'"));
         }
 
         [Fact]
@@ -477,7 +477,7 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundUnsupported
 }" + MockAttributesCsSource + MockOperatingSystemApiSource;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsVersionRule).WithLocation(25, 17).WithMessage("'Target.UnsupportedOnWindowsAndBrowser()' is unsupported on 'browser'"));
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(25, 17).WithMessage("'Target.UnsupportedOnWindowsAndBrowser()' is unsupported on 'browser'"));
         }
 
         [Fact]
@@ -507,7 +507,7 @@ class Test
 }" + MockAttributesCsSource + MockOperatingSystemApiSource;
 
             await VerifyAnalyzerAsyncCs(source,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.UnsupportedOsRule).WithLocation(14, 9)
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedOsRule).WithLocation(14, 9)
                 .WithMessage("'Test.Api()' is unsupported on 'ios' 14.0 and later"));
         }
 
@@ -767,6 +767,137 @@ class Test
             await VerifyAnalyzerAsyncCs(source);
         }
 
+        [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1()
+    {
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Create(""Windows"")))
+        {
+            M2();
+        }
+        else
+        {
+            [|M2()|];
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    void M2()
+    {
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_ValueCachedInLocal_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1(bool isWindows)
+    {
+        var windowsPlatform = OSPlatform.Create(""Windows"");
+        if(RuntimeInformation.IsOSPlatform(windowsPlatform))
+        {
+            M2();
+        }
+        else
+        {
+            [|M2()|];
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    void M2()
+    {
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_MultipleValuesCachedWithConditionalLogic()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1(bool isWindows, OSPlatform? unknown)
+    {
+        var windowsPlatform = OSPlatform.Create(""Windows"");
+        var linuxPlatform = OSPlatform.Create(""Linux"");
+        var platform = isWindows ? windowsPlatform : linuxPlatform;
+        if(RuntimeInformation.IsOSPlatform(platform))
+        {
+            M2();
+        }
+        else
+        {
+            {|#0:M2()|};
+        }
+
+        if(RuntimeInformation.IsOSPlatform(windowsPlatform))
+        {
+            M2();
+        }
+        else
+        {
+            {|#1:M2()|};
+        }
+
+        if (unknown.HasValue)
+        {
+            platform = unknown.Value;
+        }
+        else
+        {
+            platform = OSPlatform.Create(""Browser"");
+        }
+
+        if(RuntimeInformation.IsOSPlatform(platform))
+        {
+            {|#2:M2()|};
+        }
+        else
+        {
+            {|#3:M2()|};
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    [SupportedOSPlatform(""Linux"")]
+    void M2()
+    {
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(0).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(0).WithArguments("Test.M2()", "Windows"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(1).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(1).WithArguments("Test.M2()", "Windows"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(2).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(2).WithArguments("Test.M2()", "Windows"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(3).WithArguments("Test.M2()", "Linux"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(3).WithArguments("Test.M2()", "Windows")
+            );
+        }
+
         [Fact]
         public async Task GuardedCalled_SimpleIfElse_VersionNotMatch_Warns()
         {
@@ -834,7 +965,7 @@ static class Some
 " + MockAttributesCsSource + MockOperatingSystemApiSource;
 
             await VerifyAnalyzerAsyncCs(source,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.UnsupportedOsRule).WithLocation(16, 13)
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedOsRule).WithLocation(16, 13)
                 .WithMessage("'Some.WindowsSpecificApi()' is supported on 'windows' 10.0 and later"));
         }
 
@@ -1110,17 +1241,28 @@ public class Test
 {
     [UnsupportedOSPlatform(""Windows8.1"")]
     public string RemovedProperty { get; set;}
+
+    public static bool WindowsOnlyPropertyGetter
+    {
+        [SupportedOSPlatform(""windows"")]
+        get { return true; }
+        set { }
+    }
     
     public void M1()
     {
         if(OperatingSystemHelper.IsWindows() && !OperatingSystemHelper.IsWindowsVersionAtLeast(8, 0, 19222)) 
         {
+            WindowsOnlyPropertyGetter = true;
+            var val = WindowsOnlyPropertyGetter;
             RemovedProperty = ""Hello"";
             string s = RemovedProperty;
             M2(RemovedProperty);
         }
         else
         {
+            WindowsOnlyPropertyGetter = true;
+            var val = [|WindowsOnlyPropertyGetter|];
             [|RemovedProperty|] = ""Hello"";
             string s = [|RemovedProperty|];
             M2([|RemovedProperty|]);
@@ -1523,6 +1665,351 @@ public class Test
         }
 
         [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside local function escaped as delegate.
+        void LocalFunction()
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        }
+
+        M3(LocalFunction);
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside local function escaped as delegate indirectly from another local function.
+        void LocalFunction()
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        }
+
+        void LocalFunction2()
+        {
+            // Escaped inside another local function.
+            M3(LocalFunction);
+        }
+
+        LocalFunction2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside local function escaped as delegate indirectly from a lambda invoked inside a local function.
+        void LocalFunction()
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        }
+
+        Action a = () =>
+        {
+            // Escaped inside a lambda invoked inside another local function.
+            M3(LocalFunction);
+        };
+
+        void LocalFunction2()
+        {
+            a();
+        }
+
+        LocalFunction2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside local function when escaped as delegate + invoked directly from guarded context.
+        void LocalFunction()
+        {
+            [|M2()|];
+        }
+
+        // Escaped as delegate, can potentially be invoked from unguarded context.
+        M3(LocalFunction);
+
+        if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+        {
+            // Invoked directly from guarded context.
+            LocalFunction();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionMultipleCallsOsDependentMember_MixedGuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn 'WindowsOnly' inside local function, all calls from guarded context.
+        // Warn on 'Windows10OrLaterOnly' inside local function, some calls are from unguarded context.
+        void LocalFunction()
+        {
+            WindowsOnly();
+            [|Windows10OrLaterOnly()|];
+        }
+
+        void LocalFunction2()
+        {
+            LocalFunction();
+        }
+
+        if(OperatingSystemHelper.IsWindows())
+        {
+            if (OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                // Invoked multiple times directly from guarded context.
+                LocalFunction();
+                LocalFunction();
+
+                // Invoked indirectly via another local function, but from guarded context.
+                LocalFunction2();
+            }
+
+            // No Windows10 guard.
+            LocalFunction();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    public void WindowsOnly()
+    {
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void Windows10OrLaterOnly()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionMultipleCalls_DifferentOrder_OsDependentMember_MixedGuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        void LocalFunction()
+        {
+            [|WindowsOnly()|];
+        }
+
+        // Unguarded call before guarded call - should warn.
+        LocalFunction();
+        if(OperatingSystemHelper.IsWindows())
+        {
+            LocalFunction();
+        }
+    }
+
+    public void M2()
+    {
+        void LocalFunction()
+        {
+            [|WindowsOnly()|];
+        }
+
+        // Guarded call before unguarded call - should warn.
+        LocalFunction();
+        if(OperatingSystemHelper.IsWindows())
+        {
+            LocalFunction();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    public void WindowsOnly()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionWithUnrelatedLocalFunctionCallsOsDependentMember_GuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn inside local function, all calls from guarded context.
+        void LocalFunction()
+        {
+            M2();
+        }
+
+        void LocalFunction2()
+        {
+        }
+
+        if (OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+        {
+            LocalFunction();
+        }
+
+        // Unrelated 'LocalFunction2' call from unguarded context should not affect analysis of 'LocalFunction'
+        LocalFunction2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn inside unused local function.
+        void LocalFunction()
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
         public async Task LambdaCallsOsDependentMember_GuardedCall_SimpleIfElse()
         {
             var source = @"
@@ -1556,6 +2043,566 @@ public class Test
             }
         };
         action.Invoke();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact, WorkItem(4090, "https://github.com/dotnet/roslyn-analyzers/issues/4090")]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_DirectlyPassedAsArgument()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped as delegate argument.
+        M3(a: () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        });
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped as delegate.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        M3(a);
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped as delegate indirectly from another lambda.
+        Action a1 = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        Action a2 = () =>
+        {
+            // Escaped inside another local function.
+            M3(a1);
+        };
+
+        a2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped as delegate indirectly from a local function invoked inside a lambda.
+        Action a1 = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        void LocalFunction()
+        {
+            // Escaped inside a local function invoked inside another lambda.
+            M3(a1);
+        }
+
+        Action a2 = () =>
+        {
+            LocalFunction();
+        };
+
+        a2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    private Action _field;
+
+    public void M1()
+    {
+        // Warn inside lambda escaped via field.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        _field = a;
+        M3();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3() { _field(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_05()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public Action M1()
+    {
+        // Warn inside lambda escaped via return value.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        return a;
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_06()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda escaped via conversion.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        var x = (object)a;
+        M3(x);
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(object a) { ((Action)a)(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_07()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1(out Action result)
+    {
+        // Warn inside lambda escaped via out argument.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+
+        result = a;
+        return;
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_08()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside lambda when escaped as delegate + invoked directly from guarded context.
+        Action a = () =>
+        {
+            [|M2()|];
+        };
+
+        // Escaped as delegate, can potentially be invoked from unguarded context.
+        M3(a);
+
+        if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+        {
+            // Invoked directly from guarded context.
+            a();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+
+    public void M3(Action a) { a(); }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Warn inside unused lambda.
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                M2();
+            }
+            else
+            {
+                [|M2()|];
+            }
+        };
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaMultipleCallsOsDependentMember_MixedGuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn 'WindowsOnly' inside lambda, all calls from guarded context.
+        // Warn on 'Windows10OrLaterOnly' inside lambda, some calls are from unguarded context.
+        Action a = () =>
+        {
+            WindowsOnly();
+            [|Windows10OrLaterOnly()|];
+        };
+
+        if(OperatingSystemHelper.IsWindows())
+        {
+            if (OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+            {
+                // Invoked multiple times directly from guarded context.
+                a();
+                a();
+
+                // Invoked indirectly via local function, but from guarded context.
+                LocalFunction();
+            }
+
+            // No Windows10 guard.
+            a();
+        }
+
+        void LocalFunction()
+        {
+            a();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    public void WindowsOnly()
+    {
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void Windows10OrLaterOnly()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaWithUnrelatedLambdaCallsOsDependentMember_GuardedCalls()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        // Do not warn inside lambda, all calls from guarded context.
+        Action a = () =>
+        {
+            M2();
+        };
+
+        Action a2 = () =>
+        {
+        };
+
+        if (OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11))
+        {
+            a();
+        }
+
+        // Unrelated lambda call from unguarded context should not affect analysis of 'a'
+        a2();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LambdaContaingLocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        Action a = () =>
+        {
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 10, 2, 1))
+            {
+                LocalFunction();
+            }
+
+            void LocalFunction()
+            {
+                // Should not warn here as all callsites to 'LocalFunction' are guarded.
+                M2();
+            }
+        };
+
+        a();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
+        public async Task LocalFunctionContainingLambdaCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        void LocalFunction()
+        {
+            Action a = () =>
+            {
+                // Should not warn here as all callsites to 'a' are guarded.
+                M2();
+            };
+
+            if(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 10, 2, 1))
+            {
+                a();
+            }
+        }
+
+        LocalFunction();
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
@@ -1947,6 +2994,37 @@ public class Test
         }
 
         [Fact]
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAndNegation()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    public void M1()
+    {
+        if (!(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 10, 2) ||
+           OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 11)))
+        {
+            [|M2()|];
+        }
+        else
+        {
+            M2();
+        }
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    public void M2()
+    {
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact]
         public async Task GuardedCall_SimpleIfElseIfElseTestWithLogicalOr()
         {
             var source = @"
@@ -2030,7 +3108,7 @@ class Test
 }"
 + MockAttributesCsSource + MockOperatingSystemApiSource;
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(16, 13).WithMessage("'Test.M2()' is unsupported on 'windows'"));
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(16, 13).WithMessage("'Test.M2()' is unsupported on 'windows'"));
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -2053,7 +3131,7 @@ Class Test
 End Class
 " + MockRuntimeApiSourceVb + MockAttributesVbSource;
             await VerifyAnalyzerAsyncVb(vbSource, s_msBuildPlatforms,
-                VerifyCS.Diagnostic(PlatformCompatabilityAnalyzer.SupportedOsRule).WithLocation(10, 13).WithMessage("'Test.M2()' is unsupported on 'Windows'"));
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsRule).WithLocation(10, 13).WithMessage("'Private Sub M2()' is unsupported on 'Windows'"));
         }
 
         [Fact]
@@ -2107,23 +3185,33 @@ class Test
         public async Task GuardedWith_DebugAssertAnalysisTest()
         {
             var source = @"
+using System;
 using System.Diagnostics;
 using System.Runtime.Versioning;
-using System;
+using System.Runtime.InteropServices;
 
 class Test
 {
     void M1()
     {
+        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+        M3();
+
+        // Should still warn for Windows10.1.2.3 
         [|M2()|];
 
         Debug.Assert(OperatingSystemHelper.IsOSPlatformVersionAtLeast(""Windows"", 10, 2));
-
         M2();
+        M3();
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2()
+    {
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    void M3()
     {
     }
 }" + MockAttributesCsSource + MockOperatingSystemApiSource;
@@ -2352,7 +3440,7 @@ class Test
     }
 }" + MockAttributesCsSource + MockOperatingSystemApiSource;
 
-            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
+            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5");
         }
 
         [Fact(Skip = "TODO: Analysis value not returned, needs to be fixed")]

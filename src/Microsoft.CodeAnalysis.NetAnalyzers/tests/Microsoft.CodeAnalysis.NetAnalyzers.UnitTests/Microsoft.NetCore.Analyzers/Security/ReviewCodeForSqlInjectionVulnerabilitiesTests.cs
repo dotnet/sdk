@@ -3735,6 +3735,8 @@ public class MyController : Controller
 
         [InlineData("st.Append(stringParam); st.CopyTo(0, arr, 0, 10)", true, "string stringParam", 36, "new string(arr)")]
         [InlineData("st.Append(stringParam); st.Clear()", false)]
+
+        [InlineData("StaticString = stringParam", false)]
         public async Task TaintThis_StringBuilder(string payload, bool warn, string source = "", int sourceColumn = 36, string sinkArg = "st.ToString()")
         {
             string code = $@"
@@ -3751,6 +3753,8 @@ public class MyController
         {payload};
         new SqlCommand({sinkArg});
     }}
+
+    public static string StaticString {{ get; set; }}
 }}";
             if (warn)
             {

@@ -413,7 +413,7 @@
     <value>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.</value>
   </data>
   <data name="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage" xml:space="preserve">
-    <value>Overload operator equals on overriding value type Equals</value>
+    <value>Implement the equality operators and make their behavior identical to that of 'Equals' method</value>
   </data>
   <data name="PassSystemUriObjectsInsteadOfStringsTitle" xml:space="preserve">
     <value>Pass system uri objects instead of strings</value>

@@ -1512,24 +1512,9 @@
         <target state="translated">Методы P/Invoke не должны быть видимыми</target>
         <note />
       </trans-unit>
-      <trans-unit id="PlatformCompatabilityCheckDescription">
+      <trans-unit id="PlatformCompatibilityCheckDescription">
         <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
         <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PlatformCompatabilityCheckTitle">
-        <source>Validate platform compatibility</source>
-        <target state="new">Validate platform compatibility</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PlatformCompatabilityCheckUnsupportedOsMessage">
-        <source>'{0}' is unsupported on '{1}'</source>
-        <target state="new">'{0}' is unsupported on '{1}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PlatformCompatabilityCheckUnsupportedOsVersionMessage">
-        <source>'{0}' is unsupported on '{1}' {2} and later</source>
-        <target state="new">'{0}' is unsupported on '{1}' {2} and later</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckSupportedOsMessage">
@@ -1540,6 +1525,21 @@
       <trans-unit id="PlatformCompatibilityCheckSupportedOsVersionMessage">
         <source>'{0}' is supported on '{1}' {2} and later</source>
         <target state="new">'{0}' is supported on '{1}' {2} and later</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckTitle">
+        <source>Validate platform compatibility</source>
+        <target state="new">Validate platform compatibility</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckUnsupportedOsMessage">
+        <source>'{0}' is unsupported on '{1}'</source>
+        <target state="new">'{0}' is unsupported on '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckUnsupportedOsVersionMessage">
+        <source>'{0}' is unsupported on '{1}' {2} and later</source>
+        <target state="new">'{0}' is unsupported on '{1}' {2} and later</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
@@ -1585,6 +1585,11 @@
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
         <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
         <target state="translated">Старайтесь использовать перегрузки на основе памяти для "ReadAsync" и "WriteAsync"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
