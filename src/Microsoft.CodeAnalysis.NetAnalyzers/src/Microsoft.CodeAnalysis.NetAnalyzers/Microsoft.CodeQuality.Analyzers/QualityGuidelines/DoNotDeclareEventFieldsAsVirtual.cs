@@ -46,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
 
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!eventSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(Rule, eventSymbol, context.Compilation, context.CancellationToken))
                 {
                     return;
                 }
