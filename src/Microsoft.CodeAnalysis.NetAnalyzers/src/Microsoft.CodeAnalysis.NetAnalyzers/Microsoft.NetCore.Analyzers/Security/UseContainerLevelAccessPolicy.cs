@@ -140,12 +140,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     if (invocationOperation.TryGetEnclosingControlFlowGraph(out var cfg))
                                     {
                                         var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
-                                                                                operationBlockStartContext.Options,
+                                                                                operationAnalysisContext.Options,
                                                                                 SupportedDiagnostics,
                                                                                 operationAnalysisContext.Operation.Syntax.SyntaxTree,
-                                                                                operationBlockStartContext.Compilation,
+                                                                                operationAnalysisContext.Compilation,
                                                                                 defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
-                                                                                cancellationToken: operationBlockStartContext.CancellationToken,
+                                                                                cancellationToken: operationAnalysisContext.CancellationToken,
                                                                                 defaultMaxInterproceduralMethodCallChain: 1);
                                         var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(
                                                                         cfg,
@@ -168,11 +168,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             return;
                                         }
                                     }
-
-                                    operationAnalysisContext.ReportDiagnostic(
-                                                invocationOperation.CreateDiagnostic(
-                                                    Rule));
                                 }
+
+                                operationAnalysisContext.ReportDiagnostic(
+                                            invocationOperation.CreateDiagnostic(
+                                                Rule));
                             }
                         }
                     }, OperationKind.Invocation);
