@@ -297,6 +297,11 @@
         <target state="translated">從類型 '{0}' 移除完成項，覆寫 Dispose(bool disposing)，然後在程式碼路徑中放置完成項邏輯，其中 'disposing' 為 false。否則這可能導致 Dispose 引動過程重複，原因是基底類型 ‘{1}’ 也提供了完成項。</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">於可能時散佈 CancellationToken</target>
