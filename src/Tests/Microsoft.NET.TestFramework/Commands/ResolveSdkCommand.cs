@@ -14,7 +14,7 @@ namespace Microsoft.NET.TestFramework.Commands
         public string SdkResolversFolder { get; set; } = TestContext.Current.ToolsetUnderTest.SdkResolverPath;
 
         public ResolveSdkCommand(TestAsset testAsset, string relativePathToProject = null)
-            : base(testAsset, "ResolveSdk", relativePathToProject)
+            : base(testAsset, "Build", relativePathToProject)
         {
         }
 

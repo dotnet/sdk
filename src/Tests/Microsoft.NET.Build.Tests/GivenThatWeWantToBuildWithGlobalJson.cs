@@ -48,7 +48,9 @@ namespace Microsoft.NET.Build.Tests
                 result.And
                     .HaveStdOutContaining(warningString)
                     .And
-                    .NotHaveStdOutContaining(errorString);
+                    .NotHaveStdOutContaining(errorString)
+                    .And
+                    .HaveStdOutContaining("NETSDK1141");
             }
             else
             {
