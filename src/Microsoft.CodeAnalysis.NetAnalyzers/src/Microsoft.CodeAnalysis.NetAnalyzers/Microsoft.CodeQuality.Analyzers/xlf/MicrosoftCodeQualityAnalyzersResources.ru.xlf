@@ -298,8 +298,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
-        <source>Apply attribute 'AttributeUsageAttribute(AttributeTargets.All)'</source>
-        <target state="new">Apply attribute 'AttributeUsageAttribute(AttributeTargets.All)'</target>
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="new">Apply 'AttributeUsageAttribute'</target>
         <note />
       </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
