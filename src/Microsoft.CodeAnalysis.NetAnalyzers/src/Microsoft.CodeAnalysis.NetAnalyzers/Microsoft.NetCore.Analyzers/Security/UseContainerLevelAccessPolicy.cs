@@ -168,11 +168,15 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             return;
                                         }
                                     }
+                                    else
+                                    {
+                                        return;
+                                    }
                                 }
 
                                 operationAnalysisContext.ReportDiagnostic(
-                                            invocationOperation.CreateDiagnostic(
-                                                Rule));
+                                    invocationOperation.CreateDiagnostic(
+                                        Rule));
                             }
                         }
                     }, OperationKind.Invocation);
