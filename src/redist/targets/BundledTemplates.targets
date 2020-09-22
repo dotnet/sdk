@@ -1,29 +1,25 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="CalculateTemplatesVersions" DependsOnTargets="SetupWixProperties">
 
-    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor50Templates)"
-                               VersionSuffix="$(VersionSuffix)">
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor50Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates50InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates50MajorMinorVersion" />
       <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates50MajorMinorPatchVersion" />
     </CalculateTemplateVersions>
 
-    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor31Templates)"
-                               VersionSuffix="$(VersionSuffix)">
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor31Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates31InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates31MajorMinorVersion" />
       <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates31MajorMinorPatchVersion" />
     </CalculateTemplateVersions>
 
-    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor30Templates)"
-                               VersionSuffix="$(VersionSuffix)">
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor30Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates30InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates30MajorMinorVersion" />
       <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates30MajorMinorPatchVersion" />
     </CalculateTemplateVersions>
 
-    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor21Templates)"
-                               VersionSuffix="$(VersionSuffix)">
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor21Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates21InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates21MajorMinorVersion" />
       <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates21MajorMinorPatchVersion" />
