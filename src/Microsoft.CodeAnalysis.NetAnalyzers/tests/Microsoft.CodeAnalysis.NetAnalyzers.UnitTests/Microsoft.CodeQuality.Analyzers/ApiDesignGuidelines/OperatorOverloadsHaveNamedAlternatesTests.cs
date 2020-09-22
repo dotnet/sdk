@@ -213,6 +213,96 @@ struct C
 ");
         }
 
+        [Fact]
+        public async Task ImplicitCastToArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static implicit operator byte[](MyStruct myStruct)
+    {
+        return new byte[1];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 43).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
+        }
+
+        [Fact]
+        public async Task ExplicitCastToArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static explicit operator byte[](MyStruct myStruct)
+    {
+        return new byte[1];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 43).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
+        }
+
+        [Fact]
+        public async Task ImplicitCastToMultidimensionalArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static implicit operator byte[,](MyStruct myStruct)
+    {
+        return new byte[1,1];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 44).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
+        }
+
+        [Fact]
+        public async Task ExplicitCastToMultidimensionalArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static explicit operator byte[,](MyStruct myStruct)
+    {
+        return new byte[1,1];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 44).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
+        }
+
+        [Fact]
+        public async Task ImplicitCastToJaggedArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static implicit operator byte[][](MyStruct myStruct)
+    {
+        return new byte[1][];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 45).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
+        }
+
+        [Fact]
+        public async Task ExplicitCastToJaggedArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static explicit operator byte[][](MyStruct myStruct)
+    {
+        return new byte[1][];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 45).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
+        }
+
         #endregion
 
         //

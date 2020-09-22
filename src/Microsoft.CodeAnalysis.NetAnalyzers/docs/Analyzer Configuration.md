@@ -52,7 +52,7 @@ This section documents the list of supported .editorconfig key-value options for
 
 Option Name: `api_surface`
 
-Configurable Rules: 
+Configurable Rules:
 [CA1000](https://docs.microsoft.com/visualstudio/code-quality/ca1000),
 [CA1002](https://docs.microsoft.com/visualstudio/code-quality/ca1002),
 [CA1003](https://docs.microsoft.com/visualstudio/code-quality/ca1003),
@@ -71,6 +71,7 @@ Configurable Rules:
 [CA1043](https://docs.microsoft.com/visualstudio/code-quality/ca1043),
 [CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044),
 [CA1045](https://docs.microsoft.com/visualstudio/code-quality/ca1045),
+[CA1046](https://docs.microsoft.com/visualstudio/code-quality/ca1046),
 [CA1047](https://docs.microsoft.com/visualstudio/code-quality/ca1047),
 [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051),
 [CA1052](https://docs.microsoft.com/visualstudio/code-quality/ca1052),
@@ -79,7 +80,9 @@ Configurable Rules:
 [CA1056](https://docs.microsoft.com/visualstudio/code-quality/ca1056),
 [CA1058](https://docs.microsoft.com/visualstudio/code-quality/ca1058),
 [CA1063](https://docs.microsoft.com/visualstudio/code-quality/ca1063),
+[CA1070](https://docs.microsoft.com/visualstudio/code-quality/ca1070),
 [CA1700](https://docs.microsoft.com/visualstudio/code-quality/ca1700),
+[CA1707](https://docs.microsoft.com/visualstudio/code-quality/ca1707),
 [CA1708](https://docs.microsoft.com/visualstudio/code-quality/ca1708),
 [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710),
 [CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711),
@@ -260,7 +263,7 @@ Option Name: `excluded_symbol_names`
 Configurable Rules:
 [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303),
 [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062),
-[CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304), 
+[CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304),
 [CA1508](https://docs.microsoft.com/visualstudio/code-quality/ca1508),
 [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000),
 [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100),
@@ -401,7 +404,7 @@ Configurable Rules:
 [CA1508](https://docs.microsoft.com/visualstudio/code-quality/ca1508),
 [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000),
 [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100),
-[CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213), 
+[CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213),
 Taint analysis rules
 
 #### Interprocedural analysis Kind
@@ -436,7 +439,7 @@ Option Name: `max_interprocedural_lambda_or_local_function_call_chain`
 
 Option Values: Unsigned integer
 
-Default Value: 10
+Default Value: 3
 
 Example: `dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 5`
 
@@ -525,6 +528,7 @@ class Test
 ```
 
 #### Points to analysis kind for DFA rules based on PointsToAnalysis
+
 Option Name: `points_to_analysis_kind`
 
 Configurable Rules: All DFA rules
@@ -693,6 +697,7 @@ Default Value: Namespace, NamedType, Method, Property, Event, Parameter
 Example: `dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace, Property`
 
 ### Use naming heuristic
+
 Option Name: `use_naming_heuristic`
 
 Configurable Rules: [CA1303](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1303)
@@ -704,14 +709,16 @@ Default Value: `false`
 Example: `dotnet_code_quality.CA1303.use_naming_heuristic = true`
 
 ### Additional use results methods
+
 Option Name: `additional_use_results_methods`
 
 Configurable Rules: [CA1806](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1806)
 
 Option Values: Names of additional methods (separated by '|') for CA1806.
 Allowed method name formats:
+
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the symbol's documentation ID format: https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
      with an optional "M:" prefix.
 
 Default Value: None
@@ -726,6 +733,7 @@ Examples:
 |`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS1.MyType1.MyMethod1(ParamType)\|M:NS2.MyType2.MyMethod2(ParamType)` | Matches specific methods 'MyMethod1' and 'MyMethod2' with respective fully qualified signature
 
 ### Allowed suffixes
+
 Option Name: `allowed_suffixes`
 
 Configurable Rules: [CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711)
@@ -733,3 +741,27 @@ Configurable Rules: [CA1711](https://docs.microsoft.com/visualstudio/code-qualit
 Option Values: List (separated by '|') of allowed suffixes
 
 Example: `dotnet_code_quality.CA1711.allowed_suffixes = Flag|Flags`
+
+### Enable platform compatibility analyzer for TFMs <= net5.0
+
+Option Name: `enable_platform_analyzer_on_pre_net5_target`
+
+Configurable Rules: [CA14016](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
+
+Option Values: Boolean values
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.enable_platform_analyzer_on_pre_net5_target = true` or `dotnet_code_quality.CA1416.enable_platform_analyzer_on_pre_net5_target = true`
+
+### Exclude structs
+
+Option Name: `exclude_structs`
+
+Configurable Rules: [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051)
+
+Option Values: Boolean values
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1051.exclude_structs = true`

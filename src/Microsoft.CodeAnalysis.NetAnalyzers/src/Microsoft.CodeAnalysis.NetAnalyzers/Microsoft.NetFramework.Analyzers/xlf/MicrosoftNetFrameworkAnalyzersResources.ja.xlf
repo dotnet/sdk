@@ -173,13 +173,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
-        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</source>
-        <target state="translated">破損状態例外をキャッチすると、エラー (アクセス違反など) がマスクされ、実行の状態に一貫性がなくなったり、攻撃者がシステムを侵害しやすくなったりする可能性があります。代わりに、より具体的な例外の種類をキャッチして処理するか、例外を再スローします</target>
+        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
+        <target state="needs-review-translation">破損状態例外をキャッチすると、エラー (アクセス違反など) がマスクされ、実行の状態に一貫性がなくなったり、攻撃者がシステムを侵害しやすくなったりする可能性があります。代わりに、より具体的な例外の種類をキャッチして処理するか、例外を再スローします</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
-        <source>{0} is catching corrupted state exception.</source>
-        <target state="translated">{0} が破損状態例外をキャッチしています。</target>
+        <source>{0} is catching corrupted state exception</source>
+        <target state="needs-review-translation">{0} が破損状態例外をキャッチしています。</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -363,8 +363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
-        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</source>
-        <target state="translated">コントローラー アクション {0} では MVC による HttpVerbs.GET と ValidateAntiForgeryTokenAttribute の使用はサポートされていません。</target>
+        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
+        <target state="needs-review-translation">コントローラー アクション {0} では MVC による HttpVerbs.GET と ValidateAntiForgeryTokenAttribute の使用はサポートされていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -373,8 +373,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</source>
-        <target state="translated">既定で POST 要求を受入れる ValidateAntiForgeryTokenAttribute が MVC コントローラー アクション {0} にありません。</target>
+        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
+        <target state="needs-review-translation">既定で POST 要求を受入れる ValidateAntiForgeryTokenAttribute が MVC コントローラー アクション {0} にありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -383,8 +383,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</source>
-        <target state="translated">コントローラー アクション {0} に ValidateAntiForgeryTokenAttribute がありません。</target>
+        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
+        <target state="needs-review-translation">コントローラー アクション {0} に ValidateAntiForgeryTokenAttribute がありません。</target>
         <note />
       </trans-unit>
     </body>

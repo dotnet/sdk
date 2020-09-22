@@ -10,9 +10,11 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using static GenerateDocumentationAndConfigFiles.CommonPropertyNames;
 
 namespace GenerateDocumentationAndConfigFiles
 {
@@ -20,7 +22,7 @@ namespace GenerateDocumentationAndConfigFiles
     {
         public static int Main(string[] args)
         {
-            const int expectedArguments = 16;
+            const int expectedArguments = 17;
 
             if (args.Length != expectedArguments)
             {
@@ -36,18 +38,19 @@ namespace GenerateDocumentationAndConfigFiles
             var assemblyList = args[5].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList();
             string propsFileDir = args[6];
             string propsFileName = args[7];
-            string analyzerDocumentationFileDir = args[8];
-            string analyzerDocumentationFileName = args[9];
-            string analyzerSarifFileDir = args[10];
-            string analyzerSarifFileName = args[11];
-            var analyzerVersion = args[12];
-            var analyzerPackageName = args[13];
-            if (!bool.TryParse(args[14], out var containsPortedFxCopRules))
+            string propsFileToDisableNetAnalyzersInNuGetPackageName = args[8];
+            string analyzerDocumentationFileDir = args[9];
+            string analyzerDocumentationFileName = args[10];
+            string analyzerSarifFileDir = args[11];
+            string analyzerSarifFileName = args[12];
+            var analyzerVersion = args[13];
+            var analyzerPackageName = args[14];
+            if (!bool.TryParse(args[15], out var containsPortedFxCopRules))
             {
                 containsPortedFxCopRules = false;
             }
 
-            if (!bool.TryParse(args[15], out var generateAnalyzerRulesMissingDocumentationFile))
+            if (!bool.TryParse(args[16], out var generateAnalyzerRulesMissingDocumentationFile))
             {
                 generateAnalyzerRulesMissingDocumentationFile = false;
             }
@@ -149,7 +152,7 @@ namespace GenerateDocumentationAndConfigFiles
                     customTag: customTag);
             }
 
-            createPropsFile();
+            createPropsFiles();
 
             createAnalyzerDocumentationFile();
 
@@ -179,21 +182,76 @@ namespace GenerateDocumentationAndConfigFiles
                 return;
             }
 
-            void createPropsFile()
+            void createPropsFiles()
             {
                 if (string.IsNullOrEmpty(propsFileDir) || string.IsNullOrEmpty(propsFileName))
                 {
                     Debug.Assert(!containsPortedFxCopRules);
+                    Debug.Assert(string.IsNullOrEmpty(propsFileToDisableNetAnalyzersInNuGetPackageName));
                     return;
                 }
 
+                var disableNetAnalyzersImport = getDisableNetAnalyzersImport();
+
                 var fileContents =
-$@"<Project DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-  {getCodeAnalysisTreatWarningsNotAsErrors()}
+$@"<Project>
+  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsNotAsErrors()}
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
                 File.WriteAllText(fileWithPath, fileContents);
+
+                if (!string.IsNullOrEmpty(disableNetAnalyzersImport))
+                {
+                    Debug.Assert(Version.TryParse(analyzerVersion, out _));
+
+                    fileWithPath = Path.Combine(directory.FullName, propsFileToDisableNetAnalyzersInNuGetPackageName);
+                    fileContents =
+$@"<Project>
+  <!-- 
+    PropertyGroup to disable built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
+    This props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
+  -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <{NetAnalyzersNugetAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersNugetAssemblyVersionPropertyName}>
+  </PropertyGroup>
+</Project>";
+                    File.WriteAllText(fileWithPath, fileContents);
+                }
+
+                return;
+
+                string getDisableNetAnalyzersImport()
+                {
+                    if (!string.IsNullOrEmpty(propsFileToDisableNetAnalyzersInNuGetPackageName))
+                    {
+                        Debug.Assert(analyzerPackageName is NetAnalyzersPackageName or
+                            FxCopAnalyzersPackageName or
+                            NetCoreAnalyzersPackageName or
+                            NetFrameworkAnalyzersPackageName or
+                            CodeQualityAnalyzersPackageName);
+
+                        return $@"
+  <!-- 
+    This import includes an additional props file that disables built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
+    This additional props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
+  -->
+  <Import Project=""{propsFileToDisableNetAnalyzersInNuGetPackageName}"" Condition=""Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')"" />
+
+  <!--
+    PropertyGroup to set the NetAnalyzers version installed in the SDK.
+    We rely on the additional props file '{propsFileToDisableNetAnalyzersInNuGetPackageName}' not being present in the SDK.
+  -->
+  <PropertyGroup Condition=""!Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')"">
+    <{NetAnalyzersSDKAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersSDKAssemblyVersionPropertyName}>
+  </PropertyGroup>
+";
+                    }
+
+                    Debug.Assert(!containsPortedFxCopRules);
+                    return string.Empty;
+                }
             }
 
             string getCodeAnalysisTreatWarningsNotAsErrors()
@@ -204,8 +262,9 @@ $@"<Project DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/develo
     This property group prevents the rule ids implemented in this package to be bumped to errors when
     the 'CodeAnalysisTreatWarningsAsErrors' = 'false'.
   -->
-  <PropertyGroup Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);{allRuleIds}</WarningsNotAsErrors>
+  <PropertyGroup>
+    <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
+    <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
   </PropertyGroup>";
             }
 
@@ -221,11 +280,12 @@ $@"<Project DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/develo
                 var fileWithPath = Path.Combine(directory.FullName, analyzerDocumentationFileName);
 
                 var builder = new StringBuilder();
-                builder.Append(@"
-Rule ID | Title | Category | Enabled | Severity | CodeFix | Description |
---------|-------|----------|---------|----------|---------|--------------------------------------------------------------------------------------------------------------|
-");
 
+                var fileTitle = Path.GetFileNameWithoutExtension(analyzerDocumentationFileName);
+                builder.AppendLine($"# {fileTitle}");
+                builder.AppendLine();
+
+                var isFirstEntry = true;
                 foreach (var ruleById in allRulesById)
                 {
                     string ruleId = ruleById.Key;
@@ -237,7 +297,19 @@ Rule ID | Title | Category | Enabled | Severity | CodeFix | Description |
                         ruleIdWithHyperLink = $"[{ruleIdWithHyperLink}]({descriptor.HelpLinkUri})";
                     }
 
-                    var hasCodeFix = fixableDiagnosticIds.Contains(descriptor.Id);
+                    var title = descriptor.Title.ToString(CultureInfo.InvariantCulture).Trim();
+                    // Escape generic arguments to ensure they are not considered as HTML elements
+                    title = Regex.Replace(title, "(<.+?>)", "\\$1");
+
+                    if (!isFirstEntry)
+                    {
+                        // Add separation line only when reaching next entry to avoid useless empty line at the end
+                        builder.AppendLine();
+                    }
+
+                    isFirstEntry = false;
+                    builder.AppendLine($"## {ruleIdWithHyperLink}: {title}");
+                    builder.AppendLine();
 
                     var description = descriptor.Description.ToString(CultureInfo.InvariantCulture);
                     if (string.IsNullOrWhiteSpace(description))
@@ -245,11 +317,23 @@ Rule ID | Title | Category | Enabled | Severity | CodeFix | Description |
                         description = descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture);
                     }
 
-                    // Replace line breaks with HTML breaks so that new
-                    // lines don't break the markdown table formatting.
-                    description = System.Text.RegularExpressions.Regex.Replace(description, "\r?\n", "<br>");
+                    // Double the line breaks to ensure they are rendered properly in markdown
+                    description = Regex.Replace(description, "(\r?\n)", "$1$1");
+                    // Escape generic arguments to ensure they are not considered as HTML elements
+                    description = Regex.Replace(description, "(<.+?>)", "\\$1");
+                    description = description.Trim();
 
-                    builder.AppendLine($"{ruleIdWithHyperLink} | {descriptor.Title} | {descriptor.Category} | {descriptor.IsEnabledByDefault} | {descriptor.DefaultSeverity} | {hasCodeFix} | {description} |");
+                    builder.AppendLine(description);
+                    builder.AppendLine();
+
+                    builder.AppendLine("|Item|Value|");
+                    builder.AppendLine("|-|-|");
+                    builder.AppendLine($"|Category|{descriptor.Category}|");
+                    builder.AppendLine($"|Enabled|{descriptor.IsEnabledByDefault}|");
+                    builder.AppendLine($"|Severity|{descriptor.DefaultSeverity}|");
+                    var hasCodeFix = fixableDiagnosticIds.Contains(descriptor.Id);
+                    builder.AppendLine($"|CodeFix|{hasCodeFix}|");
+                    builder.AppendLine("---");
                 }
 
                 File.WriteAllText(fileWithPath, builder.ToString());
@@ -392,7 +476,7 @@ Rule ID | Title | Category | Enabled | Severity | CodeFix | Description |
                 var fileWithPath = Path.Combine(directory.FullName, "RulesMissingDocumentation.md");
 
                 var builder = new StringBuilder();
-                builder.Append(@"## Rules without documentation
+                builder.Append(@"# Rules without documentation
 
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|

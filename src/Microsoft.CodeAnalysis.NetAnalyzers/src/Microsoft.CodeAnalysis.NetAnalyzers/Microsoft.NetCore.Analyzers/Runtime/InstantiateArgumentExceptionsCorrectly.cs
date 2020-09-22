@@ -171,7 +171,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsParameterName(IParameterSymbol parameter)
         {
-            return parameter.Name == "paramName" || parameter.Name == "parameterName";
+            return parameter.Name is "paramName" or "parameterName";
         }
 
         private static bool HasParameterNameConstructor(ITypeSymbol type)

@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         // CA1827
         private static readonly LocalizableString s_localizableTitle_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessag_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessage_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         // CA1828
@@ -69,7 +69,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         internal static readonly DiagnosticDescriptor s_rule_CA1827 = DiagnosticDescriptorHelper.Create(
             CA1827,
             s_localizableTitle_CA1827,
-            s_localizableMessag_CA1827,
+            s_localizableMessage_CA1827,
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
             description: s_localizableDescription_CA1827,
@@ -153,33 +153,36 @@ namespace Microsoft.NetCore.Analyzers.Performance
             methods = namedType?.GetMembers(LongCountAsync).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(asyncMethods, methods);
 
-            // Disallowed types that shouldn't report a diagnosis given that there is no proven benefit on doing so.
-            ImmutableHashSet<ITypeSymbol>.Builder disallowedTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
+            // Allowed types that should report a CA1836 diagnosis given that there is proven benefit on doing so.
+            ImmutableHashSet<ITypeSymbol>.Builder allowedTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemory1);
-            disallowedTypesBuilder.AddIfNotNull(namedType);
+            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentBag1);
+            allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSpan1);
-            disallowedTypesBuilder.AddIfNotNull(namedType);
+            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentDictionary2);
+            allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlyMemory1);
-            disallowedTypesBuilder.AddIfNotNull(namedType);
+            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentQueue1);
+            allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1);
-            disallowedTypesBuilder.AddIfNotNull(namedType);
+            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentStack1);
+            allowedTypesBuilder.AddIfNotNull(namedType);
 
-            ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836 = disallowedTypesBuilder.ToImmutable();
+            ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836 = allowedTypesBuilder.ToImmutable();
 
             if (syncMethods.Count > 0 || asyncMethods.Count > 0)
             {
                 context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(
-                    operationContext, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), disallowedTypesForCA1836),
+                    operationContext, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
                     OperationKind.Invocation);
             }
 
-            context.RegisterOperationAction(operationContext => AnalyzePropertyReference(
-                operationContext, disallowedTypesForCA1836),
-                OperationKind.PropertyReference);
+            if (!allowedTypesForCA1836.IsEmpty)
+            {
+                context.RegisterOperationAction(operationContext => AnalyzePropertyReference(
+                    operationContext, allowedTypesForCA1836),
+                    OperationKind.PropertyReference);
+            }
 
             static void AddIfNotNull(ImmutableHashSet<IMethodSymbol>.Builder set, IEnumerable<IMethodSymbol>? others)
             {
@@ -194,7 +197,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             OperationAnalysisContext context,
             ImmutableHashSet<IMethodSymbol> syncMethods,
             ImmutableHashSet<IMethodSymbol> asyncMethods,
-            ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836)
+            ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
             var invocationOperation = (IInvocationOperation)context.Operation;
 
@@ -222,7 +225,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (isAsync)
             {
                 // Only report awaited calls.
-                if (!(parentOperation is IAwaitOperation awaitOperation))
+                if (parentOperation is not IAwaitOperation awaitOperation)
                 {
                     return;
                 }
@@ -236,15 +239,15 @@ namespace Microsoft.NetCore.Analyzers.Performance
             bool shouldReplaceParent = ShouldReplaceParent(ref parentOperation, out string? operationKey, out bool shouldNegateIsEmpty);
 
             DetermineReportForInvocationAnalysis(context, invocationOperation, parentOperation,
-                shouldReplaceParent, isAsync, shouldNegateIsEmpty, hasPredicate, originalDefinition.Name, operationKey, disallowedTypesForCA1836);
+                shouldReplaceParent, isAsync, shouldNegateIsEmpty, hasPredicate, originalDefinition.Name, operationKey, allowedTypesForCA1836);
         }
 
-        private static void AnalyzePropertyReference(OperationAnalysisContext context, ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836)
+        private static void AnalyzePropertyReference(OperationAnalysisContext context, ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
             var propertyReferenceOperation = (IPropertyReferenceOperation)context.Operation;
 
             string propertyName = propertyReferenceOperation.Member.Name;
-            if (propertyName != Count && propertyName != Length)
+            if (propertyName is not Count and not Length)
             {
                 return;
             }
@@ -259,7 +262,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (shouldReplaceParent)
             {
                 DetermineReportForPropertyReference(context, propertyReferenceOperation, parentOperation,
-                    operationKey, shouldNegateIsEmpty, disallowedTypesForCA1836);
+                    operationKey, shouldNegateIsEmpty, allowedTypesForCA1836);
             }
         }
 
@@ -409,7 +412,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             OperationAnalysisContext context,
             IInvocationOperation invocationOperation, IOperation parent,
             bool shouldReplaceParent, bool isAsync, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey,
-            ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836)
+            ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
             if (!shouldReplaceParent)
             {
@@ -438,7 +441,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                     else
                     {
-                        if (!disallowedTypesForCA1836.Contains(type.OriginalDefinition) &&
+                        if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
                             TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
                             !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
                         {
@@ -465,12 +468,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static void DetermineReportForPropertyReference(
             OperationAnalysisContext context, IOperation operation, IOperation parent,
             string? operationKey, bool shouldNegateIsEmpty,
-            ImmutableHashSet<ITypeSymbol> disallowedTypesForCA1836)
+            ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
             ITypeSymbol? type = operation.GetInstanceType();
             if (type != null)
             {
-                if (!disallowedTypesForCA1836.Contains(type.OriginalDefinition) &&
+                if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
                     TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
                     !IsPropertyGetOfIsEmptyUsingThisInstance(context, operation, isEmptyPropertySymbol!))
                 {
@@ -688,7 +691,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 _ => -1
             };
 
-            return constant == 0 || constant == 1;
+            return constant is 0 or 1;
         }
 
         private static bool IsPropertyGetOfIsEmptyUsingThisInstance(OperationAnalysisContext context, IOperation operation, ISymbol isEmptyPropertySymbol)

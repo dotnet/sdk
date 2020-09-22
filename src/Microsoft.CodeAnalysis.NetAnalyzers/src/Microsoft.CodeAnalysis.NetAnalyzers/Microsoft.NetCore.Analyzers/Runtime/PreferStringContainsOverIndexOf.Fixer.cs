@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             Document doc = context.Document;
             CancellationToken cancellationToken = context.CancellationToken;
             SyntaxNode root = await doc.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            if (!(root.FindNode(context.Span) is SyntaxNode expression))
+            if (root.FindNode(context.Span) is not SyntaxNode expression)
             {
                 return;
             }
@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var operation = semanticModel.GetOperation(expression, cancellationToken);
 
             // Not offering a code-fix for the variable declaration case
-            if (!(operation is IBinaryOperation binaryOperation))
+            if (operation is not IBinaryOperation binaryOperation)
             {
                 return;
             }
@@ -65,9 +65,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             context.RegisterCodeFix(
                 CodeAction.Create(
-                    title: MicrosoftNetCoreAnalyzersResources.PreferStringContainsOverIndexOfTitle,
+                    title: MicrosoftNetCoreAnalyzersResources.PreferStringContainsOverIndexOfCodeFixTitle,
                     createChangedDocument: c => ReplaceBinaryOperationWithContains(doc, instanceOperation.Syntax, invocationOperation.Arguments, binaryOperation, c),
-                    equivalenceKey: MicrosoftNetCoreAnalyzersResources.PreferStringContainsOverIndexOfTitle),
+                    equivalenceKey: MicrosoftNetCoreAnalyzersResources.PreferStringContainsOverIndexOfCodeFixTitle),
                 context.Diagnostics);
             return;
 
@@ -95,7 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 else
                 {
                     int stringOrCharArgumentIndex, ordinalArgumentIndex;
-                    if (indexOfMethodArguments[0].Value.Type.SpecialType == SpecialType.System_String || indexOfMethodArguments[0].Value.Type.SpecialType == SpecialType.System_Char)
+                    if (indexOfMethodArguments[0].Value.Type.SpecialType is SpecialType.System_String or SpecialType.System_Char)
                     {
                         stringOrCharArgumentIndex = 0;
                         ordinalArgumentIndex = 1;

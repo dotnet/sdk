@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                 if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol) ||
                     !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol) ||
-                    !(compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
+                    compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
                 }

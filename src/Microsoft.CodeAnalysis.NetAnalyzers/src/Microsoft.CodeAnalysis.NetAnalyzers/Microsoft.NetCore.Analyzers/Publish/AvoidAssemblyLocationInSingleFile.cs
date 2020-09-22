@@ -36,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Publish
             IL3001,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidAssemblyLocationInSingleFileTitle),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidAssemblyGetFilesInSingleFile),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidAssemblyGetFilesInSingleFileMessage),
                 MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Publish,
             RuleLevel.BuildWarning,

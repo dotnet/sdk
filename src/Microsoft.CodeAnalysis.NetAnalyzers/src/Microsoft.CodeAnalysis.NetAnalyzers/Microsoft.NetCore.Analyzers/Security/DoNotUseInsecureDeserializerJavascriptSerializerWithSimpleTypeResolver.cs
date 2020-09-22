@@ -106,14 +106,14 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         break;
 
                                     case PointsToAbstractValueKind.KnownLocations:
-                                        if (pointsTo.Locations.Any(l => !l.IsNull && simpleTypeResolverSymbol.Equals(l.LocationTypeOpt)))
+                                        if (pointsTo.Locations.Any(l => !l.IsNull && simpleTypeResolverSymbol.Equals(l.LocationType)))
                                         {
                                             kind = PropertySetAbstractValueKind.Flagged;
                                         }
                                         else if (pointsTo.Locations.Any(l =>
                                                     !l.IsNull
-                                                    && javaScriptTypeResolverSymbol.Equals(l.LocationTypeOpt)
-                                                    && (l.CreationOpt == null || l.CreationOpt.Kind != OperationKind.ObjectCreation)))
+                                                    && javaScriptTypeResolverSymbol.Equals(l.LocationType)
+                                                    && (l.Creation == null || l.Creation.Kind != OperationKind.ObjectCreation)))
                                         {
                                             // Points to a JavaScriptTypeResolver, but we don't know if the instance is a SimpleTypeResolver.
                                             kind = PropertySetAbstractValueKind.MaybeFlagged;
@@ -261,8 +261,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                             }
                             finally
                             {
-                                rootOperationsNeedingAnalysis.Free();
-                                allResults?.Free();
+                                rootOperationsNeedingAnalysis.Free(compilationAnalysisContext.CancellationToken);
+                                allResults?.Free(compilationAnalysisContext.CancellationToken);
                             }
                         });
                 });

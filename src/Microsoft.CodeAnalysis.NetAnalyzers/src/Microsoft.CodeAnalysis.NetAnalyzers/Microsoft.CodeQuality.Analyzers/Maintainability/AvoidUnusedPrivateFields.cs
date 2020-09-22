@@ -123,7 +123,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 var namedType = (INamedTypeSymbol)context.Symbol;
                                 foreach (var member in namedType.GetMembers())
                                 {
-                                    if (!(member is IFieldSymbol field))
+                                    if (member is not IFieldSymbol field)
                                     {
                                         continue;
                                     }

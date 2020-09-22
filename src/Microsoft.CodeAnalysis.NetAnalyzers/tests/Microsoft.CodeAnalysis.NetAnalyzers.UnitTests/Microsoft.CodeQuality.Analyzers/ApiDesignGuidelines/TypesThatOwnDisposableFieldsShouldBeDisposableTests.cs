@@ -52,7 +52,7 @@ using System.IO;
         FileStream newFile1, newFile2 = new FileStream(""data.txt"", FileMode.Append);
     }
 ",
-            GetCA1001CSharpResultAt(4, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001CSharpResultAt(4, 18, "NoDisposeClass", "newFile2"));
         }
 
         [Fact]
@@ -288,7 +288,7 @@ Imports System.IO
         Dim newFile1 As FileStream, newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
 ",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
@@ -299,7 +299,7 @@ Imports System.IO
         Dim newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
 ",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
         }
 
         [Fact]
@@ -448,6 +448,80 @@ Namespace ClassLibrary1
 End Namespace
 ",
             GetCA1001BasicResultAt(6, 11, "Class1", "_disp1"));
+        }
+
+        [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        public async Task CA1001_OnlyListDisposableFields()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+
+public class {|#0:NoDisposeClass|}
+{
+    FileStream _fs1;
+    FileStream _fs2;
+
+    public NoDisposeClass(FileStream fs)
+    {
+        _fs1 = new FileStream(""data.txt"", FileMode.Append);
+        _fs2 = fs;
+    }
+}
+",
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+
+Public Class {|#0:NoDisposeClass|}
+    Private _fs1 As FileStream
+    Private _fs2 As FileStream
+
+    Public Sub New(ByVal fs As FileStream)
+        _fs1 = New FileStream(""data.txt"", FileMode.Append)
+        _fs2 = fs
+    End Sub
+End Class
+",
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"));
+        }
+
+        [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        public async Task CA1001_ListDisposableFields()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+
+public class {|#0:NoDisposeClass|}
+{
+    FileStream _fs1 = new FileStream(""data.txt"", FileMode.Append), _fs2 = new FileStream(""data.txt"", FileMode.Append);
+    FileStream _fs3;
+    FileStream _fs4;
+
+    public NoDisposeClass()
+    {
+        _fs3 = new FileStream(""data.txt"", FileMode.Append);
+        _fs4 = new FileStream(""data.txt"", FileMode.Append);
+    }
+}
+",
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+
+Public Class {|#0:NoDisposeClass|}
+    Private _fs1 As FileStream = new FileStream(""data.txt"", FileMode.Append), _fs2 As FileStream = new FileStream(""data.txt"", FileMode.Append)
+    Private _fs3 As FileStream
+    Private _fs4 As FileStream
+
+    Public Sub New(ByVal fs As FileStream)
+        _fs3 = new FileStream(""data.txt"", FileMode.Append)
+        _fs4 = new FileStream(""data.txt"", FileMode.Append)
+    End Sub
+End Class
+",
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"));
         }
 
         private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)

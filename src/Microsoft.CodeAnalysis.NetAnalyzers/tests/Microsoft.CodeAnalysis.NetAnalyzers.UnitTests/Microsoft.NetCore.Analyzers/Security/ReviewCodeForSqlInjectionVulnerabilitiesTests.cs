@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForSqlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -11,6 +13,65 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class ReviewCodeForSqlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForSqlInjectionVulnerabilities, ReviewCodeForSqlInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForSqlInjectionVulnerabilities.Rule;
+
+        [Fact]
+        public async Task EntityFramework_FromSql_Constant_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+namespace VulnerableWebApp
+{
+    using System;
+    using System.Data;
+    using System.Linq;
+    using System.Web;
+    using System.Web.UI;
+    using Microsoft.EntityFrameworkCore;
+
+    public class MyContext : DbContext
+    {
+        public DbSet<string> DataSet { get; set; }
+    }
+
+    public partial class WebForm : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            new MyContext().DataSet.FromSql("""");
+        }
+    }
+}
+            ");
+        }
+
+        [Fact]
+        public async Task HttpRequest_Form_Item_EntityFramework_FromSql_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+namespace VulnerableWebApp
+{
+    using System;
+    using System.Data;
+    using System.Linq;
+    using System.Web;
+    using System.Web.UI;
+    using Microsoft.EntityFrameworkCore;
+
+    public class MyContext : DbContext
+    {
+        public DbSet<string> DataSet { get; set; }
+    }
+
+    public partial class WebForm : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            new MyContext().DataSet.FromSql(Request[""in""]);
+        }
+    }
+}
+            ",
+                GetCSharpResultAt(20, 13, 20, 45, "IQueryable<string> RelationalQueryableExtensions.FromSql<string>(IQueryable<string> source, RawSqlString sql, params object[] parameters)", "void WebForm.Page_Load(object sender, EventArgs e)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
+        }
 
         [Fact]
         public async Task DocSample1_CSharp_Violation_Diagnostic()
@@ -618,6 +679,38 @@ namespace VulnerableWebApp
 }
             ",
                 GetCSharpResultAt(15, 37, 15, 52, "SqlCommand.SqlCommand(string cmdText)", "void WebForm.Page_Load(object sender, EventArgs e)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
+        }
+
+        [Fact]
+        public async Task HttpRequest_Form_Method_GenericsSink_Diagnostic()
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default
+                    .AddAssemblies(ImmutableArray.Create("System.Web", "System.Web.Extensions"))
+                    .AddPackages(ImmutableArray.Create(new PackageIdentity("EntityFramework", "6.4.4"))),
+                TestCode = @"
+namespace VulnerableWebApp
+{
+    using System;
+    using System.Data.Entity;
+    using System.Web.UI;
+
+    public partial class WebForm : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            string input = Request.Form.Get(""in"");
+            new DbContext(""connectionString"").Set<Object>().SqlQuery(input, null);
+        }
+     }
+}
+",
+            };
+
+            csharpTest.ExpectedDiagnostics.AddRange(new[] { GetCSharpResultAt(13, 13, 12, 28, "DbSqlQuery<object> DbSet<object>.SqlQuery(string sql, params object[] parameters)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)") });
+
+            await csharpTest.RunAsync();
         }
 
         [Fact]
@@ -3252,6 +3345,452 @@ namespace TestNamespace
         }
     }
 }");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_MvcFromServices_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public interface ISomething
+{
+    string ToString();
+}
+
+public class MyController : Controller
+{
+    public void DoSomething([FromServices]ISomething input)
+    {
+        new SqlCommand(input.ToString());
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_MvcNoFromServices_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public interface ISomething
+{
+    string ToString();
+}
+
+public class MyController : Controller
+{
+    public void DoSomething(ISomething input)
+    {
+        new SqlCommand(input.ToString());
+    }
+}",
+                GetCSharpResultAt(14, 9, 12, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(ISomething input)", "ISomething input", "void MyController.DoSomething(ISomething input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_MultipleActions_Diagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController : Controller
+{
+    public void DoSomething1(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething2(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+}",
+                GetCSharpResultAt(9, 9, 7, 30, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething1(string input)", "string input", "void MyController.DoSomething1(string input)"),
+                GetCSharpResultAt(14, 9, 12, 30, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething2(string input)", "string input", "void MyController.DoSomething2(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_MultipleActions_NotController_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+[NonController]
+public class MyController : Controller
+{
+    // more actions to hit the cache even with the lock-free implementation
+    public void DoSomething1(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething2(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething3(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething4(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething5(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething6(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething7(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething8(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething9(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething10(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething11(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething12(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething13(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething14(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething15(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething16(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething17(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething18(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+
+    public void DoSomething19(string input)
+    {
+        new SqlCommand(input.ToString());
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_InheritedNonController_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+[NonController]
+public class TotallyNonController : Controller
+{
+}
+
+public class MyController : TotallyNonController
+{
+    public void DoSomethingNonAction(string input)
+    {
+        new SqlCommand(input);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_InheritedNonAction_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyControllerBase : Controller
+{
+    [NonAction]
+    public virtual void DoSomethingNonAction(string input)
+    {
+        new SqlCommand(input);
+    }
+}
+
+public class MyController : MyControllerBase
+{
+    public override void DoSomethingNonAction(string input)
+    {
+        new SqlCommand(input);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_ControllerAttribute()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+[Controller]
+public class My
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+}",
+                GetCSharpResultAt(10, 9, 8, 29, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_ControllerSuffix_Inherited()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class Controller
+{
+}
+
+public class My : Controller
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+}",
+                GetCSharpResultAt(13, 9, 11, 29, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_ControllerSuffix()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+}",
+                GetCSharpResultAt(9, 9, 7, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_Reassignment_NoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController
+{
+    public void DoSomething(string input)
+    {
+        input = """";
+        new SqlCommand(input);
+    }
+}");
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments_NoMvcReferenced_NoDiagnostic()
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestState =
+                {
+                    Sources = { @"
+using System.Data.SqlClient;
+
+public class MyController
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+}"
+                    }
+                },
+            };
+
+            await csharpTest.RunAsync();
+        }
+
+        [Fact]
+        public async Task TaintFunctionArguments()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController : Controller
+{
+    public void DoSomething(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    [NonAction]
+    public void DoSomethingNonAction(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    public static void DoSomethingStatic(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    private void DoSomethingPrivate(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    protected void DoSomethingProtected(string input)
+    {
+        new SqlCommand(input);
+    }
+
+    public MyController(string x)
+    {
+        new SqlCommand(x);
+    }
+}",
+                GetCSharpResultAt(9, 9, 7, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
+        }
+
+        [Theory]
+        [InlineData("st.Append(stringParam);", true, "string stringParam")]
+        [InlineData("st.Append(intParam);", false)]
+        [InlineData("st.Append(charArrayParam);", true, "char[] charArrayParam", 70)]
+        [InlineData("st.Append(charPointerParam, 10);", true, "char* charPointerParam", 93)]
+        [InlineData("st.Append(charParam);", true, "char charParam", 117)]
+
+        [InlineData("st.AppendFormat(stringParam, \"1\");", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}\", stringParam);", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}{1}\", \"\", stringParam);", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}\", \"\", \"\", stringParam);", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}{3}\", \"\", \"\", \"\", stringParam);", true, "string stringParam")]
+        [InlineData("st.AppendFormat(\"{0}{1}{2}{3}{4}\", \"\", \"\", \"\", \"\", stringParam);", true, "string stringParam")]
+
+        [InlineData("st.AppendLine(stringParam);", true, "string stringParam")]
+
+        [InlineData("st.Insert(0, stringParam);", true, "string stringParam")]
+        [InlineData("st.Insert(0, intParam);", false)]
+        [InlineData("st.Insert(0, charArrayParam);", true, "char[] charArrayParam", 70)]
+        [InlineData("st.Insert(0, charParam);", true, "char charParam", 117)]
+
+        [InlineData("st.Replace(\"\", stringParam);", true, "string stringParam")]
+
+        [InlineData("st[0] = charParam;", true, "char charParam", 117)]
+
+        [InlineData("st.Append(stringParam); st.CopyTo(0, arr, 0, 10)", true, "string stringParam", 36, "new string(arr)")]
+        [InlineData("st.Append(stringParam); st.Clear()", false)]
+
+        [InlineData("StaticString = stringParam", false)]
+        public async Task TaintThis_StringBuilder(string payload, bool warn, string source = "", int sourceColumn = 36, string sinkArg = "st.ToString()")
+        {
+            string code = $@"
+using System.Data.SqlClient;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
+
+public class MyController
+{{
+    public unsafe void DoSomething(string stringParam, int intParam, char[] charArrayParam, char* charPointerParam, char charParam)
+    {{
+        var st = new StringBuilder();
+        var arr = new char[100];
+        {payload};
+        new SqlCommand({sinkArg});
+    }}
+
+    public static string StaticString {{ get; set; }}
+}}";
+            if (warn)
+            {
+                await VerifyCSharpWithDependenciesAsync(
+                     code,
+                     GetCSharpResultAt(
+                         13, 9, 8, sourceColumn,
+                         "SqlCommand.SqlCommand(string cmdText)",
+                         "void MyController.DoSomething(string stringParam, int intParam, char[] charArrayParam, char* charPointerParam, char charParam)",
+                         source,
+                         "void MyController.DoSomething(string stringParam, int intParam, char[] charArrayParam, char* charPointerParam, char charParam)"));
+            }
+            else
+            {
+                await VerifyCSharpWithDependenciesAsync(code);
+            }
+        }
+
+        [Fact]
+        public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_WrongSanitizer()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultForTaintedDataAnalysis,
+                TestState =
+                {
+                    Sources =
+                    {
+                        SharedCode.WrongSanitizer,
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(16, 33, 11, 24, "SqlCommand.SqlCommand(string cmdText)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)")
+                    },
+                },
+            }.RunAsync();
         }
     }
 }

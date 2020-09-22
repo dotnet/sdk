@@ -80,7 +80,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 IInvocationOperation invocation = (IInvocationOperation)context.Operation;
 
-                if (!(context.ContainingSymbol is IMethodSymbol containingMethod))
+                if (context.ContainingSymbol is not IMethodSymbol containingMethod)
                 {
                     return;
                 }

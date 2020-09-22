@@ -127,7 +127,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
-                    if (!(disposableType.GetMembers(DisposeMethodName).FirstOrDefault() is IMethodSymbol disposeInterfaceMethod))
+                    if (disposableType.GetMembers(DisposeMethodName).FirstOrDefault() is not IMethodSymbol disposeInterfaceMethod)
                     {
                         return;
                     }
@@ -138,7 +138,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
-                    if (!(garbageCollectorType.GetMembers(SuppressFinalizeMethodName).FirstOrDefault() is IMethodSymbol suppressFinalizeMethod))
+                    if (garbageCollectorType.GetMembers(SuppressFinalizeMethodName).FirstOrDefault() is not IMethodSymbol suppressFinalizeMethod)
                     {
                         return;
                     }
@@ -224,7 +224,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             private void AnalyzeOperationBlock(OperationBlockAnalysisContext context)
             {
-                if (!(context.OwningSymbol is IMethodSymbol method))
+                if (context.OwningSymbol is not IMethodSymbol method)
                 {
                     return;
                 }

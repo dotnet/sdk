@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -37,6 +38,18 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                            argNode.NameColon?.Name?.Identifier.ValueText == name;
                 });
             }
+        }
+
+        protected override bool IsSystemNamespaceImported(IReadOnlyList<SyntaxNode> importList)
+        {
+            foreach (SyntaxNode import in importList)
+            {
+                if (import is UsingDirectiveSyntax { Name: IdentifierNameSyntax { Identifier: { Text: nameof(System) } } })
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

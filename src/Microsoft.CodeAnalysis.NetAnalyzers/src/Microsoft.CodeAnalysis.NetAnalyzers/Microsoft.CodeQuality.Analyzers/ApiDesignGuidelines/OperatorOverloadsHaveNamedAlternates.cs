@@ -253,9 +253,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return createSingle("Plus");
                 case "op_Implicit":
                 case "op_Explicit":
-                    return new ExpectedAlternateMethodGroup(alternateMethod1: $"To{returnType.Name}", alternateMethod2: parameterType != null ? $"From{parameterType.Name}" : null);
+                    return new ExpectedAlternateMethodGroup(alternateMethod1: $"To{GetTypeName(returnType)}", alternateMethod2: parameterType != null ? $"From{GetTypeName(parameterType)}" : null);
                 default:
                     return null;
+            }
+
+            static string GetTypeName(ITypeSymbol typeSymbol)
+            {
+                if (typeSymbol.TypeKind != TypeKind.Array)
+                {
+                    return typeSymbol.Name;
+                }
+
+                var elementType = typeSymbol;
+                do
+                {
+                    elementType = ((IArrayTypeSymbol)elementType).ElementType;
+                }
+                while (elementType.TypeKind == TypeKind.Array);
+
+                return elementType.Name + "Array";
             }
         }
 

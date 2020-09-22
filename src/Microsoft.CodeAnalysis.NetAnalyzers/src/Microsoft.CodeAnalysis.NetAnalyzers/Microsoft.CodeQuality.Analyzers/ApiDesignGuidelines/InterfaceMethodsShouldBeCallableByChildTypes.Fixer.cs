@@ -39,7 +39,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            if (!(semanticModel.GetDeclaredSymbol(nodeToFix, context.CancellationToken) is IMethodSymbol methodSymbol))
+            if (semanticModel.GetDeclaredSymbol(nodeToFix, context.CancellationToken) is not IMethodSymbol methodSymbol)
             {
                 return;
             }

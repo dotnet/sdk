@@ -1178,6 +1178,95 @@ End Class";
             }.RunAsync();
         }
 
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        public async Task FullProperties_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    private int field;
+
+    public int P1
+    {
+        get { return field; }
+        set { field = value; }
+    }
+
+    public int P2
+    {
+        get { return field; }
+    }
+
+    public int P3 => field;
+
+    public int P4
+    {
+        get => field;
+        set => field = value;
+    }
+}");
+        }
+
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        public async Task AutoProperties_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+public class C1
+{
+    public string P1 { get; set; }
+
+    public string P2 { get; }
+
+    public string P3
+    {
+        [DebuggerStepThrough]
+        get;
+    }
+
+    public string [|P4|] // Because of the error there is no generated field
+    {
+        [DebuggerStepThrough]
+        {|CS8051:set|};
+    }
+
+    public string P5
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        get;
+    }
+}");
+        }
+
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        public async Task Properties_StaticField_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C1
+{
+    private static int s_field;
+
+    public int [|P1|]
+    {
+        get { return s_field; }
+        set { s_field = value; }
+    }
+
+    public int [|P2|]
+    {
+        get { return s_field; }
+    }
+
+    public int [|P3|]
+    {
+        set { s_field = value; }
+    }
+}");
+        }
+
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
