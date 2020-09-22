@@ -584,6 +584,97 @@ class Test
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
+        [Fact, WorkItem(4190, "https://github.com/dotnet/roslyn-analyzers/issues/4190")]
+        public async Task Unsupported_GuardedWith_DebugAssert_IsOsNameMethods()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1()
+    {
+        Debug.Assert(!OperatingSystemHelper.IsBrowser());
+
+        NotForBrowser();
+        [|NotForIos12OrLater()|];
+    }
+
+    void M2()
+    {
+        Debug.Assert(OperatingSystemHelper.IsBrowser());
+
+        NotForIos12OrLater();
+        [|NotForBrowser()|];
+    }
+
+    void M3()
+    {
+        Debug.Assert(OperatingSystemHelper.IsOSPlatform(""Browser""));
+        [|NotForBrowser()|];
+    }
+
+    void M4()
+    {
+        Debug.Assert(!OperatingSystemHelper.IsOSPlatform(""Browser""));
+        NotForBrowser();
+    }
+
+    void M5()
+    {
+        Debug.Assert(OperatingSystemHelper.IsIOS());
+        [|NotForIos12OrLater()|];
+    }
+
+    void M6()
+    {
+        Debug.Assert(!OperatingSystemHelper.IsIOS());
+        NotForIos12OrLater();
+    }
+
+    void M7()
+    {
+        Debug.Assert(OperatingSystemHelper.IsIOSVersionAtLeast(12,1));
+        [|NotForIos12OrLater()|];
+    }
+
+    void M8()
+    {
+        Debug.Assert(!OperatingSystemHelper.IsIOSVersionAtLeast(12,1));
+        NotForIos12OrLater();
+    }
+
+    void M9()
+    {
+        Debug.Assert(OperatingSystemHelper.IsIOS());
+        Debug.Assert(!OperatingSystemHelper.IsIOSVersionAtLeast(12,0));
+        
+        NotForIos12OrLater();
+    }
+
+    void M10()
+    {
+        Debug.Assert(!(OperatingSystemHelper.IsIOS() && !OperatingSystemHelper.IsIOSVersionAtLeast(12,0)));
+        [|NotForIos12OrLater()|];
+    }
+
+    [UnsupportedOSPlatform(""browser"")]
+    void NotForBrowser()
+    {
+    }
+
+    [UnsupportedOSPlatform(""ios12.1"")]
+    void NotForIos12OrLater()
+    {
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
         public static IEnumerable<object[]> OperatingSystem_IsOsNameVersionAtLeast_MethodsTestData()
         {
             yield return new object[] { "Windows", "IsWindows", "10,1", true };
