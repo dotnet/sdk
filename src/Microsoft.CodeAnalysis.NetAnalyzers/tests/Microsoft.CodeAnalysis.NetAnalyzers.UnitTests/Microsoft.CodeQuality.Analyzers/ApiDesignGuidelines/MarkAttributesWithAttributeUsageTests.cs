@@ -17,23 +17,23 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public partial class MarkAttributesWithAttributeUsageTests
     {
         [Theory]
-        [InlineData(AttributeTargets.All)]
-        [InlineData(AttributeTargets.Assembly)]
-        [InlineData(AttributeTargets.Class)]
-        [InlineData(AttributeTargets.Constructor)]
-        [InlineData(AttributeTargets.Delegate)]
-        [InlineData(AttributeTargets.Enum)]
-        [InlineData(AttributeTargets.Event)]
-        [InlineData(AttributeTargets.Field)]
-        [InlineData(AttributeTargets.GenericParameter)]
-        [InlineData(AttributeTargets.Interface)]
-        [InlineData(AttributeTargets.Method)]
-        [InlineData(AttributeTargets.Module)]
-        [InlineData(AttributeTargets.Parameter)]
-        [InlineData(AttributeTargets.Property)]
-        [InlineData(AttributeTargets.ReturnValue)]
-        [InlineData(AttributeTargets.Struct)]
-        public async Task TestSimpleAttributeClass(AttributeTargets attributeTarget)
+        [InlineData(AttributeTargets.All, 0)]
+        [InlineData(AttributeTargets.Assembly, 1)]
+        [InlineData(AttributeTargets.Class, 2)]
+        [InlineData(AttributeTargets.Constructor, 3)]
+        [InlineData(AttributeTargets.Delegate, 4)]
+        [InlineData(AttributeTargets.Enum, 5)]
+        [InlineData(AttributeTargets.Event, 6)]
+        [InlineData(AttributeTargets.Field, 7)]
+        [InlineData(AttributeTargets.GenericParameter, 8)]
+        [InlineData(AttributeTargets.Interface, 9)]
+        [InlineData(AttributeTargets.Method, 10)]
+        [InlineData(AttributeTargets.Module, 11)]
+        [InlineData(AttributeTargets.Parameter, 12)]
+        [InlineData(AttributeTargets.Property, 13)]
+        [InlineData(AttributeTargets.ReturnValue, 14)]
+        [InlineData(AttributeTargets.Struct, 15)]
+        public async Task TestSimpleAttributeClass(AttributeTargets attributeTarget, int codeActionIndex)
         {
             var attributeTargetsValue = "AttributeTargets." + attributeTarget.ToString();
 
@@ -47,6 +47,8 @@ class C : Attribute
 }
 ",
                 ExpectedDiagnostics = { GetCA1018CSharpResultAt(4, 7, "C"), },
+                CodeActionIndex = codeActionIndex,
+                CodeActionEquivalenceKey = attributeTargetsValue,
                 FixedCode = @"
 using System;
 
