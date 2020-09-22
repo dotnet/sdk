@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Analyzer.Utilities;
@@ -62,7 +61,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             public DisposableFieldAnalyzer(Compilation compilation)
             {
                 DisposeAnalysisHelper.TryGetOrCreate(compilation, out _disposeAnalysisHelper!);
-                Debug.Assert(_disposeAnalysisHelper != null);
+                RoslynDebug.Assert(_disposeAnalysisHelper != null);
             }
 
             public void AnalyzeSymbol(SymbolAnalysisContext symbolContext)
