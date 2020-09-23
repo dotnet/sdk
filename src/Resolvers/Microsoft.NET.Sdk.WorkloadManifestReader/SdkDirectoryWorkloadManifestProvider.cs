@@ -51,7 +51,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 foreach (var workloadName in Directory.EnumerateDirectories(manifestDirectory))
                 {
                     var workloadManifest = Path.Combine(workloadName, "WorkloadManifest.json");
-                    yield return File.OpenRead(workloadManifest);
+                    if (File.Exists(workloadManifest))
+                    {
+                        yield return File.OpenRead(workloadManifest);
+                    }
                 }
             }
         }
