@@ -164,9 +164,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                             }
 
                             operationAnalysisContext.ReportDiagnostic(
-                                Diagnostic.Create(
+                                operationAnalysisContext.Operation.CreateDiagnostic(
                                     rule,
-                                    operationAnalysisContext.Operation.Syntax.GetLocation(),
                                     operationAnalysisContext.ContainingSymbol.Name,
                                     algorithmName));
                         },

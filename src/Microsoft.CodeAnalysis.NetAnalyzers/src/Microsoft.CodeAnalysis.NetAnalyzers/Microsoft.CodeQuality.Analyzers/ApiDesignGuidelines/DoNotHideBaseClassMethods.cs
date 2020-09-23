@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             foreach (var hiddenMethod in GetMethodsHiddenByMethod(method, method.ContainingType.BaseType))
             {
-                var diagnostic = Diagnostic.Create(Rule, context.Symbol.Locations[0], method.ToDisplayString(), hiddenMethod.ToDisplayString());
+                var diagnostic = context.Symbol.CreateDiagnostic(Rule, method.ToDisplayString(), hiddenMethod.ToDisplayString());
                 context.ReportDiagnostic(diagnostic);
             }
         }

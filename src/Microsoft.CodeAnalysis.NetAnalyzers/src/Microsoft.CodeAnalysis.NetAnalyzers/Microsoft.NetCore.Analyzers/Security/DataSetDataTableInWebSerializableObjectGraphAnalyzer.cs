@@ -2,7 +2,6 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -110,9 +109,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         foreach (InsecureObjectGraphResult result in results)
                                         {
                                             symbolAnalysisContext.ReportDiagnostic(
-                                                Diagnostic.Create(
+                                                parameterSymbol.CreateDiagnostic(
                                                     ObjectGraphContainsDangerousTypeDescriptor,
-                                                    parameterSymbol.DeclaringSyntaxReferences.First().GetSyntax().GetLocation(),
                                                     result.InsecureType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                                                     result.GetDisplayString()));
                                         }

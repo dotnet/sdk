@@ -122,7 +122,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     var properties = ImmutableDictionary<string, string>.Empty.SetItem(NewNamePropertyName, bestMatchParameter.Name);
 
-                    analysisContext.ReportDiagnostic(Diagnostic.Create(Rule, currentParameter.Locations.First(), properties, methodSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), currentParameter.Name, bestMatchParameter.Name, bestMatch.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
+                    analysisContext.ReportDiagnostic(currentParameter.CreateDiagnostic(Rule, properties, methodSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), currentParameter.Name, bestMatchParameter.Name, bestMatch.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
                 }
             }
         }

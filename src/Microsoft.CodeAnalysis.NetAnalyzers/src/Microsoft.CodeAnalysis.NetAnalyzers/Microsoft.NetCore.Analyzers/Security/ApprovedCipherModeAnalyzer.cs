@@ -74,11 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                             if (Equals(fieldSymbol.ContainingType, cipherModeTypeSymbol)
                                 && UnsafeCipherModes.Contains(fieldSymbol.MetadataName))
                             {
-                                operationAnalysisContext.ReportDiagnostic(
-                                    Diagnostic.Create(
-                                        Rule,
-                                        fieldReferenceOperation.Syntax.GetLocation(),
-                                        fieldSymbol.MetadataName));
+                                operationAnalysisContext.ReportDiagnostic(fieldReferenceOperation.CreateDiagnostic(Rule, fieldSymbol.MetadataName));
                             }
                         },
                         OperationKind.FieldReference);

@@ -129,7 +129,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var identifier = symbol.Name;
             if (s_typeNames.Contains(identifier))
             {
-                Diagnostic diagnostic = Diagnostic.Create(Rule, symbol.Locations[0], identifier);
+                Diagnostic diagnostic = symbol.CreateDiagnostic(Rule, identifier);
                 context.ReportDiagnostic(diagnostic);
             }
         }

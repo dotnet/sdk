@@ -74,7 +74,7 @@ namespace Microsoft.NetFramework.Analyzers
                             string baseTypeName = namedTypeSymbol.BaseType.ToDisplayString();
                             Debug.Assert(s_badBaseTypesToMessage.ContainsKey(baseTypeName));
                             string message = string.Format(CultureInfo.CurrentCulture, s_badBaseTypesToMessage[baseTypeName], namedTypeSymbol.ToDisplayString(), baseTypeName);
-                            Diagnostic diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations.First(), namedTypeSymbol.Locations.Skip(1), message);
+                            Diagnostic diagnostic = namedTypeSymbol.CreateDiagnostic(Rule, message);
                             saContext.ReportDiagnostic(diagnostic);
                         }
                     }
