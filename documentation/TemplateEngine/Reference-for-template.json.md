@@ -5,7 +5,6 @@ This page describes the options that are available when creating `template.json`
 When using the Template Engine the design is to allow you to create a template which is still a "runnable project" A "runnable project" is a project that can be
 executed as a normal project can. Instead of updating your source files to be tokenized you define replacements, and other processing, mostly in an external file,
 the `template.json` file. This requires that a few changes have to be done on the fly during the preparation of the package, and in the `template.json` we define all the operations needed to create a well working package.
-You can find a sample of a complex `template.json` file here [Sample](https://github.com/dotnet/templating/wiki/%22Runnable-Project%22-Templates#configuration).
 
 |Category|Description|  
 |------|------|     
@@ -20,8 +19,8 @@ You can find a sample of a complex `template.json` file here [Sample](https://gi
 |author|The author of the template|
 |classifications|Zero or more characteristics of the template which may be used in search. In this field you define the values shown as Tags in `dotnet new`|
 |name|The name for the template. This is displayed as the template name when using `dotnet new`|
-|groupIdentity|The ID of the group this template belongs to. When combined with the `tags`section, this allows multiple templates to be displayed as one, with the the decision for which one to use being presented as a choice in each one of the pivot categories (keys) [Details](https://github.com/dotnet/templating/wiki/_new#creation-of-multiple-tamplates-shown-as-one)|
-|tags|You can use tags to improve the metadata of your project. To specify the project language you have to add the tag `language` [Details](https://github.com/dotnet/templating/wiki/_new#creation-of-multiple-tamplates-shown-as-one), and if you want to make your project searchable via the `dotnet new --type` command you have to use the tag `type`|
+|groupIdentity|The ID of the group this template belongs to. When combined with the `tags`section, this allows multiple templates to be displayed as one, with the the decision for which one to use being presented as a choice in each one of the pivot categories (keys) |
+|tags|You can use tags to improve the metadata of your project. To specify the project language you have to add the tag `language`, and if you want to make your project searchable via the `dotnet new --type` command you have to use the tag `type`|
 |shortName|A default shorthand for selecting the template (applies to environments where the template name is specified by the user - not selected via a GUI). this is the name shown as Short Name in `dotnet new` list of templates, and is the name to use command list to run this template |
 |postActions|Enables actions to be performed after the project is created. See https://github.com/dotnet/templating/wiki/Post-Action-Registry|
 
@@ -91,7 +90,3 @@ There are 3 places from which a symbol can acquire its value:
 |---|---|
 |path|One instance of a primary output path.|
 |condition|If the condition evaluates to true, the corresponding path will be included in the output list. If false, the path is ignored. If no condition is provided for a path, the condition is defaulted to true.|
-
-## Creation of Multiple Templates shown as one
-
-#### TODO: Coming soon
