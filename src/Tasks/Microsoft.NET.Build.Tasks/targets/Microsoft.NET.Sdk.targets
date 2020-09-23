@@ -1020,10 +1020,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$(DOTNETSDK_WORKLOAD_MANIFEST_ROOT)</WorkloadManifestRoot>
 
     <!-- TODO: Remove this (it's for local testing) -->
-    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">C:\git\msbuild-sdk-resolver-test\testresolver\workloadmanifests\$(SdkFeatureBand)</WorkloadManifestRoot>
+    <!--<WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">C:\git\msbuild-sdk-resolver-test\testresolver\sdk-manifests\$(SdkFeatureBand)</WorkloadManifestRoot>-->
    
     <!-- TODO: This should probably go in BundledVersions.props-->
-    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$([MSBuild]::EnsureTrailingSlash('$(NetCoreRoot)'))workloadmanifests\$(SdkFeatureBand)</WorkloadManifestRoot>
+    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$([MSBuild]::EnsureTrailingSlash('$(NetCoreRoot)'))sdk-manifests\$(SdkFeatureBand)</WorkloadManifestRoot>
     
   </PropertyGroup>
 
