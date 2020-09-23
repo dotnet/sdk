@@ -1,0 +1,27 @@
+{
+  "version": 5,
+  "workloads": {
+    "microsoft-net-sdk-testworkload": {
+      "description": "SDK Test Workload",
+      "packs": [
+        "Microsoft.NET.SDK.TestWorkload.Pack"
+      ]
+    },
+    "microsoft-net-sdk-missingtestworkload": {
+      "description": "SDK Test Workload (missing)",
+      "packs": [
+        "Microsoft.NET.SDK.MissingTestWorkload.Pack"
+      ]
+    }
+  },
+  "packs": {
+    "Microsoft.NET.SDK.TestWorkload.Pack": {
+      "kind": "sdk",
+      "version": "0.42.42"
+    },
+    "Microsoft.NET.SDK.MissingTestWorkload.Pack": {
+      "kind": "sdk",
+      "version": "0.42.42"
+    }
+  }
+}
