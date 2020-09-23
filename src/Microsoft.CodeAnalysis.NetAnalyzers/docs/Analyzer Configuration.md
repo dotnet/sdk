@@ -261,8 +261,8 @@ Example: `dotnet_code_quality.try_determine_additional_string_formatting_methods
 Option Name: `excluded_symbol_names`
 
 Configurable Rules:
-[CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303),
 [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062),
+[CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303),
 [CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304),
 [CA1508](https://docs.microsoft.com/visualstudio/code-quality/ca1508),
 [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000),
@@ -306,10 +306,13 @@ Configurable Rules:
 Option Values: Names of symbols (separated by '|') that are excluded for analysis.
 Allowed symbol name formats:
 
-  1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format).
-     Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
-  3. `.ctor` for constructors and `.cctor` for static constructors
+  1. Symbol name (includes all symbols with the name, regardless of the containing type or name3pace)
+  2. Symbol name ending with a wildcard symbol (includes all symbols whose name starts with the given name, regardless of the containing type or namespace)
+  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format).
+    Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
+  4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) and ending with the wildcard symbol.
+    Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
+  5. `.ctor` for constructors and `.cctor` for static constructors
 
 Default Value: None
 
@@ -321,6 +324,9 @@ Examples:
 |`dotnet_code_quality.excluded_symbol_names = Validate1\|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
 |`dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
 |`dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+|`dotnet_code_quality.excluded_symbol_names = My*` | Matches all symbols whose name starts with 'My' |
+|`dotnet_code_quality.excluded_symbol_names = T:NS.My*` | Matches all type symbols whose name starts with 'My' in the namespace 'NS' |
+|`dotnet_code_quality.excluded_symbol_names = N:My*` | Matches all symbols whose containing namespace starts with 'My' |
 
 Additionally, all the dataflow analysis based rules can be configured with a single entry `dotnet_code_quality.dataflow.excluded_symbol_names = ...`
 
@@ -334,7 +340,9 @@ Option Values: Names of types (separated by '|'), such that the type and all its
 Allowed symbol name formats:
 
   1. Type name only (includes all types with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix.
+  2. Type name only ending with the wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace)
+  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix.
+  4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix and ending with the wildcard symbol.
 
 Default Value: None
 
