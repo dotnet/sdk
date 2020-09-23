@@ -3,7 +3,6 @@
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DataSetDataTableInWebSerializableObjectGraphAnalyzer,
@@ -31,7 +30,7 @@ public class MyService : WebService
     }
 }
 ",
-                GetCSharpResultAt(10, 31, "DataTable", "DataTable"));
+                GetCSharpResultAt(10, 41, "DataTable", "DataTable"));
         }
 
         [Fact]
@@ -57,7 +56,7 @@ public class MyType
     public DataSet DS { get; set; }
 }
 ",
-                GetCSharpResultAt(10, 31, "DataSet", "DataSet MyType.DS"));
+                GetCSharpResultAt(10, 38, "DataSet", "DataSet MyType.DS"));
         }
 
         [Fact]
@@ -84,8 +83,8 @@ public class MyClass
     public DataSet MyDataSet { get; set; }
 }
 ",
-                GetCSharpResultAt(10, 21, "DataTable", "DataTable"),
-                GetCSharpResultAt(12, 26, "DataSet", "DataSet MyClass.MyDataSet"));
+                GetCSharpResultAt(10, 31, "DataTable", "DataTable"),
+                GetCSharpResultAt(12, 34, "DataSet", "DataSet MyClass.MyDataSet"));
         }
 
         private static async Task VerifyServiceModelCSharpAsync(string source, params DiagnosticResult[] expected)

@@ -120,7 +120,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 if (currentParameter.Name != bestMatchParameter.Name)
                 {
-                    var properties = ImmutableDictionary<string, string>.Empty.SetItem(NewNamePropertyName, bestMatchParameter.Name);
+                    var properties = ImmutableDictionary<string, string?>.Empty.SetItem(NewNamePropertyName, bestMatchParameter.Name);
 
                     analysisContext.ReportDiagnostic(currentParameter.CreateDiagnostic(Rule, properties, methodSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), currentParameter.Name, bestMatchParameter.Name, bestMatch.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
                 }
