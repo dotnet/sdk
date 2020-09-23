@@ -665,6 +665,7 @@ End Class");
         [InlineData("dotnet_code_quality.excluded_symbol_names = M:NS.C.M1(System.String)")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = N:NS")]
+        [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = M*")]
         public async Task CA1034_ExcludedSymbolsOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test

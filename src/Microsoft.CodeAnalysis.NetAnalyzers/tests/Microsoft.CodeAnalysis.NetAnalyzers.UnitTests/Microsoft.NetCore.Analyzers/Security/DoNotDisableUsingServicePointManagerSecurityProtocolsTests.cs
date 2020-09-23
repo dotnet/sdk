@@ -238,6 +238,7 @@ class TestClass
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = ExampleMethod")]
         [InlineData("dotnet_code_quality.CA5378.excluded_symbol_names = ExampleMethod")]
+        [InlineData("dotnet_code_quality.CA5378.excluded_symbol_names = ExampleMet*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = ExampleMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {

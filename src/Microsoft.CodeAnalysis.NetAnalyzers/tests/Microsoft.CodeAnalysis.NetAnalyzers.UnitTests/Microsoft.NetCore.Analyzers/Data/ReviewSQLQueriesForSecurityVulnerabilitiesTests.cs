@@ -1643,8 +1643,9 @@ End Class");
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + ReviewSqlQueriesForSecurityVulnerabilities.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA2100.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA2100.excluded_symbol_names = M*")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test

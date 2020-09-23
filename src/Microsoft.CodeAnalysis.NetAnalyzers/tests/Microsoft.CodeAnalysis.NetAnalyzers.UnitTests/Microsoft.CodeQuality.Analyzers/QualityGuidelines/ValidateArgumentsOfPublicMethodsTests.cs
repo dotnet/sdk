@@ -6388,7 +6388,8 @@ public class Test
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + ValidateArgumentsOfPublicMethods.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1062.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1062.excluded_symbol_names = M*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
