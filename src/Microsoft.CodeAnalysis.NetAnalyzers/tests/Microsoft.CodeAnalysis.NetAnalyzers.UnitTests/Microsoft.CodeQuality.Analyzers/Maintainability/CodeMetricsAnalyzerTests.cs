@@ -326,11 +326,12 @@ End Class"
         }
 
         [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunction.*")]
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.*")]
-        // The presence of the '.' before the wildcard matters for the match
-        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunction*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct.MyFunct*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProduct*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProd*")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany*")]
+        [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyComp*")]
         public async Task CA1501_WildcardNamespacePrefix(string editorConfigText)
         {
             var codeMetricsConfigText = @"
@@ -375,7 +376,8 @@ public class C1 : SomeClass {}
                 },
             };
 
-            if (!editorConfigText.Contains("N:MyCompany*", StringComparison.Ordinal))
+            if (!editorConfigText.Contains("N:MyCompany*", StringComparison.Ordinal) &&
+                !editorConfigText.Contains("N:MyComp*", StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpCA1501ExpectedDiagnostic(11, 18, "C1", 1, 1, "SomeClass"));
             }
@@ -426,7 +428,8 @@ End Class"
                 },
             };
 
-            if (!editorConfigText.Contains("N:MyCompany*", StringComparison.Ordinal))
+            if (!editorConfigText.Contains("N:MyCompany*", StringComparison.Ordinal) &&
+                !editorConfigText.Contains("N:MyComp*", StringComparison.Ordinal))
             {
                 vbnetTest.ExpectedDiagnostics.Add(GetBasicCA1501ExpectedDiagnostic(15, 18, "C1", 1, 1, "SomeClass"));
             }
