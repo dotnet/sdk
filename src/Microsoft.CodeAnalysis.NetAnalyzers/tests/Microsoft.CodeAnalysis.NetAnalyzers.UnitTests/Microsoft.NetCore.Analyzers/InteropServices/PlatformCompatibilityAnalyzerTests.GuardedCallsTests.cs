@@ -242,7 +242,7 @@ namespace PlatformCompatDemo.SupportedUnupported
                 unsupportedOnWindows.TypeUnsupportedOnWindows_FunctionSupportedOnWindows11UnsupportedOnWindows12SupportedOnWindows13();
 
                 var unsupportedOnBrowser = [|new TypeUnsupportedOnBrowser()|];
-                unsupportedOnBrowser.TypeUnsupportedOnBrowser_FunctionSupportedOnBrowser(); 
+                [|unsupportedOnBrowser.TypeUnsupportedOnBrowser_FunctionSupportedOnBrowser()|]; // warn for unsupported browser type
 
                 var unsupportedOnWindowsSupportedOnWindows11 = new TypeUnsupportedOnWindowsSupportedOnWindows11(); 
                 unsupportedOnWindowsSupportedOnWindows11.TypeUnsupportedOnWindowsSupportedOnWindows11_FunctionUnsupportedOnWindows12();
@@ -260,7 +260,7 @@ namespace PlatformCompatDemo.SupportedUnupported
                 [|withoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12SupportedOnWindows13()|];
 
                 var unsupportedOnWindows = [|new TypeUnsupportedOnWindows()|];
-                [|unsupportedOnWindows.TypeUnsupportedOnWindows_FunctionSupportedOnWindows11()|];
+                [|unsupportedOnWindows.TypeUnsupportedOnWindows_FunctionSupportedOnWindows11()|];  // should only warn for unsupported type, function attribute ignored
 
                 var unsupportedOnBrowser = new TypeUnsupportedOnBrowser();
                 unsupportedOnBrowser.TypeUnsupportedOnBrowser_FunctionSupportedOnBrowser();
@@ -278,7 +278,6 @@ namespace PlatformCompatDemo.SupportedUnupported
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(37, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11()' is unsupported on 'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(38, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12()' is unsupported on 'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(39, 17).WithMessage("'TypeWithoutAttributes.TypeWithoutAttributes_FunctionUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12SupportedOnWindows13()' is unsupported on 'windows'"),
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(42, 17).WithMessage("'TypeUnsupportedOnWindows.TypeUnsupportedOnWindows_FunctionSupportedOnWindows11()' is unsupported on 'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(47, 64).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11' is unsupported on 'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(48, 17).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11.TypeUnsupportedOnWindowsSupportedOnWindows11_FunctionUnsupportedOnWindows12SupportedOnWindows13()' is unsupported on 'windows'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(50, 86).WithMessage("'TypeUnsupportedOnWindowsSupportedOnWindows11UnsupportedOnWindows12' is unsupported on 'windows'"));
@@ -996,8 +995,7 @@ class Test
 using System.Runtime.Versioning;
 using System;
 
-[assembly:SupportedOSPlatform(""windows7.0"")]
-
+[SupportedOSPlatform(""windows7.0"")]
 static class Program
 {
     public static void Main()
@@ -1029,7 +1027,7 @@ public class WindowsSpecificApis
 using System;
 using System.Runtime.Versioning;
 
-[assembly:SupportedOSPlatform(""windows"")]
+[SupportedOSPlatform(""windows"")]
 static class Program
 {
     public static void Main()
