@@ -22,6 +22,8 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
 
         public override int Priority => 4000;
 
+        private bool _enabled;
+
         private IWorkloadManifestProvider _workloadManifestProvider;
         private IWorkloadResolver _workloadResolver;
 
@@ -30,10 +32,34 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
         private readonly NETCoreSdkResolver _sdkResolver;
 #endif
 
+
         public MSBuildWorkloadSdkResolver()
         {
+            //  Put workload resolution behind a feature flag.
+            _enabled = false;
+            var envVar = Environment.GetEnvironmentVariable("MSBuildEnableWorkloadResolver");
+            if (envVar != null)
+            {
+                if (envVar.Equals("true", StringComparison.OrdinalIgnoreCase))
+                {
+                    _enabled = true;
+                }
+            }
+
+            if (!_enabled)
+            {
+                string sentinelPath = Path.Combine(Path.GetDirectoryName(typeof(MSBuildWorkloadSdkResolver).Assembly.Location), "EnableWorkloadResolver.sentinel");
+                if (File.Exists(sentinelPath))
+                {
+                    _enabled = true;
+                }
+            }
+
 #if NETFRAMEWORK
-            _sdkResolver = new NETCoreSdkResolver();
+            if (_enabled)
+            {
+                _sdkResolver = new NETCoreSdkResolver();
+            }
 #endif
         }
 
@@ -52,6 +78,11 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
 
         public override SdkResult Resolve(SdkReference sdkReference, SdkResolverContext resolverContext, SdkResultFactory factory)
         {
+            if (!_enabled)
+            {
+                return null;
+            }
+
             InitializeWorkloadResolver(resolverContext);
 
             if (sdkReference.Name.Equals("Microsoft.NET.SDK.WorkloadAutoImportPropsLocator", StringComparison.OrdinalIgnoreCase))

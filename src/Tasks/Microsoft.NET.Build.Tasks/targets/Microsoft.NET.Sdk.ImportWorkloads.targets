@@ -1,0 +1,42 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.ImportWorkloads.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved. 
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Workload support -->
+
+  <PropertyGroup>
+    <!-- TODO: This should be based on NETCoreSdkVersion, and probably set with it in BundledVersions.props-->
+    <SdkFeatureBand>5.0.100</SdkFeatureBand>
+
+    <!-- Default to environment variable -->
+    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$(DOTNETSDK_WORKLOAD_MANIFEST_ROOT)</WorkloadManifestRoot>
+
+    <!-- TODO: Remove this (it's for local testing) -->
+    <!--<WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">C:\git\msbuild-sdk-resolver-test\testresolver\sdk-manifests\$(SdkFeatureBand)</WorkloadManifestRoot>-->
+
+    <!-- TODO: This should probably go in BundledVersions.props-->
+    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$([MSBuild]::EnsureTrailingSlash('$(NetCoreRoot)'))sdk-manifests\$(SdkFeatureBand)</WorkloadManifestRoot>
+
+  </PropertyGroup>
+
+  <!-- Import workload manifests -->
+  <Import Project="$(WorkloadManifestRoot)/*/WorkloadManifest.targets" />
+
+  <Target Name="_CheckForMissingWorkload"
+        BeforeTargets="_CheckForInvalidConfigurationAndPlatform;_CheckForUnsupportedTargetPlatformIdentifier"
+        Condition="'@(MissingWorkloadPack)' != ''"
+          >
+
+    <!-- TODO: Use a task that will map from workload packs to workloads, and display a localized error message with the workloads that need to be installed -->
+
+    <Error Text="This project requires the following workload pack: @(MissingWorkloadPack)" />
+  </Target>
+</Project>

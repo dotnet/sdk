@@ -38,6 +38,7 @@ namespace Microsoft.NET.Build.Tests
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
+                .WithEnvironmentVariable("MSBuildEnableWorkloadResolver", "true")
                 .Execute()
                 .Should()
                 .Pass();
@@ -57,11 +58,34 @@ namespace Microsoft.NET.Build.Tests
                 .CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
+                .WithEnvironmentVariable("MSBuildEnableWorkloadResolver", "true")
                 .Execute()
                 .Should()
                 .Fail()
                 .And
                 .HaveStdOutContaining("This project requires the following workload pack");
+        }
+
+        [Fact]
+        public void It_should_fail_without_resolver_enabled()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "WorkloadTest",
+                IsSdkProject = true,
+                TargetFrameworks = "net5.0-workloadtestplatform"
+            };
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(testProject);
+
+            //  NETSDK1139: The target platform identifier workloadtestplatform was not recognized.
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1139");
         }
 
         [Fact]
@@ -78,7 +102,9 @@ namespace Microsoft.NET.Build.Tests
 
             var getValuesCommand = new GetValuesCommand(testAsset, "TestWorkloadAutoImportPropsImported");
 
-            getValuesCommand.Execute()
+            getValuesCommand
+                .WithEnvironmentVariable("MSBuildEnableWorkloadResolver", "true")
+                .Execute()
                 .Should()
                 .Pass();
 
@@ -86,8 +112,6 @@ namespace Microsoft.NET.Build.Tests
                 .GetValues()
                 .Should()
                 .BeEquivalentTo("true");
-
-
         }
     }
 }

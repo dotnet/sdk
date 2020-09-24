@@ -1010,35 +1010,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Windows.targets" Condition="'$(TargetPlatformIdentifier)' == 'Windows'" />
   <Import Project="$(MSBuildThisFileDirectory)../../Microsoft.NET.Sdk.WindowsDesktop/targets/Microsoft.NET.Sdk.WindowsDesktop.targets" Condition="'$(ImportWindowsDesktopTargets)' == 'true'"/>
 
-  <!-- Workload support -->
-
-  <PropertyGroup>
-    <!-- TODO: This should be based on NETCoreSdkVersion, and probably set with it in BundledVersions.props-->
-    <SdkFeatureBand>5.0.100</SdkFeatureBand>
-
-    <!-- Default to environment variable -->
-    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$(DOTNETSDK_WORKLOAD_MANIFEST_ROOT)</WorkloadManifestRoot>
-
-    <!-- TODO: Remove this (it's for local testing) -->
-    <!--<WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">C:\git\msbuild-sdk-resolver-test\testresolver\sdk-manifests\$(SdkFeatureBand)</WorkloadManifestRoot>-->
-   
-    <!-- TODO: This should probably go in BundledVersions.props-->
-    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$([MSBuild]::EnsureTrailingSlash('$(NetCoreRoot)'))sdk-manifests\$(SdkFeatureBand)</WorkloadManifestRoot>
-    
-  </PropertyGroup>
-
-  <!-- Import workload manifests -->
-  <Import Project="$(WorkloadManifestRoot)/*/WorkloadManifest.targets" />
-
-  <Target Name="_CheckForMissingWorkload"
-        BeforeTargets="_CheckForInvalidConfigurationAndPlatform;_CheckForUnsupportedTargetPlatformIdentifier"
-        Condition="'@(MissingWorkloadPack)' != ''"
-          >
-
-    <!-- TODO: Use a task that will map from workload packs to workloads, and display a localized error message with the workloads that need to be installed -->
-    
-    <Error Text="This project requires the following workload pack: @(MissingWorkloadPack)" />
-  </Target>
+  <!-- Import workload targets -->
+  <Import Project="Microsoft.NET.Sdk.ImportWorkloads.targets" Condition="'$(MSBuildEnableWorkloadResolver)' == 'true'" />
 
   <!-- TargetPlatformMoniker and TargetPlatformDisplayName would normally be set in Microsoft.Common.CurrentVersion.targets.  However, the
        TargetPlatformVersion may have been set later than that in evaluation by platform-specific targets.  So fix up those properties here -->
