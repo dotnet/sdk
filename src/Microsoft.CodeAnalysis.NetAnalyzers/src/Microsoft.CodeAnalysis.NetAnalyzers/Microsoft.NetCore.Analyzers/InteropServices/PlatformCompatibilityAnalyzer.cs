@@ -235,6 +235,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
                         cfg, context.OwningSymbol, CreateOperationVisitor, wellKnownTypeProvider,
                         context.Options, SupportedOsRule, performValueContentAnalysis,
+                        pessimisticAnalysis: false,
                         context.CancellationToken, out var valueContentAnalysisResult,
                         additionalSupportedValueTypes: osPlatformTypeArray,
                         getValueContentValueForAdditionalSupportedValueTypeOperation: GetValueContentValue);
