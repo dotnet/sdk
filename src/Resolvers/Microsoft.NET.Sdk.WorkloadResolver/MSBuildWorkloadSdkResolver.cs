@@ -114,13 +114,12 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
             }
             else
             {
-                var sdkVersion = _workloadResolver.TryGetPackVersion(sdkReference.Name);
-                if (sdkVersion != null)
+                var packInfo = _workloadResolver.TryGetPackInfo(sdkReference.Name);
+                if (packInfo != null)
                 {
-                    string workloadPackPath = GetWorkloadPackPath(resolverContext, sdkReference.Name, sdkVersion);
-                    if (Directory.Exists(workloadPackPath))
+                    if (Directory.Exists(packInfo.Path))
                     {
-                        return factory.IndicateSuccess(Path.Combine(workloadPackPath, "Sdk"), sdkReference.Version);
+                        return factory.IndicateSuccess(Path.Combine(packInfo.Path, "Sdk"), sdkReference.Version);
                     }
                     else
                     {
@@ -129,7 +128,7 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
                             new SdkResultItem(sdkReference.Name,
                                 metadata: new Dictionary<string, string>()
                                 {
-                                    { "Version", sdkVersion }
+                                    { "Version", packInfo.Version }
                                 }));
 
                         Dictionary<string, string> propertiesToAdd = new Dictionary<string, string>();
@@ -164,13 +163,6 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
             var sdkDirectory = GetSdkDirectory(context);
             var dotnetRoot = Directory.GetParent(sdkDirectory).Parent.FullName;
             return dotnetRoot;
-        }
-
-        //  TODO: delete this method and use workload resolver for this functionality
-        private string GetWorkloadPackPath(SdkResolverContext context, string packId, string packVersion)
-        {
-            var dotnetRoot = GetDotNetRoot(context);
-            return Path.Combine(dotnetRoot, "packs", packId, packVersion);
         }
     }
 }
