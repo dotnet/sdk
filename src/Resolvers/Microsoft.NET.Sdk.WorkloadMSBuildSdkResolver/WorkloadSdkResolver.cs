@@ -14,9 +14,9 @@ using Microsoft.DotNet.DotNetSdkResolver;
 
 #nullable disable
 
-namespace Microsoft.NET.Sdk.WorkloadResolver
+namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 {
-    public class MSBuildWorkloadSdkResolver : SdkResolver
+    public class WorkloadSdkResolver : SdkResolver
     {
         public override string Name => "Microsoft.DotNet.MSBuildWorkloadSdkResolver";
 
@@ -33,7 +33,7 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
 #endif
 
 
-        public MSBuildWorkloadSdkResolver()
+        public WorkloadSdkResolver()
         {
             //  Put workload resolution behind a feature flag.
             _enabled = false;
@@ -48,7 +48,7 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
 
             if (!_enabled)
             {
-                string sentinelPath = Path.Combine(Path.GetDirectoryName(typeof(MSBuildWorkloadSdkResolver).Assembly.Location), "EnableWorkloadResolver.sentinel");
+                string sentinelPath = Path.Combine(Path.GetDirectoryName(typeof(WorkloadSdkResolver).Assembly.Location), "EnableWorkloadResolver.sentinel");
                 if (File.Exists(sentinelPath))
                 {
                     _enabled = true;
@@ -72,8 +72,8 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
             var sdkVersion = Path.GetFileName(sdkDirectory);
 
             _workloadManifestProvider ??= new SdkDirectoryWorkloadManifestProvider(dotnetRootPath, sdkVersion);
-            //  TODO: Fix namespace / type names so there's not a collision for WorkloadResolver
-            _workloadResolver ??= new Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver(_workloadManifestProvider, dotnetRootPath);
+            
+            _workloadResolver ??= new WorkloadResolver(_workloadManifestProvider, dotnetRootPath);
         }
 
         public override SdkResult Resolve(SdkReference sdkReference, SdkResolverContext resolverContext, SdkResultFactory factory)

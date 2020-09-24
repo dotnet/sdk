@@ -8,7 +8,7 @@
 
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
-    <None Update="SdkResolvers\Microsoft.NET.Sdk.WorkloadResolver\Microsoft.NET.Sdk.WorkloadResolver.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SdkResolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,10 +38,7 @@
       <ManifestLines Include="&lt;/SdkResolver&gt;" />
     </ItemGroup>
 
-    <WriteLinesToFile File="$(OutputPath)\SdkResolvers\$(AssemblyName)\$(AssemblyName).xml"
-                  Lines="@(ManifestLines)"
-                  Overwrite="true"
-                  WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(OutputPath)\SdkResolvers\$(AssemblyName)\$(AssemblyName).xml" Lines="@(ManifestLines)" Overwrite="true" WriteOnlyWhenDifferent="true" />
   </Target>
 
 </Project>
