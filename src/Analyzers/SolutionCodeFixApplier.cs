@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 document: document,
                 codeFixProvider: codeFix,
                 scope: FixAllScope.Solution,
-                codeActionEquivalenceKey: null,
+                codeActionEquivalenceKey: null!, // FixAllState supports null equivalence key. This should still be supported.
                 diagnosticIds: new[] { diagnosticId },
                 fixAllDiagnosticProvider: new DiagnosticProvider(result),
                 cancellationToken: cancellationToken);

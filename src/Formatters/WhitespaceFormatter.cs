@@ -53,7 +53,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         private static async Task<SourceText> GetFormattedDocumentWithDetailedChanges(Document document, SourceText sourceText, OptionSet optionSet, CancellationToken cancellationToken)
         {
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var formattingTextChanges = Formatter.GetFormattedTextChanges(root, document.Project.Solution.Workspace, optionSet, cancellationToken);
+            // Since we've already checked that formatable documents support syntax tree, we know the `root` is not null.
+            var formattingTextChanges = Formatter.GetFormattedTextChanges(root!, document.Project.Solution.Workspace, optionSet, cancellationToken);
 
             return sourceText.WithChanges(formattingTextChanges);
         }
