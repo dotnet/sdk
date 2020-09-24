@@ -78,7 +78,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 !symbol.IsAbstract &&
                 !IsSealedAndVisualBasic(symbol) &&
                 symbol.IsStaticHolderType() &&
-                symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+                context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
             {
                 context.ReportDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name));
             }

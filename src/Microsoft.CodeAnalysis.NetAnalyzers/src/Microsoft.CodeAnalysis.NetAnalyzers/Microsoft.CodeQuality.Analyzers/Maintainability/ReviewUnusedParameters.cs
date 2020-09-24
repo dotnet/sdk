@@ -216,9 +216,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             // Bail out if user has configured to skip analysis for the method.
-            if (!method.MatchesConfiguredVisibility(
-                startOperationBlockContext.Options,
+            if (!startOperationBlockContext.Options.MatchesConfiguredVisibility(
                 Rule,
+                method,
                 startOperationBlockContext.Compilation,
                 startOperationBlockContext.CancellationToken,
                 defaultRequiredVisibility: SymbolVisibilityGroup.All))
