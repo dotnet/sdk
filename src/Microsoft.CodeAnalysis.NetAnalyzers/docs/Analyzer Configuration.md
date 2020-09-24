@@ -815,7 +815,7 @@ Default Value: `false`
 
 Example: `dotnet_code_quality.CA1051.exclude_structs = true`
 
-### Exclude OrDefault methods
+### Exclude FirstOrDefault and LastOrDefault methods
 
 Option Name: `exclude_ordefault_methods`
 
