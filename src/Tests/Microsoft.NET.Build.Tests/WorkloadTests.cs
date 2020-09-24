@@ -63,7 +63,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("This project requires the following workload pack");
+                .HaveStdOutContaining("NETSDK1146");
         }
 
         [Fact]

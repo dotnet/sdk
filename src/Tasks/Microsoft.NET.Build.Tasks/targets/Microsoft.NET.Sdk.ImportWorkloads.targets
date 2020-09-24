@@ -14,14 +14,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Import workload manifests -->
   <Import Project="WorkloadManifest.targets" Sdk="Microsoft.NET.SDK.WorkloadManifestTargetsLocator"/>
+  
+  <UsingTask TaskName="ShowMissingWorkloads" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <Target Name="_CheckForMissingWorkload"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform;_CheckForUnsupportedTargetPlatformIdentifier"
-        Condition="'@(MissingWorkloadPack)' != ''"
-          >
+        Condition="'@(MissingWorkloadPack)' != ''">
 
-    <!-- TODO: Use a task that will map from workload packs to workloads, and display a localized error message with the workloads that need to be installed -->
-
-    <Error Text="This project requires the following workload pack: @(MissingWorkloadPack)" />
+    <ShowMissingWorkloads MissingWorkloadPacks="@(MissingWorkloadPack)"/>
   </Target>
 </Project>
