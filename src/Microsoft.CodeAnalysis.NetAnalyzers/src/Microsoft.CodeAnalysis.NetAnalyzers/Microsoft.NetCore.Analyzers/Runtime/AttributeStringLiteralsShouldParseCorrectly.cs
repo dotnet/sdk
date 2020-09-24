@@ -157,7 +157,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             }
 
-            var syntax = attributeData.ApplicationSyntaxReference.GetSyntax(cancellationToken);
+            var syntax = attributeData.ApplicationSyntaxReference?.GetSyntax(cancellationToken);
+            if (syntax == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < attributeConstructor.Parameters.Count(); i++)
             {
