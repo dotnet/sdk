@@ -61,7 +61,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                     Dim convertionOperation = TryCast(invocationOperation.Instance, IConversionOperation)
 
-                    Return If(Not convertionOperation Is Nothing,
+                    Return If(convertionOperation IsNot Nothing,
                         convertionOperation.Operand.Type,
                         invocationOperation.Instance.Type)
 
