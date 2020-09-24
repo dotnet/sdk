@@ -12,23 +12,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Workload support -->
 
-  <PropertyGroup>
-    <!-- TODO: This should be based on NETCoreSdkVersion, and probably set with it in BundledVersions.props-->
-    <SdkFeatureBand>5.0.100</SdkFeatureBand>
-
-    <!-- Default to environment variable -->
-    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$(DOTNETSDK_WORKLOAD_MANIFEST_ROOT)</WorkloadManifestRoot>
-
-    <!-- TODO: Remove this (it's for local testing) -->
-    <!--<WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">C:\git\msbuild-sdk-resolver-test\testresolver\sdk-manifests\$(SdkFeatureBand)</WorkloadManifestRoot>-->
-
-    <!-- TODO: This should probably go in BundledVersions.props-->
-    <WorkloadManifestRoot Condition="'$(WorkloadManifestRoot)' == ''">$([MSBuild]::EnsureTrailingSlash('$(NetCoreRoot)'))sdk-manifests\$(SdkFeatureBand)</WorkloadManifestRoot>
-
-  </PropertyGroup>
-
   <!-- Import workload manifests -->
-  <Import Project="$(WorkloadManifestRoot)/*/WorkloadManifest.targets" />
+  <Import Project="WorkloadManifest.targets" Sdk="Microsoft.NET.SDK.WorkloadManifestTargetsLocator"/>
 
   <Target Name="_CheckForMissingWorkload"
         BeforeTargets="_CheckForInvalidConfigurationAndPlatform;_CheckForUnsupportedTargetPlatformIdentifier"

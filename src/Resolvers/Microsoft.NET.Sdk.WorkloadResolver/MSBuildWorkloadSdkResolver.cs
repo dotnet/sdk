@@ -99,6 +99,19 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
                 }
                 return factory.IndicateSuccess(autoImportSdkPaths, sdkReference.Version);
             }
+            else if (sdkReference.Name.Equals("Microsoft.NET.SDK.WorkloadManifestTargetsLocator", StringComparison.OrdinalIgnoreCase))
+            {
+                List<string> workloadManifestPaths = new List<string>();
+                foreach (var manifestDirectory in _workloadManifestProvider.GetManifestDirectories())
+                {
+                    var workloadManifestTargetPath = Path.Combine(manifestDirectory, "WorkloadManifest.targets");
+                    if (File.Exists(workloadManifestTargetPath))
+                    {
+                        workloadManifestPaths.Add(manifestDirectory);
+                    }
+                }
+                return factory.IndicateSuccess(workloadManifestPaths, sdkReference.Version);
+            }
             else
             {
                 var sdkVersion = _workloadResolver.TryGetPackVersion(sdkReference.Name);
