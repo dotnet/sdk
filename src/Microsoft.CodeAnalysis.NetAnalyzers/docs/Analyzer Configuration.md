@@ -814,3 +814,15 @@ Option Values: Boolean values
 Default Value: `false`
 
 Example: `dotnet_code_quality.CA1051.exclude_structs = true`
+
+### Exclude FirstOrDefault and LastOrDefault methods
+
+Option Name: `exclude_ordefault_methods`
+
+Configurable Rules: [CA1826](https://docs.microsoft.com/visualstudio/code-quality/CA1826)
+
+Option Values: Boolean values
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1826.exclude_ordefault_methods = true`
