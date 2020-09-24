@@ -42,9 +42,8 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
             var dotnetRootPath = GetDotNetRoot(context);
 
             var sdkDirectory = GetSdkDirectory(context);
-            //  TODO: Is the directory name OK, or should we read the .version file (we don't want to use the Cli.Utils library to read it on .NET Framework)
+            //  The SDK version is the name of the SDK directory (ie dotnet\sdk\5.0.100)
             var sdkVersion = Path.GetFileName(sdkDirectory);
-
 
             _workloadManifestProvider ??= new SdkDirectoryWorkloadManifestProvider(dotnetRootPath, sdkVersion);
             //  TODO: Fix namespace / type names so there's not a collision for WorkloadResolver
@@ -68,28 +67,6 @@ namespace Microsoft.NET.Sdk.WorkloadResolver
                     }
                 }
                 return factory.IndicateSuccess(autoImportSdkPaths, sdkReference.Version);
-            }
-            else if (sdkReference.Name == "TestSdk")
-            {
-                var propertiesToAdd = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                propertiesToAdd["TestProperty1"] = "AOEU";
-                propertiesToAdd["TestProperty2"] = "ASDF";
-
-                Dictionary<string, SdkResultItem> itemsToAdd = new Dictionary<string, SdkResultItem>(StringComparer.OrdinalIgnoreCase);
-
-                itemsToAdd["TestItem1"] = new SdkResultItem("TestItem1Value",
-                    new Dictionary<string, string>()
-                    { {"a", "b" } });
-
-                itemsToAdd["TestItem2"] = new SdkResultItem("TestItem2Value",
-                    new Dictionary<string, string>()
-                    { {"c", "d" },
-                      {"e", "f" }});
-
-                return factory.IndicateSuccess(Enumerable.Empty<string>(),
-                    sdkReference.Version,
-                    propertiesToAdd,
-                    itemsToAdd);
             }
             else
             {
