@@ -1,26 +1,17 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
     public class ProgramTests
     {
-        // Should be kept in sync with Program.Run
-        private delegate void TestCommandHandlerDelegate(
-            string workspace,
-            bool folder,
-            string verbosity,
-            bool check,
-            string[] include,
-            string[] exclude,
-            string report,
-            bool includeGenerated);
-
         [Fact]
         public void ExitCodeIsOneWithCheckAndAnyFilesFormatted()
         {
@@ -126,36 +117,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [Fact]
-        public void CommandLine_ProjectArgument_GetsPassedToHandler()
-        {
-            // Arrange
-            var sut = FormatCommand.CreateCommandLineOptions();
-            var handlerWasCalled = false;
-            sut.Handler = CommandHandler.Create(new TestCommandHandlerDelegate(TestCommandHandler));
-
-            void TestCommandHandler(
-                string workspace,
-                bool folder,
-                string verbosity,
-                bool check,
-                string[] include,
-                string[] exclude,
-                string report,
-                bool includeGenerated)
-            {
-                handlerWasCalled = true;
-                Assert.Equal("workspaceValue", workspace);
-                Assert.Equal("detailed", verbosity);
-            };
-
-            // Act
-            var result = sut.Invoke(new[] { "--verbosity", "detailed", "workspace" });
-
-            // Assert
-            Assert.True(handlerWasCalled);
-        }
-
-        [Fact]
         public void CommandLine_ProjectArgument_FailsIfSpecifiedTwice()
         {
             // Arrange
@@ -205,6 +166,72 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
+        }
+
+        [Fact]
+        // If this test fails that means FormatCommand options have changed, ensure the FormatCommand.Handler has been updated to match.
+        public async Task CommandLine_AllArguments_Bind()
+        {
+            // Arrange
+            var uniqueExitCode = 143;
+
+            var sut = FormatCommand.CreateCommandLineOptions();
+            sut.Handler = CommandHandler.Create(new FormatCommand.Handler(TestRun));
+
+            Task<int> TestRun(
+                string workspace,
+                bool folder,
+                bool fixWhitespace,
+                string fixStyle,
+                string fixAnalyzers,
+                string verbosity,
+                bool check,
+                string[] include,
+                string[] exclude,
+                string report,
+                bool includeGenerated,
+                IConsole console = null)
+            {
+                Assert.Equal("./src", workspace);
+                Assert.False(folder);
+                Assert.True(fixWhitespace);
+                Assert.Equal("warn", fixStyle);
+                Assert.Equal("info", fixAnalyzers);
+                Assert.Equal("diag", verbosity);
+                Assert.True(check);
+                Assert.Equal(new[] { "*.cs" }, include);
+                Assert.Equal(new[] { "*.vb" }, exclude);
+                Assert.Equal("report.json", report);
+                Assert.True(includeGenerated);
+
+                return Task.FromResult(uniqueExitCode);
+            };
+
+            var args = @"
+./src
+--fix-whitespace
+--fix-style
+warn
+--fix-analyzers
+info
+--verbosity
+diag
+--check
+--include
+*.cs
+--exclude
+*.vb
+--report
+report.json
+--include-generated".Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+            // Act
+            var parseResult = sut.Parse(args);
+            var result = await sut.InvokeAsync(args);
+
+            // Assert
+            Assert.Equal(0, parseResult.Errors.Count);
+            Assert.Equal(uniqueExitCode, result);
         }
     }
 }
