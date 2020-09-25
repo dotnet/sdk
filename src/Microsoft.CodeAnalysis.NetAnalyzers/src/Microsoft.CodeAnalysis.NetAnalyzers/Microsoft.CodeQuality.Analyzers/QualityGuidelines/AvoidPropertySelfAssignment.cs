@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -73,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     operationValue.Instance is IInstanceReferenceOperation valueInstanceReference &&
                     valueInstanceReference.ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
                 {
-                    var diagnostic = Diagnostic.Create(Rule, valueInstanceReference.Syntax.GetLocation(), operationTarget.Property.Name);
+                    var diagnostic = valueInstanceReference.CreateDiagnostic(Rule, operationTarget.Property.Name);
                     operationContext.ReportDiagnostic(diagnostic);
                 }
             }, OperationKind.SimpleAssignment);
