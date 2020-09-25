@@ -39,15 +39,15 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
 
     <!--
-      In order tests to load the NuGet packages from the SDK folder as dotnet-format does, we must exclude the assets from
-      the NuGet package assets brought in by the testing framworks.
-    -->
-    <PackageReference Include="NuGet.Common" Version="5.8.0-preview.3.6823" ExcludeAssets="runtime"/>
-    <PackageReference Include="NuGet.Configuration" Version="5.8.0-preview.3.6823" ExcludeAssets="runtime"/>
-    <PackageReference Include="NuGet.Frameworks" Version="5.8.0-preview.3.6823" ExcludeAssets="runtime"/>
-    <PackageReference Include="NuGet.Packaging" Version="5.8.0-preview.3.6823" ExcludeAssets="runtime"/>
-    <PackageReference Include="NuGet.Protocol" Version="5.8.0-preview.3.6823" ExcludeAssets="runtime"/>
-    <PackageReference Include="NuGet.Versioning" Version="5.8.0-preview.3.6823" ExcludeAssets="runtime"/>
+      The package "Microsoft.CodeAnalysis.Analyzer.Testing" brings in v5.3 of these NuGet dependencies. In order to
+      test against the same verion of NuGet as our configured SDK, we must set the version to be the same.
+     -->
+    <PackageReference Include="NuGet.Common" Version="$(NuGetCommonVersion)" />
+    <PackageReference Include="NuGet.Configuration" Version="$(NuGetConfigurationVersion)" />
+    <PackageReference Include="NuGet.Frameworks" Version="$(NuGetFrameworksVersion)" />
+    <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingVersion)" />
+    <PackageReference Include="NuGet.Protocol" Version="$(NuGetProtocolVersion)" />
+    <PackageReference Include="NuGet.Versioning" Version="$(NuGetVersioningVersion)" />
   </ItemGroup>
 
   <ItemGroup>
