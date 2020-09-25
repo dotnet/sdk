@@ -2703,6 +2703,40 @@ public class Test
             await VerifyAnalyzerAsyncCs(source);
         }
 
+        [Fact, WorkItem(4209, "https://github.com/dotnet/roslyn-analyzers/issues/4209")]
+        public async Task LambdaInvocationWithUnknownTarget_BeforeGuardedCall()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    Func<string> Greetings = () => ""Hi!"";
+    
+    void M1()
+    {
+        Greetings();
+        if (OperatingSystemHelper.IsBrowser())
+        {
+            SupportedOnBrowser();
+        }
+        else
+        {
+            UnsupportedOnBrowser();
+        }
+    }
+
+    [SupportedOSPlatform(""browser"")]
+    void SupportedOnBrowser() { }
+
+    [UnsupportedOSPlatform(""browser"")]
+    void UnsupportedOnBrowser() { }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
         [Fact]
         public async Task OsDependentEventAccessed_GuardedCall_SimpleIfElse()
         {
