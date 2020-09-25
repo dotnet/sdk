@@ -287,8 +287,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 foreach (InsecureObjectGraphResult result in results)
                                 {
                                     operationAnalysisContext.ReportDiagnostic(
-                                        operationForLocation.CreateDiagnostic(
+                                        Diagnostic.Create(
                                             ObjectGraphContainsDangerousTypeDescriptor,
+                                            operationForLocation.Syntax.GetLocation(),
                                             result.InsecureType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                                             result.GetDisplayString()));
                                 }
