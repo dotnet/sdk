@@ -1,3 +1,4 @@
+using Microsoft.TemplateEngine.Utils;
 using System;
 using System.Reflection;
 
@@ -141,7 +142,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             {
                 if (source is string s)
                 {
-                    return double.TryParse(s, out result);
+                    return ParserExtensions.DoubleTryParseСurrentOrInvariant(s, out result);
                 }
 
                 result = 0;

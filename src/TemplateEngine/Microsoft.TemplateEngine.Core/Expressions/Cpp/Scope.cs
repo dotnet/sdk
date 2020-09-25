@@ -1,3 +1,4 @@
+using Microsoft.TemplateEngine.Utils;
 using System;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
@@ -76,13 +77,13 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                 case Operator.NotEqualTo:
                     return EvaluateSides(Left, Right, x => x, (x, y) => !LenientEquals(x, y));
                 case Operator.GreaterThan:
-                    return EvaluateSides(Left, Right, Convert.ToDouble, (x, y) => x > y);
+                    return EvaluateSides(Left, Right, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x > y);
                 case Operator.GreaterThanOrEqualTo:
-                    return EvaluateSides(Left, Right, Convert.ToDouble, (x, y) => x >= y);
+                    return EvaluateSides(Left, Right, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x >= y);
                 case Operator.LessThan:
-                    return EvaluateSides(Left, Right, Convert.ToDouble, (x, y) => x < y);
+                    return EvaluateSides(Left, Right, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x < y);
                 case Operator.LessThanOrEqualTo:
-                    return EvaluateSides(Left, Right, Convert.ToDouble, (x, y) => x <= y);
+                    return EvaluateSides(Left, Right, ParserExtensions.ConvertToDoubleCurrentOrInvariant, (x, y) => x <= y);
                 case Operator.LeftShift:
                     return EvaluateSides(Left, Right, Convert.ToInt64, Convert.ToInt32, (x, y) => x << y);
                 case Operator.RightShift:

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -7,18 +7,6 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-
-    public sealed class SkipOnNonEnUsLocale : FactAttribute
-    {
-        public SkipOnNonEnUsLocale(string displayName, string message) {
-            DisplayName = displayName;
-            if (!CultureInfo.CurrentCulture.Name.Equals("en-US"))
-            {
-                Skip = "Skipped : non en-US locale. " + message;
-            }
-        }
-    }
-
     public partial class ConditionalTests
     {
         [Fact(DisplayName=nameof(VerifyIfEndifTrueCondition))]
@@ -1408,17 +1396,39 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        [SkipOnNonEnUsLocale(nameof(VerifyIfElseEndifConditionUsesDouble), "The test is temporarily disabled, tracked in issue #2436.")]
-        public void VerifyIfElseEndifConditionUsesDouble()
+
+        [Theory(DisplayName = nameof(VerifyIfElseEndifConditionUsesDouble))]
+        [InlineData("", "Hello\r\n#if (1.2 < 2.5)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("invariant", "Hello\r\n#if (1.2 < 2.5)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("pl-PL", "Hello\r\n#if (1.2 < 2.5)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("ru-RU", "Hello\r\n#if (1.2 < 2.5)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("ru-RU", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("tr-TR", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("tr-TR", "Hello\r\n#if (2,5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("en-US", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("en-US", "Hello\r\n#if (2,5 < 3,5)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nThere")]
+        [InlineData("en-GB", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("hr-HR", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("hi-IN", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("fr-CH", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("zh-CN", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("zh-SG", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("zh-TW", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("zh-CHS", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        [InlineData("zh-CHT", "Hello\r\n#if (2.5 < 25)\r\nvalue\r\n#endif\r\nThere", "Hello\r\nvalue\r\nThere")]
+        public void VerifyIfElseEndifConditionUsesDouble(string culture, string value, string expected)
         {
-            string value = @"Hello
-    #if (1.2 < 2.5)
-value
-    #endif
-There";
-            string expected = @"Hello
-value
-There";
+            if (!string.IsNullOrEmpty(culture))
+            {
+                if (culture == "invariant")
+                {
+                    CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+                }
+                else
+                {
+                    CultureInfo.CurrentCulture = new CultureInfo(culture);
+                }
+            }
 
             byte[] valueBytes = Encoding.UTF8.GetBytes(value);
             MemoryStream input = new MemoryStream(valueBytes);

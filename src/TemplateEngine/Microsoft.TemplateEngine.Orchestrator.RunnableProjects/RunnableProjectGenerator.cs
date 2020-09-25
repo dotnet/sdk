@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -533,18 +533,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
             {
-                if (double.TryParse(literal, out double convertedFloat))
+                if (ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double convertedFloat))
                 {
                     return convertedFloat;
                 }
                 else
                 {
                     string val;
-                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out val) && (val == null || !double.TryParse(val, out convertedFloat)))
+                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out val) && (val == null || !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat)))
                     {
                     }
 
-                    valueResolutionError = !double.TryParse(val, out convertedFloat);
+                    valueResolutionError = !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat);
                     return convertedFloat;
                 }
             }
@@ -653,7 +653,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return null;
                 }
 
-                if (literal.Contains(".") && double.TryParse(literal, out double literalDouble))
+                if ((literal.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
+                    || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
+                    && ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double literalDouble))
                 {
                     return literalDouble;
                 }

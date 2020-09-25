@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 {
@@ -552,7 +553,9 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                     return null;
                 }
 
-                if (literal.Contains(".") && double.TryParse(literal, out double literalDouble))
+                if ((literal.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
+                    || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
+                    && ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double literalDouble))
                 {
                     return literalDouble;
                 }
