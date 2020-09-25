@@ -21,7 +21,7 @@
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
-  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences">
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <ItemGroup>
       <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
     </ItemGroup>
