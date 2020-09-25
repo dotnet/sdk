@@ -14,7 +14,7 @@
   <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
-      <WixVersion>3.10.4</WixVersion>
+      <WixVersion>3.14.0.4118</WixVersion>
       <WixDownloadUrl>https://dotnetcli.azureedge.net/build/wix/wix.$(WixVersion).zip</WixDownloadUrl>
       <WixRoot>$(ArtifactsDir)Tools/WixTools/$(WixVersion)</WixRoot>
       <WixDestinationPath>$(WixRoot)/WixTools.$(WixVersion).zip</WixDestinationPath>
@@ -45,6 +45,10 @@
       <SdkMSBuildExtensionsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
+
+      <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/Debug</VSTemplateLocatorLayoutPath>
+      <VSTemplateLocatorNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
+      <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
 
       <!-- Temp directory for light command layouts -->
       <LightCommandObjDir>$(ArtifactsObjDir)/LightCommandPackages</LightCommandObjDir>
@@ -243,7 +247,7 @@
 
   <Target Name="GenerateTemplatesMsis"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo;SetupTemplatesMsis"
-          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'"
           Inputs="@(TemplatesMsiComponent);$(TemplatesGenerateMsiPowershellScript)"
           Outputs="%(TemplatesMsiComponent.MSIInstallerFile)">
 
@@ -291,6 +295,9 @@
         <UpgradeCode>$(Templates50InstallerUpgradeCode)</UpgradeCode>
         <DependencyKeyName>NetCore_Templates_5.0</DependencyKeyName>
       </TemplatesMsiComponent>
+    </ItemGroup>
+
+    <ItemGroup Condition="!$(Architecture.StartsWith('arm'))">
       <TemplatesMsiComponent Include="NetCore31TemplatesMsi">
         <LayoutPath>$(Templates31LayoutPath.TrimEnd('\'))</LayoutPath>
         <MSIInstallerFile>$(Templates31MSIInstallerFile)</MSIInstallerFile>
@@ -511,6 +518,23 @@
 
   </Target>
 
+  <Target Name="GenerateVSTemplateLocatorNupkg"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
+          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
+          Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
+                    $(VSTemplateLocatorNuspecFile);
+                    $(GenerateNupkgPowershellScript)"
+          Outputs="$(VSTemplateLocatorNupkgFile)">
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                      '$(ArtifactsDir)' ^
+                      '$(VSTemplateLocatorLayoutPath.TrimEnd('\'))' ^
+                      '$(FullNugetVersion)' ^
+                      '$(VSTemplateLocatorNuspecFile)' ^
+                      '$(VSTemplateLocatorNupkgFile)'" />
+
+  </Target>
+
   <Target Name="GenerateMsis"
         DependsOnTargets="GenerateLayout;
                             MsiTargetsSetupInputOutputs;
@@ -528,8 +552,9 @@
                             GenerateSdkPlaceholderNupkg;
                             GenerateVSToolsNupkg;
                             GenerateVSToolsResolverNupkg;
-                            GenerateSdkMSBuildExtensionsNupkg"
-        Condition=" '$(OS)' == 'Windows_NT' and !$(Architecture.StartsWith('arm')) " />
+                            GenerateSdkMSBuildExtensionsNupkg;
+                            GenerateVSTemplateLocatorNupkg"
+        Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />
 
 
 </Project>

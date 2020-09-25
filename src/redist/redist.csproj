@@ -3,6 +3,7 @@
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +13,7 @@
                         />
 
     <ProjectReference Include="..\SdkResolver\SdkResolver.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\VSTemplateLocator\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

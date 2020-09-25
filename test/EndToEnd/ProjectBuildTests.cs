@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.DotNet.TestFramework;
@@ -81,51 +80,6 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
                 .Should().Pass().And.HaveStdOutContaining("Hello World!");
-        }
-
-        [WindowsOnlyFact]
-        public void ItCanPublishArm64Winforms()
-        {
-            DirectoryInfo directory = TestAssets.CreateTestDirectory();
-            string projectDirectory = directory.FullName;
-
-            string newArgs = "winforms --no-restore";
-            new NewCommandShim()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
-
-            string publishArgs="-r win-arm64";
-            new PublishCommand()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute(publishArgs)
-                .Should().Pass();
-            
-            var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
-                .Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault()
-                .Sub("win-arm64").Sub("publish");
-
-            selfContainedPublishDir.Should().HaveFilesMatching("System.Windows.Forms.dll", SearchOption.TopDirectoryOnly);
-            selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
-        }
-        
-        [WindowsOnlyFact]
-        public void ItCantPublishArm64Wpf()
-        {
-            DirectoryInfo directory = TestAssets.CreateTestDirectory();
-            string projectDirectory = directory.FullName;
-
-            string newArgs = "wpf --no-restore";
-            new NewCommandShim()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
-
-            string publishArgs="-r win-arm64";
-            new PublishCommand()
-                .WithWorkingDirectory(projectDirectory)
-                .Execute(publishArgs)
-                .Should().Fail();
         }
 
         [Theory]

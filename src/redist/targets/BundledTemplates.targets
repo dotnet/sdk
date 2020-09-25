@@ -1,29 +1,25 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="CalculateTemplatesVersions" DependsOnTargets="SetupWixProperties">
 
-    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor50Templates)"
-                               VersionSuffix="$(VersionSuffix)">
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor50Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates50InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates50MajorMinorVersion" />
       <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates50MajorMinorPatchVersion" />
     </CalculateTemplateVersions>
 
-    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor31Templates)"
-                               VersionSuffix="$(VersionSuffix)">
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor31Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates31InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates31MajorMinorVersion" />
       <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates31MajorMinorPatchVersion" />
     </CalculateTemplateVersions>
 
-    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor30Templates)"
-                               VersionSuffix="$(VersionSuffix)">
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor30Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates30InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates30MajorMinorVersion" />
       <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates30MajorMinorPatchVersion" />
     </CalculateTemplateVersions>
 
-    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor21Templates)"
-                               VersionSuffix="$(VersionSuffix)">
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor21Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates21InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates21MajorMinorVersion" />
       <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates21MajorMinorPatchVersion" />
@@ -70,6 +66,7 @@
     <Bundled31Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor31Templates)" />
     <Bundled31Templates Include="Microsoft.DotNet.Web.ProjectTemplates.3.1" PackageVersion="$(AspNetCorePackageVersionFor31Templates)" />
     <Bundled31Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1" PackageVersion="$(AspNetCorePackageVersionFor31Templates)" />
+    <Bundled31Templates Include="Microsoft.AspNetCore.Components.WebAssembly.Templates" PackageVersion="$(MicrosoftAspNetCoreComponentsWebAssemblyTemplatesPackageVersion)" />
     <Bundled31Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates31PackageVersion)" />
   </ItemGroup>
   <ItemGroup>
@@ -183,7 +180,7 @@
 
   <Target Name="LayoutTemplatesFor50MSI"
           DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
-          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))">
+          Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
     <Copy SourceFiles="%(Bundled50Templates.RestoredNupkgPath)"
           DestinationFolder="$(Templates50LayoutPath)templates/$(BundledTemplates50InstallPath)"/>
   </Target>

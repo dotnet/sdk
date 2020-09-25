@@ -63,6 +63,21 @@ Zasoby
     • Dokumentacja zestawu SDK: https://aka.ms/dotnet-sdk-docs
     • Informacje o wersji: https://aka.ms/dotnet5-release-notes
     • Samouczki: https://aka.ms/dotnet-tutorials</String>
+  <String Id="FirstTimeWelcomeMessageArm64">Instalacja zakończyła się pomyślnie.
+
+Następujące elementy zostały zainstalowane w: „[DOTNETHOME]”
+    • Zestaw .NET SDK [DOTNETSDKVERSION]
+    • Środowisko uruchomieniowe platformy .NET [DOTNETRUNTIMEVERSION]
+    • Środowisko uruchomieniowe platformy ASP.NET Core [ASPNETCOREVERSION]
+
+Ten produkt gromadzi dane dotyczące użycia
+    • Więcej informacji i rezygnacja: https://aka.ms/dotnet-cli-telemetry
+
+Zasoby
+    • Dokumentacja platformy .NET: https://aka.ms/dotnet-docs
+    • Dokumentacja zestawu SDK: https://aka.ms/dotnet-sdk-docs
+    • Informacje o wersji: https://aka.ms/dotnet5-release-notes
+    • Samouczki: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     Zestaw SDK platformy .NET służy do tworzenia, uruchamiania i testowania aplikacji platformy .NET. Możesz wybierać spośród wielu języków, edytorów i narzędzi deweloperskich oraz korzystać z dużego ekosystemu bibliotek do tworzenia aplikacji dla sieci Web, urządzeń przenośnych, komputerów, środowisk gier i technologii IoT. Mamy nadzieję, że Ci się podoba!</String>
