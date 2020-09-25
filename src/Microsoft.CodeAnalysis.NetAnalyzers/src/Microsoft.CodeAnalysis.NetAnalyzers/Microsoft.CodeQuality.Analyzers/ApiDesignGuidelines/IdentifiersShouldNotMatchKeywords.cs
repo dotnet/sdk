@@ -157,7 +157,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                         if (doReportDiagnostic)
                         {
-                            var diagnostic = Diagnostic.Create(NamespaceRule, containingNamespace.Locations[0], namespaceDisplayString, matchingKeyword);
+                            var diagnostic = containingNamespace.CreateDiagnostic(NamespaceRule, namespaceDisplayString, matchingKeyword);
                             context.ReportDiagnostic(diagnostic);
                         }
                     }

@@ -92,7 +92,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         IMethodSymbol suggestedMethod = toUpperInvariant ?? toUpperWithCultureInfo!;
 
                         // In method {0}, replace the call to {1} with {2}.
-                        var diagnostic = Diagnostic.Create(ToUpperRule, invocation.Syntax.GetLocation(), operationAnalysisContext.ContainingSymbol.Name, method.Name, suggestedMethod.Name);
+                        var diagnostic = invocation.CreateDiagnostic(ToUpperRule, operationAnalysisContext.ContainingSymbol.Name, method.Name, suggestedMethod.Name);
                         operationAnalysisContext.ReportDiagnostic(diagnostic);
                     }
                 }, OperationKind.Invocation);

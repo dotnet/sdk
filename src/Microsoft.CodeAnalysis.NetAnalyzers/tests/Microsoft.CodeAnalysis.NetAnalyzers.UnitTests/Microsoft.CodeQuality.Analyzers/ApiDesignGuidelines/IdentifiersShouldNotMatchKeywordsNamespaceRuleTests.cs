@@ -148,7 +148,10 @@ namespace @namespace
     public class D {}
 }",
                 // Diagnostic for only one of the two occurrences.
-                GetCSharpResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "namespace", "namespace"));
+                VerifyCS.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule)
+                    .WithSpan(2, 11, 2, 21)
+                    .WithSpan(7, 11, 7, 21)
+                    .WithArguments("namespace", "namespace"));
         }
 
         [Fact]
@@ -165,7 +168,10 @@ Namespace [Namespace]
     End Class
 End Namespace
 ",
-                GetBasicResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "Namespace", "Namespace"));
+                VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule)
+                    .WithSpan(2, 11, 2, 22)
+                    .WithSpan(7, 11, 7, 22)
+                    .WithArguments("Namespace", "Namespace"));
         }
 
         [Theory]

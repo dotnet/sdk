@@ -75,16 +75,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     var parametersInScope = GetParametersInScope(context);
                     if (HasAMatchInScope(stringText, parametersInScope))
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            RuleWithSuggestion, argument.Value.Syntax.GetLocation(), stringText));
+                        context.ReportDiagnostic(argument.Value.CreateDiagnostic(RuleWithSuggestion, stringText));
                     }
                     return;
                 case PropertyName:
                     var propertiesInScope = GetPropertiesInScope(context);
                     if (HasAMatchInScope(stringText, propertiesInScope))
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            RuleWithSuggestion, argument.Value.Syntax.GetLocation(), stringText));
+                        context.ReportDiagnostic(argument.Value.CreateDiagnostic(RuleWithSuggestion, stringText));
                     }
                     return;
                 default:
