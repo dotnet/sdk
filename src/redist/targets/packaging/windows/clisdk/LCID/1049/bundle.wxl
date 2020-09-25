@@ -63,6 +63,21 @@
     • Документация по SDK: https://aka.ms/dotnet-sdk-docs
     • Заметки о выпуске: https://aka.ms/dotnet5-release-notes
     • Учебники: https://aka.ms/dotnet-tutorials</String>
+  <String Id="FirstTimeWelcomeMessageArm64">Установка выполнена.
+
+В "[DOTNETHOME]" установлены следующие компоненты:
+    • Пакет SDK для .NET [DOTNETSDKVERSION]
+    • Среда выполнения .NET [DOTNETRUNTIMEVERSION]
+    • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]
+
+Этот продукт собирает данные об использовании.
+    • Чтобы получить дополнительные сведения или отказаться от использования продукта, перейдите на страницу https://aka.ms/dotnet-cli-telemetry
+
+Ресурсы
+    • Документация по .NET: https://aka.ms/dotnet-docs
+    • Документация по SDK: https://aka.ms/dotnet-sdk-docs
+    • Заметки о выпуске: https://aka.ms/dotnet5-release-notes
+    • Учебники: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">Пакет SDK для .NET</String>
   <String Id="WelcomeDescription">
     Пакет SDK для .NET используется для сборки, запуска и тестирования приложений .NET. Вы можете выбрать один из нескольких языков, использовать различные редакторы и инструменты для разработчиков, а также воспользоваться преимуществами большой экосистемы библиотек для создания веб-приложений, мобильных и классических приложений, игр и приложений Интернета вещей. Надеемся, вам понравится!</String>

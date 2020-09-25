@@ -14,6 +14,10 @@
         WixBundleInstalled OR ((NOT (DOTNETHOME_X64 ~= DOTNETHOME_X86)) OR DOTNETHOMESIMILARITYCHECKOVERRIDE)
     </bal:Condition>
 
+    <bal:Condition Message="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;">
+        WixBundleInstalled OR ((NOT (DOTNETHOME_ARM64 ~= DOTNETHOME_X86)) OR DOTNETHOMESIMILARITYCHECKOVERRIDE)
+    </bal:Condition>
+
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.Foundation">
       <bal:WixStandardBootstrapperApplication
         LicenseFile="dummyeula.rtf"
@@ -25,13 +29,13 @@
 
     <swid:Tag Regid="microsoft.com" InstallPath="[DOTNETHOME]" />
 
-      <util:RegistrySearch Id="CheckDotnetInstallLocation_x86"
+    <util:RegistrySearch Id="CheckDotnetInstallLocation_x86"
               Variable="DotnetInstallLocationExists_x86"
               Result="exists"
               Root="HKLM"
               Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86"
               Value="InstallLocation" />
-      <util:RegistrySearch Id="DotnetInstallLocation_x86"
+    <util:RegistrySearch Id="DotnetInstallLocation_x86"
               After="CheckDotnetInstallLocation_x86"
               Condition="DotnetInstallLocationExists_x86"
               Variable="DOTNETHOME_X86"
@@ -40,18 +44,19 @@
               Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86"
               Value="InstallLocation" />
 
-      <util:FileSearch Id="DotnetExeSearch_x86"
+    <util:FileSearch Id="DotnetExeSearch_x86"
               After="DotnetInstallLocation_x86"
               Variable="DotnetExeExists_x86"
               Condition="NOT DotnetInstallLocationExists_x86"
               Result="exists"
               Path="[ProgramFilesFolder]dotnet\dotnet.exe"/>
-      <util:DirectorySearch Id="DotnetExeLocation_x86"
+    <util:DirectorySearch Id="DotnetExeLocation_x86"
               After="DotnetExeSearch_x86"
               Condition="DotnetExeExists_x86"
               Variable="DOTNETHOME_X86"
               Path="[ProgramFilesFolder]dotnet"/>
-      
+
+    <?if $(var.Platform)=x64?>
     <util:RegistrySearch Id="CheckDotnetInstallLocation_x64"
               Variable="DotnetInstallLocationExists_x64"
               Result="exists"
@@ -79,6 +84,35 @@
               Variable="DOTNETHOME_X64"
               Path="[ProgramFiles64Folder]dotnet"/>
 
+    <?elseif $(var.Platform)=arm64?>
+    <util:RegistrySearch Id="CheckDotnetInstallLocation_arm64"
+              Variable="DotnetInstallLocationExists_arm64"
+              Result="exists"
+              Root="HKLM"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\arm64"
+              Value="InstallLocation" />
+    <util:RegistrySearch Id="DotnetInstallLocation_arm64"
+              After="CheckDotnetInstallLocation_arm64"
+              Condition="DotnetInstallLocationExists_arm64"
+              Variable="DOTNETHOME_ARM64"
+              Result="value"
+              Root="HKLM"
+              Key="SOFTWARE\dotnet\Setup\InstalledVersions\arm64"
+              Value="InstallLocation" />
+
+    <util:FileSearch Id="DotnetExeSearch_arm64"
+              After="DotnetInstallLocation_arm64"
+              Variable="DotnetExeExists_arm64"
+              Condition="NOT DotnetInstallLocationExists_arm64"
+              Result="exists"
+              Path="[ProgramFiles64Folder]dotnet\dotnet.exe"/>
+    <util:DirectorySearch Id="DotnetExeLocation_arm64"
+              After="DotnetExeSearch_arm64"
+              Condition="DotnetExeExists_arm64"
+              Variable="DOTNETHOME_ARM64"
+              Path="[ProgramFiles64Folder]dotnet"/>
+    <?endif?>
+
     <!-- 
         When installing the SDK bundle to a custom location using the commandline parameters, it is intended, not mandatory, that 
         both "DOTNETHOME_X86" and "DOTNETHOME_X64" should be used on the commandline and should take this convention:
@@ -89,6 +123,7 @@
     -->
     <Variable Name="DOTNETHOME_X86" Type="string" Value="[ProgramFilesFolder]dotnet" bal:Overridable="yes" />
     <Variable Name="DOTNETHOME_X64" Type="string" Value="[ProgramFiles64Folder]dotnet" bal:Overridable="yes" />
+    <Variable Name="DOTNETHOME_ARM64" Type="string" Value="[ProgramFiles64Folder]dotnet" bal:Overridable="yes" />
     <Variable Name="DOTNETHOME" Type="string" Value="[DOTNETHOME_$(var.PlatformToken)]" bal:Overridable="no" />
     <Variable Name="BUNDLEMONIKER" Type="string" Value="$(var.ProductMoniker)" bal:Overridable="no" />
     <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(var.NugetVersion)" bal:Overridable="no" />
@@ -107,15 +142,13 @@
       <MsiPackage SourceFile="$(var.SharedHostMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
-      <MsiPackage SourceFile="$(var.WinFormsAndWpfMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
       <MsiPackage SourceFile="$(var.NetCoreAppTargetingPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
       <MsiPackage SourceFile="$(var.NetCoreAppHostPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
+      <?if $(var.Platform)=x86 or $(var.Platform)=x64?>
       <MsiPackage SourceFile="$(var.AlternateNetCoreAppHostPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
@@ -128,10 +161,14 @@
       <MsiPackage SourceFile="$(var.NetStandardTargetingPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
-      <MsiPackage SourceFile="$(var.AspNetTargetingPackMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      <MsiPackage SourceFile="$(var.WinFormsAndWpfMsiSourcePath)">
+          <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
       <MsiPackage SourceFile="$(var.WindowsDesktopTargetingPackMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
+      <?endif?>
+      <MsiPackage SourceFile="$(var.AspNetTargetingPackMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
       <MsiPackage SourceFile="$(var.TemplatesMsiSourcePath)">
@@ -142,6 +179,7 @@
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
         <MsiProperty Name="DOTNETHOME_X86" Value="[DOTNETHOME_X86]" />
         <MsiProperty Name="DOTNETHOME_X64" Value="[DOTNETHOME_X64]" />
+        <MsiProperty Name="DOTNETHOME_ARM64" Value="[DOTNETHOME_ARM64]" />
         <MsiProperty Name="EXEFULLPATH" Value="[WixBundleOriginalSource]" />
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
@@ -149,13 +187,23 @@
         <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
       <?elseif $(var.Platform)=x64?>
         <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64"/>
+      <?elseif $(var.Platform)=arm64?>
+        <PackageGroupRef Id="PG_AspNetCoreSharedFramework_arm64"/>
       <?endif?>
     </Chain>
   </Bundle>
 
   <Fragment>
     <PayloadGroup Id="DotnetCoreBAPayloads">
+      <!-- This theme is dupped with a slight change: It uses a modified version of FirstTimeWelcomeMessageArm64
+      for SuccessInstallHeader to account for ARM64's lack of support for WPF/WinForms. Once they converge, remove
+      this and remove FirstTimeWelcomeMessageArm64 from the wxl files. -->
+      <?if $(var.Platform)=arm64?>
+      <Payload Name="thm.xml" Compressed="yes" SourceFile="bundleArm64.thm" />
+      <?else?>
       <Payload Name="thm.xml" Compressed="yes" SourceFile="bundle.thm" />
+      <?endif?>
+
       <!-- Default/Neutral localized content is US English -->
       <Payload Name="thm.wxl" Compressed="yes" SourceFile="LCID\1033\bundle.wxl" />
       <Payload Name="bg.png" Compressed="yes" SourceFile="..\..\osx\clisdk\resources\dotnetbackground.png" />
