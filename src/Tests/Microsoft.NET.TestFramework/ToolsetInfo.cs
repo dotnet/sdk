@@ -149,6 +149,12 @@ namespace Microsoft.NET.TestFramework
                 string sdksPath = Path.Combine(DotNetRoot, "sdk", SdkVersion, "Sdks");
                 command.Environment["DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR"] = sdksPath;
 
+                //  Avoid using stage 0 dotnet install dir
+                command.Environment["DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR"] = "";
+
+                //  Put stage 2 on the Path (this is how the MSBuild SDK resolver finds dotnet)
+                command.Environment["Path"] = DotNetRoot + ";" + Environment.GetEnvironmentVariable("Path");
+
                 if (!string.IsNullOrEmpty(MicrosoftNETBuildExtensionsPathOverride))
                 {
                     var microsoftNETBuildExtensionsPath = GetMicrosoftNETBuildExtensionsPath();
