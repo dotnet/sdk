@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Formatters;
-
+using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
@@ -17,6 +17,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
     public class FilterDiagnosticsTests : CSharpFormatterTests
     {
+        public FilterDiagnosticsTests()
+        {
+            MSBuildRegistrar.RegisterInstance();
+        }
+
         [Fact]
         public async Task TestFilterWarning()
         {

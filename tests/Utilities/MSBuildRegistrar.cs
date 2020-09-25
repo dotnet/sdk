@@ -1,37 +1,38 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Tools.MSBuild;
+using Microsoft.Extensions.Logging;
+
+#nullable enable
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
     /// <summary>
-    /// This test fixture ensures that MSBuild is loaded.
+    /// Loads MSBuild and NuGet assemblies.
     /// </summary>
-    public sealed class MSBuildFixture : IDisposable
+    public sealed class MSBuildRegistrar
     {
         private static int s_registered;
 
-        public static string MSBuildPath { get; private set; }
+        private static string? s_msBuildPath;
 
 
-        public void RegisterInstance()
+        public static string RegisterInstance(ILogger? logger = null)
         {
             if (Interlocked.Exchange(ref s_registered, 1) == 0)
             {
                 var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances().First();
 
-                MSBuildPath = msBuildInstance.MSBuildPath;
+                s_msBuildPath = msBuildInstance.MSBuildPath;
 
-                LooseVersionAssemblyLoader.Register(MSBuildPath);
+                LooseVersionAssemblyLoader.Register(s_msBuildPath, logger);
                 Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
+                NuGetLoader.Load();
             }
-        }
 
-        public void Dispose()
-        {
+            return s_msBuildPath!;
         }
     }
 }

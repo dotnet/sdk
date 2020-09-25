@@ -3,7 +3,7 @@
 using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis.Tools.Analyzers;
-
+using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
@@ -12,6 +12,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
     public class LoadAnalyzersAndFixersTests
     {
+        public LoadAnalyzersAndFixersTests()
+        {
+            MSBuildRegistrar.RegisterInstance();
+        }
+
         [Fact]
         public static async Task TestSingleAnalyzerAndFixerAsync()
         {
