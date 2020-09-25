@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
     /// <summary>
-    /// Loads MSBuild and NuGet assemblies.
+    /// Loads MSBuild assemblies.
     /// </summary>
     public sealed class MSBuildRegistrar
     {
@@ -29,7 +29,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 
                 LooseVersionAssemblyLoader.Register(s_msBuildPath, logger);
                 Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
-                NuGetLoader.Load();
             }
 
             return s_msBuildPath!;

@@ -12,11 +12,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
     public class LoadAnalyzersAndFixersTests
     {
-        public LoadAnalyzersAndFixersTests()
-        {
-            MSBuildRegistrar.RegisterInstance();
-        }
-
         [Fact]
         public static async Task TestSingleAnalyzerAndFixerAsync()
         {

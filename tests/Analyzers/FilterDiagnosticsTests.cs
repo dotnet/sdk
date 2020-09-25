@@ -17,11 +17,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
     public class FilterDiagnosticsTests : CSharpFormatterTests
     {
-        public FilterDiagnosticsTests()
-        {
-            MSBuildRegistrar.RegisterInstance();
-        }
-
         [Fact]
         public async Task TestFilterWarning()
         {
