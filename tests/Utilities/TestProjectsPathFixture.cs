@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
@@ -14,16 +15,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
         private static int s_registered;
         private static string s_currentDirectory;
 
-        public string SetCurrentDirectory()
+        public void SetCurrentDirectory()
         {
             if (Interlocked.Increment(ref s_registered) == 1)
             {
                 s_currentDirectory = Environment.CurrentDirectory;
-                var solutionPath = Directory.GetParent(s_currentDirectory).Parent.Parent.Parent.Parent.FullName;
-                Environment.CurrentDirectory = Path.Combine(solutionPath, "tests", "projects");
-            }
 
-            return Environment.CurrentDirectory;
+                // walk from /format/artifacts/bin/dotnet-format.UnitTests/Debug/netcoreapp2.1/dotnet-format.UnitTests.dll
+                // up to the repo root then down to the test projects folder.
+                var unitTestAssemblyPath = Assembly.GetExecutingAssembly().Location;
+                var repoRootPath = Directory.GetParent(unitTestAssemblyPath).Parent.Parent.Parent.Parent.Parent.FullName;
+                Environment.CurrentDirectory = Path.Combine(repoRootPath, "tests", "projects");
+            }
         }
 
         public void Dispose()
