@@ -110,8 +110,8 @@ jobs:
     vmImage: 'windows-latest'
   timeoutInMinutes: 5
   steps:
-    - script: dotnet run --project ./src/dotnet-format.csproj -c Release -- '@validate.rsp'
-      displayName: Run dotnet-format
+    - script: build.cmd -c Release && dotnet ./artifacts/bin/dotnet-format/Release/netcoreapp2.1/dotnet-format.dll @validate.rsp
+      displayName: Build and Run dotnet-format
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:

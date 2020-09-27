@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
         private static int s_registered;
         private static string s_currentDirectory;
 
-        public void SetCurrentDirectory()
+        public string SetCurrentDirectory()
         {
             if (Interlocked.Increment(ref s_registered) == 1)
             {
@@ -22,6 +22,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
                 var solutionPath = Directory.GetParent(s_currentDirectory).Parent.Parent.Parent.Parent.FullName;
                 Environment.CurrentDirectory = Path.Combine(solutionPath, "tests", "projects");
             }
+
+            return Environment.CurrentDirectory;
         }
 
         public void Dispose()

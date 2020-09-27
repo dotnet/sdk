@@ -10,11 +10,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {
     public class MSBuildWorkspaceFinderTests : IClassFixture<TestProjectsPathFixture>
     {
-        private string SolutionPath => Environment.CurrentDirectory;
+        private string SolutionPath { get; }
 
         public MSBuildWorkspaceFinderTests(TestProjectsPathFixture testProjectsPathFixture)
         {
-            testProjectsPathFixture.SetCurrentDirectory();
+            SolutionPath = testProjectsPathFixture.SetCurrentDirectory();
         }
 
         [Fact]
