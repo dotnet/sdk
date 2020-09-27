@@ -3,7 +3,6 @@
 using System.Threading.Tasks;
 
 using Microsoft.CodeAnalysis.Tools.Analyzers;
-
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers

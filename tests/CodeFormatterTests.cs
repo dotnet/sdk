@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
-    public class CodeFormatterTests : IClassFixture<MSBuildFixture>, IClassFixture<TestProjectsPathFixture>
+    public class CodeFormatterTests : IClassFixture<TestProjectsPathFixture>
     {
         private const string FormattedProjectPath = "for_code_formatter/formatted_project/";
         private const string FormattedProjectFilePath = FormattedProjectPath + "formatted_project.csproj";
@@ -43,16 +43,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
         private readonly ITestOutputHelper _output;
 
-        public CodeFormatterTests(ITestOutputHelper output, MSBuildFixture msBuildFixture, TestProjectsPathFixture testProjectsPathFixture)
+        public CodeFormatterTests(ITestOutputHelper output, TestProjectsPathFixture testProjectsPathFixture)
         {
             _output = output;
 
             testProjectsPathFixture.SetCurrentDirectory();
-            msBuildFixture.RegisterInstance(_output);
-
-            // For NetStandard projects to resolve framework references, the project.assets.json files must
-            // be constructed by a NuGet restore.
-            ProcessRunner.CreateProcess("dotnet", $"restore \"{CodeStyleSolutionFilePath}\"").Result.GetAwaiter().GetResult();
         }
 
         [Fact]
@@ -418,6 +413,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
         {
+            var restoreExitCode = await PerformNuGetRestore(CodeStyleSolutionFilePath);
+            Assert.Equal(0, restoreExitCode);
+
             await TestFormatWorkspaceAsync(
                 CodeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -432,6 +430,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
         {
+            var restoreExitCode = await PerformNuGetRestore(CodeStyleSolutionFilePath);
+            Assert.Equal(0, restoreExitCode);
+
             await TestFormatWorkspaceAsync(
                 CodeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -447,6 +448,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
         {
+            var restoreExitCode = await PerformNuGetRestore(CodeStyleSolutionFilePath);
+            Assert.Equal(0, restoreExitCode);
+
             await TestFormatWorkspaceAsync(
                 CodeStyleSolutionFilePath,
                 include: EmptyFilesList,
@@ -528,8 +532,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                     : WorkspaceType.Project;
             }
 
-            var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
             var logger = new TestLogger();
+            var msBuildPath = MSBuildRegistrar.RegisterInstance(logger);
+
+            logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, Program.GetRuntimeVersion());
+            logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
+
+            var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
             var formatOptions = new FormatOptions(
                 workspacePath,
                 workspaceType,

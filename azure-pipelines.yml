@@ -12,7 +12,7 @@ jobs:
 
 - job: Windows
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   variables:
     _os: Windows
   strategy:
@@ -43,8 +43,7 @@ jobs:
 
 - job: Linux
   pool:
-    name: NetCorePublic-Pool
-    queue: BuildPool.Ubuntu.1604.Amd64.Open
+    vmImage: 'ubuntu-latest'
   variables:
     _os: Linux
   strategy:
@@ -108,13 +107,11 @@ jobs:
 
 - job: Formatting_Check
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'ubuntu-latest'
   timeoutInMinutes: 5
   steps:
-    - script: ./build.cmd -c Release
-      displayName: Build dotnet-format
-    - script: dotnet ./artifacts/bin/dotnet-format/Release/netcoreapp2.1/dotnet-format.dll @validate.rsp
-      displayName: Run dotnet-format
+    - script: ./restore.sh && dotnet run --project ./src/dotnet-format.csproj -c Release -- @validate.rsp
+      displayName: Build and Run dotnet-format
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:

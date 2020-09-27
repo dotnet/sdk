@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Formatters;
-
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
@@ -11,8 +12,10 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
     {
         private static readonly string[] s_extensions = new[] { "ni.dll", "ni.exe", "dll", "exe" };
 
-        internal static Assembly? TryResolveAssemblyFromPaths(AssemblyLoadContext context, AssemblyName assemblyName, string searchPath, Dictionary<string, Assembly>? knownAssemblyPaths = null)
+        internal static Assembly? TryResolveAssemblyFromPaths(AssemblyLoadContext context, AssemblyName assemblyName, string searchPath, Dictionary<string, Assembly>? knownAssemblyPaths = null, ILogger? logger = null)
         {
+            logger?.LogTrace($"Trying to resolve assembly {assemblyName.FullName}.");
+
             foreach (var cultureSubfolder in string.IsNullOrEmpty(assemblyName.CultureName)
                 // If no culture is specified, attempt to load directly from
                 // the known dependency paths.
@@ -41,7 +44,11 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
 
                     try
                     {
-                        return context.LoadFromAssemblyPath(candidatePath);
+                        var assembly = context.LoadFromAssemblyPath(candidatePath);
+
+                        logger?.LogTrace($"Loaded assembly from {candidatePath}.");
+
+                        return assembly;
                     }
                     catch
                     {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis.Tools.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.MSBuild
 {
@@ -18,7 +19,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
         /// <summary>
         /// Register an assembly loader that will load assemblies with higher version than what was requested.
         /// </summary>
-        public static void Register(string searchPath)
+        public static void Register(string searchPath, ILogger? logger = null)
         {
             AssemblyLoadContext.Default.Resolving += (AssemblyLoadContext context, AssemblyName assemblyName) =>
             {
@@ -29,7 +30,7 @@ namespace Microsoft.CodeAnalysis.Tools.MSBuild
                         return cachedAssembly;
                     }
 
-                    var assembly = AssemblyResolver.TryResolveAssemblyFromPaths(context, assemblyName, searchPath, s_pathsToAssemblies);
+                    var assembly = AssemblyResolver.TryResolveAssemblyFromPaths(context, assemblyName, searchPath, s_pathsToAssemblies, logger: logger);
 
                     // Cache assembly
                     if (assembly != null)

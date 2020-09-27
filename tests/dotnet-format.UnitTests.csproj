@@ -10,6 +10,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Always run on the latest runtime installed. -->
+    <RuntimeFrameworkVersion>2.1.0-rc1</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
@@ -36,6 +37,17 @@
     <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
+
+    <!--
+      The package "Microsoft.CodeAnalysis.Analyzer.Testing" brings in v5.3 of these NuGet dependencies. In order to
+      test against the same verion of NuGet as our configured SDK, we must set the version to be the same.
+     -->
+    <PackageReference Include="NuGet.Common" Version="$(NuGetCommonVersion)" />
+    <PackageReference Include="NuGet.Configuration" Version="$(NuGetConfigurationVersion)" />
+    <PackageReference Include="NuGet.Frameworks" Version="$(NuGetFrameworksVersion)" />
+    <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingVersion)" />
+    <PackageReference Include="NuGet.Protocol" Version="$(NuGetProtocolVersion)" />
+    <PackageReference Include="NuGet.Versioning" Version="$(NuGetVersioningVersion)" />
   </ItemGroup>
 
   <ItemGroup>
