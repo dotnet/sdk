@@ -829,7 +829,7 @@ public abstract class C1
         {
             await new VerifyCS.Test
             {
-                LanguageVersion = LanguageVersion.CSharp9,
+                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = @"
 public record C
 {
