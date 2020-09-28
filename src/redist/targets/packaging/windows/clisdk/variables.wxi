@@ -26,8 +26,21 @@
   <?define WixQuietExec="WixQuietExec64"?>
   <?define Program_Files="ProgramFiles64Folder"?>
   <?define Win64AttributeValue=yes?>
+  <?elseif $(var.Platform)=arm64?>
+  <?define PlatformToken="ARM64"?>
+  <?define WixQuietExec="WixQuietExec64"?>
+  <?define Program_Files="ProgramFiles64Folder"?>
+  <?define Win64AttributeValue=yes?>
   <?else?>
   <?error Invalid Platform ($(var.Platform))?>
+  <?endif?>
+
+  <!-- See https://docs.microsoft.com/en-us/windows/win32/msi/using-64-bit-windows-installer-packages. -->
+  <!-- For 64-bit packages on the Arm64 platform, the Windows Installer database schema must be 500 or higher. -->
+  <?if $(var.Platform)=arm64?>
+  <?define InstallerVersion="500"?>
+  <?else?>
+  <?define InstallerVersion="200"?>
   <?endif?>
 
   <?define DependencyKey   = "$(var.DependencyKeyName)_$(var.SDKBundleVersion)_$(var.Platform)"?>

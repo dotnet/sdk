@@ -71,7 +71,7 @@
       <RemainingFiles Remove="$(SdkOutputDirectory)**\*.resources.dll" />
 
       <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
-      <RemainingFiles Remove="$(SdkOutputDirectory)ref\*.dll" />
+      <RemainingFiles Remove="$(SdkOutputDirectory)**\ref\*.dll" />
 
       <DiasymReaderPath Include="$(SharedFrameworkNameVersionPath)/Microsoft.DiaSymReader.Native.$(DIASymReaderCrossgenFilter).dll" />
     </ItemGroup>

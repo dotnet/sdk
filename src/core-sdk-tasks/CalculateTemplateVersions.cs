@@ -12,9 +12,6 @@ namespace Microsoft.DotNet.Cli.Build
         [Required]
         public string AspNetCorePackageVersionTemplate { get; set; }
 
-        [Required]
-        public string VersionSuffix { get; set; }
-
         [Output]
         public string BundledTemplateInstallPath { get; set; }
 
@@ -28,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Build
 
         public override bool Execute()
         {
-            var result = Calculate(AspNetCorePackageVersionTemplate, VersionSuffix);
+            var result = Calculate(AspNetCorePackageVersionTemplate);
             BundledTemplateInstallPath = result.BundledTemplateInstallPath;
             BundledTemplateMajorMinorVersion = result.BundledTemplateMajorMinorVersion;
             BundledTemplateMajorMinorPatchVersion = result.BundledTemplateMajorMinorPatchVersion;
@@ -40,16 +37,14 @@ namespace Microsoft.DotNet.Cli.Build
             (string BundledTemplateInstallPath,
             string BundledTemplateMajorMinorVersion,
 			string BundledTemplateMajorMinorPatchVersion) 
-            Calculate(
-                string aspNetCorePackageVersionTemplate,
-                string versionSuffix)
+            Calculate(string aspNetCorePackageVersionTemplate)
         {
             var aspNetCoreTemplate = NuGetVersion.Parse(aspNetCorePackageVersionTemplate);
 
             NuGetVersion baseMajorMinorPatch = GetBaseMajorMinorPatch(aspNetCoreTemplate);
 
             string bundledTemplateInstallPath = aspNetCoreTemplate.IsPrerelease
-                ? $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}-{versionSuffix}"
+                ? $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}-{aspNetCoreTemplate.Release}"
                 : $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}";
 
             return (
