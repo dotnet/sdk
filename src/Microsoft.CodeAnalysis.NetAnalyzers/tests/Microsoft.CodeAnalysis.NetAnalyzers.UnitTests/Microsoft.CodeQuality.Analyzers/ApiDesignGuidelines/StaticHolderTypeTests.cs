@@ -823,5 +823,16 @@ public abstract class C1
 }
 ");
         }
+
+        [Fact]
+        public async Task CA1052NoDiagnosticRecords()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public record C
+{
+    public static void M() { }
+}
+");
+        }
     }
 }
