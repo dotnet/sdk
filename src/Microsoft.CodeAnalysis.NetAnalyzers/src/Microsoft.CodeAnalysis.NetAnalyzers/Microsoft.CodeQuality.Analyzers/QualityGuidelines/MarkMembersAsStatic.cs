@@ -248,7 +248,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            if (!methodSymbol.MatchesConfiguredVisibility(options, Rule, wellKnownTypeProvider.Compilation, cancellationToken,
+            if (!options.MatchesConfiguredVisibility(Rule, methodSymbol, wellKnownTypeProvider.Compilation, cancellationToken,
                     defaultRequiredVisibility: SymbolVisibilityGroup.All))
             {
                 return false;

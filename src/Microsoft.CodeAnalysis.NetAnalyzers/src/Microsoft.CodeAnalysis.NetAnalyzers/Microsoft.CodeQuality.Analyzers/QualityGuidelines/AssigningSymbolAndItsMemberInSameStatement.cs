@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Immutable;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -69,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             if (isViolationFound)
             {
-                var diagnostic = Diagnostic.Create(Rule, operationTarget.Syntax.GetLocation(), operationTarget.Instance.Syntax, operationTarget.Member.Name);
+                var diagnostic = operationTarget.CreateDiagnostic(Rule, operationTarget.Instance.Syntax, operationTarget.Member.Name);
                 context.ReportDiagnostic(diagnostic);
             }
         }
