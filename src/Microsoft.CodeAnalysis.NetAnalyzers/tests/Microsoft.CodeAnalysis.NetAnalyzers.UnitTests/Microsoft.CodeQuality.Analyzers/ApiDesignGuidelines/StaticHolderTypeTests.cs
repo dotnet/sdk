@@ -827,12 +827,16 @@ public abstract class C1
         [Fact]
         public async Task CA1052NoDiagnosticRecords()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp9,
+                TestCode = @"
 public record C
 {
     public static void M() { }
 }
-");
+"
+            }.RunAsync();
         }
     }
 }
