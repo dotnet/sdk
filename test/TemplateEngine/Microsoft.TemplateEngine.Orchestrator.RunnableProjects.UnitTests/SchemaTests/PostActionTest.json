@@ -1,0 +1,99 @@
+{
+  "author": "Test",
+  "classifications": [ "Web", "MVC" ],
+  "name": "Test Post Actions",
+  "defaultName": "TestPostAction",
+  "identity": "Test.PostAction",
+  "groupIdentity": "Test.PostAction",
+  "shortName": "testpostactions",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Test.Generator",
+  "preferNameDirectory": true,
+  "primaryOutputs": [ { "path": "Test.Generator" } ],
+  "sources": [
+    {
+
+    }
+  ],
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    },
+    {
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "args": {
+        "executable": "setup.cmd",
+        "args": "",
+        "redirectStandardOutput": "false"
+      },
+      "manualInstructions": [
+        {
+          "text": "Run 'setup.cmd'"
+        }
+      ],
+      "continueOnError": false,
+      "description ": "setups the project by calling setup.cmd"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\")",
+      "description": "Opens Class1.cs in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "1"
+      },
+      "continueOnError": true
+    },
+    {
+      "description": "Adding Reference to Microsoft.NET.Sdk.Functions Nuget package",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": false,
+      "manualInstructions": [
+        {
+          "text": "Manually add the reference to Microsoft.NET.Sdk.Functions to your project file"
+        }
+      ],
+      "args": {
+        "referenceType": "package",
+        "reference": "Microsoft.NET.Sdk.Functions",
+        "version": "1.0.0",
+        "projectFileExtensions": ".csproj"
+      }
+    },
+    {
+      "condition": "(postActionAddToSln)",
+      "description": "Add projects to solution",
+      "manualInstructions": [ { "text": "Run post action 'Add projects to a solution file'" } ],
+      "args": {
+        "primaryOutputIndexes": "0;2"
+      },
+      "actionId": "D396686C-DE0E-4DE6-906D-291CD29FC5DE",
+      "continueOnError": true
+    },
+    {
+      "condition": "(OS != \"Windows_NT\")",
+      "description": "Make scripts executable",
+      "manualInstructions": [
+        {
+          "text": "Run 'chmod +x *.sh'"
+        }
+      ],
+      "actionId": "cb9a6cf3-4f5c-4860-b9d2-03a574959774",
+      "args": {
+        "+x": "*.sh"
+      },
+      "continueOnError": true
+    }
+  ]
+}

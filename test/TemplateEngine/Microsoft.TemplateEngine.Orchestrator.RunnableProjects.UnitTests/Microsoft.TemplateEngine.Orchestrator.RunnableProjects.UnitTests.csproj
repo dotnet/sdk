@@ -1,8 +1,11 @@
-﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
+<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
         <TestProject>true</TestProject>
     </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.13" />
+    </ItemGroup>
 
     <ItemGroup>
         <Compile Update="ConditionalTests.*.cs" DependentUpon="ConditionalTests.cs" />
@@ -18,4 +21,27 @@
         <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
         <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Update="SchemaTests\BasicTest.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="SchemaTests\GeneratorTest.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="SchemaTests\PostActionTest.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="SchemaTests\StarterWebTest.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' ">
+      <Exec Command="copy $(SolutionDir)src\Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Schemas\JSON\template.json $(TargetDir)SchemaTests" />
+    </Target>
+
+    <Target Name="PostBuildUnix" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Unix' ">
+        <Exec Command="cp $(SolutionDir)src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Schemas/JSON/template.json $(TargetDir)SchemaTests" />
+    </Target>
 </Project>
