@@ -211,7 +211,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                     switch (attribute.ConstructorArguments[0].Value)
                     {
-                        case string designerTypeName when designerTypeName != null:
+                        case string designerTypeName:
                             {
                                 if (IsTypeInCurrentAssembly(designerTypeName, compilation, out var namedType))
                                 {
@@ -220,7 +220,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 break;
                             }
 
-                        case INamedTypeSymbol namedType when namedType != null:
+                        case INamedTypeSymbol namedType:
                             return namedType;
                     }
 
@@ -241,7 +241,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                     switch (attribute.ConstructorArguments[0].Value)
                     {
-                        case string typeName when typeName != null:
+                        case string typeName:
                             {
                                 if (IsTypeInCurrentAssembly(typeName, compilation, out var namedType))
                                 {
@@ -250,7 +250,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 break;
                             }
 
-                        case INamedTypeSymbol namedType when namedType != null:
+                        case INamedTypeSymbol namedType:
                             return namedType;
                     }
 
