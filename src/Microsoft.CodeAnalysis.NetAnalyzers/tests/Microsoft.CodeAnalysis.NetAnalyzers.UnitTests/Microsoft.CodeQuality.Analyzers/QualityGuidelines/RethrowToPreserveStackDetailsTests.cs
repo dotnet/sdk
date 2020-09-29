@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -492,6 +493,68 @@ Class Program
         End Try
     End Sub
 End Class
+");
+        }
+
+        [Fact]
+        public async Task CA2200_DiagnosticsForThrowCaughtExceptionInLocalMethod()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class Program
+{
+    void CatchAndRethrowExplicitly()
+    {
+        try
+        {
+        }
+        catch (Exception e)
+        {
+
+            DoThrow();
+
+            void DoThrow()
+            {
+                [|throw e;|]
+            }
+        }
+    }
+}
+");
+        }
+
+        [Fact]
+        public async Task CA2200_NoDiagnosticsForThrowCaughtExceptionInActionOrFunc()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class Program
+{
+    void CatchAndRethrowExplicitly()
+    {
+        try
+        {
+        }
+        catch (Exception e)
+        {
+            Action DoThrowAction = () =>
+            {
+                throw e;
+            };
+
+            Func<int> DoThrowFunc = () =>
+            {
+                throw e;
+            };
+
+
+            DoThrowAction();
+            var result = DoThrowFunc();
+        }
+    }
+}
 ");
         }
 
