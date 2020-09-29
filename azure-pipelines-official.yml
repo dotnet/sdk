@@ -54,14 +54,6 @@ stages:
         testRunTitle: 'Unit Tests'
       condition: always()
 
-    - task: NuGetPublisher@0
-      displayName: Publish NuGet Packages to MyGet
-      inputs:
-        searchPattern: '$(Build.SourcesDirectory)\artifacts\packages\$(BuildConfiguration)\Shipping\*.nupkg'
-        connectedServiceName: 'dotnet-format - NuGet feed'
-        nuGetVersion: 4.0.0.2283
-      condition: succeeded()
-
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
