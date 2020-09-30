@@ -6624,46 +6624,5 @@ public class C
 }",
             }.RunAsync();
         }
-
-        [Fact, WorkItem(3899, "https://github.com/dotnet/roslyn-analyzers/issues/3899")]
-        public async Task IsNotNull_NoDiagnostic()
-        {
-            await new VerifyCS.Test
-            {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                TestCode = @"
-public class C
-{
-    public void M(object instance)
-    {
-        if (instance is not null)
-        {
-            _ = instance.GetHashCode();
-        }
-    }
-}",
-            }.RunAsync();
-        }
-
-        [Fact, WorkItem(3899, "https://github.com/dotnet/roslyn-analyzers/issues/3899")]
-        public async Task IsNull_Diagnostic()
-        {
-            await new VerifyCS.Test
-            {
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-                TestCode = @"
-public class C
-{
-    public void M(object instance)
-    {
-        if (instance is null)
-        {
-            _ = instance.GetHashCode();
-        }
-    }
-}",
-                ExpectedDiagnostics = { GetCSharpResultAt(8, 17, "void C.M(object instance)", "instance"), },
-            }.RunAsync();
-        }
     }
 }
