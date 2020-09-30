@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis.Operations;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
@@ -48,11 +47,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     ancestor.Kind != OperationKind.LocalFunction)
                 {
                     if (ancestor.Kind == OperationKind.CatchClause &&
-                        ancestor is ICatchClauseOperation catchClause &&
-                        catchClause.Locals.Contains(localReference.Local) &&
-                        !IsReassignedInCatch(catchClause, localReference))
+                        ancestor is ICatchClauseOperation catchClause)
                     {
-                        context.ReportDiagnostic(throwOperation.CreateDiagnostic(Rule));
+                        if (catchClause.Locals.Contains(localReference.Local) &&
+                            !IsReassignedInCatch(catchClause, localReference))
+                        {
+                            context.ReportDiagnostic(throwOperation.CreateDiagnostic(Rule));
+                        }
+
                         return;
                     }
 

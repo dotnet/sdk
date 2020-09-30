@@ -108,7 +108,7 @@ class Program
         }
         catch (ArithmeticException e)
         {
-            throw e;
+            [|throw e;|]
         }
     }
 
@@ -117,8 +117,7 @@ class Program
         throw new ArithmeticException();
     }
 }
-",
-           GetCA2200CSharpResultAt(14, 13));
+");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -128,12 +127,11 @@ Class Program
         Try
             Throw New ArithmeticException()
         Catch e As ArithmeticException
-            Throw e
+            [|Throw e|]
         End Try
     End Sub
 End Class
-",
-            GetCA2200BasicResultAt(9, 13));
+");
         }
 
         [Fact]
@@ -261,12 +259,11 @@ Class Program
         Catch e As ArithmeticException
             [|Throw e|]
         Catch e As Exception
-            Throw e
+            [|Throw e|]
         End Try
     End Sub
 End Class
-",
-            GetCA2200BasicResultAt(11, 13));
+");
         }
 
         [Fact]
@@ -285,11 +282,11 @@ class Program
         }
         catch (ArithmeticException e)
         {
-            throw e;
+            [|throw e;|]
         }
         catch (Exception e)
         {
-            throw e;
+            [|throw e;|]
         }
     }
 
@@ -298,9 +295,7 @@ class Program
         throw new ArithmeticException();
     }
 }
-",
-            GetCA2200CSharpResultAt(14, 13),
-            GetCA2200CSharpResultAt(18, 13));
+");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -310,19 +305,17 @@ Class Program
         Try
             Throw New ArithmeticException()
         Catch e As ArithmeticException
-            Throw e
+            [|Throw e|]
         Catch e As Exception
-            Throw e
+            [|Throw e|]
         End Try
     End Sub
 End Class
-",
-            GetCA2200BasicResultAt(9, 13),
-            GetCA2200BasicResultAt(11, 13));
+");
         }
 
         [Fact]
-        public async Task CA2200_DiagnosticForThrowOuterCaughtException()
+        public async Task CA2200_NoDiagnosticForThrowOuterCaughtException()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -348,8 +341,7 @@ class Program
         }
     }
 }
-",
-            GetCA2200CSharpResultAt(20, 17));
+");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -367,8 +359,7 @@ Class Program
         End Try
     End Sub
 End Class
-",
-            GetCA2200BasicResultAt(12, 17));
+");
         }
 
         [Fact]
@@ -611,13 +602,5 @@ Class Program
 End Class
 ");
         }
-
-        private static DiagnosticResult GetCA2200BasicResultAt(int line, int column)
-            => VerifyVB.Diagnostic()
-                .WithLocation(line, column);
-
-        private static DiagnosticResult GetCA2200CSharpResultAt(int line, int column)
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column);
     }
 }
