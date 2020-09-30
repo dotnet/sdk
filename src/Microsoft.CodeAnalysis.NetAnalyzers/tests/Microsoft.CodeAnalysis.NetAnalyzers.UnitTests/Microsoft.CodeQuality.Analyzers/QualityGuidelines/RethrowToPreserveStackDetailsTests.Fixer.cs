@@ -3,10 +3,10 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpRethrowToPreserveStackDetailsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicRethrowToPreserveStackDetailsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines

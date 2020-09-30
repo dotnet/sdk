@@ -5,10 +5,12 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
-    public abstract class RethrowToPreserveStackDetailsAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class RethrowToPreserveStackDetailsAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2200";
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.RethrowToPreserveStackDetailsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -25,9 +27,49 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        protected static Diagnostic CreateDiagnostic(SyntaxNode node)
+        public override void Initialize(AnalysisContext analysisContext)
         {
-            return node.CreateDiagnostic(Rule);
+            analysisContext.EnableConcurrentExecution();
+            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+
+            analysisContext.RegisterOperationAction(context =>
+            {
+                var throwOperation = (IThrowOperation)context.Operation;
+
+                if (throwOperation.Exception is not ILocalReferenceOperation localReference)
+                {
+                    return;
+                }
+
+                IOperation ancestor = throwOperation;
+                while (ancestor != null &&
+                    ancestor.Kind != OperationKind.AnonymousFunction &&
+                    ancestor.Kind != OperationKind.LocalFunction)
+                {
+                    if (ancestor.Kind == OperationKind.CatchClause &&
+                        ancestor is ICatchClauseOperation catchClause)
+                    {
+                        if (catchClause.Locals.Contains(localReference.Local) &&
+                            !IsReassignedInCatch(catchClause, localReference))
+                        {
+                            context.ReportDiagnostic(throwOperation.CreateDiagnostic(Rule));
+                        }
+
+                        return;
+                    }
+
+                    ancestor = ancestor.Parent;
+                }
+            }, OperationKind.Throw);
+        }
+
+        private static bool IsReassignedInCatch(ICatchClauseOperation catchClause, ILocalReferenceOperation localReference)
+        {
+            var dataflow = catchClause.Language == LanguageNames.CSharp
+                ? catchClause.SemanticModel.AnalyzeDataFlow(catchClause.Handler.Syntax)
+                : catchClause.SemanticModel.AnalyzeDataFlow(catchClause.Handler.Operations[0].Syntax, catchClause.Handler.Operations[^1].Syntax);
+
+            return dataflow.WrittenInside.Contains(localReference.Local);
         }
     }
 }
