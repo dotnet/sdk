@@ -567,7 +567,7 @@ End Class
             GetBasicResultAt(8, 34, "Sub Test.M1(str As String, str2 As String)", "str2"));
         }
 
-        [Fact]
+        [Fact, WorkItem(4248, "https://github.com/dotnet/roslyn-analyzers/issues/4248")]
         public async Task NotNullAttribute_PossibleNullRefUsage_NoDiagnostic()
         {
             await new VerifyCS.Test
