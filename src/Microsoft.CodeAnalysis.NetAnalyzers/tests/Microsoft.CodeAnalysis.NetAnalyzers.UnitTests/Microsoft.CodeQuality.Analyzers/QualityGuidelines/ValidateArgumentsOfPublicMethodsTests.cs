@@ -567,6 +567,40 @@ End Class
             GetBasicResultAt(8, 34, "Sub Test.M1(str As String, str2 As String)", "str2"));
         }
 
+        [Fact, WorkItem(4248, "https://github.com/dotnet/roslyn-analyzers/issues/4248")]
+        public async Task NotNullAttribute_PossibleNullRefUsage_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                TestCode = @"
+using System.Diagnostics.CodeAnalysis;
+
+public class Test
+{
+    public void M1([NotNull]string str)
+    {
+        var x = str.ToString();
+    }
+}
+",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                TestCode = @"
+Imports System.Diagnostics.CodeAnalysis
+
+Public Class Test
+    Public Sub M1(<NotNull>str As String)
+        Dim x = str.ToString()
+    End Sub
+End Class
+",
+            }.RunAsync();
+        }
+
         [Fact]
         public async Task DefiniteSimpleAssignment_BeforeHazardousUsages_NoDiagnostic()
         {
