@@ -107,13 +107,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterSymbolAction((saContext) =>
             {
                 var namedTypeSymbol = (INamedTypeSymbol)saContext.Symbol;
-                if (!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, DefaultRule, saContext.Compilation, saContext.CancellationToken))
+                if (!saContext.Options.MatchesConfiguredVisibility(DefaultRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken))
                 {
-                    Debug.Assert(!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.Compilation, saContext.CancellationToken));
+                    Debug.Assert(!saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
                     return;
                 }
 
-                Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.Compilation, saContext.CancellationToken));
+                Debug.Assert(saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
 
                 var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
                    namedTypeSymbol, context.Compilation, defaultValue: true, cancellationToken: context.CancellationToken);

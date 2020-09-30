@@ -100,7 +100,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static bool ShouldAnalyze(SymbolAnalysisContext context, DiagnosticDescriptor rule)
         {
-            if (!context.Symbol.MatchesConfiguredVisibility(context.Options, rule, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(rule, context.Symbol, context.Compilation, context.CancellationToken))
             {
                 return false;
             }
@@ -126,7 +126,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
 
                 // Don't complain about a namespace unless it contains at least one public type.
-                if (!type.MatchesConfiguredVisibility(context.Options, NamespaceRule, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(NamespaceRule, type, context.Compilation, context.CancellationToken))
                 {
                     return;
                 }
@@ -157,7 +157,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                         if (doReportDiagnostic)
                         {
-                            var diagnostic = Diagnostic.Create(NamespaceRule, containingNamespace.Locations[0], namespaceDisplayString, matchingKeyword);
+                            var diagnostic = containingNamespace.CreateDiagnostic(NamespaceRule, namespaceDisplayString, matchingKeyword);
                             context.ReportDiagnostic(diagnostic);
                         }
                     }
@@ -211,7 +211,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             var method = (IMethodSymbol)context.Symbol;
             if (!GetSymbolKindsToAnalyze(context, MemberParameterRule).Contains(SymbolKind.Parameter) ||
-                !method.MatchesConfiguredVisibility(context.Options, MemberParameterRule, context.Compilation, context.CancellationToken))
+                !context.Options.MatchesConfiguredVisibility(MemberParameterRule, method, context.Compilation, context.CancellationToken))
             {
                 return;
             }

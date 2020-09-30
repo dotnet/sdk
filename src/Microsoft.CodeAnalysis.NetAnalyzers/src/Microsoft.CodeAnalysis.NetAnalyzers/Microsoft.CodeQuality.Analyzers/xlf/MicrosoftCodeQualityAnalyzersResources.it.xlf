@@ -297,6 +297,11 @@
         <target state="translated">Rimuovere il finalizzatore dal tipo '{0}', eseguire l'override di Dispose(bool disposing) e inserire la logica di finalizzazione nel percorso del codice in cui 'disposing' è false. In caso contrario, potrebbero verificarsi chiamate duplicate a Dispose perché il tipo di base '{1}' fornisce anche un finalizzatore.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Propagare parametri CancellationToken quando possibile</target>
@@ -703,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Overload operator equals on overriding value type Equals</source>
-        <target state="translated">Eseguire l'overload dell'operatore di uguaglianza all'override del tipo valore Equals</target>
+        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
+        <target state="needs-review-translation">Eseguire l'overload dell'operatore di uguaglianza all'override del tipo valore Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">

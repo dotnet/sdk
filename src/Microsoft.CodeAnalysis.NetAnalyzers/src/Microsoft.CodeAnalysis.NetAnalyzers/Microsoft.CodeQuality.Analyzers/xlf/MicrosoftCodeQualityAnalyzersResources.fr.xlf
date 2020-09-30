@@ -297,6 +297,11 @@
         <target state="translated">Supprimez le finaliseur du type '{0}', remplacez Dispose(bool disposing) et placez la logique de finalisation dans le chemin de code où 'disposing' est false. Sinon, vous risquez d'avoir des invocations de Dispose en double, car le type de base '{1}' fournit aussi un finaliseur.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Propager CancellationTokens quand cela est possible</target>
@@ -703,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Overload operator equals on overriding value type Equals</source>
-        <target state="translated">Surcharger l'opérateur d'égalité en remplaçant ValueType.Equals</target>
+        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
+        <target state="needs-review-translation">Surcharger l'opérateur d'égalité en remplaçant ValueType.Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">

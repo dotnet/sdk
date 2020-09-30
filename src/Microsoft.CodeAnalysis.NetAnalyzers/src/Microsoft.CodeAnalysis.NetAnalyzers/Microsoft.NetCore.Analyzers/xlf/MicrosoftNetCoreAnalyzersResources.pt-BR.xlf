@@ -1512,24 +1512,9 @@
         <target state="translated">P/Invokes não deve ser visível</target>
         <note />
       </trans-unit>
-      <trans-unit id="PlatformCompatabilityCheckDescription">
+      <trans-unit id="PlatformCompatibilityCheckDescription">
         <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
         <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PlatformCompatabilityCheckTitle">
-        <source>Validate platform compatibility</source>
-        <target state="new">Validate platform compatibility</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PlatformCompatabilityCheckUnsupportedOsMessage">
-        <source>'{0}' is unsupported on '{1}'</source>
-        <target state="new">'{0}' is unsupported on '{1}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PlatformCompatabilityCheckUnsupportedOsVersionMessage">
-        <source>'{0}' is unsupported on '{1}' {2} and later</source>
-        <target state="new">'{0}' is unsupported on '{1}' {2} and later</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckSupportedOsMessage">
@@ -1540,6 +1525,21 @@
       <trans-unit id="PlatformCompatibilityCheckSupportedOsVersionMessage">
         <source>'{0}' is supported on '{1}' {2} and later</source>
         <target state="new">'{0}' is supported on '{1}' {2} and later</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckTitle">
+        <source>Validate platform compatibility</source>
+        <target state="new">Validate platform compatibility</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckUnsupportedOsMessage">
+        <source>'{0}' is unsupported on '{1}'</source>
+        <target state="new">'{0}' is unsupported on '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckUnsupportedOsVersionMessage">
+        <source>'{0}' is unsupported on '{1}' {2} and later</source>
+        <target state="new">'{0}' is unsupported on '{1}' {2} and later</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
@@ -1585,6 +1585,11 @@
       <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
         <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
         <target state="translated">Prefira as sobrecargas baseadas em 'Memória' para 'ReadAsync' e 'WriteAsync'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="new">Replace with 'string.Contains'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
@@ -2243,33 +2248,33 @@
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDataSetReadXml">
-        <source>Use XmlReader For DataSet Read Xml</source>
-        <target state="translated">Usar XmlReader para XML da Leitura do Conjunto de Dados</target>
+        <source>Use XmlReader for 'DataSet.ReadXml()'</source>
+        <target state="needs-review-translation">Usar XmlReader para XML da Leitura do Conjunto de Dados</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForDeserialize">
-        <source>Use XmlReader For Deserialize</source>
-        <target state="translated">Usar XmlReader para Desserializar</target>
+        <source>Use XmlReader for 'XmlSerializer.Deserialize()'</source>
+        <target state="needs-review-translation">Usar XmlReader para Desserializar</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForSchemaRead">
-        <source>Use XmlReader For Schema Read</source>
-        <target state="translated">Usar XmlReader para Leitura de Esquema</target>
+        <source>Use XmlReader for 'XmlSchema.Read()'</source>
+        <target state="needs-review-translation">Usar XmlReader para Leitura de Esquema</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForValidatingReader">
-        <source>Use XmlReader For Validating Reader</source>
-        <target state="translated">Usar XmlReader para Validar Leitor</target>
+        <source>Use XmlReader for XmlValidatingReader constructor</source>
+        <target state="needs-review-translation">Usar XmlReader para Validar Leitor</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderForXPathDocument">
-        <source>Use XmlReader For XPathDocument</source>
-        <target state="translated">Usar XmlReader para XPathDocument</target>
+        <source>Use XmlReader for XPathDocument constructor</source>
+        <target state="needs-review-translation">Usar XmlReader para XPathDocument</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderMessage">
-        <source>This overload of the {0}.{1} method is potentially unsafe, use an overload that takes a XmlReader instance instead</source>
-        <target state="translated">Esta sobrecarga do método {0}.{1} é potencialmente insegura. Use uma sobrecarga que utiliza uma instância de XmlReader</target>
+        <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
+        <target state="needs-review-translation">Esta sobrecarga do método {0}.{1} é potencialmente insegura. Use uma sobrecarga que utiliza uma instância de XmlReader</target>
         <note />
       </trans-unit>
     </body>

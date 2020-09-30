@@ -41,6 +41,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     switch (node.Kind())
                     {
+                        // Don't warn if a local function or lambda containing stackalloc is inside a loop.
+                        case SyntaxKind.LocalFunctionStatement:
+                        case SyntaxKind.ParenthesizedLambdaExpression:
+                        case SyntaxKind.SimpleLambdaExpression:
+                        case SyntaxKind.AnonymousMethodExpression:
+                            return;
+
                         // Look for loops.  We don't bother with ad-hoc loops via gotos as we're
                         // too likely to incur false positives.
                         case SyntaxKind.ForStatement:

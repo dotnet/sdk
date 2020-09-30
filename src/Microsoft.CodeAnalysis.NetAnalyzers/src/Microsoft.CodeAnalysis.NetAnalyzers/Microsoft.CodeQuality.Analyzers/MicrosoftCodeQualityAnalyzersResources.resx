@@ -413,7 +413,7 @@
     <value>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.</value>
   </data>
   <data name="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage" xml:space="preserve">
-    <value>Overload operator equals on overriding value type Equals</value>
+    <value>Implement the equality operators and make their behavior identical to that of 'Equals' method</value>
   </data>
   <data name="PassSystemUriObjectsInsteadOfStringsTitle" xml:space="preserve">
     <value>Pass system uri objects instead of strings</value>
@@ -1450,5 +1450,8 @@
   </data>
   <data name="DoNotIgnoreMethodResultsMessageUserDefinedMethod" xml:space="preserve">
     <value>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</value>
+  </data>
+  <data name="MarkAttributesWithAttributeUsageCodeFix" xml:space="preserve">
+    <value>Apply 'AttributeUsageAttribute'</value>
   </data>
 </root>

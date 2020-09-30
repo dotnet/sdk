@@ -95,7 +95,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                         // will always have identical configured visibility.
                         var namedType = (INamedTypeSymbol)symbolContext.Symbol;
-                        if (namedType.MatchesConfiguredVisibility(symbolContext.Options, RuleForDelegates, symbolContext.Compilation, symbolContext.CancellationToken) &&
+                        if (symbolContext.Options.MatchesConfiguredVisibility(RuleForDelegates, namedType, symbolContext.Compilation, symbolContext.CancellationToken) &&
                             IsDelegateTypeWithInvokeMethod(namedType) &&
                             namedType.DelegateInvokeMethod.HasEventHandlerSignature(eventArgs))
                         {
@@ -117,7 +117,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                         // will always have identical configured visibility.
                         var eventSymbol = (IEventSymbol)symbolContext.Symbol;
-                        if (eventSymbol.MatchesConfiguredVisibility(symbolContext.Options, RuleForEvents, symbolContext.Compilation, symbolContext.CancellationToken) &&
+                        if (symbolContext.Options.MatchesConfiguredVisibility(RuleForEvents, eventSymbol, symbolContext.Compilation, symbolContext.CancellationToken) &&
                             !eventSymbol.IsOverride &&
                             !eventSymbol.IsImplementationOfAnyInterfaceMember() &&
                             !ContainingTypeHasComSourceInterfacesAttribute(eventSymbol) &&

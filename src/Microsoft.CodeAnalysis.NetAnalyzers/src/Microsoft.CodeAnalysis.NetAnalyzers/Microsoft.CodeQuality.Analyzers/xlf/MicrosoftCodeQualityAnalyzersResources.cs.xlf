@@ -297,6 +297,11 @@
         <target state="translated">Odeberte finalizační metodu z typu {0}, přepište Dispose(bool disposing) a vložte finalizační logiku do cesty kódu, kde je disposing hodnoty false. V opačném případě by to mohlo vést k duplicitním voláním Dispose, protože základní typ {1} také poskytuje finalizační metodu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Když je to možné, rozšiřte objekty CancellationToken.</target>
@@ -703,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Overload operator equals on overriding value type Equals</source>
-        <target state="translated">Operátor přetížení je roven přepisující hodnotě typu Equals.</target>
+        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
+        <target state="needs-review-translation">Operátor přetížení je roven přepisující hodnotě typu Equals.</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">

@@ -297,6 +297,11 @@
         <target state="translated">'{0}' türünden sonlandırıcıyı kaldırın, Dispose(bool disposing) metodunu geçersiz kılın ve sonlandırma mantığını 'disposing' değerinin false olduğu kod yoluna yerleştirin. Aksi takdirde, '{1}' Temel türü de bir sonlandırıcı sağladığından yinelenen Dispose çağrılarına yol açabilir.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Mümkün Olduğunda CancellationToken’ları Yay</target>
@@ -703,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Overload operator equals on overriding value type Equals</source>
-        <target state="translated">Aşırı yükleme işleci, Equals geçersiz kılma değer türüne eşittir</target>
+        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
+        <target state="needs-review-translation">Aşırı yükleme işleci, Equals geçersiz kılma değer türüne eşittir</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">

@@ -102,7 +102,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            if (symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+            if (context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
             {
                 context.ReportDiagnostic(symbol.CreateDiagnostic(Rule));
             }

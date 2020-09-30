@@ -105,7 +105,7 @@
         },
         "CA1309": {
           "id": "CA1309",
-          "shortDescription": "Use ordinal stringcomparison",
+          "shortDescription": "Use ordinal string comparison",
           "fullDescription": "A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1309",
@@ -1235,13 +1235,13 @@
         },
         "CA1307": {
           "id": "CA1307",
-          "shortDescription": "Specify StringComparison",
-          "fullDescription": "A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.",
-          "defaultLevel": "hidden",
+          "shortDescription": "Specify StringComparison for clarity",
+          "fullDescription": "A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.",
+          "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1307",
           "properties": {
             "category": "Globalization",
-            "isEnabledByDefault": true,
+            "isEnabledByDefault": false,
             "typeName": "SpecifyStringComparisonAnalyzer",
             "languages": [
               "C#",
@@ -1273,6 +1273,25 @@
             ]
           }
         },
+        "CA1310": {
+          "id": "CA1310",
+          "shortDescription": "Specify StringComparison for correctness",
+          "fullDescription": "A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1310",
+          "properties": {
+            "category": "Globalization",
+            "isEnabledByDefault": true,
+            "typeName": "SpecifyStringComparisonAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry"
+            ]
+          }
+        },
         "CA1401": {
           "id": "CA1401",
           "shortDescription": "P/Invokes should not be visible",
@@ -1289,6 +1308,25 @@
             ],
             "tags": [
               "PortedFromFxCop",
+              "Telemetry"
+            ]
+          }
+        },
+        "CA1416": {
+          "id": "CA1416",
+          "shortDescription": "Validate platform compatibility",
+          "fullDescription": "Using platform dependent API on a component makes the code no longer work across all platforms.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1416",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "PlatformCompatabilityAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry"
             ]
           }
@@ -4858,7 +4896,7 @@
         },
         "CA1309": {
           "id": "CA1309",
-          "shortDescription": "Use ordinal stringcomparison",
+          "shortDescription": "Use ordinal string comparison",
           "fullDescription": "A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1309",
