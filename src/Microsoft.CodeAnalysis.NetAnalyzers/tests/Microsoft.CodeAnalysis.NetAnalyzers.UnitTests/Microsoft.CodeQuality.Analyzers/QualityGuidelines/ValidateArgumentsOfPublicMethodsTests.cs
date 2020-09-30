@@ -568,6 +568,40 @@ End Class
         }
 
         [Fact]
+        public async Task NotNullAttribute_PossibleNullRefUsage_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                TestCode = @"
+using System.Diagnostics.CodeAnalysis;
+
+public class Test
+{
+    public void M1([NotNull]string str)
+    {
+        var x = str.ToString();
+    }
+}
+",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp31,
+                TestCode = @"
+Imports System.Diagnostics.CodeAnalysis
+
+Public Class Test
+    Public Sub M1(<NotNull>str As String)
+        Dim x = str.ToString()
+    End Sub
+End Class
+",
+            }.RunAsync();
+        }
+
+        [Fact]
         public async Task DefiniteSimpleAssignment_BeforeHazardousUsages_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
