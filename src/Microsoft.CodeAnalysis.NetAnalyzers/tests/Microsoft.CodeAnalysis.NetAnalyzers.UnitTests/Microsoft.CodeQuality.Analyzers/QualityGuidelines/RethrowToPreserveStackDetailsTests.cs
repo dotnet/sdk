@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpRethrowToPreserveStackDetailsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicRethrowToPreserveStackDetailsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
@@ -511,12 +511,39 @@ class Program
         }
         catch (Exception e)
         {
-
             DoThrow();
 
             void DoThrow()
             {
-                [|throw e;|]
+                throw e;
+            }
+        }
+    }
+}
+");
+        }
+
+        [Fact]
+        public async Task CA2200_NoDiagnosticsForThrowCaughtExceptionInLocalMethodAfterReassignment()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class Program
+{
+    void CatchAndRethrowExplicitly()
+    {
+        try
+        {
+        }
+        catch (Exception e)
+        {
+            e = new ArgumentException();
+            DoThrow();
+
+            void DoThrow()
+            {
+                throw e; // This should not fire.
             }
         }
     }
@@ -555,6 +582,33 @@ class Program
         }
     }
 }
+");
+        }
+
+        [Fact]
+        public async Task CA2200_NoDiagnosticsForThrowVariable()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class Program
+{
+    void M()
+    {
+        var e = new ArithmeticException();
+        throw e;
+    }
+}
+");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Class Program
+    Sub M()
+        Dim e = New ArithmeticException()
+        Throw e
+    End Sub
+End Class
 ");
         }
 
