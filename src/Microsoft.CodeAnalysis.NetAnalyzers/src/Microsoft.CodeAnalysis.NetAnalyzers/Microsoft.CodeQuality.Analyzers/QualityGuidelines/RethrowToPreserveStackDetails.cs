@@ -7,7 +7,6 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.NetCore.Analyzers.Security;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
