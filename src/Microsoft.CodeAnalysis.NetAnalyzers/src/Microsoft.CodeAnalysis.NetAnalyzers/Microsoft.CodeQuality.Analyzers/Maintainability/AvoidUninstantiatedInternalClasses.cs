@@ -203,7 +203,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 {
                     RoslynDebug.Assert(designerAttributeSymbol != null);
 
-                    if ((attribute.ConstructorArguments.Length != 1 && attribute.ConstructorArguments.Length != 2) ||
+                    if (attribute.ConstructorArguments.Length is not (1 or 2) ||
                         !attribute.AttributeClass.Equals(designerAttributeSymbol))
                     {
                         return null;
@@ -228,7 +228,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 }
 
                 bool CanBeDebuggerTypeProxyAttributeContext(INamedTypeSymbol type)
-                    => debuggerTypeProxyAttributeSymbol != null && (type.TypeKind == TypeKind.Interface || type.TypeKind == TypeKind.Class);
+                    => debuggerTypeProxyAttributeSymbol != null && (type.TypeKind == TypeKind.Struct || type.TypeKind == TypeKind.Class);
 
                 INamedTypeSymbol? FindTypeIfDebuggerTypeProxyAttribute(AttributeData attribute, Compilation compilation)
                 {
