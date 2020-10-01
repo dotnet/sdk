@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
         <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
-        <target state="needs-review-translation">Zachytávání výjimek poškozující stav procesu může skrýt chyby (třeba narušení přístupu). To může vést k nekonzistentnímu stavu spuštění, ale taky usnadnit útočníkům průnik do systému. Místo toho zachyťte a zpracujte konkrétnější sadu typů výjimek nebo danou výjimku znovu vyvolejte.</target>
+        <target state="translated">Zachytávání výjimek poškozující stav procesu může skrýt chyby (třeba narušení přístupu). To může vést k nekonzistentnímu stavu spuštění, ale taky usnadnit útočníkům průnik do systému. Místo toho zachyťte a zpracujte konkrétnější sadu typů výjimek nebo danou výjimku znovu vyvolejte.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
         <source>{0} is catching corrupted state exception</source>
-        <target state="needs-review-translation">{0} zachytává výjimku poškozující stav procesu.</target>
+        <target state="translated">{0} zachytává výjimku poškozující stav procesu.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
         <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
-        <target state="needs-review-translation">MVC nepodporuje použití HttpVerbs.GET a ValidateAntiForgeryTokenAttribute pro akci kontroleru {0}.</target>
+        <target state="translated">MVC nepodporuje použití HttpVerbs.GET a ValidateAntiForgeryTokenAttribute pro akci kontroleru {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -374,7 +374,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
-        <target state="needs-review-translation">Chybí ValidateAntiForgeryTokenAttribute pro akci kontroleru MVC {0}, která ve výchozím nastavení přijímá požadavky POST.</target>
+        <target state="translated">Chybí ValidateAntiForgeryTokenAttribute pro akci kontroleru MVC {0}, která ve výchozím nastavení přijímá požadavky POST.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -384,7 +384,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
-        <target state="needs-review-translation">Chybí ValidateAntiForgeryTokenAttribute pro akci kontroleru {0}.</target>
+        <target state="translated">Chybí ValidateAntiForgeryTokenAttribute pro akci kontroleru {0}.</target>
         <note />
       </trans-unit>
     </body>
