@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
         <source>Assigning symbol and its member in the same statement</source>
-        <target state="needs-review-translation">Assegnazione del simbolo e del relativo membro nella stessa istruzione.</target>
+        <target state="translated">Assegnazione del simbolo e del relativo membro nella stessa istruzione</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
         <source>Consider a design where '{0}' has no more than {1} type parameters</source>
-        <target state="needs-review-translation">Considerare una progettazione in cui '{0}' contiene più di {1} parametri di tipo.</target>
+        <target state="translated">Provare a usare una progettazione in cui '{0}' contiene più di {1} parametri di tipo</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="AvoidOutParametersMessage">
         <source>Avoid 'out' parameters as they are not designed for general audience</source>
-        <target state="needs-review-translation">Evitare i parametri 'out' perché non sono progettati per utenti generici.</target>
+        <target state="translated">Evitare i parametri 'out' perché non sono progettati per utenti generici</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidOutParametersTitle">
@@ -104,7 +104,7 @@
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
         <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception</source>
-        <target state="needs-review-translation">Modificare '{0}' in modo da rilevare un tipo di eccezione consentito più specifico o generare di nuovo l'eccezione.</target>
+        <target state="translated">Modificare '{0}' in modo da rilevare un tipo di eccezione consentito più specifico o generare di nuovo l'eccezione</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
         <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'</source>
-        <target state="needs-review-translation">'{0}' è un nuovo membro protetto nella classe '{1}' di 'NonInheritable'.</target>
+        <target state="translated">'{0}' è un nuovo membro protetto nella classe '{1}' di 'NonInheritable'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
@@ -194,7 +194,7 @@
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
         <source>'{0}' should not overload the equality operator</source>
-        <target state="needs-review-translation">'{0}' non deve eseguire l'overload dell'operatore di uguaglianza.</target>
+        <target state="translated">'{0}' non deve eseguire l'overload dell'operatore di uguaglianza</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
@@ -224,7 +224,7 @@
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceMessage">
         <source>Consider a design that does not require that '{0}' be a reference parameter</source>
-        <target state="needs-review-translation">Usare una progettazione in cui non è richiesto l'uso di '{0}' come parametro per riferimento.</target>
+        <target state="translated">Provare a usare una progettazione in cui non è richiesto l'uso di '{0}' come parametro per riferimento</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceTitle">
@@ -239,7 +239,7 @@
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameMessage">
         <source>Do not prefix enum values with the name of the enum type '{0}'</source>
-        <target state="needs-review-translation">Non aggiungere il nome del tipo enumerazione '{0}' come prefisso in valori di enumerazione.</target>
+        <target state="translated">Non anteporre il nome del tipo enumerazione '{0}' come prefisso in valori di enumerazione</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameTitle">
@@ -264,12 +264,12 @@
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
         <source>The field reference '{0}' is duplicated in this bitwise initialization</source>
-        <target state="needs-review-translation">Il riferimento al campo '{0}' è duplicato in questa inizializzazione bit per bit.</target>
+        <target state="translated">Il riferimento al campo '{0}' è duplicato in questa inizializzazione bit per bit</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
         <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'</source>
-        <target state="needs-review-translation">Il membro di enumerazione '{0}' ha lo stesso valore costante '{1}' del membro '{2}'.</target>
+        <target state="translated">Il membro di enumerazione '{0}' ha lo stesso valore costante '{1}' del membro '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
@@ -369,22 +369,22 @@
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsRename">
         <source>In enum {0}, change the name of {1} to 'None'</source>
-        <target state="needs-review-translation">Nell'enumerazione {0} modificare il nome di {1} in 'None'.</target>
+        <target state="translated">Nell'enumerazione {0} modificare il nome di {1} in 'None'</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsMultipleZeros">
         <source>Remove all members that have the value zero from {0} except for one member that is named 'None'</source>
-        <target state="needs-review-translation">Rimuovere da {0} tutti i membri con valore zero ad eccezione dell'unico membro denominato 'None'.</target>
+        <target state="translated">Rimuovere da {0} tutti i membri con valore zero ad eccezione dell'unico membro denominato 'None'</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue">
         <source>Add a member to {0} that has a value of zero with a suggested name of 'None'</source>
-        <target state="needs-review-translation">Aggiungere a {0} un membro con valore zero e assegnargli il nome suggerito 'None'.</target>
+        <target state="translated">Aggiungere a {0} un membro con valore zero e assegnargli il nome suggerito 'None'</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
         <source>Abstract types should not have public constructors</source>
-        <target state="new">Abstract types should not have public constructors</target>
+        <target state="translated">I tipi astratti non devono avere costruttori pubblici</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -394,7 +394,7 @@
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
         <source>Abstract type '{0}' should not have public constructors</source>
-        <target state="new">Abstract type '{0}' should not have public constructors</target>
+        <target state="translated">Il tipo astratto '{0}' non deve avere costruttori pubblici</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -459,7 +459,7 @@
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
         <source>Specify AttributeUsage on {0}</source>
-        <target state="needs-review-translation">Specificare AttributeUsage su {0}.</target>
+        <target state="translated">Specificare AttributeUsage su {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageInherited">
@@ -479,17 +479,17 @@
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
         <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
-        <target state="needs-review-translation">Aggiungere una funzione di accesso alla proprietà di sola lettura public per l'argomento posizionale {0} dell'attributo {1}.</target>
+        <target state="translated">Aggiungere una funzione di accesso alla proprietà di sola lettura public per l'argomento posizionale {0} dell'attributo {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageRemoveSetter">
         <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}</source>
-        <target state="needs-review-translation">Rimuovere il setter di proprietà da {0} o ridurne l'accessibilità perché corrisponde all'argomento posizionale {1}.</target>
+        <target state="translated">Rimuovere il setter di proprietà da {0} o ridurne l'accessibilità perché corrisponde all'argomento posizionale {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility">
         <source>If {0} is the property accessor for positional argument {1}, make it public</source>
-        <target state="needs-review-translation">Impostare {0} come public se è la funzione di accesso alla proprietà per l'argomento posizionale {1}.</target>
+        <target state="translated">Impostare {0} come public se è la funzione di accesso alla proprietà per l'argomento posizionale {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertiesWhereAppropriateTitle">
@@ -534,7 +534,7 @@
       </trans-unit>
       <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesMessage">
         <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes</source>
-        <target state="needs-review-translation">Impostare '{0}' come sealed (modifica a posteriori se la classe è già stata distribuita), implementare il metodo in modo non esplicito o implementare un nuovo metodo che espone la funzionalità di '{1}' ed è visibile alle classi derivate.</target>
+        <target state="translated">Impostare '{0}' come sealed (modifica che causa un'interruzione se la classe è già stata distribuita), implementare il metodo in modo non esplicito o implementare un nuovo metodo che espone la funzionalità di '{1}' ed è visibile alle classi derivate</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesTitle">
@@ -549,12 +549,12 @@
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageEquals">
         <source>{0} should override Equals since it implements IComparable</source>
-        <target state="needs-review-translation">{0} deve eseguire l'override di Equals perché implementa IComparable.</target>
+        <target state="translated">{0} deve eseguire l'override di Equals perché implementa IComparable</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageOperator">
         <source>{0} should define operator(s) '{1}' since it implements IComparable</source>
-        <target state="needs-review-translation">{0} deve definire l'operatore o gli operatori '{1}' perché implementa IComparable.</target>
+        <target state="translated">{0} deve definire l'operatore o gli operatori '{1}' perché implementa IComparable</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
       <trans-unit id="MovePInvokesToNativeMethodsClassTitle">
@@ -584,12 +584,12 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldDifferByMoreThanCaseMessage">
         <source>Names of '{0}' and '{1}' should differ by more than case</source>
-        <target state="needs-review-translation">La differenza tra i nomi di '{0}' e '{1}' non deve limitarsi al diverso uso di maiuscole/minuscole.</target>
+        <target state="translated">La differenza tra i nomi di '{0}' e '{1}' non deve limitarsi al diverso uso di maiuscole/minuscole</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixTitle">
         <source>Identifiers should have correct prefix</source>
-        <target state="needs-review-translation">Gli identificatori devono contenere il prefisso corretto</target>
+        <target state="translated">Gli identificatori devono contenere il prefisso corretto</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixDescription">
@@ -599,12 +599,12 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageInterface">
         <source>Prefix interface name {0} with 'I'</source>
-        <target state="needs-review-translation">Anteporre il prefisso 'I' al nome di interfaccia {0}.</target>
+        <target state="translated">Anteporre il prefisso 'I' al nome di interfaccia {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageTypeParameter">
         <source>Prefix generic type parameter name {0} with 'T'</source>
-        <target state="needs-review-translation">Anteporre il prefisso 'T' al nome di parametro di tipo generico {0}.</target>
+        <target state="translated">Anteporre il prefisso 'T' al nome di parametro di tipo generico {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="NonConstantFieldsShouldNotBeVisibleTitle">
@@ -649,22 +649,22 @@
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageDefault">
         <source>Provide a method named '{0}' as a friendly alternate for operator {1}</source>
-        <target state="needs-review-translation">Fornire un metodo denominato '{0}' come alternativa descrittiva per l'operatore {1}.</target>
+        <target state="translated">Fornire un metodo denominato '{0}' come alternativa descrittiva per l'operatore {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageProperty">
         <source>Provide a property named '{0}' as a friendly alternate for operator {1}</source>
-        <target state="needs-review-translation">Fornire una proprietà denominata '{0}' come alternativa descrittiva per l'operatore {1}.</target>
+        <target state="translated">Fornire una proprietà denominata '{0}' come alternativa descrittiva per l'operatore {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageMultiple">
         <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}</source>
-        <target state="needs-review-translation">Fornire un metodo denominato '{0}' o '{1}' come alternativa per l'operatore {2}.</target>
+        <target state="translated">Fornire un metodo denominato '{0}' o '{1}' come alternativa per l'operatore {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageVisibility">
         <source>Mark {0} as public because it is a friendly alternate for operator {1}</source>
-        <target state="needs-review-translation">Contrassegnare {0} come public perché è un'alternativa descrittiva per l'operatore {1}.</target>
+        <target state="translated">Contrassegnare {0} come public perché è un'alternativa descrittiva per l'operatore {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsTitle">
@@ -694,7 +694,7 @@
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyMessage">
         <source>Change '{0}' to be read-only by removing the property setter</source>
-        <target state="needs-review-translation">Modificare '{0}' in modo che sia di sola lettura rimuovendo il setter proprietà.</target>
+        <target state="translated">Modificare '{0}' in modo che sia di sola lettura rimuovendo il setter proprietà</target>
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle">
@@ -704,12 +704,12 @@
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsDescription">
         <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.</source>
-        <target state="needs-review-translation">La maggior parte dei linguaggi di programmazione non prevede alcuna implementazione predefinita dell'operatore di uguaglianza (==) per i tipi valore. Se il linguaggio di programmazione supporta gli overload degli operatori, è consigliabile provare a implementare l'operatore di uguaglianza. Il relativo comportamento dovrebbe essere identico a quello di Equals</target>
+        <target state="translated">La maggior parte dei linguaggi di programmazione non prevede alcuna implementazione predefinita dell'operatore di uguaglianza (==) per i tipi valore. Se il linguaggio di programmazione supporta gli overload degli operatori, è consigliabile provare a implementare l'operatore di uguaglianza. Il relativo comportamento dovrebbe essere identico a quello di Equals.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
         <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
-        <target state="needs-review-translation">Eseguire l'overload dell'operatore di uguaglianza all'override del tipo valore Equals</target>
+        <target state="translated">Implementare gli operatori di uguaglianza e impostare il comportamento in modo che sia identico a quello del metodo 'Equals'</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -724,7 +724,7 @@
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsMessage">
         <source>Modify '{0}' to call '{1}' instead of '{2}'</source>
-        <target state="needs-review-translation">Modificare '{0}' in modo che chiami '{1}' invece di '{2}'.</target>
+        <target state="translated">Modificare '{0}' in modo che chiami '{1}' invece di '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
@@ -794,12 +794,12 @@
       </trans-unit>
       <trans-unit id="AddAssemblyLevelComVisibleFalse">
         <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true)</source>
-        <target state="needs-review-translation">Dal momento che {0} espone tipi visibili esternamente, contrassegnarlo con ComVisible(false) a livello di assembly e quindi contrassegnare con ComVisible(true) tutti i tipi all'interno dell'assembly che devono essere esposti ai client COM.</target>
+        <target state="translated">Dal momento che {0} espone tipi visibili esternamente, contrassegnarlo con ComVisible(false) a livello di assembly e quindi contrassegnare con ComVisible(true) tutti i tipi all'interno dell'assembly che devono essere esposti ai client COM</target>
         <note />
       </trans-unit>
       <trans-unit id="ChangeAssemblyLevelComVisibleToFalse">
         <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level</source>
-        <target state="needs-review-translation">Provare a impostare su false l'attributo ComVisible su {0} e ad acconsentire in modo esplicito a livello di tipo.</target>
+        <target state="translated">Provare a impostare su false l'attributo ComVisible su {0} e ad acconsentire in modo esplicito a livello di tipo</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementComparable">
@@ -889,7 +889,7 @@
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Message">
         <source>If possible, make the underlying type of {0} System.Int32 instead of {1}</source>
-        <target state="needs-review-translation">Se possibile, impostare System.Int32 come tipo sottostante di {0} invece di {1}.</target>
+        <target state="translated">Se possibile, impostare System.Int32 come tipo sottostante di {0} invece di {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEventsWhereAppropriateTitle">
@@ -904,7 +904,7 @@
       </trans-unit>
       <trans-unit id="UseEventsWhereAppropriateMessage">
         <source>Consider making '{0}' an event</source>
-        <target state="needs-review-translation">Provare a impostare '{0}' come evento.</target>
+        <target state="translated">Provare a impostare '{0}' come evento</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsTitle">
@@ -919,7 +919,7 @@
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
         <source>Add the following constructor to {0}: {1}</source>
-        <target state="needs-review-translation">Aggiungere il costruttore seguente a {0}: {1}.</target>
+        <target state="translated">Aggiungere il costruttore seguente a {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsMessageAccessibility">
@@ -989,12 +989,12 @@
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageAddGetter">
         <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method</source>
-        <target state="needs-review-translation">Dal momento che la proprietà {0} è di sola scrittura, aggiungere un getter di proprietà con un'accessibilità maggiore o uguale al rispettivo setter oppure convertire questa proprietà in un metodo.</target>
+        <target state="translated">Dal momento che la proprietà {0} è di sola scrittura, aggiungere un getter di proprietà con un'accessibilità maggiore o uguale al rispettivo setter oppure convertire questa proprietà in un metodo</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible">
         <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter</source>
-        <target state="needs-review-translation">Dal momento che il getter di proprietà per {0} è meno visibile del rispettivo setter, aumentare l'accessibilità del getter o diminuire l'accessibilità del relativo setter.</target>
+        <target state="translated">Dal momento che il getter di proprietà per {0} è meno visibile del rispettivo setter, aumentare l'accessibilità del getter o diminuire l'accessibilità del relativo setter</target>
         <note />
       </trans-unit>
       <trans-unit id="DeclareTypesInNamespacesTitle">
@@ -1029,22 +1029,22 @@
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsTitle">
         <source>URI-like parameters should not be strings</source>
-        <target state="needs-review-translation">I parametri Uri non devono essere stringhe</target>
+        <target state="translated">I parametri simili a URI non devono essere stringhe</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsDescription">
         <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</source>
-        <target state="needs-review-translation">Se un metodo accetta una rappresentazione di stringa di un URI, è necessario fornire un overload corrispondente che accetti un'istanza della classe URI, la quale fornisce questi servizi in modo sicuro e protetto.</target>
+        <target state="translated">Questa regola presuppone che il parametro rappresenti un URI (Uniform Resource Identifier). Le rappresentazioni di stringa o gli URI sono soggetti a errori di analisi e di codifica e possono comportare vulnerabilità di sicurezza. La classe 'System.Uri' fornisce questi servizi in modo sicuro e protetto.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsMessage">
         <source>Change the type of parameter '{0}' of method '{1}' from 'string' to 'System.Uri', or provide an overload to '{1}' that allows '{0}' to be passed as a 'System.Uri' object</source>
-        <target state="needs-review-translation">Modificare il tipo del parametro {0} del metodo {1} da stringa in System.Uri oppure fornire un overload di {1} che consenta il passaggio di {0} come oggetto System.Uri.</target>
+        <target state="translated">Modificare il tipo del parametro '{0}' del metodo '{1}' da 'string' a 'System.Uri' oppure fornire un overload di '{1}' che consenta il passaggio di '{0}' come oggetto 'System.Uri'</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
         <source>URI-like return values should not be strings</source>
-        <target state="needs-review-translation">I valori restituiti di Uri non devono essere stringhe</target>
+        <target state="translated">I valori restituiti simili a URI non devono essere stringhe</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsDescription">
@@ -1054,12 +1054,12 @@
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
         <source>Change the return type of method '{0}' from 'string' to 'System.Uri'</source>
-        <target state="needs-review-translation">Modificare il tipo restituito del metodo {0} da stringa in System.Uri.</target>
+        <target state="translated">Modificare il tipo restituito del metodo '{0}' da 'string' a 'System.Uri'</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
         <source>URI-like properties should not be strings</source>
-        <target state="needs-review-translation">Le proprietà Uri non devono essere stringhe</target>
+        <target state="translated">Le proprietà simili a URI non devono essere stringhe</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsDescription">
@@ -1069,7 +1069,7 @@
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
         <source>Change the type of property '{0}' from 'string' to 'System.Uri'</source>
-        <target state="needs-review-translation">Modificare il tipo della proprietà {0} da stringa in System.Uri.</target>
+        <target state="translated">Modificare il tipo della proprietà '{0}' da 'string' a 'System.Uri'</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyTitle">
@@ -1084,37 +1084,37 @@
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageIDisposableReimplementation">
         <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'</source>
-        <target state="needs-review-translation">Rimuovere IDisposable dall'elenco delle interfacce implementate da '{0}' perché è già implementato dal tipo di base '{1}'.</target>
+        <target state="translated">Rimuovere IDisposable dall'elenco delle interfacce implementate da '{0}' perché è già implementato dal tipo di base '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeOverride">
         <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true</source>
-        <target state="needs-review-translation">Rimuovere '{0}', eseguire l'override di Dispose(bool disposing) e inserire la logica di Dispose nel percorso del codice in cui 'disposing' è true.</target>
+        <target state="translated">Rimuovere '{0}', eseguire l'override di Dispose(bool disposing) e inserire la logica di Dispose nel percorso del codice in cui 'disposing' è true</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeSignature">
         <source>Ensure that '{0}' is declared as public and sealed</source>
-        <target state="needs-review-translation">Verificare che '{0}' sia dichiarato come public e sealed.</target>
+        <target state="translated">Assicurarsi che '{0}' sia dichiarato come public e sealed</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageRenameDispose">
         <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed</source>
-        <target state="needs-review-translation">Rinominare '{0}' in 'Dispose' e verificare che sia dichiarato come public e sealed.</target>
+        <target state="translated">Rinominare '{0}' in 'Dispose' e assicurarsi che sia dichiarato come public e sealed</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeBoolSignature">
         <source>Ensure that '{0}' is declared as protected, virtual, and unsealed</source>
-        <target state="needs-review-translation">Assicurarsi che '{0}' sia dichiarato come protected, virtual e unsealed.</target>
+        <target state="translated">Assicurarsi che '{0}' sia dichiarato come protected, virtual e unsealed</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeImplementation">
         <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns</source>
-        <target state="needs-review-translation">Modificare '{0}' in modo che chiami Dispose(true), quindi GC.SuppressFinalize nell'istanza dell'oggetto corrente ('this' o 'Me' in Visual Basic) e quindi esca dalla funzione.</target>
+        <target state="translated">Modificare '{0}' in modo che chiami Dispose(true), quindi GC.SuppressFinalize nell'istanza dell'oggetto corrente ('this' o 'Me' in Visual Basic) e quindi esca dalla funzione</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeImplementation">
         <source>Modify '{0}' so that it calls Dispose(false) and then returns</source>
-        <target state="needs-review-translation">Modificare '{0}' in modo che chiami Dispose(false) e quindi esca dalla funzione.</target>
+        <target state="translated">Modificare '{0}' in modo che chiami Dispose(false) e quindi esca dalla funzione</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageProvideDisposeBool">
@@ -1174,42 +1174,42 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageAssembly">
         <source>Remove the underscores from assembly name {0}</source>
-        <target state="needs-review-translation">Rimuovere i caratteri di sottolineatura dal nome di assembly {0}.</target>
+        <target state="translated">Rimuovere i caratteri di sottolineatura dal nome di assembly {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageNamespace">
         <source>Remove the underscores from namespace name '{0}'</source>
-        <target state="needs-review-translation">Rimuovere i caratteri di sottolineatura dal nome di spazio dei nomi '{0}'.</target>
+        <target state="translated">Rimuovere i caratteri di sottolineatura dal nome di spazio dei nomi '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageType">
         <source>Remove the underscores from type name {0}</source>
-        <target state="needs-review-translation">Rimuovere i caratteri di sottolineatura dal nome di tipo {0}.</target>
+        <target state="translated">Rimuovere i caratteri di sottolineatura dal nome di tipo {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMember">
         <source>Remove the underscores from member name {0}</source>
-        <target state="needs-review-translation">Rimuovere i caratteri di sottolineatura dal nome di membro {0}.</target>
+        <target state="translated">Rimuovere i caratteri di sottolineatura dal nome di membro {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageTypeTypeParameter">
         <source>On type {0}, remove the underscores from generic type parameter name {1}</source>
-        <target state="needs-review-translation">Nel tipo {0} rimuovere i caratteri di sottolineatura dal nome di parametro di tipo generico {1}.</target>
+        <target state="translated">Nel tipo {0} rimuovere i caratteri di sottolineatura dal nome di parametro di tipo generico {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMethodTypeParameter">
         <source>On method {0}, remove the underscores from generic type parameter name {1}</source>
-        <target state="needs-review-translation">Nel metodo {0} rimuovere i caratteri di sottolineatura dal nome di parametro di tipo generico {1}.</target>
+        <target state="translated">Nel metodo {0} rimuovere i caratteri di sottolineatura dal nome di parametro di tipo generico {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMemberParameter">
         <source>In member {0}, remove the underscores from parameter name {1}</source>
-        <target state="needs-review-translation">Nel membro {0} rimuovere i caratteri di sottolineatura dal nome di parametro {1}.</target>
+        <target state="translated">Nel membro {0} rimuovere i caratteri di sottolineatura dal nome di parametro {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageDelegateParameter">
         <source>In delegate {0}, remove the underscores from parameter name {1}</source>
-        <target state="needs-review-translation">Nel delegato {0} rimuovere i caratteri di sottolineatura dal nome di parametro {1}.</target>
+        <target state="translated">Nel delegato {0} rimuovere i caratteri di sottolineatura dal nome di parametro {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixTitle">
@@ -1224,12 +1224,12 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
         <source>Rename {0} to end in '{1}'</source>
-        <target state="needs-review-translation">Rinominare {0} in modo che termini con '{1}'.</target>
+        <target state="translated">Rinominare {0} in modo che termini con '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
         <source>Rename {0} to end in either 'Collection' or '{1}'</source>
-        <target state="needs-review-translation">Rinominare {0} in modo che termini con 'Collection' o '{1}'.</target>
+        <target state="translated">Rinominare {0} in modo che termini con 'Collection' o '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">
@@ -1244,22 +1244,22 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNoAlternate">
         <source>Rename type name {0} so that it does not end in '{1}'</source>
-        <target state="needs-review-translation">Rinominare il nome di tipo {0} in modo che non termini con '{1}'.</target>
+        <target state="translated">Rinominare il nome di tipo {0} in modo che non termini con '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberNewerVersion">
         <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces</source>
-        <target state="needs-review-translation">Sostituire il suffisso '{0}' nel nome di membro {1} con l'alternativa numerica suggerita '2' o fornire un suffisso più significativo che lo distingua dal membro che sostituisce.</target>
+        <target state="translated">Sostituire il suffisso '{0}' nel nome di membro {1} con l'alternativa numerica suggerita '2' o fornire un suffisso più significativo che lo distingua dal membro che sostituisce</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNewerVersion">
         <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces</source>
-        <target state="needs-review-translation">Sostituire il suffisso '{0}' nel nome di tipo {1} con l'alternativa numerica suggerita '2' o fornire un suffisso più significativo che lo distingua dal tipo che sostituisce.</target>
+        <target state="translated">Sostituire il suffisso '{0}' nel nome di tipo {1} con l'alternativa numerica suggerita '2' o fornire un suffisso più significativo che lo distingua dal tipo che sostituisce</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberWithAlternate">
         <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely</source>
-        <target state="needs-review-translation">Sostituire il suffisso '{0}' nel nome di membro '{1}' con l'alternativa suggerita '{2}' o rimuovere completamente il suffisso.</target>
+        <target state="translated">Sostituire il suffisso '{0}' nel nome di membro '{1}' con l'alternativa suggerita '{2}' o rimuovere completamente il suffisso</target>
         <note />
       </trans-unit>
       <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
@@ -1369,7 +1369,7 @@
       </trans-unit>
       <trans-unit id="ParameterNamesShouldMatchBaseDeclarationMessage">
         <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}</source>
-        <target state="needs-review-translation">Nel membro {0} modificare il nome di parametro {1} in {2} in modo che corrisponda all'identificatore come è stato dichiarato in {3}.</target>
+        <target state="translated">Nel membro {0} modificare il nome di parametro {1} in {2} in modo che corrisponda all'identificatore come è stato dichiarato in {3}</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsTitle">
@@ -1384,82 +1384,82 @@
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageAssembly">
         <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</source>
-        <target state="needs-review-translation">Sostituire il termine '{0}' nel nome di assembly {1} con l'alternativa preferita '{2}'.</target>
+        <target state="translated">Sostituire il termine '{0}' nel nome di assembly {1} con l'alternativa preferita '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespace">
         <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</source>
-        <target state="needs-review-translation">Sostituire il termine '{0}' nel nome di spazio dei nomi '{1}' con l'alternativa preferita '{2}'.</target>
+        <target state="translated">Sostituire il termine '{0}' nel nome di spazio dei nomi '{1}' con l'alternativa preferita '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameter">
         <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="needs-review-translation">Nel membro {0} sostituire il termine '{1}' nel nome di parametro '{2}' con l'alternativa preferita '{3}'.</target>
+        <target state="translated">Nel membro {0} sostituire il termine '{1}' nel nome di parametro '{2}' con l'alternativa preferita '{3}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageDelegateParameter">
         <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="needs-review-translation">Nel delegato {0} sostituire il termine '{1}' nel nome di parametro '{2}' con l'alternativa preferita '{3}'.</target>
+        <target state="translated">Nel delegato {0} sostituire il termine '{1}' nel nome di parametro '{2}' con l'alternativa preferita '{3}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
         <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="needs-review-translation">Nel tipo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con l'alternativa preferita '{3}'.</target>
+        <target state="translated">Nel tipo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con l'alternativa preferita '{3}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
         <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
-        <target state="needs-review-translation">Nel metodo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con l'alternativa preferita '{3}'.</target>
+        <target state="translated">Nel metodo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con l'alternativa preferita '{3}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageType">
         <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</source>
-        <target state="needs-review-translation">Sostituire il termine '{0}' nel nome di tipo {1} con l'alternativa preferita '{2}'.</target>
+        <target state="translated">Sostituire il termine '{0}' nel nome di tipo {1} con l'alternativa preferita '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMember">
         <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</source>
-        <target state="needs-review-translation">Sostituire il termine '{0}' nel nome di membro {1} con l'alternativa preferita '{2}'.</target>
+        <target state="translated">Sostituire il termine '{0}' nel nome di membro {1} con l'alternativa preferita '{2}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
         <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="needs-review-translation">Sostituire il termine '{0}' nel nome di assembly {1} con un'alternativa appropriata o rimuoverlo completamente.</target>
+        <target state="translated">Sostituire il termine '{0}' nel nome di assembly {1} con un'alternativa appropriata o rimuoverlo completamente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
         <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
-        <target state="needs-review-translation">Sostituire il termine '{0}' nel nome di spazio dei nomi '{1}' con un'alternativa appropriata o rimuoverlo completamente.</target>
+        <target state="translated">Sostituire il termine '{0}' nel nome di spazio dei nomi '{1}' con un'alternativa appropriata o rimuoverlo completamente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
         <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="needs-review-translation">Nel membro {0} sostituire il termine '{1}' nel nome di parametro {2} con un'alternativa appropriata o rimuoverlo completamente.</target>
+        <target state="translated">Nel membro {0} sostituire il termine '{1}' nel nome di parametro {2} con un'alternativa appropriata o rimuoverlo completamente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
         <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="needs-review-translation">Nel delegato {0} sostituire il termine '{1}' nel nome di parametro {2} con un'alternativa appropriata o rimuoverlo completamente.</target>
+        <target state="translated">Nel delegato {0} sostituire il termine '{1}' nel nome di parametro {2} con un'alternativa appropriata o rimuoverlo completamente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
         <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="needs-review-translation">Nel tipo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con un'alternativa appropriata o rimuoverlo completamente.</target>
+        <target state="translated">Nel tipo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con un'alternativa appropriata o rimuoverlo completamente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
         <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="needs-review-translation">Nel metodo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con un'alternativa appropriata o rimuoverlo completamente.</target>
+        <target state="translated">Nel metodo {0} sostituire il termine '{1}' nel nome di parametro di tipo generico {2} con un'alternativa appropriata o rimuoverlo completamente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
         <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="needs-review-translation">Sostituire il termine '{0}' nel nome di tipo {1} con un'alternativa appropriata o rimuoverlo completamente.</target>
+        <target state="translated">Sostituire il termine '{0}' nel nome di tipo {1} con un'alternativa appropriata o rimuoverlo completamente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
         <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="needs-review-translation">Sostituire il termine '{0}' nel nome di membro {1} con un'alternativa appropriata o rimuoverlo completamente.</target>
+        <target state="translated">Sostituire il termine '{0}' nel nome di membro {1} con un'alternativa appropriata o rimuoverlo completamente</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
@@ -1474,12 +1474,12 @@
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageEquals">
         <source>{0} should override Equals</source>
-        <target state="needs-review-translation">{0} deve eseguire l'override di Equals.</target>
+        <target state="translated">{0} deve eseguire l'override di Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageOpEquality">
         <source>{0} should override the equality (==) and inequality (!=) operators</source>
-        <target state="needs-review-translation">{0} deve eseguire l'override degli operatori di uguaglianza (==) e disuguaglianza (!=).</target>
+        <target state="translated">{0} deve eseguire l'override degli operatori di uguaglianza (==) e disuguaglianza (!=)</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotReturnArraysTitle">
@@ -1674,7 +1674,7 @@
       </trans-unit>
       <trans-unit id="DoNotHideBaseClassMethodsMessage">
         <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'</source>
-        <target state="needs-review-translation">Modificare o rimuovere '{0}' perché nasconde un metodo della classe di base più specifico: '{1}'.</target>
+        <target state="translated">Modificare o rimuovere '{0}' perché nasconde un metodo della classe di base più specifico: '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHideBaseClassMethodsTitle">
@@ -1684,7 +1684,7 @@
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
         <source>Remove '{0}' and replace its usage with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
-        <target state="needs-review-translation">Rimuovere '{0}' e sostituirne l'utilizzo con un elemento EventHandler generico, ad esempio EventHandler&lt;T&gt;, dove T è un elemento EventArgs valido</target>
+        <target state="translated">Rimuovere '{0}' e sostituirne l'utilizzo con un elemento EventHandler generico, ad esempio EventHandler&lt;T&gt;, dove T è un elemento EventArgs valido</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateDescription">
@@ -1694,7 +1694,7 @@
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
         <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
-        <target state="needs-review-translation">Modificare l'evento '{0}' per sostituire il tipo '{1}' con un elemento EventHandler generico, ad esempio EventHandler&lt;T&gt;, dove T è un elemento EventArgs valido</target>
+        <target state="translated">Modificare l'evento '{0}' per sostituire il tipo '{1}' con un elemento EventHandler generico, ad esempio EventHandler&lt;T&gt;, dove T è un elemento EventArgs valido</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventDescription">
@@ -1714,7 +1714,7 @@
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageBoth">
         <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable</source>
-        <target state="needs-review-translation">{0} deve definire l'operatore o gli operatori '{1}' e Equals perché implementa IComparable.</target>
+        <target state="translated">{0} deve definire l'operatore o gli operatori '{1}' e Equals perché implementa IComparable</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsTitle">
@@ -1759,22 +1759,22 @@
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
         <source>Remove the call to SafeHandle.DangerousGetHandle from {0}</source>
-        <target state="needs-review-translation">Rimuovere la chiamata a SafeHandle.DangerousGetHandle da {0}.</target>
+        <target state="translated">Rimuovere la chiamata a SafeHandle.DangerousGetHandle da {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
         <source>Remove the call to Assembly.LoadFrom from {0}</source>
-        <target state="needs-review-translation">Rimuovere la chiamata a Assembly.LoadFrom da {0}.</target>
+        <target state="translated">Rimuovere la chiamata a Assembly.LoadFrom da {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
         <source>Remove the call to Assembly.LoadFile from {0}</source>
-        <target state="needs-review-translation">Rimuovere la chiamata a Assembly.LoadFile da {0}.</target>
+        <target state="translated">Rimuovere la chiamata a Assembly.LoadFile da {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
         <source>Remove the call to Assembly.LoadWithPartialName from {0}</source>
-        <target state="needs-review-translation">Rimuovere la chiamata a Assembly.LoadWithPartialName da {0}.</target>
+        <target state="translated">Rimuovere la chiamata a Assembly.LoadWithPartialName da {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="CategoryReliability">
@@ -1849,7 +1849,7 @@
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceMessage">
         <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'.</source>
-        <target state="needs-review-translation">'{0}' contiene una gerarchia di oggetti a '{1}' livelli nel modulo che si sta definendo. Se possibile, eliminare le classi base dalla gerarchia per ridurre il livello della gerarchia sotto '{2}': '{3}'</target>
+        <target state="translated">'{0}' contiene una gerarchia di oggetti a '{1}' livelli nel modulo che si sta definendo. Se possibile, eliminare le classi base dalla gerarchia per ridurre il livello della gerarchia al di sotto di '{2}': '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceTitle">
@@ -1874,7 +1874,7 @@
       </trans-unit>
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileDescription">
         <source>Invalid entry in code metrics rule specification file.</source>
-        <target state="needs-review-translation">Voce non valida nel file di specifica delle regole per la metrica del codice</target>
+        <target state="translated">Voce non valida nel file di specifica delle regole per la metrica del codice.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileMessage">
@@ -1984,7 +1984,7 @@
       </trans-unit>
       <trans-unit id="AvoidUnusedPrivateFieldsMessage">
         <source>Unused field '{0}'</source>
-        <target state="needs-review-translation">Il campo '{0}' è inutilizzato.</target>
+        <target state="translated">Il campo '{0}' è inutilizzato</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessagePureMethod">
@@ -2009,12 +2009,12 @@
       </trans-unit>
       <trans-unit id="AvoidPropertySelfAssignmentMessage">
         <source>The property {0} should not be assigned to itself</source>
-        <target state="needs-review-translation">La proprietà {0} non deve essere assegnata a se stessa.</target>
+        <target state="translated">La proprietà {0} non deve essere assegnata a se stessa</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPropertySelfAssignmentTitle">
         <source>Do not assign a property to itself</source>
-        <target state="needs-review-translation">Non assegnare una proprietà a se stessa. </target>
+        <target state="translated">Non assegnare una proprietà a se stessa</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkMembersAsStaticCodeFix">
@@ -2059,7 +2059,7 @@
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
         <source>Member '{0}' is explicitly initialized to its default value</source>
-        <target state="needs-review-translation">Il membro '{0}' è inizializzato in modo esplicito in base al relativo valore predefinito.</target>
+        <target state="translated">Il membro '{0}' è inizializzato in modo esplicito in base al relativo valore predefinito</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -2154,12 +2154,12 @@
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsMessage">
         <source>Re-throwing caught exception changes stack information</source>
-        <target state="needs-review-translation">Il rethrow dell'eccezione generata implica la modifica delle informazioni sullo stack.</target>
+        <target state="translated">La rigenerazione dell'eccezione rilevata implica la modifica delle informazioni sullo stack</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsTitle">
         <source>Rethrow to preserve stack details</source>
-        <target state="needs-review-translation">Eseguire il rethrow per mantenere i dettagli dello stack.</target>
+        <target state="translated">Eseguire il rethrow per conservare i dettagli dello stack</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeDeclaringTypeInternal">
@@ -2184,7 +2184,7 @@
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesMessageFinally">
         <source>Do not raise an exception from within a finally clause</source>
-        <target state="needs-review-translation">Non generare un'eccezione dall'interno di una clausola finally. </target>
+        <target state="translated">Non generare un'eccezione dall'interno di una clausola finally</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesTitle">

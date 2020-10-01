@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
         <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'</source>
-        <target state="needs-review-translation">在 '{0}' 的建構函式中，將目前為 "{2}" 的引數值 '{1}'，變更為可正確剖析成 '{3}' 的值。</target>
+        <target state="translated">在 '{0}' 的建構函式中，將目前為 "{2}" 的引數值 '{1}'，變更為可正確剖析成 '{3}' 的值</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
         <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'</source>
-        <target state="needs-review-translation">在 '{0}' 的建構函式中，將目前為空字串 ("") 的引數值 '{1}'，變更為可正確剖析成 '{2}' 的值。</target>
+        <target state="translated">在 '{0}' 的建構函式中，將目前為空字串 ("") 的引數值 '{1}'，變更為可正確剖析成 '{2}' 的值</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
@@ -49,32 +49,32 @@
       </trans-unit>
       <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
         <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="new">'{0}' will throw for assemblies embedded in a single-file app</target>
+        <target state="translated">'{0}' 將會為內嵌在單一檔案應用程式中的組件進行擲回</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
         <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="new">'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</target>
+        <target state="translated">'{0}' 一律會為內嵌在單一檔案應用程式中的組件傳回空字串。若需要應用程式目錄的路徑，請考慮呼叫 'System.AppContext.BaseDirectory'。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
         <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="new">Avoid using accessing Assembly file path when publishing as a single-file</target>
+        <target state="translated">以單一檔案形式發佈時，避免使用正在存取的組件檔案路徑</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
-        <target state="new">Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</target>
+        <target state="translated">封送處理 'StringBuilder' 一律都會建立原生緩衝區複本，因而導致單一封送處理作業出現多重配置。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersMessage">
         <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</source>
-        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</target>
+        <target state="translated">請勿對 P/Invoke 使用 'StringBuilder' 參數。請考慮改用字元緩衝區。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersTitle">
         <source>Avoid 'StringBuilder' parameters for P/Invokes</source>
-        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes</target>
+        <target state="translated">請勿對 P/Invoke 使用 'StringBuilder' 參數</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
         <source>Avoid zero-length array allocations</source>
-        <target state="needs-review-translation">避免長度為零的陣列配置。</target>
+        <target state="translated">避免長度為零的陣列配置</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -174,92 +174,92 @@
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">還原序列化不受信任的輸入時，將 {0} 物件還原序列化並不安全。'{1}' 屬於或衍生自 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable type found in deserializable object graph</source>
-        <target state="new">Unsafe DataSet or DataTable type found in deserializable object graph</target>
+        <target state="translated">在可還原序列化的物件圖形中，找到不安全的 DataSet 或 DataTable 類型</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeMessage">
         <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</source>
-        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</target>
+        <target state="translated">以 IFormatter 形式的序列化程式，還原序列化不受信任的輸入時，將 {0} 物件還原序列化並不安全。'{1}' 屬於或衍生自 {0}。請確認自動產生的類型一律不會用不受信任的資料進行還原序列化。</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</target>
+        <target state="translated">自動產生的可序列化類型中所出現的不安全 DataSet 或 DataTable，容易受到遠端程式碼執行攻擊</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">還原序列化不受信任的輸入時，將 {0} 物件還原序列化並不安全。'{1}' 屬於或衍生自 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</target>
+        <target state="translated">還原序列化後之物件圖表中的 Unsafe DataSet 或 DataTable 容易受到遠端程式碼執行攻擊</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceSerializableTypeMessage">
         <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</source>
-        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</target>
+        <target state="translated">當使用採用 IFormatter 之序列化程式還原序列化不信任的輸入時，將 {0} 物件還原序列化並不安全。'{1}' 屬於或衍生自 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</target>
+        <target state="translated">可序列化類型中不安全的 DataSet 或 DataTable 容易受到遠端程式碼執行攻擊</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">還原序列化不受信任的輸入時，將 {0} 物件還原序列化並不安全。'{1}' 屬於或衍生自 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in serializable type</source>
-        <target state="new">Unsafe DataSet or DataTable in serializable type</target>
+        <target state="translated">可序列化類型中不安全的 DataSet 或 DataTable</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">還原序列化不受信任的輸入時，將 {0} 物件還原序列化並不安全。'{1}' 屬於或衍生自 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable type in web deserializable object graph</source>
-        <target state="new">Unsafe DataSet or DataTable type in web deserializable object graph</target>
+        <target state="translated">可還原序列化之物件圖形中不安全的 DataSet 或 DataTable 類型</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlAutogeneratedMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</target>
+        <target state="translated">還原序列化不受信任的資料時，方法 '{0}' 不安全。請確定包含 '{0}' 呼叫的自動產生類別，未使用不受信任的資料進行還原序列化。</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlAutogeneratedTitle">
         <source>Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</source>
-        <target state="new">Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</target>
+        <target state="translated">請確認包含 DataSet.ReadXml() 方法所自動產生的類別，不會與不受信任的資料一起使用</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
+        <target state="translated">還原序列化不受信任的資料時，方法 '{0}' 不安全</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlTitle">
         <source>Do not use DataSet.ReadXml() with untrusted data</source>
-        <target state="new">Do not use DataSet.ReadXml() with untrusted data</target>
+        <target state="translated">使用 DataSet.ReadXml() 時請勿附上不受信任的資料</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
+        <target state="translated">還原序列化不受信任的資料時，方法 '{0}' 不安全</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlTitle">
         <source>Do not use DataTable.ReadXml() with untrusted data</source>
-        <target state="new">Do not use DataTable.ReadXml() with untrusted data</target>
+        <target state="translated">使用 DataTable.ReadXml() 時請勿附上不受信任的資料</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
         <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths</source>
-        <target state="needs-review-translation">確認方法 '{0}' 呼叫了所有可能的控制流程路徑中的 '{1}'。</target>
+        <target state="translated">確保方法 '{0}' 呼叫了所有可能控制流程路徑中的 '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
         <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope</source>
-        <target state="needs-review-translation">在 '{0}' 所建立的物件上，於所有參考 System.IDisposable.Dispose 的項目前呼叫它，超出範圍。</target>
+        <target state="translated">在 '{0}' 所建立的物件上，在所有參考 System.IDisposable.Dispose 的項目超出範圍前，呼叫 System.IDisposable.Dispose</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
@@ -444,7 +444,7 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
-        <target state="needs-review-translation">將類別 {0} 的執行個體還原序列化時，方法 {1} 可以呼叫危險的方法 {2}。</target>
+        <target state="translated">將類別 {0} 的執行個體還原序列化時，方法 {1} 可以呼叫危險的方法 {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -499,12 +499,12 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum</source>
-        <target state="needs-review-translation">引數內含 TaskContinuationsOptions 列舉，而非 TaskCreationOptions 列舉。</target>
+        <target state="translated">引數內含 TaskContinuationsOptions 列舉，而非 TaskCreationOptions 列舉</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</source>
-        <target state="needs-review-translation">傳遞到 TaskCompletionSource 建構函式的引數應為 TaskCreationOptions 列舉，而非 TaskContinuationOptions 列舉。</target>
+        <target state="translated">傳遞到 TaskCompletionSource 建構函式的引數應為 TaskCreationOptions 列舉，而非 TaskContinuationOptions 列舉</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -529,7 +529,7 @@
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;</source>
-        <target state="needs-review-translation">將完成項新增到衍生自 MemoryManager&lt;T&gt; 的類型時，可能會允許在 Span&lt;T&gt; 仍在使用記憶體時，釋出該記憶體。</target>
+        <target state="translated">將完成項新增到衍生自 MemoryManager&lt;T&gt; 的型別時，可能會在 Span&lt;T&gt; 仍在使用記憶體時，允許釋出該記憶體</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
@@ -684,12 +684,12 @@
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
         <source>Exception type {0} is reserved by the runtime</source>
-        <target state="needs-review-translation">例外狀況類型 {0} 由執行階段所保留。</target>
+        <target state="translated">例外狀況型別 {0} 由執行階段所保留</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
         <source>Exception type {0} is not sufficiently specific</source>
-        <target state="needs-review-translation">例外狀況類型 {0} 不夠明確。</target>
+        <target state="translated">例外狀況型別 {0} 不夠明確</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
@@ -709,7 +709,7 @@
       </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
         <source>Pointer field {0} on serializable type</source>
-        <target state="needs-review-translation">可序列化類型上的指標欄位 {0}。</target>
+        <target state="translated">可序列化型別上的指標欄位 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
@@ -749,7 +749,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
         <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
-        <target state="needs-review-translation">會在可使用 AnyAsync() 的地方改用 {0}() 來提升效能。</target>
+        <target state="translated">會在可使用 AnyAsync() 的地方改用 {0}() 來提升效能</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -764,7 +764,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
         <source>{0}() is used where Any() could be used instead to improve performance</source>
-        <target state="needs-review-translation">會在可使用 Any() 的地方改用 {0}() 來提升效能。</target>
+        <target state="translated">會在可使用 Any() 的地方改用 {0}() 來提升效能</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
@@ -804,7 +804,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseDSAMessage">
         <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
-        <target state="needs-review-translation">非對稱式加密演算法 {0} 是弱式加密。請改為切換成至少有 2048 金鑰大小的 RSA、ECDH 或 ECDSA 演算法</target>
+        <target state="translated">非對稱式加密演算法 {0} 是弱式加密。請改為至少有 2048 金鑰大小的 RSA、ECDH 或 ECDSA 演算法。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -814,12 +814,12 @@
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
         <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly.</source>
-        <target state="needs-review-translation">請勿在可編製索引的集合上，使用 Enumerable 方法。改為使用直接收集</target>
+        <target state="translated">請勿在可索引的集合上，使用 Enumerable 方法。改為直接使用集合。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
         <source>Do not use Enumerable methods on indexable collections</source>
-        <target state="needs-review-translation">請勿在可編製索引的集合上，使用 Enumerable 方法。改為使用直接收集</target>
+        <target state="translated">請勿在可索引的集合上，使用 Enumerable 方法</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomness">
@@ -834,7 +834,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
         <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
-        <target state="needs-review-translation">{0} 是不安全的亂數產生器。當安全性需要隨機性時，使用密碼編譯亂數產生器</target>
+        <target state="translated">{0} 是不安全的亂數產生器。當安全性需要隨機性時，請使用密碼編譯安全性亂數產生器。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseMD5">
@@ -864,17 +864,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersDescription">
         <source>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</source>
-        <target state="new">String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</target>
+        <target state="translated">如果字串是暫留字串，則使用 'OutAttribute' 以值傳遞的字串參數可能會造成執行階段不穩定。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
         <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</source>
-        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</target>
+        <target state="translated">請勿對以值傳遞的字串參數 '{0}' 使用 'OutAttribute'。如果需要將已修改的資料封送處理至呼叫者，請改用 'out' 關鍵字以傳址方式傳遞字串。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
         <source>Do not use 'OutAttribute' on string parameters for P/Invokes</source>
-        <target state="new">Do not use 'OutAttribute' on string parameters for P/Invokes</target>
+        <target state="translated">請勿在 P/Invoke 的字串參數上使用 'OutAttribute'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
@@ -919,7 +919,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
         <source>Do not use stackalloc in loops</source>
-        <target state="needs-review-translation">請勿在迴圈中使用 stackalloc。</target>
+        <target state="translated">請勿在迴圈中使用 stackalloc</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -979,7 +979,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
         <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
-        <target state="needs-review-translation">{0} 是以弱式雜湊演算法建立而成。請使用 SHA256、SHA384 或 SHA512 來從密碼建立強式金鑰</target>
+        <target state="translated">{0} 是以弱式雜湊演算法建立而成。請使用 SHA256、SHA384 或 SHA512 來從密碼建立強式金鑰。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
@@ -1059,17 +1059,17 @@
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
         <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="needs-review-translation">將 GetObjectData 的實作加入類型 {0}。</target>
+        <target state="translated">將 GetObjectData 的實作加入型別 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
         <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="needs-review-translation">請將 {0}.GetObjectData 設定成虛擬和可覆寫。</target>
+        <target state="translated">請將 {0}.GetObjectData 設定成虛擬和可覆寫</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
         <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="needs-review-translation">增大 {0}.GetObjectData 的存取範圍，讓它對衍生類型而言為可見的。</target>
+        <target state="translated">增大 {0}.GetObjectData 的存取範圍，讓它對衍生型別而言為可見的</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyTitle">
@@ -1114,27 +1114,27 @@
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="needs-review-translation">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的簽章變更，使其不再是泛型。</target>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請變更其特徵標記，使其不再是泛型</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="needs-review-translation">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的簽章變更，使其接受 'System.Runtime.Serialization.StreamingContext' 類型的單一參數。</target>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請變更其特徵標記，使其接受 'System.Runtime.Serialization.StreamingContext' 型別的單一參數</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="needs-review-translation">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的傳回類型從 {1} 變更成 void (Visual Basic 中為 Sub)。</target>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的傳回型別從 {1} 變更成 void (Visual Basic 中為 Sub)</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="needs-review-translation">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它從 static (Visual Basic 中為 Shared) 變更成執行個體方法。</target>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它從 static (Visual Basic 中為 Shared) 變更成執行個體方法</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="needs-review-translation">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將它的存取範圍變更成 private。</target>
+        <target state="translated">因為 {0} 標記著 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，請將其存取範圍變更成 private</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
@@ -1194,7 +1194,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter</source>
-        <target state="needs-review-translation">請呼叫包含 message 及 (或) paramName 參數的 {0} 建構函式。</target>
+        <target state="translated">呼叫包含 message 及 (或) paramName 參數的 {0} 建構函式</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1459,7 +1459,7 @@
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
         <source>In method '{0}', replace the call to '{1}' with '{2}'</source>
-        <target state="needs-review-translation">在方法 '{0}' 中，以 '{2}' 取代對 '{1}' 的呼叫。</target>
+        <target state="translated">在方法 '{0}' 中，以 '{2}' 取代對 '{1}' 的呼叫</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseTitle">
@@ -1514,32 +1514,32 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckDescription">
         <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
-        <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
+        <target state="translated">在元件上使用相依於平台的 API，會使程式碼無法繼續在所有平台上運作。</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckSupportedOsMessage">
         <source>'{0}' is supported on '{1}'</source>
-        <target state="new">'{0}' is supported on '{1}'</target>
+        <target state="translated">'{1}' 支援 '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckSupportedOsVersionMessage">
         <source>'{0}' is supported on '{1}' {2} and later</source>
-        <target state="new">'{0}' is supported on '{1}' {2} and later</target>
+        <target state="translated">'{1}' {2} 及更新版本皆支援 '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckTitle">
         <source>Validate platform compatibility</source>
-        <target state="new">Validate platform compatibility</target>
+        <target state="translated">驗證平台相容性</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckUnsupportedOsMessage">
         <source>'{0}' is unsupported on '{1}'</source>
-        <target state="new">'{0}' is unsupported on '{1}'</target>
+        <target state="translated">'{1}' 不支援 '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckUnsupportedOsVersionMessage">
         <source>'{0}' is unsupported on '{1}' {2} and later</source>
-        <target state="new">'{0}' is unsupported on '{1}' {2} and later</target>
+        <target state="translated">'{1}' {2} 及更新版本皆不支援 '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
@@ -1569,7 +1569,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
-        <target state="needs-review-translation">若要判斷物件是否包含項目，建議使用 'IsEmpty'，而不要使用 'Count'。</target>
+        <target state="translated">若要判斷物件是否包含項目，建議使用 'IsEmpty'，而不要使用 'Count'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
@@ -1589,12 +1589,12 @@
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
         <source>Replace with 'string.Contains'</source>
-        <target state="new">Replace with 'string.Contains'</target>
+        <target state="translated">以 'string.Contains' 取代</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
-        <target state="needs-review-translation">呼叫 'String.IndexOf' 的結果，將用於確認有無子字串可由 'String.Contains' 取代</target>
+        <target state="translated">呼叫 'String.IndexOf' 的結果，將用於確認有無子字串可由 'String.Contains' 取代。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
@@ -1614,7 +1614,7 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
-        <target state="needs-review-translation">移除 ToString 呼叫，以使用強型別 StringBuilder 多載。</target>
+        <target state="translated">移除 ToString 呼叫，以使用強型別 StringBuilder 多載</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -1624,7 +1624,7 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
         <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder</source>
-        <target state="needs-review-translation">建議在 StringBuilder 上使用強型別 Append 及 Insert 方法多載。</target>
+        <target state="translated">建議在 StringBuilder 上使用強型別 Append 及 Insert 方法多載</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
@@ -1634,12 +1634,12 @@
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
         <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string</source>
-        <target state="needs-review-translation">當輸入為常數單元字串時，請使用 'StringBuilder.Append(char)'，而不要使用 'StringBuilder.Append(string)'。</target>
+        <target state="translated">當輸入為常數單元字串時，請使用 'StringBuilder.Append(char)'，而非 'StringBuilder.Append(string)'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
         <source>Consider using 'StringBuilder.Append(char)' when applicable</source>
-        <target state="needs-review-translation">請在適當時考慮使用 'StringBuilder.Append(char)'。</target>
+        <target state="translated">請在適當時考慮使用 'StringBuilder.Append(char)'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -1684,12 +1684,12 @@
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
         <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="needs-review-translation">將 'private void OnDeserialized(StreamingContext)' 方法加入類型 {0}，並為它加上 System.Runtime.Serialization.OnDeserializedAttribute 屬性。</target>
+        <target state="translated">將 'private void OnDeserialized(StreamingContext)' 方法加入類型 {0}，並為其加上 System.Runtime.Serialization.OnDeserializedAttribute 屬性</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
         <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="needs-review-translation">將 'private void OnDeserializing(StreamingContext)' 方法加入類型 {0}，並為它加上 System.Runtime.Serialization.OnDeserializingAttribute 屬性。</target>
+        <target state="translated">將 'private void OnDeserializing(StreamingContext)' 方法加入型別 {0}，並為其加上 System.Runtime.Serialization.OnDeserializingAttribute 屬性</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
@@ -1844,7 +1844,7 @@
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
         <source>Review if the query string passed to '{0}' in '{1}', accepts any user input</source>
-        <target state="needs-review-translation">檢閱查詢字串是否已傳遞到 '{1}' 中的 '{0}'，接受所有使用者輸入。</target>
+        <target state="translated">檢閱查詢字串是否已傳遞到 '{1}' 中的 '{0}'，接受所有使用者輸入</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
@@ -1899,7 +1899,7 @@
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
         <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
-        <target state="needs-review-translation">方法或建構函式會呼叫一或多個其多載接受 System.IFormatProvider 參數的成員，但方法或建構函式不會呼叫接受 IFormatProvider 參數的多載。未提供 System.Globalization.CultureInfo 或 IFormatProvider 物件時，多載成員提供的預設值可能無法在所有地區設定中呈現您想要的效果。如果結果將取決於輸入來源/對使用者顯示的輸出，請將 'CultureInfo.CurrentCulture' 指定為 'IFormatProvider'。否則，若將由軟體儲存結果及進行存取 (例如，從磁碟/資料庫載入時，以及要保存到磁碟/資料庫時)，請指定 'CultureInfo.InvariantCulture'</target>
+        <target state="translated">方法或建構函式會呼叫一或多個其多載接受 System.IFormatProvider 參數的成員，但方法或建構函式不會呼叫接受 IFormatProvider 參數的多載。未提供 System.Globalization.CultureInfo 或 IFormatProvider 物件時，多載成員提供的預設值可能無法在所有地區設定中呈現您想要的效果。如果結果將取決於輸入來源/對使用者顯示的輸出，請將 'CultureInfo.CurrentCulture' 指定為 'IFormatProvider'。否則，若將由軟體儲存結果及進行存取 (例如，從磁碟/資料庫載入時，以及要保存到磁碟/資料庫時)，請指定 'CultureInfo.InvariantCulture'。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -1959,32 +1959,32 @@
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Description">
         <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
+        <target state="translated">字串比較作業使用不設定 StringComparison 參數的方法多載。建議您使用會採用 StringComparison 參數的多載，使意圖更清楚。若要對使用者顯示此結果 (例如，排序項目清單以顯示於清單方塊中)，請將 'StringComparison.CurrentCulture' 或 'StringComparison.CurrentCultureIgnoreCase' 指定為 'StringComparison' 參數。若要比較不區分大小寫的識別碼 (例如檔案路徑、環境變數或登錄機碼與值)，請指定 'StringComparison.OrdinalIgnoreCase'。而若要比較區分大小寫的識別碼，請指定 'StringComparison.Ordinal'。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Message">
         <source>'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</source>
-        <target state="new">'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</target>
+        <target state="translated">'{0}' 具有採用 'StringComparison' 參數的方法多載。請以對 '{2}' 的呼叫取代 '{1}' 中的此呼叫，使意圖更清楚。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Title">
         <source>Specify StringComparison for clarity</source>
-        <target state="new">Specify StringComparison for clarity</target>
+        <target state="translated">指定 StringComparison 以提升明確性</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Description">
         <source>A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
+        <target state="translated">字串比較作業使用不設定 StringComparison 參數的方法多載，因此，根據目前使用者的地區設定，其行為可能不同。強烈建議您使用會採用 StringComparison 參數的多載，以提升意圖的正確性及明確性。若要對使用者顯示此結果 (例如，排序項目清單以顯示於清單方塊中)，請將 'StringComparison.CurrentCulture' 或 'StringComparison.CurrentCultureIgnoreCase' 指定為 'StringComparison' 參數。若要比較不區分大小寫的識別項碼 (例如檔案路徑、環境變數或登錄機碼與值)，請指定 'StringComparison.OrdinalIgnoreCase'。而若要比較區分大小寫的識別碼，請指定 'StringComparison.Ordinal'。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Message">
         <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
-        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</target>
+        <target state="translated">'{0}' 的行為可能會因目前使用者的地區設定而異。以呼叫 '{2}' 來取代 '{1}' 中的此呼叫。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Title">
         <source>Specify StringComparison for correctness</source>
-        <target state="new">Specify StringComparison for correctness</target>
+        <target state="translated">指定 StringComparison 以提升正確性</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
@@ -1994,7 +1994,7 @@
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
         <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check</source>
-        <target state="needs-review-translation">請使用 'string.Length' 屬性或 'string.IsNullOrEmpty' 方法測試空白字串，而非使用相等檢查。</target>
+        <target state="translated">請使用 'string.Length' 屬性或 'string.IsNullOrEmpty' 方法測試空白字串，而非使用相等檢查</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
@@ -2029,7 +2029,7 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
-        <target state="needs-review-translation">在 '{2}' 上使用 '{0}' 代替以 '{1}' 為基礎的索引子，以避免建立不必要的資料複本。</target>
+        <target state="translated">在 '{2}' 上使用 '{0}' 代替以 '{1}' 為基礎的索引子，以避免建立不必要的資料複本</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
@@ -2084,7 +2084,7 @@
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS.</source>
-        <target state="needs-review-translation">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請於建立 SAS 時使用容器層級存取原則</target>
+        <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請於建立 SAS 時使用容器層級存取原則。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
@@ -2104,22 +2104,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
         <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
-        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</target>
+        <target state="translated">'Environment.ProcessId' 比 'Process.GetCurrentProcess().Id' 更簡單快速。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdFix">
         <source>Use 'Environment.ProcessId'</source>
-        <target state="new">Use 'Environment.ProcessId'</target>
+        <target state="translated">請使用 'Environment.ProcessId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdMessage">
         <source>Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</source>
-        <target state="new">Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</target>
+        <target state="translated">請使用 'Environment.ProcessId' 而非 'Process.GetCurrentProcess().Id'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdTitle">
         <source>Use 'Environment.ProcessId'</source>
-        <target state="new">Use 'Environment.ProcessId'</target>
+        <target state="translated">請使用 'Environment.ProcessId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2159,7 +2159,7 @@
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
         <source>Use ordinal string comparison</source>
-        <target state="needs-review-translation">使用循序的 StringComparison</target>
+        <target state="translated">使用序數字串比較</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
@@ -2169,7 +2169,7 @@
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
         <source>Use the "{0}" property instead of Enumerable.Count()</source>
-        <target state="needs-review-translation">使用 "{0}" 屬性而非 Enumerable.Count()。</target>
+        <target state="translated">使用 "{0}" 屬性而非 Enumerable.Count()</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
@@ -2209,7 +2209,7 @@
       </trans-unit>
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
-        <target state="needs-review-translation">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請指定 SharedAccessProtocol.HttpsOnly</target>
+        <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請指定 SharedAccessProtocol.HttpsOnly。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">

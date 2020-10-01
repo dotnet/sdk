@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
         <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
-        <target state="needs-review-translation">L'interception des exceptions état altéré peut masquer les erreurs (par exemple les violations d'accès) et entraîner un état incohérent de l'exécution ou faciliter la tâche aux pirates qui tentent compromettre un système. À la place, interceptez et prenez en charge un ensemble plus spécifique de types d'exception, ou levez à nouveau l'exception</target>
+        <target state="translated">L'interception des exceptions état altéré peut masquer les erreurs (par exemple les violations d'accès) et entraîner un état incohérent de l'exécution ou faciliter la tâche des attaquants qui tentent de compromettre un système. À la place, interceptez et prenez en charge un ensemble plus spécifique de types d'exception, ou levez à nouveau l'exception.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
         <source>{0} is catching corrupted state exception</source>
-        <target state="needs-review-translation">{0} intercepte l'exception état altéré.</target>
+        <target state="translated">{0} intercepte l'exception état altéré</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
         <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
-        <target state="needs-review-translation">L'utilisation de HttpVerbs.GET et ValidateAntiForgeryTokenAttribute n'est pas prise en charge par MVC sur l'action de contrôleur {0}.</target>
+        <target state="translated">L'utilisation de HttpVerbs.GET et ValidateAntiForgeryTokenAttribute n'est pas prise en charge par MVC sur l'action de contrôleur {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -374,7 +374,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
-        <target state="needs-review-translation">ValidateAntiForgeryTokenAttribute est manquant sur l'action de contrôleur MVC {0} qui accepte par défaut les demandes POST.</target>
+        <target state="translated">ValidateAntiForgeryTokenAttribute est manquant sur l'action de contrôleur MVC {0} qui accepte par défaut les demandes POST</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -384,7 +384,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
-        <target state="needs-review-translation">ValidateAntiForgeryTokenAttribute manquant sur l'action de contrôleur {0}.</target>
+        <target state="translated">ValidateAntiForgeryTokenAttribute manquant sur l'action de contrôleur {0}</target>
         <note />
       </trans-unit>
     </body>

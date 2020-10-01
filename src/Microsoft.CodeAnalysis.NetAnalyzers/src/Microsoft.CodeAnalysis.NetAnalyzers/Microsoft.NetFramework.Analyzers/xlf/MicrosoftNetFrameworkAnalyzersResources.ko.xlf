@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="AvoidDuplicateAcceleratorsDescription">
         <source>An access key, also known as an accelerator, enables keyboard access to a control by using the ALT key. When multiple controls have duplicate access keys, the behavior of the access key is not well defined.</source>
-        <target state="translated">액셀러레이터 키라고도 알려진 선택키는 &lt;ALT&gt; 키를 사용하여 컨트롤에 대한 키보드 액세스를 사용합니다. 여러 컨트롤에 중복되는 선택키가 있는 경우 선택키의 동작이 잘 정의되지 않습니다.</target>
+        <target state="translated">액셀러레이터 키라고도 알려진 액세스 키는 &lt;ALT&gt; 키를 사용하여 컨트롤에 대한 키보드 액세스를 사용합니다. 여러 컨트롤에 중복되는 선택키가 있는 경우 선택키의 동작이 잘 정의되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateAcceleratorsMessage">
@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
         <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
-        <target state="needs-review-translation">손상된 상태 예외를 catch하면 오류(예: 액세스 위반)가 숨겨질 수 있으며 이로 인해 실행 상태가 일관되지 않거나 공격자가 더 쉽게 시스템을 손상시킬 수 있습니다. 더 구체적인 예외 형식 집합을 catch하고 처리하거나 예외를 다시 throw하세요.</target>
+        <target state="translated">손상된 상태 예외를 catch하면 오류(예: 액세스 위반)가 숨겨질 수 있으며 이로 인해 실행 상태가 일관되지 않거나 공격자가 더 쉽게 시스템을 손상할 수 있습니다. 대신 더 구체적인 예외 형식 집합을 catch하고 처리하거나 예외를 다시 throw하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
         <source>{0} is catching corrupted state exception</source>
-        <target state="needs-review-translation">{0}이(가) 손상된 상태 예외를 catch하고 있습니다.</target>
+        <target state="translated">{0}이(가) 손상된 상태 예외를 catch하고 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
         <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
-        <target state="needs-review-translation">컨트롤러 작업 {0}의 MVC에서는 HttpVerbs.GET 및 ValidateAntiForgeryTokenAttribute를 사용할 수 없습니다.</target>
+        <target state="translated">컨트롤러 작업 {0}의 MVC에서는 HttpVerbs.GET 및 ValidateAntiForgeryTokenAttribute를 사용할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -374,7 +374,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
-        <target state="needs-review-translation">기본적으로 POST 요청을 승인하는 MVC 컨트롤러 작업 {0}에 ValidateAntiForgeryTokenAttribute가 없습니다.</target>
+        <target state="translated">기본적으로 POST 요청을 승인하는 MVC 컨트롤러 작업 {0}에 ValidateAntiForgeryTokenAttribute가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -384,7 +384,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
-        <target state="needs-review-translation">컨트롤러 작업 {0}에 ValidateAntiForgeryTokenAttribute가 없습니다.</target>
+        <target state="translated">컨트롤러 작업 {0}에 ValidateAntiForgeryTokenAttribute가 없습니다.</target>
         <note />
       </trans-unit>
     </body>
