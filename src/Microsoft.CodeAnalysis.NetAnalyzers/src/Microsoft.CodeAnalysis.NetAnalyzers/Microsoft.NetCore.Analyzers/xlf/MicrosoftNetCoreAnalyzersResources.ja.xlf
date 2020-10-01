@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
         <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'</source>
-        <target state="needs-review-translation">'{0}' のコンストラクター内にある引数 '{1}' の値 (現在は "{2}") を、'{3}' として正しく解析できる値に変更してください。</target>
+        <target state="translated">'{0}' のコンストラクター内にある引数 '{1}' の値 (現在は "{2}") を、'{3}' として正しく解析できる値に変更してください</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
         <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'</source>
-        <target state="needs-review-translation">'{0}' のコンストラクター内にある引数 '{1}' の値は現在空の文字列 ("") になっています。'{2}' として正しく解析できる値に変更してください。</target>
+        <target state="translated">'{0}' のコンストラクター内にある引数 '{1}' の値は現在空の文字列 ("") になっています。'{2}' として正しく解析できる値に変更してください</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
@@ -49,32 +49,32 @@
       </trans-unit>
       <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
         <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="new">'{0}' will throw for assemblies embedded in a single-file app</target>
+        <target state="translated">'{0}' は、単一ファイル アプリに組み込まれているアセンブリのためにスローします</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
         <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="new">'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</target>
+        <target state="translated">'{0}' は、単一ファイル アプリに埋め込まれているアセンブリに対して、常に空の文字列を返します。アプリ ディレクトリへのパスが必要な場合は、'System.AppContext.BaseDirectory' を呼び出すことを検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
         <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="new">Avoid using accessing Assembly file path when publishing as a single-file</target>
+        <target state="translated">単一ファイルとして発行するときにアセンブリ ファイル パスへのアクセスを使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
-        <target state="new">Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</target>
+        <target state="translated">'StringBuilder' をマーシャリングすると、ネイティブ バッファーのコピーが常に作成され、1 回のマーシャリング操作に対して複数の割り当てが発生します。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersMessage">
         <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</source>
-        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</target>
+        <target state="translated">P/Invoke に 'StringBuilder' パラメーターを使用しないでください。代わりに、文字バッファーを使用することをご検討ください。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersTitle">
         <source>Avoid 'StringBuilder' parameters for P/Invokes</source>
-        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes</target>
+        <target state="translated">P/Invoke の 'StringBuilder' パラメーターを使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
         <source>Avoid zero-length array allocations</source>
-        <target state="needs-review-translation">長さ 0 の配列の割り当てを避けます。</target>
+        <target state="translated">長さ 0 の配列は割り当て不可</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -174,92 +174,92 @@
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">信頼されていない入力を逆シリアル化する場合、{0} オブジェクトの逆シリアル化は安全ではありません。'{1}' は {0} であるか、それから派生しています</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable type found in deserializable object graph</source>
-        <target state="new">Unsafe DataSet or DataTable type found in deserializable object graph</target>
+        <target state="translated">逆シリアル化可能なオブジェクト グラフに、安全でない DataSet または DataTable 型が見つかりました</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeMessage">
         <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</source>
-        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</target>
+        <target state="translated">IFormatter ベースのシリアライザーを使用して信頼されていない入力を逆シリアル化する場合、{0} オブジェクトの逆シリアル化は安全ではありません。'{1}' は {0} であるか、それから派生しています。自動生成型が、信頼されていないデータで逆シリアル化されないようにしてください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</target>
+        <target state="translated">シリアル化可能な自動生成型に含まれる安全でない DataSet または DataTable は、リモート コード実行攻撃に対して脆弱になる可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">信頼されていない入力を逆シリアル化する場合、{0} オブジェクトの逆シリアル化は安全ではありません。'{1}' は {0} であるか、それから派生しています</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</target>
+        <target state="translated">逆シリアル化されたオブジェクト グラフに含まれる安全でない DataSet または DataTable は、リモート コード実行攻撃に対して脆弱になる可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceSerializableTypeMessage">
         <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</source>
-        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</target>
+        <target state="translated">IFormatter ベースのシリアライザーを使用して信頼されていない入力を逆シリアル化する場合、{0} オブジェクトの逆シリアル化は安全ではありません。'{1}' は {0} であるか、それから派生しています。</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</target>
+        <target state="translated">シリアル化可能な型に含まれる安全でない DataSet または DataTable は、リモート コード実行攻撃に対して脆弱になる可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">信頼されていない入力を逆シリアル化する場合、{0} オブジェクトの逆シリアル化は安全ではありません。'{1}' は {0} であるか、それから派生しています</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in serializable type</source>
-        <target state="new">Unsafe DataSet or DataTable in serializable type</target>
+        <target state="translated">シリアル化可能な型に含まれる安全でない DataSet または DataTable</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">信頼されていない入力を逆シリアル化する場合、{0} オブジェクトの逆シリアル化は安全ではありません。'{1}' は {0} であるか、それから派生しています</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable type in web deserializable object graph</source>
-        <target state="new">Unsafe DataSet or DataTable type in web deserializable object graph</target>
+        <target state="translated">Web の逆シリアル化可能なオブジェクト グラフに含まれる安全でない DataSet または DataTable 型</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlAutogeneratedMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</target>
+        <target state="translated">メソッド '{0}' は、信頼されていないデータを逆シリアル化しているときは安全ではありません。'{0}' 呼び出しを含む自動生成クラスが、信頼されていないデータで逆シリアル化されていないことを確認してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlAutogeneratedTitle">
         <source>Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</source>
-        <target state="new">Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</target>
+        <target state="translated">DataSet.ReadXml() を含む自動生成クラスが信頼されていないデータで使用されていないことを確認する</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
+        <target state="translated">信頼されていないデータを逆シリアル化する場合、メソッド '{0}' は安全ではありません</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlTitle">
         <source>Do not use DataSet.ReadXml() with untrusted data</source>
-        <target state="new">Do not use DataSet.ReadXml() with untrusted data</target>
+        <target state="translated">信頼されていないデータで DataSet.ReadXml() を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
+        <target state="translated">信頼されていないデータを逆シリアル化する場合、メソッド '{0}' は安全ではありません</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlTitle">
         <source>Do not use DataTable.ReadXml() with untrusted data</source>
-        <target state="new">Do not use DataTable.ReadXml() with untrusted data</target>
+        <target state="translated">信頼されていないデータで DataTable.ReadXml() を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
         <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths</source>
-        <target state="needs-review-translation">考えられるすべての制御フロー パスで、メソッド '{0}' が '{1}' を呼び出すようにしてください。</target>
+        <target state="translated">考えられるすべての制御フロー パスで、メソッド '{0}' が '{1}' を呼び出すようにしてください</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
         <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope</source>
-        <target state="needs-review-translation">'{0}' が作成したオブジェクトへの参照がすべてスコープ外になる前に、そのオブジェクトの System.IDisposable.Dispose を呼び出してください。</target>
+        <target state="translated">'{0}' が作成したオブジェクトへの参照がすべてスコープ外になる前に、そのオブジェクトの System.IDisposable.Dispose を呼び出してください</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
@@ -444,7 +444,7 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
-        <target state="needs-review-translation">クラス {0} のインスタンスを逆シリアル化すると、メソッド {1} が危険なメソッド{2} を呼び出す可能性があります。</target>
+        <target state="translated">クラス {0} のインスタンスを逆シリアル化すると、メソッド {1} が危険なメソッド {2} を呼び出す可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -499,12 +499,12 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum</source>
-        <target state="needs-review-translation">引数には、TaskCreationOptions 列挙型ではなく、TaskContinuationsOptions 列挙型が含まれています。</target>
+        <target state="translated">引数には、TaskCreationOptions 列挙型ではなく、TaskContinuationsOptions 列挙型が含まれています</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</source>
-        <target state="needs-review-translation">TaskCompletionSource コンストラクターに渡された引数は、TaskContinuationOptions 列挙型ではなく、TaskCreationOptions 列挙型にする必要があります。</target>
+        <target state="translated">TaskCompletionSource コンストラクターに渡される引数は、TaskContinuationOptions 列挙型ではなく TaskCreationOptions 列挙型であることが必要</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -529,7 +529,7 @@
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;</source>
-        <target state="needs-review-translation">MemoryManager&lt;T&gt; から派生した型にファイナライザーを追加すると、Span&lt;T&gt; によってまだ使用中のメモリが解放される可能性があります。</target>
+        <target state="translated">MemoryManager&lt;T&gt; から派生した型にファイナライザーを追加すると、Span&lt;T&gt; によってまだ使用中のメモリが解放される可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
@@ -684,12 +684,12 @@
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
         <source>Exception type {0} is reserved by the runtime</source>
-        <target state="needs-review-translation">例外の種類 {0} は、ランタイムによって予約されています。</target>
+        <target state="translated">例外の種類 {0} は、ランタイムによって予約されています</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
         <source>Exception type {0} is not sufficiently specific</source>
-        <target state="needs-review-translation">例外の種類 {0} は十分に特定されていません。</target>
+        <target state="translated">例外の種類 {0} は十分に特定されていません</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
@@ -709,7 +709,7 @@
       </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
         <source>Pointer field {0} on serializable type</source>
-        <target state="needs-review-translation">シリアル化可能な型のポインター フィールド {0} です。</target>
+        <target state="translated">シリアル化可能な型のポインター フィールド {0} です</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
@@ -749,7 +749,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
         <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
-        <target state="needs-review-translation">パフォーマンスを向上させるために AnyAsync() を代わりに使用できるところで {0}() が使用されています。</target>
+        <target state="translated">パフォーマンスを向上させるために AnyAsync() を代わりに使用できるところで {0}() が使用されています</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -764,7 +764,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
         <source>{0}() is used where Any() could be used instead to improve performance</source>
-        <target state="needs-review-translation">パフォーマンスを向上させるために Any() を代わりに使用できるところで {0}() が使用されています。</target>
+        <target state="translated">パフォーマンスを向上させるために Any() を代わりに使用できるところで {0}() が使用されています</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
@@ -804,7 +804,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseDSAMessage">
         <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
-        <target state="needs-review-translation">非対称暗号化アルゴリズム {0} が脆弱です。キー サイズが少なくとも 2048 の RSA、ECDH、または ECDSA アルゴリズムに切り替えてください</target>
+        <target state="translated">非対称暗号化アルゴリズム {0} が脆弱です。代わりに、キー サイズが少なくとも 2048 の RSA、ECDH、または ECDSA アルゴリズムに切り替えてください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -814,12 +814,12 @@
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
         <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly.</source>
-        <target state="needs-review-translation">インデックス可能なコレクションで Enumerable メソッドを使用しません。代わりに、コレクションを直接使用します</target>
+        <target state="translated">インデックス可能なコレクションで Enumerable メソッドを使用しません。代わりに、コレクションを直接使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
         <source>Do not use Enumerable methods on indexable collections</source>
-        <target state="needs-review-translation">インデックス可能なコレクションで Enumerable メソッドを使用しません。代わりに、コレクションを直接使用します</target>
+        <target state="translated">インデックス可能なコレクションで Enumerable メソッドは使用不可</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomness">
@@ -834,7 +834,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
         <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
-        <target state="needs-review-translation">{0} は安全でない乱数ジェネレーターです。セキュリティにランダム度が必要な場合に、暗号化によってセキュリティで保護された乱数ジェネレーターを使用します</target>
+        <target state="translated">{0} は安全でない乱数ジェネレーターです。セキュリティにランダム度が必要な場合に、暗号化によってセキュリティで保護された乱数ジェネレーターを使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseMD5">
@@ -864,17 +864,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersDescription">
         <source>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</source>
-        <target state="new">String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</target>
+        <target state="translated">値渡しされる文字列パラメーターで 'OutAttribute' を指定すると、文字列がインターン処理された文字列である場合にランタイムが不安定になる可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
         <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</source>
-        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</target>
+        <target state="translated">値渡しされる文字列パラメーター '{0}' には、'OutAttribute' を使用しないでください。変更されたデータを呼び出し元にマーシャリングする必要がある場合は、代わりに 'out' キーワードを使用して文字列を参照渡ししてください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
         <source>Do not use 'OutAttribute' on string parameters for P/Invokes</source>
-        <target state="new">Do not use 'OutAttribute' on string parameters for P/Invokes</target>
+        <target state="translated">P/Invoke の文字列パラメーターに 'OutAttribute' を使用しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
@@ -919,7 +919,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
         <source>Do not use stackalloc in loops</source>
-        <target state="needs-review-translation">stackalloc はループ内で使用しないでください。</target>
+        <target state="translated">stackalloc はループ内で使用不可</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -979,7 +979,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
         <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
-        <target state="needs-review-translation">{0} は弱いハッシュ アルゴリズムを使用して作成されました。SHA256、SHA384、SHA512 を使用してパスワードから強力なキーを作成してください</target>
+        <target state="translated">{0} は弱いハッシュ アルゴリズムを使用して作成されました。SHA256、SHA384、SHA512 を使用してパスワードから強力なキーを作成してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
@@ -1059,17 +1059,17 @@
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
         <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="needs-review-translation">GetObjectData の実装を型 {0} に追加します。</target>
+        <target state="translated">GetObjectData の実装を型 {0} に追加してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
         <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="needs-review-translation">{0}.GetObjectData を仮想およびオーバーライド可能にします。</target>
+        <target state="translated">{0}.GetObjectData を仮想およびオーバーライド可能にしてください</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
         <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="needs-review-translation">派生型に公開するため、{0}.GetObjectData のアクセシビリティを上げます。</target>
+        <target state="translated">派生型に公開するため、{0}.GetObjectData のアクセシビリティを上げてください</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyTitle">
@@ -1114,27 +1114,27 @@
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="needs-review-translation">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、ジェネリックにならないようにシグネチャを変更してください。</target>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、ジェネリックにならないようにシグネチャを変更してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="needs-review-translation">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、'System.Runtime.Serialization.StreamingContext' という型の単一のパラメーターを受け取るようにシグネチャを変更してください。</target>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、'System.Runtime.Serialization.StreamingContext' という型の単一のパラメーターを受け取るようにシグネチャを変更してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="needs-review-translation">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、戻り値の型を {1} から void (Visual Basic では Sub) に変更してください。</target>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、戻り値の型を {1} から void (Visual Basic では Sub) に変更してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="needs-review-translation">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、静的 (Visual Basic では共有) からインスタンス メソッドに変更してください。</target>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、静的 (Visual Basic では共有) からインスタンス メソッドに変更してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="needs-review-translation">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、アクセシビリティをプライベートに変更してください。</target>
+        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、アクセシビリティをプライベートに変更してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
@@ -1194,7 +1194,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter</source>
-        <target state="needs-review-translation">メッセージおよび paramName パラメーターまたはそのいずれかを含む {0} コンストラクターを呼び出します。</target>
+        <target state="translated">メッセージおよび paramName パラメーターまたはそのいずれかを含む {0} コンストラクターを呼び出してください</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1459,7 +1459,7 @@
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
         <source>In method '{0}', replace the call to '{1}' with '{2}'</source>
-        <target state="needs-review-translation">メソッド '{0}' で、'{1}' の呼び出しを '{2}' に置き換えます。</target>
+        <target state="translated">メソッド '{0}' で、'{1}' の呼び出しを '{2}' に置き換えてください</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseTitle">
@@ -1514,32 +1514,32 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckDescription">
         <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
-        <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
+        <target state="translated">プラットフォーム依存 API をコンポーネント上で使用すると、一部のプラットフォームでコードが動作しなくなります。</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckSupportedOsMessage">
         <source>'{0}' is supported on '{1}'</source>
-        <target state="new">'{0}' is supported on '{1}'</target>
+        <target state="translated">'{0}' は '{1}' でサポートされています</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckSupportedOsVersionMessage">
         <source>'{0}' is supported on '{1}' {2} and later</source>
-        <target state="new">'{0}' is supported on '{1}' {2} and later</target>
+        <target state="translated">'{0}' は '{1}' {2} 以降でサポートされています</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckTitle">
         <source>Validate platform compatibility</source>
-        <target state="new">Validate platform compatibility</target>
+        <target state="translated">プラットフォームの互換性の検証</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckUnsupportedOsMessage">
         <source>'{0}' is unsupported on '{1}'</source>
-        <target state="new">'{0}' is unsupported on '{1}'</target>
+        <target state="translated">'{0}' は '{1}' ではサポートされていません</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckUnsupportedOsVersionMessage">
         <source>'{0}' is unsupported on '{1}' {2} and later</source>
-        <target state="new">'{0}' is unsupported on '{1}' {2} and later</target>
+        <target state="translated">'{0}' は '{1}' {2} 以降ではサポートされていません</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
@@ -1569,7 +1569,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
-        <target state="needs-review-translation">オブジェクトにアイテムが含まれているかどうかを判断するには、'Count' より 'IsEmpty' を優先してください。</target>
+        <target state="translated">オブジェクトに項目が含まれているかどうかを判断するには、'Count' より 'IsEmpty' を優先してください</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
@@ -1589,12 +1589,12 @@
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
         <source>Replace with 'string.Contains'</source>
-        <target state="new">Replace with 'string.Contains'</target>
+        <target state="translated">'string.Contains' で置き換える</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
-        <target state="needs-review-translation">部分文字列が存在するかどうかを確認するために結果を使用する 'string.IndexOf' の呼び出しは、'string.Contains' で置き換えることができます</target>
+        <target state="translated">部分文字列が存在するかどうかを確認するために結果を使用する 'string.IndexOf' の呼び出しは、'string.Contains' で置き換えることができます。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
@@ -1614,7 +1614,7 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
-        <target state="needs-review-translation">厳密に型指定された StringBuilder のオーバーロードを使用するには、ToString 呼び出しを削除します。</target>
+        <target state="translated">厳密に型指定された StringBuilder のオーバーロードを使用するには、ToString 呼び出しを削除してください</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -1624,7 +1624,7 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
         <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder</source>
-        <target state="needs-review-translation">StringBuilder の厳密に型指定された Append および Insert メソッドのオーバーロードをお勧めします。</target>
+        <target state="translated">StringBuilder での厳密に型指定された Append および Insert メソッドのオーバーロードを推奨</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
@@ -1634,12 +1634,12 @@
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
         <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string</source>
-        <target state="needs-review-translation">入力が定数単位文字列である場合は、'StringBuilder.Append(string)' ではなく、'StringBuilder.Append(char)' をお使いください。</target>
+        <target state="translated">入力が定数単位文字列である場合は、'StringBuilder.Append(string)' ではなく、'StringBuilder.Append(char)' を使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
         <source>Consider using 'StringBuilder.Append(char)' when applicable</source>
-        <target state="needs-review-translation">該当する場合は、'StringBuilder.Append(char)' を使用することをご検討ください。</target>
+        <target state="translated">該当する場合は 'StringBuilder.Append(char)' の使用を検討</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -1684,12 +1684,12 @@
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
         <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="needs-review-translation">'private void OnDeserialized(StreamingContext)' メソッドを型 {0} に追加し、System.Runtime.Serialization.OnDeserializedAttribute に属性指定します。</target>
+        <target state="translated">'private void OnDeserialized(StreamingContext)' メソッドを型 {0} に追加し、System.Runtime.Serialization.OnDeserializedAttribute に属性指定してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
         <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="needs-review-translation">'private void OnDeserializing(StreamingContext)' メソッドを型 {0} に追加し、System.Runtime.Serialization.OnDeserializingAttribute に属性指定します。</target>
+        <target state="translated">'private void OnDeserializing(StreamingContext)' メソッドを型 {0} に追加し、System.Runtime.Serialization.OnDeserializingAttribute に属性指定してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
@@ -1844,7 +1844,7 @@
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
         <source>Review if the query string passed to '{0}' in '{1}', accepts any user input</source>
-        <target state="needs-review-translation">'{1}' の '{0}' に渡されたクエリ文字列が任意のユーザー入力を受け入れるかどうかを確認します。</target>
+        <target state="translated">'{1}' の '{0}' に渡されたクエリ文字列が任意のユーザー入力を受け入れるかどうかを確認してください</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
@@ -1899,7 +1899,7 @@
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
         <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
-        <target state="needs-review-translation">メソッドまたはコンストラクターは、System.IFormatProvider パラメーターを受け取るオーバーロードを持つ 1 つ以上のメンバーを呼び出します。IFormatProvider パラメーターを受け取るオーバーロードは呼び出しません。System.Globalization.CultureInfo または IFormatProvider オブジェクトが指定されない場合、オーバーロードされたメンバーによって指定される既定値は、一部のロケールでは期待どおりの効果がないことがあります。結果がユーザーからの入力およびユーザーに表示される出力に基づく場合、'IFormatProvider' として 'CultureInfo.CurrentCulture' を指定します。そうではなく、結果がソフトウェアによって格納およびアクセスされる場合 (結果がディスク/データベースから読み込まれる場合やディスク/データベースに永続的に保存される場合など) は、'CultureInfo.InvariantCulture' を指定します</target>
+        <target state="translated">メソッドまたはコンストラクターでは、System.IFormatProvider パラメーターを受け取るオーバーロードを持つ 1 つ以上のメンバーを呼び出します。メソッドまたはコンストラクターでは、IFormatProvider パラメーターを受け取るオーバーロードは呼び出しません。System.Globalization.CultureInfo または IFormatProvider オブジェクトが指定されない場合、オーバーロードされたメンバーによって指定される既定値は、一部のロケールでは期待どおりの効果がないことがあります。結果がユーザーからの入力およびユーザーに表示される出力に基づく場合、'IFormatProvider' として 'CultureInfo.CurrentCulture' を指定します。そうではなく、結果がソフトウェアによって格納およびアクセスされる場合 (結果がディスクまたはデータベースから読み込まれる場合や、ディスクまたはデータベースに永続的に保存される場合など) は、'CultureInfo.InvariantCulture' を指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -1959,32 +1959,32 @@
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Description">
         <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
+        <target state="translated">文字列比較操作では、StringComparison パラメーターを設定しないメソッド オーバーロードを使用します。意図を明確にするため、StringComparison パラメーターを指定してオーバーロードを使用することをお勧めします。結果がユーザーに表示される場合 (リスト ボックスに表示するために項目のリストを並べ替える場合など) は、'StringComparison' パラメーターとして 'StringComparison.CurrentCulture' または 'StringComparison.CurrentCultureIgnoreCase' を指定します。大文字と小文字が区別されない識別子 (ファイル パス、環境変数、レジストリのキーと値など) を比較する場合は、'StringComparison.OrdinalIgnoreCase' を指定します。そうではなく、大文字と小文字が区別される識別子を比較する場合は、'StringComparison.Ordinal' を指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Message">
         <source>'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</source>
-        <target state="new">'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</target>
+        <target state="translated">'{0}' には、'StringComparison' パラメーターを受け取るメソッド オーバーロードがあります。意図を明確にするために、'{1}' のこの呼び出しを '{2}' への呼び出しで置き換えます。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Title">
         <source>Specify StringComparison for clarity</source>
-        <target state="new">Specify StringComparison for clarity</target>
+        <target state="translated">明確さのために StringComparison を指定する</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Description">
         <source>A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
+        <target state="translated">文字列比較操作では、StringComparison パラメーターを設定しないメソッド オーバーロードが使用されるため、その動作は、現在のユーザーのロケール設定によって異なる場合があります。正確さと意図の明確さのために、StringComparison パラメーターを指定してオーバーロードを使用することを強くお勧めします。結果がユーザーに表示される場合 (リスト ボックスに表示するために項目のリストを並べ替える場合など) は、'StringComparison' パラメーターとして 'StringComparison.CurrentCulture' または 'StringComparison.CurrentCultureIgnoreCase' を指定します。大文字と小文字が区別されない識別子 (ファイル パス、環境変数、レジストリのキーと値など) を比較する場合は、'StringComparison.OrdinalIgnoreCase' を指定します。そうではなく、大文字と小文字が区別される識別子を比較する場合は、'StringComparison.Ordinal' を指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Message">
         <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
-        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</target>
+        <target state="translated">'{0}' の動作は、現在のユーザーのロケール設定によって異なる場合があります。'{1}' 内のこの呼び出しを '{2}' への呼び出しに置き換えてください。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Title">
         <source>Specify StringComparison for correctness</source>
-        <target state="new">Specify StringComparison for correctness</target>
+        <target state="translated">正確さのために StringComparison を指定する</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
@@ -1994,7 +1994,7 @@
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
         <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check</source>
-        <target state="needs-review-translation">等値チェックの代わりに 'string.Length' プロパティまたは 'string.IsNullOrEmpty' メソッドを使用して空の文字列をテストしてください。</target>
+        <target state="translated">等値性のチェックの代わりに 'string.Length' プロパティまたは 'string.IsNullOrEmpty' メソッドを使用して空の文字列をテストしてください</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
@@ -2029,7 +2029,7 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
-        <target state="needs-review-translation">不要なデータ コピーが作成されないようにするには、'{2}' で '{1}' ベースのインデクサーの代わりに '{0}' をお使いください。</target>
+        <target state="translated">不要なデータ コピーが作成されないようにするには、'{2}' で '{1}' ベースのインデクサーの代わりに '{0}' を使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
@@ -2084,7 +2084,7 @@
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS.</source>
-        <target state="needs-review-translation">可能な場合は、Shared Access Signature (SAS) の代わりに、Azure のロールベースのアクセス制御を使用することを検討してください。依然として SAS を使用する必要がある場合は、SAS の作成時にコンテナーレベルのアクセス ポリシーを使用します</target>
+        <target state="translated">可能な場合は、Shared Access Signature (SAS) の代わりに、Azure のロールベースのアクセス制御を使用することを検討してください。依然として SAS を使用する必要がある場合は、SAS の作成時にコンテナーレベルのアクセス ポリシーを使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
@@ -2104,22 +2104,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
         <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
-        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</target>
+        <target state="translated">'Environment.ProcessId' は、'Process.GetCurrentProcess().Id' よりも単純かつ高速です。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdFix">
         <source>Use 'Environment.ProcessId'</source>
-        <target state="new">Use 'Environment.ProcessId'</target>
+        <target state="translated">'Environment.ProcessId' を使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdMessage">
         <source>Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</source>
-        <target state="new">Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</target>
+        <target state="translated">'Process.GetCurrentProcess().Id' の代わりに 'Environment.ProcessId' を使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdTitle">
         <source>Use 'Environment.ProcessId'</source>
-        <target state="new">Use 'Environment.ProcessId'</target>
+        <target state="translated">'Environment.ProcessId' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2159,7 +2159,7 @@
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
         <source>Use ordinal string comparison</source>
-        <target state="needs-review-translation">順序を示す StringComparison を使用します</target>
+        <target state="translated">序数の文字列比較を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
@@ -2169,7 +2169,7 @@
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
         <source>Use the "{0}" property instead of Enumerable.Count()</source>
-        <target state="needs-review-translation">Enumerable.Count() の代わりに "{0}" プロパティを使用します。</target>
+        <target state="translated">Enumerable.Count() の代わりに "{0}" プロパティを使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
@@ -2209,7 +2209,7 @@
       </trans-unit>
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
-        <target state="needs-review-translation">可能な場合は、Shared Access Signature (SAS) の代わりに、Azure のロールベースのアクセス制御を使用することを検討してください。依然として SAS を使用する必要がある場合は、SharedAccessProtocol を指定します。 HttpsOnly</target>
+        <target state="translated">可能な場合は、Shared Access Signature (SAS) の代わりに、Azure のロールベースのアクセス制御を使用することを検討してください。依然として SAS を使用する必要がある場合は、SharedAccessProtocol.HttpsOnly を指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
