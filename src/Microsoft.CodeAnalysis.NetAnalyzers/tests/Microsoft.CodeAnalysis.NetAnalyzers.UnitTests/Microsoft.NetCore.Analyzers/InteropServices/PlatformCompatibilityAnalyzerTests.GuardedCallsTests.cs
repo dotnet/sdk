@@ -1054,7 +1054,7 @@ static class Some
 " + MockAttributesCsSource + MockOperatingSystemApiSource;
 
             await VerifyAnalyzerAsyncCs(source,
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedOsRule).WithLocation(16, 13)
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedOsVersionRule).WithLocation(16, 13)
                 .WithArguments("Some.WindowsSpecificApi()", "windows", "10.0"));
         }
 
