@@ -23,6 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             {
                 public static System.Threading.Tasks.ValueTask ReturnsValueTask() => throw null;
                 public static System.Threading.Tasks.ValueTask<T> ReturnsValueTaskOfT<T>() => throw null;
+                public static System.Threading.Tasks.ValueTask<T> ReturnsValueTaskOfT<T>(T value) => throw null;
                 public static System.Threading.Tasks.ValueTask<int> ReturnsValueTaskOfInt() => throw null;
 
                 public static void AcceptsValueTask(System.Threading.Tasks.ValueTask vt) => throw null;
@@ -338,6 +339,13 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                     public ValueTask<T> ReturnValueTaskOfTExpression<T>() => Helpers.ReturnsValueTaskOfT<T>();
 
                     public ValueTask<int> ReturnValueTaskOfIntExpression() => Helpers.ReturnsValueTaskOfInt();
+
+                    public ValueTask<(string, string)> ReturnTupleWithConsts() => Helpers.ReturnsValueTaskOfT<(string, string)>(("""", """"));
+
+                    public ValueTask<(string, string)> ReturnTupleWithCalls() => Helpers.ReturnsValueTaskOfT((SomeMethod(), SomeProp));
+
+                    private string SomeProp => """";
+                    private string SomeMethod() => """";
 
                     public ValueTask ReturnValueTask()
                     {
