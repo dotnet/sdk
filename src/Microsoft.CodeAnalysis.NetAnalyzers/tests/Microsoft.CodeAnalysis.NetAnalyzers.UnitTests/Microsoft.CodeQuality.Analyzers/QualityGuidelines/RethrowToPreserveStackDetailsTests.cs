@@ -93,7 +93,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2200_NoDiagnosticsForThrowAnotherExceptionInWhenClause()
+        public async Task CA2200_NoDiagnosticsForThrowAnotherExceptionInWhenClauseWithoutVariableDeclarator()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -105,13 +105,13 @@ public abstract class C
         try
         {
         }
-        catch (Exception ex) when (Map(ex, out Exception mappedEx))
+        catch (Exception) when (Map(out Exception ex))
         {
-            throw mappedEx;
+            throw ex;
         }
     }
 
-    protected abstract bool Map(Exception ex, out Exception ex2);
+    protected abstract bool Map(out Exception ex);
 }
 ");
         }
