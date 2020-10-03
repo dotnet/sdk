@@ -92,7 +92,6 @@ End Class
 ");
         }
 
-
         [Fact]
         [WorkItem(4280, "https://github.com/dotnet/roslyn-analyzers/issues/4280")]
         public async Task CA2200_NoDiagnosticsForThrowAnotherExceptionInWhenClause()
@@ -114,7 +113,7 @@ public abstract class C
     protected abstract bool Map(Exception ex, out Exception ex2);
 }
 ");
-        } 
+        }
 
         [Fact]
         [WorkItem(4280, "https://github.com/dotnet/roslyn-analyzers/issues/4280")]
