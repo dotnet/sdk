@@ -49,7 +49,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     if (ancestor.Kind == OperationKind.CatchClause &&
                         ancestor is ICatchClauseOperation catchClause)
                     {
-                        if (catchClause.Locals.Contains(localReference.Local) &&
+                        if ((catchClause.ExceptionDeclarationOrExpression is not IVariableDeclaratorOperation variableDeclaratorOperation || variableDeclaratorOperation.Symbol == localReference.Local) &&
+                            catchClause.Locals.Contains(localReference.Local) &&
                             !IsReassignedInCatch(catchClause, localReference))
                         {
                             context.ReportDiagnostic(throwOperation.CreateDiagnostic(Rule));
