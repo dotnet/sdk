@@ -92,7 +92,32 @@ End Class
 ");
         }
 
+
         [Fact]
+        [WorkItem(4280, "https://github.com/dotnet/roslyn-analyzers/issues/4280")]
+        public async Task CA2200_NoDiagnosticsForThrowAnotherExceptionInWhenClause()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+public abstract class C
+{
+    public void M()
+    {
+        try
+        {
+        }
+        catch (Exception ex) when (Map(ex, out Exception mappedEx))
+        {
+            throw mappedEx;
+        }
+    }
+    protected abstract bool Map(Exception ex, out Exception ex2);
+}
+");
+        } 
+
+        [Fact]
+        [WorkItem(4280, "https://github.com/dotnet/roslyn-analyzers/issues/4280")]
         public async Task CA2200_NoDiagnosticsForThrowAnotherExceptionInWhenClauseWithoutVariableDeclarator()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
