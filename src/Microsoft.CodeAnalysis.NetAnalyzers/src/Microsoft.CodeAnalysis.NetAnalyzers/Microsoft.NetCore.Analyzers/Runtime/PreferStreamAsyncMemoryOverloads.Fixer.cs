@@ -37,6 +37,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         // Verifies if a namespace has already been added to the usings/imports list.
         protected abstract bool IsSystemNamespaceImported(IReadOnlyList<SyntaxNode> importList);
 
+        // Verifies if the user passed `0` as the 1st argument (`offset`) and `buffer.Length` as the 2nd argument (`count`),
+        // where `buffer` is the name of the variable passed as the 0th argument.
+        protected abstract bool IsPassingZeroAndBufferLength(SemanticModel model, SyntaxNode bufferValueNode, SyntaxNode offsetValueNode, SyntaxNode countValueNode);
+
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(PreferStreamAsyncMemoryOverloads.RuleId);
 
@@ -90,7 +94,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             string title = MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsTitle;
 
-            Task<Document> createChangedDocument(CancellationToken _) => FixInvocation(doc, root, invocation, invocation.TargetMethod.Name,
+            Task<Document> createChangedDocument(CancellationToken _) => FixInvocation(model, doc, root,
+                                                         invocation, invocation.TargetMethod.Name,
                                                          bufferOperation.Value.Syntax, isBufferNamed,
                                                          offsetOperation.Value.Syntax, isOffsetNamed,
                                                          countOperation.Value.Syntax, isCountNamed,
@@ -104,7 +109,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 context.Diagnostics);
         }
 
-        private Task<Document> FixInvocation(Document doc, SyntaxNode root, IInvocationOperation invocation, string methodName,
+        private Task<Document> FixInvocation(SemanticModel model, Document doc, SyntaxNode root,
+            IInvocationOperation invocation, string methodName,
             SyntaxNode bufferValueNode, bool isBufferNamed,
             SyntaxNode offsetValueNode, bool isOffsetNamed,
             SyntaxNode countValueNode, bool isCountNamed,
@@ -112,26 +118,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(doc);
 
-            // The stream object
+            // The stream-derived instance
             SyntaxNode streamInstanceNode = invocation.Instance.Syntax;
 
-            // buffer.AsMemory(int start, int length)
-            // offset should become start
-            // count should become length
-            SyntaxNode namedStartNode = isOffsetNamed ? generator.Argument(name: "start", RefKind.None, offsetValueNode) : offsetValueNode;
-            SyntaxNode namedLengthNode = isCountNamed ? generator.Argument(name: "length", RefKind.None, countValueNode) : countValueNode;
+            // Depending on the arguments being passed to Read/WriteAsync, it's the substitution we will make
+            SyntaxNode replacedInvocationNode;
 
-            // Generate an invocation of the AsMemory() method from the byte array object, using the correct named arguments
-            SyntaxNode asMemoryExpressionNode = generator.MemberAccessExpression(bufferValueNode.WithoutTrivia(), memberName: "AsMemory");
-            SyntaxNode asMemoryInvocationNode = generator.InvocationExpression(
-                asMemoryExpressionNode,
-                namedStartNode.WithTriviaFrom(offsetValueNode),
-                namedLengthNode.WithTriviaFrom(countValueNode));
+            if (IsPassingZeroAndBufferLength(model, bufferValueNode, offsetValueNode, countValueNode))
+            {
+                // Remove 0 and buffer.length
+                replacedInvocationNode =
+                    (isBufferNamed ? generator.Argument(name: "buffer", RefKind.None, bufferValueNode) : bufferValueNode)
+                    .WithTriviaFrom(bufferValueNode);
+            }
+            else
+            {
+                // buffer.AsMemory(int start, int length)
+                // offset should become start
+                // count should become length
+                SyntaxNode namedStartNode = isOffsetNamed ? generator.Argument(name: "start", RefKind.None, offsetValueNode) : offsetValueNode;
+                SyntaxNode namedLengthNode = isCountNamed ? generator.Argument(name: "length", RefKind.None, countValueNode) : countValueNode;
 
-            // Generate the new buffer argument, ensuring we include the argument name if the user originally indicated one
-            SyntaxNode namedBufferWithAsMemoryInvocationNode =
+                // Generate an invocation of the AsMemory() method from the byte array object, using the correct named arguments
+                SyntaxNode asMemoryExpressionNode = generator.MemberAccessExpression(bufferValueNode.WithoutTrivia(), memberName: "AsMemory");
+                SyntaxNode asMemoryInvocationNode = generator.InvocationExpression(
+                    asMemoryExpressionNode,
+                    namedStartNode.WithTriviaFrom(offsetValueNode),
+                    namedLengthNode.WithTriviaFrom(countValueNode));
+
+                // Generate the new buffer argument, ensuring we include the buffer argument name if the user originally indicated one
+                replacedInvocationNode =
                     (isBufferNamed ? generator.Argument(name: "buffer", RefKind.None, asMemoryInvocationNode) : asMemoryInvocationNode)
-                .WithTriviaFrom(bufferValueNode);
+                    .WithTriviaFrom(bufferValueNode);
+            }
 
             // Create an async method call for the stream object with no arguments
             SyntaxNode asyncMethodNode = generator.MemberAccessExpression(streamInstanceNode, methodName);
@@ -141,11 +160,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (cancellationTokenValueNode != null)
             {
                 SyntaxNode namedCancellationTokenNode = isCancellationTokenNamed ? generator.Argument(name: "cancellationToken", RefKind.None, cancellationTokenValueNode) : cancellationTokenValueNode;
-                nodeArguments = new SyntaxNode[] { namedBufferWithAsMemoryInvocationNode, namedCancellationTokenNode.WithTriviaFrom(cancellationTokenValueNode) };
+                nodeArguments = new SyntaxNode[] { replacedInvocationNode, namedCancellationTokenNode.WithTriviaFrom(cancellationTokenValueNode) };
             }
             else
             {
-                nodeArguments = new SyntaxNode[] { namedBufferWithAsMemoryInvocationNode };
+                nodeArguments = new SyntaxNode[] { replacedInvocationNode };
             }
             SyntaxNode newInvocationExpression = generator.InvocationExpression(asyncMethodNode, nodeArguments).WithTriviaFrom(streamInstanceNode);
 
