@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -41,6 +42,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationContext.Compilation);
                 INamedTypeSymbol? cancellationTokenType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingCancellationToken);
                 INamedTypeSymbol? iprogressType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIProgress1);
+
+                var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
+                builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerFilePathAttribute));
+                builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerLineNumberAttribute));
+                builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerMemberNameAttribute));
+                var callerInformationAttributes = builder.ToImmutable();
+
                 if (cancellationTokenType == null)
                 {
                     return;
@@ -57,6 +65,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     int last = methodSymbol.Parameters.Length - 1;
                     if (last >= 0 && methodSymbol.Parameters[last].IsParams)
+                    {
+                        last--;
+                    }
+
+                    // Ignore parameters that have any of these attributes.
+                    // C# reserved attributes: https://docs.microsoft.com/dotnet/csharp/language-reference/attributes/caller-information
+                    while (last >= 0
+                        && HasCallerInformationAttribute(methodSymbol.Parameters[last], callerInformationAttributes))
                     {
                         last--;
                     }
@@ -120,5 +136,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 SymbolKind.Method);
             });
         }
+
+        private static bool HasCallerInformationAttribute(IParameterSymbol parameter, ImmutableHashSet<INamedTypeSymbol> callerAttributes)
+            => parameter.GetAttributes().Any(
+                attribute => callerAttributes.Any(
+                    callerAttribute => SymbolEqualityComparer.Default.Equals(callerAttribute, attribute.AttributeClass)));
     }
 }

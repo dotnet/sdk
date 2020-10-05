@@ -333,7 +333,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var literals = new StringBuilder();
             foreach (string literal in literalValues.Order())
             {
-                // sanitize the literal to ensure it's not multiline
+                // sanitize the literal to ensure it's not multi-line
                 // replace any newline characters with a space
                 var sanitizedLiteral = literal.Replace(Environment.NewLine, " ");
                 sanitizedLiteral = sanitizedLiteral.Replace((char)13, ' ');

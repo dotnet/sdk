@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
         <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
-        <target state="needs-review-translation">A captura de exceções de estado corrompido poderia mascarar erros (como violações de acesso), resultando em estado de execução inconsistente ou tornando fácil para invasores comprometerem o sistema. Em vez disso, capture e manipule um conjunto mais específico de tipos de exceção ou gere novamente a exceção</target>
+        <target state="translated">A captura de exceções de estado corrompido poderia mascarar erros (como violações de acesso), resultando em um estado de execução inconsistente ou tornando fácil para invasores comprometerem o sistema. Em vez disso, capture e manipule um conjunto mais específico de tipos de exceção ou gere novamente a exceção.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
         <source>{0} is catching corrupted state exception</source>
-        <target state="needs-review-translation">{0} está capturando uma exceção de estado corrompido.</target>
+        <target state="translated">{0} está capturando uma exceção de estado corrompido</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -313,8 +313,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">A classe derivada XmlDocument {0} não define explicitamente um construtor.</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">A classe derivada XmlDocument {0} não define explicitamente um construtor.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +328,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">A classe derivada XmlTextReader {0} não define explicitamente um construtor.</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">A classe derivada XmlTextReader {0} não define explicitamente um construtor.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +343,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">Fornecer uma instância de XsltSettings não segura e uma instância XmlResolver não segura ao método XslCompiledTransform.Load é potencialmente não seguro, pois permite o processamento de um script dentro do XSL, o que em uma entrada XSL não confiável pode levar à execução de código mal-intencionado. Substitua o argumento XsltSettings não seguro por XsltSettings.Default ou uma instância que desabilitou a função de documento e a execução de script ou substitua o argumento XmlResolver por null ou por uma instância de XmlSecureResolver. Essa mensagem poderá ser suprimida se a entrada for conhecida como sendo de uma fonte confiável e deverá haver suporte à resolução de recurso externo de locais que não são conhecidos com antecedência.</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">Fornecer uma instância de XsltSettings não segura e uma instância XmlResolver não segura ao método XslCompiledTransform.Load é potencialmente não seguro, pois permite o processamento de um script dentro do XSL, o que em uma entrada XSL não confiável pode levar à execução de código mal-intencionado. Substitua o argumento XsltSettings não seguro por XsltSettings.Default ou uma instância que desabilitou a função de documento e a execução de script ou substitua o argumento XmlResolver por null ou por uma instância de XmlSecureResolver. Essa mensagem poderá ser suprimida se a entrada for conhecida como sendo de uma fonte confiável e deverá haver suporte à resolução de recurso externo de locais que não são conhecidos com antecedência.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
         <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
-        <target state="needs-review-translation">Não há suporte do MVC para o uso de HttpVerbs.GET e ValidateAntiForgeryTokenAttribute na ação do controlador {0}.</target>
+        <target state="translated">Não há suporte do MVC para o uso de HttpVerbs.GET e ValidateAntiForgeryTokenAttribute na ação do controlador {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -374,7 +374,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
-        <target state="needs-review-translation">ValidateAntiForgeryTokenAttribute ausente da ação do controlador MVC {0} que por padrão aceita solicitações POST.</target>
+        <target state="translated">ValidateAntiForgeryTokenAttribute ausente da ação do controlador MVC {0} que por padrão aceita solicitações POST</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -384,7 +384,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
-        <target state="needs-review-translation">ValidateAntiForgeryTokenAttribute ausente na ação do controlador {0}.</target>
+        <target state="translated">ValidateAntiForgeryTokenAttribute ausente na ação do controlador {0}</target>
         <note />
       </trans-unit>
     </body>

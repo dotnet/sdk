@@ -174,12 +174,12 @@
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
         <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
-        <target state="needs-review-translation">Durch das Abfangen von Corrupted State Exceptions können Fehler (beispielsweise Zugriffsverletzungen) verdeckt werden. Dadurch wird möglicherweise ein inkonsistenter Ausführungsstatus verursacht oder das Kompromittieren des Systems für Angreifer vereinfacht. Fangen Sie stattdessen eine spezifischere Menge von Ausnahmetypen ab, und verarbeiten Sie sie, oder lösen Sie die Ausnahme erneut aus.</target>
+        <target state="translated">Durch das Abfangen von Corrupted State Exceptions können Fehler (beispielsweise Zugriffsverletzungen) verdeckt werden. Dadurch wird möglicherweise ein inkonsistenter Ausführungsstatus verursacht oder das Kompromittieren des Systems für Angreifer vereinfacht. Fangen Sie stattdessen eine spezifischere Menge von Ausnahmetypen ab, und verarbeiten Sie sie, oder lösen Sie die Ausnahme erneut aus.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
         <source>{0} is catching corrupted state exception</source>
-        <target state="needs-review-translation">"{0}" fängt eine Corrupted State Exception ab.</target>
+        <target state="translated">"{0}" fängt eine Corrupted State Exception ab.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -313,8 +313,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">Die von XmlDocument abgeleitete Klasse "{0}" definiert explizit keinen Konstruktor.</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">Die von XmlDocument abgeleitete Klasse "{0}" definiert explizit keinen Konstruktor.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +328,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">Die von XmlTextReader abgeleitete Klasse "{0}" definiert explizit keinen Konstruktor.</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">Die von XmlTextReader abgeleitete Klasse "{0}" definiert explizit keinen Konstruktor.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +343,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">Das Bereitstellen einer unsicheren XsltSettings-Instanz und einer unsicheren XmlResolver-Instanz für die Methode "XslCompiledTransform.Load" ist möglicherweise unsicher, weil dadurch die Verarbeitung von Skript innerhalb von XSL ermöglicht wird. Dies kann in einer nicht vertrauenswürdigen XSL-Eingabe zur Ausführung von Malware führen. Ersetzen Sie entweder das unsichere XsltSettings-Argument durch "XsltSettings.Default" oder eine Instanz, bei der die Ausführung von Dokumentfunktionen und Skripts deaktiviert wurde, oder ersetzen Sie das XmlResolver-Argument durch NULL oder eine XmlSecureResolver-Instanz. Diese Meldung kann unterdrückt werden, wenn die Eingabe bekanntermaßen von einer vertrauenswürdigen Quelle stammt und die Auflösung externer Ressourcen von Standorten, die nicht im Voraus bekannt sind, unterstützt werden muss.</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">Das Bereitstellen einer unsicheren XsltSettings-Instanz und einer unsicheren XmlResolver-Instanz für die Methode "XslCompiledTransform.Load" ist möglicherweise unsicher, weil dadurch die Verarbeitung von Skript innerhalb von XSL ermöglicht wird. Dies kann in einer nicht vertrauenswürdigen XSL-Eingabe zur Ausführung von Malware führen. Ersetzen Sie entweder das unsichere XsltSettings-Argument durch "XsltSettings.Default" oder eine Instanz, bei der die Ausführung von Dokumentfunktionen und Skripts deaktiviert wurde, oder ersetzen Sie das XmlResolver-Argument durch NULL oder eine XmlSecureResolver-Instanz. Diese Meldung kann unterdrückt werden, wenn die Eingabe bekanntermaßen von einer vertrauenswürdigen Quelle stammt und die Auflösung externer Ressourcen von Standorten, die nicht im Voraus bekannt sind, unterstützt werden muss.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
         <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
-        <target state="needs-review-translation">Die Verwendung von "HttpVerbs.GET" und "ValidateAntiForgeryTokenAttribute" wird von MVC bei der Controlleraktion {0} nicht unterstützt.</target>
+        <target state="translated">Die Verwendung von "HttpVerbs.GET" und "ValidateAntiForgeryTokenAttribute" wird von MVC bei der Controlleraktion "{0}" nicht unterstützt.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -374,7 +374,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
-        <target state="needs-review-translation">Für die MVC-Controlleraktion {0}, die standardmäßig POST-Anforderungen akzeptiert, fehlt ein ValidateAntiForgeryTokenAttribute.</target>
+        <target state="translated">Für die MVC-Controlleraktion "{0}", die standardmäßig POST-Anforderungen akzeptiert, fehlt "ValidateAntiForgeryTokenAttribute".</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -384,7 +384,7 @@
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
         <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
-        <target state="needs-review-translation">Für die Controlleraktion {0} fehlt das ValidateAntiForgeryTokenAttribute.</target>
+        <target state="translated">Für die Controlleraktion "{0}" fehlt "ValidateAntiForgeryTokenAttribute".</target>
         <note />
       </trans-unit>
     </body>

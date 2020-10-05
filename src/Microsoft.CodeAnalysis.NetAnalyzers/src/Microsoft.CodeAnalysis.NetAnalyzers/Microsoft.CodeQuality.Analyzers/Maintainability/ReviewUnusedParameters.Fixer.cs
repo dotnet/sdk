@@ -45,8 +45,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         /// <summary>
         /// Gets parameter declaration node for a given diagnostic node.
-        /// Requires language specific implementation because 
-        /// diagnositcs are reported on different syntax nodes for across languages.
+        /// Requires language specific implementation because
+        /// diagnostics are reported on different syntax nodes for across languages.
         /// </summary>
         /// <param name="node">the diagnostic node</param>
         /// <returns>the parameter declaration node</returns>
@@ -79,15 +79,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         private ImmutableArray<IArgumentOperation>? GetOperationArguments(SyntaxNode node, SemanticModel semanticModel, CancellationToken cancellationToken)
         {
-            // For a given reference symbol node, find an object creration parent or an invocation parent. Then, return arguments of the parent found.
+            // For a given reference symbol node, find an object creation parent or an invocation parent. Then, return arguments of the parent found.
             // For 'c(param1, param2)', the input node is 'c'. Then, we climb up to 'c(param1, param2)', and return [param1, param2].
             // For 'new A.B(param1, param2)', the input node is 'B'. Then, we climb up to 'new A.B(param1, param2)', and return [param1, param2].
             // For 'A.B.C(param1, param2)', the input node is 'C'. Then, we climb up to 'A.B.C(param1, param2)', and return [param1, param2].
 
             // Consider operations like A.B.C(0). We start from 'C' and need to get to '0'.
-            // To achieve this, it is necessary to climb up to 'A.B.C' 
+            // To achieve this, it is necessary to climb up to 'A.B.C'
             // and check that this is IObjectCreationOperation or IInvocationOperation.
-            // Intermediate calls of GetOperation on 'B.C' and 'A.B.C.' return null. 
+            // Intermediate calls of GetOperation on 'B.C' and 'A.B.C.' return null.
             // GetOperation on 'A.B.C(0)' returns a non-null operation.
             // After that, it is possible to check its arguments.
             // Return null in any unexpected situation, e.g. inconsistent tree.
@@ -147,7 +147,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                         {
                             foreach (IArgumentOperation argument in arguments)
                             {
-                                // The name comparison below looks fragile. However, symbol comparison does not work for Reduced Extension Methods. Need to consider more reliable options. 
+                                // The name comparison below looks fragile. However, symbol comparison does not work for Reduced Extension Methods. Need to consider more reliable options.
                                 if (string.Equals(argument.Parameter.Name, parameterSymbol.Name, StringComparison.Ordinal) && argument.ArgumentKind == ArgumentKind.Explicit)
                                 {
                                     nodesToRemove.Add(new KeyValuePair<DocumentId, SyntaxNode>(referenceLocation.Document.Id, referenceRoot.FindNode(argument.Syntax.GetLocation().SourceSpan)));

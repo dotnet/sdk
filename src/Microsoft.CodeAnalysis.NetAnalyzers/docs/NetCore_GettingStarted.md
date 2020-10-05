@@ -39,7 +39,7 @@
 
 1. Navigate to the root of the Roslyn-analyzers repo and run these commands:
     - `cd roslyn-analyzers`
-    - `set RUNTIMEPACKAGEVERSION=3.0.0`
+    - Set RUNTIMEPACKAGEVERSION variable with the version which ever the [runtime](https://github.com/dotnet/runtime/blob/master/eng/Analyzers.props#L9)/[roslyn-analyzers](https://github.com/dotnet/roslyn-analyzers/blob/master/eng/Versions.props#L26) repo is using: `set RUNTIMEPACKAGEVERSION=5.0.0`
     - `build.cmd -ci /p:AssemblyVersion=%RUNTIMEPACKAGEVERSION% /p:AutoGenerateAssemblyVersion=false /p:OfficialBuild=true`
     - For testing against `dotnet/runtime`:
         - `cd artifacts\bin\Microsoft.CodeAnalysis.CSharp.NetAnalyzers\Debug\netstandard2.0`
@@ -59,6 +59,7 @@
 8. In case no any failure introduce an error somewhere to prove that the rule ran.
     - Be careful about in which project you are producing an error, choose an API not having reference from other APIs, else all dependent API's will fail.
 9. If failures found, repeat step 4-5 to evaluate and address all warnings.
+    - In case you want to [debug some failures](#Debugging-analyzer-with-runtiem-repo-projects).
 
 ## Testing against the Roslyn repo
 
@@ -70,3 +71,16 @@
     - `.\artifacts\bin\AnalyzerRunner\Release\netcoreapp3.1\AnalyzerRunner.exe ..\roslyn-analyzers\artifacts\bin\Microsoft.NetCore.Analyzers.Package\Debug\netstandard2.0 .\Roslyn.sln /stats /concurrent /a AnalyzerNameToTest /log Output.txt`
     - Do not forget change value after `/a` option with your testing analyzer name.
 The diagnostics reported by the analyzer will be listed in Output.txt.
+
+## Debugging analyzer with runtime repo projects
+
+1. Copy over debug build of analyzer assemblies on top of NetAnalyzers nuget package in your packages folder. (Instructions are same as the step 1 and 2 of [Testing against the Runtime repo step](#Testing-against-the-Runtime-and-Roslyn-analyzers-repo))
+2. Start VS and open a project you want to debug
+3. Note the process ID for `ServiceHub.RoslynCodeAnalysisService.exe` corresponding to that VS instance
+    - If you are using `Visual Studio` older than version `16.8 Preview2` then analyzers run in `devenv.exe`, you will need to attach that process instead
+    - Code fixes and analyzers run in different processes. If you want to debug the CodeFixProvider corresponding to the analyzer, attach `devenv.exe` instead. 
+4. Open another VS instance for `RoslynAnalyzers.sln` and set breakpoints in the analyzer solution where you want to debug
+5. Attach to above process ID with the RoslynAnalyzers debugger: `Debug -> Attach to Process...`
+6. Start typing in the other project, the breakpoints should hit
+    - If breakpoints are not hitting then the RoslynAnalyzers.sln build might not the same as the build you copied to the step 1 repeat the step again or check if you copied into the correct path
+    
