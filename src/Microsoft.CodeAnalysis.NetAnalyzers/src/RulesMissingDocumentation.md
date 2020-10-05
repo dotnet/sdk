@@ -2,4 +2,5 @@
 
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|
-CA1416 | https://docs.microsoft.com/visualstudio/code-quality/ca1416 | Validate platform compatibility |
+CA2218 | https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2218 | Override GetHashCode on overriding Equals |
+CA2224 | https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2224 | Override Equals on overloading operator equals |
