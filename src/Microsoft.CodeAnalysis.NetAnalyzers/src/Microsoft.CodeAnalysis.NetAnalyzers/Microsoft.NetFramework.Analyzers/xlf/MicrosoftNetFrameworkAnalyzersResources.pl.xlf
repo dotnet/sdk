@@ -313,8 +313,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">Klasa pochodna {0} elementu XmlDocument nie określa jawnie konstruktora.</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">Klasa pochodna {0} elementu XmlDocument nie określa jawnie konstruktora.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +328,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">Klasa pochodna {0} elementu XmlTextReader nie określa jawnie konstruktora.</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">Klasa pochodna {0} elementu XmlTextReader nie określa jawnie konstruktora.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +343,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">Dostarczanie niezabezpieczonego wystąpienia XsltSettings i niezabezpieczonego wystąpienia XmlResolver do metody XslCompiledTransform.Load jest potencjalnie niebezpieczne, ponieważ umożliwia przetwarzanie skryptu w elemencie XSL, co w przypadku niezaufanych danych wejściowych XSL może prowadzić do uruchomienia złośliwego kodu. Zastąp niezabezpieczony argument XsltSettings elementem XsltSettings.Default lub wystąpieniem, które wyłączyło funkcję dokumentu i wykonywanie skryptu, albo zastąp argument XmlResolver wartością null lub wystąpieniem XmlSecureResolver. Ten komunikat może zostać pominięty, jeśli wiadomo, że dane wejściowe pochodzą z zaufanego źródła, i musi być obsługiwane rozpoznawanie zasobów zewnętrznych pochodzących z lokalizacji, które nie są wcześniej znane.</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">Dostarczanie niezabezpieczonego wystąpienia XsltSettings i niezabezpieczonego wystąpienia XmlResolver do metody XslCompiledTransform.Load jest potencjalnie niebezpieczne, ponieważ umożliwia przetwarzanie skryptu w elemencie XSL, co w przypadku niezaufanych danych wejściowych XSL może prowadzić do uruchomienia złośliwego kodu. Zastąp niezabezpieczony argument XsltSettings elementem XsltSettings.Default lub wystąpieniem, które wyłączyło funkcję dokumentu i wykonywanie skryptu, albo zastąp argument XmlResolver wartością null lub wystąpieniem XmlSecureResolver. Ten komunikat może zostać pominięty, jeśli wiadomo, że dane wejściowe pochodzą z zaufanego źródła, i musi być obsługiwane rozpoznawanie zasobów zewnętrznych pochodzących z lokalizacji, które nie są wcześniej znane.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">

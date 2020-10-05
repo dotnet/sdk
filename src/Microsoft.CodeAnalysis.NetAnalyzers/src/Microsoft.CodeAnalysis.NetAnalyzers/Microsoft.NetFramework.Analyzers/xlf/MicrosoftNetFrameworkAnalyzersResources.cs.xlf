@@ -313,8 +313,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">Odvozená třída XmlDocument {0} nedefinuje explicitně konstruktor.</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">Odvozená třída XmlDocument {0} nedefinuje explicitně konstruktor.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +328,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">Odvozená třída XmlTextReader {0} nedefinuje explicitně konstruktor.</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">Odvozená třída XmlTextReader {0} nedefinuje explicitně konstruktor.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +343,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">Poskytnutí nezabezpečených instancí XsltSettings a XmlResolver metodě XslCompiledTransform.Load je potenciálně nebezpečné, protože to umožňuje zpracovat skript v šabloně stylů XSL, který při zpracování nedůvěryhodného vstupu XSL může vést ke spuštění škodlivého kódu. Buď nahraďte nezabezpečený argument XsltSettings hodnotou XsltSettings.Default nebo instancí, která má zakázané funkce dokumentů a spouštění skriptů, nebo nahraďte argument XmlResolver hodnotou null nebo instancí XmlSecureResolver. Pokud víte, že vstup pochází z důvěryhodného zdroje, a musíte podporovat překlad externích prostředků z umístění, která předem neznáte, dá se tato zpráva potlačit.</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">Poskytnutí nezabezpečených instancí XsltSettings a XmlResolver metodě XslCompiledTransform.Load je potenciálně nebezpečné, protože to umožňuje zpracovat skript v šabloně stylů XSL, který při zpracování nedůvěryhodného vstupu XSL může vést ke spuštění škodlivého kódu. Buď nahraďte nezabezpečený argument XsltSettings hodnotou XsltSettings.Default nebo instancí, která má zakázané funkce dokumentů a spouštění skriptů, nebo nahraďte argument XmlResolver hodnotou null nebo instancí XmlSecureResolver. Pokud víte, že vstup pochází z důvěryhodného zdroje, a musíte podporovat překlad externích prostředků z umístění, která předem neznáte, dá se tato zpráva potlačit.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">

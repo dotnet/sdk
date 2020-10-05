@@ -66,7 +66,7 @@ End Structure
 public class Class1
 {
     private readonly static int field = 1;
-    static Class1() // No static field initalization
+    static Class1() // No static field initialization
     {
         Class1_Method();
         var field2 = 1;

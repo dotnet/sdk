@@ -25,7 +25,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            // Fixes all occurrences within within Document, Project, or Solution
+            // Fixes all occurrences within Document, Project, or Solution
             return WellKnownFixAllProviders.BatchFixer;
         }
 

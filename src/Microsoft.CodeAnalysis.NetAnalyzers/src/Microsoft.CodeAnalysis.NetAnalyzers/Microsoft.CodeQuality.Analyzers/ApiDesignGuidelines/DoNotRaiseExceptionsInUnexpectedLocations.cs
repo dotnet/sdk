@@ -80,7 +80,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // Find out if this given method is one of the interesting categories of methods.
-                    // For eg: certain Equals methods or certain accessors etc.
+                    // e.g.: certain Equals methods or certain accessors etc.
                     MethodCategory methodCategory = methodCategories.FirstOrDefault(l => l.IsMatch(methodSymbol, compilation));
                     if (methodCategory == null)
                     {
