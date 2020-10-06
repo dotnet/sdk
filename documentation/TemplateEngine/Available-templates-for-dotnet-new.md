@@ -36,6 +36,7 @@ Here is a list (alpha sorted) of templates which are available for use with `dot
 | [Template templates](https://github.com/tintoy/dotnet-template-templates) - Templates to create new project and item templates. Requires `new3`. | `dotnet new -i "FiftyProtons.Templates.DotNetNew::*"` |
 | [Zahasoft Templates](https://github.com/zahasoft/skele) | `dotnet new -i "Zahasoft.Skele::*"` |
 | [ASP.NET Core Web API (extended)](https://github.com/popov1024/httpapi-template-sharp) | `dotnet new -i "Popov1024.HttpApi.Template.CSharp::*"` |
+| [ASP.NET Core Web API for AKS](https://github.com/robbell/dotnet-aks-api-template) - A template for creating a fully-featured, 12 Factor, ASP.NET Core Web API for AKS | `dotnet new -i "RobBell.AksApi.Template::*"` |
 | [HoNoSoFt.DotNet.Web.Spa.ProjectTemplates (VueJs + Picnic CSS)](https://github.com/Nordes/HoNoSoFt.DotNet.Web.Spa.ProjectTemplates) | `dotnet new -i "HoNoSoFt.DotNet.Web.Spa.ProjectTemplates::*"` |
 | [xUnit Test Template](https://github.com/gatewayprogrammingschool/xUnit.Template) - Adds a xUnit test file to an existing test project. | `dotnet new -i GatewayProgrammingSchool.xUnit.CSharp`|
 [RocketMod Plugin Templates](https://github.com/RocketMod/Rocket.Templates) RocketMod is a plugin framework for .NET based games. This template allows to quickly get started with a new RocketMod Plugin.| `dotnet new -i "Rocket.Templates::*"` |
