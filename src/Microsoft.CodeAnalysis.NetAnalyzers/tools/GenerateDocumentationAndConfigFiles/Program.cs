@@ -23,11 +23,24 @@ namespace GenerateDocumentationAndConfigFiles
         public static int Main(string[] args)
         {
             const int expectedArguments = 17;
+            const int expectedArgumentsWithValidateOnly = 18; // Extra --validate-only argument for CI checks.
 
-            if (args.Length != expectedArguments)
+            if (args.Length is not (expectedArguments or expectedArgumentsWithValidateOnly))
             {
-                Console.Error.WriteLine($"Excepted {expectedArguments} arguments, found {args.Length}: {string.Join(';', args)}");
+                Console.Error.WriteLine($"Excepted {expectedArguments} or {expectedArgumentsWithValidateOnly} arguments, found {args.Length}: {string.Join(';', args)}");
                 return 1;
+            }
+
+            bool validateOnly = false;
+            bool validationResult = true;
+            if (args.Length == expectedArgumentsWithValidateOnly)
+            {
+                if (args[expectedArgumentsWithValidateOnly] != "--validate-only")
+                {
+                    Console.Error.WriteLine("Expected the last argument to be --validate-only");
+                    return 1;
+                }
+                validateOnly = true;
             }
 
             string analyzerRulesetsDir = args[0];
@@ -163,6 +176,11 @@ namespace GenerateDocumentationAndConfigFiles
                 createAnalyzerRulesMissingDocumentationFile();
             }
 
+            if (validateOnly && !validationResult)
+            {
+                return 1;
+            }
+
             return 0;
 
             // Local functions.
@@ -177,8 +195,8 @@ namespace GenerateDocumentationAndConfigFiles
                 string? category = null,
                 string? customTag = null)
             {
-                CreateRuleset(analyzerRulesetsDir, fileName + ".ruleset", title, description, rulesetKind, category, customTag, allRulesById, analyzerPackageName);
-                CreateEditorconfig(analyzerEditorconfigsDir, fileName, title, description, rulesetKind, category, customTag, allRulesById);
+                CreateRuleset(analyzerRulesetsDir, fileName + ".ruleset", title, description, rulesetKind, category, customTag, allRulesById, analyzerPackageName, validateOnly, ref validationResult);
+                CreateEditorconfig(analyzerEditorconfigsDir, fileName, title, description, rulesetKind, category, customTag, allRulesById, validateOnly, ref validationResult);
                 return;
             }
 
@@ -199,7 +217,15 @@ $@"<Project>
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
-                File.WriteAllText(fileWithPath, fileContents);
+
+                if (validateOnly)
+                {
+                    Validate(fileWithPath, fileContents, ref validationResult);
+                }
+                else
+                {
+                    File.WriteAllText(fileWithPath, fileContents);
+                }
 
                 if (!string.IsNullOrEmpty(disableNetAnalyzersImport))
                 {
@@ -217,7 +243,14 @@ $@"<Project>
     <{NetAnalyzersNugetAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersNugetAssemblyVersionPropertyName}>
   </PropertyGroup>
 </Project>";
-                    File.WriteAllText(fileWithPath, fileContents);
+                    if (validateOnly)
+                    {
+                        Validate(fileWithPath, fileContents, ref validationResult);
+                    }
+                    else
+                    {
+                        File.WriteAllText(fileWithPath, fileContents);
+                    }
                 }
 
                 return;
@@ -336,7 +369,14 @@ $@"<Project>
                     builder.AppendLine("---");
                 }
 
-                File.WriteAllText(fileWithPath, builder.ToString());
+                if (validateOnly)
+                {
+                    Validate(fileWithPath, builder.ToString(), ref validationResult);
+                }
+                else
+                {
+                    File.WriteAllText(fileWithPath, builder.ToString());
+                }
             }
 
             // based on https://github.com/dotnet/roslyn/blob/master/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
@@ -352,7 +392,7 @@ $@"<Project>
 
                 var directory = Directory.CreateDirectory(analyzerSarifFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, analyzerSarifFileName);
-
+                // TODO: Validate only.
                 using var textWriter = new StreamWriter(fileWithPath, false, Encoding.UTF8);
                 using var writer = new Roslyn.Utilities.JsonWriter(textWriter);
                 writer.WriteObjectStart(); // root
@@ -498,7 +538,14 @@ Rule ID | Missing Help Link | Title |
                     builder.AppendLine($"{ruleId} | {helpLinkUri} | {descriptor.Title} |");
                 }
 
-                File.WriteAllText(fileWithPath, builder.ToString());
+                if (validateOnly)
+                {
+                    Validate(fileWithPath, builder.ToString(), ref validationResult);
+                }
+                else
+                {
+                    File.WriteAllText(fileWithPath, builder.ToString());
+                }
                 return;
 
                 static bool checkHelpLink(string helpLink)
@@ -532,7 +579,9 @@ Rule ID | Missing Help Link | Title |
             string? category,
             string? customTag,
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
-            string analyzerPackageName)
+            string analyzerPackageName,
+            bool validateOnly,
+            ref bool validationResult)
         {
             var text = GetRulesetOrEditorconfigText(
                 rulesetKind,
@@ -550,7 +599,14 @@ Rule ID | Missing Help Link | Title |
 
             var directory = Directory.CreateDirectory(analyzerRulesetsDir);
             var rulesetFilePath = Path.Combine(directory.FullName, rulesetFileName);
-            File.WriteAllText(rulesetFilePath, text);
+            if (validateOnly)
+            {
+                Validate(rulesetFilePath, text, ref validationResult);
+            }
+            else
+            {
+                File.WriteAllText(rulesetFilePath, text);
+            }
             return;
 
             // Local functions
@@ -595,7 +651,9 @@ Rule ID | Missing Help Link | Title |
             RulesetKind rulesetKind,
             string? category,
             string? customTag,
-            SortedList<string, DiagnosticDescriptor> sortedRulesById)
+            SortedList<string, DiagnosticDescriptor> sortedRulesById,
+            bool validateOnly,
+            ref bool validationResult)
         {
             var text = GetRulesetOrEditorconfigText(
                 rulesetKind,
@@ -613,7 +671,14 @@ Rule ID | Missing Help Link | Title |
 
             var directory = Directory.CreateDirectory(Path.Combine(analyzerEditorconfigsDir, editorconfigFolder));
             var editorconfigFilePath = Path.Combine(directory.FullName, ".editorconfig");
-            File.WriteAllText(editorconfigFilePath, text);
+            if (validateOnly)
+            {
+                Validate(editorconfigFilePath, text, ref validationResult);
+            }
+            else
+            {
+                File.WriteAllText(editorconfigFilePath, text);
+            }
             return;
 
             // Local functions
@@ -798,6 +863,15 @@ Rule ID | Missing Help Link | Title |
                         }
                     }
                 }
+            }
+        }
+
+        private static void Validate(string fileWithPath, string fileContents, ref bool validationResult)
+        {
+            if (File.ReadAllText(fileWithPath) != fileContents)
+            {
+                Console.Error.WriteLine($"Content of {fileWithPath} is unexpected. Consider re-generating using `MSBuild /t:pack` command");
+                validationResult = false;
             }
         }
 
