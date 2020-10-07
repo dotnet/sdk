@@ -40,6 +40,7 @@ namespace GenerateDocumentationAndConfigFiles
                     Console.Error.WriteLine("Expected the last argument to be --validate-only");
                     return 1;
                 }
+
                 validateOnly = true;
             }
 
