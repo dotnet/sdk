@@ -86,7 +86,11 @@
 
     <ItemGroup>
       <!-- External files -->
-      <LayoutFilesToSign Include="$(SdkOutputDirectory)**/Newtonsoft.Json.dll">
+      <LayoutFilesToSign Include="$(SdkOutputDirectory)**/Newtonsoft.Json.dll;
+                            $(SdkOutputDirectory)**/MessagePack.Annotations.dll;
+                            $(SdkOutputDirectory)**/MessagePack.dll;
+                            $(SdkOutputDirectory)**/Nerdbank.Streams.dll;
+                            $(SdkOutputDirectory)**/StreamJsonRpc.dll">
         <CertificateName>$(ExternalCertificateId)</CertificateName>
       </LayoutFilesToSign>
       <!-- Built binaries -->
@@ -109,6 +113,7 @@
                             $(SdkOutputDirectory)**/MSBuild.dll;
                             $(SdkOutputDirectory)**/MSBuild.resources.dll;
                             $(SdkOutputDirectory)**/PresentationBuildTasks.dll;
+                            $(SdkOutputDirectory)**/redist.dll;
                             $(SdkOutputDirectory)**/rzc.dll;
                             $(SdkOutputDirectory)**/testhost.dll;
                             $(SdkOutputDirectory)**/testhost.exe;
@@ -179,10 +184,15 @@
 
     <ItemGroup>
       <TemplatesMsiFilesToSign Include="$(Templates50MSIInstallerFile)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="!$(Architecture.StartsWith('arm'))">
       <TemplatesMsiFilesToSign Include="$(Templates31MSIInstallerFile)" />
       <TemplatesMsiFilesToSign Include="$(Templates30MSIInstallerFile)" />
       <TemplatesMsiFilesToSign Include="$(Templates21MSIInstallerFile)" />
-
+    </ItemGroup>
+    
+    <ItemGroup>
       <TemplatesMsiFileSignInfo Include="@(TemplatesMsiFilesToSign->'%(Filename)%(Extension)')">
         <CertificateName>$(InternalCertificateId)</CertificateName>
       </TemplatesMsiFileSignInfo>

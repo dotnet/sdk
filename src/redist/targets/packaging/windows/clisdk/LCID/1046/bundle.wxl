@@ -63,6 +63,21 @@ Recursos
     • Documentação do SDK: https://aka.ms/dotnet-sdk-docs
     • Notas sobre a Versão: https://aka.ms/netcore3releasenotes
     • Tutoriais: https://aka.ms/dotnet-tutorials</String>
+  <String Id="FirstTimeWelcomeMessageArm64">A instalação foi bem-sucedida.
+
+O seguinte foi instalado em: '[DOTNETHOME]'
+    • SDK do .NET [DOTNETSDKVERSION]
+    • Runtime do .NET [DOTNETRUNTIMEVERSION]
+    • Runtime do ASP.NET Core [ASPNETCOREVERSION]
+
+Este produto coleta dados de uso
+    • Para obter mais informações ou recusá-lo, acesse https://aka.ms/dotnet-cli-telemetry
+
+Recursos
+    • Documentação do .NET: https://aka.ms/dotnet-docs
+    • Documentação do SDK: https://aka.ms/dotnet-sdk-docs
+    • Notas sobre a Versão: https://aka.ms/netcore3releasenotes
+    • Tutoriais: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">SDK do .NET</String>
   <String Id="WelcomeDescription">
     O SDK do .NET é usado para compilar, executar e testar aplicativos .NET. Você pode escolher entre vários idiomas, editores e ferramentas de desenvolvedor e aproveitar um grande ecossistema de bibliotecas para criar aplicativos para Web, móveis, área de trabalho, jogos e IoT. Esperamos que você goste!</String>
@@ -71,7 +86,7 @@ Recursos
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentação do .NET&lt;/A&gt;</String>
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentação do SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Política de Privacidade&lt;/A&gt;</String>
-  <String Id="DotNetEulaLink">&lt; A HREF = "https://aka.ms/dotnet-License-Windows" &gt; Informações de licenciamento para .NET&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-License-Windows"&gt;Informações de licenciamento para .NET&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Nota de instalação</String>
   <String Id="InstallationNote">Um comando será executado durante o processo de instalação que melhorará a velocidade de restauração do projeto e habilitará o acesso offline. Isso levará até um minuto para ser concluído.
   </String>
