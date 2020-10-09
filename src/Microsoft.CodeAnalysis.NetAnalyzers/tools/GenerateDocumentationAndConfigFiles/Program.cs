@@ -527,6 +527,11 @@ $@"<Project>
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|
 ");
+                string[]? actualContent = null;
+                if (validateOnly)
+                {
+                    actualContent = File.ReadAllLines(fileWithPath);
+                }
 
                 foreach (var ruleById in allRulesById)
                 {
@@ -540,15 +545,25 @@ Rule ID | Missing Help Link | Title |
                         // Rule with valid documentation link
                         continue;
                     }
-
-                    builder.AppendLine($"{ruleId} | {helpLinkUri} | {descriptor.Title} |");
+                    if (validateOnly)
+                    {
+                        // The validation for RulesMissingDocumentation.md is different than others.
+                        // We consider having "extra" entries as valid. This is to prevent CI failures due to rules being documented.
+                        // However, we consider "missing" entries as invalid. This is to force updating the file when new rules are added.
+                        if (!actualContent.Contains($"{ruleId} | {helpLinkUri} | {descriptor.Title} |"))
+                        {
+                            // The file is missing an entry. Mark it as invalid and break the loop as there is no need to continue validating.
+                            fileNamesWithValidationFailures.Add(fileWithPath);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        builder.AppendLine($"{ruleId} | {helpLinkUri} | {descriptor.Title} |");
+                    }
                 }
 
-                if (validateOnly)
-                {
-                    Validate(fileWithPath, builder.ToString(), fileNamesWithValidationFailures);
-                }
-                else
+                if (!validateOnly)
                 {
                     File.WriteAllText(fileWithPath, builder.ToString());
                 }
