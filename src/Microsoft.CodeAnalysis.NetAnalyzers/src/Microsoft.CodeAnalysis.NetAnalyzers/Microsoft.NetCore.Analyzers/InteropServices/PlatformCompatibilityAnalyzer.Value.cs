@@ -42,7 +42,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 IMethodSymbol invokedPlatformCheckMethod,
                 ImmutableArray<IArgumentOperation> arguments,
                 ValueContentAnalysisResult? valueContentAnalysisResult,
-                INamedTypeSymbol osPlatformType,
+                INamedTypeSymbol? osPlatformType,
                 ArrayBuilder<PlatformMethodValue> infosBuilder)
             {
                 // Accelerators like OperatingSystem.IsPlatformName()
@@ -129,7 +129,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             private static bool TryDecodeRuntimeInformationIsOSPlatform(
                 IOperation argumentValue,
-                INamedTypeSymbol osPlatformType,
+                INamedTypeSymbol? osPlatformType,
                 ValueContentAnalysisResult? valueContentAnalysisResult,
                 ArrayBuilder<string> decodedOsPlatformNamesBuilder)
             {

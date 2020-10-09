@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static void AnalyzeSymbol(SymbolAnalysisContext context, INamedTypeSymbol obsoleteAttributeType)
         {
             // FxCop compat: only analyze externally visible symbols by default
-            if (!context.Symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, context.Symbol, context.Compilation, context.CancellationToken))
             {
                 return;
             }
@@ -70,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     // ObsoleteAttribute has a constructor that takes no params and two
                     // other constructors that take a message as the first param.
-                    // If there are no arguments specificed or if the message argument is empty
+                    // If there are no arguments specified or if the message argument is empty
                     // then report a diagnostic.
                     if (attribute.ConstructorArguments.IsEmpty ||
                         string.IsNullOrEmpty(attribute.ConstructorArguments.First().Value as string))

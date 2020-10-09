@@ -95,11 +95,11 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
                     if (receiverType != null &&
                         receiverType.DerivesFromOrImplementsAnyConstructionOf(immutableCollectionType))
                     {
-                        operationContext.ReportDiagnostic(Diagnostic.Create(
-                            Rule,
-                            invocation.Syntax.GetLocation(),
-                            targetMethod.Name,
-                            immutableCollectionType.Name));
+                        operationContext.ReportDiagnostic(
+                            invocation.CreateDiagnostic(
+                                Rule,
+                                targetMethod.Name,
+                                immutableCollectionType.Name));
                     }
                 }, OperationKind.Invocation);
             });

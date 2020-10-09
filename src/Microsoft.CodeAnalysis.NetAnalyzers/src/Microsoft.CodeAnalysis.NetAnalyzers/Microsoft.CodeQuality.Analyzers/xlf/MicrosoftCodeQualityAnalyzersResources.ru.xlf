@@ -297,6 +297,11 @@
         <target state="translated">Удалите метод завершения из типа '{0}', переопределите Dispose(bool disposing) и поместите логику завершения в путь кода, туда где 'disposing' имеет значение false. В противном случае это может привести к дублированию вызовов метода Dispose, так как базовый тип '{1}' также предоставляет метод завершения.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">По мере возможности распространяйте токены CancellationToken</target>

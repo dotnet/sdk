@@ -67,13 +67,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             {
                                 if (member.ContainingType != null && member.ContainingType.Equals(type))
                                 {
-                                    context.ReportDiagnostic(Diagnostic.Create(Rule, member.Locations[0]));
+                                    context.ReportDiagnostic(member.CreateDiagnostic(Rule));
                                 }
                                 else
                                 {
-                                    // we have a member and its not declared on this type?  
+                                    // we have a member and its not declared on this type?
                                     // must be implicit implementation of base member
-                                    context.ReportDiagnostic(Diagnostic.Create(Rule, type.Locations[0]));
+                                    context.ReportDiagnostic(type.CreateDiagnostic(Rule));
                                 }
                             }
                         }
