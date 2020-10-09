@@ -175,7 +175,7 @@ namespace GenerateDocumentationAndConfigFiles
                 Console.WriteLine("Found validation errors the following file(s). Consider re-generating the files using `MSBuild /t:pack` command:");
                 foreach (string fileNameWithValidationFailure in fileNamesWithValidationFailures)
                 {
-                    Console.WriteLine($"    {fileNamesWithValidationFailures}");
+                    Console.WriteLine($"    {fileNameWithValidationFailure}");
                 }
                 return 1;
             }
