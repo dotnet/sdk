@@ -23,6 +23,7 @@ namespace GenerateDocumentationAndConfigFiles
         public static int Main(string[] args)
         {
             const int expectedArguments = 18;
+            const string validateOnlyPrefix = "-validateOnly:";
 
             if (args.Length != expectedArguments)
             {
@@ -30,7 +31,13 @@ namespace GenerateDocumentationAndConfigFiles
                 return 1;
             }
 
-            if (!bool.TryParse(args[17], out var validateOnly))
+            if (!args[17].StartsWith("-validateOnly:", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.Error.WriteLine($"Excepted the last argument to start with `{validateOnlyPrefix}`. found `{args[17]}`.");
+                return 1;
+            }
+
+            if (!bool.TryParse(args[17][validateOnlyPrefix.Length..], out var validateOnly))
             {
                 validateOnly = false;
             }
@@ -175,7 +182,7 @@ namespace GenerateDocumentationAndConfigFiles
                 Console.WriteLine("Found validation errors the following file(s). Consider re-generating the files using `MSBuild /t:pack` command:");
                 foreach (string fileNameWithValidationFailure in fileNamesWithValidationFailures)
                 {
-                    Console.WriteLine($"    {fileNameWithValidationFailure}");
+                    Console.Error.WriteLine($"    {fileNameWithValidationFailure}");
                 }
                 return 1;
             }
