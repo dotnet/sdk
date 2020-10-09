@@ -31,40 +31,40 @@ namespace GenerateDocumentationAndConfigFiles
                 return 1;
             }
 
-            if (!args[17].StartsWith("-validateOnly:", StringComparison.OrdinalIgnoreCase))
+            if (!args[0].StartsWith("-validateOnly:", StringComparison.OrdinalIgnoreCase))
             {
-                Console.Error.WriteLine($"Excepted the last argument to start with `{validateOnlyPrefix}`. found `{args[17]}`.");
+                Console.Error.WriteLine($"Excepted the first argument to start with `{validateOnlyPrefix}`. found `{args[0]}`.");
                 return 1;
             }
 
-            if (!bool.TryParse(args[17][validateOnlyPrefix.Length..], out var validateOnly))
+            if (!bool.TryParse(args[0][validateOnlyPrefix.Length..], out var validateOnly))
             {
                 validateOnly = false;
             }
 
             var fileNamesWithValidationFailures = new List<string>();
 
-            string analyzerRulesetsDir = args[0];
-            string analyzerEditorconfigsDir = args[1];
-            string binDirectory = args[2];
-            string configuration = args[3];
-            string tfm = args[4];
-            var assemblyList = args[5].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            string propsFileDir = args[6];
-            string propsFileName = args[7];
-            string propsFileToDisableNetAnalyzersInNuGetPackageName = args[8];
-            string analyzerDocumentationFileDir = args[9];
-            string analyzerDocumentationFileName = args[10];
-            string analyzerSarifFileDir = args[11];
-            string analyzerSarifFileName = args[12];
-            var analyzerVersion = args[13];
-            var analyzerPackageName = args[14];
-            if (!bool.TryParse(args[15], out var containsPortedFxCopRules))
+            string analyzerRulesetsDir = args[1];
+            string analyzerEditorconfigsDir = args[2];
+            string binDirectory = args[3];
+            string configuration = args[4];
+            string tfm = args[5];
+            var assemblyList = args[6].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            string propsFileDir = args[7];
+            string propsFileName = args[8];
+            string propsFileToDisableNetAnalyzersInNuGetPackageName = args[9];
+            string analyzerDocumentationFileDir = args[10];
+            string analyzerDocumentationFileName = args[11];
+            string analyzerSarifFileDir = args[12];
+            string analyzerSarifFileName = args[13];
+            var analyzerVersion = args[14];
+            var analyzerPackageName = args[15];
+            if (!bool.TryParse(args[16], out var containsPortedFxCopRules))
             {
                 containsPortedFxCopRules = false;
             }
 
-            if (!bool.TryParse(args[16], out var generateAnalyzerRulesMissingDocumentationFile))
+            if (!bool.TryParse(args[17], out var generateAnalyzerRulesMissingDocumentationFile))
             {
                 generateAnalyzerRulesMissingDocumentationFile = false;
             }
