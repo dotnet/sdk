@@ -22,27 +22,20 @@ namespace GenerateDocumentationAndConfigFiles
     {
         public static int Main(string[] args)
         {
-            const int expectedArguments = 17;
-            const int expectedArgumentsWithValidateOnly = 18; // Extra --validate-only argument for CI checks.
+            const int expectedArguments = 18;
 
-            if (args.Length is not (expectedArguments or expectedArgumentsWithValidateOnly))
+            if (args.Length != expectedArguments)
             {
-                Console.Error.WriteLine($"Excepted {expectedArguments} or {expectedArgumentsWithValidateOnly} arguments, found {args.Length}: {string.Join(';', args)}");
+                Console.Error.WriteLine($"Excepted {expectedArguments} arguments, found {args.Length}: {string.Join(';', args)}");
                 return 1;
             }
 
-            bool validateOnly = false;
-            bool validationResult = true;
-            if (args.Length == expectedArgumentsWithValidateOnly)
+            if (!bool.TryParse(args[17], out var validateOnly))
             {
-                if (args[expectedArgumentsWithValidateOnly] != "--validate-only")
-                {
-                    Console.Error.WriteLine("Expected the last argument to be --validate-only");
-                    return 1;
-                }
-
-                validateOnly = true;
+                validateOnly = false;
             }
+
+            var fileNamesWithValidationFailures = new List<string>();
 
             string analyzerRulesetsDir = args[0];
             string analyzerEditorconfigsDir = args[1];
@@ -177,8 +170,13 @@ namespace GenerateDocumentationAndConfigFiles
                 createAnalyzerRulesMissingDocumentationFile();
             }
 
-            if (validateOnly && !validationResult)
+            if (fileNamesWithValidationFailures.Count > 0)
             {
+                Console.WriteLine("Found validation errors the following file(s). Consider re-generating the files using `MSBuild /t:pack` command:");
+                foreach (string fileNameWithValidationFailure in fileNamesWithValidationFailures)
+                {
+                    Console.WriteLine($"    {fileNamesWithValidationFailures}");
+                }
                 return 1;
             }
 
@@ -196,8 +194,8 @@ namespace GenerateDocumentationAndConfigFiles
                 string? category = null,
                 string? customTag = null)
             {
-                CreateRuleset(analyzerRulesetsDir, fileName + ".ruleset", title, description, rulesetKind, category, customTag, allRulesById, analyzerPackageName, validateOnly, ref validationResult);
-                CreateEditorconfig(analyzerEditorconfigsDir, fileName, title, description, rulesetKind, category, customTag, allRulesById, validateOnly, ref validationResult);
+                CreateRuleset(analyzerRulesetsDir, fileName + ".ruleset", title, description, rulesetKind, category, customTag, allRulesById, analyzerPackageName, validateOnly, fileNamesWithValidationFailures);
+                CreateEditorconfig(analyzerEditorconfigsDir, fileName, title, description, rulesetKind, category, customTag, allRulesById, validateOnly, fileNamesWithValidationFailures);
                 return;
             }
 
@@ -221,7 +219,7 @@ $@"<Project>
 
                 if (validateOnly)
                 {
-                    Validate(fileWithPath, fileContents, ref validationResult);
+                    Validate(fileWithPath, fileContents, fileNamesWithValidationFailures);
                 }
                 else
                 {
@@ -246,7 +244,7 @@ $@"<Project>
 </Project>";
                     if (validateOnly)
                     {
-                        Validate(fileWithPath, fileContents, ref validationResult);
+                        Validate(fileWithPath, fileContents, fileNamesWithValidationFailures);
                     }
                     else
                     {
@@ -372,7 +370,7 @@ $@"<Project>
 
                 if (validateOnly)
                 {
-                    Validate(fileWithPath, builder.ToString(), ref validationResult);
+                    Validate(fileWithPath, builder.ToString(), fileNamesWithValidationFailures);
                 }
                 else
                 {
@@ -541,7 +539,7 @@ Rule ID | Missing Help Link | Title |
 
                 if (validateOnly)
                 {
-                    Validate(fileWithPath, builder.ToString(), ref validationResult);
+                    Validate(fileWithPath, builder.ToString(), fileNamesWithValidationFailures);
                 }
                 else
                 {
@@ -582,7 +580,7 @@ Rule ID | Missing Help Link | Title |
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
             string analyzerPackageName,
             bool validateOnly,
-            ref bool validationResult)
+            List<string> fileNamesWithValidationFailures)
         {
             var text = GetRulesetOrEditorconfigText(
                 rulesetKind,
@@ -602,7 +600,7 @@ Rule ID | Missing Help Link | Title |
             var rulesetFilePath = Path.Combine(directory.FullName, rulesetFileName);
             if (validateOnly)
             {
-                Validate(rulesetFilePath, text, ref validationResult);
+                Validate(rulesetFilePath, text, fileNamesWithValidationFailures);
             }
             else
             {
@@ -654,7 +652,7 @@ Rule ID | Missing Help Link | Title |
             string? customTag,
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
             bool validateOnly,
-            ref bool validationResult)
+            List<string> fileNamesWithValidationFailures)
         {
             var text = GetRulesetOrEditorconfigText(
                 rulesetKind,
@@ -674,7 +672,7 @@ Rule ID | Missing Help Link | Title |
             var editorconfigFilePath = Path.Combine(directory.FullName, ".editorconfig");
             if (validateOnly)
             {
-                Validate(editorconfigFilePath, text, ref validationResult);
+                Validate(editorconfigFilePath, text, fileNamesWithValidationFailures);
             }
             else
             {
@@ -867,12 +865,11 @@ Rule ID | Missing Help Link | Title |
             }
         }
 
-        private static void Validate(string fileWithPath, string fileContents, ref bool validationResult)
+        private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
         {
             if (File.ReadAllText(fileWithPath) != fileContents)
             {
-                Console.Error.WriteLine($"Content of {fileWithPath} is unexpected. Consider re-generating using `MSBuild /t:pack` command");
-                validationResult = false;
+                fileNamesWithValidationFailures.Add(fileWithPath);
             }
         }
 
