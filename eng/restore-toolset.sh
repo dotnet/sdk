@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function InitializeCustomSDKToolset {
   if [[ "$restore" != true ]]; then
     return
@@ -7,6 +9,14 @@ function InitializeCustomSDKToolset {
   # Do not attempt to install them in source build.
   if [[ "${DotNetBuildFromSource:-}" == "true" ]]; then
     return
+  fi
+
+  DISTRO=
+  MAJOR_VERSION=
+  if [ -e /etc/os-release ]; then
+      . /etc/os-release
+      DISTRO="$ID"
+      MAJOR_VERSION="${VERSION_ID:+${VERSION_ID%%.*}}"
   fi
 
   InitializeDotNetCli true
