@@ -383,10 +383,16 @@ $@"<Project>
                 }
 
                 var culture = new CultureInfo("en-us");
+                string tempAnalyzerSarifFileName = analyzerSarifFileName;
+                if (validateOnly)
+                {
+                    // In validate only mode, we write the sarif file in a temp file and compare it with
+                    // the existing content in `analyzerSarifFileName`.
+                    tempAnalyzerSarifFileName = $"temp-{analyzerSarifFileName}";
+                }
 
                 var directory = Directory.CreateDirectory(analyzerSarifFileDir);
-                var fileWithPath = Path.Combine(directory.FullName, analyzerSarifFileName);
-                // TODO: Validate only.
+                var fileWithPath = Path.Combine(directory.FullName, tempAnalyzerSarifFileName);
                 using var textWriter = new StreamWriter(fileWithPath, false, Encoding.UTF8);
                 using var writer = new Roslyn.Utilities.JsonWriter(textWriter);
                 writer.WriteObjectStart(); // root
@@ -473,6 +479,11 @@ $@"<Project>
 
                 writer.WriteArrayEnd(); // runs
                 writer.WriteObjectEnd(); // root
+
+                if (validateOnly)
+                {
+                    Validate(analyzerSarifFileName, File.ReadAllText(tempAnalyzerSarifFileName), fileNamesWithValidationFailures);
+                }
 
                 return;
                 static string getLevel(DiagnosticSeverity severity)
