@@ -224,14 +224,8 @@ $@"<Project>
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
 
-                if (validateOnly)
-                {
-                    Validate(fileWithPath, fileContents, fileNamesWithValidationFailures);
-                }
-                else
-                {
-                    File.WriteAllText(fileWithPath, fileContents);
-                }
+                // This doesn't need validation as the generated file is part of artifacts.
+                File.WriteAllText(fileWithPath, fileContents);
 
                 if (!string.IsNullOrEmpty(disableNetAnalyzersImport))
                 {
@@ -249,14 +243,8 @@ $@"<Project>
     <{NetAnalyzersNugetAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersNugetAssemblyVersionPropertyName}>
   </PropertyGroup>
 </Project>";
-                    if (validateOnly)
-                    {
-                        Validate(fileWithPath, fileContents, fileNamesWithValidationFailures);
-                    }
-                    else
-                    {
-                        File.WriteAllText(fileWithPath, fileContents);
-                    }
+                    // This doesn't need validation as the generated file is part of artifacts.
+                    File.WriteAllText(fileWithPath, fileContents);
                 }
 
                 return;
@@ -686,7 +674,6 @@ Rule ID | Missing Help Link | Title |
 
             // This doesn't need validation as the generated file is part of artifacts.
             File.WriteAllText(editorconfigFilePath, text);
-
             return;
 
             // Local functions
