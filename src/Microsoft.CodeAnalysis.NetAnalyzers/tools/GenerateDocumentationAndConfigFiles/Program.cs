@@ -486,7 +486,7 @@ $@"<Project>
                     // Note: Although a using statement exists for the textWriter, its scope is the whole method.
                     // So Dispose isn't called before the whole method returns.
                     textWriter.Close();
-                    Validate(fileWithPath, File.ReadAllText(Path.Combine(directory.FullName, analyzerSarifFileName)), fileNamesWithValidationFailures);
+                    Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
                 }
 
                 return;
