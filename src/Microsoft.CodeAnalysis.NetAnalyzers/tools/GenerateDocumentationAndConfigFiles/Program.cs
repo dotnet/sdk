@@ -482,11 +482,11 @@ $@"<Project>
 
                 if (validateOnly)
                 {
-                    // Flush is needed to be able to read the file. Close() and Dispose() should do the same job.
+                    // Close is needed to be able to read the file. Dispose() should do the same job.
                     // Note: Although a using statement exists for the textWriter, its scope is the whole method.
                     // So Dispose isn't called before the whole method returns.
-                    textWriter.Flush();
-                    Validate(analyzerSarifFileName, File.ReadAllText(tempAnalyzerSarifFileName), fileNamesWithValidationFailures);
+                    textWriter.Close();
+                    Validate(fileWithPath, File.ReadAllText(Path.Combine(directory.FullName, analyzerSarifFileName)), fileNamesWithValidationFailures);
                 }
 
                 return;
