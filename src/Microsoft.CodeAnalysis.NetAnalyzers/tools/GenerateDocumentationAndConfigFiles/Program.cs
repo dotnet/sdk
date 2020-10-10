@@ -889,6 +889,12 @@ Rule ID | Missing Help Link | Title |
 
         private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
         {
+            if (fileWithPath.Contains("artifacts", StringComparison.Ordinal))
+            {
+                // There is no need to validate these.
+                // TODO: (enhancement) Don't call validate for these files and remove this condition.
+                return;
+            }
             if (File.ReadAllText(fileWithPath) != fileContents)
             {
                 fileNamesWithValidationFailures.Add(fileWithPath);
