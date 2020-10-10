@@ -201,8 +201,8 @@ namespace GenerateDocumentationAndConfigFiles
                 string? category = null,
                 string? customTag = null)
             {
-                CreateRuleset(analyzerRulesetsDir, fileName + ".ruleset", title, description, rulesetKind, category, customTag, allRulesById, analyzerPackageName, validateOnly, fileNamesWithValidationFailures);
-                CreateEditorconfig(analyzerEditorconfigsDir, fileName, title, description, rulesetKind, category, customTag, allRulesById, validateOnly, fileNamesWithValidationFailures);
+                CreateRuleset(analyzerRulesetsDir, fileName + ".ruleset", title, description, rulesetKind, category, customTag, allRulesById, analyzerPackageName);
+                CreateEditorconfig(analyzerEditorconfigsDir, fileName, title, description, rulesetKind, category, customTag, allRulesById);
                 return;
             }
 
@@ -600,9 +600,7 @@ Rule ID | Missing Help Link | Title |
             string? category,
             string? customTag,
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
-            string analyzerPackageName,
-            bool validateOnly,
-            List<string> fileNamesWithValidationFailures)
+            string analyzerPackageName)
         {
             var text = GetRulesetOrEditorconfigText(
                 rulesetKind,
@@ -620,14 +618,9 @@ Rule ID | Missing Help Link | Title |
 
             var directory = Directory.CreateDirectory(analyzerRulesetsDir);
             var rulesetFilePath = Path.Combine(directory.FullName, rulesetFileName);
-            if (validateOnly)
-            {
-                Validate(rulesetFilePath, text, fileNamesWithValidationFailures);
-            }
-            else
-            {
-                File.WriteAllText(rulesetFilePath, text);
-            }
+
+            // This doesn't need validation as the generated file is part of artifacts.
+            File.WriteAllText(rulesetFilePath, text);
             return;
 
             // Local functions
@@ -672,9 +665,7 @@ Rule ID | Missing Help Link | Title |
             RulesetKind rulesetKind,
             string? category,
             string? customTag,
-            SortedList<string, DiagnosticDescriptor> sortedRulesById,
-            bool validateOnly,
-            List<string> fileNamesWithValidationFailures)
+            SortedList<string, DiagnosticDescriptor> sortedRulesById)
         {
             var text = GetRulesetOrEditorconfigText(
                 rulesetKind,
@@ -692,14 +683,10 @@ Rule ID | Missing Help Link | Title |
 
             var directory = Directory.CreateDirectory(Path.Combine(analyzerEditorconfigsDir, editorconfigFolder));
             var editorconfigFilePath = Path.Combine(directory.FullName, ".editorconfig");
-            if (validateOnly)
-            {
-                Validate(editorconfigFilePath, text, fileNamesWithValidationFailures);
-            }
-            else
-            {
-                File.WriteAllText(editorconfigFilePath, text);
-            }
+
+            // This doesn't need validation as the generated file is part of artifacts.
+            File.WriteAllText(editorconfigFilePath, text);
+
             return;
 
             // Local functions
@@ -887,14 +874,16 @@ Rule ID | Missing Help Link | Title |
             }
         }
 
+        /// <summary>
+        /// Validates whether <paramref name="fileContents"/> matches the contents of <paramref name="fileWithPath"/>.
+        /// If they doesn't match, <paramref name="fileWithPath"/> is added to <paramref name="fileNamesWithValidationFailures"/>.
+        /// The validation process is run within CI, so that the CI build fails when the auto-generated files are outdated.
+        /// </summary>
+        /// <remarks>
+        /// Don't call this method with auto-generated files that are part of the artifacts because it's expected that they doesn't initially exist.
+        /// </remarks>
         private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
         {
-            if (fileWithPath.Contains("artifacts", StringComparison.Ordinal))
-            {
-                // There is no need to validate these.
-                // TODO: (enhancement) Don't call validate for these files and remove this condition.
-                return;
-            }
             if (File.ReadAllText(fileWithPath) != fileContents)
             {
                 fileNamesWithValidationFailures.Add(fileWithPath);
