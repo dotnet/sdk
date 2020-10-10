@@ -179,7 +179,7 @@ namespace GenerateDocumentationAndConfigFiles
 
             if (fileNamesWithValidationFailures.Count > 0)
             {
-                Console.WriteLine("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:");
+                Console.Error.WriteLine("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:");
                 foreach (string fileNameWithValidationFailure in fileNamesWithValidationFailures)
                 {
                     Console.Error.WriteLine($"    {fileNameWithValidationFailure}");
