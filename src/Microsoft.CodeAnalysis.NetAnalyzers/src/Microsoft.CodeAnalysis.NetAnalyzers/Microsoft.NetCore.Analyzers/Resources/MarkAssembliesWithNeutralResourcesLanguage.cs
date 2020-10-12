@@ -73,10 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Resources
                     if (data != null)
                     {
                         // we have the attribute but its doing it wrong.
-                        if (data.ApplicationSyntaxReference != null)
-                        {
-                            ce.ReportDiagnostic(data.ApplicationSyntaxReference.GetSyntax(ce.CancellationToken).CreateDiagnostic(Rule));
-                        }
+                        ce.ReportDiagnostic(data.ApplicationSyntaxReference.GetSyntax(ce.CancellationToken).CreateDiagnostic(Rule));
                         return;
                     }
 

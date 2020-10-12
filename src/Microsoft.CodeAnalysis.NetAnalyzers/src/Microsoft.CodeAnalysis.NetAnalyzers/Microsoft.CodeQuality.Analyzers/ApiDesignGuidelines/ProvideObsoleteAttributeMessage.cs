@@ -75,11 +75,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (attribute.ConstructorArguments.IsEmpty ||
                         string.IsNullOrEmpty(attribute.ConstructorArguments.First().Value as string))
                     {
-                        SyntaxNode? node = attribute.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken);
-                        if (node != null)
-                        {
-                            context.ReportDiagnostic(node.CreateDiagnostic(Rule, context.Symbol.Name));
-                        }
+                        SyntaxNode node = attribute.ApplicationSyntaxReference.GetSyntax(context.CancellationToken);
+                        context.ReportDiagnostic(node.CreateDiagnostic(Rule, context.Symbol.Name));
                     }
                 }
             }

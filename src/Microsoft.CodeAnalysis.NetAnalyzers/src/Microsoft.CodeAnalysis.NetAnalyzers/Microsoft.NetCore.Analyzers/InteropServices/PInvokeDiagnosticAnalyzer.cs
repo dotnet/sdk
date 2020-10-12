@@ -209,8 +209,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
 
             private static Location GetAttributeLocation(AttributeData attributeData)
-                => attributeData.ApplicationSyntaxReference?.SyntaxTree.GetLocation(attributeData.ApplicationSyntaxReference.Span)
-                    ?? Location.None;
+            {
+                return attributeData.ApplicationSyntaxReference.SyntaxTree.GetLocation(attributeData.ApplicationSyntaxReference.Span);
+            }
         }
     }
 }

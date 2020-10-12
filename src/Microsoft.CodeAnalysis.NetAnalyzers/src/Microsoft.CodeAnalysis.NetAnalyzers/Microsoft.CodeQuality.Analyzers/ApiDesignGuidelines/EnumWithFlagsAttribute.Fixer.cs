@@ -75,11 +75,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             AttributeData flagsAttribute = enumType.GetAttributes().First(a => Equals(a.AttributeClass, flagsAttributeType));
-            SyntaxNode? attributeNode = flagsAttribute.ApplicationSyntaxReference.GetSyntax(cancellationToken);
+            SyntaxNode attributeNode = flagsAttribute.ApplicationSyntaxReference.GetSyntax(cancellationToken);
 
-            return attributeNode != null
-                ? generator.RemoveNode(enumTypeSyntax, attributeNode)
-                : enumTypeSyntax;
+            return generator.RemoveNode(enumTypeSyntax, attributeNode);
         }
 
         private class MyCodeAction : DocumentChangeAction
