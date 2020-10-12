@@ -3287,9 +3287,10 @@ class C : B
 
         [Theory]
         [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = B")]
-        [InlineData("dotnet_code_quality." + DisposableFieldsShouldBeDisposed.RuleId + ".excluded_symbol_names = B")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = B")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = BB")]
+        [InlineData("dotnet_code_quality.CA2213.excluded_symbol_names = BB")]
+        [InlineData("dotnet_code_quality.CA2213.excluded_symbol_names = B*")]
+        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = BB")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -3308,10 +3309,10 @@ class A : IDisposable
     }
 }
 
-class B : IDisposable
+class BB : IDisposable
 {
     private readonly A a;
-    public B()
+    public BB()
     {
         a = new A();
     }
@@ -3328,8 +3329,8 @@ class B : IDisposable
             if (editorConfigText.Length == 0)
             {
                 csharpTest.ExpectedDiagnostics.Add(
-                    // Test0.cs(13,24): warning CA2213: 'B' contains field 'a' that is of IDisposable type 'A', but it is never disposed. Change the Dispose method on 'B' to call Dispose or Close on this field.
-                    GetCSharpResultAt(13, 24, "B", "a", "A"));
+                    // Test0.cs(13,24): warning CA2213: 'BB' contains field 'a' that is of IDisposable type 'A', but it is never disposed. Change the Dispose method on 'B' to call Dispose or Close on this field.
+                    GetCSharpResultAt(13, 24, "BB", "a", "A"));
             }
 
             await csharpTest.RunAsync();
@@ -3349,7 +3350,7 @@ Class A
     End Sub
 End Class
 
-Class B
+Class BB
     Implements IDisposable
 
     Private ReadOnly a As A
@@ -3368,8 +3369,8 @@ End Class"
             if (editorConfigText.Length == 0)
             {
                 basicTest.ExpectedDiagnostics.Add(
-                    // Test0.vb(13,22): warning CA2213: 'B' contains field 'a' that is of IDisposable type 'A', but it is never disposed. Change the Dispose method on 'B' to call Dispose or Close on this field.
-                    GetBasicResultAt(13, 22, "B", "a", "A"));
+                    // Test0.vb(13,22): warning CA2213: 'BB' contains field 'a' that is of IDisposable type 'A', but it is never disposed. Change the Dispose method on 'B' to call Dispose or Close on this field.
+                    GetBasicResultAt(13, 22, "BB", "a", "A"));
             }
 
             await basicTest.RunAsync();
