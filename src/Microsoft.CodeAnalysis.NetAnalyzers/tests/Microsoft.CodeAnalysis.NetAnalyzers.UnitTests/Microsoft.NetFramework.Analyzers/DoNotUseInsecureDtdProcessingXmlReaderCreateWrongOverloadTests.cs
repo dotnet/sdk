@@ -163,7 +163,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInCatchShouldGenerateNotDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInCatchShouldNotGenerateDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
