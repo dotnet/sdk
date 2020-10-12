@@ -72,8 +72,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 var traceListenerSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsTraceListener);
                 var mef1ExportAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelCompositionExportAttribute);
                 var mef2ExportAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCompositionExportAttribute);
+
                 var coClassAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesCoClassAttribute);
                 var designerAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemComponentModelDesignerAttribute);
+                var debuggerTypeProxyAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsDebuggerTypeProxyAttribute);
+
+                var instantiatingAttributeChecker = new List<(Func<INamedTypeSymbol, bool> isAttributeTarget, Func<AttributeData, Compilation, INamedTypeSymbol?> findTypeOrDefault)>
+                {
+                    (type => CanBeCoClassAttributeContext(type), (attribute, _) => FindTypeIfCoClassAttribute(attribute)),
+                    (type => CanBeDesignerAttributeContext(type), (attribute, compilation) => FindTypeIfDesignerAttribute(attribute, compilation)),
+                    (type => CanBeDebuggerTypeProxyAttributeContext(type), (attribute, compilation) => FindTypeIfDebuggerTypeProxyAttribute(attribute, compilation)),
+                };
 
                 RegisterLanguageSpecificChecks(startContext, instantiatedTypes);
 
@@ -108,50 +117,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                         instantiatedTypes.TryAdd(type.BaseType, null);
                     }
 
-                    // Consider class types declared in the CoClassAttribute or DesignerAttribute as instantiated
-                    if ((coClassAttributeSymbol != null || designerAttributeSymbol != null) &&
-                        (type.TypeKind == TypeKind.Class || type.TypeKind == TypeKind.Interface))
+                    // Some attributes are known to behave as type activator so we want to check them
+                    var applicableAttributes = instantiatingAttributeChecker.Where(tuple => tuple.isAttributeTarget(type)).ToArray();
+                    foreach (var attribute in type.GetAttributes())
                     {
-                        bool isCoClassHandled = false;
-                        foreach (var attribute in type.GetAttributes())
+                        foreach (var (_, findTypeOrDefault) in applicableAttributes)
                         {
-                            if (coClassAttributeSymbol != null &&
-                                !isCoClassHandled &&
-                                attribute.AttributeClass.Equals(coClassAttributeSymbol))
+                            if (findTypeOrDefault(attribute, context.Compilation) is INamedTypeSymbol namedType)
                             {
-                                isCoClassHandled = true;
-                                if (attribute.ConstructorArguments.Length == 1 &&
-                                    attribute.ConstructorArguments[0].Kind == TypedConstantKind.Type &&
-                                    attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeSymbol &&
-                                    typeSymbol.TypeKind == TypeKind.Class)
-                                {
-                                    instantiatedTypes.TryAdd(typeSymbol, null);
-                                }
-                            }
-
-                            if (designerAttributeSymbol != null &&
-                                (attribute.ConstructorArguments.Length == 1 || attribute.ConstructorArguments.Length == 2) &&
-                                attribute.AttributeClass.Equals(designerAttributeSymbol))
-                            {
-                                switch (attribute.ConstructorArguments[0].Value)
-                                {
-                                    case string designerTypeName when designerTypeName != null:
-                                        {
-                                            var nameParts = designerTypeName.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                                            if (nameParts.Length >= 2 &&
-                                                nameParts[1].Trim().Equals(context.Compilation.AssemblyName, StringComparison.Ordinal) &&
-                                                wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(nameParts[0].Trim(), out var namedType) &&
-                                                namedType.ContainingAssembly.Equals(compilation.Assembly))
-                                            {
-                                                instantiatedTypes.TryAdd(namedType, null);
-                                            }
-                                            break;
-                                        }
-
-                                    case INamedTypeSymbol namedType when namedType != null:
-                                        instantiatedTypes.TryAdd(namedType, null);
-                                        break;
-                                }
+                                instantiatedTypes.TryAdd(namedType, null);
+                                break;
                             }
                         }
                     }
@@ -197,6 +172,90 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                         context.ReportDiagnostic(type.CreateDiagnostic(Rule, type.FormatMemberName()));
                     }
                 });
+
+                return;
+
+                // Local functions
+
+                bool CanBeCoClassAttributeContext(INamedTypeSymbol type)
+                     => coClassAttributeSymbol != null && type.TypeKind == TypeKind.Interface;
+
+                INamedTypeSymbol? FindTypeIfCoClassAttribute(AttributeData attribute)
+                {
+                    RoslynDebug.Assert(coClassAttributeSymbol != null);
+
+                    if (attribute.AttributeClass.Equals(coClassAttributeSymbol) &&
+                        attribute.ConstructorArguments.Length == 1 &&
+                        attribute.ConstructorArguments[0].Kind == TypedConstantKind.Type &&
+                        attribute.ConstructorArguments[0].Value is INamedTypeSymbol typeSymbol &&
+                        typeSymbol.TypeKind == TypeKind.Class)
+                    {
+                        return typeSymbol;
+                    }
+
+                    return null;
+                }
+
+                bool CanBeDesignerAttributeContext(INamedTypeSymbol type)
+                    => designerAttributeSymbol != null && (type.TypeKind == TypeKind.Interface || type.TypeKind == TypeKind.Class);
+
+                INamedTypeSymbol? FindTypeIfDesignerAttribute(AttributeData attribute, Compilation compilation)
+                {
+                    RoslynDebug.Assert(designerAttributeSymbol != null);
+
+                    if (attribute.ConstructorArguments.Length is not (1 or 2) ||
+                        !attribute.AttributeClass.Equals(designerAttributeSymbol))
+                    {
+                        return null;
+                    }
+
+                    switch (attribute.ConstructorArguments[0].Value)
+                    {
+                        case string designerTypeName:
+                            {
+                                if (IsTypeInCurrentAssembly(designerTypeName, compilation, out var namedType))
+                                {
+                                    return namedType;
+                                }
+                                break;
+                            }
+
+                        case INamedTypeSymbol namedType:
+                            return namedType;
+                    }
+
+                    return null;
+                }
+
+                bool CanBeDebuggerTypeProxyAttributeContext(INamedTypeSymbol type)
+                    => debuggerTypeProxyAttributeSymbol != null && (type.TypeKind == TypeKind.Struct || type.TypeKind == TypeKind.Class);
+
+                INamedTypeSymbol? FindTypeIfDebuggerTypeProxyAttribute(AttributeData attribute, Compilation compilation)
+                {
+                    RoslynDebug.Assert(debuggerTypeProxyAttributeSymbol != null);
+
+                    if (!attribute.AttributeClass.Equals(debuggerTypeProxyAttributeSymbol))
+                    {
+                        return null;
+                    }
+
+                    switch (attribute.ConstructorArguments[0].Value)
+                    {
+                        case string typeName:
+                            {
+                                if (IsTypeInCurrentAssembly(typeName, compilation, out var namedType))
+                                {
+                                    return namedType;
+                                }
+                                break;
+                            }
+
+                        case INamedTypeSymbol namedType:
+                            return namedType;
+                    }
+
+                    return null;
+                }
             });
         }
 
@@ -430,6 +489,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     }
                 }
             }
+        }
+
+        private static bool IsTypeInCurrentAssembly(string typeName, Compilation compilation, out INamedTypeSymbol? namedType)
+        {
+            namedType = null;
+            var nameParts = typeName.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            return nameParts.Length >= 2 &&
+                nameParts[1].Trim().Equals(compilation.AssemblyName, StringComparison.Ordinal) &&
+                compilation.TryGetOrCreateTypeByMetadataName(nameParts[0].Trim(), out namedType) &&
+                namedType.ContainingAssembly.Equals(compilation.Assembly);
         }
     }
 }
