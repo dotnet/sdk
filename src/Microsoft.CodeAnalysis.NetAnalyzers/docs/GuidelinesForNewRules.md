@@ -32,7 +32,6 @@
 
 1. Documentation PR must be submitted to the [dotnet/docs](https://github.com/dotnet/docs) repo:
 
-   Please review [Contribute docs for .NET code analysis rules to the .NET docs repository
-](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis) for guidelines.
+   Please review [Contribute docs for .NET code analysis rules to the .NET docs repository](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis) for guidelines.
 
 If for some exceptional reason you are unable to submit a PR, please [file a documentation issue](https://github.com/dotnet/docs/issues) to add documentation for the rule in future. Please include all relevant information in the issue to allow the documentation experts to easily author the documentation.
