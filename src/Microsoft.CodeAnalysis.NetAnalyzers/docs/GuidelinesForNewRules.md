@@ -25,25 +25,14 @@
    3. A good rule of thumb is that if your analyzer needs to invoke `GetTypeByMetadataName`, then most likely it is an API specific analyzer and belongs to `Microsoft.NetCore.Analyzers`.
 
 5. Documentation requirements:
-   1. **New CA rule must be documented**: Each rule ID `CAxxxx` is automatically assigned the help link `https://docs.microsoft.com/visualstudio/code-quality/caxxxx`. The documentation for this page is populated from `caxxxx.md` file at [visualstudio-docs code-quality folder](https://github.com/MicrosoftDocs/visualstudio-docs/tree/master/docs/code-quality). For example, `CA1000` is documented at [ca1000.md](https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/code-quality/ca1000.md) file. Documenting a new rule is primarily ensuring a PR is sent to `MicrosoftDocs` repo to add `caxxxx.md` file for the new rule. Detailed steps are given below.
+   1. **New CA rule must be documented**: Each rule ID `CAxxxx` is automatically assigned the help link `https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/caxxxx`. The documentation for this page is populated from `caxxxx.md` file at [dotnet/docs quality-rules folder](https://github.com/dotnet/docs/tree/master/docs/fundamentals/code-analysis/quality-rules). For example, `CA1000` is documented at [ca1000.md](https://github.com/dotnet/docs/tree/master/docs/fundamentals/code-analysis/quality-rules/ca1000.md) file. Documenting a new rule is primarily ensuring a PR is sent to `dotnet/docs` repo to add `caxxxx.md` file for the new rule. Detailed steps are given below.
    2. **Documentation PR must be submitted within ONE WEEK of the rule implementation being merged**. Note that we will communicate this requirement on each PR contributing a new CA rule. We reserve the right to revert the rule implementation PR if this documentation requirement is not met.
 
 ## Guidelines for creating documentation PR
 
-1. Documentation PR must be submitted to the following repo:
-   1. [_External contributors_](https://github.com/MicrosoftDocs/visualstudio-docs)
-   2. [_Internal contributors_](https://github.com/MicrosoftDocs/visualstudio-docs-pr)
+1. Documentation PR must be submitted to the [dotnet/docs](https://github.com/dotnet/docs) repo:
 
-   Please review [CONTRIBUTING.md](https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/CONTRIBUTING.md) for guidelines.
-2. Documentation PR for a new CA rule must have following changes:
-   1. New `caxxxx.md` file under `/docs/code-quality` sub-folder with rule documentation.
+   Please review [Contribute docs for .NET code analysis rules to the .NET docs repository
+](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis) for guidelines.
 
-      `TIP:` Clone an existing `caxxxx.md` file inside `/docs/code-quality` sub-folder in the repo, rename it and update the contents for the new rule.
-   2. Update the following tables in the repo for supported CA rule IDs:
-      1. Add entry in `/docs/code-quality/toc.yml` under appropriate category.
-      2. Add entry in `/docs/code-quality/code-analysis-warnings-for-managed-code-by-checkid.md`
-      3. Add entry in the documentation file `/docs/code-quality/<%category%>-warnings.md` for rule's `Category`. For example:
-         1. For a new rule with category `Design`, add an entry to `/docs/code-quality/design-warnings.md`.
-         2. For a new rule with category `Performance`, add an entry to `/docs/code-quality/performance-warnings.md`, and so on.
-
-If for some exceptional reason you are unable to submit a PR, please [file a documentation issue](https://github.com/MicrosoftDocs/visualstudio-docs/issues) to add documentation for the rule in future. Please include all relevant information in the issue to allow the documentation experts to easily author the documentation. For example, see [this issue](https://github.com/MicrosoftDocs/visualstudio-docs/issues/3454).
+If for some exceptional reason you are unable to submit a PR, please [file a documentation issue](https://github.com/dotnet/docs/issues) to add documentation for the rule in future. Please include all relevant information in the issue to allow the documentation experts to easily author the documentation. For example, see [this issue](https://github.com/MicrosoftDocs/visualstudio-docs/issues/3454).
