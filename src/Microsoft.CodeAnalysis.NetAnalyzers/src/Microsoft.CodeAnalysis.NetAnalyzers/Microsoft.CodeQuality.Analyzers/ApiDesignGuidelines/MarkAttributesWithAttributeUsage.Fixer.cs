@@ -53,7 +53,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 .OrderBy(a => a.Title)
                 .ToImmutableArray();
 
-#pragma warning disable RS1010 // Provide an explicit value for EquivalenceKey - false positve 
+#pragma warning disable RS1010 // Provide an explicit value for EquivalenceKey - false positive
             context.RegisterCodeFix(
                 CodeAction.Create(MicrosoftCodeQualityAnalyzersResources.MarkAttributesWithAttributeUsageCodeFix, applyAttributeTargetValues, isInlinable: false),
                 context.Diagnostics);

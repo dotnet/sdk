@@ -40,7 +40,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 return PropertySetAbstractValue.GetInstance(PropertySetAbstractValueKind.Flagged);
             });
 
-        // If HttpOnly is set explictly, the callbacks of OperationKind.SimpleAssignment can cover that case.
+        // If HttpOnly is set explicitly, the callbacks of OperationKind.SimpleAssignment can cover that case.
         // Otherwise, using PropertySetAnalysis to cover the case where HttpCookie object is returned without initializing or assgining HttpOnly property.
         private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
             new PropertyMapper(
@@ -79,11 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             ISymbol owningSymbol = operationBlockStartAnalysisContext.OwningSymbol;
 
-                            if (owningSymbol.IsConfiguredToSkipAnalysis(
-                                    operationBlockStartAnalysisContext.Options,
-                                    Rule,
-                                    operationBlockStartAnalysisContext.Compilation,
-                                    operationBlockStartAnalysisContext.CancellationToken))
+                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(Rule, owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
                             {
                                 return;
                             }

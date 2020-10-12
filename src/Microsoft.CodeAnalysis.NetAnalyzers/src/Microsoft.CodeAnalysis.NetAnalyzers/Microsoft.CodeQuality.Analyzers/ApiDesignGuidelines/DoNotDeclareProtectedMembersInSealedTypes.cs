@@ -42,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var symbol = context.Symbol;
 
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
                 {
                     return;
                 }

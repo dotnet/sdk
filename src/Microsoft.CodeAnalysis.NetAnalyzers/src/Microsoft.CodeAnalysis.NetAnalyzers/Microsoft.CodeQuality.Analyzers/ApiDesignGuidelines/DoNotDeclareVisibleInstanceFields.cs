@@ -46,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     var field = (IFieldSymbol)symbolAnalysisContext.Symbol;
 
-                    // Only report diagnostic on non-static, non-const, non-private fields.                    
+                    // Only report diagnostic on non-static, non-const, non-private fields.
                     if (field.IsStatic ||
                         field.IsConst ||
                         field.DeclaredAccessibility == Accessibility.Private)
@@ -70,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // Additionally, by default only report externally visible fields for FxCop compat.
-                    if (field.MatchesConfiguredVisibility(symbolAnalysisContext.Options, Rule, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
+                    if (symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, field, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
                     {
                         symbolAnalysisContext.ReportDiagnostic(field.CreateDiagnostic(Rule));
                     }

@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
         <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'</source>
-        <target state="needs-review-translation">V konstruktoru {0} změňte hodnotu argumentu {1}, která je aktuálně {2}, na hodnotu, která se dá správně parsovat jako {3}.</target>
+        <target state="translated">V konstruktoru {0} změňte hodnotu argumentu {1}, která je aktuálně {2}, na hodnotu, která se dá správně parsovat jako {3}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
         <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'</source>
-        <target state="needs-review-translation">V konstruktoru {0} změňte hodnotu argumentu {1}, která je aktuálně prázdný řetězec (""), na hodnotu, která se dá správně parsovat jako {2}.</target>
+        <target state="translated">V konstruktoru {0} změňte hodnotu argumentu {1}, která je aktuálně prázdný řetězec (""), na hodnotu, která se dá správně parsovat jako {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
@@ -49,32 +49,32 @@
       </trans-unit>
       <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
         <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="new">'{0}' will throw for assemblies embedded in a single-file app</target>
+        <target state="translated">Pro sestavení vložená do aplikace s jedním souborem {0} vyvolá výjimku.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
         <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="new">'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</target>
+        <target state="translated">Pro sestavení vložená do aplikace s jedním souborem {0} vždy vrátí prázdný řetězec. Pokud se cesta k adresáři aplikace vyžaduje, zvažte možnost zavolat System.AppContext.BaseDirectory.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
         <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="new">Avoid using accessing Assembly file path when publishing as a single-file</target>
+        <target state="translated">Při publikování jednoho souboru nepoužívat přístup k cestě souboru sestavení</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
-        <target state="new">Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</target>
+        <target state="translated">Zařazením parametru StringBuilder se vždy vytvoří kopie nativní vyrovnávací paměti, která bude mít za následek vícenásobné přidělení pro jednu operaci zařazování.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersMessage">
         <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</source>
-        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</target>
+        <target state="translated">Nepoužívejte parametry StringBuilder pro volání nespravovaného kódu (P/Invokes). Místo toho zvažte možnost použít vyrovnávací paměť znaků.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersTitle">
         <source>Avoid 'StringBuilder' parameters for P/Invokes</source>
-        <target state="new">Avoid 'StringBuilder' parameters for P/Invokes</target>
+        <target state="translated">Nepoužívejte parametry StringBuilder pro volání nespravovaného kódu</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
         <source>Avoid zero-length array allocations</source>
-        <target state="needs-review-translation">Vyhněte se alokacím polí s nulovou délkou</target>
+        <target state="translated">Vyhněte se alokacím polí s nulovou délkou</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -174,92 +174,92 @@
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">Při deserializaci nedůvěryhodného vstupu není deserializace objektu {0} bezpečná. Objekt {1} je buď objektem {0}, nebo je z tohoto objektu odvozený.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable type found in deserializable object graph</source>
-        <target state="new">Unsafe DataSet or DataTable type found in deserializable object graph</target>
+        <target state="translated">V grafu deserializovatelných objektů se našel nebezpečný typ DataSet nebo DataTable</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeMessage">
-        <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</source>
-        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</target>
+        <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the auto-generated type is never deserialized with untrusted data.</source>
+        <target state="needs-review-translation">Při deserializaci nedůvěryhodného vstupu pomocí serializátoru založeného na rozhraní IFormatter není deserializace objektu {0} bezpečná. Objekt {1} je buď objektem {0}, nebo je z tohoto objektu odvozený. Zajistěte, aby automaticky generovaný typ nikdy nebyl deserializovaný s nedůvěryhodnými daty.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeTitle">
-        <source>Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</target>
+        <source>Unsafe DataSet or DataTable in auto-generated serializable type can be vulnerable to remote code execution attacks</source>
+        <target state="needs-review-translation">Nebezpečné DataSet nebo DataTable v automaticky generovaném serializovatelném typu můžou být ohrožené útoky spuštěním vzdáleného kódu</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">Při deserializaci nedůvěryhodného vstupu není deserializace objektu {0} bezpečná. Objekt {1} je buď objektem {0}, nebo je z tohoto objektu odvozený.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</target>
+        <target state="translated">Nebezpečné DataSet nebo DataTable v grafu deserializovaných objektů můžou být ohrožené útoky spuštěním vzdáleného kódu</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceSerializableTypeMessage">
         <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</source>
-        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</target>
+        <target state="translated">Při deserializaci nedůvěryhodného vstupu pomocí serializátoru založeného na rozhraní IFormatter není deserializace objektu {0} bezpečná. Objekt {1} je buď objektem {0}, nebo je z tohoto objektu odvozený.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</target>
+        <target state="translated">Nebezpečné DataSet nebo DataTable v serializovatelném typu můžou být ohrožené útoky spuštěním vzdáleného kódu</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">Při deserializaci nedůvěryhodného vstupu není deserializace objektu {0} bezpečná. Objekt {1} je buď objektem {0}, nebo je z tohoto objektu odvozený.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in serializable type</source>
-        <target state="new">Unsafe DataSet or DataTable in serializable type</target>
+        <target state="translated">Nebezpečné DataSet nebo DataTable v serializovatelném typu</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">Při deserializaci nedůvěryhodného vstupu není deserializace objektu {0} bezpečná. Objekt {1} je buď objektem {0}, nebo je z tohoto objektu odvozený.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable type in web deserializable object graph</source>
-        <target state="new">Unsafe DataSet or DataTable type in web deserializable object graph</target>
+        <target state="translated">V grafu deserializovatelných objektů webu je nebezpečný typ DataSet nebo DataTable</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlAutogeneratedMessage">
-        <source>The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</target>
+        <source>The method '{0}' is insecure when deserializing untrusted data. Make sure that auto-generated class containing the '{0}' call is not deserialized with untrusted data.</source>
+        <target state="needs-review-translation">Při deserializaci nedůvěryhodných dat není metoda {0} bezpečná. Zajistěte, aby automaticky generovaná třída obsahující volání {0} nebyla deserializovaná s nedůvěryhodnými daty.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlAutogeneratedTitle">
-        <source>Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</source>
-        <target state="new">Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</target>
+        <source>Ensure auto-generated class containing DataSet.ReadXml() is not used with untrusted data</source>
+        <target state="needs-review-translation">Zajistěte, aby se automaticky generovaná třída obsahující DataSet.ReadXml() nepoužívala s nedůvěryhodnými daty</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
+        <target state="translated">Při deserializaci nedůvěryhodných dat není metoda {0} bezpečná.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlTitle">
         <source>Do not use DataSet.ReadXml() with untrusted data</source>
-        <target state="new">Do not use DataSet.ReadXml() with untrusted data</target>
+        <target state="translated">Nepoužívejte DataSet.ReadXml() s nedůvěryhodnými daty</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
+        <target state="translated">Při deserializaci nedůvěryhodných dat není metoda {0} bezpečná.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlTitle">
         <source>Do not use DataTable.ReadXml() with untrusted data</source>
-        <target state="new">Do not use DataTable.ReadXml() with untrusted data</target>
+        <target state="translated">Nepoužívejte DataTable.ReadXml() s nedůvěryhodnými daty</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
         <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths</source>
-        <target state="needs-review-translation">Zajistěte, aby metoda {0} volala {1} na všech možných cestách toku řízení.</target>
+        <target state="translated">Zajistěte, aby metoda {0} volala {1} na všech možných cestách toku řízení.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
@@ -389,7 +389,7 @@
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
         <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope</source>
-        <target state="needs-review-translation">Zavolejte System.IDisposable.Dispose pro objekt vytvořený pomocí {0} dříve, než budou všechny odkazy na něj mimo obor.</target>
+        <target state="translated">Zavolejte System.IDisposable.Dispose pro objekt vytvořený pomocí {0} dříve, než budou všechny odkazy na něj mimo obor.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
@@ -444,7 +444,7 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
-        <target state="needs-review-translation">Při deserializaci instance třídy {0} může metoda {1} volat nebezpečnou metodu {2}.</target>
+        <target state="translated">Při deserializaci instance třídy {0} může metoda {1} volat nebezpečnou metodu {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -499,12 +499,12 @@
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
         <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum</source>
-        <target state="needs-review-translation">Argument obsahuje výčet TaskContinuationsOptions místo výčtu TaskCreationOptions.</target>
+        <target state="translated">Argument obsahuje výčet TaskContinuationsOptions místo výčtu TaskCreationOptions.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
         <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</source>
-        <target state="needs-review-translation">Argument předaný konstruktoru TaskCompletionSource by měl být výčet TaskCreationOptions, nikoli výčet TaskContinuationOptions</target>
+        <target state="translated">Argument předaný konstruktoru TaskCompletionSource by měl být výčet TaskCreationOptions, nikoli výčet TaskContinuationOptions</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
@@ -529,7 +529,7 @@
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
         <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;</source>
-        <target state="needs-review-translation">Když se do typu odvozeného z MemoryManager&lt;T&gt; přidá finalizační metoda, může to umožnit, aby se paměť uvolnila i přesto, že ji stále používá typ Span&lt;T&gt;.</target>
+        <target state="translated">Když se do typu odvozeného z MemoryManager&lt;T&gt; přidá finalizační metoda, může to umožnit, aby se paměť uvolnila i přesto, že ji stále používá typ Span&lt;T&gt;.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
@@ -593,8 +593,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableSchUseStrongCryptoDescription">
-        <source>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</source>
-        <target state="translated">Počínaje .NET Framework 4.6 se doporučuje, aby třídy System.Net.ServicePointManager a System.Net.Security.SslStream používaly nové protokoly. Staré protokoly mají slabá místa a nejsou podporovány. Po nastavení Switch.System.Net.DontEnableSchUseStrongCrypto na hodnotu true se použije stará slabá kryptografická kontrola a výslovný nesouhlas s migrací protokolů.</target>
+        <source>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommended to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</source>
+        <target state="needs-review-translation">Počínaje .NET Framework 4.6 se doporučuje, aby třídy System.Net.ServicePointManager a System.Net.Security.SslStream používaly nové protokoly. Staré protokoly mají slabá místa a nejsou podporovány. Po nastavení Switch.System.Net.DontEnableSchUseStrongCrypto na hodnotu true se použije stará slabá kryptografická kontrola a výslovný nesouhlas s migrací protokolů.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableSchUseStrongCryptoMessage">
@@ -684,12 +684,12 @@
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
         <source>Exception type {0} is reserved by the runtime</source>
-        <target state="needs-review-translation">Výjimka typu {0} je rezervovaná modulem runtime.</target>
+        <target state="translated">Výjimka typu {0} je rezervovaná modulem runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
         <source>Exception type {0} is not sufficiently specific</source>
-        <target state="needs-review-translation">Výjimka typu {0} není dost konkrétní.</target>
+        <target state="translated">Výjimka typu {0} není dost konkrétní.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
@@ -709,7 +709,7 @@
       </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
         <source>Pointer field {0} on serializable type</source>
-        <target state="needs-review-translation">Pole ukazatele {0} v serializovatelném typu</target>
+        <target state="translated">Pole ukazatele {0} v serializovatelném typu</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
@@ -749,7 +749,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
         <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
-        <target state="needs-review-translation">{0}() se používá tam, kde se dá kvůli zvýšení výkonu použít AnyAsync().</target>
+        <target state="translated">{0}() se používá tam, kde se dá kvůli zvýšení výkonu použít AnyAsync().</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -764,7 +764,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
         <source>{0}() is used where Any() could be used instead to improve performance</source>
-        <target state="needs-review-translation">{0}() se používá tam, kde se dá kvůli zvýšení výkonu použít Any().</target>
+        <target state="translated">{0}() se používá tam, kde se dá kvůli zvýšení výkonu použít Any().</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
@@ -804,7 +804,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseDSAMessage">
         <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
-        <target state="needs-review-translation">Algoritmus asymetrického šifrování {0} je slabý. Použijte radši algoritmus RSA s velikostí klíče alespoň 2048, ECDH nebo ECDSA.</target>
+        <target state="translated">Algoritmus asymetrického šifrování {0} je slabý. Použijte radši algoritmus RSA s velikostí klíče alespoň 2048, ECDH nebo ECDSA.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -814,12 +814,12 @@
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
         <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly.</source>
-        <target state="needs-review-translation">Nepoužívejte metody Enumerable nebo indexovatelné kolekce. Použijte místo toho kolekci napřímo.</target>
+        <target state="translated">Nepoužívejte metody Enumerable nebo indexovatelné kolekce. Použijte místo toho kolekci napřímo.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
         <source>Do not use Enumerable methods on indexable collections</source>
-        <target state="needs-review-translation">Nepoužívejte metody Enumerable nebo indexovatelné kolekce. Použijte místo toho kolekci napřímo.</target>
+        <target state="translated">Nepoužívejte metody Enumerable nebo indexovatelné kolekce</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomness">
@@ -834,7 +834,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
         <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
-        <target state="needs-review-translation">{0} je nezabezpečený generátor náhodných čísel. Pokud se pro zabezpečení vyžaduje náhodnost, používejte kryptograficky zabezpečené generátory náhodných čísel.</target>
+        <target state="translated">{0} je nezabezpečený generátor náhodných čísel. Pokud se pro zabezpečení vyžaduje náhodnost, používejte kryptograficky zabezpečené generátory náhodných čísel.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseMD5">
@@ -864,17 +864,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersDescription">
         <source>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</source>
-        <target state="new">String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</target>
+        <target state="translated">Parametry řetězce předané do OutAttribute hodnotou můžou omezit správnou funkci modulu runtime, pokud řetězec bude interní.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
         <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</source>
-        <target state="new">Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</target>
+        <target state="translated">Nepoužívejte OutAttribute pro parametr řetězce {0}, který se předává hodnotou. Pokud je zapotřebí předat upravená data zpět volajícímu, použijte klíčové slovo out, pomocí kterého se řetězec předá odkazem.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
         <source>Do not use 'OutAttribute' on string parameters for P/Invokes</source>
-        <target state="new">Do not use 'OutAttribute' on string parameters for P/Invokes</target>
+        <target state="translated">Nepoužívat OutAttribute v parametrech řetězce pro volání nespravovaného kódu</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
@@ -919,7 +919,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseStackallocInLoopsTitle">
         <source>Do not use stackalloc in loops</source>
-        <target state="needs-review-translation">Nepoužívat stackalloc ve smyčkách</target>
+        <target state="translated">Nepoužívat stackalloc ve smyčkách</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -979,7 +979,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
         <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
-        <target state="needs-review-translation">{0} se vytvořilo pomocí slabého algoritmu hash. Jestli chcete vytvořit silný klíč z hesla, použijte SHA256, SHA384 nebo SHA512.</target>
+        <target state="translated">{0} se vytvořilo pomocí slabého algoritmu hash. Jestli chcete vytvořit silný klíč z hesla, použijte SHA256, SHA384 nebo SHA512.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
@@ -1059,17 +1059,17 @@
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
         <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="needs-review-translation">Přidejte implementaci GetObjectData k typu {0}.</target>
+        <target state="translated">Přidejte implementaci GetObjectData k typu {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
         <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="needs-review-translation">Učiňte {0}.GetObjectData virtuální a přepisovatelnou.</target>
+        <target state="translated">Učiňte {0}.GetObjectData virtuální a přepisovatelnou.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
         <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="needs-review-translation">Zvýšit přístupnost {0}.GetObjectData tak, že je viditelná pro odvozené typy.</target>
+        <target state="translated">Zvýšit přístupnost {0}.GetObjectData tak, že je viditelná pro odvozené typy.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyTitle">
@@ -1114,27 +1114,27 @@
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její signaturu tak, že již není nadále obecná.</target>
+        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její signaturu tak, že již není nadále obecná.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její signaturu tak, že vyžaduje jeden parametr typu 'System.Runtime.Serialization.StreamingContext'.</target>
+        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její signaturu tak, že vyžaduje jeden parametr typu 'System.Runtime.Serialization.StreamingContext'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její návratový typ z {1} na void (Sub v jazyce Visual Basic).</target>
+        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její návratový typ z {1} na void (Sub v jazyce Visual Basic).</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte ji ze statické (sdílené v jazyce Visual Basic) na instanční metodu.</target>
+        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte ji ze statické (sdílené v jazyce Visual Basic) na instanční metodu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
         <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="needs-review-translation">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její přístupnost na soukromou.</target>
+        <target state="translated">Protože {0} je označená pomocí OnSerializing, OnSerialized, OnDeserializing nebo OnDeserialized, změňte její přístupnost na soukromou.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
@@ -1194,7 +1194,7 @@
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
         <source>Call the {0} constructor that contains a message and/or paramName parameter</source>
-        <target state="needs-review-translation">Zavolejte konstruktor {0}, který obsahuje zprávu a/nebo parametr paramName.</target>
+        <target state="translated">Zavolejte konstruktor {0}, který obsahuje zprávu a/nebo parametr paramName.</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1378,8 +1378,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
-        <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
-        <target state="translated">V šifrování se používá nevýchozí inicializační vektor, který by se potenciálně mohl dát opakovat. Zajistěte použití výchozího nastavení.</target>
+        <source>The non-default initialization vector, which can be potentially repeatable, is used in the encryption. Ensure use the default one.</source>
+        <target state="needs-review-translation">V šifrování se používá nevýchozí inicializační vektor, který by se potenciálně mohl dát opakovat. Zajistěte použití výchozího nastavení.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
@@ -1413,8 +1413,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttributeMessage">
-        <source>Action method {0} needs to specify the Http request kind explictly</source>
-        <target state="translated">Metoda akce {0} musí explicitně určit druh požadavku HTTP.</target>
+        <source>Action method {0} needs to specify the HTTP request kind explicitly</source>
+        <target state="needs-review-translation">Metoda akce {0} musí explicitně určit druh požadavku HTTP.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
@@ -1459,7 +1459,7 @@
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
         <source>In method '{0}', replace the call to '{1}' with '{2}'</source>
-        <target state="needs-review-translation">V metodě {0} nahraďte volání {1} voláním {2}.</target>
+        <target state="translated">V metodě {0} nahraďte volání {1} voláním {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseTitle">
@@ -1514,32 +1514,32 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckDescription">
         <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
-        <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
+        <target state="translated">Když se pro komponentu použije závislé rozhraní API, kód už nebude fungovat na všech platformách.</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckSupportedOsMessage">
         <source>'{0}' is supported on '{1}'</source>
-        <target state="new">'{0}' is supported on '{1}'</target>
+        <target state="translated">{0} se podporuje v {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckSupportedOsVersionMessage">
         <source>'{0}' is supported on '{1}' {2} and later</source>
-        <target state="new">'{0}' is supported on '{1}' {2} and later</target>
+        <target state="translated">{0} se podporuje v {1} {2} a novějších.</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckTitle">
         <source>Validate platform compatibility</source>
-        <target state="new">Validate platform compatibility</target>
+        <target state="translated">Ověřit kompatibilitu platformy</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckUnsupportedOsMessage">
         <source>'{0}' is unsupported on '{1}'</source>
-        <target state="new">'{0}' is unsupported on '{1}'</target>
+        <target state="translated">{0} se v {1} nepodporuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityCheckUnsupportedOsVersionMessage">
         <source>'{0}' is unsupported on '{1}' {2} and later</source>
-        <target state="new">'{0}' is unsupported on '{1}' {2} and later</target>
+        <target state="translated">{0} se v {1} {2} a novějších nepodporuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
@@ -1569,7 +1569,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
-        <target state="needs-review-translation">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
+        <target state="translated">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
@@ -1589,12 +1589,12 @@
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
         <source>Replace with 'string.Contains'</source>
-        <target state="new">Replace with 'string.Contains'</target>
+        <target state="translated">Nahraďte řetězcem string.Contains</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfDescription">
         <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
-        <target state="needs-review-translation">Volání metody string.IndexOf, kde se pomocí výsledku kontroluje přítomnost nebo nepřítomnost podřetězce, se dá nahradit metodou string.Contains.</target>
+        <target state="translated">Volání metody string.IndexOf, kde se pomocí výsledku kontroluje přítomnost nebo nepřítomnost podřetězce, se dá nahradit metodou string.Contains.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStringContainsOverIndexOfMessage">
@@ -1614,7 +1614,7 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
         <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
-        <target state="needs-review-translation">Odeberte volání ToString, aby se používalo přetížení StringBuilder silného typu.</target>
+        <target state="translated">Odeberte volání ToString, aby se používalo přetížení StringBuilder silného typu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
@@ -1624,7 +1624,7 @@
       </trans-unit>
       <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
         <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder</source>
-        <target state="needs-review-translation">Upřednostňovat pro StringBuilder přetížení metod Append a Insert silného typu</target>
+        <target state="translated">Upřednostňovat pro StringBuilder přetížení metod Append a Insert silného typu</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
@@ -1634,12 +1634,12 @@
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
         <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string</source>
-        <target state="needs-review-translation">Když je vstup konstantní jednotkový řetězec, použijte místo StringBuilder.Append(string) metodu StringBuilder.Append(char).</target>
+        <target state="translated">Když je vstup konstantní jednotkový řetězec, použijte místo StringBuilder.Append(string) metodu StringBuilder.Append(char).</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
         <source>Consider using 'StringBuilder.Append(char)' when applicable</source>
-        <target state="needs-review-translation">Zvažte možnost použít metodu StringBuilder.Append(char) tam, kde je to možné.</target>
+        <target state="translated">Zvažte možnost použít metodu StringBuilder.Append(char) tam, kde je to možné</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
@@ -1684,12 +1684,12 @@
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
         <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="needs-review-translation">Přidejte metodu 'private void OnDeserialized(StreamingContext)' k typu {0} a označte ji pomocí System.Runtime.Serialization.OnDeserializedAttribute.</target>
+        <target state="translated">Přidejte metodu 'private void OnDeserialized(StreamingContext)' k typu {0} a označte ji pomocí System.Runtime.Serialization.OnDeserializedAttribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
         <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="needs-review-translation">Přidejte metodu 'private void OnDeserializing(StreamingContext)' k typu {0} a označte ji pomocí System.Runtime.Serialization.OnDeserializingAttribute.</target>
+        <target state="translated">Přidejte metodu 'private void OnDeserializing(StreamingContext)' k typu {0} a označte ji pomocí System.Runtime.Serialization.OnDeserializingAttribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
@@ -1844,7 +1844,7 @@
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
         <source>Review if the query string passed to '{0}' in '{1}', accepts any user input</source>
-        <target state="needs-review-translation">Zkontrolujte, jestli řetězec dotazu, který se předává do {0} v {1}, přijímá uživatelský vstup.</target>
+        <target state="translated">Zkontrolujte, jestli řetězec dotazu, který se předává do {0} v {1}, přijímá uživatelský vstup.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
@@ -1899,7 +1899,7 @@
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
         <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
-        <target state="needs-review-translation">Metoda nebo konstruktor volá nejméně jeden člen, který má přetížení přijímající parametr System.IFormatProvider, ale metoda nebo konstruktor nevolá přetížení, které přijímá parametr IFormatProvider. Když se nezadá System.Globalization.CultureInfo ani objekt IFormatProvider, výchozí hodnota, kterou poskytuje přetížený člen, nemusí mít ve všech národních prostředích požadovaný účinek. Pokud se výsledek zakládá na vstupu od uživatele nebo na výstupu, který se mu zobrazí, zadejte jako parametr IFormatProvider hodnotu CultureInfo.CurrentCulture. V opačném případě, pokud software výsledek uloží a přistupuje k němu, třeba při jeho trvalém uložení na disk nebo do databáze nebo při jeho načtení z nich, zadejte CultureInfo.InvariantCulture.</target>
+        <target state="translated">Metoda nebo konstruktor volá nejméně jeden člen, který má přetížení přijímající parametr System.IFormatProvider, ale metoda nebo konstruktor nevolá přetížení, které přijímá parametr IFormatProvider. Když se nezadá System.Globalization.CultureInfo ani objekt IFormatProvider, výchozí hodnota, kterou poskytuje přetížený člen, nemusí mít ve všech národních prostředích požadovaný účinek. Pokud se výsledek zakládá na vstupu od uživatele nebo na výstupu, který se mu zobrazí, zadejte jako parametr IFormatProvider hodnotu CultureInfo.CurrentCulture. V opačném případě, pokud software výsledek uloží a přistupuje k němu, třeba při jeho trvalém uložení na disk nebo do databáze nebo při jeho načtení z nich, zadejte CultureInfo.InvariantCulture.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -1959,32 +1959,32 @@
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Description">
         <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
+        <target state="translated">Operace porovnání řetězců používá přetížení metody, které nenastavuje parametr StringComparison. Doporučuje se použít přetížení s parametrem StringComparison, aby nebyly pochyby o záměru. Pokud se výsledek zobrazí uživateli, třeba při řazení seznamu položek před zobrazením v seznamu, zadejte jako parametr StringComparison StringComparison.CurrentCulture nebo StringComparison.CurrentCultureIgnoreCase. Pokud porovnáváte identifikátory, které nerozlišují velikost písmen, třeba cesty k souborům, proměnné prostředí nebo klíče a hodnoty registru, zadejte StringComparison.OrdinalIgnoreCase. Jinak pokud porovnáváte identifikátory s rozlišováním velikosti písmen, zadejte StringComparison.Ordinal.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Message">
         <source>'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</source>
-        <target state="new">'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</target>
+        <target state="translated">{0} má přetížení metody, které přijímá parametr StringComparison. Nahraďte toto volání v {1} voláním metody {2}, aby nebyly pochyby o záměru.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1307Title">
         <source>Specify StringComparison for clarity</source>
-        <target state="new">Specify StringComparison for clarity</target>
+        <target state="translated">Zadejte StringComparison, aby nebyly pochyby</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Description">
         <source>A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="new">A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</target>
+        <target state="translated">Operace porovnání řetězců používá přetížení metody, které nenastavuje parametr StringComparison, proto se její chování může lišit podle aktuálního nastavení národního prostředí uživatele. Důrazně se doporučuje použít přetížení s parametrem StringComparison, aby byla zaručena správnost a nebyly pochyby o záměru. Pokud se výsledek zobrazí uživateli, třeba při řazení seznamu položek před zobrazením v seznamu, zadejte jako parametr StringComparison StringComparison.CurrentCulture nebo StringComparison.CurrentCultureIgnoreCase. Pokud porovnáváte identifikátory, které nerozlišují velikost písmen, třeba cesty k souborům, proměnné prostředí nebo klíče a hodnoty registru, zadejte StringComparison.OrdinalIgnoreCase. Jinak pokud porovnáváte identifikátory s rozlišováním velikosti písmen, zadejte StringComparison.Ordinal.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Message">
         <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
-        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</target>
+        <target state="translated">Chování {0} se může lišit podle aktuálních nastavení národního prostředí uživatele. Nahraďte toto volání v {1} voláním {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyStringComparisonCA1310Title">
         <source>Specify StringComparison for correctness</source>
-        <target state="new">Specify StringComparison for correctness</target>
+        <target state="translated">Zadejte StringComparison pro správnost</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
@@ -1994,7 +1994,7 @@
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
         <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check</source>
-        <target state="needs-review-translation">Ke kontrole, jestli jsou řetězce prázdné, použijte namísto kontroly rovnosti vlastnost string.Length nebo metodu string.IsNullOrEmpty.</target>
+        <target state="translated">Ke kontrole, jestli jsou řetězce prázdné, použijte namísto kontroly rovnosti vlastnost string.Length nebo metodu string.IsNullOrEmpty.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
@@ -2029,7 +2029,7 @@
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
         <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
-        <target state="needs-review-translation">V {2} místo indexeru založeného na {1} použijte {0}, nebudou se tak vytvářet nepotřebné kopie dat.</target>
+        <target state="translated">V {2} místo indexeru založeného na {1} použijte {0}, nebudou se tak vytvářet nepotřebné kopie dat.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
@@ -2084,7 +2084,7 @@
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS.</source>
-        <target state="needs-review-translation">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, použijte při jeho vytváření zásady přístupu na úrovni kontejneru.</target>
+        <target state="translated">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, použijte při jeho vytváření zásady přístupu na úrovni kontejneru.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
@@ -2104,22 +2104,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
         <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
-        <target state="new">'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</target>
+        <target state="translated">Environment.ProcessId je jednodušší a rychlejší než Process.GetCurrentProcess().Id.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdFix">
         <source>Use 'Environment.ProcessId'</source>
-        <target state="new">Use 'Environment.ProcessId'</target>
+        <target state="translated">Použijte Environment.ProcessId.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdMessage">
         <source>Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</source>
-        <target state="new">Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</target>
+        <target state="translated">Namísto Process.GetCurrentProcess().Id použijte Environment.ProcessId.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdTitle">
         <source>Use 'Environment.ProcessId'</source>
-        <target state="new">Use 'Environment.ProcessId'</target>
+        <target state="translated">Použít Environment.ProcessId</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2159,7 +2159,7 @@
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
         <source>Use ordinal string comparison</source>
-        <target state="needs-review-translation">Použijte StringComparison s hodnotou Ordinal</target>
+        <target state="translated">Použít porovnání ordinálních řetězců</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
@@ -2169,7 +2169,7 @@
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
         <source>Use the "{0}" property instead of Enumerable.Count()</source>
-        <target state="needs-review-translation">Použijte vlastnost {0} namísto Enumerable.Count().</target>
+        <target state="translated">Použijte vlastnost {0} namísto Enumerable.Count().</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
@@ -2209,7 +2209,7 @@
       </trans-unit>
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
-        <target state="needs-review-translation">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, zadejte SharedAccessProtocol.HttpsOnly.</target>
+        <target state="translated">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, zadejte SharedAccessProtocol.HttpsOnly.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">

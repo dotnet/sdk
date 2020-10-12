@@ -261,7 +261,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     pos++;
                 }
 
-                // searching for embeded format string
+                // searching for embedded format string
                 if (ch == ':')
                 {
                     pos++;
