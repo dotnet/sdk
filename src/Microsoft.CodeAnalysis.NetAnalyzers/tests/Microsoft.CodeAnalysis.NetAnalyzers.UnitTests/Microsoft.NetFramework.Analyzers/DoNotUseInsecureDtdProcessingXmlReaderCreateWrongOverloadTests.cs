@@ -21,7 +21,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         ////    => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlReaderCreateWrongOverload).WithLocation(line, column);
 
         [Fact]
-        public async Task UseXmlReaderCreateWrongOverloadShouldGenerateDiagnostic()
+        public async Task UseXmlReaderCreateWrongOverloadShouldNotGenerateDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -51,7 +51,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInGetShouldGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInGetShouldNotGenerateDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -85,7 +85,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInSetShouldGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInSetShouldNotGenerateDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
@@ -125,7 +125,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInTryShouldGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInTryShouldNotGenerateDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -199,7 +199,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInFinallyShouldGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInFinallyShouldNotGenerateDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -276,7 +276,7 @@ End Class"
         }
 
         [Fact]
-        public async Task UseXmlReaderCreateInsecureOverloadInDelegateShouldGenerateDiagnostic()
+        public async Task UseXmlReaderCreateInsecureOverloadInDelegateShouldNotGenerateDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Xml;
