@@ -3,6 +3,7 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.CallGCSuppressFinalizeCorrectlyAnalyzer,
@@ -133,6 +134,47 @@ Public Class DisposableWithFinalizer
 	End Sub
 End Class";
             await VerifyVB.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task AsyncDisposableWithFinalizer_CSharp_NoDiagnostic()
+        {
+            var code = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+
+class MyAsyncDisposable : IAsyncDisposable
+{
+    [DllImport(""example.dll"")]
+    private static extern int GetHandle();
+
+    [DllImport(""example.dll"")]
+    private static extern void FreeHandle(int handle);
+
+    private readonly int handle;
+
+    public MyAsyncDisposable()
+    {
+        this.handle = GetHandle();
+    }
+
+    ~MyAsyncDisposable()
+    {
+        FreeHandle(this.handle);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Task.Run(() => FreeHandle(this.handle)).ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+}";
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = code
+            }.RunAsync();
         }
 
         [Fact]
