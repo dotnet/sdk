@@ -555,6 +555,8 @@ Rule ID | Missing Help Link | Title |
                         // However, we consider "missing" entries as invalid. This is to force updating the file when new rules are added.
                         if (!actualContent.Contains($"{ruleId} | {helpLinkUri} | {descriptor.Title} |"))
                         {
+                            Console.Error.WriteLine($"Missing entry in {fileWithPath}");
+                            Console.Error.WriteLine($"{ruleId} | {helpLinkUri} | {descriptor.Title} |");
                             // The file is missing an entry. Mark it as invalid and break the loop as there is no need to continue validating.
                             fileNamesWithValidationFailures.Add(fileWithPath);
                             break;
@@ -886,8 +888,16 @@ Rule ID | Missing Help Link | Title |
         /// </remarks>
         private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
         {
-            if (File.ReadAllText(fileWithPath) != fileContents)
+            string actual = File.ReadAllText(fileWithPath);
+            if (actual != fileContents)
             {
+                Console.Error.WriteLine("!!ONLY FOR TESTING PURPOSE!!");
+                Console.Error.WriteLine("Actual:");
+                Console.Error.WriteLine(actual);
+                Console.Error.WriteLine("============================");
+                Console.Error.WriteLine("Expected:");
+                Console.Error.WriteLine(fileContents);
+                Console.Error.WriteLine("============================");
                 fileNamesWithValidationFailures.Add(fileWithPath);
             }
         }
