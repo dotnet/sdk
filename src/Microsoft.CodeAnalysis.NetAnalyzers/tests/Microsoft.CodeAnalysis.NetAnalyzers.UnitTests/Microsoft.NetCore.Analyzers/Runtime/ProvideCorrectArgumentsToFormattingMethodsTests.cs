@@ -219,7 +219,7 @@ End Class
             // Dim s = Console.WriteLine(""{0} {1} {2}"", 1, 2, 3, 4)
             // since VB bind it to __arglist version where we skip analysis
             // due to a bug - https://github.com/dotnet/roslyn/issues/7346
-            // we might skip it only in C# since VB doesnt support __arglist
+            // we might skip it only in C# since VB doesn't support __arglist
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
@@ -249,7 +249,7 @@ End Class
             // Dim s = Console.WriteLine(""{0} {1} {2}"", 1, 2, 3, 4)
             // since VB bind it to __arglist version where we skip analysis
             // due to a bug - https://github.com/dotnet/roslyn/issues/7346
-            // we might skip it only in C# since VB doesnt support __arglist
+            // we might skip it only in C# since VB doesn't support __arglist
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 

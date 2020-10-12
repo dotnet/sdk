@@ -22,8 +22,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     /// <summary>
     /// CA1416: Analyzer that informs developers when they use platform-specific APIs from call sites where the API might not be available
-    /// 
-    /// It finds usage of platform-specific or unsupported APIs and diagnoses if the 
+    ///
+    /// It finds usage of platform-specific or unsupported APIs and diagnoses if the
     /// API is guarded by platform check or if it is annotated with corresponding platform specific attribute.
     /// If using the platform-specific API is not safe it reports diagnostics.
     ///
@@ -41,7 +41,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly LocalizableString s_localizableUnsupportedOsVersionMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityCheckUnsupportedOsVersionMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityCheckDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        // We are adding the new attributes into older versions of .Net 5.0, so there could be multiple referenced assemblies each with their own 
+        // We are adding the new attributes into older versions of .Net 5.0, so there could be multiple referenced assemblies each with their own
         // version of internal attribute type which will cause ambiguity, to avoid that we are comparing the attributes by their name
         private const string SupportedOSPlatformAttribute = nameof(SupportedOSPlatformAttribute);
         private const string UnsupportedOSPlatformAttribute = nameof(UnsupportedOSPlatformAttribute);
@@ -823,7 +823,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         }
                         else
                         {
-                            // Call site has no attributes for this platform, check if MsBuild list has it, 
+                            // Call site has no attributes for this platform, check if MsBuild list has it,
                             // then if call site has deny list, it should support its later support
                             if (msBuildPlatforms.Contains(platformName) &&
                                 callSiteAttributes.Any(ca => DenyList(ca.Value)))
@@ -931,7 +931,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 callSiteAttribute.SupportedFirst != null && callSiteAttribute.SupportedFirst >= attribute.SupportedFirst ||
                 SuppressedByCallSiteUnsupported(callSiteAttribute, attribute.UnsupportedFirst!);
 
-            // As optianal if call site supports that platform, their versions should match
+            // As optional if call site supports that platform, their versions should match
             static bool OptionalOsSupportSuppressed(PlatformAttributes callSiteAttribute, PlatformAttributes attribute) =>
                 (callSiteAttribute.SupportedFirst == null || attribute.SupportedFirst <= callSiteAttribute.SupportedFirst) &&
                 (callSiteAttribute.SupportedSecond == null || attribute.SupportedFirst <= callSiteAttribute.SupportedSecond);
@@ -1043,7 +1043,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             // only attributes with same platform matter, could narrow the list
                             if (childAttributes.TryGetValue(platform, out var childAttribute))
                             {
-                                // only later versions could narrow, other versions ignored 
+                                // only later versions could narrow, other versions ignored
                                 if (childAttribute.SupportedFirst > attributes.SupportedFirst)
                                 {
                                     attributes.SupportedSecond = childAttribute.SupportedFirst;
@@ -1167,7 +1167,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             if (attributes.SupportedFirst != null && attributes.SupportedFirst < version)
                             {
-                                // We should ignore second attribute in case like [UnsupportedOSPlatform(""windows""), 
+                                // We should ignore second attribute in case like [UnsupportedOSPlatform(""windows""),
                                 // [UnsupportedOSPlatform(""windows11.0"")] which doesn't have supported in between
                                 attributes.UnsupportedSecond = version;
                             }

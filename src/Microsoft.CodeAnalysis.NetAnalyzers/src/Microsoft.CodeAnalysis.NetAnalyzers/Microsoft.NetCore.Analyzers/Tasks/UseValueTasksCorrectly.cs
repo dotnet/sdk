@@ -170,6 +170,16 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
                                 return;
 
+                            case OperationKind.Conversion:
+                                var conversion = (IConversionOperation)operation.Parent;
+                                if (conversion.Conversion.IsIdentity)
+                                {
+                                    // Ignore identity conversions, which can pop in from time to time.
+                                    operation = operation.Parent;
+                                    continue;
+                                }
+                                goto default;
+
                             // At this point, we're "in the weeds", but there are still some rare-but-used valid patterns to check for.
 
                             case OperationKind.Coalesce:

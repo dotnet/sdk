@@ -58,10 +58,10 @@ End Structure");
         }
 
         [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7305")]
-        public async Task Ignored_Interace()
+        public async Task Ignored_Interface()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
-Interace I
+Interface I
     Public Overrides Function Equals(o As Object) As Boolean
         Return True
     End Function
