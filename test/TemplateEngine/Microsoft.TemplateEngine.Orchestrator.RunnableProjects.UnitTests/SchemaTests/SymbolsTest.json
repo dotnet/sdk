@@ -1,0 +1,72 @@
+{
+  "author": "Test",
+  "classifications": [ "Test" ],
+  "name": "Test Symbols",
+  "defaultName": "SymbolsTest",
+  "identity": "Symbols.Test",
+  "groupIdentity": "Symbols.Test",
+  "shortName": "symbols-test",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "SymbolsTest",
+  "preferNameDirectory": true,
+  "symbols": {
+    "TestParameter": {
+      "type": "parameter",
+      "description": "Test Choice Parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "ch1",
+          "description": "Choice 1"
+        },
+        {
+          "choice": "ch2",
+          "description": "Choice 2"
+        }
+      ],
+      "defaultValue": "ch1",
+      "replaces": "Test1",
+      "fileRename": "Test1",
+      "isRequired": true,
+      "onlyIf": {
+        "after": "T",
+        "before": "A"
+      }
+    },
+    "TestDerived": {
+      "type": "derived",
+      "datatype": "string",
+      "replaces": "Test2",
+      "fileRename": "Test2",
+      "valueSource": "name",
+      "valueTransform": "form1"
+    },
+    "TestComputed": {
+      "type": "computed",
+      "datatype": "bool",
+      "value": "(TestParameter == \"ch1\")"
+    },
+    "TestGenerated": {
+      "type": "generated",
+      "generator": "casing",
+      "datatype": "string",
+      "parameters": {
+        "source": "name",
+        "toLower": true
+      },
+      "replaces": "Test4",
+      "fileRename": "Test4"
+    },
+    "TestBinding": {
+      "type": "bind",
+      "binding": "HostIdentifier",
+      "datatype": "string"
+    }
+  },
+  "guids": [
+    "baf04077-a3c0-454b-ac6f-9fec00b8e170"
+  ]
+}

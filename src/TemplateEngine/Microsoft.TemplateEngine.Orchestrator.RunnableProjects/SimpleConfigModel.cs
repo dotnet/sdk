@@ -12,6 +12,7 @@ using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
@@ -232,7 +233,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                     IsName = isName,
                                     IsVariable = true,
                                     Name = symbol.Key,
+#pragma warning disable 612,618
                                     FileRename = baseSymbol.FileRename,
+#pragma warning restore 612,618
                                     Requirement = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
                                     Type = baseSymbol.Type,
                                     DataType = baseSymbol.DataType
@@ -338,6 +341,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
 
                 return _operationConfig;
+            }
+        }
+
+        private IReadOnlyList<IReplacementTokens> _symbolFilenameReplacements;
+        internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
+        {
+            get
+            {
+                if (_symbolFilenameReplacements == null)
+                {
+                    _symbolFilenameReplacements = ProduceSymbolFilenameReplacements();
+                }
+                return _symbolFilenameReplacements;
             }
         }
 
@@ -559,56 +575,54 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         }
                     }
 
-                    if (symbol.Value.Replaces != null)
+                    string sourceVariable = null;
+                    if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal))
                     {
-                        string sourceVariable = null;
-
-                        if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal))
+                        if (string.IsNullOrWhiteSpace(symbol.Value.Binding))
                         {
-                            if (string.IsNullOrWhiteSpace(symbol.Value.Binding))
-                            {
-                                EnvironmentSettings.Host.LogMessage($"Binding wasn't specified for bind-type symbol {symbol.Key}");
-                            }
-                            else
-                            {
-                                //Since this is a bind symbol, don't replace the literal with this symbol's value, 
-                                //  replace it with the value of the bound symbol
-                                sourceVariable = symbol.Value.Binding;
-                            }
+                            EnvironmentSettings.Host.LogMessage($"Binding wasn't specified for bind-type symbol {symbol.Key}");
                         }
                         else
                         {
-                            //Replace the literal value in the "replaces" property with the evaluated value of the symbol
-                            sourceVariable = symbol.Key;
+                            //Since this is a bind symbol, don't replace the literal with this symbol's value, 
+                            //  replace it with the value of the bound symbol
+                            sourceVariable = symbol.Value.Binding;
                         }
+                    }
+                    else
+                    {
+                        //Replace the literal value in the "replaces" property with the evaluated value of the symbol
+                        sourceVariable = symbol.Key;
+                    }
 
-                        if (sourceVariable != null)
+                    if (sourceVariable != null)
+                    {
+                        if (symbol.Value is BaseValueSymbol p)
                         {
-                            if (symbol.Value is BaseValueSymbol p)
+                            foreach (string formName in p.Forms.GlobalForms)
                             {
-                                foreach (string formName in p.Forms.GlobalForms)
+                                if (Forms.TryGetValue(formName, out IValueForm valueForm))
                                 {
-                                    if (Forms.TryGetValue(formName, out IValueForm valueForm))
+                                    string symbolName = sourceVariable + "{-VALUE-FORMS-}" + formName;
+                                    if (!string.IsNullOrWhiteSpace(symbol.Value.Replaces))
                                     {
-                                        string symbolName = symbol.Key + "{-VALUE-FORMS-}" + formName;
                                         string processedReplacement = valueForm.Process(Forms, p.Replaces);
                                         GenerateReplacementsForParameter(symbol, processedReplacement, symbolName, macroGeneratedReplacements);
-
-                                        if (generateMacros)
-                                        {
-                                            macros.Add(new ProcessValueFormMacroConfig(symbol.Key, symbolName, "string", formName, Forms));
-                                        }
                                     }
-                                    else
+                                    if (generateMacros)
                                     {
-                                        EnvironmentSettings.Host.LogDiagnosticMessage($"Unable to find a form called '{formName}'", "Authoring");
+                                        macros.Add(new ProcessValueFormMacroConfig(sourceVariable, symbolName, "string", formName, Forms));
                                     }
                                 }
+                                else
+                                {
+                                    EnvironmentSettings.Host.LogDiagnosticMessage($"Unable to find a form called '{formName}'", "Authoring");
+                                }
                             }
-                            else
-                            {
-                                GenerateReplacementsForParameter(symbol, symbol.Value.Replaces, sourceVariable, macroGeneratedReplacements);
-                            }
+                        }
+                        else if (!string.IsNullOrWhiteSpace(symbol.Value.Replaces))
+                        {
+                            GenerateReplacementsForParameter(symbol, symbol.Value.Replaces, sourceVariable, macroGeneratedReplacements);
                         }
                     }
                 }
@@ -653,10 +667,43 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 Macros = macros,
                 ComputedMacros = computedMacros,
                 Replacements = macroGeneratedReplacements,
-                CustomOperations = customOperationConfig,
+                CustomOperations = customOperationConfig
             };
-
             return config;
+        }
+
+        private IReadOnlyList<IReplacementTokens> ProduceSymbolFilenameReplacements()
+        {
+            List<IReplacementTokens> filenameReplacements = new List<IReplacementTokens>();
+            if (Symbols == null || Symbols.Count == 0)
+            {
+                return filenameReplacements;
+            }
+
+            foreach (KeyValuePair<string, ISymbolModel> symbol in Symbols.Where(s => !string.IsNullOrWhiteSpace(s.Value.FileRename)))
+            {
+                if (symbol.Value is BaseValueSymbol p)
+                {
+                    foreach (string formName in p.Forms.GlobalForms)
+                    {
+                        if (Forms.TryGetValue(formName, out IValueForm valueForm))
+                        {
+                            string symbolName = symbol.Key + "{-VALUE-FORMS-}" + formName;
+                            string processedFileReplacement = valueForm.Process(Forms, p.FileRename);
+                            GenerateFileReplacementsForSymbol(processedFileReplacement, symbolName, filenameReplacements);
+                        }
+                        else
+                        {
+                            EnvironmentSettings.Host.LogDiagnosticMessage($"Unable to find a form called '{formName}'", "Authoring");
+                        }
+                    }
+                }
+                else
+                {
+                    GenerateFileReplacementsForSymbol(symbol.Value.FileRename, symbol.Key, filenameReplacements);
+                }
+            }
+            return filenameReplacements;
         }
 
         private void GenerateReplacementsForParameter(KeyValuePair<string, ISymbolModel> symbol, string replaces, string sourceVariable, List<IReplacementTokens> macroGeneratedReplacements)
@@ -684,6 +731,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 macroGeneratedReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));
             }
+        }
+
+        private void GenerateFileReplacementsForSymbol(string fileRename, string sourceVariable, List<IReplacementTokens> filenameReplacements)
+        {
+            TokenConfig replacementConfig = fileRename.TokenConfigBuilder();
+            filenameReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));          
         }
 
         private List<IMacroConfig> ProduceMacroConfig(List<IMacroConfig> computedMacroConfigs)
@@ -932,7 +985,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private IReadOnlyDictionary<string, string> AugmentRenames(IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameters, Dictionary<string, string> fileRenames)
         {
-            return FileRenameGenerator.AugmentFileRenames(EnvironmentSettings, SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames);
+            return FileRenameGenerator.AugmentFileRenames(EnvironmentSettings, SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames, SymbolFilenameReplacements);
         }
 
         private static ISymbolModel SetupDefaultNameSymbol(string sourceName)

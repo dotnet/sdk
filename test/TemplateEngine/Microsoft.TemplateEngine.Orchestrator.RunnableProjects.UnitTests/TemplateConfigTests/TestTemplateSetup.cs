@@ -152,6 +152,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return changesByTarget;
         }
 
+        public IReadOnlyDictionary<string, string> GetRenames(string sourceDir, string targetBaseDir, IParameterSet parameters, IReadOnlyList<IReplacementTokens> symbolBasedRenames)
+        {
+            IFileSystemInfo configFileInfo = TemplateConfigTestHelpers.ConfigFileSystemInfo(SourceMountPoint, _configFile);
+            parameters.TryGetParameterDefinition("name", out ITemplateParameter nameParam);
+            object resolvedNameValue = parameters.ResolvedValues[nameParam];
+            return FileRenameGenerator.AugmentFileRenames(_environment, _sourceBaseDir, configFileInfo, sourceDir, ref targetBaseDir, resolvedNameValue, parameters, new Dictionary<string, string>(), symbolBasedRenames);
+        }
+
         public void AddFile(string filename, string content = null)
         {
             _sourceFiles.Add(filename, content ?? string.Empty);

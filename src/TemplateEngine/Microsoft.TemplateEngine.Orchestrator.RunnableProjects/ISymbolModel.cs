@@ -11,5 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         string Replaces { get; set; }
 
         IReadOnlyList<IReplacementContext> ReplacementContexts { get; }
+
+        string FileRename { get; set; }
     }
 }

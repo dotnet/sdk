@@ -5,6 +5,7 @@ using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -44,10 +45,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             }
 
             Assert.NotNull(runConfig);
-            Assert.Equal(1, runConfig.Macros.Count);
-            
-            Assert.True(runConfig.Macros[0] is ProcessValueFormMacroConfig);
-            ProcessValueFormMacroConfig identityFormConfig = runConfig.Macros[0] as ProcessValueFormMacroConfig;
+            Assert.Equal(1, runConfig.Macros.Count(m => m.VariableName.StartsWith("mySymbol")));
+            var mySymbolMacro = runConfig.Macros.Single(m => m.VariableName.StartsWith("mySymbol"));
+
+            Assert.True(mySymbolMacro is ProcessValueFormMacroConfig);
+            ProcessValueFormMacroConfig identityFormConfig = mySymbolMacro as ProcessValueFormMacroConfig;
             Assert.Equal("identity", identityFormConfig.FormName);
         }
 

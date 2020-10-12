@@ -4,7 +4,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 {
     public class ParameterSymbol : BaseValueSymbol
     {
@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     string choice = choiceObject.ToString("choice");
 
                     if (localization == null
-                        || ! localization.ChoicesAndDescriptions.TryGetValue(choice, out string choiceDescription))
+                        || !localization.ChoicesAndDescriptions.TryGetValue(choice, out string choiceDescription))
                     {
                         choiceDescription = choiceObject.ToString("description");
                     }

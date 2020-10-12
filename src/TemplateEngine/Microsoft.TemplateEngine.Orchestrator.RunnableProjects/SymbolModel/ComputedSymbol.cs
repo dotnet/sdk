@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 {
     public class ComputedSymbol : ISymbolModel
     {
@@ -25,6 +25,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         string ISymbolModel.Replaces
+        {
+            get { return null; }
+            set { }
+        }
+
+        string ISymbolModel.FileRename
         {
             get { return null; }
             set { }

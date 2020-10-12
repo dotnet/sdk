@@ -175,6 +175,7 @@
       "generator": "regex",
       "dataType": "string",
       "replaces": "case3",
+      "fileRename" : "file_case3",
       "parameters": {
         "source": "case1",
         "steps": [

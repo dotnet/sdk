@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 

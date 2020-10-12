@@ -20,13 +20,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         //  - parameters with a FileRename specified
         //  - the source & target names.
         // Any input fileRenames will be applied before the parameter symbol renames.
-        public static IReadOnlyDictionary<string, string> AugmentFileRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet, Dictionary<string, string> fileRenames)
+        public static IReadOnlyDictionary<string, string> AugmentFileRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet, Dictionary<string, string> fileRenames, IReadOnlyList<IReplacementTokens> symbolBasedFileRenames = null)
         {
             Dictionary<string, string> allRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
             IProcessor sourceRenameProcessor = SetupRenameProcessor(environmentSettings, fileRenames);
 
-            IReadOnlyDictionary<string, string> symbolBasedRenames = SetupSymbolBasedRenames(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet);
+            IReadOnlyDictionary<string, string> symbolBasedRenames = SetupSymbolBasedRenames(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet, symbolBasedFileRenames);
             IProcessor symbolRenameProcessor = SetupRenameProcessor(environmentSettings, symbolBasedRenames);
 
             IDirectory sourceBaseDirectoryInfo = configFile.Parent.Parent.DirectoryInfo(sourceDirectory.TrimEnd('/'));
@@ -81,23 +81,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         // Generates a mapping from source to target substrings in filenames, based on the parameters with FileRename defined.
         // Also sets up rename concerns for the target directory.
-        private static IReadOnlyDictionary<string, string> SetupSymbolBasedRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet)
+        private static IReadOnlyDictionary<string, string> SetupSymbolBasedRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet, IReadOnlyList<IReplacementTokens> symbolBasedFileRenames)
         {
             Dictionary<string, string> substringRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
             SetupRenameForTargetDirectory(sourceName, resolvedNameParamValue, ref targetDirectory, substringRenames);
 
-            foreach (IExtendedTemplateParameter parameter in parameterSet.ParameterDefinitions.OfType<IExtendedTemplateParameter>())
+            if (symbolBasedFileRenames == null)
             {
-                if (!string.IsNullOrEmpty(parameter.FileRename))
-                {
-                    if (parameterSet.TryGetRuntimeValue(environmentSettings, parameter.Name, out object value) && value is string valueString)
-                    {
-                        substringRenames.Add(parameter.FileRename, valueString);
-                    }
-                }
+                return substringRenames;
             }
 
+            foreach (IReplacementTokens fileRenameToken in symbolBasedFileRenames)
+            {
+                if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object value) && value is string valueString)
+                {
+                    substringRenames.Add(fileRenameToken.OriginalValue.Value, valueString);
+                }
+            }
             return substringRenames;
         }
 

@@ -1,7 +1,7 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 {
     public class DerivedSymbol : BaseValueSymbol
     {

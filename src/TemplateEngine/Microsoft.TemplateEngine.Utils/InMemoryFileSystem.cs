@@ -511,16 +511,15 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            foreach (KeyValuePair<string, FileSystemDirectory> entry in currentDir.Directories)
-            {
-                if (rx.IsMatch(entry.Key))
-                {
-                    yield return entry.Value.FullPath;
-                }
-            }
-
             if (searchOption == SearchOption.TopDirectoryOnly)
             {
+                foreach (KeyValuePair<string, FileSystemDirectory> entry in currentDir.Directories)
+                {
+                    if (rx.IsMatch(entry.Key))
+                    {
+                        yield return entry.Value.FullPath;
+                    }
+                }
                 yield break;
             }
 
@@ -553,7 +552,7 @@ namespace Microsoft.TemplateEngine.Utils
                     yield return current.Current.Value.FullPath;
                 }
 
-                foreach (KeyValuePair<string, FileSystemFile> entry in currentDir.Files)
+                foreach (KeyValuePair<string, FileSystemFile> entry in current.Current.Value.Files)
                 {
                     if (rx.IsMatch(entry.Key))
                     {

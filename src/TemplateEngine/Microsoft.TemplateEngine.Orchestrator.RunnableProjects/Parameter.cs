@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json;
@@ -39,6 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         [JsonProperty]
+        [Obsolete("This property is no longer used. It is populated only when creating parameters from parameter and derived symbols for compatibility reason.")]
         public string FileRename { get; set; }
 
         [JsonProperty]

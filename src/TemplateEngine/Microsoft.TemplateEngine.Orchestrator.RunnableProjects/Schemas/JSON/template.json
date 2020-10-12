@@ -837,6 +837,10 @@
               "valueTransform": {
                 "type": "string",
                 "description": "The name of the value form that should be applied to the source value to use as the value of this symbol"
+              },
+              "fileRename": {
+                "type": "string",
+                "description": "The element defines the portion of file names which will be replaced by symbol value"
               }
             }
           },
@@ -846,6 +850,10 @@
               "type": {
                 "description": "Defines the high level configuration of symbol",
                 "enum": [ "generated" ]
+              },
+              "fileRename": {
+                "type": "string",
+                "description": "The element defines the portion of file names which will be replaced by symbol value"
               }
             },
             "oneOf": [
@@ -894,6 +902,10 @@
               "description": {
                 "description": "The description of the parameter",
                 "type": "string"
+              },
+              "fileRename": {
+                "type": "string",
+                "description": "The element defines the portion of file names which will be replaced by symbol value"
               },
               "onlyIf": {
                 "properties": {
