@@ -13,11 +13,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private sealed class OperationVisitor : GlobalFlowStateDataFlowOperationVisitor
         {
             private readonly ImmutableArray<IMethodSymbol> _platformCheckMethods;
-            private readonly INamedTypeSymbol _osPlatformType;
+            private readonly INamedTypeSymbol? _osPlatformType;
 
             public OperationVisitor(
                 ImmutableArray<IMethodSymbol> platformCheckMethods,
-                INamedTypeSymbol osPlatformType,
+                INamedTypeSymbol? osPlatformType,
                 GlobalFlowStateAnalysisContext analysisContext)
                 : base(analysisContext, hasPredicatedGlobalState: true)
             {

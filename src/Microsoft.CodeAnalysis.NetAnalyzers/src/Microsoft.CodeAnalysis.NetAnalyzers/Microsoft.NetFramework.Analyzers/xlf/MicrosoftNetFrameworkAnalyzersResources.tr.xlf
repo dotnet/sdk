@@ -313,8 +313,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">XmlDocument’tan türetilen sınıf {0} bir oluşturucuyu açıkça tanımlamıyor.</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">XmlDocument’tan türetilen sınıf {0} bir oluşturucuyu açıkça tanımlamıyor.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +328,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">XmlTextReader’dan türetilen sınıf {0} bir oluşturucuyu açıkça tanımlamıyor.</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">XmlTextReader’dan türetilen sınıf {0} bir oluşturucuyu açıkça tanımlamıyor.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +343,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">XslCompiledTransform.Load yöntemine güvenli olmayan bir XsltSettings örneği ve güvenli olmayan bir XmlResolver örneğinin sağlanması, XSL içinde betik işlemeye ve güvenilmeyen bir XSL girişi üzerinde kötü amaçlı kod yürütmeye neden olabileceğinden potansiyel olarak güvenli değildir. Güvenli olmayan XsltSettings bağımsız değişkenini XsltSettings.Default ile veya belge işlevi ve betik yürütme devre dışı bırakılmış bir örnekle değiştirin ya da XmlResolver bağımsız değişkenini null veya bir XmlSecureResolver örneğiyle değiştirin. Giriş güvenilir olduğu bilinen bir kaynaktan geliyorsa ve önceden bilinmeyen konumlardan gelen dış kaynak çözümlemelerinin desteklenmesi gerekiyorsa bu ileti gizlenebilir.</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">XslCompiledTransform.Load yöntemine güvenli olmayan bir XsltSettings örneği ve güvenli olmayan bir XmlResolver örneğinin sağlanması, XSL içinde betik işlemeye ve güvenilmeyen bir XSL girişi üzerinde kötü amaçlı kod yürütmeye neden olabileceğinden potansiyel olarak güvenli değildir. Güvenli olmayan XsltSettings bağımsız değişkenini XsltSettings.Default ile veya belge işlevi ve betik yürütme devre dışı bırakılmış bir örnekle değiştirin ya da XmlResolver bağımsız değişkenini null veya bir XmlSecureResolver örneğiyle değiştirin. Giriş güvenilir olduğu bilinen bir kaynaktan geliyorsa ve önceden bilinmeyen konumlardan gelen dış kaynak çözümlemelerinin desteklenmesi gerekiyorsa bu ileti gizlenebilir.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">

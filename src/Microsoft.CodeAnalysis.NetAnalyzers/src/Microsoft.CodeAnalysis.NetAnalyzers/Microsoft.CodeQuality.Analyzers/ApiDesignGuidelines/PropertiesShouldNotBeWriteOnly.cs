@@ -61,7 +61,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             // not raising a violation for when:
             //     property is overridden because the issue can only be fixed in the base type
-            //     property is the implementaton of any interface member
+            //     property is the implementation of any interface member
             if (property.IsOverride || property.IsImplementationOfAnyInterfaceMember())
             {
                 return;

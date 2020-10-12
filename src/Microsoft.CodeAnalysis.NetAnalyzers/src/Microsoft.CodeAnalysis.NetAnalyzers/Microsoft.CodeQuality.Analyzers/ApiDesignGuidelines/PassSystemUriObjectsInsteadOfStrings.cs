@@ -149,7 +149,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         continue;
                     }
 
-                    // original FxCop implementation doesnt account for case where original method call contains
+                    // original FxCop implementation doesn't account for case where original method call contains
                     // 2+ string uri parameters that has overload with matching uri parameters. original implementation works
                     // when there is exactly 1 parameter having matching uri overload. this implementation follow that.
                     foreach (int index in indicesSet)

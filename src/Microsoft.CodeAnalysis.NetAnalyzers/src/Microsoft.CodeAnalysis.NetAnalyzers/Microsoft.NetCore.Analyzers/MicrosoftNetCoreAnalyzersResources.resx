@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -844,7 +844,7 @@
     <value>Do Not Disable SChannel Use of Strong Crypto</value>
   </data>
   <data name="DoNotDisableSchUseStrongCryptoDescription" xml:space="preserve">
-    <value>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</value>
+    <value>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommended to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</value>
   </data>
   <data name="DoNotDisableSchUseStrongCryptoMessage" xml:space="preserve">
     <value>{0} disables TLS 1.2 and enables SSLv3</value>
@@ -1180,7 +1180,7 @@
     <value>Miss HttpVerb attribute for action methods</value>
   </data>
   <data name="MissHttpVerbAttributeMessage" xml:space="preserve">
-    <value>Action method {0} needs to specify the Http request kind explictly</value>
+    <value>Action method {0} needs to specify the HTTP request kind explicitly</value>
   </data>
   <data name="DoNotUseInsecureRandomness" xml:space="preserve">
     <value>Do not use insecure randomness</value>
@@ -1273,7 +1273,7 @@
     <value>Use CreateEncryptor with the default IV </value>
   </data>
   <data name="MaybeUseCreateEncryptorWithNonDefaultIVMessage" xml:space="preserve">
-    <value>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</value>
+    <value>The non-default initialization vector, which can be potentially repeatable, is used in the encryption. Ensure use the default one.</value>
   </data>
   <data name="DoNotUseCreateEncryptorWithNonDefaultIVDescription" xml:space="preserve">
     <value>Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.</value>
@@ -1315,10 +1315,10 @@
     <value>Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</value>
   </data>
   <data name="DataSetDataTableInRceAutogeneratedSerializableTypeMessage" xml:space="preserve">
-    <value>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</value>
+    <value>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the auto-generated type is never deserialized with untrusted data.</value>
   </data>
   <data name="DataSetDataTableInRceAutogeneratedSerializableTypeTitle" xml:space="preserve">
-    <value>Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</value>
+    <value>Unsafe DataSet or DataTable in auto-generated serializable type can be vulnerable to remote code execution attacks</value>
   </data>
   <data name="DataSetDataTableInRceSerializableTypeTitle" xml:space="preserve">
     <value>Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</value>
@@ -1327,10 +1327,10 @@
     <value>Unsafe DataSet or DataTable in serializable type</value>
   </data>
   <data name="DataSetReadXmlAutogeneratedMessage" xml:space="preserve">
-    <value>The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</value>
+    <value>The method '{0}' is insecure when deserializing untrusted data. Make sure that auto-generated class containing the '{0}' call is not deserialized with untrusted data.</value>
   </data>
   <data name="DataSetReadXmlAutogeneratedTitle" xml:space="preserve">
-    <value>Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</value>
+    <value>Ensure auto-generated class containing DataSet.ReadXml() is not used with untrusted data</value>
   </data>
   <data name="DoNotUseStackallocInLoopsTitle" xml:space="preserve">
     <value>Do not use stackalloc in loops</value>
