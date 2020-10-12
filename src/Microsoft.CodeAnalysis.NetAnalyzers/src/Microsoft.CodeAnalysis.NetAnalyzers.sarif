@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "6.0.0",
+        "version": "5.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -14,7 +14,7 @@
           "shortDescription": "Types that own disposable fields should be disposable",
           "fullDescription": "A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1001",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -34,7 +34,7 @@
           "shortDescription": "Define accessors for attribute arguments",
           "fullDescription": "Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1019",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1019",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -54,7 +54,7 @@
           "shortDescription": "Implement standard exception constructors",
           "fullDescription": "Failure to provide the full set of constructors can make it difficult to correctly handle exceptions.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1032",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1032",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -74,7 +74,7 @@
           "shortDescription": "Do not raise exceptions in unexpected locations",
           "fullDescription": "A method that is not expected to throw exceptions throws an exception.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1065",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1065",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -94,7 +94,7 @@
           "shortDescription": "Avoid using cref tags with a prefix",
           "fullDescription": "Use of cref tags with prefixes should be avoided, since it prevents the compiler from verifying references and the IDE from updating references during refactorings. It is permissible to suppress this error at a single documentation site if the cref must use a prefix because the type being mentioned is not findable by the compiler. For example, if a cref is mentioning a special attribute in the full framework but you're in a file that compiles against the portable framework, or if you want to reference a type at higher layer of Roslyn, you should suppress the error. You should not suppress the error just because you want to take a shortcut and avoid using the full syntax.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1200",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1200",
           "properties": {
             "category": "Documentation",
             "isEnabledByDefault": true,
@@ -113,7 +113,7 @@
           "shortDescription": "Use ordinal string comparison",
           "fullDescription": "A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1309",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1309",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": true,
@@ -133,7 +133,7 @@
           "shortDescription": "Use nameof to express symbol names",
           "fullDescription": "Using nameof helps keep your code valid when refactoring.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1507",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1507",
           "properties": {
             "category": "Maintainability",
             "isEnabledByDefault": true,
@@ -152,7 +152,7 @@
           "shortDescription": "Avoid uninstantiated internal classes",
           "fullDescription": "An instance of an assembly-level type is not created by code in the assembly.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1812",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1812",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -172,7 +172,7 @@
           "shortDescription": "Mark assemblies with NeutralResourcesLanguageAttribute",
           "fullDescription": "The NeutralResourcesLanguage attribute informs the ResourceManager of the language that was used to display the resources of a neutral culture for an assembly. This improves lookup performance for the first resource that you load and can reduce your working set.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1824",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1824",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -192,7 +192,7 @@
           "shortDescription": "Avoid zero-length array allocations",
           "fullDescription": "Avoid unnecessary zero-length array allocations.  Use {0} instead.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1825",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1825",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -211,7 +211,7 @@
           "shortDescription": "Forward the 'CancellationToken' parameter to methods that take one",
           "fullDescription": "Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2016",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -225,12 +225,32 @@
             ]
           }
         },
+        "CA2200": {
+          "id": "CA2200",
+          "shortDescription": "Rethrow to preserve stack details",
+          "fullDescription": "Re-throwing caught exception changes stack information",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2200",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpRethrowToPreserveStackDetailsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2234": {
           "id": "CA2234",
           "shortDescription": "Pass system uri objects instead of strings",
           "fullDescription": "A call is made to a method that has a string parameter whose name contains \"uri\", \"URI\", \"urn\", \"URN\", \"url\", or \"URL\". The declaring type of the method contains a corresponding method overload that has a System.Uri parameter.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2234",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2234",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -248,9 +268,9 @@
         "CA3076": {
           "id": "CA3076",
           "shortDescription": "Insecure XSLT script processing.",
-          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
+          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3076",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -269,7 +289,7 @@
           "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
           "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3077",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -288,7 +308,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "6.0.0",
+        "version": "5.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -297,7 +317,7 @@
           "shortDescription": "Do not declare static members on generic types",
           "fullDescription": "When a static member of a generic type is called, the type argument must be specified for the type. When a generic instance member that does not support inference is called, the type argument must be specified for the member. In these two cases, the syntax for specifying the type argument is different and easily confused.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1000",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1000",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -318,7 +338,7 @@
           "shortDescription": "Do not expose generic lists",
           "fullDescription": "System.Collections.Generic.List<T> is a generic collection that's designed for performance and not inheritance. List<T> does not contain virtual members that make it easier to change the behavior of an inherited class.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1002",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1002",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -339,7 +359,7 @@
           "shortDescription": "Use generic event handler instances",
           "fullDescription": "A type contains an event that declares an EventHandler delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1003",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1003",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -360,7 +380,7 @@
           "shortDescription": "Avoid excessive parameters on generic types",
           "fullDescription": "The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1005",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1005",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -380,7 +400,7 @@
           "shortDescription": "Enums should have zero value",
           "fullDescription": "The default value of an uninitialized enumeration, just as other value types, is zero. A nonflags-attributed enumeration should define a member by using the value of zero so that the default value is a valid value of the enumeration. If an enumeration that has the FlagsAttribute attribute applied defines a zero-valued member, its name should be \"\"None\"\" to indicate that no values have been set in the enumeration.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1008",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1008",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -402,7 +422,7 @@
           "shortDescription": "Generic interface should also be implemented",
           "fullDescription": "To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1010",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1010",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -423,7 +443,7 @@
           "shortDescription": "Abstract types should not have public constructors",
           "fullDescription": "Constructors on abstract types can be called only by derived types. Because public constructors create instances of a type, and you cannot create instances of an abstract type, an abstract type that has a public constructor is incorrectly designed.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1012",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1012",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -444,7 +464,7 @@
           "shortDescription": "Mark assemblies with CLSCompliant",
           "fullDescription": "The Common Language Specification (CLS) defines naming restrictions, data types, and rules to which assemblies must conform if they will be used across programming languages. Good design dictates that all assemblies explicitly indicate CLS compliance by using CLSCompliantAttribute . If this attribute is not present on an assembly, the assembly is not compliant.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1014",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1014",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -465,7 +485,7 @@
           "shortDescription": "Mark assemblies with assembly version",
           "fullDescription": "The .NET Framework uses the version number to uniquely identify an assembly, and to bind to types in strongly named assemblies. The version number is used together with version and publisher policy. By default, applications run only with the assembly version with which they were built.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1016",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1016",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -486,7 +506,7 @@
           "shortDescription": "Mark assemblies with ComVisible",
           "fullDescription": "ComVisibleAttribute determines how COM clients access managed code. Good design dictates that assemblies explicitly indicate COM visibility. COM visibility can be set for the whole assembly and then overridden for individual types and type members. If this attribute is not present, the contents of the assembly are visible to COM clients.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1017",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1017",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -506,7 +526,7 @@
           "shortDescription": "Mark attributes with AttributeUsageAttribute",
           "fullDescription": "Specify AttributeUsage on {0}",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1018",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1018",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -527,7 +547,7 @@
           "shortDescription": "Avoid out parameters",
           "fullDescription": "Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1021",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1021",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -547,7 +567,7 @@
           "shortDescription": "Use properties where appropriate",
           "fullDescription": "A public or protected method has a name that starts with \"\"Get\"\", takes no parameters, and returns a value that is not an array. The method might be a good candidate to become a property.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1024",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1024",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -568,7 +588,7 @@
           "shortDescription": "Mark enums with FlagsAttribute",
           "fullDescription": "An enumeration is a value type that defines a set of related named constants. Apply FlagsAttribute to an enumeration when its named constants can be meaningfully combined.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1027",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1027",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -589,7 +609,7 @@
           "shortDescription": "Enum Storage should be Int32",
           "fullDescription": "An enumeration is a value type that defines a set of related named constants. By default, the System.Int32 data type is used to store the constant value. Although you can change this underlying type, it is not required or recommended for most scenarios.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1028",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1028",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -610,7 +630,7 @@
           "shortDescription": "Use events where appropriate",
           "fullDescription": "This rule detects methods that have names that ordinarily would be used for events. If a method is called in response to a clearly defined state change, the method should be invoked by an event handler. Objects that call the method should raise events instead of calling the method directly.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1030",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1030",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -631,7 +651,7 @@
           "shortDescription": "Do not catch general exception types",
           "fullDescription": "A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1031",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1031",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -652,7 +672,7 @@
           "shortDescription": "Interface methods should be callable by child types",
           "fullDescription": "An unsealed externally visible type provides an explicit method implementation of a public interface and does not provide an alternative externally visible method that has the same name.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1033",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1033",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -673,7 +693,7 @@
           "shortDescription": "Nested types should not be visible",
           "fullDescription": "A nested type is a type that is declared in the scope of another type. Nested types are useful to encapsulate private implementation details of the containing type. Used for this purpose, nested types should not be externally visible.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1034",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1034",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -694,7 +714,7 @@
           "shortDescription": "Override methods on comparable types",
           "fullDescription": "A public or protected type implements the System.IComparable interface. It does not override Object.Equals nor does it overload the language-specific operator for equality, inequality, less than, less than or equal, greater than or greater than or equal.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1036",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1036",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -715,7 +735,7 @@
           "shortDescription": "Avoid empty interfaces",
           "fullDescription": "Interfaces define members that provide a behavior or usage contract. The functionality that is described by the interface can be adopted by any type, regardless of where the type appears in the inheritance hierarchy. A type implements an interface by providing implementations for the members of the interface. An empty interface does not define any members; therefore, it does not define a contract that can be implemented.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1040",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1040",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -736,7 +756,7 @@
           "shortDescription": "Provide ObsoleteAttribute message",
           "fullDescription": "A type or member is marked by using a System.ObsoleteAttribute attribute that does not have its ObsoleteAttribute.Message property specified. When a type or member that is marked by using ObsoleteAttribute is compiled, the Message property of the attribute is displayed. This gives the user information about the obsolete type or member.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1041",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1041",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -757,7 +777,7 @@
           "shortDescription": "Use Integral Or String Argument For Indexers",
           "fullDescription": "Indexers, that is, indexed properties, should use integer or string types for the index. These types are typically used for indexing data structures and increase the usability of the library. Use of the Object type should be restricted to those cases where the specific integer or string type cannot be specified at design time. If the design requires other types for the index, reconsider whether the type represents a logical data store. If it does not represent a logical data store, use a method.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1043",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1043",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -778,7 +798,7 @@
           "shortDescription": "Properties should not be write only",
           "fullDescription": "Although it is acceptable and often necessary to have a read-only property, the design guidelines prohibit the use of write-only properties. This is because letting a user set a value, and then preventing the user from viewing that value, does not provide any security. Also, without read access, the state of shared objects cannot be viewed, which limits their usefulness.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1044",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1044",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -799,7 +819,7 @@
           "shortDescription": "Do not pass types by reference",
           "fullDescription": "Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1045",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1045",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -819,7 +839,7 @@
           "shortDescription": "Do not overload equality operator on reference types",
           "fullDescription": "For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1046",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1046",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -840,7 +860,7 @@
           "shortDescription": "Do not declare protected member in sealed type",
           "fullDescription": "Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1047",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1047",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -860,7 +880,7 @@
           "shortDescription": "Declare types in namespaces",
           "fullDescription": "Types are declared in namespaces to prevent name collisions and as a way to organize related types in an object hierarchy.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1050",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1050",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -881,7 +901,7 @@
           "shortDescription": "Do not declare visible instance fields",
           "fullDescription": "The primary use of a field should be as an implementation detail. Fields should be private or internal and should be exposed by using properties.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1051",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1051",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -902,7 +922,7 @@
           "shortDescription": "Static holder types should be Static or NotInheritable",
           "fullDescription": "Type '{0}' is a static holder type but is neither static nor NotInheritable",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1052",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1052",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -923,7 +943,7 @@
           "shortDescription": "URI-like parameters should not be strings",
           "fullDescription": "This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1054",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1054",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -944,7 +964,7 @@
           "shortDescription": "URI-like return values should not be strings",
           "fullDescription": "This rule assumes that the method returns a URI. A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1055",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1055",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -965,7 +985,7 @@
           "shortDescription": "URI-like properties should not be strings",
           "fullDescription": "This rule assumes that the property represents a Uniform Resource Identifier (URI). A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1056",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1056",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -986,7 +1006,7 @@
           "shortDescription": "Types should not extend certain base types",
           "fullDescription": "An externally visible type extends certain base types. Use one of the alternatives.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1058",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1058",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -1007,7 +1027,7 @@
           "shortDescription": "Move pinvokes to native methods class",
           "fullDescription": "Platform Invocation methods, such as those that are marked by using the System.Runtime.InteropServices.DllImportAttribute attribute, or methods that are defined by using the Declare keyword in Visual Basic, access unmanaged code. These methods should be of the NativeMethods, SafeNativeMethods, or UnsafeNativeMethods class.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1060",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1060",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -1027,7 +1047,7 @@
           "shortDescription": "Do not hide base class methods",
           "fullDescription": "A method in a base type is hidden by an identically named method in a derived type when the parameter signature of the derived method differs only by types that are more weakly derived than the corresponding types in the parameter signature of the base method.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1061",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1061",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -1048,7 +1068,7 @@
           "shortDescription": "Validate arguments of public methods",
           "fullDescription": "An externally visible method dereferences one of its reference arguments without verifying whether that argument is null (Nothing in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against null. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument. If the method is designed to be called only by known assemblies, you should make the method internal.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1062",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -1070,7 +1090,7 @@
           "shortDescription": "Implement IDisposable Correctly",
           "fullDescription": "All IDisposable types should implement the Dispose pattern correctly.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1063",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1063",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -1091,7 +1111,7 @@
           "shortDescription": "Exceptions should be public",
           "fullDescription": "An internal exception is visible only inside its own internal scope. After the exception falls outside the internal scope, only the base exception can be used to catch the exception. If the internal exception is inherited from T:System.Exception, T:System.SystemException, or T:System.ApplicationException, the external code will not have sufficient information to know what to do with the exception.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1064",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1064",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -1112,7 +1132,7 @@
           "shortDescription": "Implement IEquatable when overriding Object.Equals",
           "fullDescription": "When a type T overrides Object.Equals(object), the implementation must cast the object argument to the correct type T before performing the comparison. If the type implements IEquatable<T>, and therefore offers the method T.Equals(T), and if the argument is known at compile time to be of type T, then the compiler can call IEquatable<T>.Equals(T) instead of Object.Equals(object), and no cast is necessary, improving performance.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1066",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1066",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -1132,7 +1152,7 @@
           "shortDescription": "Override Object.Equals(object) when implementing IEquatable<T>",
           "fullDescription": "When a type T implements the interface IEquatable<T>, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the \"principle of least surprise\".",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1067",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1067",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -1152,7 +1172,7 @@
           "shortDescription": "CancellationToken parameters must come last",
           "fullDescription": "Method '{0}' should take CancellationToken as the last parameter",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1068",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1068",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -1172,7 +1192,7 @@
           "shortDescription": "Enums values should not be duplicated",
           "fullDescription": "The field reference '{0}' is duplicated in this bitwise initialization",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1069",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1069",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -1192,7 +1212,7 @@
           "shortDescription": "Do not declare event fields as virtual",
           "fullDescription": "Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1070",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1070",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -1211,7 +1231,7 @@
           "shortDescription": "Do not pass literals as localized parameters",
           "fullDescription": "A method passes a string literal as a parameter to a constructor or method in the .NET Framework class library and that string should be localizable. To fix a violation of this rule, replace the string literal with a string retrieved through an instance of the ResourceManager class.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1303",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1303",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": false,
@@ -1233,7 +1253,7 @@
           "shortDescription": "Specify CultureInfo",
           "fullDescription": "A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1304",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1304",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": true,
@@ -1254,7 +1274,7 @@
           "shortDescription": "Specify IFormatProvider",
           "fullDescription": "A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1305",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1305",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": true,
@@ -1275,7 +1295,7 @@
           "shortDescription": "Specify StringComparison for clarity",
           "fullDescription": "A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1307",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1307",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": false,
@@ -1296,7 +1316,7 @@
           "shortDescription": "Normalize strings to uppercase",
           "fullDescription": "Strings should be normalized to uppercase. A small group of characters cannot make a round trip when they are converted to lowercase. To make a round trip means to convert the characters from one locale to another locale that represents character data differently, and then to accurately retrieve the original characters from the converted characters.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1308",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1308",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": false,
@@ -1317,7 +1337,7 @@
           "shortDescription": "Specify StringComparison for correctness",
           "fullDescription": "A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1310",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1310",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": true,
@@ -1337,7 +1357,7 @@
           "shortDescription": "P/Invokes should not be visible",
           "fullDescription": "A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1401",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1401",
           "properties": {
             "category": "Interoperability",
             "isEnabledByDefault": true,
@@ -1358,7 +1378,7 @@
           "shortDescription": "Validate platform compatibility",
           "fullDescription": "Using platform dependent API on a component makes the code no longer work across all platforms.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1416",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1416",
           "properties": {
             "category": "Interoperability",
             "isEnabledByDefault": true,
@@ -1378,7 +1398,7 @@
           "shortDescription": "Do not use 'OutAttribute' on string parameters for P/Invokes",
           "fullDescription": "String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1417",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1417",
           "properties": {
             "category": "Interoperability",
             "isEnabledByDefault": true,
@@ -1398,7 +1418,7 @@
           "shortDescription": "Avoid excessive inheritance",
           "fullDescription": "Deeply nested type hierarchies can be difficult to follow, understand, and maintain. This rule limits analysis to hierarchies in the same module. To fix a violation of this rule, derive the type from a base type that is less deep in the inheritance hierarchy or eliminate some of the intermediate base types.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1501",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501",
           "properties": {
             "category": "Maintainability",
             "isEnabledByDefault": false,
@@ -1418,7 +1438,7 @@
           "shortDescription": "Avoid excessive complexity",
           "fullDescription": "Cyclomatic complexity measures the number of linearly independent paths through the method, which is determined by the number and complexity of conditional branches. A low cyclomatic complexity generally indicates a method that is easy to understand, test, and maintain. The cyclomatic complexity is calculated from a control flow graph of the method and is given as follows: `cyclomatic complexity = the number of edges - the number of nodes + 1`, where a node represents a logic branch point and an edge represents a line between nodes.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1502",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1502",
           "properties": {
             "category": "Maintainability",
             "isEnabledByDefault": false,
@@ -1438,7 +1458,7 @@
           "shortDescription": "Avoid unmaintainable code",
           "fullDescription": "The maintainability index is calculated by using the following metrics: lines of code, program volume, and cyclomatic complexity. Program volume is a measure of the difficulty of understanding of a symbol that is based on the number of operators and operands in the code. Cyclomatic complexity is a measure of the structural complexity of the type or method. A low maintainability index indicates that code is probably difficult to maintain and would be a good candidate to redesign.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1505",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1505",
           "properties": {
             "category": "Maintainability",
             "isEnabledByDefault": false,
@@ -1458,7 +1478,7 @@
           "shortDescription": "Avoid excessive class coupling",
           "fullDescription": "This rule measures class coupling by counting the number of unique type references that a symbol contains. Symbols that have a high degree of class coupling can be difficult to maintain. It is a good practice to have types and methods that exhibit low coupling and high cohesion. To fix this violation, try to redesign the code to reduce the number of types to which it is coupled.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1506",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1506",
           "properties": {
             "category": "Maintainability",
             "isEnabledByDefault": false,
@@ -1478,7 +1498,7 @@
           "shortDescription": "Avoid dead conditional code",
           "fullDescription": "'{0}' is never '{1}'. Remove or refactor the condition(s) to avoid dead code.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1508",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508",
           "properties": {
             "category": "Maintainability",
             "isEnabledByDefault": false,
@@ -1499,7 +1519,7 @@
           "shortDescription": "Invalid entry in code metrics rule specification file",
           "fullDescription": "Invalid entry in code metrics rule specification file.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1509",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1509",
           "properties": {
             "category": "Maintainability",
             "isEnabledByDefault": false,
@@ -1518,7 +1538,7 @@
           "shortDescription": "Do not name enum values 'Reserved'",
           "fullDescription": "This rule assumes that an enumeration member that has a name that contains \"reserved\" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1700",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": false,
@@ -1539,7 +1559,7 @@
           "shortDescription": "Identifiers should not contain underscores",
           "fullDescription": "By convention, identifier names do not contain the underscore (_) character. This rule checks namespaces, types, members, and parameters.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1707",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1707",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1560,7 +1580,7 @@
           "shortDescription": "Identifiers should differ by more than case",
           "fullDescription": "Identifiers for namespaces, types, members, and parameters cannot differ only by case because languages that target the common language runtime are not required to be case-sensitive.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1708",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1708",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1581,7 +1601,7 @@
           "shortDescription": "Identifiers should have correct suffix",
           "fullDescription": "By convention, the names of types that extend certain base types or that implement certain interfaces, or types that are derived from these types, have a suffix that is associated with the base type or interface.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1710",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1710",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1602,7 +1622,7 @@
           "shortDescription": "Identifiers should not have incorrect suffix",
           "fullDescription": "By convention, only the names of types that extend certain base types or that implement certain interfaces, or types that are derived from these types, should end with specific reserved suffixes. Other type names should not use these reserved suffixes.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1711",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1711",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1623,7 +1643,7 @@
           "shortDescription": "Do not prefix enum values with type name",
           "fullDescription": "An enumeration's values should not start with the type name of the enumeration.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1712",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1712",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1644,7 +1664,7 @@
           "shortDescription": "Events should not have 'Before' or 'After' prefix",
           "fullDescription": "Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1713",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1713",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": false,
@@ -1665,7 +1685,7 @@
           "shortDescription": "Identifiers should have correct prefix",
           "fullDescription": "The name of an externally visible interface does not start with an uppercase \"\"I\"\". The name of a generic type parameter on an externally visible type or method does not start with an uppercase \"\"T\"\".",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1715",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1715",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1686,7 +1706,7 @@
           "shortDescription": "Identifiers should not match keywords",
           "fullDescription": "A namespace name or a type name matches a reserved keyword in a programming language. Identifiers for namespaces and types should not match keywords that are defined by languages that target the common language runtime.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1716",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1716",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1707,7 +1727,7 @@
           "shortDescription": "Identifier contains type name",
           "fullDescription": "Names of parameters and members are better used to communicate their meaning than to describe their type, which is expected to be provided by development tools. For names of members, if a data type name must be used, use a language-independent name instead of a language-specific one.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1720",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1720",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1728,7 +1748,7 @@
           "shortDescription": "Property names should not match get methods",
           "fullDescription": "The name of a public or protected member starts with \"\"Get\"\" and otherwise matches the name of a public or protected property. \"\"Get\"\" methods and properties should have names that clearly distinguish their function.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1721",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1721",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": false,
@@ -1749,7 +1769,7 @@
           "shortDescription": "Type names should not match namespaces",
           "fullDescription": "Type names should not match the names of namespaces that are defined in the .NET Framework class library. Violating this rule can reduce the usability of the library.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1724",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1724",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": false,
@@ -1770,7 +1790,7 @@
           "shortDescription": "Parameter names should match base declaration",
           "fullDescription": "Consistent naming of parameters in an override hierarchy increases the usability of the method overrides. A parameter name in a derived method that differs from the name in the base declaration can cause confusion about whether the method is an override of the base method or a new overload of the method.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1725",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1725",
           "properties": {
             "category": "Naming",
             "isEnabledByDefault": true,
@@ -1791,7 +1811,7 @@
           "shortDescription": "Review unused parameters",
           "fullDescription": "Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1801",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -1812,7 +1832,7 @@
           "shortDescription": "Use literals where appropriate",
           "fullDescription": "A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1802",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -1833,7 +1853,7 @@
           "shortDescription": "Do not initialize unnecessarily",
           "fullDescription": "The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1805",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1805",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -1854,7 +1874,7 @@
           "shortDescription": "Do not ignore method results",
           "fullDescription": "A new object is created but never used; or a method that creates and returns a new string is called and the new string is never used; or a COM or P/Invoke method returns an HRESULT or error code that is never used.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1806",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1806",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -1875,7 +1895,7 @@
           "shortDescription": "Initialize reference type static fields inline",
           "fullDescription": "A reference type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1810",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1810",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -1896,7 +1916,7 @@
           "shortDescription": "Avoid unsealed attributes",
           "fullDescription": "The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1813",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1813",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -1917,7 +1937,7 @@
           "shortDescription": "Prefer jagged arrays over multidimensional",
           "fullDescription": "A jagged array is an array whose elements are arrays. The arrays that make up the elements can be of different sizes, leading to less wasted space for some sets of data.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1814",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1814",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -1938,7 +1958,7 @@
           "shortDescription": "Override equals and operator equals on value types",
           "fullDescription": "For value types, the inherited implementation of Equals uses the Reflection library and compares the contents of all fields. Reflection is computationally expensive, and comparing every field for equality might be unnecessary. If you expect users to compare or sort instances, or to use instances as hash table keys, your value type should implement Equals.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1815",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1815",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -1959,7 +1979,7 @@
           "shortDescription": "Dispose methods should call SuppressFinalize",
           "fullDescription": "A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1816",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1816",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -1980,7 +2000,7 @@
           "shortDescription": "Properties should not return arrays",
           "fullDescription": "Arrays that are returned by properties are not write-protected, even when the property is read-only. To keep the array tamper-proof, the property must return a copy of the array. Typically, users will not understand the adverse performance implications of calling such a property.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1819",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1819",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -2001,7 +2021,7 @@
           "shortDescription": "Test for empty strings using string length",
           "fullDescription": "Comparing strings by using the String.Length property or the String.IsNullOrEmpty method is significantly faster than using Equals.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1820",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1820",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -2021,7 +2041,7 @@
           "shortDescription": "Remove empty Finalizers",
           "fullDescription": "Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1821",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1821",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2042,7 +2062,7 @@
           "shortDescription": "Mark members as static",
           "fullDescription": "Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1822",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2063,7 +2083,7 @@
           "shortDescription": "Avoid unused private fields",
           "fullDescription": "Private fields were detected that do not appear to be accessed in the assembly.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1823",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1823",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -2084,7 +2104,7 @@
           "shortDescription": "Do not use Enumerable methods on indexable collections",
           "fullDescription": "This collection is directly indexable. Going through LINQ here causes unnecessary allocations and CPU work.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1826",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1826",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2104,7 +2124,7 @@
           "shortDescription": "Do not use Count() or LongCount() when Any() can be used",
           "fullDescription": "For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1827",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1827",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2124,7 +2144,7 @@
           "shortDescription": "Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used",
           "fullDescription": "For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1828",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1828",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2144,7 +2164,7 @@
           "shortDescription": "Use Length/Count property instead of Count() when available",
           "fullDescription": "Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1829",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1829",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2164,7 +2184,7 @@
           "shortDescription": "Prefer strongly-typed Append and Insert method overloads on StringBuilder",
           "fullDescription": "StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1830",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1830",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2184,7 +2204,7 @@
           "shortDescription": "Use AsSpan or AsMemory instead of Range-based indexers when appropriate",
           "fullDescription": "The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1831",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1831",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2204,7 +2224,7 @@
           "shortDescription": "Use AsSpan or AsMemory instead of Range-based indexers when appropriate",
           "fullDescription": "The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1832",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1832",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2224,7 +2244,7 @@
           "shortDescription": "Use AsSpan or AsMemory instead of Range-based indexers when appropriate",
           "fullDescription": "The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1833",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1833",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2244,7 +2264,7 @@
           "shortDescription": "Consider using 'StringBuilder.Append(char)' when applicable",
           "fullDescription": "'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1834",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1834",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2264,7 +2284,7 @@
           "shortDescription": "Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'",
           "fullDescription": "'Stream' has a 'ReadAsync' overload that takes a 'Memory<Byte>' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory<Byte>' as the first argument. Prefer calling the memory based overloads, which are more efficient.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1835",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1835",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2284,7 +2304,7 @@
           "shortDescription": "Prefer IsEmpty over Count",
           "fullDescription": "For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1836",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1836",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2304,7 +2324,7 @@
           "shortDescription": "Use 'Environment.ProcessId'",
           "fullDescription": "'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1837",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1837",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2324,7 +2344,7 @@
           "shortDescription": "Avoid 'StringBuilder' parameters for P/Invokes",
           "fullDescription": "Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1838",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1838",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -2344,7 +2364,7 @@
           "shortDescription": "Dispose objects before losing scope",
           "fullDescription": "If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2000",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": false,
@@ -2366,7 +2386,7 @@
           "shortDescription": "Do not lock on objects with weak identity",
           "fullDescription": "An object is said to have a weak identity when it can be directly accessed across application domain boundaries. A thread that tries to acquire a lock on an object that has a weak identity can be blocked by a second thread in a different application domain that has a lock on the same object.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2002",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2002",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": false,
@@ -2387,7 +2407,7 @@
           "shortDescription": "Consider calling ConfigureAwait on the awaited task",
           "fullDescription": "When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. Call ConfigureAwait(false) on the task to schedule continuations to the thread pool, thereby avoiding a deadlock on the UI thread. Passing false is a good option for app-independent libraries. Calling ConfigureAwait(true) on the task has the same behavior as not explicitly calling ConfigureAwait. By explicitly calling this method, you're letting readers know you intentionally want to perform the continuation on the original synchronization context.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2007",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": false,
@@ -2407,7 +2427,7 @@
           "shortDescription": "Do not create tasks without passing a TaskScheduler",
           "fullDescription": "Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2008",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2008",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": false,
@@ -2427,7 +2447,7 @@
           "shortDescription": "Do not call ToImmutableCollection on an ImmutableCollection value",
           "fullDescription": "Do not call {0} on an {1} value",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2009",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2009",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -2447,7 +2467,7 @@
           "shortDescription": "Avoid infinite recursion",
           "fullDescription": "Do not assign the property within its setter. This call might result in an infinite recursion.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2011",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2011",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -2467,7 +2487,7 @@
           "shortDescription": "Use ValueTasks correctly",
           "fullDescription": "ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2012",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2012",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -2487,7 +2507,7 @@
           "shortDescription": "Do not use ReferenceEquals with value types",
           "fullDescription": "Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2013",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2013",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -2507,7 +2527,7 @@
           "shortDescription": "Do not use stackalloc in loops",
           "fullDescription": "Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2014",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2014",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -2526,7 +2546,7 @@
           "shortDescription": "Do not define finalizers for types derived from MemoryManager<T>",
           "fullDescription": "Adding a finalizer to a type derived from MemoryManager<T> may permit memory to be freed while it is still in use by a Span<T>.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2015",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2015",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -2546,7 +2566,7 @@
           "shortDescription": "Review SQL queries for security vulnerabilities",
           "fullDescription": "SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2100",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -2568,7 +2588,7 @@
           "shortDescription": "Specify marshaling for P/Invoke string arguments",
           "fullDescription": "A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2101",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2101",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": true,
@@ -2589,7 +2609,7 @@
           "shortDescription": "Review visible event handlers",
           "fullDescription": "A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2109",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -2610,7 +2630,7 @@
           "shortDescription": "Seal methods that satisfy private interfaces",
           "fullDescription": "An inheritable public type provides an overridable method implementation of an internal (Friend in Visual Basic) interface. To fix a violation of this rule, prevent the method from being overridden outside the assembly.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2119",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2119",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -2631,7 +2651,7 @@
           "shortDescription": "Do Not Catch Corrupted State Exceptions",
           "fullDescription": "Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2153",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2153",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -2646,33 +2666,12 @@
             ]
           }
         },
-        "CA2200": {
-          "id": "CA2200",
-          "shortDescription": "Rethrow to preserve stack details",
-          "fullDescription": "Re-throwing caught exception changes stack information",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2200",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "RethrowToPreserveStackDetailsAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA2201": {
           "id": "CA2201",
           "shortDescription": "Do not raise reserved exception types",
           "fullDescription": "An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2201",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2201",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -2693,7 +2692,7 @@
           "shortDescription": "Initialize value type static fields inline",
           "fullDescription": "A value type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2207",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2207",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -2714,7 +2713,7 @@
           "shortDescription": "Instantiate argument exceptions correctly",
           "fullDescription": "A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2208",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2208",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -2735,7 +2734,7 @@
           "shortDescription": "Non-constant fields should not be visible",
           "fullDescription": "Static fields that are neither constants nor read-only are not thread-safe. Access to such a field must be carefully controlled and requires advanced programming techniques to synchronize access to the class object.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2211",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2211",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -2756,7 +2755,7 @@
           "shortDescription": "Disposable fields should be disposed",
           "fullDescription": "A type that implements System.IDisposable declares fields that are of types that also implement IDisposable. The Dispose method of the field is not called by the Dispose method of the declaring type. To fix a violation of this rule, call Dispose on fields that are of types that implement IDisposable if you are responsible for allocating and releasing the unmanaged resources held by the field.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2213",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2213",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -2778,7 +2777,7 @@
           "shortDescription": "Do not call overridable methods in constructors",
           "fullDescription": "Virtual methods defined on the class should not be called from constructors. If a derived class has overridden the method, the derived class version will be called (before the derived class constructor is called).",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2214",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2214",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -2799,7 +2798,7 @@
           "shortDescription": "Dispose methods should call base class dispose",
           "fullDescription": "A type that implements System.IDisposable inherits from a type that also implements IDisposable. The Dispose method of the inheriting type does not call the Dispose method of the parent type. To fix a violation of this rule, call base.Dispose in your Dispose method.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2215",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2215",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -2820,7 +2819,7 @@
           "shortDescription": "Disposable types should declare finalizer",
           "fullDescription": "A type that implements System.IDisposable and has fields that suggest the use of unmanaged resources does not implement a finalizer, as described by Object.Finalize.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2216",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2216",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -2841,7 +2840,7 @@
           "shortDescription": "Do not mark enums with FlagsAttribute",
           "fullDescription": "An externally visible enumeration is marked by using FlagsAttribute, and it has one or more values that are not powers of two or a combination of the other defined values on the enumeration.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2217",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2217",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -2862,7 +2861,7 @@
           "shortDescription": "Do not raise exceptions in finally clauses",
           "fullDescription": "When an exception is raised in a finally clause, the new exception hides the active exception. This makes the original error difficult to detect and debug.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2219",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2219",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -2883,7 +2882,7 @@
           "shortDescription": "Operator overloads have named alternates",
           "fullDescription": "An operator overload was detected, and the expected named alternative method was not found. The named alternative member provides access to the same functionality as the operator and is provided for developers who program in languages that do not support overloaded operators.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2225",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2225",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -2904,7 +2903,7 @@
           "shortDescription": "Operators should have symmetrical overloads",
           "fullDescription": "A type implements the equality or inequality operator and does not implement the opposite operator.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2226",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2226",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -2925,7 +2924,7 @@
           "shortDescription": "Collection properties should be read only",
           "fullDescription": "A writable collection property allows a user to replace the collection with a different collection. A read-only property stops the collection from being replaced but still allows the individual members to be set.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2227",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2227",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -2946,7 +2945,7 @@
           "shortDescription": "Implement serialization constructors",
           "fullDescription": "To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2229",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2229",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -2967,7 +2966,7 @@
           "shortDescription": "Overload operator equals on overriding value type Equals",
           "fullDescription": "In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2231",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2231",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -2988,7 +2987,7 @@
           "shortDescription": "Mark all non-serializable fields",
           "fullDescription": "An instance field of a type that is not serializable is declared in a type that is serializable.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2235",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2235",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -3009,7 +3008,7 @@
           "shortDescription": "Mark ISerializable types with serializable",
           "fullDescription": "To be recognized by the common language runtime as serializable, types must be marked by using the SerializableAttribute attribute even when the type uses a custom serialization routine through implementation of the ISerializable interface.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2237",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2237",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -3030,7 +3029,7 @@
           "shortDescription": "Provide correct arguments to formatting methods",
           "fullDescription": "The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2241",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2241",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -3051,7 +3050,7 @@
           "shortDescription": "Test for NaN correctly",
           "fullDescription": "This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2242",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2242",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -3072,7 +3071,7 @@
           "shortDescription": "Attribute string literals should parse correctly",
           "fullDescription": "The string literal parameter of an attribute does not parse correctly for a URL, a GUID, or a version.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2243",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2243",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -3093,7 +3092,7 @@
           "shortDescription": "Do not duplicate indexed element initializations",
           "fullDescription": "Indexed elements in objects initializers must initialize unique elements. A duplicate index might overwrite a previous element initialization.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2244",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2244",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -3112,7 +3111,7 @@
           "shortDescription": "Do not assign a property to itself",
           "fullDescription": "The property {0} should not be assigned to itself",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2245",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2245",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -3132,7 +3131,7 @@
           "shortDescription": "Assigning symbol and its member in the same statement",
           "fullDescription": "Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2246",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2246",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -3151,7 +3150,7 @@
           "shortDescription": "Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum",
           "fullDescription": "TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2247",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2247",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -3171,7 +3170,7 @@
           "shortDescription": "Provide correct 'enum' argument to 'Enum.HasFlag'",
           "fullDescription": "'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2248",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2248",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -3191,7 +3190,7 @@
           "shortDescription": "Consider using 'string.Contains' instead of 'string.IndexOf'",
           "fullDescription": "Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2249",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2249",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -3211,7 +3210,7 @@
           "shortDescription": "Do not use insecure deserializer BinaryFormatter",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2300",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3231,7 +3230,7 @@
           "shortDescription": "Do not call BinaryFormatter.Deserialize without first setting BinaryFormatter.Binder",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2301",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2301",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3252,7 +3251,7 @@
           "shortDescription": "Ensure BinaryFormatter.Binder is set before calling BinaryFormatter.Deserialize",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2302",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2302",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3273,7 +3272,7 @@
           "shortDescription": "Do not use insecure deserializer LosFormatter",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2305",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2305",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3293,7 +3292,7 @@
           "shortDescription": "Do not use insecure deserializer NetDataContractSerializer",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect NetDataContractSerializer deserialization without a SerializationBinder set, then disable rule CA2310, and enable rules CA2311 and CA2312.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2310",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2310",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3313,7 +3312,7 @@
           "shortDescription": "Do not deserialize without first setting NetDataContractSerializer.Binder",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2311",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2311",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3334,7 +3333,7 @@
           "shortDescription": "Ensure NetDataContractSerializer.Binder is set before deserializing",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data without a SerializationBinder to restrict the type of objects in the deserialized object graph.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2312",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2312",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3355,7 +3354,7 @@
           "shortDescription": "Do not use insecure deserializer ObjectStateFormatter",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2315",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2315",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3375,7 +3374,7 @@
           "shortDescription": "Do not deserialize with JavaScriptSerializer using a SimpleTypeResolver",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Initialize JavaScriptSerializer without a JavaScriptTypeResolver specified, or initialize with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2321",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2321",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3396,7 +3395,7 @@
           "shortDescription": "Ensure JavaScriptSerializer is not initialized with SimpleTypeResolver before deserializing",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data with a JavaScriptSerializer initialized with a SimpleTypeResolver. Ensure that the JavaScriptSerializer is initialized without a JavaScriptTypeResolver specified, or initialized with a JavaScriptTypeResolver that limits the types of objects in the deserialized object graph.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2322",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2322",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3417,7 +3416,7 @@
           "shortDescription": "Do not use TypeNameHandling values other than None",
           "fullDescription": "Deserializing JSON when using a TypeNameHandling value other than None can be insecure.  If you need to instead detect Json.NET deserialization when a SerializationBinder isn't specified, then disable rule CA2326, and enable rules CA2327, CA2328, CA2329, and CA2330.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2326",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2326",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3437,7 +3436,7 @@
           "shortDescription": "Do not use insecure JsonSerializerSettings",
           "fullDescription": "When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2327",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2327",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3458,7 +3457,7 @@
           "shortDescription": "Ensure that JsonSerializerSettings are secure",
           "fullDescription": "When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure.  When using JsonSerializerSettings, ensure TypeNameHandling.None is specified, or for values other than None, ensure a SerializationBinder is specified to restrict deserialized types.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2328",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2328",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3479,7 +3478,7 @@
           "shortDescription": "Do not deserialize with JsonSerializer using an insecure configuration",
           "fullDescription": "When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2329",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2329",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3500,7 +3499,7 @@
           "shortDescription": "Ensure that JsonSerializer has a secure configuration when deserializing",
           "fullDescription": "When deserializing untrusted input, allowing arbitrary types to be deserialized is insecure. When using deserializing JsonSerializer, use TypeNameHandling.None, or for values other than None, restrict deserialized types with a SerializationBinder.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2330",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2330",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3521,7 +3520,7 @@
           "shortDescription": "Do not use DataTable.ReadXml() with untrusted data",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2350",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2350",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3541,7 +3540,7 @@
           "shortDescription": "Do not use DataSet.ReadXml() with untrusted data",
           "fullDescription": "The method '{0}' is insecure when deserializing untrusted data",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2351",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2351",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3561,7 +3560,7 @@
           "shortDescription": "Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks",
           "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2352",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2352",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3581,7 +3580,7 @@
           "shortDescription": "Unsafe DataSet or DataTable in serializable type",
           "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2353",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2353",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3601,7 +3600,7 @@
           "shortDescription": "Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks",
           "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2354",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2354",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3621,7 +3620,7 @@
           "shortDescription": "Unsafe DataSet or DataTable type found in deserializable object graph",
           "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2355",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2355",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3641,7 +3640,7 @@
           "shortDescription": "Unsafe DataSet or DataTable type in web deserializable object graph",
           "fullDescription": "When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2356",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2356",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3658,10 +3657,10 @@
         },
         "CA2361": {
           "id": "CA2361",
-          "shortDescription": "Ensure auto-generated class containing DataSet.ReadXml() is not used with untrusted data",
-          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. Make sure that auto-generated class containing the '{0}' call is not deserialized with untrusted data.",
+          "shortDescription": "Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data",
+          "fullDescription": "The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2361",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2361",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3678,10 +3677,10 @@
         },
         "CA2362": {
           "id": "CA2362",
-          "shortDescription": "Unsafe DataSet or DataTable in auto-generated serializable type can be vulnerable to remote code execution attacks",
-          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the auto-generated type is never deserialized with untrusted data.",
+          "shortDescription": "Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks",
+          "fullDescription": "When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2362",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2362",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3701,7 +3700,7 @@
           "shortDescription": "Review code for SQL injection vulnerabilities",
           "fullDescription": "Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3001",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3001",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3722,7 +3721,7 @@
           "shortDescription": "Review code for XSS vulnerabilities",
           "fullDescription": "Potential cross-site scripting (XSS) vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3002",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3002",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3743,7 +3742,7 @@
           "shortDescription": "Review code for file path injection vulnerabilities",
           "fullDescription": "Potential file path injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3003",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3003",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3764,7 +3763,7 @@
           "shortDescription": "Review code for information disclosure vulnerabilities",
           "fullDescription": "Potential information disclosure vulnerability was found where '{0}' in method '{1}' may contain unintended information from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3004",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3004",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3785,7 +3784,7 @@
           "shortDescription": "Review code for LDAP injection vulnerabilities",
           "fullDescription": "Potential LDAP injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3005",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3005",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3806,7 +3805,7 @@
           "shortDescription": "Review code for process command injection vulnerabilities",
           "fullDescription": "Potential process command injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3006",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3006",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3827,7 +3826,7 @@
           "shortDescription": "Review code for open redirect vulnerabilities",
           "fullDescription": "Potential open redirect vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3007",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3007",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3848,7 +3847,7 @@
           "shortDescription": "Review code for XPath injection vulnerabilities",
           "fullDescription": "Potential XPath injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3008",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3008",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3869,7 +3868,7 @@
           "shortDescription": "Review code for XML injection vulnerabilities",
           "fullDescription": "Potential XML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3009",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3009",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3890,7 +3889,7 @@
           "shortDescription": "Review code for XAML injection vulnerabilities",
           "fullDescription": "Potential XAML injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3010",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3010",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3911,7 +3910,7 @@
           "shortDescription": "Review code for DLL injection vulnerabilities",
           "fullDescription": "Potential DLL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3011",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3011",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3932,7 +3931,7 @@
           "shortDescription": "Review code for regex injection vulnerabilities",
           "fullDescription": "Potential regex injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3012",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3012",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -3953,7 +3952,7 @@
           "shortDescription": "Do Not Add Schema By URL",
           "fullDescription": "This overload of XmlSchemaCollection.Add method internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3061",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3061",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -3973,7 +3972,7 @@
           "shortDescription": "Insecure DTD processing in XML",
           "fullDescription": "Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null. ",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3075",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3075",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -3993,7 +3992,7 @@
           "shortDescription": "Mark Verb Handlers With Validate Antiforgery Token",
           "fullDescription": "Missing ValidateAntiForgeryTokenAttribute on controller action {0}",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3147",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3147",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4013,7 +4012,7 @@
           "shortDescription": "Do Not Use Weak Cryptographic Algorithms",
           "fullDescription": "Cryptographic algorithms degrade over time as attacks become for advances to attacker get access to more computation. Depending on the type and application of this cryptographic algorithm, further degradation of the cryptographic strength of it may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA-2 512, SHA-2 384, or SHA-2 256.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5350",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5350",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4033,7 +4032,7 @@
           "shortDescription": "Do Not Use Broken Cryptographic Algorithms",
           "fullDescription": "An attack making it computationally feasible to break this algorithm exists. This allows attackers to break the cryptographic guarantees it is designed to provide. Depending on the type and application of this cryptographic algorithm, this may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA512, SHA384, or SHA256. Replace digital signature uses with RSA with a key length greater than or equal to 2048-bits, or ECDSA with a key length greater than or equal to 256 bits.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5351",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5351",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4053,7 +4052,7 @@
           "shortDescription": "Review cipher mode usage with cryptography experts",
           "fullDescription": "These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5358",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5358",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4073,7 +4072,7 @@
           "shortDescription": "Do Not Disable Certificate Validation",
           "fullDescription": "A certificate can help authenticate the identity of the server. Clients should validate the server certificate to ensure requests are sent to the intended server. If the ServerCertificateValidationCallback always returns 'true', any certificate will pass validation.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5359",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5359",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4093,7 +4092,7 @@
           "shortDescription": "Do Not Call Dangerous Methods In Deserialization",
           "fullDescription": "Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5360",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5360",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4111,9 +4110,9 @@
         "CA5361": {
           "id": "CA5361",
           "shortDescription": "Do Not Disable SChannel Use of Strong Crypto",
-          "fullDescription": "Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommended to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.",
+          "fullDescription": "Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5361",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5361",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4134,7 +4133,7 @@
           "shortDescription": "Potential reference cycle in deserialized object graph",
           "fullDescription": "Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5362",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5362",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4154,7 +4153,7 @@
           "shortDescription": "Do Not Disable Request Validation",
           "fullDescription": "Request validation is a feature in ASP.NET that examines HTTP requests and determines whether they contain potentially dangerous content. This check adds protection from markup or code in the URL query string, cookies, or posted form values that might have been added for malicious purposes. So, it is generally desirable and should be left enabled for defense in depth.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5363",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5363",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4174,7 +4173,7 @@
           "shortDescription": "Do Not Use Deprecated Security Protocols",
           "fullDescription": "Using a deprecated security protocol rather than the system default is risky.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5364",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5364",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4194,7 +4193,7 @@
           "shortDescription": "Do Not Disable HTTP Header Checking",
           "fullDescription": "HTTP header checking enables encoding of the carriage return and newline characters, \\r and \\n, that are found in response headers. This encoding can help to avoid injection attacks that exploit an application that echoes untrusted data contained by the header.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5365",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5365",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4211,10 +4210,10 @@
         },
         "CA5366": {
           "id": "CA5366",
-          "shortDescription": "Use XmlReader for 'DataSet.ReadXml()'",
+          "shortDescription": "Use XmlReader For DataSet Read Xml",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5366",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5366",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4234,7 +4233,7 @@
           "shortDescription": "Do Not Serialize Types With Pointer Fields",
           "fullDescription": "Pointers are not \"type safe\" in the sense that you cannot guarantee the correctness of the memory they point at. So, serializing types with pointer fields is dangerous, as it may allow an attacker to control the pointer.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5367",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5367",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4254,7 +4253,7 @@
           "shortDescription": "Set ViewStateUserKey For Classes Derived From Page",
           "fullDescription": "Setting the ViewStateUserKey property can help you prevent attacks on your application by allowing you to assign an identifier to the view-state variable for individual users so that they cannot use the variable to generate an attack. Otherwise, there will be cross-site request forgery vulnerabilities.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5368",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5368",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4271,10 +4270,10 @@
         },
         "CA5369": {
           "id": "CA5369",
-          "shortDescription": "Use XmlReader for 'XmlSerializer.Deserialize()'",
+          "shortDescription": "Use XmlReader For Deserialize",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5369",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5369",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4291,10 +4290,10 @@
         },
         "CA5370": {
           "id": "CA5370",
-          "shortDescription": "Use XmlReader for XmlValidatingReader constructor",
+          "shortDescription": "Use XmlReader For Validating Reader",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5370",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5370",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4311,10 +4310,10 @@
         },
         "CA5371": {
           "id": "CA5371",
-          "shortDescription": "Use XmlReader for 'XmlSchema.Read()'",
+          "shortDescription": "Use XmlReader For Schema Read",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5371",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5371",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4331,10 +4330,10 @@
         },
         "CA5372": {
           "id": "CA5372",
-          "shortDescription": "Use XmlReader for XPathDocument constructor",
+          "shortDescription": "Use XmlReader For XPathDocument",
           "fullDescription": "Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5372",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5372",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4354,7 +4353,7 @@
           "shortDescription": "Do not use obsolete key derivation function",
           "fullDescription": "Password-based key derivation should use PBKDF2 with SHA-2. Avoid using PasswordDeriveBytes since it generates a PBKDF1 key. Avoid using Rfc2898DeriveBytes.CryptDeriveKey since it doesn't use the iteration count or salt.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5373",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5373",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4374,7 +4373,7 @@
           "shortDescription": "Do Not Use XslTransform",
           "fullDescription": "Do not use XslTransform. It does not restrict potentially dangerous external references.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5374",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5374",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4394,7 +4393,7 @@
           "shortDescription": "Do Not Use Account Shared Access Signature",
           "fullDescription": "Shared Access Signatures(SAS) are a vital part of the security model for any application using Azure Storage, they should provide limited and safe permissions to your storage account to clients that don't have the account key. All of the operations available via a service SAS are also available via an account SAS, that is, account SAS is too powerful. So it is recommended to use Service SAS to delegate access more carefully.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5375",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5375",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4414,7 +4413,7 @@
           "shortDescription": "Use SharedAccessProtocol HttpsOnly",
           "fullDescription": "HTTPS encrypts network traffic. Use HttpsOnly, rather than HttpOrHttps, to ensure network traffic is always encrypted to help prevent disclosure of sensitive data.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5376",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5376",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4435,7 +4434,7 @@
           "shortDescription": "Use Container Level Access Policy",
           "fullDescription": "No access policy identifier is specified, making tokens non-revocable.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5377",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5377",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4456,7 +4455,7 @@
           "shortDescription": "Do not disable ServicePointManagerSecurityProtocols",
           "fullDescription": "Do not set Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols to true.  Setting this switch limits Windows Communication Framework (WCF) to using Transport Layer Security (TLS) 1.0, which is insecure and obsolete.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5378",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5378",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4477,7 +4476,7 @@
           "shortDescription": "Do Not Use Weak Key Derivation Function Algorithm",
           "fullDescription": "Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5379",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5379",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4497,7 +4496,7 @@
           "shortDescription": "Do Not Add Certificates To Root Store",
           "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5380",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5380",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4518,7 +4517,7 @@
           "shortDescription": "Ensure Certificates Are Not Added To Root Store",
           "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5381",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5381",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4539,7 +4538,7 @@
           "shortDescription": "Use Secure Cookies In ASP.Net Core",
           "fullDescription": "Applications available over HTTPS must use secure cookies.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5382",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5382",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4560,7 +4559,7 @@
           "shortDescription": "Ensure Use Secure Cookies In ASP.Net Core",
           "fullDescription": "Applications available over HTTPS must use secure cookies.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5383",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5383",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4581,7 +4580,7 @@
           "shortDescription": "Do Not Use Digital Signature Algorithm (DSA)",
           "fullDescription": "DSA is too weak to use.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5384",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5384",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4601,7 +4600,7 @@
           "shortDescription": "Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size",
           "fullDescription": "Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5385",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5385",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4621,7 +4620,7 @@
           "shortDescription": "Avoid hardcoding SecurityProtocolType value",
           "fullDescription": "Avoid hardcoding SecurityProtocolType {0}, and instead use SecurityProtocolType.SystemDefault to allow the operating system to choose the best Transport Layer Security protocol to use.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5386",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5386",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4641,7 +4640,7 @@
           "shortDescription": "Do Not Use Weak Key Derivation Function With Insufficient Iteration Count",
           "fullDescription": "When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5387",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5387",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4662,7 +4661,7 @@
           "shortDescription": "Ensure Sufficient Iteration Count When Using Weak Key Derivation Function",
           "fullDescription": "When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5388",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5388",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4683,7 +4682,7 @@
           "shortDescription": "Do Not Add Archive Item's Path To The Target File System Path",
           "fullDescription": "When extracting files from an archive and using the archive item's path, check if the path is safe. Archive path can be relative and can lead to file system access outside of the expected file system target path, leading to malicious config changes and remote code execution via lay-and-wait technique.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5389",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5389",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4704,7 +4703,7 @@
           "shortDescription": "Do not hard-code encryption key",
           "fullDescription": "SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5390",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5390",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4725,7 +4724,7 @@
           "shortDescription": "Use antiforgery tokens in ASP.NET Core MVC controllers",
           "fullDescription": "Handling a POST, PUT, PATCH, or DELETE request without validating an antiforgery token may be vulnerable to cross-site request forgery attacks. A cross-site request forgery attack can send malicious requests from an authenticated user to your ASP.NET Core MVC controller.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5391",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5391",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4745,7 +4744,7 @@
           "shortDescription": "Use DefaultDllImportSearchPaths attribute for P/Invokes",
           "fullDescription": "By default, P/Invokes using DllImportAttribute probe a number of directories, including the current working directory for the library to load. This can be a security issue for certain applications, leading to DLL hijacking.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5392",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5392",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4765,7 +4764,7 @@
           "shortDescription": "Do not use unsafe DllImportSearchPath value",
           "fullDescription": "There could be a malicious DLL in the default DLL search directories. Or, depending on where your application is run from, there could be a malicious DLL in the application's directory. Use a DllImportSearchPath value that specifies an explicit search path instead. The DllImportSearchPath flags that this rule looks for can be configured in .editorconfig.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5393",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5393",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4785,7 +4784,7 @@
           "shortDescription": "Do not use insecure randomness",
           "fullDescription": "Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5394",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5394",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4805,7 +4804,7 @@
           "shortDescription": "Miss HttpVerb attribute for action methods",
           "fullDescription": "All the methods that create, edit, delete, or otherwise modify data do so in the [HttpPost] overload of the method, which needs to be protected with the anti forgery attribute from request forgery. Performing a GET operation should be a safe operation that has no side effects and doesn't modify your persisted data.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5395",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5395",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4825,7 +4824,7 @@
           "shortDescription": "Set HttpOnly to true for HttpCookie",
           "fullDescription": "As a defense in depth measure, ensure security sensitive HTTP cookies are marked as HttpOnly. This indicates web browsers should disallow scripts from accessing the cookies. Injected malicious scripts are a common way of stealing cookies.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5396",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5396",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4846,7 +4845,7 @@
           "shortDescription": "Do not use deprecated SslProtocols values",
           "fullDescription": "Older protocol versions of Transport Layer Security (TLS) are less secure than TLS 1.2 and TLS 1.3, and are more likely to have new vulnerabilities. Avoid older protocol versions to minimize risk.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5397",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5397",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -4866,7 +4865,7 @@
           "shortDescription": "Avoid hardcoded SslProtocols values",
           "fullDescription": "Current Transport Layer Security protocol versions may become deprecated if vulnerabilities are found. Avoid hardcoding SslProtocols values to keep your application secure. Use 'None' to let the Operating System choose a version.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5398",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5398",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4886,7 +4885,7 @@
           "shortDescription": "HttpClients should enable certificate revocation list checks",
           "fullDescription": "Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5399",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5399",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4907,7 +4906,7 @@
           "shortDescription": "Ensure HttpClient certificate revocation list check is not disabled",
           "fullDescription": "Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5400",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5400",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4928,7 +4927,7 @@
           "shortDescription": "Do not use CreateEncryptor with non-default IV",
           "fullDescription": "Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5401",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5401",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4949,7 +4948,7 @@
           "shortDescription": "Use CreateEncryptor with the default IV ",
           "fullDescription": "Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5402",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5402",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4970,7 +4969,7 @@
           "shortDescription": "Do not hard-code certificate",
           "fullDescription": "Hard-coded certificates in source code are vulnerable to being exploited.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca5403",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5403",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": false,
@@ -4991,7 +4990,7 @@
           "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
           "fullDescription": "'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/il3000",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3000",
           "properties": {
             "category": "Publish",
             "isEnabledByDefault": true,
@@ -5011,7 +5010,7 @@
           "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
           "fullDescription": "'{0}' will throw for assemblies embedded in a single-file app",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/il3001",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3001",
           "properties": {
             "category": "Publish",
             "isEnabledByDefault": true,
@@ -5031,7 +5030,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "6.0.0",
+        "version": "5.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -5040,7 +5039,7 @@
           "shortDescription": "Types that own disposable fields should be disposable",
           "fullDescription": "A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1001",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": true,
@@ -5060,7 +5059,7 @@
           "shortDescription": "Define accessors for attribute arguments",
           "fullDescription": "Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1019",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1019",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -5080,7 +5079,7 @@
           "shortDescription": "Implement standard exception constructors",
           "fullDescription": "Failure to provide the full set of constructors can make it difficult to correctly handle exceptions.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1032",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1032",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -5100,7 +5099,7 @@
           "shortDescription": "Do not raise exceptions in unexpected locations",
           "fullDescription": "A method that is not expected to throw exceptions throws an exception.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1065",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1065",
           "properties": {
             "category": "Design",
             "isEnabledByDefault": false,
@@ -5120,7 +5119,7 @@
           "shortDescription": "Avoid using cref tags with a prefix",
           "fullDescription": "Use of cref tags with prefixes should be avoided, since it prevents the compiler from verifying references and the IDE from updating references during refactorings. It is permissible to suppress this error at a single documentation site if the cref must use a prefix because the type being mentioned is not findable by the compiler. For example, if a cref is mentioning a special attribute in the full framework but you're in a file that compiles against the portable framework, or if you want to reference a type at higher layer of Roslyn, you should suppress the error. You should not suppress the error just because you want to take a shortcut and avoid using the full syntax.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1200",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1200",
           "properties": {
             "category": "Documentation",
             "isEnabledByDefault": true,
@@ -5139,7 +5138,7 @@
           "shortDescription": "Use ordinal string comparison",
           "fullDescription": "A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1309",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1309",
           "properties": {
             "category": "Globalization",
             "isEnabledByDefault": true,
@@ -5159,7 +5158,7 @@
           "shortDescription": "Use nameof to express symbol names",
           "fullDescription": "Using nameof helps keep your code valid when refactoring.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1507",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1507",
           "properties": {
             "category": "Maintainability",
             "isEnabledByDefault": true,
@@ -5178,7 +5177,7 @@
           "shortDescription": "Avoid uninstantiated internal classes",
           "fullDescription": "An instance of an assembly-level type is not created by code in the assembly.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1812",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1812",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": false,
@@ -5198,7 +5197,7 @@
           "shortDescription": "Mark assemblies with NeutralResourcesLanguageAttribute",
           "fullDescription": "The NeutralResourcesLanguage attribute informs the ResourceManager of the language that was used to display the resources of a neutral culture for an assembly. This improves lookup performance for the first resource that you load and can reduce your working set.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1824",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1824",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -5218,7 +5217,7 @@
           "shortDescription": "Avoid zero-length array allocations",
           "fullDescription": "Avoid unnecessary zero-length array allocations.  Use {0} instead.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca1825",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1825",
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
@@ -5237,7 +5236,7 @@
           "shortDescription": "Forward the 'CancellationToken' parameter to methods that take one",
           "fullDescription": "Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2016",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016",
           "properties": {
             "category": "Reliability",
             "isEnabledByDefault": true,
@@ -5251,12 +5250,32 @@
             ]
           }
         },
+        "CA2200": {
+          "id": "CA2200",
+          "shortDescription": "Rethrow to preserve stack details",
+          "fullDescription": "Re-throwing caught exception changes stack information",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2200",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "BasicRethrowToPreserveStackDetailsAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2218": {
           "id": "CA2218",
           "shortDescription": "Override GetHashCode on overriding Equals",
           "fullDescription": "GetHashCode returns a value, based on the current instance, that is suited for hashing algorithms and data structures such as a hash table. Two objects that are the same type and are equal must return the same hash code.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2218",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2218",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -5276,7 +5295,7 @@
           "shortDescription": "Override Equals on overloading operator equals",
           "fullDescription": "A public type implements the equality operator but does not override Object.Equals.",
           "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2224",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2224",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": true,
@@ -5296,7 +5315,7 @@
           "shortDescription": "Pass system uri objects instead of strings",
           "fullDescription": "A call is made to a method that has a string parameter whose name contains \"uri\", \"URI\", \"urn\", \"URN\", \"url\", or \"URL\". The declaring type of the method contains a corresponding method overload that has a System.Uri parameter.",
           "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca2234",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2234",
           "properties": {
             "category": "Usage",
             "isEnabledByDefault": false,
@@ -5314,9 +5333,9 @@
         "CA3076": {
           "id": "CA3076",
           "shortDescription": "Insecure XSLT script processing.",
-          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
+          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3076",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,
@@ -5335,7 +5354,7 @@
           "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
           "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
           "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/visualstudio/code-quality/ca3077",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
           "properties": {
             "category": "Security",
             "isEnabledByDefault": true,

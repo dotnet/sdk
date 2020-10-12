@@ -1553,6 +1553,8 @@ internal static class Program
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = M:C.M(System.String)|M:C.M2(System.String)")]
         // Match by type documentation ID with "T:" prefix
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:C")]
+        // Match by method name and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M*")]
         public async Task ShouldBeLocalized_MethodExcludedByConfiguration_NoDiagnostic(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1618,6 +1620,14 @@ public class Test
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:System.Exception")]
         // Match by namespace documentation ID with "N:" prefix
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = N:System")]
+        // Match by type name and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = Except*")]
+        // Match by constructor documentation ID with "M:" prefix and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = M:System.Exception*")]
+        // Match by type documentation ID with "T:" prefix and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:System.E*")]
+        // Match by namespace documentation ID with "N:" prefix and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = N:Sys*")]
         public async Task ShouldBeLocalized_ConstructorExcludedByConfiguration_NoDiagnostic(string editorConfigText)
         {
             var editorConfigTextWithNamingHeuristic = editorConfigText + @"
@@ -1672,6 +1682,10 @@ public class Test
         [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = System.Exception")]
         // Match by type documentation ID with "T:" prefix
         [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = T:System.Exception")]
+        // Match by type name and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = Except*")]
+        // Match by type documentation ID with "T:" prefix and wildcard
+        [InlineData(@"dotnet_code_quality.excluded_type_names_with_derived_types = T:System.Except*")]
         public async Task ShouldBeLocalized_SubTypesExcludedByConfiguration_NoDiagnostic(string editorConfigText)
         {
             var editorConfigTextWithNamingHeuristic = editorConfigText + @"
@@ -1726,7 +1740,7 @@ public class Test
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality." + DoNotPassLiteralsAsLocalizedParameters.RuleId + ".excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.CA1303.excluded_symbol_names = M1")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {

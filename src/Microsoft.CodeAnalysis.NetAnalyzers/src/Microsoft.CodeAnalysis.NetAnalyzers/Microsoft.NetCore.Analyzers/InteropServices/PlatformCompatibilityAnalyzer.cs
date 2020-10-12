@@ -113,11 +113,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         return;
                     }
                 }
-                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOSPlatform, out var osPlatformType) ||
-                    !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesRuntimeInformation, out var runtimeInformationType))
-                {
-                    return;
-                }
+
+                var osPlatformType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOSPlatform);
+                var runtimeInformationType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesRuntimeInformation);
 
                 var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
                 if (stringType == null)
@@ -126,25 +124,24 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
 
                 var msBuildPlatforms = GetSupportedPlatforms(context.Options, context.Compilation, context.CancellationToken);
-                var runtimeIsOSPlatformMethod = runtimeInformationType.GetMembers().OfType<IMethodSymbol>().Where(m =>
-                    IsOSPlatform == m.Name &&
-                    m.IsStatic &&
-                    m.ReturnType.SpecialType == SpecialType.System_Boolean &&
-                    m.Parameters.Length == 1 &&
-                    m.Parameters[0].Type.Equals(osPlatformType)).FirstOrDefault();
+                var runtimeIsOSPlatformMethod = runtimeInformationType?.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(m =>
+                        IsOSPlatform == m.Name &&
+                        m.IsStatic &&
+                        m.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                        m.Parameters.Length == 1 &&
+                        m.Parameters[0].Type.Equals(osPlatformType));
 
-                var guardMethods = GetOperatingSystemGuardMethods(runtimeIsOSPlatformMethod, operatingSystemType!);
+                var guardMethods = GetOperatingSystemGuardMethods(runtimeIsOSPlatformMethod, operatingSystemType);
                 var platformSpecificMembers = new ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?>();
-                var osPlatformTypeArray = ImmutableArray.Create(osPlatformType);
-                var osPlatformCreateMethod = osPlatformType.GetMembers("Create").OfType<IMethodSymbol>().Where(m =>
+                var osPlatformCreateMethod = osPlatformType?.GetMembers("Create").OfType<IMethodSymbol>().FirstOrDefault(m =>
                     m.IsStatic &&
                     m.ReturnType.Equals(osPlatformType) &&
                     m.Parameters.Length == 1 &&
-                    m.Parameters[0].Type.SpecialType == SpecialType.System_String).FirstOrDefault();
+                    m.Parameters[0].Type.SpecialType == SpecialType.System_String);
 
                 context.RegisterOperationBlockStartAction(
                     context => AnalyzeOperationBlock(context, guardMethods, runtimeIsOSPlatformMethod, osPlatformCreateMethod,
-                                    osPlatformTypeArray, stringType, platformSpecificMembers, msBuildPlatforms));
+                                    osPlatformType, stringType, platformSpecificMembers, msBuildPlatforms));
             });
 
             static ImmutableArray<IMethodSymbol> GetOperatingSystemGuardMethods(IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol operatingSystemType)
@@ -196,12 +193,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             ImmutableArray<IMethodSymbol> guardMethods,
             IMethodSymbol? runtimeIsOSPlatformMethod,
             IMethodSymbol? osPlatformCreateMethod,
-            ImmutableArray<INamedTypeSymbol> osPlatformTypeArray,
+            INamedTypeSymbol? osPlatformType,
             INamedTypeSymbol stringType,
             ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers,
             ImmutableArray<string> msBuildPlatforms)
         {
-            var osPlatformType = osPlatformTypeArray[0];
+            var osPlatformTypeArray = osPlatformType != null ? ImmutableArray.Create(osPlatformType) : ImmutableArray<INamedTypeSymbol>.Empty;
             var platformSpecificOperations = PooledConcurrentDictionary<IOperation, SmallDictionary<string, PlatformAttributes>>.GetInstance();
 
             context.RegisterOperationAction(context =>
@@ -238,7 +235,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         pessimisticAnalysis: false,
                         context.CancellationToken, out var valueContentAnalysisResult,
                         additionalSupportedValueTypes: osPlatformTypeArray,
-                        getValueContentValueForAdditionalSupportedValueTypeOperation: GetValueContentValue);
+                        getValueContentValueForAdditionalSupportedValueTypeOperation: osPlatformTypeArray.IsEmpty ? null : GetValueContentValue);
 
                     if (analysisResult == null)
                     {
@@ -321,7 +318,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return true;
         }
 
-        private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods, IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol osPlatformType)
+        private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods, IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol? osPlatformType)
         {
             Debug.Assert(runtimeIsOSPlatformMethod == null || guardMethods.Contains(runtimeIsOSPlatformMethod));
 
