@@ -1323,8 +1323,31 @@ internal class CSomeClass {}
                 GetCSharpResultAt(16, 16, "CSomeClass"));
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeTypeName_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeTypeName_NoDiagnostic(string attributeFullName)
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+namespace SomeNamespace
+{
+    internal class MyTextBoxDesigner { }
+
+    [" + attributeFullName + @"(""SomeNamespace.MyTextBoxDesigner, TestProject"")]
+    public class MyTextBox { }
+}");
+        }
+
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeTypeNameWithFullAssemblyName_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1334,29 +1357,17 @@ namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
-    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"")]
+    [" + attributeFullName + @"(""SomeNamespace.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
     public class MyTextBox { }
 }");
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeTypeNameWithFullAssemblyName_NoDiagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
-
-namespace SomeNamespace
-{
-    internal class MyTextBoxDesigner { }
-
-    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
-    public class MyTextBox { }
-}");
-        }
-
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeGlobalTypeName_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeGlobalTypeName_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1364,12 +1375,16 @@ using System.ComponentModel;
 
 internal class MyTextBoxDesigner { }
 
-[Designer(""MyTextBoxDesigner, TestProject"")]
+[" + attributeFullName + @"(""MyTextBoxDesigner, TestProject"")]
 public class MyTextBox { }");
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeType_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeType_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1379,7 +1394,7 @@ namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
-    [Designer(typeof(MyTextBoxDesigner))]
+    [" + attributeFullName + @"(typeof(MyTextBoxDesigner))]
     public class MyTextBox { }
 }");
         }
@@ -1435,8 +1450,12 @@ namespace SomeNamespace
 }");
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeNestedTypeName_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeNestedTypeName_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1444,7 +1463,7 @@ using System.ComponentModel;
 
 namespace SomeNamespace
 {
-    [Designer(""SomeNamespace.MyTextBox.MyTextBoxDesigner, TestProject"")]
+    [" + attributeFullName + @"(""SomeNamespace.MyTextBox.MyTextBoxDesigner, TestProject"")]
     public class MyTextBox
     {
         internal class MyTextBoxDesigner { }
@@ -1454,8 +1473,12 @@ namespace SomeNamespace
                 GetCSharpResultAt(10, 24, "MyTextBox.MyTextBoxDesigner"));
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeNestedType_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeNestedType_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1463,7 +1486,7 @@ using System.ComponentModel;
 
 namespace SomeNamespace
 {
-    [Designer(typeof(SomeNamespace.MyTextBox.MyTextBoxDesigner))]
+    [" + attributeFullName + @"(typeof(SomeNamespace.MyTextBox.MyTextBoxDesigner))]
     public class MyTextBox
     {
         internal class MyTextBoxDesigner { }
