@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
@@ -131,6 +132,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
                 DataType = "choice",
                 IsTag = true,
                 Choices = new Dictionary<string, string>() { { value, string.Empty } },
+                Forms = SymbolValueFormsModel.Default
             };
 
             return symbol;

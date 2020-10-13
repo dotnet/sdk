@@ -597,7 +597,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (sourceVariable != null)
                     {
-                        if (symbol.Value is BaseValueSymbol p)
+                        if (symbol.Value is BaseValueSymbol p && p.Forms != null)
                         {
                             foreach (string formName in p.Forms.GlobalForms)
                             {
