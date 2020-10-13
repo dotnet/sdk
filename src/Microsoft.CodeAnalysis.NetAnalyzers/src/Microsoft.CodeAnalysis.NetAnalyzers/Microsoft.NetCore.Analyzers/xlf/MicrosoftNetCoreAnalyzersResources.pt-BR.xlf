@@ -968,8 +968,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithm">
-        <source>Do Not Use Weak Key Derivation Function Algorithm</source>
-        <target state="translated">Não Use o Algoritmo de Função de Derivação de Chaves Fraca</target>
+        <source>Ensure Key Derivation Function algorithm is sufficiently strong</source>
+        <target state="needs-review-translation">Não Use o Algoritmo de Função de Derivação de Chaves Fraca</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmDescription">
@@ -978,8 +978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
-        <target state="translated">{0} criado com um algoritmo de hash fraco. Use SHA256, SHA384 ou SHA512 para criar uma chave forte por meio de uma senha.</target>
+        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0} criado com um algoritmo de hash fraco. Use SHA256, SHA384 ou SHA512 para criar uma chave forte por meio de uma senha.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
