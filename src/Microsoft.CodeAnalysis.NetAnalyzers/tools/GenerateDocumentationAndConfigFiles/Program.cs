@@ -324,7 +324,7 @@ $@"<Project>
                         ruleIdWithHyperLink = $"[{ruleIdWithHyperLink}]({descriptor.HelpLinkUri})";
                     }
 
-                    var title = descriptor.Title.ToString(CultureInfo.InvariantCulture).Trim();
+                    var title = descriptor.Title.ToString(new CultureInfo("en-US")).Trim();
                     // Escape generic arguments to ensure they are not considered as HTML elements
                     title = Regex.Replace(title, "(<.+?>)", "\\$1");
 
@@ -338,10 +338,10 @@ $@"<Project>
                     builder.AppendLine($"## {ruleIdWithHyperLink}: {title}");
                     builder.AppendLine();
 
-                    var description = descriptor.Description.ToString(CultureInfo.InvariantCulture);
+                    var description = descriptor.Description.ToString(new CultureInfo("en-US"));
                     if (string.IsNullOrWhiteSpace(description))
                     {
-                        description = descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture);
+                        description = descriptor.MessageFormat.ToString(new CultureInfo("en-US"));
                     }
 
                     // Double the line breaks to ensure they are rendered properly in markdown
@@ -428,7 +428,7 @@ $@"<Project>
                         writer.Write("shortDescription", descriptor.Title.ToString(culture));
 
                         string fullDescription = descriptor.Description.ToString(culture);
-                        writer.Write("fullDescription", !string.IsNullOrEmpty(fullDescription) ? fullDescription : descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture));
+                        writer.Write("fullDescription", !string.IsNullOrEmpty(fullDescription) ? fullDescription : descriptor.MessageFormat.ToString(new CultureInfo("en-US")));
 
                         writer.Write("defaultLevel", getLevel(descriptor.DefaultSeverity));
 
@@ -548,7 +548,8 @@ Rule ID | Missing Help Link | Title |
                         // Rule with valid documentation link
                         continue;
                     }
-                    var line = $"{ruleId} | {helpLinkUri} | {descriptor.Title.ToString(CultureInfo.InvariantCulture)} |";
+
+                    var line = $"{ruleId} | {helpLinkUri} | {descriptor.Title.ToString(new CultureInfo("en-US"))} |";
                     if (validateOnly)
                     {
                         // The validation for RulesMissingDocumentation.md is different than others.
