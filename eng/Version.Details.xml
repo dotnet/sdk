@@ -81,9 +81,9 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>0b1e2e51743cc083d99b88673fe518672e2af9f0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="5.0.0-rtm.20510.1">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="5.0.0-rtm.20513.1">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>2d6a0c33cca17f3e62e45612b4c402f0ad3556fc</Sha>
+      <Sha>e792d61a0ead2f6422b4c9af651c1128d978d454</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -103,27 +103,27 @@
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="5.0.0">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>be9cc45df18ee78da3f0854857e1831d374378c0</Sha>
+      <Sha>c7cf516a32c841d7da35d7d6f1c51befd6e34177</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-rtm.20512.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-rtm.20512.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>be9cc45df18ee78da3f0854857e1831d374378c0</Sha>
+      <Sha>c7cf516a32c841d7da35d7d6f1c51befd6e34177</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="5.0.0">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>be9cc45df18ee78da3f0854857e1831d374378c0</Sha>
+      <Sha>c7cf516a32c841d7da35d7d6f1c51befd6e34177</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-rtm.20511.1" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-rtm.20512.2" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>847a413284b297c7f0ec7d0f2f111db4595b4ffe</Sha>
+      <Sha>1b26bef8f3d5eaf91294717db041a9334dac315a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="5.0.0-rtm.20511.1" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="5.0.0-rtm.20512.2" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>847a413284b297c7f0ec7d0f2f111db4595b4ffe</Sha>
+      <Sha>1b26bef8f3d5eaf91294717db041a9334dac315a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="5.0.0-rtm.20511.1" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="5.0.0-rtm.20512.1" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>21426e3b1d52389e1ecee9bd2a2674121f3fb93c</Sha>
+      <Sha>03c6dd51d6bedd6c1d9c2cb6589d2117dfc75644</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="5.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -173,9 +173,9 @@
       <Uri>https://github.com/aspnet/xdt</Uri>
       <Sha>c01a538851a8ab1a1fbeb2e6243f391fff7587b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.0-rtm.20502.2">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.0">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>8658e37a9b30bfffd651c25e0d642006898d8333</Sha>
+      <Sha>38f5a3c09abcbd5d5100227faa139e3d3d75bde9</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
