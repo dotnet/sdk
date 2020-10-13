@@ -964,7 +964,7 @@
     <value>Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.</value>
   </data>
   <data name="DoNotUseWeakKDFAlgorithmMessage" xml:space="preserve">
-    <value>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</value>
+    <value>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</value>
   </data>
   <data name="DoNotUseXslTransform" xml:space="preserve">
     <value>Do Not Use XslTransform</value>

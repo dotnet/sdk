@@ -978,8 +978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
-        <target state="needs-review-translation">{0} zayıf bir karma algoritmasıyla oluşturuldu. Paroladan güçlü bir anahtar oluşturmak için SHA256, SHA384 veya SHA512 kullanın</target>
+        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0} zayıf bir karma algoritmasıyla oluşturuldu. Paroladan güçlü bir anahtar oluşturmak için SHA256, SHA384 veya SHA512 kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">

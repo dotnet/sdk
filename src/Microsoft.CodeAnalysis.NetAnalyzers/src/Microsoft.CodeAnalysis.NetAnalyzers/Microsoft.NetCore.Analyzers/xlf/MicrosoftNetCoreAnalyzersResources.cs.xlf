@@ -978,7 +978,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
+        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
         <target state="needs-review-translation">{0} se vytvořilo pomocí slabého algoritmu hash. Jestli chcete vytvořit silný klíč z hesla, použijte SHA256, SHA384 nebo SHA512.</target>
         <note />
       </trans-unit>

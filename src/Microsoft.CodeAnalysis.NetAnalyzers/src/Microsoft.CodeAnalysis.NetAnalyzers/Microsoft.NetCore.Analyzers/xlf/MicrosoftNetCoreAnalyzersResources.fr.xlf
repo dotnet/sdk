@@ -978,8 +978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password</source>
-        <target state="needs-review-translation">{0} créé avec un algorithme de hachage faible. Utilisez SHA256, SHA384 ou SHA512 pour créer une clé forte à partir d'un mot de passe</target>
+        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0} créé avec un algorithme de hachage faible. Utilisez SHA256, SHA384 ou SHA512 pour créer une clé forte à partir d'un mot de passe.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
