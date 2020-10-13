@@ -1,28 +1,23 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriReturnValuesShouldNotBeStringsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriReturnValuesShouldNotBeStringsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class UriReturnValuesShouldNotBeStringsTests : DiagnosticAnalyzerTestBase
+    public class UriReturnValuesShouldNotBeStringsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new UriReturnValuesShouldNotBeStringsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new UriReturnValuesShouldNotBeStringsAnalyzer();
-        }
-
         [Fact]
-        public void CA1055NoWarningWithUrl()
+        public async Task CA1055NoWarningWithUrl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -33,9 +28,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1055NoWarningWithUrlNotStringType()
+        public async Task CA1055NoWarningWithUrlNotStringType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -46,9 +41,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1055WarningWithUrl()
+        public async Task CA1055WarningWithUrl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -59,9 +54,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1055NoWarningWithNoUrl()
+        public async Task CA1055NoWarningWithNoUrl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -72,9 +67,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1055NoWarningNotPublic()
+        public async Task CA1055NoWarningNotPublic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -85,9 +80,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1055NoWarningWithUrlParameter()
+        public async Task CA1055NoWarningWithUrlParameter()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class A
@@ -98,10 +93,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1055NoWarningOverride()
+        public async Task CA1055NoWarningOverride()
         {
             // warning is from base type not overriden one
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
 
     public class Base
@@ -117,10 +112,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1055WarningVB()
+        public async Task CA1055WarningVB()
         {
             // C# and VB shares same implementation. so just one vb test
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
     Imports System
     
     Public Module A
@@ -131,13 +126,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCA1055CSharpResultAt(int line, int column, params string[] args)
-        {
-            return GetCSharpResultAt(line, column, UriReturnValuesShouldNotBeStringsAnalyzer.Rule, args);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(args);
 
         private static DiagnosticResult GetCA1055BasicResultAt(int line, int column, params string[] args)
-        {
-            return GetBasicResultAt(line, column, UriReturnValuesShouldNotBeStringsAnalyzer.Rule, args);
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(args);
     }
 }

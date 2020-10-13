@@ -107,7 +107,7 @@ namespace Microsoft.NetCore.Analyzers.Resources
                 return false;
             }
 
-            if (!(constValue.Value is string stringValue))
+            if (constValue.Value is not string stringValue)
             {
                 return false;
             }

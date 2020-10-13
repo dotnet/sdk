@@ -1,28 +1,26 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class DoNotDirectlyAwaitATaskTests : DiagnosticAnalyzerTestBase
+    public class DoNotDirectlyAwaitATaskTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotDirectlyAwaitATaskAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotDirectlyAwaitATaskAnalyzer();
-        }
-
-        [Fact]
-        public void CSharpSimpleAwaitTask()
+        [Theory]
+        [InlineData("Task")]
+        [InlineData("Task<int>")]
+        [InlineData("ValueTask")]
+        [InlineData("ValueTask<int>")]
+        public async Task CSharpSimpleAwaitTask(string typeName)
         {
             var code = @"
 using System.Threading.Tasks;
@@ -31,66 +29,36 @@ public class C
 {
     public async Task M()
     {
-        Task t = null;
+        " + typeName + @" t = default;
         await t;
     }
 }
 ";
-            VerifyCSharp(code, GetCSharpResultAt(9, 15));
+            await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(9, 15));
         }
 
-        [Fact]
-        public void BasicSimpleAwaitTask()
+        [Theory]
+        [InlineData("Task")]
+        [InlineData("Task(Of Integer)")]
+        [InlineData("ValueTask")]
+        [InlineData("ValueTask(Of Integer)")]
+        public async Task BasicSimpleAwaitTask(string typeName)
         {
             var code = @"
 Imports System.Threading.Tasks
 
 Public Class C
     Public Async Function M() As Task
-        Dim t As Task
+        Dim t As " + typeName + @"
         Await t
     End Function
 End Class
 ";
-            VerifyBasic(code, GetBasicResultAt(7, 15));
+            await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(7, 15));
         }
 
         [Fact]
-        public void CSharpSimpleAwaitTaskOfT()
-        {
-            var code = @"
-using System.Threading.Tasks;
-
-public class C
-{
-    public async Task M()
-    {
-        Task<int> t = null;
-        int x = await t;
-    }
-}
-";
-            VerifyCSharp(code, GetCSharpResultAt(9, 23));
-        }
-
-        [Fact]
-        public void BasicSimpleAwaitTaskOfT()
-        {
-            var code = @"
-Imports System.Threading.Tasks
-
-Public Class C
-    Public Async Function M() As Task
-        Dim t As Task(Of Integer)
-        Dim x As Integer = Await t
-    End Function
-End Class
-";
-            VerifyBasic(code, GetBasicResultAt(7, 34));
-        }
-
-        [Fact]
-        public void CSharpNoDiagnostic()
+        public async Task CSharpNoDiagnostic()
         {
             var code = @"
 using System;
@@ -104,10 +72,19 @@ public class C
         Task t = null;
         await t.ConfigureAwait(false);
 
+        Task<int> tg = null;
+        await tg.ConfigureAwait(false);
+
+        ValueTask vt = default;
+        await vt.ConfigureAwait(false);
+
+        ValueTask<int> vtg = default;
+        await vtg.ConfigureAwait(false);
+
         SomeAwaitable s = null;
         await s;
 
-        await; // No Argument
+        await{|CS1525:;|} // No Argument
     }
 }
 
@@ -132,11 +109,11 @@ public class SomeAwaiter : INotifyCompletion
     }
 }
 ";
-            VerifyCSharp(code, TestValidationMode.AllowCompileErrors);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicNoDiagnostic()
+        public async Task BasicNoDiagnostic()
         {
             var code = @"
 Imports System
@@ -148,10 +125,19 @@ Public Class C
         Dim t As Task = Nothing
         Await t.ConfigureAwait(False)
 
+        Dim tg As Task(Of Integer) = Nothing
+        Await tg.ConfigureAwait(False)
+
+        Dim vt As ValueTask
+        Await vt.ConfigureAwait(False)
+
+        Dim vtg As ValueTask(Of Integer) = Nothing
+        Await vtg.ConfigureAwait(False)
+
         Dim s As SomeAwaitable = Nothing
         Await s
 
-        Await 'No Argument
+        Await {|BC30201:|}'No Argument
     End Function
 End Class
 
@@ -176,11 +162,11 @@ Public Class SomeAwaiter
     End Sub
 End Class
 ";
-            VerifyBasic(code, TestValidationMode.AllowCompileErrors);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void CSharpAwaitAwaitTask()
+        public async Task CSharpAwaitAwaitTask()
         {
             var code = @"
 using System.Threading.Tasks;
@@ -193,18 +179,29 @@ public class C
         await await t; // both have warnings.
         await await t.ConfigureAwait(false); // outer await is wrong.
         await (await t).ConfigureAwait(false); // inner await is wrong.
+        await (await t.ConfigureAwait(false)).ConfigureAwait(false); // both correct.
+
+        ValueTask<ValueTask> vt = default;
+        await await vt; // both have warnings.
+        await await vt.ConfigureAwait(false); // outer await is wrong.
+        await (await vt).ConfigureAwait(false); // inner await is wrong
+        await (await vt.ConfigureAwait(false)).ConfigureAwait(false); // both correct.
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpResultAt(9, 15),
                 GetCSharpResultAt(9, 21),
                 GetCSharpResultAt(10, 15),
-                GetCSharpResultAt(11, 22));
+                GetCSharpResultAt(11, 22),
+                GetCSharpResultAt(15, 15),
+                GetCSharpResultAt(15, 21),
+                GetCSharpResultAt(16, 15),
+                GetCSharpResultAt(17, 22));
         }
 
         [Fact]
-        public void BasicAwaitAwaitTask()
+        public async Task BasicAwaitAwaitTask()
         {
             var code = @"
 Imports System.Threading.Tasks
@@ -215,18 +212,29 @@ Public Class C
         Await Await t ' both have warnings.
         Await Await t.ConfigureAwait(False) ' outer await is wrong.
         Await (Await t).ConfigureAwait(False) ' inner await is wrong.
+        Await (Await t.ConfigureAwait(False)).ConfigureAwait(False) ' both correct.
+
+        Dim vt As ValueTask(Of ValueTask)
+        Await Await vt ' both have warnings.
+        Await Await vt.ConfigureAwait(False) ' outer await is wrong.
+        Await (Await vt).ConfigureAwait(False) ' inner await is wrong.
+        Await (Await vt.ConfigureAwait(False)).ConfigureAwait(False) ' both correct.
     End Function
 End Class
 ";
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicResultAt(7, 15),
                 GetBasicResultAt(7, 21),
                 GetBasicResultAt(8, 15),
-                GetBasicResultAt(9, 22));
+                GetBasicResultAt(9, 22),
+                GetBasicResultAt(13, 15),
+                GetBasicResultAt(13, 21),
+                GetBasicResultAt(14, 15),
+                GetBasicResultAt(15, 22));
         }
 
         [Fact]
-        public void CSharpComplexAwaitTask()
+        public async Task CSharpComplexAwaitTask()
         {
             var code = @"
 using System;
@@ -244,14 +252,14 @@ public class C
     public Task<int> GetTask() { throw new NotImplementedException(); }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpResultAt(9, 28),
                 GetCSharpResultAt(10, 47),
                 GetCSharpResultAt(11, 33));
         }
 
         [Fact]
-        public void BasicComplexeAwaitTask()
+        public async Task BasicComplexeAwaitTask()
         {
             var code = @"
 Imports System
@@ -268,14 +276,14 @@ Public Class C
     End Function
 End Class
 ";
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicResultAt(7, 39),
                 GetBasicResultAt(8, 69),
                 GetBasicResultAt(9, 33));
         }
 
         [Fact, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
-        public void CSharpAsyncVoidMethod_Diagnostic()
+        public async Task CSharpAsyncVoidMethod_Diagnostic()
         {
             var code = @"
 using System.Threading.Tasks;
@@ -293,13 +301,13 @@ public class C
         await t.ConfigureAwait(false);
     }
 }";
-            VerifyCSharp(code, GetCSharpResultAt(9, 15));
+            await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(9, 15));
         }
 
         [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
         [InlineData("dotnet_code_quality.exclude_async_void_methods = true")]
         [InlineData("dotnet_code_quality.CA2007.exclude_async_void_methods = true")]
-        public void CSharpAsyncVoidMethod_AnalyzerOption_NoDiagnostic(string editorConfigText)
+        public async Task CSharpAsyncVoidMethod_AnalyzerOption_NoDiagnostic(string editorConfigText)
         {
             var code = @"
 using System.Threading.Tasks;
@@ -317,13 +325,20 @@ public class C
         await t.ConfigureAwait(false);
     }
 }";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText));
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { code },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
         }
 
         [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
         [InlineData("dotnet_code_quality.exclude_async_void_methods = false")]
         [InlineData("dotnet_code_quality.CA2007.exclude_async_void_methods = false")]
-        public void CSharpAsyncVoidMethod_AnalyzerOption_Diagnostic(string editorConfigText)
+        public async Task CSharpAsyncVoidMethod_AnalyzerOption_Diagnostic(string editorConfigText)
         {
             var code = @"
 using System.Threading.Tasks;
@@ -341,13 +356,32 @@ public class C
         await t.ConfigureAwait(false);
     }
 }";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), GetCSharpResultAt(9, 15));
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { code },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+                ExpectedDiagnostics = { GetCSharpResultAt(9, 15) }
+            }.RunAsync();
         }
 
-        [Fact, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
-        public void CSharpSimpleAwaitTask_AnalyzerOption_OutputKind()
+        [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
+        [InlineData("", true)]
+        [InlineData("dotnet_code_quality.output_kind = ConsoleApplication", false)]
+        [InlineData("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, WindowsApplication", false)]
+        [InlineData("dotnet_code_quality.output_kind = DynamicallyLinkedLibrary", true)]
+        [InlineData("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary", true)]
+        public async Task CSharpSimpleAwaitTask_AnalyzerOption_OutputKind(string editorConfigText, bool isExpectingDiagnostic)
         {
-            var code = @"
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                         @"
 using System.Threading.Tasks;
 
 public class C
@@ -358,29 +392,22 @@ public class C
         await t;
     }
 }
-";
-            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
 
-            // Verify diagnostic with no editor config options.
-            VerifyCSharp(code, compilationOptions, parseOptions: null, expected: GetCSharpResultAt(9, 15));
+            if (isExpectingDiagnostic)
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(9, 15));
+            }
 
-            // Verify no diagnostic with editor config options that exclude OutputKind.DynamicallyLinkedLibrary.
-            var editorConfigText = "dotnet_code_quality.output_kind = ConsoleApplication";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), compilationOptions, parseOptions: null);
-
-            editorConfigText = "dotnet_code_quality.CA2007.output_kind = ConsoleApplication, WindowsApplication";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), compilationOptions, parseOptions: null);
-
-            // Verify diagnostic with editor config options that include OutputKind.DynamicallyLinkedLibrary.
-            editorConfigText = "dotnet_code_quality.output_kind = DynamicallyLinkedLibrary";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), compilationOptions, parseOptions: null, expected: GetCSharpResultAt(9, 15));
-
-            editorConfigText = "dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary";
-            VerifyCSharp(code, GetEditorConfigAdditionalFile(editorConfigText), compilationOptions, parseOptions: null, expected: GetCSharpResultAt(9, 15));
+            await csharpTest.RunAsync();
         }
 
         [Fact, WorkItem(2393, "https://github.com/dotnet/roslyn-analyzers/issues/2393")]
-        public void CSharpSimpleAwaitTaskInLocalFunction()
+        public async Task CSharpSimpleAwaitTaskInLocalFunction()
         {
             var code = @"
 using System.Threading.Tasks;
@@ -397,17 +424,15 @@ public class C
     }
 }
 ";
-            VerifyCSharp(code, GetCSharpResultAt(11, 19));
+            await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(11, 19));
         }
 
-        private DiagnosticResult GetCSharpResultAt(int line, int column)
-        {
-            return GetCSharpResultAt(line, column, DoNotDirectlyAwaitATaskAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskMessage);
-        }
+        private static DiagnosticResult GetCSharpResultAt(int line, int column)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
 
-        private DiagnosticResult GetBasicResultAt(int line, int column)
-        {
-            return GetBasicResultAt(line, column, DoNotDirectlyAwaitATaskAnalyzer.RuleId, MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskMessage);
-        }
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
     }
 }

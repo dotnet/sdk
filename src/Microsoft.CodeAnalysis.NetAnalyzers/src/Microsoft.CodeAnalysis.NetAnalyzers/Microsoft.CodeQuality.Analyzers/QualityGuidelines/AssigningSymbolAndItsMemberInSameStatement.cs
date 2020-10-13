@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Immutable;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -45,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             var assignmentOperation = (ISimpleAssignmentOperation)context.Operation;
 
             // Check if there are more then one assignment in a statement
-            if (!(assignmentOperation.Target is IMemberReferenceOperation operationTarget))
+            if (assignmentOperation.Target is not IMemberReferenceOperation operationTarget)
             {
                 return;
             }
@@ -69,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             if (isViolationFound)
             {
-                var diagnostic = Diagnostic.Create(Rule, operationTarget.Syntax.GetLocation(), operationTarget.Instance.Syntax, operationTarget.Member.Name);
+                var diagnostic = operationTarget.CreateDiagnostic(Rule, operationTarget.Instance.Syntax, operationTarget.Member.Name);
                 context.ReportDiagnostic(diagnostic);
             }
         }

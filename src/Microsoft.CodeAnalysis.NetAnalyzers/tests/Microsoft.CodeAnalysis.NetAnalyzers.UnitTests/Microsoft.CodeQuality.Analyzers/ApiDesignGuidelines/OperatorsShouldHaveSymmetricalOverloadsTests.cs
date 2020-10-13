@@ -1,98 +1,92 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorsShouldHaveSymmetricalOverloadsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class OperatorsShouldHaveSymmetricalOverloadsTests : DiagnosticAnalyzerTestBase
+    public class OperatorsShouldHaveSymmetricalOverloadsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
+        [Fact]
+        public async Task CSharpTestMissingEquality()
         {
-            return new OperatorsShouldHaveSymmetricalOverloadsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new OperatorsShouldHaveSymmetricalOverloadsAnalyzer();
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class A
+{
+    public static bool operator{|CS0216:==|}(A a1, A a2) { return false; }
+}",
+                GetCSharpResultAt(4, 32, "A", "==", "!="));
         }
 
         [Fact]
-        public void CSharpTestMissingEquality()
+        public async Task CSharpTestMissingInequality()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public static bool operator==(A a1, A a2) { return false; }   // error CS0216: The operator requires a matching operator '!=' to also be defined
-}", TestValidationMode.AllowCompileErrors,
-GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "==", "!="));
-        }
-
-        [Fact]
-        public void CSharpTestMissingInequality()
-        {
-            VerifyCSharp(@"
-public class A
-{
-    public static bool operator!=(A a1, A a2) { return false; }   // error CS0216: The operator requires a matching operator '==' to also be defined
-}", TestValidationMode.AllowCompileErrors,
-GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "!=", "=="));
+    public static bool operator{|CS0216:!=|}(A a1, A a2) { return false; }
+}",
+                GetCSharpResultAt(4, 32, "A", "!=", "=="));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharpTestMissingEquality_Internal()
+        public async Task CSharpTestMissingEquality_Internal()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class A
 {
-    public static bool operator==(A a1, A a2) { return false; }
+    public static bool operator{|CS0216:==|}(A a1, A a2) { return false; }
 }
 
 public class B
 {
     private class C
     {
-        public static bool operator==(C a1, C a2) { return false; }
+        public static bool operator{|CS0216:==|}(C a1, C a2) { return false; }
     }
 
     public class D
     {
-        internal static bool operator==(D a1, D a2) { return false; }
+        internal static bool operator{|CS0216:{|CS0558:==|}|}(D a1, D a2) { return false; }
     }
 }
 
-", TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharpTestMissingInequality_Internal()
+        public async Task CSharpTestMissingInequality_Internal()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class A
 {
-    public static bool operator!=(A a1, A a2) { return false; }
+    public static bool operator{|CS0216:!=|}(A a1, A a2) { return false; }
 }
 
 public class B
 {
     private class C
     {
-        public static bool operator!=(C a1, C a2) { return false; }
+        public static bool operator{|CS0216:!=|}(C a1, C a2) { return false; }
     }
 
     public class D
     {
-        internal static bool operator!=(D a1, D a2) { return false; }
+        internal static bool operator{|CS0216:{|CS0558:!=|}|}(D a1, D a2) { return false; }
     }
 }
-", TestValidationMode.AllowCompileErrors);
+");
         }
 
         [Fact]
-        public void CSharpTestBothEqualityOperators()
+        public async Task CSharpTestBothEqualityOperators()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public static bool operator==(A a1, A a2) { return false; }
@@ -101,20 +95,20 @@ public class A
         }
 
         [Fact]
-        public void CSharpTestMissingLessThan()
+        public async Task CSharpTestMissingLessThan()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public static bool operator<(A a1, A a2) { return false; }   // error CS0216: The operator requires a matching operator '>' to also be defined
-}", TestValidationMode.AllowCompileErrors,
-GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "<", ">"));
+    public static bool operator{|CS0216:<|}(A a1, A a2) { return false; }   // error CS0216: The operator requires a matching operator '>' to also be defined
+}",
+                GetCSharpResultAt(4, 32, "A", "<", ">"));
         }
 
         [Fact]
-        public void CSharpTestNotMissingLessThan()
+        public async Task CSharpTestNotMissingLessThan()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public static bool operator<(A a1, A a2) { return false; }
@@ -123,20 +117,20 @@ public class A
         }
 
         [Fact]
-        public void CSharpTestMissingLessThanOrEqualTo()
+        public async Task CSharpTestMissingLessThanOrEqualTo()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public static bool operator<=(A a1, A a2) { return false; }   // error CS0216: The operator requires a matching operator '>=' to also be defined
-}", TestValidationMode.AllowCompileErrors,
-GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "<=", ">="));
+    public static bool operator{|CS0216:<=|}(A a1, A a2) { return false; }
+}",
+                GetCSharpResultAt(4, 32, "A", "<=", ">="));
         }
 
         [Fact]
-        public void CSharpTestNotMissingLessThanOrEqualTo()
+        public async Task CSharpTestNotMissingLessThanOrEqualTo()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
     public static bool operator<=(A a1, A a2) { return false; }
@@ -145,16 +139,23 @@ public class A
         }
 
         [Fact]
-        public void CSharpTestOperatorType()
+        public async Task CSharpTestOperatorType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
 {
-    public static bool operator==(A a1, int a2) { return false; }
-    public static bool operator!=(A a1, string a2) { return false; }
-}", TestValidationMode.AllowCompileErrors,
-GetCSharpResultAt(4, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "==", "!="),
-GetCSharpResultAt(5, 32, OperatorsShouldHaveSymmetricalOverloadsAnalyzer.Rule, "A", "!=", "=="));
+    /* We intentionally declare invalid methods for this test */
+
+    public static bool operator{|CS0216:==|}(A a1, int a2) { return false; }
+    public static bool operator{|CS0216:!=|}(A a1, string a2) { return false; }
+}",
+                GetCSharpResultAt(6, 32, "A", "==", "!="),
+                GetCSharpResultAt(7, 32, "A", "!=", "=="));
         }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(arguments);
     }
 }

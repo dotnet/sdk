@@ -16,7 +16,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
         Inherits DoNotUseCountWhenAnyCanBeUsedFixer
 
         ''' <summary>
-        ''' Tries the get a fixer the specified <paramref name="node" />.
+        ''' Tries to get a fixer for the specified <paramref name="node" />.
         ''' </summary>
         ''' <param name="node">The node to get a fixer for.</param>
         ''' <param name="operation">The operation to get the fixer from.</param>
@@ -28,7 +28,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
             Select Case operation
 
-                Case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationEqualsInstance
+                Case UseCountProperlyAnalyzer.OperationEqualsInstance
 
                     Dim invocation = TryCast(node, InvocationExpressionSyntax)
 
@@ -38,66 +38,56 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                         If member IsNot Nothing Then
 
-                            GetExpressionAndInvocationArguments(
+                            Return TryGetExpressionAndInvocationArguments(
                                 sourceExpression:=member.Expression,
                                 isAsync:=isAsync,
                                 expression:=expression,
                                 arguments:=arguments)
 
-                            Return True
-
                         End If
 
                     End If
 
-                Case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationEqualsArgument
+                Case UseCountProperlyAnalyzer.OperationEqualsArgument
 
                     Dim invocation = TryCast(node, InvocationExpressionSyntax)
 
                     If invocation IsNot Nothing AndAlso invocation.ArgumentList.Arguments.Count = 1 Then
 
-                        GetExpressionAndInvocationArguments(
+                        Return TryGetExpressionAndInvocationArguments(
                             sourceExpression:=invocation.ArgumentList.Arguments(0).GetExpression(),
                             isAsync:=isAsync,
                             expression:=expression,
                             arguments:=arguments)
 
-                        Return True
-
                     End If
 
-                Case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationBinaryLeft
+                Case UseCountProperlyAnalyzer.OperationBinaryLeft
 
                     Dim binary = TryCast(node, BinaryExpressionSyntax)
 
                     If binary IsNot Nothing Then
 
-                        GetExpressionAndInvocationArguments(
+                        Return TryGetExpressionAndInvocationArguments(
                             sourceExpression:=binary.Left,
                             isAsync:=isAsync,
                             expression:=expression,
                             arguments:=arguments)
-
-                        Return True
-
                     End If
 
-                Case DoNotUseCountWhenAnyCanBeUsedAnalyzer.OperationBinaryRight
+                Case UseCountProperlyAnalyzer.OperationBinaryRight
 
                     Dim binary = TryCast(node, BinaryExpressionSyntax)
 
                     If binary IsNot Nothing Then
 
-                        GetExpressionAndInvocationArguments(
+                        Return TryGetExpressionAndInvocationArguments(
                             sourceExpression:=binary.Right,
                             isAsync:=isAsync,
                             expression:=expression,
                             arguments:=arguments)
 
-                        Return True
-
                     End If
-
 
             End Select
 
@@ -105,7 +95,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
         End Function
 
-        Private Shared Sub GetExpressionAndInvocationArguments(sourceExpression As ExpressionSyntax, isAsync As Boolean, ByRef expression As SyntaxNode, ByRef arguments As IEnumerable(Of SyntaxNode))
+        Private Shared Function TryGetExpressionAndInvocationArguments(sourceExpression As ExpressionSyntax, isAsync As Boolean, ByRef expression As SyntaxNode, ByRef arguments As IEnumerable(Of SyntaxNode)) As Boolean
 
             Dim parenthesizedExpression = TryCast(sourceExpression, ParenthesizedExpressionSyntax)
 
@@ -116,36 +106,42 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
             End While
 
-            Dim invocationExpression As InvocationExpressionSyntax = Nothing
-
             If isAsync Then
 
                 Dim awaitExpressionSyntax = TryCast(sourceExpression, AwaitExpressionSyntax)
 
                 If awaitExpressionSyntax IsNot Nothing Then
 
-                    invocationExpression = TryCast(awaitExpressionSyntax.Expression, InvocationExpressionSyntax)
+                    sourceExpression = awaitExpressionSyntax.Expression
 
                 End If
 
-            Else
+            End If
 
-                invocationExpression = TryCast(sourceExpression, InvocationExpressionSyntax)
+            Dim invocationExpression As InvocationExpressionSyntax = TryCast(sourceExpression, InvocationExpressionSyntax)
+
+            If invocationExpression IsNot Nothing Then
+
+                expression = DirectCast(invocationExpression.Expression, MemberAccessExpressionSyntax).Expression
+                arguments = invocationExpression.ArgumentList.ChildNodes()
+                Return True
 
             End If
 
-            If invocationExpression Is Nothing Then
+            '  Try to get source expression as MemberAccessExpression which is only legal on VB.
+            Dim memberAccessExpression = TryCast(sourceExpression, MemberAccessExpressionSyntax)
 
-                expression = Nothing
-                arguments = Nothing
-                Return
-
+            ' This case happens for something like: x = GetData().Count where Count method is called without parentheses.
+            If memberAccessExpression IsNot Nothing Then
+                expression = memberAccessExpression.Expression
+                arguments = Enumerable.Empty(Of SyntaxNode)()
+                Return True
             End If
 
-            expression = DirectCast(invocationExpression.Expression, MemberAccessExpressionSyntax).Expression
-            arguments = invocationExpression.ArgumentList.ChildNodes()
-
-        End Sub
+            expression = Nothing
+            arguments = Nothing
+            Return False
+        End Function
 
     End Class
 

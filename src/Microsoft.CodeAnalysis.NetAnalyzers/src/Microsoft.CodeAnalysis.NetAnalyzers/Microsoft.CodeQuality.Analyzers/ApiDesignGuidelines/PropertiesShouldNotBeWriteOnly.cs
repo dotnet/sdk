@@ -54,27 +54,27 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// </summary>
         private static void AnalyzeSymbol(SymbolAnalysisContext context)
         {
-            if (!(context.Symbol is IPropertySymbol property))
+            if (context.Symbol is not IPropertySymbol property)
             {
                 return;
             }
 
-            // not raising a violation for when: 
-            //     property is overridden because the issue can only be fixed in the base type 
-            //     property is the implementaton of any interface member 
+            // not raising a violation for when:
+            //     property is overridden because the issue can only be fixed in the base type
+            //     property is the implementation of any interface member
             if (property.IsOverride || property.IsImplementationOfAnyInterfaceMember())
             {
                 return;
             }
 
             // Only analyze externally visible properties by default
-            if (!property.MatchesConfiguredVisibility(context.Options, AddGetterRule, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(AddGetterRule, property, context.Compilation, context.CancellationToken))
             {
-                Debug.Assert(!property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.CancellationToken));
+                Debug.Assert(!context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation, context.CancellationToken));
                 return;
             }
 
-            Debug.Assert(property.MatchesConfiguredVisibility(context.Options, MakeMoreAccessibleRule, context.CancellationToken));
+            Debug.Assert(context.Options.MatchesConfiguredVisibility(MakeMoreAccessibleRule, property, context.Compilation, context.CancellationToken));
 
             // We handled the non-CA1044 cases earlier.  Now, we handle CA1044 cases
             // If there is no getter then it is not accessible

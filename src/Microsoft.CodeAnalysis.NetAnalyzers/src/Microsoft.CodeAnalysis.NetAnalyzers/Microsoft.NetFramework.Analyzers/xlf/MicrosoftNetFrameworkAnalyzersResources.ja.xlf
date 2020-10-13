@@ -173,13 +173,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
-        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</source>
-        <target state="translated">破損状態例外をキャッチすると、エラー (アクセス違反など) がマスクされ、実行の状態に一貫性がなくなったり、攻撃者がシステムを侵害しやすくなったりする可能性があります。代わりに、より具体的な例外の種類をキャッチして処理するか、例外を再スローします</target>
+        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
+        <target state="translated">破損状態例外をキャッチすると、エラー (アクセス違反など) がマスクされ、実行の状態に一貫性がなくなったり、攻撃者がシステムを侵害しやすくなったりする可能性があります。代わりに、より具体的な一連の例外の種類をキャッチして処理するか、例外を再スローします。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
-        <source>{0} is catching corrupted state exception.</source>
-        <target state="translated">{0} が破損状態例外をキャッチしています。</target>
+        <source>{0} is catching corrupted state exception</source>
+        <target state="translated">{0} が破損状態例外をキャッチしています</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -313,8 +313,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">XmlDocument の派生クラス {0} が、コンストラクターを明示的に定義していません。</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">XmlDocument の派生クラス {0} が、コンストラクターを明示的に定義していません。</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +328,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">XmlTextReader の派生クラス {0} が、コンストラクターを明示的に定義していません。</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">XmlTextReader の派生クラス {0} が、コンストラクターを明示的に定義していません。</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +343,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">セキュリティで保護されていない XsltSettings インスタンスとセキュリティで保護されていない XmlResolver インスタンスを XslCompiledTransform.Load メソッドに指定すると、XSL 内でのスクリプトの処理が許可されるため、安全でない可能性があります。信頼できない XSL 入力では、悪意のあるコードが実行される場合があります。セキュリティで保護されていない XsltSettings 引数を XsltSettings.Default、または document 関数とスクリプトの実行が無効になっているインスタンスに置き換えるか、XmlResolver 引数を null または XmlSecureResolver インスタンスに置き換えます。このメッセージは、信頼できるソースからの入力であることがわかっていて、事前にはわからない場所からの外部リソース解決が必ずサポートされている場合には表示されないことがあります。</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">セキュリティで保護されていない XsltSettings インスタンスとセキュリティで保護されていない XmlResolver インスタンスを XslCompiledTransform.Load メソッドに指定すると、XSL 内でのスクリプトの処理が許可されるため、安全でない可能性があります。信頼できない XSL 入力では、悪意のあるコードが実行される場合があります。セキュリティで保護されていない XsltSettings 引数を XsltSettings.Default、または document 関数とスクリプトの実行が無効になっているインスタンスに置き換えるか、XmlResolver 引数を null または XmlSecureResolver インスタンスに置き換えます。このメッセージは、信頼できるソースからの入力であることがわかっていて、事前にはわからない場所からの外部リソース解決が必ずサポートされている場合には表示されないことがあります。</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">
@@ -363,8 +363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
-        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</source>
-        <target state="translated">コントローラー アクション {0} では MVC による HttpVerbs.GET と ValidateAntiForgeryTokenAttribute の使用はサポートされていません。</target>
+        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
+        <target state="translated">コントローラー アクション {0} では MVC による HttpVerbs.GET と ValidateAntiForgeryTokenAttribute の使用はサポートされていません</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -373,8 +373,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</source>
-        <target state="translated">既定で POST 要求を受入れる ValidateAntiForgeryTokenAttribute が MVC コントローラー アクション {0} にありません。</target>
+        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
+        <target state="translated">既定で POST 要求を受け入れる ValidateAntiForgeryTokenAttribute が MVC コントローラー アクション {0} にありません</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -383,8 +383,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</source>
-        <target state="translated">コントローラー アクション {0} に ValidateAntiForgeryTokenAttribute がありません。</target>
+        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
+        <target state="translated">コントローラー アクション {0} に ValidateAntiForgeryTokenAttribute がありません</target>
         <note />
       </trans-unit>
     </body>

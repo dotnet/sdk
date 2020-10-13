@@ -1,30 +1,27 @@
+
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ImplementIDisposableCorrectlyAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpImplementIDisposableCorrectlyFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ImplementIDisposableCorrectlyAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicImplementIDisposableCorrectlyFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class ImplementIDisposableCorrectlyTests : DiagnosticAnalyzerTestBase
+    public class ImplementIDisposableCorrectlyTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ImplementIDisposableCorrectlyAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ImplementIDisposableCorrectlyAnalyzer();
-        }
-
         #region CSharp Unit Tests
 
         [Fact]
-        public void CSharp_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern()
+        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -48,9 +45,9 @@ public class C : IDisposable
         }
 
         [Fact, WorkItem(1435, "https://github.com/dotnet/roslyn-analyzers/issues/1435")]
-        public void CSharp_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern_WithAttributes()
+        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern_WithAttributes()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class MyAttribute : Attribute
@@ -82,9 +79,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeSignature_NoDiagnostic_NotImplementingDisposable()
+        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_NotImplementingDisposable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C
@@ -112,9 +109,9 @@ public class C
         #region CSharp IDisposableReimplementation Unit Tests
 
         [Fact]
-        public void CSharp_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposable()
+        public async Task CSharp_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B : IDisposable
@@ -124,7 +121,7 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B, IDisposable
+public class C : B, IDisposable
 {
     public override void Dispose()
     {
@@ -140,16 +137,24 @@ public class B : IDisposable
     protected virtual void Dispose(bool disposing)
     {
     }
-}|]
+}
 ",
-            GetCA1063CSharpIDisposableReimplementationResultAt(11, 14, "C", "B"),
-            GetCA1063CSharpDisposeSignatureResultAt(13, 26, "C", "Dispose"));
+                // Test0.cs(4,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063CSharpProvideDisposeBoolResultAt(4, 14, "B"),
+                // Test0.cs(6,25): warning CA1063: Ensure that 'B.Dispose' is declared as public and sealed.
+                GetCA1063CSharpDisposeSignatureResultAt(6, 25, "B", "Dispose"),
+                // Test0.cs(6,25): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063CSharpDisposeImplementationResultAt(6, 25, "B", "Dispose"),
+                // Test0.cs(11,14): warning CA1063: Remove IDisposable from the list of interfaces implemented by 'C' as it is already implemented by base type 'B'.
+                GetCA1063CSharpIDisposableReimplementationResultAt(11, 14, "C", "B"),
+                // Test0.cs(13,26): warning CA1063: Ensure that 'C.Dispose' is declared as public and sealed.
+                GetCA1063CSharpDisposeSignatureResultAt(13, 26, "C", "Dispose"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ReimplementingIDisposable_Internal()
+        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ReimplementingIDisposable_Internal()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 internal class B : IDisposable
@@ -159,7 +164,7 @@ internal class B : IDisposable
     }
 }
 
-[|internal class C : B, IDisposable
+internal class C : B, IDisposable
 {
     public override void Dispose()
     {
@@ -175,14 +180,14 @@ internal class B : IDisposable
     protected virtual void Dispose(bool disposing)
     {
     }
-}|]
+}
 ");
         }
 
         [Fact]
-        public void CSharp_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableWithDeepInheritance()
+        public async Task CSharp_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableWithDeepInheritance()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A : IDisposable
@@ -196,7 +201,7 @@ public class B : A
 {
 }
 
-[|public class C : B, IDisposable
+public class C : B, IDisposable
 {
     public override void Dispose()
     {
@@ -212,16 +217,24 @@ public class B : A
     protected virtual void Dispose(bool disposing)
     {
     }
-}|]
+}
 ",
-            GetCA1063CSharpIDisposableReimplementationResultAt(15, 14, "C", "B"),
-            GetCA1063CSharpDisposeSignatureResultAt(17, 26, "C", "Dispose"));
+                // Test0.cs(4,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'A' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063CSharpProvideDisposeBoolResultAt(4, 14, "A"),
+                // Test0.cs(6,25): warning CA1063: Ensure that 'A.Dispose' is declared as public and sealed.
+                GetCA1063CSharpDisposeSignatureResultAt(6, 25, "A", "Dispose"),
+                // Test0.cs(6,25): warning CA1063: Modify 'A.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063CSharpDisposeImplementationResultAt(6, 25, "A", "Dispose"),
+                // Test0.cs(15,14): warning CA1063: Remove IDisposable from the list of interfaces implemented by 'C' as it is already implemented by base type 'B'.
+                GetCA1063CSharpIDisposableReimplementationResultAt(15, 14, "C", "B"),
+                // Test0.cs(17,26): warning CA1063: 'C.Dispose' is declared as public and sealed.
+                GetCA1063CSharpDisposeSignatureResultAt(17, 26, "C", "Dispose"));
         }
 
         [Fact]
-        public void CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInterfaceInheritedFromIDisposable()
+        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInterfaceInheritedFromIDisposable()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public interface ITest : IDisposable
@@ -236,7 +249,7 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B, ITest
+public class C : B, ITest
 {
     public int Test { get; set; }
 
@@ -254,40 +267,18 @@ public class B : IDisposable
     protected virtual void Dispose(bool disposing)
     {
     }
-}|]
-");
-        }
-
-        [Fact]
-        public void CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ReImplementingIDisposableWithNoDisposeMethod()
-        {
-            VerifyCSharp(@"
-using System;
-
-public interface ITest : IDisposable
-{
-    int Test { get; set; }
 }
-
-public class B : IDisposable
-{
-    public void Dispose()
-    {
-    }
-}
-
-[|public class C : B, ITest, IDisposable
-{
-    public int Test { get; set; }
-}|]
 ",
-            GetCA1063CSharpIDisposableReimplementationResultAt(16, 14, "C", "B"));
+                // Test0.cs(9,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063CSharpProvideDisposeBoolResultAt(9, 14, "B"),
+                // Test0.cs(11,17): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063CSharpDisposeImplementationResultAt(11, 17, "B", "Dispose"));
         }
 
         [Fact]
-        public void CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInheritedInterfaceWithNoDisposeReimplementation()
+        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ReImplementingIDisposableWithNoDisposeMethod()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public interface ITest : IDisposable
@@ -302,11 +293,46 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B, ITest
+public class C : B, ITest, IDisposable
 {
     public int Test { get; set; }
-}|]
-");
+}
+",
+                // Test0.cs(9,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063CSharpProvideDisposeBoolResultAt(9, 14, "B"),
+                // Test0.cs(11,17): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063CSharpDisposeImplementationResultAt(11, 17, "B", "Dispose"),
+                // Test0.cs(16,14): warning CA1063: Remove IDisposable from the list of interfaces implemented by 'C' as it is already implemented by base type 'B'.
+                GetCA1063CSharpIDisposableReimplementationResultAt(16, 14, "C", "B"));
+        }
+
+        [Fact]
+        public async Task CSharp_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInheritedInterfaceWithNoDisposeReimplementation()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public interface ITest : IDisposable
+{
+    int Test { get; set; }
+}
+
+public class B : IDisposable
+{
+    public void Dispose()
+    {
+    }
+}
+
+public class C : B, ITest
+{
+    public int Test { get; set; }
+}
+",
+                // Test0.cs(9,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063CSharpProvideDisposeBoolResultAt(9, 14, "B"),
+                // Test0.cs(11,17): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063CSharpDisposeImplementationResultAt(11, 17, "B", "Dispose"));
         }
 
         #endregion
@@ -314,9 +340,9 @@ public class B : IDisposable
         #region CSharp DisposeSignature Unit Tests
 
         [Fact]
-        public void CSharp_CA1063_DisposeSignature_Diagnostic_DisposeNotPublic()
+        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeNotPublic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -342,9 +368,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeSignature_Diagnostic_DisposeIsVirtual()
+        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeIsVirtual()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -369,9 +395,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeSignature_Diagnostic_DisposeIsOverriden()
+        public async Task CSharp_CA1063_DisposeSignature_Diagnostic_DisposeIsOverriden()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B
@@ -403,9 +429,9 @@ public class C : B, IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeSignature_NoDiagnostic_DisposeIsOverridenAndSealed()
+        public async Task CSharp_CA1063_DisposeSignature_NoDiagnostic_DisposeIsOverridenAndSealed()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B
@@ -440,9 +466,9 @@ public class C : B, IDisposable
         #region CSharp DisposeOverride Unit Tests
 
         [Fact]
-        public void CSharp_CA1063_DisposeOverride_Diagnostic_SimpleDisposeOverride()
+        public async Task CSharp_CA1063_DisposeOverride_Diagnostic_SimpleDisposeOverride()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B : IDisposable
@@ -463,20 +489,23 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B
+public class C : B
 {
     public override void Dispose()
     {
     }
-}|]
+}
 ",
-            GetCA1063CSharpDisposeOverrideResultAt(24, 26, "C", "Dispose"));
+                // Test0.cs(6,25): warning CA1063: Ensure that 'B.Dispose' is declared as public and sealed.
+                GetCA1063CSharpDisposeSignatureResultAt(6, 25, "B", "Dispose"),
+                // Test0.cs(24,26): warning CA1063: Remove 'C.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
+                GetCA1063CSharpDisposeOverrideResultAt(24, 26, "C", "Dispose"));
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeOverride_Diagnostic_DoubleDisposeOverride()
+        public async Task CSharp_CA1063_DisposeOverride_Diagnostic_DoubleDisposeOverride()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A : IDisposable
@@ -504,15 +533,20 @@ public class B : A
     }
 }
 
-[|public class C : B
+public class C : B
 {
     public override void Dispose()
     {
         Dispose(true);
     }
-}|]
+}
 ",
-            GetCA1063CSharpDisposeOverrideResultAt(31, 26, "C", "Dispose"));
+                // Test0.cs(6,25): warning CA1063: Ensure that 'A.Dispose' is declared as public and sealed.
+                GetCA1063CSharpDisposeSignatureResultAt(6, 25, "A", "Dispose"),
+                // Test0.cs(24,26): warning CA1063: Remove 'B.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
+                GetCA1063CSharpDisposeOverrideResultAt(24, 26, "B", "Dispose"),
+                // Test0.cs(31,26): warning CA1063: Remove 'C.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
+                GetCA1063CSharpDisposeOverrideResultAt(31, 26, "C", "Dispose"));
         }
 
         #endregion
@@ -520,9 +554,9 @@ public class B : A
         #region CSharp FinalizeOverride Unit Tests
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_OverridesDisposeBool()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_OverridesDisposeBool()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B : IDisposable
@@ -538,7 +572,7 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B
+public class C : B
 {
     protected override void Dispose(bool disposing)
     {
@@ -548,15 +582,15 @@ public class B : IDisposable
     ~C()
     {
     }
-}|]
+}
 ",
             GetCA1063CSharpFinalizeImplementationResultAt(24, 6, "C", "Finalize"));
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B : IDisposable
@@ -577,21 +611,21 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B
+public class C : B
 {
     ~C()
     {
     }
-}|]
+}
 ",
             // Test0.cs(22,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
             GetCA1063CSharpFinalizeOverrideResultAt(22, 14, "C", "B"));
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void CSharp_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A : IDisposable
@@ -619,21 +653,23 @@ public class B : A
     }
 }
 
-[|public class C : B
+public class C : B
 {
     ~C()
     {
     }
-}|]
+}
 ",
-            // Test0.cs(29,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
-            GetCA1063CSharpFinalizeOverrideResultAt(29, 14, "C", "B"));
+                // Test0.cs(22,14): warning CA1063: Remove the finalizer from type 'B', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'A' also provides a finalizer.
+                GetCA1063CSharpFinalizeOverrideResultAt(22, 14, "B", "A"),
+                // Test0.cs(29,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
+                GetCA1063CSharpFinalizeOverrideResultAt(29, 14, "C", "B"));
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void CSharp_CA1063_FinalizeOverride_NoDiagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasNoFinalizer()
+        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasNoFinalizer()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B : IDisposable
@@ -649,7 +685,7 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B
+public class C : B
 {
     protected override void Dispose(bool disposing)
     {
@@ -660,14 +696,14 @@ public class B : IDisposable
     {
         Dispose(false);
     }
-}|]
+}
 ");
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasFinalizer()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasFinalizer()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B : IDisposable
@@ -688,7 +724,7 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B
+public class C : B
 {
     protected override void Dispose(bool disposing)
     {
@@ -699,16 +735,16 @@ public class B : IDisposable
     {
         Dispose(false);
     }
-}|]
+}
 ",
             // Test0.cs(22,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
             GetCA1063CSharpFinalizeOverrideResultAt(22, 14, "C", "B"));
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void CSharp_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride_InvokesDisposeBool()
+        public async Task CSharp_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride_InvokesDisposeBool()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class A : IDisposable
@@ -742,7 +778,7 @@ public class B : A
     }
 }
 
-[|public class C : B
+public class C : B
 {
     protected override void Dispose(bool disposing)
     {
@@ -753,16 +789,18 @@ public class B : A
     {
         Dispose(false);
     }
-}|]
+}
 ",
-            // Test0.cs(35,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
-            GetCA1063CSharpFinalizeOverrideResultAt(35, 14, "C", "B"));
+                // Test0.cs(22,14): warning CA1063: Remove the finalizer from type 'B', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'A' also provides a finalizer.
+                GetCA1063CSharpFinalizeOverrideResultAt(22, 14, "B", "A"),
+                // Test0.cs(35,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
+                GetCA1063CSharpFinalizeOverrideResultAt(35, 14, "C", "B"));
         }
 
         [Fact]
-        public void CSharp_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotInBaseType()
+        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotInBaseType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B : IDisposable
@@ -772,19 +810,23 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B
+public class C : B
 {
     ~C()
     {
     }
-}|]
-");
+}
+",
+                // Test0.cs(4,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063CSharpProvideDisposeBoolResultAt(4, 14, "B"),
+                // Test0.cs(6,17): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063CSharpDisposeImplementationResultAt(6, 17, "B", "Dispose"));
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void CSharp_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotOverriden()
+        public async Task CSharp_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotOverriden()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class B : IDisposable
@@ -805,13 +847,13 @@ public class B : IDisposable
     }
 }
 
-[|public class C : B
+public class C : B
 {
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
     }
-}|]
+}
 ");
         }
         #endregion
@@ -819,9 +861,9 @@ public class B : IDisposable
         #region CSharp ProvideDisposeBool Unit Tests
 
         [Fact]
-        public void CSharp_CA1063_ProvideDisposeBool_Diagnostic_MissingDisposeBool()
+        public async Task CSharp_CA1063_ProvideDisposeBool_Diagnostic_MissingDisposeBool()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -841,9 +883,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_ProvideDisposeBool_NoDiagnostic_SealedClassAndMissingDisposeBool()
+        public async Task CSharp_CA1063_ProvideDisposeBool_NoDiagnostic_SealedClassAndMissingDisposeBool()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public sealed class C : IDisposable
@@ -864,9 +906,9 @@ public sealed class C : IDisposable
         #region CSharp DisposeBoolSignature Unit Tests
 
         [Fact]
-        public void CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsPublic()
+        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsPublic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -891,9 +933,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsProtectedInternal()
+        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsProtectedInternal()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -918,9 +960,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsNotVirtual()
+        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsNotVirtual()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -945,9 +987,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsSealedOverriden()
+        public async Task CSharp_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsSealedOverriden()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public abstract class B
@@ -977,9 +1019,9 @@ public class C : B, IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsOverriden()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsOverriden()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public abstract class B
@@ -1008,9 +1050,9 @@ public class C : B, IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsAbstract()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsAbstract()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public abstract class C : IDisposable
@@ -1032,9 +1074,9 @@ public abstract class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPublicAndClassIsSealed()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPublicAndClassIsSealed()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public sealed class C : IDisposable
@@ -1058,9 +1100,9 @@ public sealed class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPrivateAndClassIsSealed()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPrivateAndClassIsSealed()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public sealed class C : IDisposable
@@ -1084,9 +1126,9 @@ public sealed class C : IDisposable
         }
 
         [Fact, WorkItem(1815, "https://github.com/dotnet/roslyn-analyzers/issues/1815")]
-        public void CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsStatic()
+        public async Task CSharp_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsStatic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class Class1 : IDisposable
@@ -1111,9 +1153,9 @@ public class Class1 : IDisposable
         #region CSharp DisposeImplementation Unit Tests
 
         [Fact]
-        public void CSharp_CA1063_DisposeImplementation_Diagnostic_MissingCallDisposeBool()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_MissingCallDisposeBool()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1137,9 +1179,9 @@ public class C : IDisposable
         }
 
         [Fact, WorkItem(1974, "https://github.com/dotnet/roslyn-analyzers/issues/1974")]
-        public void CSharp_CA1063_DisposeImplementation_Diagnostic_MissingCallSuppressFinalize_HasFinalizer()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_MissingCallSuppressFinalize_HasFinalizer()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1163,9 +1205,9 @@ public class C : IDisposable
         }
 
         [Fact, WorkItem(1974, "https://github.com/dotnet/roslyn-analyzers/issues/1974")]
-        public void CSharp_CA1063_DisposeImplementation_NoDiagnostic_MissingCallSuppressFinalize_NoFinalizer()
+        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_MissingCallSuppressFinalize_NoFinalizer()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1183,9 +1225,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeImplementation_Diagnostic_EmptyDisposeBody()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_EmptyDisposeBody()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1208,9 +1250,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeImplementation_Diagnostic_CallDisposeWithFalseArgument()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_CallDisposeWithFalseArgument()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1235,9 +1277,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeImplementation_Diagnostic_ConditionalStatement()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_ConditionalStatement()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1267,9 +1309,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeImplementation_NoDiagnostic_ConditionalStatement_Internal()
+        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_ConditionalStatement_Internal()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 internal class C : IDisposable
@@ -1298,9 +1340,9 @@ internal class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeImplementation_Diagnostic_CallDisposeBoolTwice()
+        public async Task CSharp_CA1063_DisposeImplementation_Diagnostic_CallDisposeBoolTwice()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1326,9 +1368,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_DisposeImplementation_NoDiagnostic_EmptyDisposeBodyInSealedClass()
+        public async Task CSharp_CA1063_DisposeImplementation_NoDiagnostic_EmptyDisposeBodyInSealedClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public sealed class C : IDisposable
@@ -1349,9 +1391,9 @@ public sealed class C : IDisposable
         #region CSharp FinalizeImplementation Unit Tests
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public void CSharp_CA1063_FinalizeImplementation_NoDiagnostic_ExpressionBodiedImpl()
+        public async Task CSharp_CA1063_FinalizeImplementation_NoDiagnostic_ExpressionBodiedImpl()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
@@ -1378,9 +1420,9 @@ public class SomeTestClass : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_FinalizeImplementation_Diagnostic_MissingCallDisposeBool()
+        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_MissingCallDisposeBool()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1404,9 +1446,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_FinalizeImplementation_Diagnostic_CallDisposeWithTrueArgument()
+        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_CallDisposeWithTrueArgument()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1431,9 +1473,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_FinalizeImplementation_Diagnostic_ConditionalStatement()
+        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_ConditionalStatement()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1463,9 +1505,9 @@ public class C : IDisposable
         }
 
         [Fact]
-        public void CSharp_CA1063_FinalizeImplementation_Diagnostic_CallDisposeBoolTwice()
+        public async Task CSharp_CA1063_FinalizeImplementation_Diagnostic_CallDisposeBoolTwice()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class C : IDisposable
@@ -1495,9 +1537,9 @@ public class C : IDisposable
         #region VB Unit Tests
 
         [Fact]
-        public void Basic_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern()
+        public async Task Basic_CA1063_DisposeSignature_NoDiagnostic_GoodDisposablePattern()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -1521,9 +1563,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeSignature_NoDiagnostic_NotImplementingDisposable()
+        public async Task Basic_CA1063_DisposeSignature_NoDiagnostic_NotImplementingDisposable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -1550,9 +1592,9 @@ End Class
         #region VB IDisposableReimplementation Unit Tests
 
         [Fact]
-        public void Basic_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposable()
+        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class B
@@ -1562,7 +1604,7 @@ Public Class B
     End Sub
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
     Implements IDisposable
 
@@ -1579,16 +1621,24 @@ End Class
     Protected Overridable Overloads Sub Dispose(disposing As Boolean)
     End Sub
 
-End Class|]
+End Class
 ",
-            GetCA1063BasicIDisposableReimplementationResultAt(11, 14, "C", "B"),
-            GetCA1063BasicDisposeSignatureResultAt(15, 26, "C", "Dispose"));
+                // Test0.vb(4,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063BasicProvideDisposeBoolResultAt(4, 14, "B"),
+                // Test0.vb(7,28): warning CA1063: Ensure that 'B.Dispose' is declared as public and sealed.
+                GetCA1063BasicDisposeSignatureResultAt(7, 28, "B", "Dispose"),
+                // Test0.vb(7,28): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063BasicDisposeImplementationResultAt(7, 28, "B", "Dispose"),
+                // Test0.vb(11,14): warning CA1063: Remove IDisposable from the list of interfaces implemented by 'C' as it is already implemented by base type 'B'.
+                GetCA1063BasicIDisposableReimplementationResultAt(11, 14, "C", "B"),
+                // Test0.vb(15,26): warning CA1063: Ensure that 'C.Dispose' is declared as public and sealed.
+                GetCA1063BasicDisposeSignatureResultAt(15, 26, "C", "Dispose"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ReimplementingIDisposable_Internal()
+        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ReimplementingIDisposable_Internal()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Friend Class B
@@ -1598,7 +1648,7 @@ Friend Class B
     End Sub
 End Class
 
-[|Friend Class C
+Friend Class C
     Inherits B
     Implements IDisposable
 
@@ -1615,14 +1665,14 @@ End Class
     Protected Overridable Overloads Sub Dispose(disposing As Boolean)
     End Sub
 
-End Class|]
+End Class
 ");
         }
 
         [Fact]
-        public void Basic_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableWithDeepInheritance()
+        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReimplementingIDisposableWithDeepInheritance()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class A
@@ -1636,7 +1686,7 @@ Public Class B
     Inherits A
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
     Implements IDisposable
 
@@ -1653,16 +1703,24 @@ End Class
     Protected Overridable Overloads Sub Dispose(disposing As Boolean)
     End Sub
 
-End Class|]
+End Class
 ",
-            GetCA1063BasicIDisposableReimplementationResultAt(15, 14, "C", "B"),
-            GetCA1063BasicDisposeSignatureResultAt(19, 26, "C", "Dispose"));
+                // Test0.vb(4,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'A' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063BasicProvideDisposeBoolResultAt(4, 14, "A"),
+                // Test0.vb(7,28): warning CA1063: Ensure that 'A.Dispose' is declared as public and sealed.
+                GetCA1063BasicDisposeSignatureResultAt(7, 28, "A", "Dispose"),
+                // Test0.vb(7,28): warning CA1063: Modify 'A.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063BasicDisposeImplementationResultAt(7, 28, "A", "Dispose"),
+                // Test0.vb(15,14): warning CA1063: Remove IDisposable from the list of interfaces implemented by 'C' as it is already implemented by base type 'B'.
+                GetCA1063BasicIDisposableReimplementationResultAt(15, 14, "C", "B"),
+                // Test0.vb(19,26): warning CA1063: Ensure that 'C.Dispose' is declared as public and sealed.
+                GetCA1063BasicDisposeSignatureResultAt(19, 26, "C", "Dispose"));
         }
 
         [Fact]
-        public void Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInterfaceInheritedFromIDisposable()
+        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInterfaceInheritedFromIDisposable()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Interface ITest
@@ -1678,7 +1736,7 @@ Public Class B
     End Sub
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
     Implements ITest
 
@@ -1697,45 +1755,18 @@ End Class
     Protected Overridable Overloads Sub Dispose(disposing As Boolean)
     End Sub
 
-End Class|]
-");
-        }
-
-        [Fact]
-        public void Basic_CA1063_IDisposableReimplementation_Diagnostic_ReImplementingIDisposableWithNoDisposeMethod()
-        {
-            VerifyBasic(@"
-Imports System
-
-Public Interface ITest
-    Inherits IDisposable
-
-    Property Test As Integer
-End Interface
-
-Public Class B
-    Implements IDisposable
-
-    Public Sub Dispose() Implements IDisposable.Dispose
-    End Sub
 End Class
-
-[|Public NotInheritable Class C
-    Inherits B
-    Implements ITest
-    Implements IDisposable
-
-    Public Property Test As Integer Implements ITest.Test
-
-End Class|]
 ",
-            GetCA1063BasicIDisposableReimplementationResultAt(17, 29, "C", "B"));
+                // Test0.vb(10,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063BasicProvideDisposeBoolResultAt(10, 14, "B"),
+                // Test0.vb(13,16): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063BasicDisposeImplementationResultAt(13, 16, "B", "Dispose"));
         }
 
         [Fact]
-        public void Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInheritedInterfaceWithNoDisposeReimplementation()
+        public async Task Basic_CA1063_IDisposableReimplementation_Diagnostic_ReImplementingIDisposableWithNoDisposeMethod()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Interface ITest
@@ -1751,14 +1782,54 @@ Public Class B
     End Sub
 End Class
 
-[|Public NotInheritable Class C
+Public NotInheritable Class C
+    Inherits B
+    Implements ITest
+    Implements IDisposable
+
+    Public Property Test As Integer Implements ITest.Test
+
+End Class
+",
+                // Test0.vb(10,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063BasicProvideDisposeBoolResultAt(10, 14, "B"),
+                // Test0.vb(13,16): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063BasicDisposeImplementationResultAt(13, 16, "B", "Dispose"),
+                // Test0.vb(17,29): warning CA1063: Remove IDisposable from the list of interfaces implemented by 'C' as it is already implemented by base type 'B'.
+                GetCA1063BasicIDisposableReimplementationResultAt(17, 29, "C", "B"));
+        }
+
+        [Fact]
+        public async Task Basic_CA1063_IDisposableReimplementation_NoDiagnostic_ImplementingInheritedInterfaceWithNoDisposeReimplementation()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Interface ITest
+    Inherits IDisposable
+
+    Property Test As Integer
+End Interface
+
+Public Class B
+    Implements IDisposable
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+
+Public NotInheritable Class C
     Inherits B
     Implements ITest
 
     Public Property Test As Integer Implements ITest.Test
 
-End Class|]
-");
+End Class
+",
+                // Test0.vb(10,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063BasicProvideDisposeBoolResultAt(10, 14, "B"),
+                // Test0.vb(13,16): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063BasicDisposeImplementationResultAt(13, 16, "B", "Dispose"));
         }
 
         #endregion
@@ -1766,9 +1837,9 @@ End Class|]
         #region VB DisposeSignature Unit Tests
 
         [Fact]
-        public void Basic_CA1063_DisposeSignature_Diagnostic_DisposeProtected()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeProtected()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -1793,9 +1864,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeSignature_Diagnostic_DisposePrivate()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposePrivate()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -1820,9 +1891,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsVirtual()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsVirtual()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -1847,9 +1918,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsOverriden()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsOverriden()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class B
@@ -1880,9 +1951,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsOverridenAndSealed()
+        public async Task Basic_CA1063_DisposeSignature_Diagnostic_DisposeIsOverridenAndSealed()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class B
@@ -1916,9 +1987,9 @@ End Class
         #region VB RenameDispose Unit Tests
 
         [Fact]
-        public void Basic_CA1063_RenameDispose_Diagnostic_DisposeNamedD()
+        public async Task Basic_CA1063_RenameDispose_Diagnostic_DisposeNamedD()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -1947,9 +2018,9 @@ End Class
         #region VB DisposeOverride Unit Tests
 
         [Fact]
-        public void Basic_CA1063_DisposeOverride_Diagnostic_SimpleDisposeOverride()
+        public async Task Basic_CA1063_DisposeOverride_Diagnostic_SimpleDisposeOverride()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class B
@@ -1970,20 +2041,23 @@ Public Class B
 
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
 
     Public Overrides Sub Dispose()
     End Sub
-End Class|]
+End Class
 ",
-            GetCA1063BasicDisposeOverrideResultAt(25, 26, "C", "Dispose"));
+                // Test0.vb(7,28): warning CA1063: Ensure that 'B.Dispose' is declared as public and sealed.
+                GetCA1063BasicDisposeSignatureResultAt(7, 28, "B", "Dispose"),
+                // Test0.vb(25,26): warning CA1063: Remove 'C.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
+                GetCA1063BasicDisposeOverrideResultAt(25, 26, "C", "Dispose"));
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeOverride_Diagnostic_DoubleDisposeOverride()
+        public async Task Basic_CA1063_DisposeOverride_Diagnostic_DoubleDisposeOverride()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class A
@@ -2011,21 +2085,26 @@ Public Class B
     End Sub
 End Class
     
-[|Public Class C
+Public Class C
     Inherits B
 
     Public Overrides Sub Dispose()
         Dispose(True)
     End Sub
-End Class|]
+End Class
 ",
-            GetCA1063BasicDisposeOverrideResultAt(32, 26, "C", "Dispose"));
+                // Test0.vb(7,28): warning CA1063: Ensure that 'A.Dispose' is declared as public and sealed.
+                GetCA1063BasicDisposeSignatureResultAt(7, 28, "A", "Dispose"),
+                // Test0.vb(25,26): warning CA1063: Remove 'B.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
+                GetCA1063BasicDisposeOverrideResultAt(25, 26, "B", "Dispose"),
+                // Test0.vb(32,26): warning CA1063: Remove 'C.Dispose', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.
+                GetCA1063BasicDisposeOverrideResultAt(32, 26, "C", "Dispose"));
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeOverride_Diagnostic_2DisposeImplementationsOverriden()
+        public async Task Basic_CA1063_DisposeOverride_Diagnostic_2DisposeImplementationsOverriden()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class A
@@ -2054,7 +2133,7 @@ Public Class B
     End Sub
 End Class
     
-[|Public Class C
+Public Class C
     Inherits B
 
     Public Overrides Sub Dispose()
@@ -2064,9 +2143,21 @@ End Class
     Public Overrides Sub D()
         Dispose()
     End Sub
-End Class|]
+End Class
 ",
+            // Test0.vb(7,28): warning CA1063: Ensure that 'A.Dispose' is declared as public and sealed.
+            GetCA1063BasicDisposeSignatureResultAt(7, 28, "A", "Dispose"),
+            // Test0.vb(22,14): warning CA1063: Remove IDisposable from the list of interfaces implemented by 'B' as it is already implemented by base type 'A'.
+            GetCA1063BasicIDisposableReimplementationResultAt(22, 14, "B", "A"),
+            // Test0.vb(22,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+            GetCA1063BasicProvideDisposeBoolResultAt(22, 14, "B"),
+            // Test0.vb(26,28): warning CA1063: Ensure that 'B.D' is declared as public and sealed.
+            GetCA1063BasicDisposeSignatureResultAt(26, 28, "B", "D"),
+            // Test0.vb(26,28): warning CA1063: Rename 'B.D' to 'Dispose' and ensure that it is declared as public and sealed.
+            GetCA1063BasicRenameDisposeResultAt(26, 28, "B", "D"),
+            // Test0.vb(33,26): warning CA1063: Remove 'C.Dispose', override Dispose(bool disposing) and put the dispose logic in the code path where 'disposing' is true.
             GetCA1063BasicDisposeOverrideResultAt(33, 26, "C", "Dispose"),
+            // Test0.vb(37,26): warning CA1063: Remove 'C.D', override Dispose(bool disposing) and put the dispose logic in the code path where 'disposing' is true.
             GetCA1063BasicDisposeOverrideResultAt(37, 26, "C", "D"));
         }
 
@@ -2075,9 +2166,9 @@ End Class|]
         #region VB FinalizeOverride Unit Tests
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void Basic_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride()
+        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class B
@@ -2096,22 +2187,24 @@ Public Class B
 
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
 
     Protected Overrides Sub Finalize()
         MyBase.Finalize()
     End Sub
-End Class|]
+End Class
 ",
-            // Test0.vb(20,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
-            GetCA1063BasicFinalizeOverrideResultAt(20, 14, "C", "B"));
+                // Test0.vb(12,29): warning CA1063: Modify 'B.Finalize' so that it calls Dispose(false) and then returns.
+                GetCA1063BasicFinalizeImplementationResultAt(12, 29, "B", "Finalize"),
+                // Test0.vb(20,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
+                GetCA1063BasicFinalizeOverrideResultAt(20, 14, "C", "B"));
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void Basic_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride()
+        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class A
@@ -2139,22 +2232,26 @@ Public Class B
     End Sub
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
 
     Protected Overrides Sub Finalize()
         MyBase.Finalize()
     End Sub
-End Class|]
+End Class
 ",
-            // Test0.vb(29,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
-            GetCA1063BasicFinalizeOverrideResultAt(29, 14, "C", "B"));
+                // Test0.vb(12,29): warning CA1063: Modify 'A.Finalize' so that it calls Dispose(false) and then returns.
+                GetCA1063BasicFinalizeImplementationResultAt(12, 29, "A", "Finalize"),
+                // Test0.vb(20,14): warning CA1063: Remove the finalizer from type 'B', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'A' also provides a finalizer.
+                GetCA1063BasicFinalizeOverrideResultAt(20, 14, "B", "A"),
+                // Test0.vb(29,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
+                GetCA1063BasicFinalizeOverrideResultAt(29, 14, "C", "B"));
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void Basic_CA1063_FinalizeOverride_NoDiagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasNoFinalizer()
+        public async Task Basic_CA1063_FinalizeOverride_NoDiagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasNoFinalizer()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class B
@@ -2170,21 +2267,21 @@ Public Class B
 
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
 
     Protected Overrides Sub Finalize()
         Dispose(False)
         MyBase.Finalize()
     End Sub
-End Class|]
+End Class
 ");
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void Basic_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasFinalizer()
+        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_SimpleFinalizeOverride_InvokesDisposeBool_BaseTypeHasFinalizer()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class B
@@ -2205,23 +2302,23 @@ Public Class B
 
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
 
     Protected Overrides Sub Finalize()
         Dispose(False)
         MyBase.Finalize()
     End Sub
-End Class|]
+End Class
 ",
             // Test0.vb(22,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
             GetCA1063BasicFinalizeOverrideResultAt(22, 14, "C", "B"));
         }
 
         [Fact, WorkItem(1950, "https://github.com/dotnet/roslyn-analyzers/issues/1950")]
-        public void Basic_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride_InvokesDisposeBool()
+        public async Task Basic_CA1063_FinalizeOverride_Diagnostic_DoubleFinalizeOverride_InvokesDisposeBool()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class A
@@ -2250,23 +2347,25 @@ Public Class B
     End Sub
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
 
     Protected Overrides Sub Finalize()
         Dispose(False)
         MyBase.Finalize()
     End Sub
-End Class|]
+End Class
 ",
-            // Test0.vb(30,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
-            GetCA1063BasicFinalizeOverrideResultAt(30, 14, "C", "B"));
+                // Test0.vb(22,14): warning CA1063: Remove the finalizer from type 'B', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'A' also provides a finalizer.
+                GetCA1063BasicFinalizeOverrideResultAt(22, 14, "B", "A"),
+                // Test0.vb(30,14): warning CA1063: Remove the finalizer from type 'C', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type 'B' also provides a finalizer.
+                GetCA1063BasicFinalizeOverrideResultAt(30, 14, "C", "B"));
         }
 
         [Fact]
-        public void Basic_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotInBaseType()
+        public async Task Basic_CA1063_FinalizeOverride_NoDiagnostic_FinalizeNotInBaseType()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class B
@@ -2276,14 +2375,18 @@ Public Class B
     End Sub
 End Class
 
-[|Public Class C
+Public Class C
     Inherits B
 
     Protected Overrides Sub Finalize()
         MyBase.Finalize()
     End Sub
-End Class|]
-");
+End Class
+",
+                // Test0.vb(4,14): warning CA1063: Provide an overridable implementation of Dispose(bool) on 'B' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.
+                GetCA1063BasicProvideDisposeBoolResultAt(4, 14, "B"),
+                // Test0.vb(7,16): warning CA1063: Modify 'B.Dispose' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.
+                GetCA1063BasicDisposeImplementationResultAt(7, 16, "B", "Dispose"));
         }
 
         #endregion
@@ -2291,9 +2394,9 @@ End Class|]
         #region VB ProvideDisposeBool Unit Tests
 
         [Fact]
-        public void Basic_CA1063_ProvideDisposeBool_Diagnostic_MissingDisposeBool()
+        public async Task Basic_CA1063_ProvideDisposeBool_Diagnostic_MissingDisposeBool()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2312,9 +2415,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_ProvideDisposeBool_Diagnostic_SealedClassAndMissingDisposeBool()
+        public async Task Basic_CA1063_ProvideDisposeBool_Diagnostic_SealedClassAndMissingDisposeBool()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public NotInheritable Class C
@@ -2334,9 +2437,9 @@ End Class
         #region VB DisposeBoolSignature Unit Tests
 
         [Fact]
-        public void Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsPublic()
+        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsPublic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2361,9 +2464,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsProtectedInternal()
+        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsProtectedInternal()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2388,9 +2491,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsNotVirtual()
+        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsNotVirtual()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2415,9 +2518,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsSealedOverriden()
+        public async Task Basic_CA1063_DisposeBoolSignature_Diagnostic_DisposeBoolIsSealedOverriden()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public MustInherit Class B
@@ -2447,9 +2550,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsOverriden()
+        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsOverriden()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public MustInherit Class B
@@ -2478,9 +2581,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsAbstract()
+        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsAbstract()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public MustInherit Class C
@@ -2503,9 +2606,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPublicAndClassIsSealed()
+        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPublicAndClassIsSealed()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public NotInheritable Class C
@@ -2529,9 +2632,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPrivateAndClassIsSealed()
+        public async Task Basic_CA1063_DisposeBoolSignature_NoDiagnostic_DisposeBoolIsPrivateAndClassIsSealed()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public NotInheritable Class C
@@ -2559,9 +2662,9 @@ End Class
         #region VB DisposeImplementation Unit Tests
 
         [Fact]
-        public void Basic_CA1063_DisposeImplementation_Diagnostic_MissingCallDisposeBool()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_MissingCallDisposeBool()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2585,9 +2688,9 @@ End Class
         }
 
         [Fact, WorkItem(1974, "https://github.com/dotnet/roslyn-analyzers/issues/1974")]
-        public void Basic_CA1063_DisposeImplementation_Diagnostic_MissingCallSuppressFinalize_HasFinalizer()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_MissingCallSuppressFinalize_HasFinalizer()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2611,9 +2714,9 @@ End Class
         }
 
         [Fact, WorkItem(1974, "https://github.com/dotnet/roslyn-analyzers/issues/1974")]
-        public void Basic_CA1063_DisposeImplementation_NoDiagnostic_MissingCallSuppressFinalize_NoFinalizer()
+        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_MissingCallSuppressFinalize_NoFinalizer()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2631,9 +2734,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeImplementation_Diagnostic_EmptyDisposeBody()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_EmptyDisposeBody()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2656,9 +2759,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeImplementation_Diagnostic_CallDisposeWithFalseArgument()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_CallDisposeWithFalseArgument()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2683,9 +2786,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeImplementation_Diagnostic_ConditionalStatement()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_ConditionalStatement()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2714,9 +2817,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeImplementation_NoDiagnostic_ConditionalStatement_Internal()
+        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_ConditionalStatement_Internal()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Friend Class C
@@ -2744,9 +2847,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeImplementation_Diagnostic_CallDisposeBoolTwice()
+        public async Task Basic_CA1063_DisposeImplementation_Diagnostic_CallDisposeBoolTwice()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2772,9 +2875,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_DisposeImplementation_NoDiagnostic_EmptyDisposeBodyInSealedClass()
+        public async Task Basic_CA1063_DisposeImplementation_NoDiagnostic_EmptyDisposeBodyInSealedClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public NotInheritable Class C
@@ -2796,9 +2899,9 @@ End Class
         #region VB FinalizeImplementation Unit Tests
 
         [Fact]
-        public void Basic_CA1063_FinalizeImplementation_Diagnostic_MissingCallDisposeBool()
+        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_MissingCallDisposeBool()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2821,9 +2924,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_FinalizeImplementation_Diagnostic_CallDisposeWithTrueArgument()
+        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_CallDisposeWithTrueArgument()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2848,9 +2951,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_FinalizeImplementation_Diagnostic_ConditionalStatement()
+        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_ConditionalStatement()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2879,9 +2982,9 @@ End Class
         }
 
         [Fact]
-        public void Basic_CA1063_FinalizeImplementation_Diagnostic_CallDisposeBoolTwice()
+        public async Task Basic_CA1063_FinalizeImplementation_Diagnostic_CallDisposeBoolTwice()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class C
@@ -2911,116 +3014,94 @@ End Class
         #region Helpers
 
         private static DiagnosticResult GetCA1063CSharpIDisposableReimplementationResultAt(int line, int column, string typeName, string baseTypeName)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageIDisposableReimplementation, typeName, baseTypeName);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.IDisposableReimplementationRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName, baseTypeName);
 
         private static DiagnosticResult GetCA1063BasicIDisposableReimplementationResultAt(int line, int column, string typeName, string baseTypeName)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageIDisposableReimplementation, typeName, baseTypeName);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.IDisposableReimplementationRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName, baseTypeName);
 
         private static DiagnosticResult GetCA1063CSharpDisposeSignatureResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageDisposeSignature, typeName + "." + disposeMethod);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeSignatureRule)
+                .WithLocation(line, column)
+                .WithArguments($"{ typeName}.{ disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicDisposeSignatureResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageDisposeSignature, typeName + "." + disposeMethod);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeSignatureRule)
+                .WithLocation(line, column)
+                .WithArguments($"{ typeName}.{ disposeMethod}");
 
         private static DiagnosticResult GetCA1063CSharpRenameDisposeResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageRenameDispose, typeName + "." + disposeMethod);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.RenameDisposeRule)
+                .WithLocation(line, column)
+                .WithArguments($"{ typeName}.{ disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicRenameDisposeResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageRenameDispose, typeName + "." + disposeMethod);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.RenameDisposeRule)
+                .WithLocation(line, column)
+                .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063CSharpDisposeOverrideResultAt(int line, int column, string typeName, string method)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageDisposeOverride, typeName + "." + method);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeOverrideRule)
+                .WithLocation(line, column)
+                .WithArguments($"{ typeName}.{method}");
 
         private static DiagnosticResult GetCA1063BasicDisposeOverrideResultAt(int line, int column, string typeName, string method)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageDisposeOverride, typeName + "." + method);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeOverrideRule)
+                .WithLocation(line, column)
+                .WithArguments($"{ typeName}.{method}");
 
         private static DiagnosticResult GetCA1063CSharpFinalizeOverrideResultAt(int line, int column, string typeName, string baseTypeName)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageFinalizeOverride, typeName, baseTypeName);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.FinalizeOverrideRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName, baseTypeName);
 
         private static DiagnosticResult GetCA1063BasicFinalizeOverrideResultAt(int line, int column, string typeName, string baseTypeName)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageFinalizeOverride, typeName, baseTypeName);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.FinalizeOverrideRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName, baseTypeName);
 
         private static DiagnosticResult GetCA1063CSharpProvideDisposeBoolResultAt(int line, int column, string typeName)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageProvideDisposeBool, typeName);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.ProvideDisposeBoolRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName);
 
         private static DiagnosticResult GetCA1063BasicProvideDisposeBoolResultAt(int line, int column, string typeName)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageProvideDisposeBool, typeName);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.ProvideDisposeBoolRule)
+                .WithLocation(line, column)
+                .WithArguments(typeName);
 
         private static DiagnosticResult GetCA1063CSharpDisposeBoolSignatureResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageDisposeBoolSignature, typeName + "." + disposeMethod);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeBoolSignatureRule)
+                .WithLocation(line, column)
+                .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicDisposeBoolSignatureResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageDisposeBoolSignature, typeName + "." + disposeMethod);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeBoolSignatureRule)
+                .WithLocation(line, column)
+                .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063CSharpDisposeImplementationResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageDisposeImplementation, typeName + "." + disposeMethod);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeImplementationRule)
+                .WithLocation(line, column)
+                .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicDisposeImplementationResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageDisposeImplementation, typeName + "." + disposeMethod);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.DisposeImplementationRule)
+                .WithLocation(line, column)
+                .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063CSharpFinalizeImplementationResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(
-                MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageFinalizeImplementation, typeName + "." +
-                disposeMethod);
-            return GetCSharpResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyCS.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.FinalizeImplementationRule)
+                .WithLocation(line, column)
+                .WithArguments($"{typeName}.{disposeMethod}");
 
         private static DiagnosticResult GetCA1063BasicFinalizeImplementationResultAt(int line, int column, string typeName, string disposeMethod)
-        {
-            string message = string.Format(
-                MicrosoftCodeQualityAnalyzersResources.ImplementIDisposableCorrectlyMessageFinalizeImplementation, typeName + "." +
-                disposeMethod);
-            return GetBasicResultAt(line, column, ImplementIDisposableCorrectlyAnalyzer.RuleId, message);
-        }
+            => VerifyVB.Diagnostic(ImplementIDisposableCorrectlyAnalyzer.FinalizeImplementationRule)
+                .WithLocation(line, column)
+                .WithArguments($"{typeName}.{disposeMethod}");
 
         #endregion
     }

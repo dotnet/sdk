@@ -1,29 +1,26 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
-using Test.Utilities;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumStorageShouldBeInt32Analyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpEnumStorageShouldBeInt32Fixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumStorageShouldBeInt32Analyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicEnumStorageShouldBeInt32Fixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class EnumStorageShouldBeInt32Tests : DiagnosticAnalyzerTestBase
+    public class EnumStorageShouldBeInt32Tests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new EnumStorageShouldBeInt32Analyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new EnumStorageShouldBeInt32Analyzer();
-        }
-
         #region CSharpUnitTests
 
         [Fact]
-        public void CSharp_CA1028_NoDiagnostic()
+        public async Task CSharp_CA1028_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 namespace Test
 {
@@ -60,9 +57,9 @@ namespace Test
         }
 
         [Fact]
-        public void CSharp_CA1028_DiagnosticForInt64WithNoFlags()
+        public async Task CSharp_CA1028_DiagnosticForInt64WithNoFlags()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 namespace Test
 {
@@ -77,9 +74,9 @@ namespace Test
         }
 
         [Fact]
-        public void CSharp_CA1028_DiagnosticForSByte()
+        public async Task CSharp_CA1028_DiagnosticForSByte()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 namespace Test
 {
@@ -94,9 +91,9 @@ namespace Test
         }
 
         [Fact]
-        public void CSharp_CA1028_DiagnosticForUShort()
+        public async Task CSharp_CA1028_DiagnosticForUShort()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 namespace Test
 {
@@ -114,9 +111,9 @@ namespace Test
         #region BasicUnitTests
 
         [Fact]
-        public void Basic_CA1028_NoDiagnostic()
+        public async Task Basic_CA1028_NoDiagnostic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Module Module1
     Public Enum TestEnum1 'no violation - because underlying type is Int32
@@ -146,9 +143,9 @@ End Module
         }
 
         [Fact]
-        public void Basic_CA1028_DiagnosticForInt64WithNoFlags()
+        public async Task Basic_CA1028_DiagnosticForInt64WithNoFlags()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Module Module1
     Public Enum TestEnum1 As Long 'violation - because underlying type is Int64 and has no Flags attribute
@@ -161,9 +158,9 @@ End Module
         }
 
         [Fact]
-        public void Basic_CA1028_DiagnosticForByte()
+        public async Task Basic_CA1028_DiagnosticForByte()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Module Module1
     Public Enum TestEnum2 As Byte 'violation - because underlying type is not Int32
@@ -176,9 +173,9 @@ End Module
         }
 
         [Fact]
-        public void Basic_CA1028_DiagnosticForUShort()
+        public async Task Basic_CA1028_DiagnosticForUShort()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Public Module Module1
     Public Enum TestEnum3 As UShort 'violation - because underlying type is not Int32
@@ -190,5 +187,15 @@ End Module
             GetBasicResultAt(4, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum3", "UShort"));
         }
         #endregion
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+            => VerifyCS.Diagnostic(rule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+            => VerifyVB.Diagnostic(rule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
     }
 }

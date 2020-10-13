@@ -403,7 +403,7 @@ namespace Blah
             var csharpTest = new VerifyCS.Test
             {
                 ReferenceAssemblies = AdditionalMetadataReferences
-                    .DefaultWithNewtonsoftJson
+                    .DefaultWithNewtonsoftJson12
                     .AddAssemblies(ImmutableArray.Create("System.Data")),
                 TestState =
                 {

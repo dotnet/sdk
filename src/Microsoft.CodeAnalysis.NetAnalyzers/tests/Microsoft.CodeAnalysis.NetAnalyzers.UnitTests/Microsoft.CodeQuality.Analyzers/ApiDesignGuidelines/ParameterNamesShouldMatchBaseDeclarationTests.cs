@@ -1,57 +1,63 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ParameterNamesShouldMatchBaseDeclarationAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ParameterNamesShouldMatchBaseDeclarationFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ParameterNamesShouldMatchBaseDeclarationAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ParameterNamesShouldMatchBaseDeclarationFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class ParameterNamesShouldMatchBaseDeclarationTests : DiagnosticAnalyzerTestBase
+    public class ParameterNamesShouldMatchBaseDeclarationTests
     {
         [Fact]
-        public void VerifyNoFalsePositivesAreReported()
+        public async Task VerifyNoFalsePositivesAreReported()
         {
-            VerifyCSharp(@"public class TestClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public class TestClass
                            {
                                public void TestMethod() { }
                            }");
 
-            VerifyCSharp(@"public class TestClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public class TestClass
                            {
                                public void TestMethod(string arg1, string arg2) { }
                            }");
 
-            VerifyCSharp(@"public class TestClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public class TestClass
                            {
                                public void TestMethod(string arg1, string arg2, __arglist) { }
                            }");
 
-            VerifyCSharp(@"public class TestClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public class TestClass
                            {
                                public void TestMethod(string arg1, string arg2, params string[] arg3) { }
                            }");
 
-            VerifyBasic(@"Public Class TestClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Class TestClass
                               Public Sub TestMethod()
                               End Sub
                           End Class");
 
-            VerifyBasic(@"Public Class TestClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Class TestClass
                               Public Sub TestMethod(arg1 As String, arg2 As String)
                               End Sub
                           End Class");
 
-            VerifyBasic(@"Public Class TestClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Class TestClass
                               Public Sub TestMethod(arg1 As String, arg2 As String, ParamArray arg3() As String)
                               End Sub
                           End Class");
         }
 
         [Fact]
-        public void VerifyOverrideWithWrongParameterNames()
+        public async Task VerifyOverrideWithWrongParameterNames()
         {
-            VerifyCSharp(@"public abstract class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
                                public abstract void TestMethod(string baseArg1, string baseArg2);
                            }
@@ -63,7 +69,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetCSharpResultAt(8, 71, "void TestClass.TestMethod(string arg1, string arg2)", "arg1", "baseArg1", "void BaseClass.TestMethod(string baseArg1, string baseArg2)"),
                          GetCSharpResultAt(8, 84, "void TestClass.TestMethod(string arg1, string arg2)", "arg2", "baseArg2", "void BaseClass.TestMethod(string baseArg1, string baseArg2)"));
 
-            VerifyCSharp(@"public abstract class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
                                public abstract void TestMethod(string baseArg1, string baseArg2, __arglist);
                            }
@@ -75,7 +81,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetCSharpResultAt(8, 71, "void TestClass.TestMethod(string arg1, string arg2, __arglist)", "arg1", "baseArg1", "void BaseClass.TestMethod(string baseArg1, string baseArg2, __arglist)"),
                          GetCSharpResultAt(8, 84, "void TestClass.TestMethod(string arg1, string arg2, __arglist)", "arg2", "baseArg2", "void BaseClass.TestMethod(string baseArg1, string baseArg2, __arglist)"));
 
-            VerifyCSharp(@"public abstract class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
                                public abstract void TestMethod(string baseArg1, string baseArg2, params string[] baseArg3);
                            }
@@ -88,11 +94,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetCSharpResultAt(8, 84, "void TestClass.TestMethod(string arg1, string arg2, params string[] arg3)", "arg2", "baseArg2", "void BaseClass.TestMethod(string baseArg1, string baseArg2, params string[] baseArg3)"),
                          GetCSharpResultAt(8, 106, "void TestClass.TestMethod(string arg1, string arg2, params string[] arg3)", "arg3", "baseArg3", "void BaseClass.TestMethod(string baseArg1, string baseArg2, params string[] baseArg3)"));
 
-            VerifyBasic(@"Public MustInherit Class BaseClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public MustInherit Class BaseClass
                               Public MustOverride Sub TestMethod(baseArg1 As String, baseArg2 As String)
                           End Class
 
-                          Public Class TestClass 
+                          Public Class TestClass
                               Inherits BaseClass
 
                               Public Overrides Sub TestMethod(arg1 As String, arg2 As String)
@@ -101,7 +107,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetBasicResultAt(8, 63, "Sub TestClass.TestMethod(arg1 As String, arg2 As String)", "arg1", "baseArg1", "Sub BaseClass.TestMethod(baseArg1 As String, baseArg2 As String)"),
                          GetBasicResultAt(8, 79, "Sub TestClass.TestMethod(arg1 As String, arg2 As String)", "arg2", "baseArg2", "Sub BaseClass.TestMethod(baseArg1 As String, baseArg2 As String)"));
 
-            VerifyBasic(@"Public MustInherit Class BaseClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public MustInherit Class BaseClass
                               Public MustOverride Sub TestMethod(baseArg1 As String, baseArg2 As String, ParamArray baseArg3 As String())
                           End Class
 
@@ -117,9 +123,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void VerifyInternalOverrideWithWrongParameterNames_NoDiagnostic()
+        public async Task VerifyInternalOverrideWithWrongParameterNames_NoDiagnostic()
         {
-            VerifyCSharp(@"public abstract class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
                                internal abstract void TestMethod(string baseArg1, string baseArg2);
                            }
@@ -129,7 +135,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                internal override void TestMethod(string arg1, string arg2) { }
                            }");
 
-            VerifyCSharp(@"internal abstract class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"internal abstract class BaseClass
                            {
                                public abstract void TestMethod(string baseArg1, string baseArg2, __arglist);
                            }
@@ -139,7 +145,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                public override void TestMethod(string arg1, string arg2, __arglist) { }
                            }");
 
-            VerifyCSharp(@"internal class OuterClass
+            await VerifyCS.VerifyAnalyzerAsync(@"internal class OuterClass
                            {
                                public abstract class BaseClass
                                {
@@ -152,7 +158,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                }
                            }");
 
-            VerifyBasic(@"Friend MustInherit Class BaseClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Friend MustInherit Class BaseClass
                               Public MustOverride Sub TestMethod(baseArg1 As String, baseArg2 As String)
                           End Class
 
@@ -163,7 +169,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                               End Sub
                           End Class");
 
-            VerifyBasic(@"Public MustInherit Class BaseClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public MustInherit Class BaseClass
                               Friend MustOverride Sub TestMethod(baseArg1 As String, baseArg2 As String, ParamArray baseArg3 As String())
                           End Class
 
@@ -174,7 +180,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                               End Sub
                           End Class");
 
-            VerifyBasic(@"Friend Class OuterClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Friend Class OuterClass
                               Public MustInherit Class BaseClass
                                   Public MustOverride Sub TestMethod(baseArg1 As String, baseArg2 As String, ParamArray baseArg3 As String())
                               End Class
@@ -189,9 +195,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyInterfaceImplementationWithWrongParameterNames()
+        public async Task VerifyInterfaceImplementationWithWrongParameterNames()
         {
-            VerifyCSharp(@"public interface IBase
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface IBase
                            {
                                void TestMethod(string baseArg1, string baseArg2);
                            }
@@ -203,7 +209,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetCSharpResultAt(8, 62, "void TestClass.TestMethod(string arg1, string arg2)", "arg1", "baseArg1", "void IBase.TestMethod(string baseArg1, string baseArg2)"),
                          GetCSharpResultAt(8, 75, "void TestClass.TestMethod(string arg1, string arg2)", "arg2", "baseArg2", "void IBase.TestMethod(string baseArg1, string baseArg2)"));
 
-            VerifyCSharp(@"public interface IBase
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface IBase
                            {
                                void TestMethod(string baseArg1, string baseArg2, __arglist);
                            }
@@ -215,7 +221,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetCSharpResultAt(8, 62, "void TestClass.TestMethod(string arg1, string arg2, __arglist)", "arg1", "baseArg1", "void IBase.TestMethod(string baseArg1, string baseArg2, __arglist)"),
                          GetCSharpResultAt(8, 75, "void TestClass.TestMethod(string arg1, string arg2, __arglist)", "arg2", "baseArg2", "void IBase.TestMethod(string baseArg1, string baseArg2, __arglist)"));
 
-            VerifyCSharp(@"public interface IBase
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface IBase
                            {
                                void TestMethod(string baseArg1, string baseArg2, params string[] baseArg3);
                            }
@@ -228,7 +234,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetCSharpResultAt(8, 75, "void TestClass.TestMethod(string arg1, string arg2, params string[] arg3)", "arg2", "baseArg2", "void IBase.TestMethod(string baseArg1, string baseArg2, params string[] baseArg3)"),
                          GetCSharpResultAt(8, 97, "void TestClass.TestMethod(string arg1, string arg2, params string[] arg3)", "arg3", "baseArg3", "void IBase.TestMethod(string baseArg1, string baseArg2, params string[] baseArg3)"));
 
-            VerifyBasic(@"Public Interface IBase
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Interface IBase
                               Sub TestMethod(baseArg1 As String, baseArg2 As String)
                           End Interface
 
@@ -241,7 +247,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                         GetBasicResultAt(8, 53, "Sub TestClass.TestMethod(arg1 As String, arg2 As String)", "arg1", "baseArg1", "Sub IBase.TestMethod(baseArg1 As String, baseArg2 As String)"),
                         GetBasicResultAt(8, 69, "Sub TestClass.TestMethod(arg1 As String, arg2 As String)", "arg2", "baseArg2", "Sub IBase.TestMethod(baseArg1 As String, baseArg2 As String)"));
 
-            VerifyBasic(@"Public Interface IBase
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Interface IBase
                               Sub TestMethod(baseArg1 As String, baseArg2 As String, ParamArray baseArg3() As String)
                           End Interface
 
@@ -257,9 +263,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void VerifyExplicitInterfaceImplementationWithWrongParameterNames_NoDiagnostic()
+        public async Task VerifyExplicitInterfaceImplementationWithWrongParameterNames_NoDiagnostic()
         {
-            VerifyCSharp(@"public interface IBase
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface IBase
                            {
                                void TestMethod(string baseArg1, string baseArg2);
                            }
@@ -269,7 +275,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                void IBase.TestMethod(string arg1, string arg2) { }
                            }");
 
-            VerifyCSharp(@"public interface IBase
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface IBase
                            {
                                void TestMethod(string baseArg1, string baseArg2, __arglist);
                            }
@@ -279,7 +285,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                void IBase.TestMethod(string arg1, string arg2, __arglist) { }
                            }");
 
-            VerifyCSharp(@"public interface IBase
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface IBase
                            {
                                void TestMethod(string baseArg1, string baseArg2, params string[] baseArg3);
                            }
@@ -291,9 +297,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyInterfaceImplementationWithDifferentMethodName()
+        public async Task VerifyInterfaceImplementationWithDifferentMethodName()
         {
-            VerifyBasic(@"Public Interface IBase
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Interface IBase
                               Sub TestMethod(baseArg1 As String, baseArg2 As String)
                           End Interface
 
@@ -306,7 +312,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                         GetBasicResultAt(8, 60, "Sub TestClass.AnotherTestMethod(arg1 As String, arg2 As String)", "arg1", "baseArg1", "Sub IBase.TestMethod(baseArg1 As String, baseArg2 As String)"),
                         GetBasicResultAt(8, 76, "Sub TestClass.AnotherTestMethod(arg1 As String, arg2 As String)", "arg2", "baseArg2", "Sub IBase.TestMethod(baseArg1 As String, baseArg2 As String)"));
 
-            VerifyBasic(@"Public Interface IBase
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Interface IBase
                               Sub TestMethod(baseArg1 As String, baseArg2 As String, ParamArray baseArg3 As String())
                           End Interface
 
@@ -322,23 +328,23 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyThatInvalidOverrideIsNotReported()
+        public async Task VerifyThatInvalidOverrideIsNotReported()
         {
-            VerifyCSharp(@"public class TestClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public class TestClass
                            {
-                               public override void TestMethod(string arg1, string arg2) { }
-                           }", TestValidationMode.AllowCompileErrors);
+                               public override void {|CS0115:TestMethod|}(string arg1, string arg2) { }
+                           }");
 
-            VerifyBasic(@"Public Class TestClass
-                              Public Overrides Sub TestMethod(arg1 As String, arg2 As String)
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Class TestClass
+                              Public Overrides Sub {|BC30284:TestMethod|}(arg1 As String, arg2 As String)
                               End Sub
-                          End Class", TestValidationMode.AllowCompileErrors);
+                          End Class");
         }
 
         [Fact]
-        public void VerifyOverrideWithInheritanceChain()
+        public async Task VerifyOverrideWithInheritanceChain()
         {
-            VerifyCSharp(@"public abstract class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
                                public abstract void TestMethod(string baseArg1, string baseArg2);
                            }
@@ -354,7 +360,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetCSharpResultAt(12, 71, "void TestClass.TestMethod(string arg1, string arg2)", "arg1", "baseArg1", "void BaseClass.TestMethod(string baseArg1, string baseArg2)"),
                          GetCSharpResultAt(12, 84, "void TestClass.TestMethod(string arg1, string arg2)", "arg2", "baseArg2", "void BaseClass.TestMethod(string baseArg1, string baseArg2)"));
 
-            VerifyBasic(@"Public MustInherit Class BaseClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public MustInherit Class BaseClass
                               Public MustOverride Sub TestMethod(baseArg1 As String, baseArg2 As String)
                           End Class
 
@@ -373,9 +379,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyNewOverrideWithInheritance()
+        public async Task VerifyNewOverrideWithInheritance()
         {
-            VerifyCSharp(@"public class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public class BaseClass
                            {
                                public void TestMethod(string baseArg1, string baseArg2) { }
                            }
@@ -385,7 +391,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                public new void TestMethod(string arg1, string arg2) { }
                            }");
 
-            VerifyBasic(@"Public Class BaseClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Class BaseClass
                               Public Sub TestMethod(baseArg1 As String, baseArg2 As String)
                               End Sub
                           End Class
@@ -399,9 +405,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyBaseClassNameHasPriority()
+        public async Task VerifyBaseClassNameHasPriority()
         {
-            VerifyCSharp(@"public abstract class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
                                public abstract void TestMethod(string arg1, string arg2);
                            }
@@ -416,7 +422,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                public override void TestMethod(string arg1, string arg2) { }
                            }");
 
-            VerifyCSharp(@"public abstract class BaseClass
+            await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
                                public abstract void TestMethod(string arg1, string arg2);
                            }
@@ -433,7 +439,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                          GetCSharpResultAt(13, 71, "void TestClass.TestMethod(string interfaceArg1, string interfaceArg2)", "interfaceArg1", "arg1", "void BaseClass.TestMethod(string arg1, string arg2)"),
                          GetCSharpResultAt(13, 93, "void TestClass.TestMethod(string interfaceArg1, string interfaceArg2)", "interfaceArg2", "arg2", "void BaseClass.TestMethod(string arg1, string arg2)"));
 
-            VerifyBasic(@"Public MustInherit Class BaseClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public MustInherit Class BaseClass
                               Public MustOverride Sub TestMethod(arg1 As String, arg2 As String)
                           End Class
 
@@ -449,7 +455,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                               End Sub
                           End Class");
 
-            VerifyBasic(@"Public MustInherit Class BaseClass
+            await VerifyVB.VerifyAnalyzerAsync(@"Public MustInherit Class BaseClass
                               Public MustOverride Sub TestMethod(arg1 As String, arg2 As String)
                           End Class
 
@@ -469,9 +475,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyMultipleClashingInterfacesWithFullMatch()
+        public async Task VerifyMultipleClashingInterfacesWithFullMatch()
         {
-            VerifyCSharp(@"public interface ITest1
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface ITest1
                            {
                                void TestMethod(string arg1, string arg2);
                            }
@@ -486,7 +492,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                public void TestMethod(string arg1, string arg2) { }
                            }");
 
-            VerifyBasic(@"Public Interface ITest1
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Interface ITest1
                               Sub TestMethod(arg1 As String, arg2 As String)
                           End Interface
 
@@ -503,9 +509,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyMultipleClashingInterfacesWithPartialMatch()
+        public async Task VerifyMultipleClashingInterfacesWithPartialMatch()
         {
-            VerifyCSharp(@"public interface ITest1
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface ITest1
                            {
                                void TestMethod(string arg1, string arg2, string arg3);
                            }
@@ -521,7 +527,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            }",
                          GetCSharpResultAt(13, 88, "void TestClass.TestMethod(string arg1, string arg2, string otherArg3)", "otherArg3", "arg3", "void ITest1.TestMethod(string arg1, string arg2, string arg3)"));
 
-            VerifyBasic(@"Public Interface ITest1
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Interface ITest1
                               Sub TestMethod(arg1 As String, arg2 As String, arg3 As String)
                           End Interface
 
@@ -539,9 +545,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyIgnoresPropertiesWithTheSameName()
+        public async Task VerifyIgnoresPropertiesWithTheSameName()
         {
-            VerifyCSharp(@"public interface ITest1
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface ITest1
                            {
                                void TestMethod(string arg1, string arg2);
                            }
@@ -557,7 +563,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                int ITest2.TestMethod { get; set; }
                            }");
 
-            VerifyBasic(@"Public Interface ITest1
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Interface ITest1
                               Sub TestMethod(arg1 As String, arg2 As String)
                           End Interface
 
@@ -576,9 +582,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void VerifyHandlesMultipleBaseMethodsWithTheSameName()
+        public async Task VerifyHandlesMultipleBaseMethodsWithTheSameName()
         {
-            VerifyCSharp(@"public interface ITest
+            await VerifyCS.VerifyAnalyzerAsync(@"public interface ITest
                            {
                                void TestMethod(string arg1);
                                void TestMethod(string arg1, string arg2);
@@ -590,7 +596,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                                public void TestMethod(string arg1, string arg2) { }
                            }");
 
-            VerifyBasic(@"Public Interface ITest
+            await VerifyVB.VerifyAnalyzerAsync(@"Public Interface ITest
                               Sub TestMethod(arg1 As String)
                               Sub TestMethod(arg1 As String, arg2 As String)
                           End Interface
@@ -607,23 +613,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string violatingMember, string violatingParameter, string baseParameter, string baseMember)
-        {
-            return GetCSharpResultAt(line, column, ParameterNamesShouldMatchBaseDeclarationAnalyzer.Rule, violatingMember, violatingParameter, baseParameter, baseMember);
-        }
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(violatingMember, violatingParameter, baseParameter, baseMember);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string violatingMember, string violatingParameter, string baseParameter, string baseMember)
-        {
-            return GetBasicResultAt(line, column, ParameterNamesShouldMatchBaseDeclarationAnalyzer.Rule, violatingMember, violatingParameter, baseParameter, baseMember);
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new ParameterNamesShouldMatchBaseDeclarationAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ParameterNamesShouldMatchBaseDeclarationAnalyzer();
-        }
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+                .WithArguments(violatingMember, violatingParameter, baseParameter, baseMember);
     }
 }

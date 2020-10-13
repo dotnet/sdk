@@ -55,12 +55,6 @@ namespace Microsoft.NetCore.Analyzers.Data
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
                     ISymbol symbol = operationBlockStartContext.OwningSymbol;
-                    if (symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options,
-                        Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
-                    {
-                        return;
-                    }
-
                     var isInDbCommandConstructor = false;
                     var isInDataAdapterConstructor = false;
 
@@ -114,7 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Data
                         }
 
                         // Make sure we're in assignment statement
-                        if (!(propertyReference.Parent is IAssignmentOperation assignment))
+                        if (propertyReference.Parent is not IAssignmentOperation assignment)
                         {
                             return;
                         }
@@ -209,6 +203,11 @@ namespace Microsoft.NetCore.Analyzers.Data
                                                  ISymbol invokedSymbol,
                                                  ISymbol containingMethod)
         {
+            if (operationContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationContext.Compilation, operationContext.CancellationToken))
+            {
+                return false;
+            }
+
             if (argumentValue.Type.SpecialType != SpecialType.System_String || !argumentValue.ConstantValue.HasValue)
             {
                 // We have a candidate for diagnostic. perform more precise dataflow analysis.

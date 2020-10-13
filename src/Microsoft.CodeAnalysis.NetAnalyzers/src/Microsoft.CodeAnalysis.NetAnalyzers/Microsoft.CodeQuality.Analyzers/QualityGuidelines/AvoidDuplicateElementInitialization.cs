@@ -10,7 +10,9 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
-    // TODO: Now that this flags all but the last duplicate initializer, we can offer a code fix to remove the flagged ones.
+    /// <summary>
+    /// CA2244: Do not duplicate indexed element initializations
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class AvoidDuplicateElementInitialization : DiagnosticAnalyzer
     {
@@ -61,7 +63,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     {
                         var indexesText = string.Join(", ", values.Select(value => value?.ToString() ?? "null"));
                         context.ReportDiagnostic(
-                            Diagnostic.Create(Rule, propertyReference.Syntax.GetLocation(), indexesText));
+                            Diagnostic.Create(Rule, propertyReference.Syntax.GetLocation(),
+                                additionalLocations: ImmutableArray.Create(assignment.Syntax.GetLocation()),
+                                messageArgs: indexesText));
                     }
                 }
             }

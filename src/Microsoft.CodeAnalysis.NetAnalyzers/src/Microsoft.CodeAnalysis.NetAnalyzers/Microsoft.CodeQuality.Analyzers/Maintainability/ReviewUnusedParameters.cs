@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -12,8 +12,6 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability
 {
-    using UnusedParameterDictionary = IDictionary<IMethodSymbol, ISet<IParameterSymbol>>;
-
     /// <summary>
     /// CA1801: Review unused parameters
     /// </summary>
@@ -38,28 +36,30 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-#pragma warning disable RS1026 // Enable concurrent execution
         public override void Initialize(AnalysisContext context)
-#pragma warning restore RS1026 // Enable concurrent execution
         {
-            // TODO: Consider making this analyzer thread-safe.
-            //context.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
             context.RegisterCompilationStartAction(compilationStartContext =>
             {
-                INamedTypeSymbol? eventsArgSymbol = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationStartContext.Compilation);
+
+                INamedTypeSymbol? eventsArgSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
 
                 // Ignore conditional methods (FxCop compat - One conditional will often call another conditional method as its only use of a parameter)
-                INamedTypeSymbol? conditionalAttributeSymbol = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute);
+                INamedTypeSymbol? conditionalAttributeSymbol = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsConditionalAttribute);
 
                 // Ignore methods with special serialization attributes (FxCop compat - All serialization methods need to take 'StreamingContext')
-                INamedTypeSymbol? onDeserializingAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnDeserializingAttribute);
-                INamedTypeSymbol? onDeserializedAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnDeserializedAttribute);
-                INamedTypeSymbol? onSerializingAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnSerializingAttribute);
-                INamedTypeSymbol? onSerializedAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnSerializedAttribute);
-                INamedTypeSymbol? obsoleteAttribute = compilationStartContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+                INamedTypeSymbol? onDeserializingAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnDeserializingAttribute);
+                INamedTypeSymbol? onDeserializedAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnDeserializedAttribute);
+                INamedTypeSymbol? onSerializingAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnSerializingAttribute);
+                INamedTypeSymbol? onSerializedAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationOnSerializedAttribute);
+                INamedTypeSymbol? obsoleteAttribute = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute);
+
+                INamedTypeSymbol? serializationInfoType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationSerializationInfo);
+                INamedTypeSymbol? streamingContextType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationStreamingContext);
 
                 ImmutableHashSet<INamedTypeSymbol?> attributeSetForMethodsToIgnore = ImmutableHashSet.Create(
                     conditionalAttributeSymbol,
@@ -69,62 +69,113 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     onSerializingAttribute,
                     obsoleteAttribute);
 
-                UnusedParameterDictionary unusedMethodParameters = new ConcurrentDictionary<IMethodSymbol, ISet<IParameterSymbol>>();
-                ISet<IMethodSymbol> methodsUsedAsDelegates = new HashSet<IMethodSymbol>();
-
-                // Create a list of functions to exclude from analysis. We assume that any function that is used in an IMethodBindingExpression
-                // cannot have its signature changed, and add it to the list of methods to be excluded from analysis.
-                compilationStartContext.RegisterOperationAction(operationContext =>
+                compilationStartContext.RegisterSymbolStartAction(symbolStartContext =>
                 {
-                    var methodBinding = (IMethodReferenceOperation)operationContext.Operation;
-                    methodsUsedAsDelegates.Add(methodBinding.Method.OriginalDefinition);
-                }, OperationKind.MethodReference);
+                    // Map from parameter to a bool indicating if the parameter is used or not.
+                    var parameterUsageMap = new ConcurrentDictionary<IParameterSymbol, bool>();
 
-                compilationStartContext.RegisterOperationBlockStartAction(startOperationBlockContext =>
-                {
-                    // We only care about methods.
-                    if (!(startOperationBlockContext.OwningSymbol is IMethodSymbol method))
+                    // Set of methods which are used as delegates.
+                    var methodsUsedAsDelegates = new ConcurrentDictionary<IMethodSymbol, bool>();
+
+                    // Add candidate parameters for methods.
+                    symbolStartContext.RegisterOperationBlockStartAction(startOperationBlockContext =>
                     {
-                        return;
-                    }
+                        if (startOperationBlockContext.OwningSymbol is IMethodSymbol method &&
+                            ShouldAnalyzeMethod(method, startOperationBlockContext, eventsArgSymbol, attributeSetForMethodsToIgnore, serializationInfoType, streamingContextType))
+                        {
+                            AddParameters(method, parameterUsageMap);
+                        }
+                    });
 
-                    AnalyzeMethod(method, startOperationBlockContext, unusedMethodParameters,
-                        eventsArgSymbol, methodsUsedAsDelegates, attributeSetForMethodsToIgnore);
+                    // Add candidate parameters for local functions.
+                    symbolStartContext.RegisterOperationAction(
+                        context => AddParameters(((ILocalFunctionOperation)context.Operation).Symbol, parameterUsageMap),
+                        OperationKind.LocalFunction);
 
-                    foreach (var localFunctionOperation in startOperationBlockContext.OperationBlocks.SelectMany(o => o.Descendants()).OfType<ILocalFunctionOperation>())
-                    {
-                        AnalyzeMethod(localFunctionOperation.Symbol, startOperationBlockContext, unusedMethodParameters,
-                           eventsArgSymbol, methodsUsedAsDelegates, attributeSetForMethodsToIgnore);
-                    }
-                });
+                    // Add methods used as delegates.
+                    symbolStartContext.RegisterOperationAction(
+                        context => methodsUsedAsDelegates.TryAdd(((IMethodReferenceOperation)context.Operation).Method.OriginalDefinition, true),
+                        OperationKind.MethodReference);
 
-                // Register a compilation end action to filter all methods used as delegates and report any diagnostics
-                compilationStartContext.RegisterCompilationEndAction(compilationAnalysisContext =>
-                {
-                    // Report diagnostics for unused parameters.
-                    var unusedParameters = unusedMethodParameters.Where(kvp => !methodsUsedAsDelegates.Contains(kvp.Key)).SelectMany(kvp => kvp.Value);
-                    foreach (var parameter in unusedParameters)
-                    {
-                        var diagnostic = Diagnostic.Create(Rule, parameter.Locations[0], parameter.Name, parameter.ContainingSymbol.Name);
-                        compilationAnalysisContext.ReportDiagnostic(diagnostic);
-                    }
+                    // Mark parameters with a parameter reference as used.
+                    symbolStartContext.RegisterOperationAction(
+                        context => parameterUsageMap.AddOrUpdate(
+                            ((IParameterReferenceOperation)context.Operation).Parameter,
+                            addValue: true,
+                            updateValueFactory: ReturnTrue),
+                        OperationKind.ParameterReference);
 
-                });
+                    // Report unused parameters in SymbolEnd action.
+                    symbolStartContext.RegisterSymbolEndAction(
+                        context => ReportUnusedParameters(context, parameterUsageMap, methodsUsedAsDelegates));
+                }, SymbolKind.NamedType);
             });
         }
 
-        private static void AnalyzeMethod(
+        private static bool ReturnTrue(IParameterSymbol param, bool value) => true;
+
+        private static void AddParameters(IMethodSymbol method, ConcurrentDictionary<IParameterSymbol, bool> unusedParameters)
+        {
+            foreach (var parameter in method.Parameters)
+            {
+                unusedParameters.TryAdd(parameter, false);
+            }
+        }
+
+        private static void ReportUnusedParameters(
+            SymbolAnalysisContext symbolEndContext,
+            ConcurrentDictionary<IParameterSymbol, bool> parameterUsageMap,
+            ConcurrentDictionary<IMethodSymbol, bool> methodsUsedAsDelegates)
+        {
+            // Report diagnostics for unused parameters.
+            foreach (var (parameter, used) in parameterUsageMap)
+            {
+                if (used || parameter.Name.Length == 0)
+                {
+                    continue;
+                }
+
+                var containingMethod = (IMethodSymbol)parameter.ContainingSymbol;
+
+                // Don't report parameters for methods used as delegates.
+                // We assume these methods have signature requirements,
+                // and hence its unused parameters cannot be removed.
+                if (methodsUsedAsDelegates.ContainsKey(containingMethod))
+                {
+                    continue;
+                }
+
+                // Do not flag unused 'this' parameter of an extension method.
+                if (containingMethod.IsExtensionMethod && parameter.Ordinal == 0)
+                {
+                    continue;
+                }
+
+                // Do not flag unused parameters with special discard symbol name.
+                if (parameter.IsSymbolWithSpecialDiscardName())
+                {
+                    continue;
+                }
+
+                var diagnostic = parameter.CreateDiagnostic(Rule, parameter.Name, parameter.ContainingSymbol.Name);
+                symbolEndContext.ReportDiagnostic(diagnostic);
+            }
+        }
+
+#pragma warning disable RS1012 // Start action has no registered actions.
+        private static bool ShouldAnalyzeMethod(
             IMethodSymbol method,
             OperationBlockStartAnalysisContext startOperationBlockContext,
-            UnusedParameterDictionary unusedMethodParameters,
             INamedTypeSymbol? eventsArgSymbol,
-            ISet<IMethodSymbol> methodsUsedAsDelegates,
-            ImmutableHashSet<INamedTypeSymbol?> attributeSetForMethodsToIgnore)
+            ImmutableHashSet<INamedTypeSymbol?> attributeSetForMethodsToIgnore,
+            INamedTypeSymbol? serializationInfoType,
+            INamedTypeSymbol? streamingContextType)
+#pragma warning restore RS1012 // Start action has no registered actions.
         {
             // We only care about methods with parameters.
             if (method.Parameters.IsEmpty)
             {
-                return;
+                return false;
             }
 
             // Ignore implicitly declared methods, extern methods, abstract methods, virtual methods, interface implementations and finalizers (FxCop compat).
@@ -136,117 +187,59 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 method.IsImplementationOfAnyInterfaceMember() ||
                 method.IsFinalizer())
             {
-                return;
+                return false;
             }
 
             // Ignore property accessors.
             if (method.IsPropertyAccessor())
             {
-                return;
+                return false;
+            }
+
+            // Ignore serialization special methods
+            if (method.IsSerializationConstructor(serializationInfoType, streamingContextType) ||
+                method.IsGetObjectData(serializationInfoType, streamingContextType))
+            {
+                return false;
             }
 
             // Ignore event handler methods "Handler(object, MyEventArgs)"
-            if (eventsArgSymbol != null &&
-                method.Parameters.Length == 2 &&
-                method.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
-                method.Parameters[1].Type.Inherits(eventsArgSymbol))
+            if (method.HasEventHandlerSignature(eventsArgSymbol))
             {
-                return;
+                return false;
             }
 
             // Ignore methods with any attributes in 'attributeSetForMethodsToIgnore'.
             if (method.GetAttributes().Any(a => a.AttributeClass != null && attributeSetForMethodsToIgnore.Contains(a.AttributeClass)))
             {
-                return;
-            }
-
-            // Ignore methods that were used as delegates
-            if (methodsUsedAsDelegates.Contains(method))
-            {
-                return;
+                return false;
             }
 
             // Bail out if user has configured to skip analysis for the method.
-            if (!method.MatchesConfiguredVisibility(
-                    startOperationBlockContext.Options,
-                    Rule,
-                    startOperationBlockContext.CancellationToken,
-                    defaultRequiredVisibility: SymbolVisibilityGroup.All))
+            if (!startOperationBlockContext.Options.MatchesConfiguredVisibility(
+                Rule,
+                method,
+                startOperationBlockContext.Compilation,
+                startOperationBlockContext.CancellationToken,
+                defaultRequiredVisibility: SymbolVisibilityGroup.All))
             {
-                return;
+                return false;
             }
 
-            // Initialize local mutable state in the start action.
-            var analyzer = new UnusedParametersAnalyzer(method, unusedMethodParameters);
-
-            // Register an intermediate non-end action that accesses and modifies the state.
-            startOperationBlockContext.RegisterOperationAction(analyzer.AnalyzeParameterReference, OperationKind.ParameterReference);
-
-            // Register an end action to add unused parameters to the unusedMethodParameters dictionary
-            startOperationBlockContext.RegisterOperationBlockEndAction(analyzer.OperationBlockEndAction);
-        }
-
-        private class UnusedParametersAnalyzer
-        {
-            #region Per-CodeBlock mutable state
-
-            private readonly HashSet<IParameterSymbol> _unusedParameters;
-            private readonly UnusedParameterDictionary _finalUnusedParameters;
-            private readonly IMethodSymbol _method;
-
-            #endregion
-
-            #region State intialization
-
-            public UnusedParametersAnalyzer(IMethodSymbol method, UnusedParameterDictionary finalUnusedParameters)
+            // Check to see if the method just throws a NotImplementedException/NotSupportedException
+            // We shouldn't warn about parameters in that case
+            if (startOperationBlockContext.IsMethodNotImplementedOrSupported())
             {
-                // Initialization: Assume all parameters are unused, except the ones with special discard name.
-                _unusedParameters = new HashSet<IParameterSymbol>(method.Parameters.Where(p => !p.IsSymbolWithSpecialDiscardName()));
-                _finalUnusedParameters = finalUnusedParameters;
-                _method = method;
+                return false;
             }
 
-            #endregion
-
-            #region Intermediate actions
-
-            public void AnalyzeParameterReference(OperationAnalysisContext context)
+            // Ignore generated method for top level statements
+            if (method.IsTopLevelStatementsEntryPointMethod())
             {
-                // Check if we have any pending unreferenced parameters.
-                if (_unusedParameters.Count == 0)
-                {
-                    return;
-                }
-
-                // Mark this parameter as used.
-                IParameterSymbol parameter = ((IParameterReferenceOperation)context.Operation).Parameter;
-                _unusedParameters.Remove(parameter);
+                return false;
             }
 
-            #endregion
-
-            #region End action
-
-            public void OperationBlockEndAction(OperationBlockAnalysisContext context)
-            {
-                // Check to see if the method just throws a NotImplementedException/NotSupportedException
-                // We shouldn't warn about parameters in that case
-                if (context.IsMethodNotImplementedOrSupported())
-                {
-                    return;
-                }
-
-                // Do not raise warning for unused 'this' parameter of an extension method.
-                if (_method.IsExtensionMethod)
-                {
-                    var thisParamter = _unusedParameters.Where(p => p.Ordinal == 0).FirstOrDefault();
-                    _unusedParameters.Remove(thisParamter);
-                }
-
-                _finalUnusedParameters.Add(_method, _unusedParameters);
-            }
-
-            #endregion
+            return true;
         }
     }
 }

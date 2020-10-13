@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Globalization;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -16,6 +17,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     public sealed class InstantiateArgumentExceptionsCorrectlyAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2208";
+        internal const string MessagePosition = nameof(MessagePosition);
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
@@ -24,15 +26,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableMessageIncorrectParameterName = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyMessageIncorrectParameterName), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Descriptor = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static DiagnosticDescriptor RuleNoArguments = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
-                                                                             "{0}",
+                                                                             s_localizableMessageNoArguments,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.CandidateForRemoval,    // Superseded by VS threading analyzers.
+                                                                             RuleLevel.IdeSuggestion,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
+
+        internal static DiagnosticDescriptor RuleIncorrectMessage = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageIncorrectMessage,
+                                                                             DiagnosticCategory.Usage,
+                                                                             RuleLevel.IdeSuggestion,
+                                                                             description: s_localizableDescription,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+
+        internal static DiagnosticDescriptor RuleIncorrectParameterName = DiagnosticDescriptorHelper.Create(RuleId,
+                                                                             s_localizableTitle,
+                                                                             s_localizableMessageIncorrectParameterName,
+                                                                             DiagnosticCategory.Usage,
+                                                                             RuleLevel.IdeSuggestion,
+                                                                             description: s_localizableDescription,
+                                                                             isPortedFxCopRule: true,
+                                                                             isDataflowRule: false);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleNoArguments, RuleIncorrectMessage, RuleIncorrectParameterName);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
@@ -65,21 +86,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ITypeSymbol argumentExceptionType)
         {
             var creation = (IObjectCreationOperation)context.Operation;
-            if (!creation.Type.Inherits(argumentExceptionType))
+            if (!creation.Type.Inherits(argumentExceptionType) || !MatchesConfiguredVisibility(owningSymbol, context) || !HasParameterNameConstructor(creation.Type))
             {
                 return;
             }
 
             if (creation.Arguments.IsEmpty)
             {
-                if (HasMessageOrParameterNameConstructor(creation.Type))
+                if (HasParameters(owningSymbol))
                 {
                     // Call the {0} constructor that contains a message and/ or paramName parameter
-                    ReportDiagnostic(context, s_localizableMessageNoArguments, creation.Type.Name);
+                    context.ReportDiagnostic(context.Operation.Syntax.CreateDiagnostic(RuleNoArguments, creation.Type.Name));
                 }
             }
             else
             {
+                Diagnostic? diagnostic = null;
                 foreach (IArgumentOperation argument in creation.Arguments)
                 {
                     if (argument.Parameter.Type.SpecialType != SpecialType.System_String)
@@ -93,11 +115,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         continue;
                     }
 
-                    CheckArgument(owningSymbol, creation, argument.Parameter, value, context);
+                    diagnostic = CheckArgument(owningSymbol, creation, argument.Parameter, value, context);
+
+                    // RuleIncorrectMessage is the highest priority rule, no need to check other rules
+                    if (diagnostic != null && diagnostic.Descriptor.Equals(RuleIncorrectMessage))
+                    {
+                        break;
+                    }
+                }
+
+                if (diagnostic != null)
+                {
+                    context.ReportDiagnostic(diagnostic);
                 }
             }
         }
-        private static void CheckArgument(
+
+        private static bool MatchesConfiguredVisibility(ISymbol owningSymbol, OperationAnalysisContext context) =>
+             context.Options.MatchesConfiguredVisibility(RuleIncorrectParameterName, owningSymbol, context.Compilation,
+                 context.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.All);
+
+        private static bool HasParameters(ISymbol owningSymbol) => !owningSymbol.GetParameters().IsEmpty;
+
+        private static Diagnostic? CheckArgument(
             ISymbol targetSymbol,
             IObjectCreationOperation creation,
             IParameterSymbol parameter,
@@ -105,35 +145,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             OperationAnalysisContext context)
         {
             bool matchesParameter = MatchesParameter(targetSymbol, creation, stringArgument);
-            LocalizableString? format = null;
 
             if (IsMessage(parameter) && matchesParameter)
             {
-                format = s_localizableMessageIncorrectMessage;
+                var dictBuilder = ImmutableDictionary.CreateBuilder<string, string?>();
+                dictBuilder.Add(MessagePosition, parameter.Ordinal.ToString(CultureInfo.InvariantCulture));
+                return context.Operation.CreateDiagnostic(RuleIncorrectMessage, dictBuilder.ToImmutable(), targetSymbol.Name, stringArgument, parameter.Name, creation.Type.Name);
             }
-            else if (IsParameterName(parameter) && !matchesParameter)
+            else if (HasParameters(targetSymbol) && IsParameterName(parameter) && !matchesParameter)
             {
                 // Allow argument exceptions in accessors to use the associated property symbol name.
-                if (MatchesAssociatedSymbol(targetSymbol, stringArgument))
+                if (!MatchesAssociatedSymbol(targetSymbol, stringArgument))
                 {
-                    return;
+                    return context.Operation.CreateDiagnostic(RuleIncorrectParameterName, targetSymbol.Name, stringArgument, parameter.Name, creation.Type.Name);
                 }
-
-                format = s_localizableMessageIncorrectParameterName;
             }
 
-            if (format != null)
-            {
-                ReportDiagnostic(context, format, targetSymbol.Name, stringArgument, parameter.Name, creation.Type.Name);
-            }
-        }
-
-        private static void ReportDiagnostic(OperationAnalysisContext context, LocalizableString format, params object[] args)
-        {
-            context.ReportDiagnostic(
-                context.Operation.Syntax.CreateDiagnostic(
-                    Descriptor,
-                    string.Format(format.ToString(), args)));
+            return null;
         }
 
         private static bool IsMessage(IParameterSymbol parameter)
@@ -143,10 +171,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsParameterName(IParameterSymbol parameter)
         {
-            return parameter.Name == "paramName" || parameter.Name == "parameterName";
+            return parameter.Name is "paramName" or "parameterName";
         }
 
-        private static bool HasMessageOrParameterNameConstructor(ITypeSymbol type)
+        private static bool HasParameterNameConstructor(ITypeSymbol type)
         {
             foreach (ISymbol member in type.GetMembers())
             {
@@ -158,7 +186,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 foreach (IParameterSymbol parameter in member.GetParameters())
                 {
                     if (parameter.Type.SpecialType == SpecialType.System_String
-                        && (IsMessage(parameter) || IsParameterName(parameter)))
+                        && IsParameterName(parameter))
                     {
                         return true;
                     }
@@ -211,6 +239,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
+            if (symbol is IMethodSymbol method)
+            {
+                if (method.IsGenericMethod)
+                {
+                    foreach (ITypeParameterSymbol parameter in method.TypeParameters)
+                    {
+                        if (parameter.Name == stringArgumentValue)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
             return false;
         }
 

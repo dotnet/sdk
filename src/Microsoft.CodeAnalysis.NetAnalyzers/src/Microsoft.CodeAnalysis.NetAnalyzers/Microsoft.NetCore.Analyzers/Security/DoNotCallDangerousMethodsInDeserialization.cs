@@ -38,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 (WellKnownTypeNames.SystemIOFileInfo, new[] { "Delete" }),
                 (WellKnownTypeNames.SystemIODirectoryInfo, new[] { "Delete" }),
                 (WellKnownTypeNames.SystemIOLogLogStore, new[] { "Delete" }),
-                (WellKnownTypeNames.SystemReflectionAssemblyFullName, new[] { "GetLoadedModules", "Load", "LoadFile", "LoadFrom", "LoadModule", "LoadWithPartialName", "ReflectionOnlyLoad", "ReflectionOnlyLoadFrom", "UnsafeLoadFrom" })
+                (WellKnownTypeNames.SystemReflectionAssembly, new[] { "GetLoadedModules", "Load", "LoadFile", "LoadFrom", "LoadModule", "LoadWithPartialName", "ReflectionOnlyLoad", "ReflectionOnlyLoadFrom", "UnsafeLoadFrom" })
             );
 
         internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 s_Title,
                 s_Message,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_Description,
                 isPortedFxCopRule: false,
                 isDataflowRule: false);

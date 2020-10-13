@@ -22,7 +22,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
         protected override bool CanContinuouslyLeadToObjectCreationOrInvocation(SyntaxNode node)
         {
             var kind = node.Kind();
-            return kind == SyntaxKind.QualifiedName || kind == SyntaxKind.IdentifierName || kind == SyntaxKind.SimpleMemberAccessExpression;
+            return kind is SyntaxKind.QualifiedName or SyntaxKind.IdentifierName or SyntaxKind.SimpleMemberAccessExpression;
         }
     }
 }

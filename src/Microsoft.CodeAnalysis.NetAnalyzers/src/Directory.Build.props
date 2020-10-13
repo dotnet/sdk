@@ -4,7 +4,13 @@
 
   <PropertyGroup>
     <FxCopAnalyzersProject Condition="$(MSBuildProjectName.StartsWith('Microsoft.CodeQuality')) OR $(MSBuildProjectName.StartsWith('Microsoft.NetCore')) OR $(MSBuildProjectName.StartsWith('Microsoft.NetFramework'))">true</FxCopAnalyzersProject>
-	<DefineConstants Condition="'$(FxCopAnalyzersProject)' == 'true'">$(DefineConstants),FXCOP_ANALYZERS</DefineConstants>
-    <DefineConstants Condition="'$(FxCopAnalyzersProject)' != 'true'">$(DefineConstants),NET_ANALYZERS</DefineConstants>
+    <NetAnalyzersProject Condition="'$(FxCopAnalyzersProject)' != 'true'">true</NetAnalyzersProject>
+    
+    <DefineConstants Condition="'$(FxCopAnalyzersProject)' == 'true'">$(DefineConstants),FXCOP_ANALYZERS</DefineConstants>
+    <DefineConstants Condition="'$(NetAnalyzersProject)' == 'true'">$(DefineConstants),NET_ANALYZERS</DefineConstants>
+    
+    <!-- Override the version prefix and label for NetAnalyzers projects -->
+    <VersionPrefix Condition="'$(NetAnalyzersProject)' == 'true'">$(NetAnalyzersVersionPrefix)</VersionPrefix>
+    <PreReleaseVersionLabel Condition="'$(NetAnalyzersProject)' == 'true'">$(NetAnalyzersPreReleaseVersionLabel)</PreReleaseVersionLabel>
   </PropertyGroup>
 </Project>

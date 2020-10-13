@@ -54,7 +54,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             IEnumerable<INamedTypeSymbol> globalTypes = context.Compilation.GlobalNamespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                    MatchesConfiguredVisibility(item, context.Options, context.CancellationToken));
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
 
             CheckTypeNames(globalTypes, context);
             CheckNamespaceMembers(globalNamespaces, context);
@@ -69,7 +69,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // types because "InternalsVisibleTo" could be set. But it might be bad for users to start seeing warnings
             // where they previously did not from FxCop.
             // Note that end user can now override this default behavior via options.
-            if (!namedTypeSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation, context.CancellationToken))
             {
                 return;
             }
@@ -77,7 +77,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // Get externally visible members in the given type
             IEnumerable<ISymbol> members = namedTypeSymbol.GetMembers()
                                                           .Where(item => !item.IsAccessorMethod() &&
-                                                                         MatchesConfiguredVisibility(item, context.Options, context.CancellationToken));
+                                                                         MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
 
             if (members.Any())
             {
@@ -97,7 +97,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // Get all the potentially externally visible types in the namespace
                 IEnumerable<INamedTypeSymbol> typeMembers = @namespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                    MatchesConfiguredVisibility(item, context.Options, context.CancellationToken));
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
 
                 if (typeMembers.Any())
                 {
@@ -301,10 +301,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return string.Join(", ", group.Select(s => s.ToDisplayString()).OrderBy(k => k, StringComparer.Ordinal));
         }
 
-        public static bool MatchesConfiguredVisibility(ISymbol symbol, AnalyzerOptions options, CancellationToken cancellationToken)
+        public static bool MatchesConfiguredVisibility(ISymbol symbol, AnalyzerOptions options, Compilation compilation, CancellationToken cancellationToken)
         {
             var defaultAllowedVisibilties = SymbolVisibilityGroup.Public | SymbolVisibilityGroup.Internal;
-            var allowedVisibilities = options.GetSymbolVisibilityGroupOption(Rule, defaultAllowedVisibilties, cancellationToken);
+            var allowedVisibilities = options.GetSymbolVisibilityGroupOption(Rule, symbol, compilation, defaultAllowedVisibilties, cancellationToken);
             return allowedVisibilities.Contains(symbol.GetResultantVisibility());
         }
 

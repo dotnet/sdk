@@ -367,8 +367,8 @@ public sealed class ImplementsGeneral  : IGeneral
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
             }.RunAsync();
         }
 
@@ -517,8 +517,8 @@ public sealed class ImplementsGeneralThree : IGeneral
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
             }.RunAsync();
         }
 
@@ -949,8 +949,8 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
             }.RunAsync();
         }
 
@@ -1065,8 +1065,8 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
-                CodeFixIndex = 1,
-                CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
+                CodeActionIndex = 1,
+                CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
             }.RunAsync();
         }
 

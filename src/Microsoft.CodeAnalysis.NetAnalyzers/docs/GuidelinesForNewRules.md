@@ -1,7 +1,10 @@
-﻿Guidelines for contributing a new Code Analysis (CA) rule to the repo
-=================================================================
+﻿# Contribution Guidelines
 
-1. File an [issue](https://github.com/dotnet/roslyn-analyzers/issues/new) describing your proposed rule prior to working on a PR. This will ensure that the rule gets triaged and there is no duplicate work involved from an existing rule OR another contributor working on a similar rule.
+## Guidelines for contributing a new Code Analysis (CA) rule to the repo
+
+1. File an issue describing your proposed rule prior to working on a PR. This will ensure that the rule gets triaged and there is no duplicate work involved from an existing rule OR another contributor working on a similar rule.
+   1. For .NET API related analyzer suggestions, please open an issue at [dotnet/runtime/issues](https://github.com/dotnet/runtime/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) with [code-analyzer](https://github.com/dotnet/runtime/issues?q=is%3Aopen+is%3Aissue+label%3Acode-analyzer+sort%3Aupdated-desc) label.
+   2. For non-API related analyzer suggestions, please open an issue in this repo over [here](https://github.com/dotnet/roslyn-analyzers/issues/new?template=suggest-a-new-rule.md).
 
 2. Newly proposed rule would be tagged with [Needs-Review](https://github.com/dotnet/roslyn-analyzers/labels/Needs-Review) label. An [Approved-Rule](https://github.com/dotnet/roslyn-analyzers/labels/Approved-Rule) label indicates that the proposal has been reviewed and a PR to implement the rule would be accepted.
 
@@ -21,4 +24,14 @@
    2. For majority of cases, you would be contributing to either [Microsoft.CodeQuality.Analyzers](https://github.com/dotnet/roslyn-analyzers#microsoftcodequalityanalyzers) or [Microsoft.NetCoreAnalyzers](https://github.com/dotnet/roslyn-analyzers#microsoftnetcoreanalyzers). Analyzers related to pure code quality improvements, which are not specific to any API should go into `Microsoft.CodeQuality.Analyzers`. Analyzers specific to usage of a specific .NetCore/.NetStandard API should go into `Microsoft.NetCore.Analyzers` package.
    3. A good rule of thumb is that if your analyzer needs to invoke `GetTypeByMetadataName`, then most likely it is an API specific analyzer and belongs to `Microsoft.NetCore.Analyzers`.
 
-5. **NOTE:** Once the new rule is merged, it needs to be documented. Either submit a PR on the [official documentation page](https://docs.microsoft.com/visualstudio/code-quality/code-analysis-for-managed-code-warnings) for the rule's category (preferred) or [file an issue](https://github.com/MicrosoftDocs/visualstudio-docs/issues). If filing an issue, please include all relevant information in the issue to allow the documentation experts to easily author the documentation. For example, see [this issue](https://github.com/MicrosoftDocs/visualstudio-docs/issues/3454).
+5. Documentation requirements:
+   1. **New CA rule must be documented**: Each rule ID `CAxxxx` is automatically assigned the help link `https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/caxxxx`. The documentation for this page is populated from `caxxxx.md` file at [dotnet/docs quality-rules folder](https://github.com/dotnet/docs/tree/master/docs/fundamentals/code-analysis/quality-rules). For example, `CA1000` is documented at [ca1000.md](https://github.com/dotnet/docs/tree/master/docs/fundamentals/code-analysis/quality-rules/ca1000.md) file. Documenting a new rule is primarily ensuring a PR is sent to `dotnet/docs` repo to add `caxxxx.md` file for the new rule. Detailed steps are given below.
+   2. **Documentation PR must be submitted within ONE WEEK of the rule implementation being merged**. Note that we will communicate this requirement on each PR contributing a new CA rule. We reserve the right to revert the rule implementation PR if this documentation requirement is not met.
+
+## Guidelines for creating documentation PR
+
+1. Documentation PR must be submitted to the [dotnet/docs](https://github.com/dotnet/docs) repo:
+
+   Please review [Contribute docs for .NET code analysis rules to the .NET docs repository](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis) for guidelines.
+
+If for some exceptional reason you are unable to submit a PR, please [file a documentation issue](https://github.com/dotnet/docs/issues) to add documentation for the rule in future. Please include all relevant information in the issue to allow the documentation experts to easily author the documentation.

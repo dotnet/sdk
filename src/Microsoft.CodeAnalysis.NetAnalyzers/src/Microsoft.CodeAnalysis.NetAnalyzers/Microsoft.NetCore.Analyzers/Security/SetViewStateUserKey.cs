@@ -32,7 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 s_Title,
                 s_Message,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_Description,
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
@@ -71,10 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                                                                     s.IsProtected() &&
                                                                                                                     !s.IsStatic));
                         var setViewStateUserKeyInPage_Init = SetViewStateUserKeyCorrectly(methods.FirstOrDefault(s => s.Name == "Page_Init" &&
-                                                                                                                        s.Parameters.Length == 2 &&
-                                                                                                                        s.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
-                                                                                                                        s.Parameters[1].Type.Equals(eventArgsTypeSymbol) &&
-                                                                                                                        s.ReturnType.SpecialType == SpecialType.System_Void));
+                                                                                                                        s.HasEventHandlerSignature(eventArgsTypeSymbol)));
 
                         if (setViewStateUserKeyInOnInit || setViewStateUserKeyInPage_Init)
                         {

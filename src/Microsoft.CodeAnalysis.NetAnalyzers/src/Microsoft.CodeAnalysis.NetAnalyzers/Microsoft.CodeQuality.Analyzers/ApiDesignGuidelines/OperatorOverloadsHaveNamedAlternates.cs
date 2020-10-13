@@ -82,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // FxCop compat: only analyze externally visible symbols by default.
             // Note all the descriptors/rules for this analyzer have the same ID and category and hence
             // will always have identical configured visibility.
-            if (!methodSymbol.MatchesConfiguredVisibility(symbolContext.Options, DefaultRule, symbolContext.CancellationToken))
+            if (!symbolContext.Options.MatchesConfiguredVisibility(DefaultRule, methodSymbol, symbolContext.Compilation, symbolContext.CancellationToken))
             {
                 return;
             }
@@ -188,7 +188,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         internal static ExpectedAlternateMethodGroup? GetExpectedAlternateMethodGroup(string operatorName, ITypeSymbol returnType, ITypeSymbol? parameterType)
         {
-            // list of operator alternate names: https://docs.microsoft.com/visualstudio/code-quality/ca2225-operator-overloads-have-named-alternates
+            // list of operator alternate names: https://docs.microsoft.com/visualstudio/code-quality/ca2225
 
             // the most common case; create a static method with the already specified types
             static ExpectedAlternateMethodGroup createSingle(string methodName) => new ExpectedAlternateMethodGroup(methodName);
@@ -253,9 +253,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return createSingle("Plus");
                 case "op_Implicit":
                 case "op_Explicit":
-                    return new ExpectedAlternateMethodGroup(alternateMethod1: $"To{returnType.Name}", alternateMethod2: parameterType != null ? $"From{parameterType.Name}" : null);
+                    return new ExpectedAlternateMethodGroup(alternateMethod1: $"To{GetTypeName(returnType)}", alternateMethod2: parameterType != null ? $"From{GetTypeName(parameterType)}" : null);
                 default:
                     return null;
+            }
+
+            static string GetTypeName(ITypeSymbol typeSymbol)
+            {
+                if (typeSymbol.TypeKind != TypeKind.Array)
+                {
+                    return typeSymbol.Name;
+                }
+
+                var elementType = typeSymbol;
+                do
+                {
+                    elementType = ((IArrayTypeSymbol)elementType).ElementType;
+                }
+                while (elementType.TypeKind == TypeKind.Array);
+
+                return elementType.Name + "Array";
             }
         }
 

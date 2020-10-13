@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AssigningSymbolAndItsMemberInSameStatementTitle">
-        <source>Assigning symbol and its member in the same statement.</source>
-        <target state="translated">동일한 문에 기호 및 해당 멤버 할당</target>
+        <source>Assigning symbol and its member in the same statement</source>
+        <target state="translated">동일한 문에서 기호 및 해당 멤버 할당</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidAsyncVoidTitle">
@@ -52,19 +52,154 @@
         <target state="translated">비동기 메서드 이름은 Async로 끝나야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesDescription">
+        <source>The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.</source>
+        <target state="translated">제네릭 형식에 포함된 형식 매개 변수가 많을수록 각 형식 매개 변수가 나타내는 항목을 파악하고 기억하기가 더 어려워집니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesMessage">
+        <source>Consider a design where '{0}' has no more than {1} type parameters</source>
+        <target state="translated">'{0}'의 형식 매개 변수가 {1}개를 넘지 않는 디자인이 좋습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidExcessiveParametersOnGenericTypesTitle">
+        <source>Avoid excessive parameters on generic types</source>
+        <target state="translated">제네릭 형식에 매개 변수를 너무 많이 사용하지 마십시오.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageMaybe">
+        <source>Do not assign the property within its setter. This call might result in an infinite recursion.</source>
+        <target state="translated">setter 내에서 속성을 할당하지 마세요. 이 호출로 인해 무한 재귀가 발생할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionMessageSure">
+        <source>Do not assign the property within its setter. This call will result in an infinite recursion.</source>
+        <target state="translated">setter 내에서 속성을 할당하지 마세요. 이 호출로 인해 무한 재귀가 발생합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidInfiniteRecursionTitle">
+        <source>Avoid infinite recursion</source>
+        <target state="translated">무한 재귀 방지</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersDescription">
+        <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
+        <target state="translated">'out' 또는 'ref'를 사용하여 참조로 형식을 전달하려면 포인터 사용 경험, 값 형식과 참조 형식이 어떻게 다른지에 대한 이해 및 반환 값이 여러 개인 메서드 처리가 필요합니다. 또한 'out' 매개 변수와 'ref' 매개 변수의 차이점은 널리 이해되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersMessage">
+        <source>Avoid 'out' parameters as they are not designed for general audience</source>
+        <target state="translated">'out' 매개 변수는 일반 사용자용으로 설계되지 않았으므로 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidOutParametersTitle">
+        <source>Avoid out parameters</source>
+        <target state="translated">out 매개 변수를 사용하지 마십시오.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
         <target state="translated">System.Exception이나 System.SystemException과 같은 일반 예외 또는 허용되지 않는 예외 형식이 catch 문에서 catch되거나, 일반 catch 절이 사용됩니다. 일반 예외와 허용되지 않는 예외는 catch되면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesMessage">
-        <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception.</source>
-        <target state="translated">'{0}'을(를) 수정하여 좀 더 구체적인 허용되는 예외 형식을 catch하거나 해당 예외를 다시 throw합니다.</target>
+        <source>Modify '{0}' to catch a more specific allowed exception type, or rethrow the exception</source>
+        <target state="translated">'{0}'을(를) 수정하여 좀 더 구체적인 허용 예외 형식을 catch하거나 해당 예외를 다시 throw합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesTitle">
         <source>Do not catch general exception types</source>
         <target state="translated">일반적인 예외 형식을 catch하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesDescription">
+        <source>Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.</source>
+        <target state="translated">형식은 상속하는 형식이 멤버에 액세스하거나 멤버를 재정의할 수 있도록 protected 멤버를 선언합니다. 정의에 따라 sealed 형식에서는 상속할 수 없습니다. 즉, sealed 형식에 대한 protected 메서드는 호출할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
+        <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'</source>
+        <target state="translated">'{0}'은(는) 'NonInheritable' 클래스 '{1}'의 새 protected 멤버입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
+        <source>Do not declare protected member in sealed type</source>
+        <target state="translated">protected 멤버를 sealed 형식으로 선언하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">'{0}'이(가) '{1}'을(를) 호출하지만 메서드에서 반환된 값을 사용하지 않습니다. LINQ 메서드는 부작용이 없는 것으로 알려져 있습니다. 결과를 조건문에 사용하거나, 변수에 할당하거나, 다른 메서드에 인수로 전달하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
+        <source>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
+        <target state="translated">'{0}'이(가) '{1}'을(를) 호출하지만 메서드가 반환하는 값을 사용하지 않습니다. 이 메서드가 사용자 옵션으로 정의되어 있습니다. 결과를 조건문에 사용하거나 변수에 할당하거나 다른 메서드에 인수로 전달하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotInitializeUnnecessarilyFix">
+        <source>Remove the unnecessary assignment.</source>
+        <target state="translated">불필요한 할당을 제거하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedDescription">
+        <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
+        <target state="translated">이 규칙에서 이름에 "reserved"가 포함된 열거형 멤버는 현재 사용되고 있지 않으며 이후 버전에서 이름을 바꾸거나 제거할 자리 표시자라고 가정합니다. 멤버 제거 또는 이름 바꾸기는 호환성이 손상되는 변경 내용입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedMessage">
+        <source>If '{0}.{1}' is not used in the current implementation, remove it. Otherwise give it a meaningful name.</source>
+        <target state="translated">현재 구현에서 '{0}.{1}'을(를) 사용하지 않는 경우 제거하세요. 사용하는 경우에는 의미 있는 이름을 지정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotNameEnumValuesReservedTitle">
+        <source>Do not name enum values 'Reserved'</source>
+        <target state="translated">열거형 값의 이름을 'Reserved'로 지정하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsDescription">
+        <source>System.Collections.Generic.List&lt;T&gt; is a generic collection that's designed for performance and not inheritance. List&lt;T&gt; does not contain virtual members that make it easier to change the behavior of an inherited class.</source>
+        <target state="translated">System.Collections.Generic.List&lt;T&gt;는 상속이 아닌 성능을 위해 설계된 제네릭 컬렉션입니다. List&lt;T&gt;는 상속된 클래스의 동작을 더 쉽게 변경할 수 있도록 만들어 주는 가상 멤버를 포함하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsMessage">
+        <source>Change '{0}' in '{1}' to use 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' or 'KeyedCollection&lt;K,V&gt;'</source>
+        <target state="translated">'{1}'의 '{0}'이(가) 'Collection&lt;T&gt;', 'ReadOnlyCollection&lt;T&gt;' 또는 'KeyedCollection&lt;K,V&gt;'를 사용하도록 변경합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotExposeGenericListsTitle">
+        <source>Do not expose generic lists</source>
+        <target state="translated">제네릭 목록을 노출하지 마십시오.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualDescription">
+        <source>Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.</source>
+        <target state="translated">기본 클래스에서 가상 이벤트를 선언하지 마세요. 파생 클래스에서 재정의된 이벤트에는 정의되지 않은 동작이 있습니다. C# 컴파일러는 이를 올바르게 처리하지 않으며 파생 이벤트에 대한 구독자가 실제로 기본 클래스 이벤트를 구독하는지 여부를 예측할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualMessage">
+        <source>Event '{0}' should not be declared virtual</source>
+        <target state="translated">'{0}' 이벤트는 가상으로 선언할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDeclareEventFieldsAsVirtualTitle">
+        <source>Do not declare event fields as virtual</source>
+        <target state="translated">이벤트 필드를 가상으로 선언하지 않음</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesDescription">
+        <source>For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.</source>
+        <target state="translated">참조 형식의 경우 같음 연산자의 기본 구현은 거의 항상 올바릅니다. 기본적으로 두 참조는 같은 개체를 가리키는 경우에만 같습니다. 연산자가 의미 있는 값 같음을 제공하는 경우 형식은 제네릭 'System.IEquatable' 인터페이스를 구현해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesMessage">
+        <source>'{0}' should not overload the equality operator</source>
+        <target state="translated">'{0}'은(는) 같음 연산자를 오버로드하면 안 됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotOverloadOperatorEqualsOnReferenceTypesTitle">
+        <source>Do not overload equality operator on reference types</source>
+        <target state="translated">참조 형식에 같음 연산자를 오버로드하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassAsyncLambdasAsVoidReturningDelegateTypesTitle">
@@ -82,13 +217,28 @@
         <target state="translated">비동기 람다를 Void 반환 대리자 형식으로 전달하지 마세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceDescription">
+        <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
+        <target state="translated">out 또는 ref를 사용하여 참조로 형식을 전달하려면 포인터 사용 경험이 있고, 값 형식과 참조 형식의 차이점을 알고 있으며, 반환 값이 여러 개인 메서드를 처리해야 합니다. 또한 out 매개 변수와 ref 매개 변수의 차이점은 널리 알려져 있지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceMessage">
+        <source>Consider a design that does not require that '{0}' be a reference parameter</source>
+        <target state="translated">'{0}'이(가) 참조 매개 변수일 필요가 없는 디자인이 좋습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassTypesByReferenceTitle">
+        <source>Do not pass types by reference</source>
+        <target state="translated">참조로 형식을 전달하지 마십시오.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameDescription">
         <source>An enumeration's values should not start with the type name of the enumeration.</source>
         <target state="translated">열거형의 값은 열거형의 형식 이름으로 시작하지 않아야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPrefixEnumValuesWithTypeNameMessage">
-        <source>Do not prefix enum values with the name of the enum type '{0}'. </source>
+        <source>Do not prefix enum values with the name of the enum type '{0}'</source>
         <target state="translated">열거형 값에 열거형 형식 '{0}'의 이름을 접두사로 사용하지 마세요.</target>
         <note />
       </trans-unit>
@@ -112,9 +262,44 @@
         <target state="translated">비동기 람다를 Void 반환 대리자 형식으로 저장하지 마세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart">
+        <source>The field reference '{0}' is duplicated in this bitwise initialization</source>
+        <target state="translated">이 비트 초기화에서 필드 참조 '{0}'이(가) 중복되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue">
+        <source>The enum member '{0}' has the same constant value '{1}' as member '{2}'</source>
+        <target state="translated">열거형 멤버 '{0}'의 상수 값 '{1}'이(가) '{2}' 멤버와 같습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnumShouldNotHaveDuplicatedValuesTitle">
+        <source>Enums values should not be duplicated</source>
+        <target state="translated">열거형 값은 중복되어서는 안 됨</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixDescription">
+        <source>Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.</source>
+        <target state="translated">이벤트 이름에는 이벤트를 발생시키는 동작의 설명이 있어야 합니다. 특정 시퀀스에서 발생하는 관련 이벤트의 이름을 지정하려면, 현재 또는 과거 시제를 사용하여 작업 순서에서 상대 위치를 나타냅니다. 예를 들어, 리소스를 종료할 때 발생하는 이벤트 쌍을 명명하는 경우 'BeforeClose' 및 'AfterClose' 대신 'Closing' 및 'Closed'로 이름을 지정할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixMessage">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="translated">이벤트에 'Before' 또는 'After' 접두사를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EventsShouldNotHaveBeforeOrAfterPrefixTitle">
+        <source>Events should not have 'Before' or 'After' prefix</source>
+        <target state="translated">이벤트에 'Before' 또는 'After' 접두사를 사용하지 마세요.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">'{0}' 형식에서 종료자를 제거하고 Dispose(bool disposing)를 재정의한 후 종료 논리를 'disposing'이 false인 코드 경로에 추가하세요. 그렇지 않으면, 기본 형식 '{1}'도 종료자를 제공할 때 중복된 Dispose 호출이 발생할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="new">Apply 'AttributeUsageAttribute'</target>
         <note />
       </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
@@ -145,6 +330,11 @@
       <trans-unit id="DoNotMixBlockingAndAsyncMessage">
         <source>Don't Mix Blocking and Async</source>
         <target state="translated">차단과 비동기를 조합하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
+        <source>Remove redundant element initializer</source>
+        <target state="translated">중복 요소 이니셜라이저 제거</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesThatOwnDisposableFieldsShouldBeDisposableTitle">
@@ -178,23 +368,23 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsRename">
-        <source>In enum {0}, change the name of {1} to 'None'.</source>
+        <source>In enum {0}, change the name of {1} to 'None'</source>
         <target state="translated">{0} 열거형에서 {1}의 이름을 'None'으로 변경하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageFlagsMultipleZeros">
-        <source>Remove all members that have the value zero from {0} except for one member that is named 'None'.</source>
-        <target state="translated">{0}에서 'None'으로 명명된 하나의 멤버를 제외하고 0 값을 가진 모든 멤버를 제거하세요.</target>
+        <source>Remove all members that have the value zero from {0} except for one member that is named 'None'</source>
+        <target state="translated">{0}에서 'None'으로 명명된 하나의 멤버를 제외하고 0 값이 있는 모든 멤버를 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue">
-        <source>Add a member to {0} that has a value of zero with a suggested name of 'None'.</source>
-        <target state="translated">제안된 이름 'None'과 0 값을 가진 멤버를 {0}에 추가하세요.</target>
+        <source>Add a member to {0} that has a value of zero with a suggested name of 'None'</source>
+        <target state="translated">제안된 이름 'None'과 0 값이 있는 멤버를 {0}에 추가하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsTitle">
-        <source>Abstract types should not have constructors</source>
-        <target state="translated">추상 형식에는 생성자를 사용하지 않아야 합니다.</target>
+        <source>Abstract types should not have public constructors</source>
+        <target state="translated">추상 형식에는 public 생성자를 사용하지 않아야 함</target>
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsDescription">
@@ -203,8 +393,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AbstractTypesShouldNotHaveConstructorsMessage">
-        <source>Abstract type {0} should not have constructors</source>
-        <target state="translated">{0} 추상 형식에는 생성자를 사용하지 않아야 합니다.</target>
+        <source>Abstract type '{0}' should not have public constructors</source>
+        <target state="translated">추상 형식 '{0}'에는 public 생성자를 사용하지 않아야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAssembliesWithClsCompliantTitle">
@@ -268,7 +458,7 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageMessageDefault">
-        <source>Specify AttributeUsage on {0}.</source>
+        <source>Specify AttributeUsage on {0}</source>
         <target state="translated">{0}에서 AttributeUsage를 지정하세요.</target>
         <note />
       </trans-unit>
@@ -288,18 +478,18 @@
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageDefault">
-        <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}.</source>
-        <target state="translated">{1} 특성의 위치 인수 {0}에 public 읽기 전용 속성 접근자를 추가하세요.</target>
+        <source>Add a public read-only property accessor for positional argument {0} of Attribute {1}</source>
+        <target state="translated">{1} 특성의 위치 인수 {0}에 대한 공개 읽기 전용 속성 접근자를 추가하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageRemoveSetter">
-        <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}.</source>
-        <target state="translated">속성 setter가 위치 인수 {1}에 해당하므로 {0}에서 이 속성 setter를 제거하거나 해당 접근성을 낮추세요.</target>
+        <source>Remove the property setter from {0} or reduce its accessibility because it corresponds to positional argument {1}</source>
+        <target state="translated">속성 setter가 위치 인수 {1}에 해당하므로 이 속성 setter를 {0}에서 제거하거나 해당 접근성을 낮추세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility">
-        <source>If {0} is the property accessor for positional argument {1}, make it public.</source>
-        <target state="translated">{0}이(가) 위치 인수 {1}에 대한 속성 접근자인 경우 public으로 만드세요.</target>
+        <source>If {0} is the property accessor for positional argument {1}, make it public</source>
+        <target state="translated">{0}이(가) 위치 인수 {1}에 대한 속성 접근자인 경우 공개로 설정하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertiesWhereAppropriateTitle">
@@ -343,8 +533,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesMessage">
-        <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes.</source>
-        <target state="translated">{0}을(를) sealed로 설정(이 클래스가 이전에 함께 제공된 경우 새롭게 변경)하거나, 메서드를 비명시적으로 구현하거나, '{1}'의 기능을 노출하여 파생 클래스에 표시하는 새 메서드를 구현하세요.</target>
+        <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes</source>
+        <target state="translated">'{0}'을(를) sealed로 설정(이 클래스가 이전에 제공된 경우 호환성이 손상되는 변경)하거나, 메서드를 비명시적으로 구현하거나, '{1}'의 기능을 노출하고 파생 클래스에 표시되는 새 메서드를 구현하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesTitle">
@@ -358,13 +548,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageEquals">
-        <source>{0} should override Equals since it implements IComparable.</source>
+        <source>{0} should override Equals since it implements IComparable</source>
         <target state="translated">{0}은(는) IComparable을 구현하므로 Equals를 재정의해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageOperator">
-        <source>{0} should define operator(s) '{1}' since it implements IComparable.</source>
-        <target state="translated">{0}은(는) IComparable을 구현하므로 연산자 '{1}'을(를) 정의해야 합니다.</target>
+        <source>{0} should define operator(s) '{1}' since it implements IComparable</source>
+        <target state="translated">{0}은(는) IComparable을 구현하므로 '{1}' 연산자를 정의해야 합니다.</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
       <trans-unit id="MovePInvokesToNativeMethodsClassTitle">
@@ -393,7 +583,7 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldDifferByMoreThanCaseMessage">
-        <source>Names of '{0}' and '{1}' should differ by more than case.</source>
+        <source>Names of '{0}' and '{1}' should differ by more than case</source>
         <target state="translated">'{0}' 및 '{1}'에 대/소문자만 다른 이름을 사용할 수 없습니다.</target>
         <note />
       </trans-unit>
@@ -408,12 +598,12 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageInterface">
-        <source>Prefix interface name {0} with 'I'.</source>
+        <source>Prefix interface name {0} with 'I'</source>
         <target state="translated">인터페이스 이름 {0}에 'I'를 접두사로 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectPrefixMessageTypeParameter">
-        <source>Prefix generic type parameter name {0} with 'T'.</source>
+        <source>Prefix generic type parameter name {0} with 'T'</source>
         <target state="translated">제네릭 형식 매개 변수 이름 {0}에 'T'를 접두사로 사용하세요.</target>
         <note />
       </trans-unit>
@@ -458,23 +648,23 @@
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageDefault">
-        <source>Provide a method named '{0}' as a friendly alternate for operator {1}.</source>
-        <target state="translated">{1} 연산자의 대체 항목으로 이름이 '{0}'인 메서드를 제공하세요.</target>
+        <source>Provide a method named '{0}' as a friendly alternate for operator {1}</source>
+        <target state="translated">{1} 연산자의 적절한 대체 메서드로 이름이 '{0}'인 메서드를 제공하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageProperty">
-        <source>Provide a property named '{0}' as a friendly alternate for operator {1}.</source>
-        <target state="translated">{1} 연산자의 대체 항목으로 이름이 '{0}'인 속성을 제공하세요.</target>
+        <source>Provide a property named '{0}' as a friendly alternate for operator {1}</source>
+        <target state="translated">{1} 연산자의 적절한 대체 속성으로 이름이 '{0}'인 속성을 제공하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageMultiple">
-        <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}.</source>
-        <target state="translated">{2} 연산자의 대체 항목으로 이름이 '{0}' 또는 '{1}'인 메서드를 제공하세요.</target>
+        <source>Provide a method named '{0}' or '{1}' as an alternate for operator {2}</source>
+        <target state="translated">{2} 연산자의 대체 메서드로 이름이 '{0}' 또는 '{1}'인 메서드를 제공하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorOverloadsHaveNamedAlternatesMessageVisibility">
-        <source>Mark {0} as public because it is a friendly alternate for operator {1}.</source>
-        <target state="translated">{0}은(는) {1} 연산자의 대체 항목이므로 public으로 표시하세요.</target>
+        <source>Mark {0} as public because it is a friendly alternate for operator {1}</source>
+        <target state="translated">{0}은(는) {1} 연산자의 적절한 대체 항목이므로 공개로 표시하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatorsShouldHaveSymmetricalOverloadsTitle">
@@ -503,7 +693,7 @@
         <note />
       </trans-unit>
       <trans-unit id="CollectionPropertiesShouldBeReadOnlyMessage">
-        <source>Change '{0}' to be read-only by removing the property setter.</source>
+        <source>Change '{0}' to be read-only by removing the property setter</source>
         <target state="translated">속성 setter를 제거하여 '{0}'을(를) 읽기 전용으로 변경하세요.</target>
         <note />
       </trans-unit>
@@ -513,13 +703,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsDescription">
-        <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals</source>
-        <target state="translated">대부분의 프로그래밍 언어에서는 값 형식에 대한 같음 연산자(==)를 기본적으로 구현하지 않습니다. 사용 중인 프로그래밍 언어에서 연산자 오버로드를 지원하는 경우 같음 연산자를 구현하세요. 해당 연산자의 동작은 Equals의 동작과 같아야 합니다.</target>
+        <source>In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.</source>
+        <target state="translated">대부분의 프로그래밍 언어에서는 값 형식에 같음 연산자(==)를 기본적으로 구현하지 않습니다. 프로그래밍 언어에서 연산자 오버로드를 지원하는 경우 같음 연산자를 구현해야 합니다. 해당 연산자의 동작은 Equals의 동작과 같아야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Overload operator equals on overriding value type Equals</source>
-        <target state="translated">값 형식 Equals를 재정의할 때 같음 연산자를 오버로드하세요.</target>
+        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
+        <target state="translated">같음 연산자를 구현하고 해당 동작을 'Equals' 메서드의 동작과 같게 만드세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -533,18 +723,18 @@
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsMessage">
-        <source>Modify '{0}' to call '{1}' instead of '{2}'.</source>
+        <source>Modify '{0}' to call '{1}' instead of '{2}'</source>
         <target state="translated">'{0}'을(를) 수정하여 '{2}' 대신 '{1}'을(를) 호출하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsTitle">
-        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
-        <target state="translated">{0} 형식은 Equals를 재정의하므로 IEquatable&lt;T&gt;를 구현해야 합니다.</target>
+        <source>Implement IEquatable when overriding Object.Equals</source>
+        <target state="translated">Object.Equals를 재정의할 때 IEquatable을 구현하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIEquatableWhenOverridingObjectEqualsMessage">
-        <source>Implement IEquatable when overriding Object.Equals</source>
-        <target state="translated">Object.Equals를 재정의할 때 IEquatable을 구현하세요.</target>
+        <source>Type {0} should implement IEquatable&lt;T&gt; because it overrides Equals</source>
+        <target state="translated">{0} 형식은 Equals를 재정의하므로 IEquatable&lt;T&gt;를 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CancellationTokenParametersMustComeLastTitle">
@@ -603,13 +793,13 @@
         <note />
       </trans-unit>
       <trans-unit id="AddAssemblyLevelComVisibleFalse">
-        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true).</source>
-        <target state="translated">{0}이(가) 외부에 표시되는 형식을 노출하므로 어셈블리 수준에서 ComVisible(false)로 표시한 다음 COM 클라이언트에서 ComVisible(true)로 노출되어야 하는 어셈블리 내에서 모든 형식을 표시하세요.</target>
+        <source>Because {0} exposes externally visible types, mark it with ComVisible(false) at the assembly level and then mark all types within the assembly that should be exposed to COM clients with ComVisible(true)</source>
+        <target state="translated">{0}이(가) 외부에 표시되는 형식을 노출하므로 어셈블리 수준에서 ComVisible(false)로 표시한 다음, COM 클라이언트에 노출되어야 하는 어셈블리 내의 모든 형식을 ComVisible(true)로 표시하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ChangeAssemblyLevelComVisibleToFalse">
-        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level.</source>
-        <target state="translated">{0}에서 ComVisible 특성을 false로 변경하고 형식 수준에서 선택하세요.</target>
+        <source>Consider changing the ComVisible attribute on {0} to false, and opting in at the type level</source>
+        <target state="translated">{0}에서 ComVisible 특성을 false로 변경하고 형식 수준에서 선택하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementComparable">
@@ -698,7 +888,7 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumStorageShouldBeInt32Message">
-        <source>If possible, make the underlying type of {0} System.Int32 instead of {1}.</source>
+        <source>If possible, make the underlying type of {0} System.Int32 instead of {1}</source>
         <target state="translated">가능한 경우 {1} 대신 {0} System.Int32의 기본 형식을 만드세요.</target>
         <note />
       </trans-unit>
@@ -713,8 +903,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseEventsWhereAppropriateMessage">
-        <source>Consider making '{0}' an event.</source>
-        <target state="translated">'{0}'을(를) 이벤트로 만드세요.</target>
+        <source>Consider making '{0}' an event</source>
+        <target state="translated">'{0}'을(를) 이벤트로 만드는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsTitle">
@@ -728,7 +918,7 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementStandardExceptionConstructorsMessageMissingConstructor">
-        <source>Add the following constructor to {0}: {1}.</source>
+        <source>Add the following constructor to {0}: {1}</source>
         <target state="translated">{1} 생성자를 {0}에 추가하세요.</target>
         <note />
       </trans-unit>
@@ -798,13 +988,13 @@
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageAddGetter">
-        <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method.</source>
-        <target state="translated">{0} 속성이 쓰기 전용이므로 setter보다 크거나 같은 접근성을 가진 속성 getter를 추가하거나 이 속성을 메서드로 변환하세요.</target>
+        <source>Because property {0} is write-only, either add a property getter with an accessibility that is greater than or equal to its setter or convert this property into a method</source>
+        <target state="translated">{0} 속성이 쓰기 전용이므로 해당 setter보다 크거나 같은 접근성이 있는 속성 getter를 추가하거나 이 속성을 메서드로 변환하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible">
-        <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter.</source>
-        <target state="translated">{0}의 속성 getter가 setter보다 표시 수준이 낮으므로 getter의 접근성을 높이거나 setter의 접근성을 낮추세요.</target>
+        <source>Because the property getter for {0} is less visible than its setter, either increase the accessibility of its getter or decrease the accessibility of its setter</source>
+        <target state="translated">{0}의 속성 getter가 setter보다 표시 수준이 낮으므로 getter의 접근성을 높이거나 해당 setter의 접근성을 낮추세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeclareTypesInNamespacesTitle">
@@ -838,23 +1028,23 @@
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsTitle">
-        <source>Uri parameters should not be strings</source>
-        <target state="translated">URI 매개 변수는 문자열이 아니어야 합니다.</target>
+        <source>URI-like parameters should not be strings</source>
+        <target state="translated">URI 같은 매개 변수는 문자열이 아니어야 함</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsDescription">
-        <source>If a method takes a string representation of a URI, a corresponding overload should be provided that takes an instance of the URI class, which provides these services in a safe and secure manner.</source>
-        <target state="translated">메서드가 URI의 문자열 표현을 사용하는 경우 URI 클래스의 인스턴스를 사용하는 해당 오버로드를 제공하여 서비스를 안전하게 제공해야 합니다.</target>
+        <source>This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.</source>
+        <target state="translated">이 규칙은 매개 변수가 URI(Uniform Resource Identifier)를 나타낸다고 가정합니다. URI의 문자열 표현은 오류를 구문 분석하거나 인코딩하기 쉬우며 이로 인해 보안이 취약해질 수 있습니다. 'System.Uri' 클래스는 이러한 서비스를 안전하게 제공합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsMessage">
-        <source>Change the type of parameter {0} of method {1} from string to System.Uri, or provide an overload to {1} that allows {0} to be passed as a System.Uri object.</source>
-        <target state="translated">{1} 메서드의 {0} 매개 변수 형식을 문자열에서 System.Uri로 변경하거나 {0}을(를) System.Uri 개체로 전달하는 {1}에 오버로드를 제공하세요.</target>
+        <source>Change the type of parameter '{0}' of method '{1}' from 'string' to 'System.Uri', or provide an overload to '{1}' that allows '{0}' to be passed as a 'System.Uri' object</source>
+        <target state="translated">'{1}' 메서드의 '{0}' 매개 변수 형식을 'string'에서 'System.Uri'로 변경하거나 '{0}'을(를) 'System.Uri' 개체로 전달하도록 허용하는 '{1}'에 오버로드를 제공하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsTitle">
-        <source>Uri return values should not be strings</source>
-        <target state="translated">URI 반환 값은 문자열이 아니어야 합니다.</target>
+        <source>URI-like return values should not be strings</source>
+        <target state="translated">URI 같은 반환 값은 문자열이 아니어야 함</target>
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsDescription">
@@ -863,13 +1053,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UriReturnValuesShouldNotBeStringsMessage">
-        <source>Change the return type of method {0} from string to System.Uri.</source>
-        <target state="translated">{0} 메서드의 반환 형식을 문자열에서 Sysyem.Uri로 변경하세요.</target>
+        <source>Change the return type of method '{0}' from 'string' to 'System.Uri'</source>
+        <target state="translated">메서드 '{0}'의 반환 형식을 'string'에서 'System.Uri'로 변경하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsTitle">
-        <source>Uri properties should not be strings</source>
-        <target state="translated">URI 속성은 문자열이 아니어야 합니다.</target>
+        <source>URI-like properties should not be strings</source>
+        <target state="translated">URI 같은 속성은 문자열이 아니어야 함</target>
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsDescription">
@@ -878,8 +1068,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UriPropertiesShouldNotBeStringsMessage">
-        <source>Change the type of property {0} from string to System.Uri.</source>
-        <target state="translated">{0} 속성의 형식을 문자열에서 System.Uri로 변경하세요.</target>
+        <source>Change the type of property '{0}' from 'string' to 'System.Uri'</source>
+        <target state="translated">속성 '{0}'의 형식을 'string'에서 'System.Uri'로 변경하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyTitle">
@@ -893,38 +1083,38 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageIDisposableReimplementation">
-        <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'.</source>
-        <target state="translated">기본 형식 '{1}'에서 이미 구현되었으므로 '{0}'에서 구현된 인터페이스 목록의 IDisposable을 제거하세요.</target>
+        <source>Remove IDisposable from the list of interfaces implemented by '{0}' as it is already implemented by base type '{1}'</source>
+        <target state="translated">기본 형식 '{1}'에서 이미 구현되었으므로 '{0}'에서 구현된 인터페이스의 목록에서 IDisposable을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeOverride">
-        <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true.</source>
+        <source>Remove '{0}', override Dispose(bool disposing), and put the dispose logic in the code path where 'disposing' is true</source>
         <target state="translated">'{0}'을(를) 제거하고 Dispose(bool disposing)를 재정의한 후 삭제 논리를 'disposing'이 true인 코드 경로에 추가하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeSignature">
-        <source>Ensure that '{0}' is declared as public and sealed.</source>
+        <source>Ensure that '{0}' is declared as public and sealed</source>
         <target state="translated">'{0}'이(가) public 및 sealed로 선언되었는지 확인하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageRenameDispose">
-        <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed.</source>
-        <target state="translated">'{0}'의 이름을 'Dispose'로 바꾸고 public 및 sealed로 선언되었는지 확인합니다.</target>
+        <source>Rename '{0}' to 'Dispose' and ensure that it is declared as public and sealed</source>
+        <target state="translated">'{0}'의 이름을 'Dispose'로 바꾸고 public 및 sealed로 선언되었는지 확인하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeBoolSignature">
-        <source>Ensure that '{0}' is declared as protected, virtual, and unsealed.</source>
+        <source>Ensure that '{0}' is declared as protected, virtual, and unsealed</source>
         <target state="translated">'{0}'이(가) protected, virtual 및 unsealed로 선언되었는지 확인하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageDisposeImplementation">
-        <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns.</source>
-        <target state="translated">Dispose(true)를 호출한 다음, 현재 개체 인스턴스(Visual Basic의 경우 'this' 또는 'Me')에서 GC.SuppressFinalize를 호출한 후 반환하도록 '{0}'을(를) 수정하세요.</target>
+        <source>Modify '{0}' so that it calls Dispose(true), then calls GC.SuppressFinalize on the current object instance ('this' or 'Me' in Visual Basic), and then returns</source>
+        <target state="translated">'{0}'을(를) 수정하여 Dispose(true)를 호출한 다음에 현재 개체 인스턴스(Visual Basic의 경우 'this' 또는 'Me')에서 GC.SuppressFinalize를 호출한 후 반환하도록 하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeImplementation">
-        <source>Modify '{0}' so that it calls Dispose(false) and then returns.</source>
-        <target state="translated">Dispose(false)를 호출한 후 반환하도록 '{0}'을(를) 수정하세요.</target>
+        <source>Modify '{0}' so that it calls Dispose(false) and then returns</source>
+        <target state="translated">'{0}'을(를) 수정하여 Dispose(false)를 호출한 후 반환하도록 하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageProvideDisposeBool">
@@ -983,43 +1173,43 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageAssembly">
-        <source>Remove the underscores from assembly name {0}.</source>
+        <source>Remove the underscores from assembly name {0}</source>
         <target state="translated">어셈블리 이름 {0}에서 밑줄을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageNamespace">
-        <source>Remove the underscores from namespace name '{0}'.</source>
+        <source>Remove the underscores from namespace name '{0}'</source>
         <target state="translated">네임스페이스 이름 '{0}'에서 밑줄을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageType">
-        <source>Remove the underscores from type name {0}.</source>
+        <source>Remove the underscores from type name {0}</source>
         <target state="translated">형식 이름 {0}에서 밑줄을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMember">
-        <source>Remove the underscores from member name {0}.</source>
+        <source>Remove the underscores from member name {0}</source>
         <target state="translated">멤버 이름 {0}에서 밑줄을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageTypeTypeParameter">
-        <source>On type {0}, remove the underscores from generic type parameter name {1}.</source>
-        <target state="translated">{0} 형식에서 제네릭 형식 매개 변수 이름 {1}의 밑줄을 제거하세요.</target>
+        <source>On type {0}, remove the underscores from generic type parameter name {1}</source>
+        <target state="translated">{0} 형식의 제네릭 형식 매개 변수 이름 {1}에서 밑줄을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMethodTypeParameter">
-        <source>On method {0}, remove the underscores from generic type parameter name {1}.</source>
-        <target state="translated">{0} 메서드에서 제네릭 형식 매개 변수 이름 {1}의 밑줄을 제거하세요.</target>
+        <source>On method {0}, remove the underscores from generic type parameter name {1}</source>
+        <target state="translated">{0} 메서드의 제네릭 형식 매개 변수 이름 {1}에서 밑줄을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageMemberParameter">
-        <source>In member {0}, remove the underscores from parameter name {1}.</source>
-        <target state="translated">{0} 멤버에서 매개 변수 이름 {1}의 밑줄을 제거하세요.</target>
+        <source>In member {0}, remove the underscores from parameter name {1}</source>
+        <target state="translated">{0} 멤버의 매개 변수 이름 {1}에서 밑줄을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresMessageDelegateParameter">
-        <source>In delegate {0}, remove the underscores from parameter name {1}.</source>
-        <target state="translated">{0} 대리자에서 매개 변수 이름 {1}의 밑줄을 제거하세요.</target>
+        <source>In delegate {0}, remove the underscores from parameter name {1}</source>
+        <target state="translated">{0} 대리자의 매개 변수 이름 {1}에서 밑줄을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixTitle">
@@ -1033,12 +1223,12 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
-        <source>Rename {0} to end in '{1}'.</source>
+        <source>Rename {0} to end in '{1}'</source>
         <target state="translated">{0}이(가) '{1}'(으)로 끝나도록 이름을 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
-        <source>Rename {0} to end in either 'Collection' or '{1}'.</source>
+        <source>Rename {0} to end in either 'Collection' or '{1}'</source>
         <target state="translated">{0}이(가) 'Collection' 또는 '{1}'(으)로 끝나도록 이름을 바꾸세요.</target>
         <note />
       </trans-unit>
@@ -1053,23 +1243,23 @@
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNoAlternate">
-        <source>Rename type name {0} so that it does not end in '{1}'.</source>
-        <target state="translated">'{1}'(으)로 끝나지 않도록 {0} 형식의 이름을 바꾸세요.</target>
+        <source>Rename type name {0} so that it does not end in '{1}'</source>
+        <target state="translated">'{1}'(으)로 끝나지 않도록 형식 이름 {0}을(를) 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberNewerVersion">
-        <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces.</source>
-        <target state="translated">멤버 이름 {1}의 접미사 '{0}'을(를) 대체 가능한 제안된 숫자 '2'로 바꾸거나 대체될 멤버와 구별되는 보다 의미 있는 접미사를 사용하세요.</target>
+        <source>Either replace the suffix '{0}' in member name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the member it replaces</source>
+        <target state="translated">멤버 이름 {1}의 '{0}' 접미사를 제안된 대체 숫자 '2'로 바꾸거나 대체될 멤버와 구별되는 더 의미 있는 접미사를 제공하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNewerVersion">
-        <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces.</source>
-        <target state="translated">형식 이름 {1}의 접미사 '{0}'을(를) 대체 가능한 제안된 숫자 '2'로 바꾸거나 대체될 형식과 구별되는 보다 의미 있는 접미사를 사용하세요.</target>
+        <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces</source>
+        <target state="translated">형식 이름 {1}의 '{0}' 접미사를 제안된 대체 숫자 '2'로 바꾸거나 대체될 형식과 구별되는 더 의미 있는 접미사를 제공하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberWithAlternate">
-        <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely.</source>
-        <target state="translated">멤버 이름 '{1}'의 접미사 '{0}'을(를) 대체 가능한 제안된 접미사 '{2}'(으)로 바꾸거나 접미사를 완전히 제거하세요.</target>
+        <source>Either replace the suffix '{0}' in member name '{1}' with the suggested alternate '{2}' or remove the suffix completely</source>
+        <target state="translated">멤버 이름 '{1}'의 '{0}' 접미사를 제안된 대체 접미사 '{2}'(으)로 바꾸거나 접미사를 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
@@ -1178,8 +1368,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ParameterNamesShouldMatchBaseDeclarationMessage">
-        <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}.</source>
-        <target state="translated">{3}에 선언된 식별자와 일치하도록 멤버 {0}의 매개 변수 이름 {1}을(를) {2}(으)로 변경하세요.</target>
+        <source>In member {0}, change parameter name {1} to {2} in order to match the identifier as it has been declared in {3}</source>
+        <target state="translated">{3}에 선언된 식별자와 일치하도록 {0} 멤버의 매개 변수 이름 {1}을(를) {2}(으)로 변경하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsTitle">
@@ -1193,83 +1383,83 @@
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageAssembly">
-        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">어셈블리 이름 {1}의 용어 '{0}'을(를) 대체 가능한 기본 설정 용어 '{2}'(으)로 바꾸세요.</target>
+        <source>Replace the term '{0}' in assembly name {1} with the preferred alternate '{2}'</source>
+        <target state="translated">어셈블리 이름 {1}의 '{0}' 용어를 기본 대체 용어 '{2}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespace">
-        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'.</source>
-        <target state="translated">네임스페이스 이름 {1}의 용어 '{0}'을(를) 대체 가능한 기본 설정 용어 '{2}'(으)로 바꾸세요.</target>
+        <source>Replace the term '{0}' in namespace name '{1}' with the preferred alternate '{2}'</source>
+        <target state="translated">네임스페이스 이름 '{1}'의 '{0}' 용어를 기본 대체 용어 '{2}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameter">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">{0} 멤버에서 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 기본 설정 용어 '{3}'(으)로 바꾸세요.</target>
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="translated">{0} 멤버에서 매개 변수 이름 {2}의 '{1}' 용어를 기본 대체 용어 '{3}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageDelegateParameter">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">{0} 대리자에서 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 기본 설정 용어 '{3}'(으)로 바꾸세요.</target>
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="translated">{0} 대리자에서 매개 변수 이름 {2}의 '{1}' 용어를 기본 대체 용어 '{3}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameter">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">{0} 형식에서 제네릭 형식 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 기본 설정 용어 '{3}'(으)로 바꾸세요.</target>
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="translated">{0} 형식에서 제네릭 형식 매개 변수 이름 {2}의 '{1}' 용어를 기본 대체 용어 '{3}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameter">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'.</source>
-        <target state="translated">{0} 메서드에서 제네릭 형식 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 기본 설정 용어 '{3}'(으)로 바꾸세요.</target>
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with the preferred alternate '{3}'</source>
+        <target state="translated">{0} 메서드에서 제네릭 형식 매개 변수 이름 {2}의 '{1}' 용어를 기본 대체 용어 '{3}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageType">
-        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">형식 이름 {1}의 용어 '{0}'을(를) 대체 가능한 기본 설정 용어 '{2}'(으)로 바꾸세요.</target>
+        <source>Replace the term '{0}' in type name {1} with the preferred alternate '{2}'</source>
+        <target state="translated">형식 이름 {1}의 '{0}' 용어를 기본 대체 용어 '{2}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMember">
-        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'.</source>
-        <target state="translated">멤버 이름 {1}의 용어 '{0}'을(를) 대체 가능한 기본 설정 용어 '{2}'(으)로 바꾸세요.</target>
+        <source>Replace the term '{0}' in member name {1} with the preferred alternate '{2}'</source>
+        <target state="translated">멤버 이름 {1}의 '{0}' 용어를 기본 대체 용어 '{2}'(으)로 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageAssemblyNoAlternate">
-        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">어셈블리 이름 {1}의 용어 '{0}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <source>Replace the term '{0}' in assembly name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">어셈블리 이름 {1}의 '{0}' 용어를 적절한 대체 용어로 바꾸거나 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
-        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">네임스페이스 이름 '{1}'의 용어 '{0}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
+        <target state="translated">네임스페이스 이름 '{1}'의 '{0}' 용어를 적절한 대체 용어로 바꾸거나 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
-        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">{0} 멤버에서 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <source>In member {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">{0} 멤버에서 매개 변수 이름 {2}의 '{1}' 용어를 적절한 대체 용어로 바꾸거나 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageDelegateParameterNoAlternate">
-        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">{0} 대리자에서 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <source>In delegate {0}, replace the term '{1}' in parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">{0} 대리자에서 매개 변수 이름 {2}의 '{1}' 용어를 적절한 대체 용어로 바꾸거나 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
-        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">{0} 형식에서 제네릭 형식 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">{0} 형식에서 제네릭 형식 매개 변수 이름 {2}의 '{1}' 용어를 적절한 대체 용어로 바꾸거나 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
-        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">{0} 메서드에서 제네릭 형식 매개 변수 이름 {2}의 용어 '{1}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">{0} 메서드에서 제네릭 형식 매개 변수 이름 {2}의 '{1}' 용어를 적절한 대체 용어로 바꾸거나 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
-        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">형식 이름 {1}의 용어 '{0}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <source>Replace the term '{0}' in type name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">형식 이름 {1}의 '{0}' 용어를 적절한 대체 용어로 바꾸거나 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
-        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely.</source>
-        <target state="translated">멤버 이름 {1}의 용어 '{0}'을(를) 대체 가능한 적절한 용어로 바꾸거나 완전히 제거하세요.</target>
+        <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
+        <target state="translated">멤버 이름 {1}의 '{0}' 용어를 적절한 대체 용어로 바꾸거나 완전히 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
@@ -1283,12 +1473,12 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageEquals">
-        <source>{0} should override Equals.</source>
+        <source>{0} should override Equals</source>
         <target state="translated">{0}은(는) Equals를 재정의해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesMessageOpEquality">
-        <source>{0} should override the equality (==) and inequality (!=) operators.</source>
+        <source>{0} should override the equality (==) and inequality (!=) operators</source>
         <target state="translated">{0}은(는) 같음(==) 및 같지 않음(!=) 연산자를 재정의해야 합니다.</target>
         <note />
       </trans-unit>
@@ -1483,7 +1673,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotHideBaseClassMethodsMessage">
-        <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'.</source>
+        <source>Change or remove '{0}' because it hides a more specific base class method: '{1}'</source>
         <target state="translated">더 구체적인 기본 클래스 메서드인 '{1}'이(가) 숨겨지므로 '{0}'을(를) 변경하거나 제거하세요.</target>
         <note />
       </trans-unit>
@@ -1493,8 +1683,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateMessage">
-        <source>Remove '{0}' and replace its usage with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
-        <target state="translated">'{0}'을(를) 제거하고 대신 제네릭 EventHandler를 사용합니다(예: EventHandler&lt;T&gt;). 여기서 T는 유효한 EventArgs입니다.</target>
+        <source>Remove '{0}' and replace its usage with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
+        <target state="translated">'{0}'을(를) 제거하고 대신 제네릭 EventHandler(예: EventHandler&lt;T&gt;)를 사용합니다. 여기에서 T는 유효한 EventArgs입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForDelegateDescription">
@@ -1503,8 +1693,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventMessage">
-        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for e.g. EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
-        <target state="translated">'{0}' 이벤트를 변경하여 '{1}' 형식을 제네릭 EventHandler로 바꿉니다(예: EventHandler&lt;T&gt;). 여기서 T는 유효한 EventArgs입니다.</target>
+        <source>Change the event '{0}' to replace the type '{1}' with a generic EventHandler, for example EventHandler&lt;T&gt;, where T is a valid EventArgs</source>
+        <target state="translated">'{0}' 이벤트를 변경하여 '{1}' 형식을 제네릭 EventHandler(예: EventHandler&lt;T&gt;)로 바꿉니다. 여기에서 T는 유효한 EventArgs입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesForEventDescription">
@@ -1523,7 +1713,7 @@
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesMessageBoth">
-        <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable.</source>
+        <source>{0} should define operator(s) '{1}' and Equals since it implements IComparable</source>
         <target state="translated">{0}은(는) IComparable을 구현하므로 '{1}' 및 같음 연산자를 정의해야 합니다.</target>
         <note>1 is a comma-separated list</note>
       </trans-unit>
@@ -1568,23 +1758,23 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemRuntimeInteropServicesSafeHandleDangerousGetHandle">
-        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}.</source>
-        <target state="translated">{0}에서 SafeHandle.DangerousGetHandle에 대한 호출을 제거하세요.</target>
+        <source>Remove the call to SafeHandle.DangerousGetHandle from {0}</source>
+        <target state="translated">{0}에서 SafeHandle.DangerousGetHandle 호출을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFrom">
-        <source>Remove the call to Assembly.LoadFrom from {0}.</source>
-        <target state="translated">{0}에서 Assembly.LoadFrom에 대한 호출을 제거하세요.</target>
+        <source>Remove the call to Assembly.LoadFrom from {0}</source>
+        <target state="translated">{0}에서 Assembly.LoadFrom 호출을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadFile">
-        <source>Remove the call to Assembly.LoadFile from {0}.</source>
-        <target state="translated">{0}에서 Assembly.LoadFile에 대한 호출을 제거하세요.</target>
+        <source>Remove the call to Assembly.LoadFile from {0}</source>
+        <target state="translated">{0}에서 Assembly.LoadFile 호출을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidCallingProblematicMethodsMessageSystemReflectionAssemblyLoadWithPartialName">
-        <source>Remove the call to Assembly.LoadWithPartialName from {0}.</source>
-        <target state="translated">{0}에서 Assembly.LoadWithPartialName에 대한 호출을 제거하세요.</target>
+        <source>Remove the call to Assembly.LoadWithPartialName from {0}</source>
+        <target state="translated">{0}에서 Assembly.LoadWithPartialName 호출을 제거하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="CategoryReliability">
@@ -1658,8 +1848,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceMessage">
-        <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'</source>
-        <target state="translated">'{0}'의 개체 계층 구조 '{1}' 수준이 정의 모듈 내에서 깊습니다els deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'</target>
+        <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'.</source>
+        <target state="translated">정의 모듈 내에서 '{0}'의 개체 계층 구조가 '{1}' 수준 깊습니다. 가능한 경우 계층 구조 내에서 기본 클래스를 제거하여 해당 계층 구조 수준을 '{2}' 아래('{3}')로 낮추세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceTitle">
@@ -1683,8 +1873,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileDescription">
-        <source>Invalid entry in code metrics rule specification file</source>
-        <target state="translated">코드 메트릭 규칙 사양 파일의 잘못된 항목</target>
+        <source>Invalid entry in code metrics rule specification file.</source>
+        <target state="translated">코드 메트릭 규칙 사양 파일의 항목이 잘못되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidEntryInCodeMetricsConfigFileMessage">
@@ -1793,8 +1983,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnusedPrivateFieldsMessage">
-        <source>Unused field '{0}'.</source>
-        <target state="translated">사용하지 않는 필드 '{0}'.</target>
+        <source>Unused field '{0}'</source>
+        <target state="translated">사용하지 않는 필드 '{0}'입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessagePureMethod">
@@ -1818,12 +2008,12 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidPropertySelfAssignmentMessage">
-        <source>The property {0} should not be assigned to itself.</source>
+        <source>The property {0} should not be assigned to itself</source>
         <target state="translated">{0} 속성을 자체에 할당하면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidPropertySelfAssignmentTitle">
-        <source>Do not assign a property to itself.</source>
+        <source>Do not assign a property to itself</source>
         <target state="translated">속성을 자체에 할당하면 안 됨</target>
         <note />
       </trans-unit>
@@ -1863,13 +2053,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyDescription">
-        <source>The common language runtime initializes all fields to their default values before running the constructor. In most cases, initializing a field to its default value in a constructor is redundant, which degrades performance and adds to maintenance costs. One case where it is not redundant occurs when the constructor calls another constructor of the same class or a base class constructor and that constructor initializes the field to a non-default value. In this case, changing the value of the field back to its default value can be appropriate.</source>
-        <target state="translated">공용 언어 런타임은 생성자를 실행하기 전에 모든 필드를 기본값으로 초기화합니다. 대부분의 경우 생성자에서 필드를 기본값으로 초기화하는 것은 중복되는 작업이며 이로 인해 성능이 저하되고 유지 관리 비용이 추가로 발생합니다. 생성자가 동일한 클래스의 다른 생성자 또는 기본 클래스 생성자를 호출하고 해당 생성자가 필드를 기본값이 아닌 값으로 초기화하는 경우는 중복되는 작업이 아닙니다. 이 경우 필드 값을 기본값으로 초기화하는 작업이 적합할 수 있습니다.</target>
+        <source>The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.</source>
+        <target state="translated">.NET 런타임은 생성자를 실행하기 전에 참조 형식의 모든 필드를 기본값으로 초기화합니다. 대부분의 경우 생성자에서 명시적으로 필드를 기본값으로 초기화하는 것은 중복되는 작업이며 이로 인해 유지 관리 비용이 늘어나고 성능이 저하될 수 있으며(예: 늘어난 어셈블리 크기 때문), 명시적 초기화는 제거할 수 있습니다. 기본값을 영구적으로 유지하는 정적 읽기 전용 필드와 같은 일부 경우에는 대신 상수 또는 속성으로 변경하는 것이 좋습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotInitializeUnnecessarilyMessage">
-        <source>Do not initialize unnecessarily</source>
-        <target state="translated">불필요한 초기화를 수행하지 마세요.</target>
+        <source>Member '{0}' is explicitly initialized to its default value</source>
+        <target state="translated">'{0}' 멤버는 명시적으로 기본값으로 초기화되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferJaggedArraysOverMultidimensionalTitle">
@@ -1922,14 +2112,9 @@
         <target state="translated">public 또는 protected 이벤트 처리 메서드가 검색되었습니다. 이벤트 처리 메서드는 필요한 경우에만 표시해야 합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReviewVisibleEventHandlersMessageSecurity">
-        <source>Consider making {0} not externally visible or ensure that it is benign code.</source>
-        <target state="translated">{0}이(가) 외부에 표시되지 않도록 하거나 심각하지 않은 코드인지 확인하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ReviewVisibleEventHandlersMessageDefault">
-        <source>Consider making {0} not externally visible.</source>
-        <target state="translated">{0}이(가) 외부에 표시되지 않도록 하세요.</target>
+        <source>Consider making '{0}' not externally visible</source>
+        <target state="translated">'{0}'이(가) 외부에 표시되지 않도록 하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealMethodsThatSatisfyPrivateInterfacesTitle">
@@ -1968,13 +2153,13 @@
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsMessage">
-        <source>Re-throwing caught exception changes stack information.</source>
+        <source>Re-throwing caught exception changes stack information</source>
         <target state="translated">catch한 예외를 다시 throw하면 스택 정보가 변경됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsTitle">
-        <source>Rethrow to preserve stack details.</source>
-        <target state="translated">스택 정보를 유지하려면 다시 throw하세요.</target>
+        <source>Rethrow to preserve stack details</source>
+        <target state="translated">다시 throw하여 스택 정보를 유지하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeDeclaringTypeInternal">
@@ -1998,8 +2183,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesMessageFinally">
-        <source>Do not raise an exception from within a finally clause. </source>
-        <target state="translated">finally 절 내에서 예외를 발생시키지 마세요. </target>
+        <source>Do not raise an exception from within a finally clause</source>
+        <target state="translated">finally 절 내에서 예외가 발생하지 않도록 하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseExceptionsInExceptionClausesTitle">
@@ -2018,8 +2203,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationMessage">
-        <source>The element at index [{0}] has already been initialized. Previous initializations of this element may be overwritten.</source>
-        <target state="translated">인덱스 [{0}]의 요소가 이미 초기화되었습니다. 이 요소의 이전 초기화는 덮어쓰일 수 있습니다.</target>
+        <source>Redundant element initialization at index '{0}'. Object initializer has another element initializer with the same index that overwrites this value.</source>
+        <target state="translated">인덱스 '{0}'에 중복 요소 초기화가 있습니다. 개체 이니셜라이저에 이 값을 덮어쓰는 인덱스가 같은 다른 요소 이니셜라이저가 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidDuplicateElementInitializationTitle">

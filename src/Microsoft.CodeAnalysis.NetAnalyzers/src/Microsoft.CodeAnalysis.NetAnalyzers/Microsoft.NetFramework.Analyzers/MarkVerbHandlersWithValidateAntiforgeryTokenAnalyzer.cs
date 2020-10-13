@@ -48,7 +48,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             NoVerbsMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -58,7 +58,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             NoVerbsNoTokenMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -68,7 +68,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             GetAndTokenMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -78,7 +78,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             GetAndOtherAndTokenMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -88,7 +88,7 @@ namespace Microsoft.NetFramework.Analyzers
             Title,
             VerbsAndNoTokenMessage,
             DiagnosticCategory.Security,
-            RuleLevel.BuildWarning,
+            RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -120,7 +120,7 @@ namespace Microsoft.NetFramework.Analyzers
                         (SymbolAnalysisContext symbolContext) =>
                         {
                             // TODO enhancements: Consider looking at IAsyncResult-based action methods.
-                            if (!(symbolContext.Symbol is IMethodSymbol methodSymbol)
+                            if (symbolContext.Symbol is not IMethodSymbol methodSymbol
                                 || methodSymbol.MethodKind != MethodKind.Ordinary
                                 || methodSymbol.IsStatic
                                 || !methodSymbol.IsPublic()
@@ -148,12 +148,12 @@ namespace Microsoft.NetFramework.Analyzers
                                 if (isAntiforgeryTokenDefined)
                                 {
                                     // antiforgery token attribute is set, but verbs are not specified
-                                    symbolContext.ReportDiagnostic(Diagnostic.Create(NoVerbsRule, methodSymbol.Locations[0], methodSymbol.MetadataName));
+                                    symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(NoVerbsRule, methodSymbol.MetadataName));
                                 }
                                 else
                                 {
                                     // no verbs, no antiforgery token attribute
-                                    symbolContext.ReportDiagnostic(Diagnostic.Create(NoVerbsNoTokenRule, methodSymbol.Locations[0], methodSymbol.MetadataName));
+                                    symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(NoVerbsNoTokenRule, methodSymbol.MetadataName));
                                 }
                             }
                             else
@@ -163,12 +163,12 @@ namespace Microsoft.NetFramework.Analyzers
                                 {
                                     if (verbs.HasFlag(MvcHttpVerbs.Get))
                                     {
-                                        symbolContext.ReportDiagnostic(Diagnostic.Create(GetAndTokenRule, methodSymbol.Locations[0], methodSymbol.MetadataName));
+                                        symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(GetAndTokenRule, methodSymbol.MetadataName));
 
                                         if ((verbs & (MvcHttpVerbs.Post | MvcHttpVerbs.Put | MvcHttpVerbs.Delete | MvcHttpVerbs.Patch)) != MvcHttpVerbs.None)
                                         {
                                             // both verbs, antiforgery token attribute
-                                            symbolContext.ReportDiagnostic(Diagnostic.Create(GetAndOtherAndTokenRule, methodSymbol.Locations[0], methodSymbol.MetadataName));
+                                            symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(GetAndOtherAndTokenRule, methodSymbol.MetadataName));
                                         }
                                     }
                                 }
@@ -177,7 +177,7 @@ namespace Microsoft.NetFramework.Analyzers
                                     if ((verbs & (MvcHttpVerbs.Post | MvcHttpVerbs.Put | MvcHttpVerbs.Delete | MvcHttpVerbs.Patch)) != MvcHttpVerbs.None)
                                     {
                                         // HttpPost, no antiforgery token attribute
-                                        symbolContext.ReportDiagnostic(Diagnostic.Create(VerbsAndNoTokenRule, methodSymbol.Locations[0], methodSymbol.MetadataName));
+                                        symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(VerbsAndNoTokenRule, methodSymbol.MetadataName));
                                     }
                                 }
                             }

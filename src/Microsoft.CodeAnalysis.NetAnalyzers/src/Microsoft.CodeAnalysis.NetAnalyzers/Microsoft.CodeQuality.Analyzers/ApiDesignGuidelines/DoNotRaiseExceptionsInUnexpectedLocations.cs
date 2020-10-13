@@ -74,13 +74,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 compilationStartContext.RegisterOperationBlockStartAction(operationBlockContext =>
                 {
-                    if (!(operationBlockContext.OwningSymbol is IMethodSymbol methodSymbol))
+                    if (operationBlockContext.OwningSymbol is not IMethodSymbol methodSymbol)
                     {
                         return;
                     }
 
                     // Find out if this given method is one of the interesting categories of methods.
-                    // For eg: certain Equals methods or certain accessors etc.
+                    // For example, certain Equals methods or certain accessors etc.
                     MethodCategory methodCategory = methodCategories.FirstOrDefault(l => l.IsMatch(methodSymbol, compilation));
                     if (methodCategory == null)
                     {
@@ -290,7 +290,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     return true;
                 }
-
 
                 INamedTypeSymbol? iHashCodeProvider = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIHashCodeProvider);
                 if (method.IsImplementationOfInterfaceMethod(null, iHashCodeProvider, WellKnownMemberNames.ObjectGetHashCode))

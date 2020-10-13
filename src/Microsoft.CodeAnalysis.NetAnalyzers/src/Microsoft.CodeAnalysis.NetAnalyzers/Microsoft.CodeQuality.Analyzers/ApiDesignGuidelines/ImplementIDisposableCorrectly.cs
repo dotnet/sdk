@@ -127,7 +127,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
-                    if (!(disposableType.GetMembers(DisposeMethodName).FirstOrDefault() is IMethodSymbol disposeInterfaceMethod))
+                    if (disposableType.GetMembers(DisposeMethodName).FirstOrDefault() is not IMethodSymbol disposeInterfaceMethod)
                     {
                         return;
                     }
@@ -138,7 +138,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
-                    if (!(garbageCollectorType.GetMembers(SuppressFinalizeMethodName).FirstOrDefault() is IMethodSymbol suppressFinalizeMethod))
+                    if (garbageCollectorType.GetMembers(SuppressFinalizeMethodName).FirstOrDefault() is not IMethodSymbol suppressFinalizeMethod)
                     {
                         return;
                     }
@@ -176,7 +176,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // will always have identical configured visibility.
                 if (context.Symbol is INamedTypeSymbol type &&
                     type.TypeKind == TypeKind.Class &&
-                    type.MatchesConfiguredVisibility(context.Options, IDisposableReimplementationRule, context.CancellationToken))
+                    context.Options.MatchesConfiguredVisibility(IDisposableReimplementationRule, type, context.Compilation, context.CancellationToken))
                 {
                     bool implementsDisposableInBaseType = ImplementsDisposableInBaseType(type);
 
@@ -224,7 +224,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             private void AnalyzeOperationBlock(OperationBlockAnalysisContext context)
             {
-                if (!(context.OwningSymbol is IMethodSymbol method))
+                if (context.OwningSymbol is not IMethodSymbol method)
                 {
                     return;
                 }
@@ -237,7 +237,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // will always have identical configured visibility.
                     INamedTypeSymbol type = method.ContainingType;
                     if (type != null && type.TypeKind == TypeKind.Class &&
-                        !type.IsSealed && type.MatchesConfiguredVisibility(context.Options, IDisposableReimplementationRule, context.CancellationToken))
+                        !type.IsSealed && context.Options.MatchesConfiguredVisibility(IDisposableReimplementationRule, type, context.Compilation, context.CancellationToken))
                     {
                         if (ImplementsDisposableDirectly(type))
                         {
@@ -331,10 +331,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 if (type.HasFinalizer())
                 {
                     // Flag the finalizer if there is any base type with a finalizer, this can cause duplicate Dispose(false) invocations.
-                    var baseTypeWithFinalizerOpt = GetFirstBaseTypeWithFinalizerOrDefault(type);
-                    if (baseTypeWithFinalizerOpt != null)
+                    var baseTypeWithFinalizer = GetFirstBaseTypeWithFinalizerOrDefault(type);
+                    if (baseTypeWithFinalizer != null)
                     {
-                        context.ReportDiagnostic(type.CreateDiagnostic(FinalizeOverrideRule, type.Name, baseTypeWithFinalizerOpt.Name));
+                        context.ReportDiagnostic(type.CreateDiagnostic(FinalizeOverrideRule, type.Name, baseTypeWithFinalizer.Name));
                     }
                 }
             }

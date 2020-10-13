@@ -43,7 +43,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                         if (symbol != null)
                         {
-                            if (!(symbol is INamedTypeSymbol))
+                            if (symbol is not INamedTypeSymbol)
                             {
                                 if (symbol.IsOverride)
                                 {

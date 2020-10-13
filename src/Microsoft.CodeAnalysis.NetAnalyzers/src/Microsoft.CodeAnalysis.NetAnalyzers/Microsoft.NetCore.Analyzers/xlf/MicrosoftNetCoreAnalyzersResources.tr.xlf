@@ -12,21 +12,6 @@
         <target state="translated">Serileştirilebilir öznitelik ekle</target>
         <note />
       </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeDescription">
-        <source>PreserveSigAttribute indicates that a method will return an HRESULT, rather than throwing an exception. Therefore, it is important to consume the HRESULT returned by the method, so that errors can be detected. Generally, this is done by calling Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">PreserveSigAttribute, yöntemin bir özel durum oluşturmak yerine bir HRESULT döndüreceğini gösterir. Bu nedenle, hataların algılanabilmesi için yöntem tarafından döndürülen HRESULT’ın kullanılması önemlidir. Genel olarak, bu Marshal.ThrowExceptionForHR çağrılarak yapılır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeMessage">
-        <source>Consume the hresult returned by method '{0}' and call Marshal.ThrowExceptionForHR.</source>
-        <target state="translated">'{0}' yöntemi tarafından döndürülen hresult’ı kullanın ve Marshal.ThrowExceptionForHR’ı çağırın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AlwaysConsumeTheValueReturnedByMethodsMarkedWithPreserveSigAttributeTitle">
-        <source>Always consume the value returned by methods marked with PreserveSigAttribute</source>
-        <target state="translated">Her zaman PreserveSigAttribute ile işaretlenmiş yöntemler tarafından döndürülen değeri kullanın</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">Şifreleme uzmanları ile şifreleme modu kullanımını gözden geçirin</target>
@@ -48,18 +33,48 @@
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageDefault">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'.</source>
-        <target state="translated">'{0}' öğesinin oluşturucusunda '{1}' bağımsız değişkeninin şu anda "{2}" olan değerini, '{3}' olarak doğru bir şekilde ayrıştırılabilecek bir değer olarak değiştirin.</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently "{2}", to something that can be correctly parsed as '{3}'</source>
+        <target state="translated">'{0}' öğesinin oluşturucusunda '{1}' bağımsız değişkeninin şu anda "{2}" olan değerini, '{3}' olarak doğru bir şekilde ayrıştırılabilecek bir değere değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyMessageEmpty">
-        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'.</source>
-        <target state="translated">'{0}' öğesinin oluşturucusunda '{1}' bağımsız değişkeninin şu anda boş bir dize ("") olan değerini, '{2}' olarak doğru bir şekilde ayrıştırılabilecek bir değer olarak değiştirin.</target>
+        <source>In the constructor of '{0}', change the value of argument '{1}', which is currently an empty string (""), to something that can be correctly parsed as '{2}'</source>
+        <target state="translated">'{0}' öğesinin oluşturucusunda '{1}' bağımsız değişkeninin şu anda boş bir dize ("") olan değerini, '{2}' olarak doğru bir şekilde ayrıştırılabilecek bir değere değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="AttributeStringLiteralsShouldParseCorrectlyTitle">
         <source>Attribute string literals should parse correctly</source>
         <target state="translated">Öznitelik dizesinin sabit değerleri doğru ayrıştırılmalıdır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
+        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
+        <target state="translated">'{0}', tek dosyalı bir uygulamaya eklenen bütünleştirilmiş kodlar için özel durum oluşturur</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
+        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
+        <target state="translated">'{0}', tek dosyalı bir uygulamaya eklenen bütünleştirilmiş kodlar için her zaman boş bir dize döndürür. Uygulama dizininin yolu gerekiyorsa 'System.AppContext.BaseDirectory' özelliğini çağırmayı düşünün.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
+        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
+        <target state="translated">Tek dosyalı olarak yayımlarken bütünleştirilmiş kod dosyası yoluna erişimi kullanmaktan kaçının</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
+        <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
+        <target state="translated">'StringBuilder' öğesinin hazırlanması her zaman, bir hazırlama işlemi için birden çok ayırmaya neden olan yerel arabellek kopyası oluşturur.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersMessage">
+        <source>Avoid 'StringBuilder' parameters for P/Invokes. Consider using a character buffer instead.</source>
+        <target state="translated">P/Invoke'lar için 'StringBuilder' parametreleri kullanmaktan kaçının. Bunun yerine bir karakter arabelleği kullanabilirsiniz.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidStringBuilderPInvokeParametersTitle">
+        <source>Avoid 'StringBuilder' parameters for P/Invokes</source>
+        <target state="translated">P/Invoke'lar için 'StringBuilder' parametreleri kullanmaktan kaçının</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
@@ -83,8 +98,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidZeroLengthArrayAllocationsTitle">
-        <source>Avoid zero-length array allocations.</source>
-        <target state="translated">Sıfır uzunluklu dizi ayırmaları kullanmayın.</target>
+        <source>Avoid zero-length array allocations</source>
+        <target state="translated">Sıfır uzunluklu dizi ayırmaları kullanmaktan kaçının</target>
         <note />
       </trans-unit>
       <trans-unit id="BinaryFormatterDeserializeMaybeWithoutBinderSetMessage">
@@ -159,92 +174,92 @@
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">Güvenilmeyen giriş seri durumdan çıkarılırken, {0} nesnesinin seri durumdan çıkarılması güvenli değildir. '{1}', {0} nesnesidir veya bu nesneden türetilmiştir</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable type found in deserializable object graph</source>
-        <target state="new">Unsafe DataSet or DataTable type found in deserializable object graph</target>
+        <target state="translated">Seri durumdan çıkarılabilir nesne grafında güvenli olmayan DataSet veya DataTable türü bulundu</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeMessage">
-        <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</source>
-        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the autogenerated type is never deserialized with untrusted data.</target>
+        <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}. Ensure that the auto-generated type is never deserialized with untrusted data.</source>
+        <target state="needs-review-translation">IFormatter tabanlı seri hale getirici ile güvenilmeyen giriş seri durumdan çıkarılırken, {0} nesnesinin seri durumdan çıkarılması güvenli değildir. '{1}', {0} nesnesidir veya bu nesneden türetilmiştir. Otomatik olarak oluşturulan türün hiçbir zaman güvenilmeyen verilerle seri durumdan çıkarılmadığından emin olun.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceAutogeneratedSerializableTypeTitle">
-        <source>Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks</target>
+        <source>Unsafe DataSet or DataTable in auto-generated serializable type can be vulnerable to remote code execution attacks</source>
+        <target state="needs-review-translation">Otomatik oluşturulmuş seri hale getirilebilir türdeki güvenli olmayan DataSet veya DataTable, uzaktan kod yürütme saldırılarına karşı savunmasız olabilir</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">Güvenilmeyen giriş seri durumdan çıkarılırken, {0} nesnesinin seri durumdan çıkarılması güvenli değildir. '{1}', {0} nesnesidir veya bu nesneden türetilmiştir</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks</target>
+        <target state="translated">Seri durumdan çıkarılan nesne grafındaki güvenli olmayan DataSet veya DataTable, uzaktan kod yürütme saldırılarına karşı savunmasız olabilir</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceSerializableTypeMessage">
         <source>When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</source>
-        <target state="new">When deserializing untrusted input with an IFormatter-based serializer, deserializing a {0} object is insecure. '{1}' either is or derives from {0}.</target>
+        <target state="translated">IFormatter tabanlı seri hale getirici ile güvenilmeyen giriş seri durumdan çıkarılırken {0} nesnesinin seri durumdan çıkarılması güvenli değildir. '{1}', {0} öğesidir veya bu öğeden türemiştir.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInRceSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</source>
-        <target state="new">Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks</target>
+        <target state="translated">Seri hale getirilebilir türdeki güvenli olmayan DataSet veya DataTable, uzaktan kod yürütme saldırılarına karşı savunmasız olabilir</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">Güvenilmeyen giriş seri durumdan çıkarılırken, {0} nesnesinin seri durumdan çıkarılması güvenli değildir. '{1}', {0} nesnesidir veya bu nesneden türetilmiştir</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInSerializableTypeTitle">
         <source>Unsafe DataSet or DataTable in serializable type</source>
-        <target state="new">Unsafe DataSet or DataTable in serializable type</target>
+        <target state="translated">Seri hale getirilebilir türdeki güvenli olmayan DataSet veya DataTable</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
-        <target state="new">When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</target>
+        <target state="translated">Güvenilmeyen giriş seri durumdan çıkarılırken, {0} nesnesinin seri durumdan çıkarılması güvenli değildir. '{1}', {0} nesnesidir veya bu nesneden türetilmiştir</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetDataTableInWebDeserializableObjectGraphTitle">
         <source>Unsafe DataSet or DataTable type in web deserializable object graph</source>
-        <target state="new">Unsafe DataSet or DataTable type in web deserializable object graph</target>
+        <target state="translated">Web'de seri durumdan çıkarılabilir nesne grafındaki güvenli olmayan DataSet veya DataTable türü</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlAutogeneratedMessage">
-        <source>The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data. Make sure that autogenerated class containing the '{0}' call is not deserialized with untrusted data.</target>
+        <source>The method '{0}' is insecure when deserializing untrusted data. Make sure that auto-generated class containing the '{0}' call is not deserialized with untrusted data.</source>
+        <target state="needs-review-translation">'{0}' metodu güvenilmeyen veriler seri durumdan çıkarılırken güvenli değil. '{0}' çağrısını içeren otomatik oluşturulan sınıfın, güvenilmeyen verilerle seri durumdan çıkarılmadığından emin olun.</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlAutogeneratedTitle">
-        <source>Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</source>
-        <target state="new">Ensure autogenerated class containing DataSet.ReadXml() is not used with untrusted data</target>
+        <source>Ensure auto-generated class containing DataSet.ReadXml() is not used with untrusted data</source>
+        <target state="needs-review-translation">DataSet.ReadXml() içeren bir otomatik oluşturulmuş sınıfın güvenilmeyen verilerle kullanılmadığından emin olun</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
+        <target state="translated">'{0}' metodu güvenilmeyen veriler seri durumdan çıkarılırken güvenli değil</target>
         <note />
       </trans-unit>
       <trans-unit id="DataSetReadXmlTitle">
         <source>Do not use DataSet.ReadXml() with untrusted data</source>
-        <target state="new">Do not use DataSet.ReadXml() with untrusted data</target>
+        <target state="translated">Güvenilmeyen verilerle DataSet.ReadXml() kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlMessage">
         <source>The method '{0}' is insecure when deserializing untrusted data</source>
-        <target state="new">The method '{0}' is insecure when deserializing untrusted data</target>
+        <target state="translated">'{0}' metodu güvenilmeyen veriler seri durumdan çıkarılırken güvenli değil</target>
         <note />
       </trans-unit>
       <trans-unit id="DataTableReadXmlTitle">
         <source>Do not use DataTable.ReadXml() with untrusted data</source>
-        <target state="new">Do not use DataTable.ReadXml() with untrusted data</target>
+        <target state="translated">Güvenilmeyen verilerle DataTable.ReadXml() kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyDisableHttpClientCRLCheck">
@@ -348,8 +363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeMessage">
-        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths.</source>
-        <target state="translated">'{0}' metodunun olası tüm denetim akışı yollarında '{1}' çağrısı içerdiğinden emin olun.</target>
+        <source>Ensure that method '{0}' calls '{1}' in all possible control flow paths</source>
+        <target state="translated">'{0}' metodunun olası tüm denetim akışı yollarında '{1}' çağrısı yaptığından emin olun</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeMethodsShouldCallBaseClassDisposeTitle">
@@ -373,8 +388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedMessage">
-        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope.</source>
-        <target state="translated">'{0}' tarafından oluşturulan nesnenin tüm başvuruları kapsam dışına çıkmadan önce nesne üzerinde System.IDisposable.Dispose çağrısı yapın.</target>
+        <source>Call System.IDisposable.Dispose on object created by '{0}' before all references to it are out of scope</source>
+        <target state="translated">'{0}' tarafından oluşturulan nesnenin tüm başvuruları kapsam dışına çıkmadan önce nesne üzerinde System.IDisposable.Dispose çağrısı yapın</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage">
@@ -428,8 +443,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
-        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}.</source>
-        <target state="translated">{0} sınıfının bir örneği seri durumdan çıkarılırken, {1} metodu tehlikeli {2} metodunu çağırabilir.</target>
+        <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}</source>
+        <target state="translated">{0} sınıfının bir örneği seri durumdan çıkarılırken, {1} metodu tehlikeli {2} metodunu çağırabilir</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -472,6 +487,26 @@
         <target state="translated">Genel işleyicilerde bozuk durum özel durumlarını yakalamayın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
+        <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
+        <target state="translated">TaskCompletionSource, temel alınan görevi denetleyen TaskCreationOptions öğesini ve görevde depolanan nesne durumunu alan oluşturucuları alan oluşturucuları içerir. TaskCreationOptions yerine yanlışlıkla TaskContinuationOptions geçirilmesi, çağrının seçenekleri durum olarak değerlendirmesine neden olur.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsFix">
+        <source>Replace TaskContinuationOptions with TaskCreationOptions.</source>
+        <target state="translated">TaskContinuationOptions öğesini TaskCreationOptions ile değiştirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage">
+        <source>Argument contains TaskContinuationsOptions enum instead of TaskCreationOptions enum</source>
+        <target state="translated">Bağımsız değişken TaskCreationOptions sabit listesi yerine TaskContinuationsOptions sabit listesini içeriyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle">
+        <source>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</source>
+        <target state="translated">TaskCompletionSource oluşturucusuna geçirilen bağımsız değişken, TaskContinuationOptions sabit listesi yerine TaskCreationOptions sabit listesi olmalıdır</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerDescription">
         <source>Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.</source>
         <target state="translated">Bir TaskScheduler kabul eden aşırı yüklerden birini kullanmıyorsanız görev oluşturmayın. Varsayılan, TaskScheduler.Current üzerinde zamanlamaktır. Bu kilitlenmelere neden olur. İş parçacığı havuzunda zamanlamak için TaskScheduler.Default kullanın veya amacınızı açıklamak için açıkça TaskScheduler.Current geçirin.</target>
@@ -485,6 +520,21 @@
       <trans-unit id="DoNotCreateTasksWithoutPassingATaskSchedulerTitle">
         <source>Do not create tasks without passing a TaskScheduler</source>
         <target state="translated">Bir TaskScheduler geçirmeden bir görev oluşturmayın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerDescription">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;.</source>
+        <target state="translated">MemoryManager&lt;T&gt; öğesinden türetilen bir türe sonlandırıcı eklenmesi, belleğin bir Span&lt;T&gt; tarafından hala kullanımdayken serbest bırakılmasına izin verebilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerMessage">
+        <source>Adding a finalizer to a type derived from MemoryManager&lt;T&gt; may permit memory to be freed while it is still in use by a Span&lt;T&gt;</source>
+        <target state="translated">MemoryManager&lt;T&gt; öğesinden türetilen bir türe sonlandırıcı eklenmesi, belleğin bir Span&lt;T&gt; tarafından hala kullanımdayken serbest bırakılmasına izin verebilir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDefineFinalizersForTypesDerivedFromMemoryManagerTitle">
+        <source>Do not define finalizers for types derived from MemoryManager&lt;T&gt;</source>
+        <target state="translated">MemoryManager&lt;T&gt; öğesinden türetilen türler için sonlandırıcıları tanımlama</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableCertificateValidation">
@@ -543,8 +593,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableSchUseStrongCryptoDescription">
-        <source>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommeded to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</source>
-        <target state="translated">.NET Framework 4.6'dan başlayarak, System.Net.ServicePointManager ve System.Net.Security.SslStream sınıflarının yeni protokoller kullanması önerilir. Eski sınıfların protokol zayıflıkları vardır ve bunlar desteklenmez. Switch.System.Net.DontEnableSchUseStrongCrypto öğesini true olarak ayarlamak eski zayıf şifreleme denetimini kullanır ve protokol geçişini geri çevirir.</target>
+        <source>Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommended to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.</source>
+        <target state="needs-review-translation">.NET Framework 4.6'dan başlayarak, System.Net.ServicePointManager ve System.Net.Security.SslStream sınıflarının yeni protokoller kullanması önerilir. Eski sınıfların protokol zayıflıkları vardır ve bunlar desteklenmez. Switch.System.Net.DontEnableSchUseStrongCrypto öğesini true olarak ayarlamak eski zayıf şifreleme denetimini kullanır ve protokol geçişini geri çevirir.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableSchUseStrongCryptoMessage">
@@ -633,13 +683,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageReserved">
-        <source>Exception type {0} is reserved by the runtime.</source>
-        <target state="translated">{0} özel durum türü çalışma zamanı tarafından ayrılmış.</target>
+        <source>Exception type {0} is reserved by the runtime</source>
+        <target state="translated">{0} özel durum türü çalışma zamanı tarafından ayrılmış</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesMessageTooGeneric">
-        <source>Exception type {0} is not sufficiently specific.</source>
-        <target state="translated">{0} özel durum türü yeterince belirgin değil.</target>
+        <source>Exception type {0} is not sufficiently specific</source>
+        <target state="translated">{0} özel durum türü yeterince belirli değil</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesTitle">
@@ -658,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotSerializeTypesWithPointerFieldsMessage">
-        <source>Pointer field {0} on serializable type.</source>
-        <target state="translated">Serileştirilebilir türde {0} işaretçi alanı.</target>
+        <source>Pointer field {0} on serializable type</source>
+        <target state="translated">Serileştirilebilir türde {0} işaretçi alanı</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
@@ -698,8 +748,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage">
-        <source>{0}() is used where AnyAsync() could be used instead to improve performance.</source>
-        <target state="translated">{0}(), performansı artırmak için AnyAsync() metodunun kullanılabileceği yerlerde kullanılır.</target>
+        <source>{0}() is used where AnyAsync() could be used instead to improve performance</source>
+        <target state="translated">Performansı artırmak için AnyAsync() metodu kullanılabilecekken bunun yerine {0}() kullanılıyor</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle">
@@ -713,8 +763,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedMessage">
-        <source>{0}() is used where Any() could be used instead to improve performance.</source>
-        <target state="translated">{0}(), performansı artırmak için Any() metodunun kullanılabileceği yerlerde kullanılır.</target>
+        <source>{0}() is used where Any() could be used instead to improve performance</source>
+        <target state="translated">Performansı artırmak için Any() metodu kullanılabilecekken bunun yerine {0}() kullanılıyor</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
@@ -753,8 +803,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseDSAMessage">
-        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead</source>
-        <target state="translated">Asimetrik şifreleme algoritması {0} zayıf. Bunun yerine en az 2048 anahtar boyutuna, ECDH veya ECDSA algoritmasına sahip bir RSA'ya geçiş yapın</target>
+        <source>Asymmetric encryption algorithm {0} is weak. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
+        <target state="translated">{0} asimetrik şifreleme algoritması zayıf. Bunun yerine en az 2048 anahtar boyutunda, ECDH veya ECDSA algoritmasına sahip bir RSA'ya geçiş yapın.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyDescription">
@@ -763,13 +813,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyMessage">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">Dizini oluşturulabilen koleksiyonlarda Enumerable yöntemlerini kullanmayın. Bunun yerine doğrudan koleksiyonu kullanın</target>
+        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly.</source>
+        <target state="translated">Dizini oluşturulabilen koleksiyonlarda Enumerable metotlarını kullanmayın. Bunun yerine doğrudan koleksiyonu kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTitle">
-        <source>Do not use Enumerable methods on indexable collections. Instead use the collection directly</source>
-        <target state="translated">Dizini oluşturulabilen koleksiyonlarda Enumerable yöntemlerini kullanmayın. Bunun yerine doğrudan koleksiyonu kullanın</target>
+        <source>Do not use Enumerable methods on indexable collections</source>
+        <target state="translated">Dizini oluşturulabilen koleksiyonlarda Enumerable metotlarını kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomness">
@@ -783,8 +833,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseInsecureRandomnessMessage">
-        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security</source>
-        <target state="translated">{0}, güvenli olmayan bir rastgele sayı üreticidir. Güvenlik için rastgelelik gerekli olduğundan şifreli olarak güvenli rastgele sayı üreticileri kullanın</target>
+        <source>{0} is an insecure random number generator. Use cryptographically secure random number generators when randomness is required for security.</source>
+        <target state="translated">{0}, güvenli olmayan bir rastgele sayı üreticidir. Güvenlik için rastgelelik gerekli olduğunda şifreli olarak güvenli rastgele sayı üreticileri kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseMD5">
@@ -812,6 +862,41 @@
         <target state="translated">Artık kullanılmayan {0}.{1} anahtar türetme işlevine çağrı</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersDescription">
+        <source>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</source>
+        <target state="translated">'OutAttribute' ile değer tarafından geçirilen dize parametreleri, dizeye intern uygulanmışsa çalışma zamanının kararsız hale gelmesine neden olabilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersMessage">
+        <source>Do not use the 'OutAttribute' for string parameter '{0}' which is passed by value. If marshalling of modified data back to the caller is required, use the 'out' keyword to pass the string by reference instead.</source>
+        <target state="translated">Değerle geçirilen '{0}' dize parametresi için 'OutAttribute' kullanmayın. Değiştirilmiş verilerin yeniden çağırana yönelik olarak hazırlanması gerekirse, dizeyi başvuruyla geçirmek için 'out' anahtar sözcüğünü kullanın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseOutAttributeStringPInvokeParametersTitle">
+        <source>Do not use 'OutAttribute' on string parameters for P/Invokes</source>
+        <target state="translated">P/Invokes için dize parametrelerinde 'OutAttribute' kullanmayın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesComparerMessage">
+        <source>Do not pass an argument with value type '{0}' to the 'Equals' method on 'ReferenceEqualityComparer'. Due to value boxing, this call to 'Equals' will always return 'false'.</source>
+        <target state="translated">'ReferenceEqualityComparer' üzerindeki 'Equals' metoduna '{0}' değer türüne sahip bir bağımsız değişkeni geçirmeyin. Değer kutulamadan dolayı, bu 'Equals' çağrısı her zaman 'false' değerini döndürür.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesDescription">
+        <source>Value type typed arguments are uniquely boxed for each call to this method, therefore the result is always false.</source>
+        <target state="translated">Değer türü kullanan bağımsız değişkenler bu metoda yönelik her çağrı için benzersiz şekilde kutulandığından sonuç her zaman false olur.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesMethodMessage">
+        <source>Do not pass an argument with value type '{0}' to 'ReferenceEquals'. Due to value boxing, this call to 'ReferenceEquals' will always return 'false'.</source>
+        <target state="translated">'ReferenceEquals' metoduna '{0}' değer türüne sahip bir bağımsız değişkeni geçirmeyin. Değer kutulamadan dolayı, bu 'ReferenceEquals' çağrısı her zaman 'false' değerini döndürür.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseReferenceEqualsWithValueTypesTitle">
+        <source>Do not use ReferenceEquals with value types</source>
+        <target state="translated">ReferenceEquals metodunu değer türleriyle birlikte kullanmayın</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseSHA1">
         <source>Do not use insecure cryptographic algorithm SHA1.</source>
         <target state="translated">Güvenli olmayan SHA1 kriptografik algoritmasını kullanmayın.</target>
@@ -820,6 +905,21 @@
       <trans-unit id="DoNotUseSHA1Description">
         <source>This type implements SHA1, a cryptographically insecure hashing function. Hash collisions are computationally feasible for the SHA-1 and SHA-0 algorithms. Replace this usage with a SHA-2 family hash algorithm (SHA512, SHA384, SHA256).</source>
         <target state="translated">Bu tür, kriptografik olarak güvenli olmayan bir karma işlevi olan SHA1 uygular. SHA-1 ve SHA-0 algoritmaları için karma çakışmaları işlemsel olarak uygundur. Bu kullanımı bir SHA-2 aile karma algoritmasıyla (SHA512, SHA384, SHA256) değiştirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsDescription">
+        <source>Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.</source>
+        <target state="translated">Stackalloc tarafından ayrılan yığın alanı yalnızca geçerli metot çağrısının sonunda bırakılır. Bunu bir döngüde kullanmak, sınırsız yığın büyümesi ve sonunda yığın taşması durumlarına neden olabilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsMessage">
+        <source>Potential stack overflow. Move the stackalloc out of the loop.</source>
+        <target state="translated">Olası yığın taşması. Stackalloc'u döngünün dışına taşıyın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseStackallocInLoopsTitle">
+        <source>Do not use stackalloc in loops</source>
+        <target state="translated">Döngüler içinde stackalloc kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -912,6 +1012,21 @@
         <target state="translated">Sonlandırıcılar temel sınıf sonlandırıcısını çağırmalıdır</target>
         <note />
       </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
+        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="translated">İşlem iptali bildirimlerinin doğru yayılmasını sağlamak için 'CancellationToken' parametresini bir parametre alan metotlara iletin veya kasıtlı olarak belirteci yaymadığını açıkça belirtmek için 'CancellationToken.None' içinde geçirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
+        <source>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</source>
+        <target state="translated">'{0}' parametresini '{1}' metoduna iletin veya kasıtlı olarak belirteci yaymadığını açıkça belirtmek için 'CancellationToken.None' içinde geçirin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
+        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
+        <target state="translated">'CancellationToken' parametresini bir parametre alan metotlara iletin</target>
+        <note />
+      </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
         <source>Avoid hardcoding SecurityProtocolType {0}, and instead use SecurityProtocolType.SystemDefault to allow the operating system to choose the best Transport Layer Security protocol to use.</source>
         <target state="translated">SecurityProtocolType {0} değerini sabit kodlamaktan kaçının ve bunun yerine işletim sisteminin kullanılacak en iyi Aktarım Katmanı Güvenlik protokolünü seçmesine izin vermek için SecurityProtocolType.SystemDefault kullanın.</target>
@@ -943,18 +1058,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}.</source>
-        <target state="translated">{0} türüne GetObjectData'nın bir uygulamasını ekleyin.</target>
+        <source>Add an implementation of GetObjectData to type {0}</source>
+        <target state="translated">{0} türüne GetObjectData'nın bir uygulamasını ekleyin</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable.</source>
-        <target state="translated">{0}.GetObjectData'yı sanal ve geçersiz kılınabilir yapın.</target>
+        <source>Make {0}.GetObjectData virtual and overridable</source>
+        <target state="translated">{0}.GetObjectData'yı sanal ve geçersiz kılınabilir yapın</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types.</source>
-        <target state="translated">{0}.GetObjectData erişilebilirliğini türetilmiş türlere de görünür olması için artırın.</target>
+        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
+        <target state="translated">{0}.GetObjectData erişilebilirliğini türetilmiş türlere görünür olacak şekilde artırın</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyTitle">
@@ -998,28 +1113,28 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic.</source>
-        <target state="translated">{0} OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğu için, imzasını genel olmayacak şekilde değiştirin.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
+        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, imzasını genel olmayacak şekilde değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'.</source>
-        <target state="translated">{0} OnSerializing, OnSerialized, OnDeserializing, ya da OnDeserialized ile işaretli olduğu için, imzasını 'System.Runtime.Serialization.StreamingContext' türünde tek bir parametre alacak şekilde değiştirin.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
+        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, imzasını 'System.Runtime.Serialization.StreamingContext' türünde tek bir parametre alacak şekilde değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic).</source>
-        <target state="translated">{0} OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğu için, dönüş türünü {1} yerine void (Visual Basic'te Sub) olarak değiştirin.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
+        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, dönüş türünü {1} yerine void (Visual Basic'te Sub) olarak değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method.</source>
-        <target state="translated">{0} OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğu için, static (Visual Basic'te Shared) yerine bir örnek metodu olarak değiştirin.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
+        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, statik (Visual Basic'te Shared) yerine bir örnek metoduna değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private.</source>
-        <target state="translated">{0} OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğu için, erişilebilirliğini private olarak değiştirin.</target>
+        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
+        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, erişilebilirliğini private olarak değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
@@ -1052,9 +1167,19 @@
         <target state="translated">Değer türünde statik alanları satır içi olarak başlatın</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle">
+        <source>Change to call the two argument constructor, pass null for the message.</source>
+        <target state="translated">İki bağımsız değişken oluşturucusunu çağırmak için değiştirin, ileti için null değerini geçirin.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyDescription">
         <source>A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.</source>
         <target state="translated">ArgumentException olan veya bundan türetilen bir özel durum türünün varsayılan (parametresiz) oluşturucusuna bir çağrı yapıldı veya ArgumentException olan veya bundan türetilen bir özel durum türünün parametreli oluşturucusuna yanlış bir dize bağımsız değişkeni geçirildi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle">
+        <source>Swap the arguments order</source>
+        <target state="translated">Bağımsız değişken sırasını değiştir</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageIncorrectMessage">
@@ -1068,8 +1193,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyMessageNoArguments">
-        <source>Call the {0} constructor that contains a message and/or paramName parameter.</source>
-        <target state="translated">Bir iletiyi ve/veya paramName parametresini içeren {0} oluşturucusunu çağırın.</target>
+        <source>Call the {0} constructor that contains a message and/or paramName parameter</source>
+        <target state="translated">Bir iletiyi ve/veya paramName parametresini içeren {0} oluşturucusunu çağırın</target>
         <note />
       </trans-unit>
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
@@ -1253,8 +1378,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
-        <source>The non-default initialization vector, which can be potentially repeatable, is used in the encrypion. Ensure use the default one.</source>
-        <target state="translated">Şifrelemede yinelenmesi olası, varsayılan olmayan başlatma vektörü kullanılıyor. Varsayılan olanı kullandığınızdan emin olun.</target>
+        <source>The non-default initialization vector, which can be potentially repeatable, is used in the encryption. Ensure use the default one.</source>
+        <target state="needs-review-translation">Şifrelemede yinelenmesi olası, varsayılan olmayan başlatma vektörü kullanılıyor. Varsayılan olanı kullandığınızdan emin olun.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
@@ -1288,8 +1413,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttributeMessage">
-        <source>Action method {0} needs to specify the Http request kind explictly</source>
-        <target state="translated">Eylem metodu {0} için HTTP isteği türünün açık olarak belirtilmesi gerekir</target>
+        <source>Action method {0} needs to specify the HTTP request kind explicitly</source>
+        <target state="needs-review-translation">Eylem metodu {0} için HTTP isteği türünün açık olarak belirtilmesi gerekir</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
@@ -1333,8 +1458,8 @@
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseMessageToUpper">
-        <source>In method '{0}', replace the call to '{1}' with '{2}'.</source>
-        <target state="translated">'{0}' yönteminde '{1}' çağrısını '{2}' ile değiştirin.</target>
+        <source>In method '{0}', replace the call to '{1}' with '{2}'</source>
+        <target state="translated">'{0}' metodunda '{1}' çağrısını '{2}' ile değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="NormalizeStringsToUppercaseTitle">
@@ -1387,19 +1512,154 @@
         <target state="translated">P/Invokes görünür olmamalıdır</target>
         <note />
       </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckDescription">
+        <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
+        <target state="translated">Bileşen üzerinde platforma bağımlı API kullanmak, kodun artık tüm platformlarda çalışmamasına neden olur.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckSupportedOsMessage">
+        <source>'{0}' is supported on '{1}'</source>
+        <target state="translated">'{0}', '{1}' üzerinde destekleniyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckSupportedOsVersionMessage">
+        <source>'{0}' is supported on '{1}' {2} and later</source>
+        <target state="translated">'{0}', '{1}' {2} ve üstünde desteklenir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckTitle">
+        <source>Validate platform compatibility</source>
+        <target state="translated">Platform uyumluluğunu doğrula</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckUnsupportedOsMessage">
+        <source>'{0}' is unsupported on '{1}'</source>
+        <target state="translated">'{0}', '{1}' üzerinde desteklenmiyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityCheckUnsupportedOsVersionMessage">
+        <source>'{0}' is unsupported on '{1}' {2} and later</source>
+        <target state="translated">'{0}', '{1}' {2} ve üstünde desteklenmez</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
         <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>
-        <target state="new">Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</target>
+        <target state="translated">Beklenmeyen başvuru döngülerinin işlenmesi için, seri durumdan çıkarılmış güvenilmeyen verileri işleyen kodu inceleyin. Beklenmeyen başvuru döngüsü, kodun sonsuz bir döngüye girmesine neden olmamalıdır. Buna neden olursa beklenmeyen başvuru döngüsü, güvenilmeyen veriler seri durumdan çıkarılırken saldırganın DOS'a erişmesine izin verebilir veya işlem belleğini tüketebilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphMessage">
         <source>{0} participates in a potential reference cycle</source>
-        <target state="new">{0} participates in a potential reference cycle</target>
+        <target state="translated">{0}, olası bir başvuru döngüsünde yer alıyor</target>
         <note />
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphTitle">
         <source>Potential reference cycle in deserialized object graph</source>
-        <target state="new">Potential reference cycle in deserialized object graph</target>
+        <target state="translated">Seri durumdan çıkarılan nesne grafındaki olası başvuru döngüsü</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
+        <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
+        <target state="translated">'Stream', ilk bağımsız değişken olarak 'Memory&lt;Byte&gt;' alan bir 'ReadAsync' aşırı yüklemesine ve ilk bağımsız değişken olarak 'ReadOnlyMemory&lt;Byte&gt;' alan bir 'WriteAsync' aşırı yüklemesine sahip. Daha verimli olan bellek tabanlı aşırı yüklemeleri çağırmayı tercih edin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountDescription">
+        <source>For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.</source>
+        <target state="translated">Nesnenin öğe içerip içermediğini belirlemek için 'Count' özelliğinden öğe sayısını almak yerine 'IsEmpty' özelliğini kullanmayı ve bunu 0 veya 1 ile karşılaştırmayı tercih edin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountMessage">
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
+        <target state="translated">Nesnenin öğe içerip içermediğini belirlemek için 'Count' yerine 'IsEmpty' tercih edin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferIsEmptyOverCountTitle">
+        <source>Prefer IsEmpty over Count</source>
+        <target state="translated">Count yerine IsEmpty tercih edin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsMessage">
+        <source>Change the '{0}' method call to use the '{1}' overload</source>
+        <target state="translated">'{0}' metot çağrısını, '{1}' aşırı yüklemesini kullanacak şekilde değiştir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStreamAsyncMemoryOverloadsTitle">
+        <source>Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'</source>
+        <target state="translated">'ReadAsync' ve 'WriteAsync' için 'Memory' tabanlı aşırı yüklemeleri tercih et</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfCodeFixTitle">
+        <source>Replace with 'string.Contains'</source>
+        <target state="translated">'string.Contains' ile değiştir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfDescription">
+        <source>Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.</source>
+        <target state="translated">Sonucu, bir alt dizenin varlığını/yokluğunu denetlemek için kullanılan 'string.IndexOf' çağrıları 'string.Contains' ile değiştirilebilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfMessage">
+        <source>Use 'string.Contains' instead of 'string.IndexOf' to improve readability</source>
+        <target state="translated">Okunabilirliği artırmak için 'string.IndexOf' yerine 'string.Contains' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferStringContainsOverIndexOfTitle">
+        <source>Consider using 'string.Contains' instead of 'string.IndexOf'</source>
+        <target state="translated">'string.IndexOf' yerine 'string.Contains' kullanmayı düşünün</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsDescription">
+        <source>StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.</source>
+        <target state="translated">StringBuilder.Append ve StringBuilder.Insert, System.String'in ötesinde birden çok türe yönelik aşırı yükleme sağlar. Mümkün olduğunda, ToString() ve dize tabanlı aşırı yüklemeyi kullanmak yerine kesin tür belirtilmiş aşırı yüklemeleri tercih edin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsMessage">
+        <source>Remove the ToString call in order to use a strongly-typed StringBuilder overload</source>
+        <target state="translated">Kesin tür belirtilmiş bir StringBuilder aşırı yüklemesi kullanmak için ToString çağrısını kaldırın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsRemoveToString">
+        <source>Remove the ToString call</source>
+        <target state="translated">ToString çağrısını kaldır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferTypedStringBuilderAppendOverloadsTitle">
+        <source>Prefer strongly-typed Append and Insert method overloads on StringBuilder</source>
+        <target state="translated">StringBuilder'da kesin tür belirtilmiş Append ve Insert metodu aşırı yüklemelerini tercih edin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderDescription">
+        <source>'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character.</source>
+        <target state="translated">Dize tek bir karakter olduğunda 'StringBuilder.Append(char)', 'StringBuilder.Append(string)' öğesinden daha verimlidir. 'Append' bir sabit değer ile çağrıldığında, bir karakter içeren sabit bir dize yerine sabit bir karakter kullanmayı tercih edin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderMessage">
+        <source>Use 'StringBuilder.Append(char)' instead of 'StringBuilder.Append(string)' when the input is a constant unit string</source>
+        <target state="translated">Giriş, sabit birim dizesi olduğunda 'StringBuilder.Append(string)' yerine 'StringBuilder.Append(char)' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConstCharOverConstUnitStringInStringBuilderTitle">
+        <source>Consider using 'StringBuilder.Append(char)' when applicable</source>
+        <target state="translated">Uygun olduğunda 'StringBuilder.Append(char)' kullanabilirsiniz</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
+        <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
+        <target state="translated">'Enum.HasFlag' metodu, 'sabit listesi' bağımsız değişkeninin, metodun çağrıldığı örnekle aynı 'sabit listesi' türünde olmasını ve bu 'sabit listesi' bağımsız değişkeninin 'System.FlagsAttribute' ile işaretlenmesini bekler. Bunlar farklı 'sabit listesi' türleriyse çalışma zamanında işlenmeyen özel durum oluşur. 'Sabit listesi' türü 'System.FlagsAttribute' ile işaretlenmemişse çağrı, çalışma zamanında her zaman 'false' değerini döndürür.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
+        <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
+        <target state="translated">'{0}' bağımsız değişken türü, '{1}' sabit listesi türüyle aynı olmalıdır.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
+        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
+        <target state="translated">'{0}' sabit listesi türü 'FlagsAttribute' ile işaretlenmediğinden bu çağrı her zaman 'false' döndürür</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
+        <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
+        <target state="translated">'Enum.HasFlag' için doğru 'sabit listesi' bağımsız değişkenini belirtin</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsDescription">
@@ -1423,13 +1683,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute.</source>
-        <target state="translated">{0} türüne 'private void OnDeserialized(StreamingContext)' yöntemini ekleyin ve System.Runtime.Serialization.OnDeserializedAttribute ile özniteliklendirin.</target>
+        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
+        <target state="translated">{0} türüne 'private void OnDeserialized(StreamingContext)' metodunu ekleyin ve System.Runtime.Serialization.OnDeserializedAttribute ile özniteliğini belirleyin</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute.</source>
-        <target state="translated">{0} türüne 'private void OnDeserializing(StreamingContext)' yöntemini ekleyin ve System.Runtime.Serialization.OnDeserializingAttribute ile özniteliklendirin.</target>
+        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
+        <target state="translated">{0} türüne 'private void OnDeserializing(StreamingContext)' metodunu ekleyin ve System.Runtime.Serialization.OnDeserializingAttribute ile özniteliğini belirleyin</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
@@ -1583,8 +1843,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesMessageNoNonLiterals">
-        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input.</source>
-        <target state="translated">'{1}' konumunda '{0}' öğesine geçirilen sorgu dizesinin kullanıcı girişi kabul edip etmediğini inceleyin.</target>
+        <source>Review if the query string passed to '{0}' in '{1}', accepts any user input</source>
+        <target state="translated">'{1}' içinde '{0}' öğesine geçirilen sorgu dizesinin kullanıcı girişi kabul edip etmediğini gözden geçirin</target>
         <note />
       </trans-unit>
       <trans-unit id="ReviewSQLQueriesForSecurityVulnerabilitiesTitle">
@@ -1638,8 +1898,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
-        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'</source>
-        <target state="translated">Bir yöntem veya oluşturucu, bir System.IFormatProvider parametresini kabul eden aşırı yüklemelere sahip bir veya daha fazla üyeyi çağırır, ancak bu yöntem veya oluşturucu, IFormatProvider parametresini almayan aşırı yüklemeyi çağırmaz. System.Globalization.CultureInfo nesnesi sağlanmadığında, aşırı yüklenen üye tarafından sağlanan varsayılan değer tüm yerel ayarlarda istediğiniz etkiye sahip olmayabilir. Sonuç kullanıcı girişine/kullanıcıya görüntülenecek çıkışa bağlı olacaksa 'IFormatProvider' parametresi olarak 'CultureInfo.CurrentCulture' değerini belirtin. Aksi takdirde, sonuç depolanacak ve yazılım tarafından erişilecekse (örneğin, diskten/veritabanından yüklendiğinde ve diskte/veritabanında kalıcı hale getirildiğinde) 'CultureInfo.InvariantCulture' değerini belirtin.</target>
+        <source>A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.</source>
+        <target state="translated">Bir metot veya oluşturucu, bir System.IFormatProvider parametresini kabul eden aşırı yüklemelere sahip bir veya daha fazla üyeyi çağırır, ancak bu metot veya oluşturucu, IFormatProvider parametresini alan aşırı yüklemeyi çağırmaz. System.Globalization.CultureInfo veya IFormatProvider nesnesi sağlanmadığında, aşırı yüklenen üye tarafından sağlanan varsayılan değer tüm yerel ayarlarda istediğiniz etkiye sahip olmayabilir. Sonuç kullanıcı girişine/kullanıcıya görüntülenecek çıkışa bağlı olacaksa 'IFormatProvider' parametresi olarak 'CultureInfo.CurrentCulture' belirtin. Aksi takdirde, sonuç yazılım tarafından depolanacaksa ve erişilecekse (örneğin, diskten/veritabanından yüklendiğinde ve diskte/veritabanında kalıcı hale getirildiğinde) 'CultureInfo.InvariantCulture' belirtin.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderAlternate">
@@ -1697,19 +1957,34 @@
         <target state="translated">P/Invoke dize bağımsız değişkenleri için sıralamayı belirtme</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonDescription">
-        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
-        <target state="translated">Dize karşılaştırması, bir StringComparison parametresi ayarlamayan bir yöntem aşırı yüklemesi kullanır. Sonuç kullanıcıya görüntülenecekse (örneğin, bir liste kutusunda görüntülenmek üzere bir öğe listesi sıralanırken), 'StringComparison' parametresi olarak 'StringComparison.CurrentCulture' veya 'StringComparison.CurrentCultureIgnoreCase' değerini belirtin. Dosya yolları, ortam değişkenleri veya kayıt defteri anahtarları ve değerleri gibi büyük/küçük harfe duyarlı olmayan tanımlayıcılar karşılaştırılıyorsa 'StringComparison.OrdinalIgnoreCase' değerini belirtin. Aksi takdirde, yani büyük/küçük harfe duyarlı tanımlayıcılar karşılaştırılıyorsa 'StringComparison.Ordinal' değerini belirtin.</target>
+      <trans-unit id="SpecifyStringComparisonCA1307Description">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="translated">Dize karşılaştırması, bir StringComparison parametresi ayarlamayan bir yöntem aşırı yüklemesi kullanır. Amaç netliği için, StringComparison parametresini içeren aşırı yüklemenin kullanılması önerilir. Sonuç kullanıcıya görüntülenecekse (örneğin, bir liste kutusunda görüntülenmek üzere bir öğe listesi sıralanırken), 'StringComparison' parametresi olarak 'StringComparison.CurrentCulture' veya 'StringComparison.CurrentCultureIgnoreCase' değerini belirtin. Dosya yolları, ortam değişkenleri veya kayıt defteri anahtarları ve değerleri gibi büyük/küçük harfe duyarlı olmayan tanımlayıcılar karşılaştırılıyorsa 'StringComparison.OrdinalIgnoreCase' değerini belirtin. Aksi takdirde, yani büyük/küçük harfe duyarlı tanımlayıcılar karşılaştırılıyorsa 'StringComparison.Ordinal' değerini belirtin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonMessage">
+      <trans-unit id="SpecifyStringComparisonCA1307Message">
+        <source>'{0}' has a method overload that takes a 'StringComparison' parameter. Replace this call in '{1}' with a call to '{2}' for clarity of intent.</source>
+        <target state="translated">'{0}', bir 'StringComparison' parametresi alan bir yöntem aşırı yüklemesiyle karşılaştı. '{1}' içinde bu çağrıyı, amaç netliği için '{2}' çağrısıyla değiştirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1307Title">
+        <source>Specify StringComparison for clarity</source>
+        <target state="translated">Netlik için StringComparison belirtin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1310Description">
+        <source>A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.</source>
+        <target state="translated">Dize karşılaştırması, bir StringComparison parametresi ayarlamayan bir yöntem aşırı yüklemesi kullanır, bu nedenle davranışı geçerli kullanıcının yerel ayarlarına göre değişebilir. Doğruluk ve amaç netliği için, StringComparison parametresini içeren aşırı yüklemenin kullanılması önemle önerilir. Sonuç kullanıcıya görüntülenecekse (örneğin, bir liste kutusunda görüntülenmek üzere bir öğe listesi sıralanırken), 'StringComparison' parametresi olarak 'StringComparison.CurrentCulture' veya 'StringComparison.CurrentCultureIgnoreCase' değerini belirtin. Dosya yolları, ortam değişkenleri veya kayıt defteri anahtarları ve değerleri gibi büyük/küçük harfe duyarlı olmayan tanımlayıcılar karşılaştırılıyorsa 'StringComparison.OrdinalIgnoreCase' değerini belirtin. Aksi takdirde, yani büyük/küçük harfe duyarlı tanımlayıcılar karşılaştırılıyorsa 'StringComparison.Ordinal' değerini belirtin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyStringComparisonCA1310Message">
         <source>The behavior of '{0}' could vary based on the current user's locale settings. Replace this call in '{1}' with a call to '{2}'.</source>
         <target state="translated">'{0}' öğesinin davranışı, geçerli kullanıcının yerel ayarlarına göre farklılık gösterebilir. '{1}' öğesinde bu çağrıyı bir '{2}' çağrısıyla değiştirin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyStringComparisonTitle">
-        <source>Specify StringComparison</source>
-        <target state="translated">StringComparison belirtin</target>
+      <trans-unit id="SpecifyStringComparisonCA1310Title">
+        <source>Specify StringComparison for correctness</source>
+        <target state="translated">Doğruluk için StringComparison belirtin</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
@@ -1718,8 +1993,8 @@
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthMessage">
-        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check.</source>
-        <target state="translated">Equality denetimi yerine 'string.Length' özelliğini veya 'string.IsNullOrEmpty' yöntemini kullanarak boş dize testi uygulayın.</target>
+        <source>Test for empty strings using 'string.Length' property or 'string.IsNullOrEmpty' method instead of an Equality check</source>
+        <target state="translated">Equality denetimi yerine 'string.Length' özelliğini veya 'string.IsNullOrEmpty' metodunu kullanarak boş dize testi uygulayın</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthTitle">
@@ -1745,6 +2020,41 @@
       <trans-unit id="UseArrayEmpty">
         <source>Use Array.Empty</source>
         <target state="translated">Array.Empty kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.</source>
+        <target state="translated">Dizi değerleri üzerindeki Aralık tabanlı dizin oluşturucu, dizinin istenen kısmının bir kopyasını üretir. Bu kopya, örtük olarak bir Yayılma veya Bellek değeri olarak kullanıldığında genellikle istenmez. Kopya oluşturmamak için AsSpan metodunu kullanın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerMessage">
+        <source>Use '{0}' instead of the '{1}'-based indexer on '{2}' to avoid creating unnecessary data copies</source>
+        <target state="translated">Gereksiz veri kopyaları oluşturmamak için '{2}' üzerinde '{1}' tabanlı dizin oluşturucu yerine '{0}' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on a string</source>
+        <target state="translated">Dizede Aralık tabanlı dizin oluşturucular yerine `{0}` kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle">
+        <source>Use `{0}` instead of Range-based indexers on an array</source>
+        <target state="translated">Dizide Aralık tabanlı dizin oluşturucular yerine `{0}` kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfRangeIndexerTitle">
+        <source>Use AsSpan or AsMemory instead of Range-based indexers when appropriate</source>
+        <target state="translated">Uygun olduğunda Aralık tabanlı dizin oluşturucular yerine AsSpan veya AsMemory kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanInsteadOfStringRangeIndexerDescription">
+        <source>The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="translated">Dize değerleri üzerindeki Aralık tabanlı dizin oluşturucu, dizenin istenen kısmının bir kopyasını oluşturur. Bu kopya örtük olarak bir ReadOnlySpan veya ReadOnlyMemory değeri olarak kullanıldığında genellikle gereksizdir. Kopya oluşturmamak için AsSpan metodunu kullanın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription">
+        <source>The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.</source>
+        <target state="translated">Dizi değerleri üzerindeki Aralık tabanlı dizin oluşturucu, dizinin istenen kısmının bir kopyasını üretir. Bu kopya, örtük olarak bir ReadOnlySpan veya ReadOnlyMemory değeri olarak kullanıldığında genellikle gerekli değildir. Kopya oluşturmamak için AsSpan metodunu kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
@@ -1773,8 +2083,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS</source>
-        <target state="translated">Mümkünse Paylaşılan Erişim İmzası (SAS) yerine Azure'un rol tabanlı erişim denetimini kullanmayı düşünün. Yine de SAS kullanmanız gerekiyorsa, SAS oluştururken kapsayıcı düzeyinde bir erişim ilkesi kullanın</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, use a container-level access policy when creating a SAS.</source>
+        <target state="translated">Mümkünse Paylaşılan Erişim İmzası (SAS) yerine Azure'un rol tabanlı erişim denetimini kullanmayı düşünün. Yine de SAS kullanmanız gerekiyorsa, SAS oluştururken kapsayıcı düzeyinde bir erişim ilkesi kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseDefaultDllImportSearchPathsAttribute">
@@ -1790,6 +2100,26 @@
       <trans-unit id="UseDefaultDllImportSearchPathsAttributeMessage">
         <source>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</source>
         <target state="translated">{0} metodu P/Invokes için DefaultDllImportSearchPaths özniteliğini kullanmadı.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdDescription">
+        <source>'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'.</source>
+        <target state="translated">'Environment.ProcessId' şundan daha basit ve hızlıdır: 'Process.GetCurrentProcess().Id'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdFix">
+        <source>Use 'Environment.ProcessId'</source>
+        <target state="translated">'Environment.ProcessId' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdMessage">
+        <source>Use 'Environment.ProcessId' instead of 'Process.GetCurrentProcess().Id'</source>
+        <target state="translated">'Process.GetCurrentProcess().Id' yerine 'Environment.ProcessId' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseEnvironmentProcessIdTitle">
+        <source>Use 'Environment.ProcessId'</source>
+        <target state="translated">'Environment.ProcessId' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -1828,8 +2158,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseOrdinalStringComparisonTitle">
-        <source>Use ordinal stringcomparison</source>
-        <target state="translated">Sıralı stringcomparison kullanın</target>
+        <source>Use ordinal string comparison</source>
+        <target state="translated">Sıralı dize karşılaştırması kullan</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableDescription">
@@ -1838,8 +2168,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableMessage">
-        <source>Use the "{0}" property instead of Enumerable.Count().</source>
-        <target state="translated">Enumerable.Count() yerine "{0}" özelliğini kullanın.</target>
+        <source>Use the "{0}" property instead of Enumerable.Count()</source>
+        <target state="translated">Enumerable.Count() yerine "{0}" özelliğini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePropertyInsteadOfCountMethodWhenAvailableTitle">
@@ -1878,8 +2208,38 @@
         <note />
       </trans-unit>
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
-        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly</source>
-        <target state="translated">Mümkünse Paylaşılan Erişim İmzası (SAS) yerine Azure'un rol tabanlı erişim denetimini kullanmayı düşünün. Yine de SAS kullanmanız gerekiyorsa, SharedAccessProtocol.HttpsOnly belirtin</target>
+        <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
+        <target state="translated">Mümkünse Paylaşılan Erişim İmzası (SAS) yerine Azure'un rol tabanlı erişim denetimini kullanmayı düşünün. Yine de SAS kullanmanız gerekiyorsa, SharedAccessProtocol.HttpsOnly belirtin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyDescription">
+        <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
+        <target state="translated">Üye çağırmalarından döndürülen ValueTask'lerin doğrudan beklenmesi amaçlanır. Bir ValueTask'ı birden çok kez kullanmak ya da tamamlandığı bilinmeden önce birinin sonucuna doğrudan erişmek, bir özel duruma veya bozulmaya neden olabilir. Bu tür bir ValueTask'ın yoksayılması, büyük olasılıkla bir işlev hatasının göstergesidir ve performansı düşürebilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_AccessingIncompleteResult">
+        <source>ValueTask instances should not have their result directly accessed unless the instance has already completed. Unlike Tasks, calling Result or GetAwaiter().GetResult() on a ValueTask is not guaranteed to block until the operation completes. If you can't simply await the instance, consider first checking its IsCompleted property (or asserting it's true if you know that to be the case).</source>
+        <target state="translated">ValueTask örneklerinin sonuçlarına, örnek tamamlanmadığı sürece doğrudan erişilmemelidir. Task'lerin aksine, ValueTask üzerinde Result veya GetAwaiter().GetResult() çağırmak, işlem tamamlanana kadar engellemeyi garantilemez. Örneği bekleyemiyorsanız, önce örneğin IsCompleted özelliğini kontrol etmeyi (veya durumunu biliyorsanız doğruluğunu onaylamayı) deneyin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_DoubleConsumption">
+        <source>ValueTask instances should only be consumed once, such as via an await. Consuming the same ValueTask instance multiple times can result in exceptions and data corruption.</source>
+        <target state="translated">ValueTask örnekleri yalnızca bir kez kullanılmalıdır (örneğin bir await aracılığıyla). Aynı ValueTask örneğini birden çok kez kullanmak, özel durumlara ve veri bozulmasına neden olabilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_General">
+        <source>ValueTask instances returned from method calls should be directly awaited, returned, or passed as an argument to another method call. Other usage, such as storing an instance into a local or a field, is likely an indication of a bug, as ValueTask instances must only ever be consumed once.</source>
+        <target state="translated">Metot çağrılarından döndürülen ValueTask örnekleri doğrudan beklenmeli, döndürülmeli veya başka bir metot çağrısına bağımsız değişken olarak geçirilmelidir. Bir örneğin yerele veya alana depolanması gibi diğer kullanımlar, ValueTask örneklerinin yalnızca bir kez kullanılması gerektiğinden büyük olasılıkla bir hata göstergesidir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyMessage_Unconsumed">
+        <source>ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.</source>
+        <target state="translated">Metot çağrılarından döndürülen ValueTask örneklerinin her zaman kullanılması ve genellikle beklenmesi gerekir. Bunun sıklıkla yapılmaması bir işlev hatasını temsil eder. Ancak temsil etmese bile, hedef metot nesneleri ValueTask'ler ile kullanılmak üzere biriktiriyorsa bu durum düşük performansa neden olabilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseValueTasksCorrectlyTitle">
+        <source>Use ValueTasks correctly</source>
+        <target state="translated">ValueTask'leri doğru kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseXmlReaderDescription">

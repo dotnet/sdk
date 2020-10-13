@@ -65,7 +65,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             if (method != null &&
                 (method.IsAbstract || method.IsVirtual) &&
                 Equals(method.ContainingType, containingType) &&
-                !operation.IsInsideAnonymousFunction())
+                !operation.IsWithinLambdaOrLocalFunction(out _))
             {
                 context.ReportDiagnostic(operation.Syntax.CreateDiagnostic(Rule));
             }
@@ -75,7 +75,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         {
             // This diagnostic is only relevant in constructors.
             // TODO: should this apply to instance field initializers for VB?
-            if (!(symbol is IMethodSymbol m) || m.MethodKind != MethodKind.Constructor)
+            if (symbol is not IMethodSymbol m || m.MethodKind != MethodKind.Constructor)
             {
                 return true;
             }

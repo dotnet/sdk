@@ -1,8 +1,15 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
-using Test.Utilities;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotMatchKeywordsAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldNotMatchKeywordsFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotMatchKeywordsAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicIdentifiersShouldNotMatchKeywordsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
@@ -14,22 +21,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     /// FxCop does not report a violation unless the namespace contains a publicly visible
     /// class, and we follow that implementation.
     /// </remarks>
-    public class IdentifiersShouldNotMatchKeywordsNamespaceRuleTests : DiagnosticAnalyzerTestBase
+    public class IdentifiersShouldNotMatchKeywordsNamespaceRuleTests
     {
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldNotMatchKeywordsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new IdentifiersShouldNotMatchKeywordsAnalyzer();
-        }
-
         [Fact]
-        public void CSharpDiagnosticForKeywordNamedNamespaceContainingPublicClass()
+        public async Task CSharpDiagnosticForKeywordNamedNamespaceContainingPublicClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace @namespace
 {
     public class C {}
@@ -39,9 +36,9 @@ namespace @namespace
         }
 
         [Fact]
-        public void BasicDiagnosticForKeywordNamedNamespaceContainingPublicClass()
+        public async Task BasicDiagnosticForKeywordNamedNamespaceContainingPublicClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Namespace [Namespace]
     Public Class C
     End Class
@@ -51,9 +48,9 @@ End Namespace
         }
 
         [Fact]
-        public void CSharpNoDiagnosticForNonKeywordNamedNamespaceContainingPublicClass()
+        public async Task CSharpNoDiagnosticForNonKeywordNamedNamespaceContainingPublicClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace namespace2
 {
     public class C {}
@@ -62,9 +59,9 @@ namespace namespace2
         }
 
         [Fact]
-        public void BasicNoDiagnosticForNonKeywordNamedNamespaceContainingPublicClass()
+        public async Task BasicNoDiagnosticForNonKeywordNamedNamespaceContainingPublicClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Namespace Namespace2
     Public Class C
     End Class
@@ -73,9 +70,9 @@ End Namespace
         }
 
         [Fact]
-        public void CSharpNoDiagnosticForKeywordNamedNamespaceContainingInternalClass()
+        public async Task CSharpNoDiagnosticForKeywordNamedNamespaceContainingInternalClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace @namespace
 {
     internal class C {}
@@ -84,9 +81,9 @@ namespace @namespace
         }
 
         [Fact]
-        public void BasicNoDiagnosticForKeywordNamedNamespaceContainingInternalClass()
+        public async Task BasicNoDiagnosticForKeywordNamedNamespaceContainingInternalClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Namespace [Namespace]
     Friend Class C
     End Class
@@ -95,9 +92,9 @@ End Namespace
         }
 
         [Fact]
-        public void CSharpDiagnosticForKeywordNamedMultiComponentNamespaceContainingPublicClass()
+        public async Task CSharpDiagnosticForKeywordNamedMultiComponentNamespaceContainingPublicClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace N1.@namespace.N2.@for.N3
 {
     public class C {}
@@ -108,9 +105,9 @@ namespace N1.@namespace.N2.@for.N3
         }
 
         [Fact]
-        public void BasicDiagnosticForKeywordNamedMultiComponentNamespaceContainingPublicClass()
+        public async Task BasicDiagnosticForKeywordNamedMultiComponentNamespaceContainingPublicClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Namespace N1.[Namespace].N2.[For].N3
     Public Class C
     End Class
@@ -121,26 +118,26 @@ End Namespace
         }
 
         [Fact]
-        public void CSharpNoDiagnosticForPublicClassInGlobalNamespace()
+        public async Task CSharpNoDiagnosticForPublicClassInGlobalNamespace()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C {}
 ");
         }
 
         [Fact]
-        public void BasicNoDiagnosticForPublicClassInGlobalNamespace()
+        public async Task BasicNoDiagnosticForPublicClassInGlobalNamespace()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
 End Class
 ");
         }
 
         [Fact]
-        public void CSharpNoDiagnosticForRepeatedOccurrencesOfSameKeywordNamedNamespace()
+        public async Task CSharpNoDiagnosticForRepeatedOccurrencesOfSameKeywordNamedNamespace()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace @namespace
 {
     public class C {}
@@ -151,13 +148,16 @@ namespace @namespace
     public class D {}
 }",
                 // Diagnostic for only one of the two occurrences.
-                GetCSharpResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "namespace", "namespace"));
+                VerifyCS.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule)
+                    .WithSpan(2, 11, 2, 21)
+                    .WithSpan(7, 11, 7, 21)
+                    .WithArguments("namespace", "namespace"));
         }
 
         [Fact]
-        public void BasicNoDiagnosticForRepeatedOccurrencesOfSameKeywordNamedNamespace()
+        public async Task BasicNoDiagnosticForRepeatedOccurrencesOfSameKeywordNamedNamespace()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Namespace [Namespace]
     Public Class C
     End Class
@@ -168,7 +168,104 @@ Namespace [Namespace]
     End Class
 End Namespace
 ",
-                GetBasicResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "Namespace", "Namespace"));
+                VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule)
+                    .WithSpan(2, 11, 2, 22)
+                    .WithSpan(7, 11, 7, 22)
+                    .WithArguments("Namespace", "Namespace"));
         }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method, Property")]
+        public async Task UserOptionDoesNotIncludeNamespace_NoDiagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace @namespace
+{
+    public class C {}
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace [Namespace]
+    Public Class C
+    End Class
+End Namespace",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                },
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Namespace")]
+        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Namespace, Property")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace")]
+        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace, Property")]
+        public async Task UserOptionIncludesNamespace_Diagnostic(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace @namespace
+{
+    public class C {}
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetCSharpResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "namespace", "namespace"), },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Namespace [Namespace]
+    Public Class C
+    End Class
+End Namespace",
+            },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) },
+                    ExpectedDiagnostics = { GetBasicResultAt(2, 11, IdentifiersShouldNotMatchKeywordsAnalyzer.NamespaceRule, "Namespace", "Namespace"), },
+                },
+            }.RunAsync();
+        }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+            => VerifyCS.Diagnostic(rule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+            => VerifyVB.Diagnostic(rule)
+                .WithLocation(line, column)
+                .WithArguments(arguments);
     }
 }

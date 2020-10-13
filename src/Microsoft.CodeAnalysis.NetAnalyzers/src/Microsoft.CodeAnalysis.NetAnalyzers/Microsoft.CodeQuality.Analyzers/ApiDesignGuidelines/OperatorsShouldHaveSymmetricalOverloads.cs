@@ -45,7 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var namedType = (INamedTypeSymbol)symbolAnalysisContext.Symbol;
 
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!namedType.MatchesConfiguredVisibility(symbolAnalysisContext.Options, Rule, symbolAnalysisContext.CancellationToken))
+                if (!symbolAnalysisContext.Options.MatchesConfiguredVisibility(Rule, namedType, symbolAnalysisContext.Compilation, symbolAnalysisContext.CancellationToken))
                 {
                     return;
                 }
@@ -77,7 +77,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             foreach (var operator1 in operators1)
             {
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!operator1.MatchesConfiguredVisibility(analysisContext.Options, Rule, analysisContext.CancellationToken))
+                if (!analysisContext.Options.MatchesConfiguredVisibility(Rule, operator1, analysisContext.Compilation, analysisContext.CancellationToken))
                 {
                     return;
                 }

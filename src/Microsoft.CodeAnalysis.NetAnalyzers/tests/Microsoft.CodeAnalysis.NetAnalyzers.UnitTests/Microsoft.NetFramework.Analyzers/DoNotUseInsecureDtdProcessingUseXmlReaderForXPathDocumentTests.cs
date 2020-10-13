@@ -23,7 +23,9 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [Fact]
         public async Task UseXPathDocumentWithoutReaderShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml;
 using System.Xml.XPath;
 
@@ -41,7 +43,9 @@ namespace TestNamespace
                 GetCA3075XPathDocumentCSharpResultAt(11, 33)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Xml
 Imports System.Xml.XPath
 
@@ -59,7 +63,9 @@ End Namespace",
         [Fact]
         public async Task UseXPathDocumentWithoutReaderInGetShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml.XPath;
 
 class TestClass
@@ -77,7 +83,9 @@ class TestClass
                 GetCA3075XPathDocumentCSharpResultAt(11, 33)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Xml.XPath
 
 Class TestClass
@@ -96,7 +104,9 @@ End Class",
         [Fact]
         public async Task UseXPathDocumentWithoutReaderInSetShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml.XPath;
 
 class TestClass
@@ -120,7 +130,9 @@ public XPathDocument GetDoc
                 GetCA3075XPathDocumentCSharpResultAt(14, 41)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Xml.XPath
 
 Class TestClass
@@ -144,7 +156,9 @@ End Class",
         [Fact]
         public async Task UseXPathDocumentWithoutReaderInTryBlockShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
   using System;
   using System.Xml.XPath;
 
@@ -164,7 +178,9 @@ End Class",
                 GetCA3075XPathDocumentCSharpResultAt(12, 37)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System
 Imports System.Xml.XPath
 
@@ -186,7 +202,9 @@ End Class",
         [Fact]
         public async Task UseXPathDocumentWithoutReaderInCatchBlockShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
    using System;
    using System.Xml.XPath;
 
@@ -206,7 +224,9 @@ End Class",
                 GetCA3075XPathDocumentCSharpResultAt(13, 37)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System
 Imports System.Xml.XPath
 
@@ -227,7 +247,9 @@ End Class",
         [Fact]
         public async Task UseXPathDocumentWithoutReaderInFinallyBlockShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System;
 using System.Xml.XPath;
 
@@ -247,7 +269,9 @@ class TestClass
                 GetCA3075XPathDocumentCSharpResultAt(14, 33)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System
 Imports System.Xml.XPath
 
@@ -269,7 +293,9 @@ End Class",
         [Fact]
         public async Task UseXPathDocumentWithoutReaderInAsyncAwaitShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Threading.Tasks;
 using System.Xml.XPath;
 
@@ -291,7 +317,9 @@ class TestClass
                 GetCA3075XPathDocumentCSharpResultAt(11, 33)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Threading.Tasks
 Imports System.Xml.XPath
 
@@ -315,7 +343,9 @@ End Class",
         [Fact]
         public async Task UseXPathDocumentWithoutReaderInDelegateShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml.XPath;
 
 class TestClass
@@ -330,7 +360,9 @@ class TestClass
                 GetCA3075XPathDocumentCSharpResultAt(10, 29)
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 Imports System.Xml.XPath
 
 Class TestClass
@@ -349,7 +381,9 @@ End Class",
         [Fact]
         public async Task UseXPathDocumentWithXmlReaderShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(
+                ReferenceAssemblies.NetFramework.Net472.Default,
+                @"
 using System.Xml;
 using System.Xml.XPath;
 
