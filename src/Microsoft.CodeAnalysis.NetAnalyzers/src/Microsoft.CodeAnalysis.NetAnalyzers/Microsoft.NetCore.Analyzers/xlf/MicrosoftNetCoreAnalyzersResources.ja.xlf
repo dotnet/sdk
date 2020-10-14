@@ -968,8 +968,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithm">
-        <source>Do Not Use Weak Key Derivation Function Algorithm</source>
-        <target state="translated">弱いキー派生関数アルゴリズムを使用しないでください</target>
+        <source>Ensure Key Derivation Function algorithm is sufficiently strong</source>
+        <target state="needs-review-translation">弱いキー派生関数アルゴリズムを使用しないでください</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmDescription">
@@ -978,8 +978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
-        <target state="translated">{0} は弱いハッシュ アルゴリズムを使用して作成されました。SHA256、SHA384、SHA512 を使用してパスワードから強力なキーを作成してください。</target>
+        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0} は弱いハッシュ アルゴリズムを使用して作成されました。SHA256、SHA384、SHA512 を使用してパスワードから強力なキーを作成してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">

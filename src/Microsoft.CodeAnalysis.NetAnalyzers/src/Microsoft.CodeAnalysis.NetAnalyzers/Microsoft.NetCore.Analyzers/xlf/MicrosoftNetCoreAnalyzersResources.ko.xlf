@@ -968,8 +968,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithm">
-        <source>Do Not Use Weak Key Derivation Function Algorithm</source>
-        <target state="translated">취약한 키 파생 함수 알고리즘은 사용하지 마세요.</target>
+        <source>Ensure Key Derivation Function algorithm is sufficiently strong</source>
+        <target state="needs-review-translation">취약한 키 파생 함수 알고리즘은 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmDescription">
@@ -978,8 +978,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFAlgorithmMessage">
-        <source>{0} created with a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
-        <target state="translated">{0}이(가) 취약한 해시 알고리즘으로 생성되었습니다. 암호에서 강력한 키를 만들려면 SHA256, SHA384 또는 SHA512를 사용하세요.</target>
+        <source>{0} might be using a weak hash algorithm. Use SHA256, SHA384, or SHA512 to create a strong key from a password.</source>
+        <target state="needs-review-translation">{0}이(가) 취약한 해시 알고리즘으로 생성되었습니다. 암호에서 강력한 키를 만들려면 SHA256, SHA384 또는 SHA512를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">

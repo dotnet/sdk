@@ -268,14 +268,6 @@ namespace Microsoft.NetFramework.Analyzers
 
                     if (xmlReaderSettingsIndex < 0)
                     {
-                        if (method.Parameters.Length == 1
-                            && method.Parameters[0].RefKind == RefKind.None
-                            && method.Parameters[0].Type.SpecialType == SpecialType.System_String)
-                        {
-                            // inputUri can load be a URL.  Should further investigate if this is worth flagging.
-                            context.ReportDiagnostic(expressionSyntax.CreateDiagnostic(RuleXmlReaderCreateWrongOverload));
-                        }
-
                         // If no XmlReaderSettings are passed, then the default
                         // XmlReaderSettings are used, with DtdProcessing set to Prohibit.
                     }
