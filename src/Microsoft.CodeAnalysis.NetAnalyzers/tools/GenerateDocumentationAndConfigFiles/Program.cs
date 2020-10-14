@@ -180,10 +180,7 @@ namespace GenerateDocumentationAndConfigFiles
             if (fileNamesWithValidationFailures.Count > 0)
             {
                 Console.Error.WriteLine("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:");
-                foreach (string fileNameWithValidationFailure in fileNamesWithValidationFailures)
-                {
-                    Console.Error.WriteLine($"    {fileNameWithValidationFailure}");
-                }
+                fileNamesWithValidationFailures.ForEach(fileName => Console.Error.WriteLine($"    {fileNameWithValidationFailure}"));
                 return 1;
             }
 
@@ -882,24 +879,17 @@ Rule ID | Missing Help Link | Title |
 
         /// <summary>
         /// Validates whether <paramref name="fileContents"/> matches the contents of <paramref name="fileWithPath"/>.
-        /// If they doesn't match, <paramref name="fileWithPath"/> is added to <paramref name="fileNamesWithValidationFailures"/>.
-        /// The validation process is run within CI, so that the CI build fails when the auto-generated files are outdated.
+        /// If they don't match, <paramref name="fileWithPath"/> is added to <paramref name="fileNamesWithValidationFailures"/>.
+        /// The validation process is run within CI, so that the CI build fails when the auto-generated files are out of date.
         /// </summary>
         /// <remarks>
-        /// Don't call this method with auto-generated files that are part of the artifacts because it's expected that they doesn't initially exist.
+        /// Don't call this method with auto-generated files that are part of the artifacts because it's expected that they don't initially exist.
         /// </remarks>
         private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
         {
             string actual = File.ReadAllText(fileWithPath);
             if (actual != fileContents)
             {
-                Console.Error.WriteLine("!!ONLY FOR TESTING PURPOSE!!");
-                Console.Error.WriteLine("Actual:");
-                Console.Error.WriteLine(actual);
-                Console.Error.WriteLine("============================");
-                Console.Error.WriteLine("Expected:");
-                Console.Error.WriteLine(fileContents);
-                Console.Error.WriteLine("============================");
                 fileNamesWithValidationFailures.Add(fileWithPath);
             }
         }
