@@ -381,7 +381,7 @@ namespace Microsoft.NET.Publish.Tests
                 foreach (var extraWarning in extraWarnings)
                     errorMessage += "+  " + extraWarning + "\n";
             }
-            Assert.True(!missingWarnings.Any() || !extraWarnings.Any(), errorMessage);
+            Assert.True(!missingWarnings.Any() && !extraWarnings.Any(), errorMessage);
         }
 
         [Theory]
