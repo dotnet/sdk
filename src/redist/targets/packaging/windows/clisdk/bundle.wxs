@@ -7,7 +7,7 @@
 
   <Bundle Name="$(var.ProductName)" Manufacturer="$(var.Manufacturer)"
           Version="$(var.SDKBundleVersion)" UpgradeCode="$(var.UpgradeCode)"
-          AboutUrl="https://dotnet.github.io/"
+          AboutUrl="https://aka.ms/netcorehelp/"
           Compressed="yes">
 
     <bal:Condition Message="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;">
