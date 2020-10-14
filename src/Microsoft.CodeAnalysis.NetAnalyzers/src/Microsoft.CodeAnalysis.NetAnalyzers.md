@@ -2628,7 +2628,7 @@ Do not set Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityPro
 |CodeFix|False|
 ---
 
-## [CA5379](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5379): Do Not Use Weak Key Derivation Function Algorithm
+## [CA5379](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5379): Ensure Key Derivation Function algorithm is sufficiently strong
 
 Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.
 
