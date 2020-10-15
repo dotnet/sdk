@@ -337,7 +337,7 @@ Option Name: `excluded_type_names_with_derived_types`
 Configurable Rules:
 [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303),
 [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062),
-[CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304), 
+[CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304),
 [CA1508](https://docs.microsoft.com/visualstudio/code-quality/ca1508),
 [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000),
 [CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100),
