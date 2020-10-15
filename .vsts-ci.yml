@@ -32,7 +32,7 @@ stages:
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
+          queue: buildpool.server.amd64.vs2019.open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           name: NetCoreInternal-Pool
           queue: buildpool.windows.10.amd64.vs2017
@@ -61,7 +61,7 @@ stages:
         agentOs: Windows_NT_FullFramework
         pool:
           name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
+          queue: buildpool.server.amd64.vs2019.open
         strategy:
           matrix:
             Build_Debug:
@@ -78,7 +78,7 @@ stages:
         agentOs: Windows_NT_TestAsTools
         pool:
           name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
+          queue: buildpool.server.amd64.vs2019.open
         strategy:
           matrix:
             Build_Debug:
