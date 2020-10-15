@@ -5,6 +5,26 @@
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="5.0.0">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Cli.Localization" Version="5.0.0-rtm.20512.3">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="5.0.0">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="5.0.0">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="5.0.0">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="5.0.0">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
