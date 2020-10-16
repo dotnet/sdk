@@ -211,9 +211,16 @@
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
       <Bundled60Templates Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
       <Bundled60Templates Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
+      <Bundled50Templates Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
+      <Bundled50Templates Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
     </ItemGroup>
     <Copy SourceFiles="%(Bundled60Templates.RestoredNupkgPath)"
           DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplates60InstallPath)"/>
+
+    <!-- Since not all the templates have 6.0 versions yet, include the 5.0 versions in the layout for now -->
+    <Copy SourceFiles="%(Bundled50Templates.RestoredNupkgPath)"
+          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplates60InstallPath)"/>
+
   </Target>
 
   <Target Name="LayoutTemplatesFor60MSI"
