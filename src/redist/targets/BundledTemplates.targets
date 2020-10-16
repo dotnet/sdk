@@ -1,6 +1,12 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="CalculateTemplatesVersions" DependsOnTargets="SetupWixProperties">
 
+    <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor60Templates)">
+      <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates60InstallPath" />
+      <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates60MajorMinorVersion" />
+      <Output TaskParameter="BundledTemplateMajorMinorPatchVersion" PropertyName="BundledTemplates60MajorMinorPatchVersion" />
+    </CalculateTemplateVersions>
+    
     <CalculateTemplateVersions AspNetCorePackageVersionTemplate="$(AspNetCorePackageVersionFor50Templates)">
       <Output TaskParameter="BundledTemplateInstallPath" PropertyName="BundledTemplates50InstallPath" />
       <Output TaskParameter="BundledTemplateMajorMinorVersion" PropertyName="BundledTemplates50MajorMinorVersion" />
@@ -47,6 +53,28 @@
   </Target>
 
   <ItemGroup>
+    <Bundled60Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates60PackageVersion)" 
+                        Condition="'$(MicrosoftDotNetCommonItemTemplates60PackageVersion)' != '$(MicrosoftDotNetCommonItemTemplates50PackageVersion)'" />
+    <Bundled60Templates Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)"
+                        Condition="'$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)' != '$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)'" />
+    <Bundled60Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)"
+                        Condition="'$(MicrosoftDotNetTestProjectTemplates60PackageVersion)' != '$(MicrosoftDotNetTestProjectTemplates50PackageVersion)'" />
+    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates60PackageVersion)"
+                        Condition="'$(MicrosoftDotnetWpfProjectTemplates60PackageVersion)' != '$(MicrosoftDotnetWpfProjectTemplates50PackageVersion)'" />
+    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates60PackageVersion)"
+                        Condition="'$(MicrosoftDotnetWinFormsProjectTemplates60PackageVersion)' != '$(MicrosoftDotnetWinFormsProjectTemplates50PackageVersion)'" />
+    <Bundled60Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor60Templates)"
+                        Condition="'$(AspNetCorePackageVersionFor60Templates)' != '$(AspNetCorePackageVersionFor50Templates)'" />
+    <Bundled60Templates Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)"
+                        Condition="'$(AspNetCorePackageVersionFor60Templates)' != '$(AspNetCorePackageVersionFor50Templates)'"/>
+    <Bundled60Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)"
+                        Condition="'$(AspNetCorePackageVersionFor60Templates)' != '$(AspNetCorePackageVersionFor50Templates)'" />
+    <Bundled60Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates60PackageVersion)"
+                        Condition="'$(NUnit3Templates60PackageVersion)' != '$(NUnit3Templates50PackageVersion)'" />
+
+  </ItemGroup>
+  
+  <ItemGroup>
     <Bundled50Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates50PackageVersion)" />
     <Bundled50Templates Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)" />
     <Bundled50Templates Include="Microsoft.DotNet.Test.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates50PackageVersion)" />
@@ -91,6 +119,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Bundled60Templates Update="@(Bundled60Templates)">
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+      <Version>[%(PackageVersion)]</Version>
+    </Bundled60Templates>
+  </ItemGroup>
+  <ItemGroup>
     <Bundled50Templates Update="@(Bundled50Templates)">
       <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
       <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
@@ -126,6 +161,7 @@
     <PackageDownload Include="@(Bundled30Templates)" Exclude="@(PackageDownload)" />
     <PackageDownload Include="@(Bundled31Templates)" Exclude="@(PackageDownload)" />
     <PackageDownload Include="@(Bundled50Templates)" Exclude="@(PackageDownload)" />
+    <PackageDownload Include="@(Bundled60Templates)" Exclude="@(PackageDownload)" />
 
     <PackageDownload Update="Microsoft.DotNet.Common.ItemTemplates"
                      Version="[$(MicrosoftDotNetCommonItemTemplates21PackageVersion)];
@@ -166,18 +202,24 @@
   </ItemGroup>
 
   <Target Name="LayoutTemplates"
-        DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesFor50MSI;LayoutTemplatesFor31MSI;LayoutTemplatesFor30MSI;LayoutTemplatesFor21MSI" />
+        DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesFor60MSI;LayoutTemplatesFor50MSI;LayoutTemplatesFor31MSI;LayoutTemplatesFor30MSI;LayoutTemplatesFor21MSI" />
 
   <Target Name="LayoutTemplatesForSDK"
           DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions">
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
-      <Bundled50Templates Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
-      <Bundled50Templates Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
+      <Bundled60Templates Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
+      <Bundled60Templates Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
     </ItemGroup>
-    <Copy SourceFiles="%(Bundled50Templates.RestoredNupkgPath)"
-          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplates50InstallPath)"/>
+    <Copy SourceFiles="%(Bundled60Templates.RestoredNupkgPath)"
+          DestinationFolder="$(RedistLayoutPath)templates/$(BundledTemplates60InstallPath)"/>
   </Target>
 
+  <Target Name="LayoutTemplatesFor60MSI"
+        DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
+        Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
+    <Copy SourceFiles="%(Bundled60Templates.RestoredNupkgPath)"
+          DestinationFolder="$(Templates60LayoutPath)templates/$(BundledTemplates60InstallPath)"/>
+  </Target>
   <Target Name="LayoutTemplatesFor50MSI"
           DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
           Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
