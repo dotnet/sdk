@@ -61,9 +61,9 @@
       <Uri>https://github.com/dotnet/fsharp</Uri>
       <Sha>da6be68280c89131cdba2045525b80890401defd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.9.0-2.20516.1">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.9.0-2.20516.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>685495cef15afd2eb18c8242a45259c441af9b85</Sha>
+      <Sha>1371ff57e669a7b642aef0de71490d2262aea0e7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="6.0.0-alpha.1.20513.8">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
