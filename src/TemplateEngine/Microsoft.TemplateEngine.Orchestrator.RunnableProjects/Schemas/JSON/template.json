@@ -568,6 +568,10 @@
                       "primaryOutputIndexes": {
                         "type": "string",
                         "description": "A semicolon delimited list of indexes of the primary outputs that should be added to the solution, if not specified, all primary outputs are used"
+                      },
+                      "solutionFolder": {
+                        "type": "string",
+                        "description": "Defines the destination solution folder path to add the projects to. Optional."
                       }
                     }
                   }

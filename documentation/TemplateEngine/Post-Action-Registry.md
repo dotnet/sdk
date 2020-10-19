@@ -156,6 +156,7 @@ Opens a file in the editor. For command line cases this post action will be igno
  - **Specific Configuration** :
    - `args`:
      - `primaryOutputIndexes` (string): A semicolon delimited list of indexes to the primary outputs. Note: If primary outputs are conditional, multiple post actions with the same conditions as the primary outputs might be necessary.
+     - `solutionFolder` (string) (optional) (supported in 5.0.200 or higher): the destination solution folder path to add the projects to. 
  - **Supported in**:
    - `dotnet new3`
    - `dotnet new` (2.0.0 or higher)
@@ -169,7 +170,8 @@ Opens a file in the editor. For command line cases this post action will be igno
   "description": "Add projects to solution",
   "manualInstructions": [ { "text": "Run post action 'Add projects to a solution file'" } ],
   "args": {
-    "primaryOutputIndexes": "0;2"
+    "primaryOutputIndexes": "0;2",
+    "solutionFolder": "src"
   },
   "actionId": "D396686C-DE0E-4DE6-906D-291CD29FC5DE",
   "continueOnError": true

@@ -76,7 +76,8 @@
       "description": "Add projects to solution",
       "manualInstructions": [ { "text": "Run post action 'Add projects to a solution file'" } ],
       "args": {
-        "primaryOutputIndexes": "0;2"
+        "primaryOutputIndexes": "0;2",
+        "solutionFolder":  "src"
       },
       "actionId": "D396686C-DE0E-4DE6-906D-291CD29FC5DE",
       "continueOnError": true
