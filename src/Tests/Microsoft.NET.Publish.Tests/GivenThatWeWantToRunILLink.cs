@@ -364,22 +364,22 @@ namespace Microsoft.NET.Publish.Tests
             //missing warnings also. It doesn't use BeEquivalentTo
             //function that warns for any new or missing warnings
             //since the error experience is not good for a developer
-            var warnings = result.StdOut.Split('\n', ')').Where(line => line.StartsWith("ILLink"));
+            var warnings = result.StdOut.Split('\n','\r', ')').Where(line => line.StartsWith("ILLink :"));
             var missingWarnings = warnings.Except(expectedOutput);
             var extraWarnings = expectedOutput.Except(warnings);
 
-            string errorMessage = "The execution of a hello world app generated a diff in the number of warnings the app produces\n\n";
+            string errorMessage = $"The execution of a hello world app generated a diff in the number of warnings the app produces{Environment.NewLine}{Environment.NewLine}";
             if (missingWarnings.Any())
             {
-                errorMessage += "This is a list of missing linker warnings generated with your change using a console app, if you are working on make things linker" +
-                    " friendly please also submit a PR deleting these warnings:\n";
+                errorMessage += $"This is a list of missing linker warnings generated with your change using a console app, if you are working on make things linker" +
+                    $" friendly please also submit a PR deleting these warnings:{Environment.NewLine}";
                 foreach (var missingWarning in missingWarnings)
-                    errorMessage += "-  " + missingWarning + "\n";
+                    errorMessage += "-  " + missingWarning + Environment.NewLine;
             }
             if (extraWarnings.Any()) { 
-                errorMessage += "This is a list of extra linker warnings generated with your change using a console app:\n";
+                errorMessage += $"This is a list of extra linker warnings generated with your change using a console app:{Environment.NewLine}";
                 foreach (var extraWarning in extraWarnings)
-                    errorMessage += "+  " + extraWarning + "\n";
+                    errorMessage += "+  " + extraWarning + Environment.NewLine;
             }
             Assert.True(!missingWarnings.Any() && !extraWarnings.Any(), errorMessage);
         }
