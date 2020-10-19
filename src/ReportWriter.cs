@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var reportFilePath = GetReportFilePath(reportPath);
             var reportFolderPath = Path.GetDirectoryName(reportFilePath);
 
-            if (reportFolderPath != null && !Directory.Exists(reportFolderPath))
+            if (!string.IsNullOrEmpty(reportFolderPath) && !Directory.Exists(reportFolderPath))
             {
                 Directory.CreateDirectory(reportFolderPath);
             }
