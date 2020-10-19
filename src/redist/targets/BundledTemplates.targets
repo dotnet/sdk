@@ -55,7 +55,8 @@
   <ItemGroup>
     <Bundled60Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates60PackageVersion)" 
                         Condition="'$(MicrosoftDotNetCommonItemTemplates60PackageVersion)' != '$(MicrosoftDotNetCommonItemTemplates50PackageVersion)'" />
-    <Bundled60Templates Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)"
+    <!-- TODO: Update this package name to 6.0 when it starts getting produced that way -->
+    <Bundled60Templates Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)"
                         Condition="'$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)' != '$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)'" />
     <Bundled60Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)"
                         Condition="'$(MicrosoftDotNetTestProjectTemplates60PackageVersion)' != '$(MicrosoftDotNetTestProjectTemplates50PackageVersion)'" />
