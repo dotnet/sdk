@@ -15,6 +15,12 @@ namespace Microsoft.CodeAnalysis.Tools
             var reportFilePath = GetReportFilePath(reportPath);
             var reportFolderPath = Path.GetDirectoryName(reportFilePath);
 
+            // If no folder path is specified to the report path, set it to "." (which is the current working directory)
+            if (string.Empty.Equals(reportFolderPath, StringComparison.OrdinalIgnoreCase))
+            {
+                reportFolderPath = ".";
+            }
+
             if (reportFolderPath != null && !Directory.Exists(reportFolderPath))
             {
                 Directory.CreateDirectory(reportFolderPath);
