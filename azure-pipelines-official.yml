@@ -61,7 +61,7 @@ stages:
         ArtifactName: 'Logs'
         publishLocation: Container
       continueOnError: true
-      condition: always()
+      condition: not(succeeded())
 
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
