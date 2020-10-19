@@ -7,7 +7,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
     <Nullable>Enable</Nullable>
 
     <NoWarn>$(NoWarn);8002</NoWarn>
