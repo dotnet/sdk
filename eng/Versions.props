@@ -4,8 +4,8 @@
     <MajorVersion>5</MajorVersion>
     <MinorVersion>0</MinorVersion>
     <!-- Build release-only package. -->
-    <PreReleaseVersionLabel></PreReleaseVersionLabel>
-
+    <PreReleaseVersionLabel>
+    </PreReleaseVersionLabel>
     <!--
       Because this is a global tool Arcade is unable to generate prerelease versioned packages
       due to the shim executable containing a hardcoded path which includes the release version.
