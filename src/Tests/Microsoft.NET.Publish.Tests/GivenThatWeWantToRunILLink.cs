@@ -311,7 +311,7 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2075: System.Diagnostics.Tracing.ManifestBuilder.CreateManifestString(",
                     "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.TypeAnalysis.TypeAnalysis(Type,EventDataAttribute,List<Type>",
                     "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.NullableTypeInfo.NullableTypeInfo(Type,List<Type>",
-                    "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.NullableTypeInfo.WriteData(TraceLoggingDataCollector,PropertyValue",
+                    "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.NullableTypeInfo.WriteData(PropertyValue",
                     "ILLink : Trim analysis warning IL2077: System.Runtime.Serialization.Formatters.Binary.ObjectReader.ParseObject(ParseRecord",
                     "ILLink : Trim analysis warning IL2075: System.Runtime.Serialization.ObjectManager.DoValueTypeFixup(FieldInfo,ObjectHolder,Object",
                     "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.ObjectManager.GetDeserializationConstructor(Type",
@@ -365,8 +365,8 @@ namespace Microsoft.NET.Publish.Tests
             //function that warns for any new or missing warnings
             //since the error experience is not good for a developer
             var warnings = result.StdOut.Split('\n','\r', ')').Where(line => line.StartsWith("ILLink :"));
-            var missingWarnings = warnings.Except(expectedOutput);
-            var extraWarnings = expectedOutput.Except(warnings);
+            var extraWarnings = warnings.Except(expectedOutput);
+            var missingWarnings = expectedOutput.Except(warnings);
 
             string errorMessage = $"The execution of a hello world app generated a diff in the number of warnings the app produces{Environment.NewLine}{Environment.NewLine}";
             if (missingWarnings.Any())
