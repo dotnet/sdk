@@ -23,7 +23,6 @@ namespace Microsoft.DotNet.Cli.Build
         [Required]
         public string ProductMonikerRid { get; set; }
 
-        [Required]
         public string InstallerExtension { get; set; }
 
         [Required]
