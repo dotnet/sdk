@@ -313,8 +313,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">XmlDocument 파생 클래스 {0}이(가) 명시적으로 생성자를 정의하지 않습니다.</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">XmlDocument 파생 클래스 {0}이(가) 명시적으로 생성자를 정의하지 않습니다.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +328,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">XmlTextReader 파생 클래스 {0}이(가) 명시적으로 생성자를 정의하지 않습니다.</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">XmlTextReader 파생 클래스 {0}이(가) 명시적으로 생성자를 정의하지 않습니다.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +343,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">안전하지 않은 XsltSettings 인스턴스와 XmlResolver 인스턴스를 XslCompiledTransform.Load 메서드에 제공하면 XSL 내에서 스크립트를 처리할 수 있게 되며 신뢰할 수 없는 XSL 입력에서 스크립트를 처리하면 악의적인 코드가 실행될 수 있으므로 잠재적으로 위험합니다. 안전하지 않은 XsltSettings 인수를 XsltSettings.Default 또는 문서 기능과 스크립트 실행을 사용할 수 없는 인스턴스로 바꾸거나, XmlResolver 인수를 null 또는 XmlSecureResolver 인스턴스로 바꾸세요. 신뢰할 수 있는 출처의 입력임이 알려지면 이 메시지가 표시되지 않을 수 있으며, 미리 알려지지 않은 위치의 외부 리소스 해결 방법이 지원되어야 합니다.</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">안전하지 않은 XsltSettings 인스턴스와 XmlResolver 인스턴스를 XslCompiledTransform.Load 메서드에 제공하면 XSL 내에서 스크립트를 처리할 수 있게 되며 신뢰할 수 없는 XSL 입력에서 스크립트를 처리하면 악의적인 코드가 실행될 수 있으므로 잠재적으로 위험합니다. 안전하지 않은 XsltSettings 인수를 XsltSettings.Default 또는 문서 기능과 스크립트 실행을 사용할 수 없는 인스턴스로 바꾸거나, XmlResolver 인수를 null 또는 XmlSecureResolver 인스턴스로 바꾸세요. 신뢰할 수 있는 출처의 입력임이 알려지면 이 메시지가 표시되지 않을 수 있으며, 미리 알려지지 않은 위치의 외부 리소스 해결 방법이 지원되어야 합니다.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">

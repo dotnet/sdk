@@ -334,5 +334,89 @@ End Class",
             VerifyVB.Diagnostic().WithLocation(7, 21)
                 .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, progress1 As System.IProgress(Of Integer), progress2 As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
+
+        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        public async Task CA1068_CallerAttributesWithNonOptionalCancellationToken()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(CancellationToken cancellationToken,
+        [CallerMemberName] string memberName = """",
+        [CallerFilePath] string sourceFilePath = """",
+        [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+
+        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        public async Task CA1068_CallerAttributesWithOptionalCancellationToken()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(CancellationToken cancellationToken = default,
+        [CallerMemberName] string memberName = """",
+        [CallerFilePath] string sourceFilePath = """",
+        [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+
+        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsLastParameter()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync([CallerMemberName] string memberName = """",
+        [CallerFilePath] string sourceFilePath = """",
+        [CallerLineNumber] int sourceLineNumber = 0,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+
+        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsMiddleParameter()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync([CallerMemberName] string memberName = """",
+        [CallerFilePath] string sourceFilePath = """",
+        CancellationToken cancellationToken = default,
+        [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
     }
 }

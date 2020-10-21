@@ -61,8 +61,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 compilationContext.RegisterOperationBlockAction(operationBlockContext =>
                 {
                     var owningSymbol = operationBlockContext.OwningSymbol;
-                    if (owningSymbol.IsConfiguredToSkipAnalysis(operationBlockContext.Options,
-                        AlwaysTrueFalseOrNullRule, operationBlockContext.Compilation, operationBlockContext.CancellationToken))
+                    if (operationBlockContext.Options.IsConfiguredToSkipAnalysis(AlwaysTrueFalseOrNullRule, owningSymbol, operationBlockContext.Compilation, operationBlockContext.CancellationToken))
                     {
                         return;
                     }
