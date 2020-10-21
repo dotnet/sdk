@@ -20,19 +20,24 @@ namespace Microsoft.DotNet.Cli.Build
 
         public override bool Execute()
         {
-            var parsedVersion = NuGetVersion.Parse(VersionMajorMinorPatch);
+            MsiVersion = GenerateMsiVersion(VersionRevision, VersionMajorMinorPatch);
+
+            return true;
+        }
+
+        public static string GenerateMsiVersion(int versionRevision, string versionMajorMinorPatch)
+        {
+            var parsedVersion = NuGetVersion.Parse(versionMajorMinorPatch);
 
             var buildVersion = new Version()
             {
                 Major = parsedVersion.Major,
                 Minor = parsedVersion.Minor,
                 Patch = parsedVersion.Patch,
-                VersionRevision = VersionRevision
+                VersionRevision = versionRevision
             };
 
-            MsiVersion = buildVersion.GenerateMsiVersion();
-
-            return true;
+            return buildVersion.GenerateMsiVersion();
         }
     }
 }

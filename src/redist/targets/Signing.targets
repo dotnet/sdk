@@ -180,18 +180,12 @@
 
   <Target Name="SignTemplatesMsis"
       Condition="'$(SignCoreSdk)' == 'true'"
-      DependsOnTargets="SetSignProps">
+      DependsOnTargets="SetSignProps;SetupTemplatesMsis">
 
     <ItemGroup>
-      <TemplatesMsiFilesToSign Include="$(Templates50MSIInstallerFile)" />
+      <TemplatesMsiFilesToSign Include="@(TemplatesMsiComponent->'%(MSIInstallerFile)')" />
     </ItemGroup>
 
-    <ItemGroup Condition="!$(Architecture.StartsWith('arm'))">
-      <TemplatesMsiFilesToSign Include="$(Templates31MSIInstallerFile)" />
-      <TemplatesMsiFilesToSign Include="$(Templates30MSIInstallerFile)" />
-      <TemplatesMsiFilesToSign Include="$(Templates21MSIInstallerFile)" />
-    </ItemGroup>
-    
     <ItemGroup>
       <TemplatesMsiFileSignInfo Include="@(TemplatesMsiFilesToSign->'%(Filename)%(Extension)')">
         <CertificateName>$(InternalCertificateId)</CertificateName>
