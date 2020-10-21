@@ -116,12 +116,14 @@
     <TargetFramework>$(TargetFramework)</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    @(BundledTemplatePackageDownload->'<BundledTemplatePackageDownload Include="%(Identity)" Version="%(Version)" />', '
+    @(BundledTemplatePackageDownload->'<PackageDownload Include="%(Identity)" Version="%(Version)" />', '
     ')
   </ItemGroup>
 </Project>
 ]]>
       </TemplatePackageDownloadProjectContent>
+      <!-- Escape semicolons as %3B in order to avoid being interpreted as line splits in WriteLinesToFile -->
+      <TemplatePackageDownloadProjectContent>$(TemplatePackageDownloadProjectContent.Replace(';', '%3B'))</TemplatePackageDownloadProjectContent>
       <TemplatePackageDownloadProjectDirectory>$(IntermediateOutputPath)TemplatePackageDownloader\</TemplatePackageDownloadProjectDirectory>
       <TemplatePackageDownloadProjectPath>$(TemplatePackageDownloadProjectDirectory)TemplatePackageDownloader.csproj</TemplatePackageDownloadProjectPath>
     </PropertyGroup>
