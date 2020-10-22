@@ -980,7 +980,7 @@ The .NET runtime initializes all fields of reference types to their default valu
 |-|-|
 |Category|Performance|
 |Enabled|True|
-|Severity|Info|
+|Severity|Hidden|
 |CodeFix|True|
 ---
 
