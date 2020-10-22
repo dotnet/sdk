@@ -17,11 +17,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     {
         // Verifies that the analyzer generates the specified C# diagnostic results, if any.
         protected Task CSharpVerifyAnalyzerAsync(string source, params DiagnosticResult[] expected) =>
-            CSharpVerifyForVersionAsync(source, null, ReferenceAssemblies.NetCore.NetCoreApp50, expected);
+            CSharpVerifyForVersionAsync(source, null, ReferenceAssemblies.Net.Net50, expected);
 
         // Verifies that the analyzer generates the specified VB diagnostic results, if any.
         protected Task VisualBasicVerifyAnalyzerAsync(string source, params DiagnosticResult[] expected) =>
-            VisualBasicVerifyForVersionAsync(source, null, ReferenceAssemblies.NetCore.NetCoreApp50, expected);
+            VisualBasicVerifyForVersionAsync(source, null, ReferenceAssemblies.Net.Net50, expected);
 
         // Verifies that the analyzer generates the specified C# diagnostic results, if any, in an unsupported .NET version.
         protected Task CSharpVerifyAnalyzerForUnsupportedVersionAsync(string source, params DiagnosticResult[] expected) =>
@@ -33,11 +33,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         // Verifies that the fixer generates the fixes for the specified C# diagnostic results, if any.
         protected Task CSharpVerifyExpectedCodeFixDiagnosticsAsync(string originalSource, string fixedSource, params DiagnosticResult[] expected) =>
-            CSharpVerifyForVersionAsync(originalSource, fixedSource, ReferenceAssemblies.NetCore.NetCoreApp50, expected);
+            CSharpVerifyForVersionAsync(originalSource, fixedSource, ReferenceAssemblies.Net.Net50, expected);
 
         // Verifies that the fixer generates the fixes for the specified VB diagnostic results, if any.
         protected Task VisualBasicVerifyExpectedCodeFixDiagnosticsAsync(string originalSource, string fixedSource, params DiagnosticResult[] expected) =>
-            VisualBasicVerifyForVersionAsync(originalSource, fixedSource, ReferenceAssemblies.NetCore.NetCoreApp50, expected);
+            VisualBasicVerifyForVersionAsync(originalSource, fixedSource, ReferenceAssemblies.Net.Net50, expected);
 
         // Verifies that the analyzer generates the specified C# diagnostic results, if any, for the specified originalSource.
         // If fixedSource is provided, also verifies that the fixer generates the fixes for the verified diagnostic results, if any.
