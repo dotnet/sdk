@@ -26,6 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
+                isReportedAtCompilationEnd: false,
                 descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>

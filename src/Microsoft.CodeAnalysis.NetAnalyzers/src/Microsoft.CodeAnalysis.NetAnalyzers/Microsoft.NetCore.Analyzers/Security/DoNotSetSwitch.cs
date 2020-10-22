@@ -30,6 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
+            isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableSchUseStrongCryptoDescription));
         internal static DiagnosticDescriptor DoNotDisableSpmSecurityProtocolsRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5378",
@@ -37,6 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableUsingServicePointManagerSecurityProtocolsMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
+            isReportedAtCompilationEnd: false,
             isDataflowRule: true);
 
         internal static ImmutableDictionary<string, (bool BadValue, DiagnosticDescriptor Rule)> BadSwitches =

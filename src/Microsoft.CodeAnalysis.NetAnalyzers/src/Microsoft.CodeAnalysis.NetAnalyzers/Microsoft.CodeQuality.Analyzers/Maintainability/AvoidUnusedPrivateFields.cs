@@ -31,7 +31,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                                       RuleLevel.Disabled,       // Need to figure out how to handle runtime only references. We also have an implementation in the IDE.
                                                                                       description: s_localizableDescription,
                                                                                       isPortedFxCopRule: true,
-                                                                                      isDataflowRule: false);
+                                                                                      isDataflowRule: false,
+                                                                                      isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
