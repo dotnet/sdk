@@ -49,7 +49,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                 RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_Description,
                 isPortedFxCopRule: false,
-                isDataflowRule: false);
+                isDataflowRule: false,
+                isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

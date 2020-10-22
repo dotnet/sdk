@@ -32,7 +32,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: true);
+                                                                             isDataflowRule: true,
+                                                                             isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

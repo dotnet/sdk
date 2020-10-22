@@ -23,7 +23,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                 nameof(MicrosoftNetCoreAnalyzersResources.NetDataContractSerializerDeserializeWithoutBinderSetMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
-                isDataflowRule: true);
+                isDataflowRule: true,
+                isReportedAtCompilationEnd: true);
         internal static readonly DiagnosticDescriptor RealBinderMaybeNotSetDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2312",
@@ -31,7 +32,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                 nameof(MicrosoftNetCoreAnalyzersResources.NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
-                isDataflowRule: true);
+                isDataflowRule: true,
+                isReportedAtCompilationEnd: true);
 
         protected override string DeserializerTypeMetadataName =>
             WellKnownTypeNames.SystemRuntimeSerializationNetDataContractSerializer;
