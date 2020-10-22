@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Versioning;
@@ -9,26 +11,80 @@ namespace Microsoft.DotNet.Cli.Build
 {
     public class CalculateTemplateVersions : Task
     {
+        //  Group BundledTemplates by TemplateFrameworkVersion
+        //  In each group, get the version of the template with UseVersionForTemplateInstallPath=true
+        //  From that version number, get the BundledTemplateInstallPath, BundledTemplateMajorMinorVersion, and BundledTemplateMajorMinorPatchVersion
         [Required]
-        public string AspNetCorePackageVersionTemplate { get; set; }
+        public ITaskItem [] BundledTemplates { get; set; }
+
+        [Required]
+        public string FullNugetVersion { get; set; }
+
+        [Required]
+        public string ProductMonikerRid { get; set; }
+
+        public string InstallerExtension { get; set; }
+
+        [Required]
+        public int CombinedBuildNumberAndRevision { get; set; }
+
+
+        //  Should be the BundledTemplates with BundledTemplateInstallPath metadata set to the value calculated for that group
+        [Output]
+        public ITaskItem [] BundledTemplatesWithInstallPaths { get; set; }
+
+        //  For each group of templates (grouped by TemplateFrameworkVersion), this should be the following
+        //  ItemSpec: NetCore60Templates
+        //  TemplateBaseFilename: dotnet-60templates
+        //  TemplatesMajorMinorVersion: 6.0 (from BundledTemplateMajorMinorVersion from group)
+        //  InstallerUpgradeCode: Guid generated using GenerateGuidFromName, combining TemplateBaseFilename, FullNugetVersion, ProductMonikerRid, and InstallerExtension
+        //  MSIVersion: Result of calling GenerateMsiVersionFromFullVersion logic with CombinedBuildNumberAndRevision and BundledTemplateMajorMinorPatchVersion from template group
 
         [Output]
-        public string BundledTemplateInstallPath { get; set; }
-
-        [Output]
-        public string BundledTemplateMajorMinorVersion { get; set; }
-
-        [Output]
-        public string BundledTemplateMajorMinorPatchVersion { get; set; }
+        public ITaskItem [] TemplatesComponents { get; set; }
 
         private const int _patchVersionResetOffset = 1;
 
         public override bool Execute()
         {
-            var result = Calculate(AspNetCorePackageVersionTemplate);
-            BundledTemplateInstallPath = result.BundledTemplateInstallPath;
-            BundledTemplateMajorMinorVersion = result.BundledTemplateMajorMinorVersion;
-            BundledTemplateMajorMinorPatchVersion = result.BundledTemplateMajorMinorPatchVersion;
+            var groups = BundledTemplates.GroupBy(bt => bt.GetMetadata("TemplateFrameworkVersion"))
+                .ToDictionary(g => g.Key, g =>
+                {
+                    var itemWithVersion = g.SingleOrDefault(i => i.GetMetadata("UseVersionForTemplateInstallPath").Equals("true", StringComparison.OrdinalIgnoreCase));
+                    if (itemWithVersion == null)
+                    {
+                        throw new InvalidOperationException("Could not find single item with UseVersionForTemplateInstallPath for templates with TemplateFrameworkVersion: " + g.Key);
+                    }
+
+                    return Calculate(itemWithVersion.GetMetadata("PackageVersion"));
+                });
+
+            BundledTemplatesWithInstallPaths = BundledTemplates.Select(t =>
+            {
+                var templateWithInstallPath = new TaskItem(t);
+                templateWithInstallPath.SetMetadata("BundledTemplateInstallPath", groups[t.GetMetadata("TemplateFrameworkVersion")].BundledTemplateInstallPath);
+                return templateWithInstallPath;
+            }).ToArray();
+
+            TemplatesComponents = groups.Select(g =>
+            {
+                string majorMinorWithoutDots = g.Value.BundledTemplateMajorMinorVersion.Replace(".", "");
+                var componentItem = new TaskItem($"NetCore{majorMinorWithoutDots}Templates");
+                var templateBaseFilename = $"dotnet-{majorMinorWithoutDots}templates";
+                componentItem.SetMetadata("TemplateBaseFilename", templateBaseFilename);
+                componentItem.SetMetadata("TemplatesMajorMinorVersion", g.Value.BundledTemplateMajorMinorVersion);
+                var installerUpgradeCode = GenerateGuidFromName.GenerateGuid(string.Join("-", templateBaseFilename, FullNugetVersion, ProductMonikerRid) + InstallerExtension).ToString().ToUpper();
+                componentItem.SetMetadata("InstallerUpgradeCode", installerUpgradeCode);
+                componentItem.SetMetadata("MSIVersion", GenerateMsiVersionFromFullVersion.GenerateMsiVersion(CombinedBuildNumberAndRevision, g.Value.BundledTemplateMajorMinorPatchVersion));
+
+                var brandName = System.Version.Parse(g.Key).Major >= 5 ?
+                    $"Microsoft .NET {g.Key} Templates" :
+                    $"Microsoft .NET Core {g.Key} Templates";
+
+                componentItem.SetMetadata("BrandNameWithoutVersion", brandName);
+
+                return componentItem;
+            }).ToArray();
 
             return true;
         }
