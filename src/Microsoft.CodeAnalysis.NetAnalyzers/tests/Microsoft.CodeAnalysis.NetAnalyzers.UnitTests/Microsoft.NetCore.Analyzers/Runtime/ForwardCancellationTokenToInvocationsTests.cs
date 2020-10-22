@@ -4210,7 +4210,7 @@ End Class
             {
                 TestCode = originalCode,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 FixedCode = fixedCode,
             };
 
@@ -4224,7 +4224,7 @@ End Class
             {
                 TestCode = originalCode,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
@@ -4237,7 +4237,7 @@ End Class
             {
                 TestCode = originalCode,
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 FixedCode = fixedCode
             };
 
@@ -4251,7 +4251,7 @@ End Class
             {
                 TestCode = originalCode,
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
