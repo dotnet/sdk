@@ -1852,7 +1852,7 @@
           "id": "CA1805",
           "shortDescription": "Do not initialize unnecessarily",
           "fullDescription": "The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.",
-          "defaultLevel": "note",
+          "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1805",
           "properties": {
             "category": "Performance",
