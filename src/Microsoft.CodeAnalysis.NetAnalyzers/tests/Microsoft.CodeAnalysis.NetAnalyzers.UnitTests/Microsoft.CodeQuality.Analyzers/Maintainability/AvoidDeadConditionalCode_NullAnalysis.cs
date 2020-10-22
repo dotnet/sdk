@@ -5476,6 +5476,34 @@ public class C : IDisposable
 }");
         }
 
+#if NETCOREAPP
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4327, "https://github.com/dotnet/roslyn-analyzers/issues/4327")]
+        public async Task TestCompilerGeneratedNullCheckNotFlagged_02()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+class Class1
+{
+    static async IAsyncEnumerable<int> M(IAsyncEnumerable<int> iae)
+    {
+        await foreach (int i in iae.ConfigureAwait(false))
+        {
+            if (i > 0)
+                yield return i;
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+#endif
+
         [Fact]
         public async Task StaticObjectReferenceEquals_Diagnostic()
         {
