@@ -21,26 +21,28 @@
   </Target>
 
   <ItemGroup>
-    <Bundled60Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates60PackageVersion)" 
-                        Condition="'$(MicrosoftDotNetCommonItemTemplates60PackageVersion)' != '$(MicrosoftDotNetCommonItemTemplates50PackageVersion)'" />
+    <Bundled60Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates60PackageVersion)" />
     <!-- TODO: Update this package name to 6.0 when it starts getting produced that way -->
-    <Bundled60Templates Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)"
-                        Condition="'$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)' != '$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)'" />
-    <Bundled60Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)"
-                        Condition="'$(MicrosoftDotNetTestProjectTemplates60PackageVersion)' != '$(MicrosoftDotNetTestProjectTemplates50PackageVersion)'" />
-    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates60PackageVersion)"
-                        Condition="'$(MicrosoftDotnetWpfProjectTemplates60PackageVersion)' != '$(MicrosoftDotnetWpfProjectTemplates50PackageVersion)'" />
-    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates60PackageVersion)"
-                        Condition="'$(MicrosoftDotnetWinFormsProjectTemplates60PackageVersion)' != '$(MicrosoftDotnetWinFormsProjectTemplates50PackageVersion)'" />
-    <Bundled60Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor60Templates)"
-                        Condition="'$(AspNetCorePackageVersionFor60Templates)' != '$(AspNetCorePackageVersionFor50Templates)'" />
-    <Bundled60Templates Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)"
-                        UseVersionForTemplateInstallPath="true"
-                        Condition="'$(AspNetCorePackageVersionFor60Templates)' != '$(AspNetCorePackageVersionFor50Templates)'"/>
-    <Bundled60Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)"
-                        Condition="'$(AspNetCorePackageVersionFor60Templates)' != '$(AspNetCorePackageVersionFor50Templates)'" />
-    <Bundled60Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates60PackageVersion)"
-                        Condition="'$(NUnit3Templates60PackageVersion)' != '$(NUnit3Templates50PackageVersion)'" />
+    <Bundled60Templates Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)" />
+    <Bundled60Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
+    <Bundled60Templates Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" UseVersionForTemplateInstallPath="true" />
+    <Bundled60Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
+    
+    
+    <!-- Templates that don't yet have 6.0 versions.  Use the 5.0 versions until we do have them -->
+    <Bundled60Templates Include="Microsoft.DotNet.Test.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates50PackageVersion)" />
+    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates50PackageVersion)" />
+    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates50PackageVersion)" />
+    <Bundled60Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates50PackageVersion)" />
+
+    <!-- Once we do have 6.0 versions of these templates, we should remove them from the previous list, and add the commented versions below. -->
+
+    <!--
+    <Bundled60Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)" />
+    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates60PackageVersion)" />
+    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates60PackageVersion)" />
+    <Bundled60Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates60PackageVersion)" />
+    -->
   </ItemGroup>
   
   <ItemGroup>
@@ -150,12 +152,6 @@
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
           DestinationFolder="$(RedistLayoutPath)templates/%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
           Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '6.0'"/>
-
-    <!-- Since not all the templates have 6.0 versions yet, include the 5.0 versions in the layout for now -->
-    <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(RedistLayoutPath)templates/%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
-          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '5.0'"/>
-
   </Target>
 
   <Target Name="LayoutTemplatesForMSI"
