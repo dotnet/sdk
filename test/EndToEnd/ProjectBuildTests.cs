@@ -13,6 +13,20 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
+        //  TODO: Once console template is updated to target net6.0, remove this logic
+        void RetargetProject(string projectDirectory)
+        {
+            var projectFile = Directory.GetFiles(projectDirectory, "*.csproj").Single();
+
+            var projectXml = XDocument.Load(projectFile);
+            var ns = projectXml.Root.Name.Namespace;
+
+            projectXml.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = "net6.0";
+
+            projectXml.Save(projectFile);
+        }
+
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -24,6 +38,8 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
                 .Should().Pass();
+
+            RetargetProject(projectDirectory);
 
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
@@ -62,6 +78,8 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
                 .Should().Pass();
+
+            RetargetProject(projectDirectory);
 
             string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
 
