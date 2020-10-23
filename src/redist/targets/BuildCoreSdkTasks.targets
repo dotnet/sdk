@@ -25,9 +25,7 @@
   <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ZipFileExtractToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
-  <UsingTask TaskName="GenerateMsiVersion" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="GenerateMsiVersionFromFullVersion" AssemblyFile="$(CoreSdkTaskDll)" />
-  <UsingTask TaskName="GenerateGuidFromName" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="Chmod" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="DotNetDebTool" AssemblyFile="$(CoreSdkTaskDll)" />

@@ -103,25 +103,25 @@
       <GeneratedInstallers Include="@(TemplatesMsiComponent->'%(MSIInstallerFile)')" />
     </ItemGroup>
 
-    <GenerateMsiVersion VersionRevision="$(CombinedBuildNumberAndRevision)"
-                        VersionMajor="$(VersionMajor)"
-                        VersionMinor="$(VersionMinor)"
-                        VersionPatch="$(VersionFeature)">
+    <GenerateMsiVersion BuildNumber="$(CombinedBuildNumberAndRevision)"
+                        Major="$(VersionMajor)"
+                        Minor="$(VersionMinor)"
+                        Patch="$(VersionFeature)">
       <Output TaskParameter="MsiVersion" PropertyName="MsiVersion" />
     </GenerateMsiVersion>
 
     <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
-      <Output TaskParameter="OutputGuid"
+      <Output TaskParameter="GeneratedGuid"
           PropertyName="SdkInstallerUpgradeCode" />
     </GenerateGuidFromName>
 
     <GenerateGuidFromName Name="$(SdkPlaceholderMSIInstallerFile)">
-      <Output TaskParameter="OutputGuid"
+      <Output TaskParameter="GeneratedGuid"
           PropertyName="SdkPlaceholderInstallerUpgradeCode" />
     </GenerateGuidFromName>
 
     <GenerateGuidFromName Name="$(SdkBundleInstallerOutputGuidString)">
-      <Output TaskParameter="OutputGuid"
+      <Output TaskParameter="GeneratedGuid"
           PropertyName="CombinedFrameworkSDKHostInstallerUpgradeCode" />
     </GenerateGuidFromName>
   </Target>
