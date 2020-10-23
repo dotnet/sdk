@@ -16,7 +16,8 @@ namespace Microsoft.NetCore.Analyzers.Security
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForProcessCommandInjectionVulnerabilitiesMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
-            isDataflowRule: true);
+            isDataflowRule: true,
+            isReportedAtCompilationEnd: false);
 
         protected override SinkKind SinkKind { get { return SinkKind.ProcessCommand; } }
 

@@ -32,7 +32,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+                                                                             isDataflowRule: false,
+                                                                             isReportedAtCompilationEnd: true);
         internal static DiagnosticDescriptor SystemRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageSystem,
@@ -40,7 +41,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.Disabled,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+                                                                             isDataflowRule: false,
+                                                                             isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, SystemRule);
 
