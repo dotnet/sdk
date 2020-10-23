@@ -23,7 +23,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                 nameof(MicrosoftNetCoreAnalyzersResources.DataTableReadXmlMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
-                isDataflowRule: false);
+                isDataflowRule: false,
+                isReportedAtCompilationEnd: false);
 
         protected override string DeserializerTypeMetadataName =>
             WellKnownTypeNames.SystemDataDataTable;

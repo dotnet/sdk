@@ -114,7 +114,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1509,
                                                                      isPortedFxCopRule: false,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                     isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
 
