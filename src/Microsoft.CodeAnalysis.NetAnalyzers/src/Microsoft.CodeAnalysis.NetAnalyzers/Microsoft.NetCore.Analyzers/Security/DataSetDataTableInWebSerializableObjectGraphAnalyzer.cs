@@ -26,7 +26,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                 nameof(MicrosoftNetCoreAnalyzersResources.DataSetDataTableInWebDeserializableObjectGraphMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
-                isDataflowRule: false);
+                isDataflowRule: false,
+                isReportedAtCompilationEnd: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(ObjectGraphContainsDangerousTypeDescriptor);

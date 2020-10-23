@@ -35,6 +35,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             RuleLevel ruleLevel,
             bool isPortedFxCopRule,
             bool isDataflowRule,
+            bool isReportedAtCompilationEnd,
             string? descriptionResourceStringName = null)
         {
             return CreateDiagnosticDescriptor(
@@ -45,6 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 ruleLevel,
                 isPortedFxCopRule,
                 isDataflowRule,
+                isReportedAtCompilationEnd,
                 descriptionResourceStringName);
         }
 
@@ -68,6 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             RuleLevel ruleLevel,
             bool isPortedFxCopRule,
             bool isDataflowRule,
+            bool isReportedAtCompilationEnd,
             string? descriptionResourceStringName = null)
         {
             return DiagnosticDescriptorHelper.Create(
@@ -79,7 +82,8 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 descriptionResourceStringName != null ? GetResourceString(resourceSource, descriptionResourceStringName) : null,
                 isPortedFxCopRule,
                 isDataflowRule,
-                isEnabledByDefaultInFxCopAnalyzers: ruleLevel != RuleLevel.Disabled);
+                isEnabledByDefaultInFxCopAnalyzers: ruleLevel != RuleLevel.Disabled,
+                isReportedAtCompilationEnd: isReportedAtCompilationEnd);
         }
 
         /// <summary>

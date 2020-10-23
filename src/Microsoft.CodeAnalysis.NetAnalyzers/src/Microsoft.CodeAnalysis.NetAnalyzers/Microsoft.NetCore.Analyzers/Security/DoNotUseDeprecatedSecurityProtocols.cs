@@ -22,6 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.IdeHidden_BulkConfigurable,
             isPortedFxCopRule: false,
             isDataflowRule: false,
+            isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseDeprecatedSecurityProtocolsDescription));
         internal static DiagnosticDescriptor HardCodedRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5386",
@@ -30,7 +31,8 @@ namespace Microsoft.NetCore.Analyzers.Security
             nameof(MicrosoftNetCoreAnalyzersResources.HardCodedSecurityProtocolMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
-            isDataflowRule: false);
+            isDataflowRule: false,
+            isReportedAtCompilationEnd: false);
 
         private readonly ImmutableHashSet<string> HardCodedSafeProtocolMetadataNames = ImmutableHashSet.Create(
             StringComparer.Ordinal,

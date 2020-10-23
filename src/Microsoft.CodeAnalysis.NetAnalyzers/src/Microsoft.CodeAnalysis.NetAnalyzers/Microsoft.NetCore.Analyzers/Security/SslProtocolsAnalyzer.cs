@@ -22,6 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.IdeHidden_BulkConfigurable,
             isPortedFxCopRule: false,
             isDataflowRule: false,
+            isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsDescription));
         internal static DiagnosticDescriptor HardcodedRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5398",
@@ -30,6 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,
+            isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.HardcodedSslProtocolsDescription));
 
         private readonly ImmutableHashSet<string> HardcodedSslProtocolsMetadataNames = ImmutableHashSet.Create(
