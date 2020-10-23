@@ -220,7 +220,7 @@
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedWindowsDesktopTargetingPackInstallerFile"
-                                 Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopTargetingPackBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWindowsDesktopTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
@@ -299,7 +299,7 @@
       </BundledLayoutComponent>
 
       <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>

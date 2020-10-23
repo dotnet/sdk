@@ -63,21 +63,6 @@ Kaynaklar
     • SDK Belgeleri https://aka.ms/dotnet-sdk-docs
     • Sürüm Notları https://aka.ms/dotnet5-release-notes
     • Öğreticiler https://aka.ms/dotnet-tutorials</String>
-  <String Id="FirstTimeWelcomeMessageArm64">Yükleme başarılı oldu.
-
-Aşağıdakiler şu konumda yüklü: '[DOTNETHOME]'
-    • .NET SDK [DOTNETSDKVERSION]
-    • .NET Çalışma Zamanı [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Çalışma Zamanı [ASPNETCOREVERSION]
-
-Bu ürün, kullanım verilerini toplar
-    • Daha fazla bilgi ve katılmamayı seçmek için bkz. https://aka.ms/dotnet-cli-telemetry
-
-Kaynaklar
-    • .NET Belgeleri https://aka.ms/dotnet-docs
-    • SDK Belgeleri https://aka.ms/dotnet-sdk-docs
-    • Sürüm Notları https://aka.ms/dotnet5-release-notes
-    • Öğreticiler https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK'sı</String>
   <String Id="WelcomeDescription">
     .NET SDK, .NET uygulamalarını derlemek, çalıştırmak ve test etmek için kullanılır. Birden çok dil, düzenleyici ve geliştirici aracı arasından seçim yapabilirsiniz ve web, mobil, masaüstü, oyun ve IoT uygulamaları oluşturmak için büyük bir kitaplık ekosisteminden yararlanabilirsiniz. Beğeneceğinizi umuyoruz!</String>

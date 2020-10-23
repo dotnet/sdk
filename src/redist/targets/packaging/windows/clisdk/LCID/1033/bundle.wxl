@@ -63,21 +63,6 @@ Resources
     • SDK Documentation https://aka.ms/dotnet-sdk-docs
     • Release Notes https://aka.ms/dotnet5-release-notes
     • Tutorials https://aka.ms/dotnet-tutorials</String>
-<String Id="FirstTimeWelcomeMessageArm64">The installation was successful.
-
-The following were installed at: '[DOTNETHOME]'
-    • .NET SDK [DOTNETSDKVERSION]
-    • .NET Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Runtime [ASPNETCOREVERSION]
-
-This product collects usage data
-    • More information and opt-out https://aka.ms/dotnet-cli-telemetry
-
-Resources
-    • .NET Documentation https://aka.ms/dotnet-docs
-    • SDK Documentation https://aka.ms/dotnet-sdk-docs
-    • Release Notes https://aka.ms/dotnet5-release-notes
-    • Tutorials https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     The .NET SDK is used to build, run and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming and IoT. We hope you enjoy it!</String>

@@ -63,21 +63,6 @@
     • SDK 文档: https://aka.ms/dotnet-sdk-docs
     • 发行说明: https://aka.ms/dotnet5-release-notes
     • 教程: https://aka.ms/dotnet-tutorials</String>
-<String Id="FirstTimeWelcomeMessageArm64">已成功安装。
-
-下列项安装于: "[DOTNETHOME]"
-    • .NET SDK [DOTNETSDKVERSION]
-    • .NET 运行时 [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core 运行时 [ASPNETCOREVERSION]
-
-此产品会收集用法数据
-    • 详细信息和选择退出选项: https://aka.ms/dotnet-cli-telemetry
-
-资源
-    • .NET 文档: https://aka.ms/dotnet-docs
-    • SDK 文档: https://aka.ms/dotnet-sdk-docs
-    • 发行说明: https://aka.ms/dotnet5-release-notes
-    • 教程: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     .NET SDK 用于生成、运行和测试 .NET 应用程序。有多种语言、编辑器和开发人员工具可供选择，你也可使用由库构成的大型生态系统来构建面向 Web、移动设备、桌面、游戏和 IoT 的应用。希望你喜欢它!</String>
