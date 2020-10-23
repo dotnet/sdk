@@ -33,8 +33,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                                                                              RuleLevel.IdeSuggestion,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isReportedAtCompilationEnd: true);
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

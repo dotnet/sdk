@@ -32,8 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              RuleLevel.Disabled,    // We have an implementation in IDE.
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isReportedAtCompilationEnd: true);
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

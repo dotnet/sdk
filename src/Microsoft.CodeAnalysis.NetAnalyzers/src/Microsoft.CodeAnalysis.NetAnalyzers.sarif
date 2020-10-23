@@ -1834,8 +1834,7 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
-              "CompilationEnd"
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },
@@ -2086,8 +2085,7 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
-              "CompilationEnd"
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },
@@ -2108,8 +2106,7 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
-              "CompilationEnd"
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },
@@ -2782,8 +2779,7 @@
               "PortedFromFxCop",
               "Dataflow",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
-              "CompilationEnd"
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },
