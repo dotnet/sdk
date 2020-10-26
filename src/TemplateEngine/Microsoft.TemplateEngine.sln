@@ -69,6 +69,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.ScraperOutputComparison", "src\Microsoft.TemplateSearch.ScraperOutputComparison\Microsoft.TemplateSearch.ScraperOutputComparison.csproj", "{95D28477-05FE-4450-86B8-D7384202AB90}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "template_feed", "template_feed", "{7272B385-2422-4C57-8C1B-65C12250D8FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Common.ProjectTemplates.6.0", "template_feed\Microsoft.DotNet.Common.ProjectTemplates.6.0\Microsoft.DotNet.Common.ProjectTemplates.6.0.csproj", "{1DADD24C-5BEF-400D-9C96-8092857D346A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -439,6 +443,18 @@ Global
 		{95D28477-05FE-4450-86B8-D7384202AB90}.Release|x64.Build.0 = Release|Any CPU
 		{95D28477-05FE-4450-86B8-D7384202AB90}.Release|x86.ActiveCfg = Release|Any CPU
 		{95D28477-05FE-4450-86B8-D7384202AB90}.Release|x86.Build.0 = Release|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Debug|x64.Build.0 = Debug|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Debug|x86.Build.0 = Debug|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|x64.ActiveCfg = Release|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|x64.Build.0 = Release|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|x86.ActiveCfg = Release|Any CPU
+		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -474,6 +490,7 @@ Global
 		{4DF4A1B9-F31C-49D1-8FEB-8DB37AEBDC0B} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{FBEBB725-F645-40DC-856C-D1BC7FB52CF3} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{95D28477-05FE-4450-86B8-D7384202AB90} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
+		{1DADD24C-5BEF-400D-9C96-8092857D346A} = {7272B385-2422-4C57-8C1B-65C12250D8FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6EA1A508-6033-4538-BF98-7F71B4E297AD}
