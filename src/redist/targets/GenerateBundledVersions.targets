@@ -214,7 +214,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- .NET 6.0 -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
-                              TargetFramework="netcoreapp6.0"
+                              TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftNETCoreAppDefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
@@ -226,21 +226,21 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"
-                      TargetFramework="netcoreapp6.0"
+                      TargetFramework="net6.0"
                       AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
                       AppHostPackVersion="$(_NETCoreAppPackageVersion)"
                       AppHostRuntimeIdentifiers="@(NetCoreAppHostRids, '%3B')"
                       />
 
     <KnownCrossgen2Pack Include="Microsoft.NETCore.App.Crossgen2"
-                        TargetFramework="netcoreapp6.0"
+                        TargetFramework="net6.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                         Crossgen2RuntimeIdentifiers="@(Crossgen2SupportedRids, '%3B')"
                         />
     
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
-                              TargetFramework="netcoreapp6.0"
+                              TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
@@ -252,7 +252,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
-                              TargetFramework="netcoreapp6.0"
+                              TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
@@ -265,7 +265,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
-                              TargetFramework="netcoreapp6.0"
+                              TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppDefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsDesktopAppRuntimePackageVersion)"
@@ -278,7 +278,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
-                              TargetFramework="netcoreapp6.0"
+                              TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
                               DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppDefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
@@ -329,7 +329,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- .NET 5.0 -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
-                              TargetFramework="netcoreapp5.0"
+                              TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
                               DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_NET50RuntimePackVersion)"
@@ -341,21 +341,21 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownAppHostPack Include="Microsoft.NETCore.App"
-                      TargetFramework="netcoreapp5.0"
+                      TargetFramework="net5.0"
                       AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
                       AppHostPackVersion="$(_NET50RuntimePackVersion)"
                       AppHostRuntimeIdentifiers="@(Net50AppHostRids, '%3B')"
                       />
 
     <KnownCrossgen2Pack Include="Microsoft.NETCore.App.Crossgen2"
-                        TargetFramework="netcoreapp5.0"
+                        TargetFramework="net5.0"
                         Crossgen2PackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
                         Crossgen2PackVersion="$(_NET50RuntimePackVersion)"
                         Crossgen2RuntimeIdentifiers="@(Net50Crossgen2SupportedRids, '%3B')"
                         />
     
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
-                              TargetFramework="netcoreapp5.0"
+                              TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
@@ -367,7 +367,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
-                              TargetFramework="netcoreapp5.0"
+                              TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
@@ -380,7 +380,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
-                              TargetFramework="netcoreapp5.0"
+                              TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
                               DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
@@ -393,7 +393,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               />
 
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
-                              TargetFramework="netcoreapp5.0"
+                              TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
                               DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_AspNet50RuntimePackVersion)"
