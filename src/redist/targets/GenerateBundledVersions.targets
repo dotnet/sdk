@@ -29,10 +29,13 @@
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
       <!-- TODO: Once .NET 5.0 has released, update these version numbers to 5.0.0 -->
+      <_NET50DefaultRuntimeFrameworkVersion>5.0.0-rc.2.20475.5</_NET50DefaultRuntimeFrameworkVersion>
       <_NET50RuntimePackVersion>5.0.0-rc.2.20475.5</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0-rc.2.20475.5</_NET50TargetingPackVersion>
+      <_WindowsDesktop50DefaultRuntimeFrameworkVersion>5.0.0-rc.2.20475.6</_WindowsDesktop50DefaultRuntimeFrameworkVersion>
       <_WindowsDesktop50RuntimePackVersion>5.0.0-rc.2.20475.6</_WindowsDesktop50RuntimePackVersion>
       <_WindowsDesktop50TargetingPackVersion>5.0.0-rc.2.20475.6</_WindowsDesktop50TargetingPackVersion>
+      <_AspNet50DefaultRuntimeFrameworkVersion>5.0.0-rc.2.20475.17</_AspNet50DefaultRuntimeFrameworkVersion>
       <_AspNet50RuntimePackVersion>5.0.0-rc.2.20475.17</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0-rc.2.20475.17</_AspNet50TargetingPackVersion>
 
@@ -331,7 +334,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
-                              DefaultRuntimeFrameworkVersion="5.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_NET50DefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(_NET50RuntimePackVersion)"
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(_NET50TargetingPackVersion)"
@@ -357,7 +360,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="5.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop50DefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop50TargetingPackVersion)"
@@ -369,7 +372,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="5.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop50DefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop50TargetingPackVersion)"
@@ -382,7 +385,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="5.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop50DefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop50TargetingPackVersion)"
@@ -395,7 +398,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
-                              DefaultRuntimeFrameworkVersion="5.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_AspNet50DefaultRuntimeFrameworkVersion)"
                               LatestRuntimeFrameworkVersion="$(_AspNet50RuntimePackVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(_AspNet50TargetingPackVersion)"
