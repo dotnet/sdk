@@ -14,6 +14,7 @@ namespace EndToEnd.Tests
     public class ProjectBuildTests : TestBase
     {
         //  TODO: Once console template is updated to target net6.0, remove this logic
+        //  https://github.com/dotnet/installer/issues/8974
         void RetargetProject(string projectDirectory)
         {
             var projectFile = Directory.GetFiles(projectDirectory, "*.csproj").Single();

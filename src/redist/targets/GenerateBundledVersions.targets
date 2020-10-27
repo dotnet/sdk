@@ -28,7 +28,8 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <!-- TODO: Once .NET 5.0 has released, update these version numbers to 5.0.0 -->
+      <!-- TODO: Once .NET 5.0 has released, update these version numbers to 5.0.0
+           https://github.com/dotnet/installer/issues/8974 -->
       <_NET50DefaultRuntimeFrameworkVersion>5.0.0-rc.2.20475.5</_NET50DefaultRuntimeFrameworkVersion>
       <_NET50RuntimePackVersion>5.0.0-rc.2.20475.5</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0-rc.2.20475.5</_NET50TargetingPackVersion>
@@ -113,7 +114,7 @@
         " />
 
       <Net50Crossgen2SupportedRids Include="linux-musl-x64;linux-x64;win-x64" />
-      <Crossgen2SupportedRids Include="@(Crossgen2SupportedRids)" />
+      <Crossgen2SupportedRids Include="@(Net50Crossgen2SupportedRids)" />
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);win-arm64" />
