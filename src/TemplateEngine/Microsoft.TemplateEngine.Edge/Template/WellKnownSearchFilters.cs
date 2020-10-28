@@ -88,7 +88,8 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                 }
 
-                return null;
+                // type is specified for the filter, but missing in template
+                return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Mismatch };
             };
         }
 
