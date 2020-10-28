@@ -116,6 +116,11 @@ namespace Microsoft.TemplateSearch.Common
                             }
 
                             workingPackToTemplateMap[packName] = new PackToTemplateEntry(version, templatesInPack);
+                            if (entryValue.TryGetValue(nameof(PackToTemplateEntry.TotalDownloads), out JToken totalDownloadsToken)
+                                && long.TryParse(totalDownloadsToken.Value<string>(), out long totalDownloads))
+                            {
+                                workingPackToTemplateMap[packName].TotalDownloads = totalDownloads;
+                            }
                         }
                     }
                 }

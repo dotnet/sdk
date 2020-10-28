@@ -12,6 +12,8 @@ namespace Microsoft.TemplateSearch.Common
 
         public string Version { get; }
 
+        public long TotalDownloads { get; set; }
+
         public IReadOnlyList<TemplateIdentificationEntry> TemplateIdentificationEntry { get; }
     }
 }

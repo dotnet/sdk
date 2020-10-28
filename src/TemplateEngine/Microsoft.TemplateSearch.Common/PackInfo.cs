@@ -13,9 +13,19 @@ namespace Microsoft.TemplateSearch.Common
             Version = version;
         }
 
+        public PackInfo(string name, string version, long totalDownloads)
+        {
+            Name = name;
+            Version = version;
+            TotalDownloads = totalDownloads;
+        }
+
         public string Name { get; }
 
         public string Version { get; }
+
+        public long TotalDownloads { get; }
+
     }
 
     public class PackInfoEqualityComparer : IEqualityComparer<PackInfo>

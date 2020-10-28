@@ -11,5 +11,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         public string Version { get; set; }
 
         public string Path { get; set; }
+
+        public long TotalDownloads { get; set; }
     }
 }

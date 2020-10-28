@@ -12,7 +12,7 @@ namespace Microsoft.TemplateSearch.Common
 
             foreach (KeyValuePair<string, PackToTemplateEntry> entry in templateDictionary)
             {
-                PackInfo packAndVersion = new PackInfo(entry.Key, entry.Value.Version);
+                PackInfo packAndVersion = new PackInfo(entry.Key, entry.Value.Version, entry.Value.TotalDownloads);
 
                 foreach (TemplateIdentificationEntry templateIdentityInfo in entry.Value.TemplateIdentificationEntry)
                 {

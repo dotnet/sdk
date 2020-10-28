@@ -73,7 +73,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                                             VersionedPackageIdentity = sourceInfo.VersionedPackageIdentity,
                                             Id = sourceInfo.Id,
                                             Version = sourceInfo.Version,
-                                            Path = packageFilePath
+                                            Path = packageFilePath,
+                                            TotalDownloads = sourceInfo.TotalDownloads
+                                            
                                         };
 
                                         yield return packInfo;
