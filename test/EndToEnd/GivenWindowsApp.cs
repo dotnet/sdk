@@ -10,7 +10,7 @@ using Xunit;
 
 namespace EndToEnd
 {
-    public class GivenWindows50App : TestBase
+    public class GivenWindowsApp : TestBase
     {
         [WindowsOnlyTheory]
         [InlineData("10.0.17763.0")]
