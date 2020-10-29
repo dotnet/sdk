@@ -14,12 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalContent Update="$(WorkerRoot)\Targets\**\*.*">
+    <AdditionalContent Include="$(WorkerRoot)\Targets\**\*.*">
       <Pack>true</Pack>
       <PackagePath>targets</PackagePath>
     </AdditionalContent>
 
-    <AdditionalContent Update="$(WorkerRoot)\Sdk\**\*.*">
+    <AdditionalContent Include="$(WorkerRoot)\Sdk\**\*.*">
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>
     </AdditionalContent>

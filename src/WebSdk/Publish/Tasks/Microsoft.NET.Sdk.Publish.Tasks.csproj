@@ -49,12 +49,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     
-    <AdditionalContent Update="$(PublishRoot)\Targets\**\*.*">
+    <AdditionalContent Include="$(PublishRoot)\Targets\**\*.*">
       <Pack>true</Pack>
       <PackagePath>targets</PackagePath>
     </AdditionalContent>
 
-    <AdditionalContent Update="$(PublishRoot)\Sdk\**\*.*">
+    <AdditionalContent Include="$(PublishRoot)\Sdk\**\*.*">
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>
     </AdditionalContent>
