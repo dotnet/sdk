@@ -188,7 +188,7 @@ namespace GenerateDocumentationAndConfigFiles
 
             // Local functions.
             static void AnalyzerFileReference_AnalyzerLoadFailed(object? sender, AnalyzerLoadFailureEventArgs e)
-                => throw e.Exception;
+                => throw e.Exception ?? new NotSupportedException(e.Message);
 
             void createRulesetAndEditorconfig(
                 string fileName,
