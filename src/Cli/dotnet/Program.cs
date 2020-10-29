@@ -30,12 +30,29 @@ namespace Microsoft.DotNet.Cli
         {
             DebugHelper.HandleDebugSwitch(ref args);
 
-            // Initialize the performance log start-up information.
-            PerformanceLogStartupInformation startupInfo = new PerformanceLogStartupInformation(DateTime.Now);
+            // Capture the current timestamp to calculate the host overhead.
+            DateTime mainTimeStamp = DateTime.Now;
 
-            PerformanceLogManager.Initialize(FileSystemWrapper.Default);
-            using (PerformanceLogEventListener eventListener = PerformanceLogEventListener.Create(FileSystemWrapper.Default, PerformanceLogManager.Instance.CurrentLogDirectory))
+            // Determine if the perf log is enabled.
+            bool perfLogEnabled = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_PERF_LOG", false);
+            PerformanceLogStartupInformation startupInfo = null;
+            if (perfLogEnabled)
             {
+                // Initialize the performance log start-up information.
+                startupInfo = new PerformanceLogStartupInformation(mainTimeStamp);
+
+                // Initialize the performance log manager and kick off asynchronous clean-up.
+                PerformanceLogManager.Initialize(FileSystemWrapper.Default);
+            }
+
+            PerformanceLogEventListener perLogEventListener = null;
+            try
+            {
+                if (perfLogEnabled)
+                {
+                    perLogEventListener = PerformanceLogEventListener.Create(FileSystemWrapper.Default, PerformanceLogManager.Instance.CurrentLogDirectory);
+                }
+
                 new MulticoreJitActivator().TryActivateMulticoreJit();
 
                 PerformanceLogEventSource.Log.LogStartUpInformation(startupInfo);
@@ -91,6 +108,13 @@ namespace Microsoft.DotNet.Cli
                     }
 
                     PerformanceLogEventSource.Log.CLIStop();
+                }
+            }
+            finally
+            {
+                if(perLogEventListener != null)
+                {
+                    perLogEventListener.Dispose();
                 }
             }
         }
@@ -225,9 +249,9 @@ namespace Microsoft.DotNet.Cli
                 Console.WriteLine($"Telemetry is: {(telemetryClient.Enabled ? "Enabled" : "Disabled")}");
             }
 
-            PerformanceLogEventSource.Log.TelemetrySendIfEnabledStart();
+            PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStart();
             TelemetryEventEntry.SendFiltered(topLevelCommandParserResult);
-            PerformanceLogEventSource.Log.TelemetrySendIfEnabledStop();
+            PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStop();
 
             int exitCode;
             if (BuiltInCommandsCatalog.Commands.TryGetValue(topLevelCommandParserResult.Command, out var builtIn))
@@ -238,9 +262,9 @@ namespace Microsoft.DotNet.Cli
 
                 if (!parseResult.Errors.Any())
                 {
-                    PerformanceLogEventSource.Log.TelemetrySendIfEnabledStart();
+                    PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStart();
                     TelemetryEventEntry.SendFiltered(parseResult);
-                    PerformanceLogEventSource.Log.TelemetrySendIfEnabledStop();
+                    PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStop();
                 }
 
                 PerformanceLogEventSource.Log.BuiltInCommandStart();

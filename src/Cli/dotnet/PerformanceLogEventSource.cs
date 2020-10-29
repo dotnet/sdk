@@ -1,20 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli
 {
-    [EventSource(Name = "Microsoft-Dotnet-CLI-Performance")]
+    [EventSource(Name = "Microsoft-Dotnet-CLI-Performance", Guid = "cbd57d06-3b9f-5374-ed53-cfbcc23cf44f")]
     internal sealed class PerformanceLogEventSource : EventSource
     {
         internal static PerformanceLogEventSource Log = new PerformanceLogEventSource();
@@ -26,7 +21,10 @@ namespace Microsoft.DotNet.Cli
         [NonEvent]
         internal void LogStartUpInformation(PerformanceLogStartupInformation startupInfo)
         {
-            Process currentProcess = Process.GetCurrentProcess();
+            if(!IsEnabled())
+            {
+                return;
+            }
 
             DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
             string commitSha = versionFile.CommitSha ?? "N/A";
@@ -38,16 +36,21 @@ namespace Microsoft.DotNet.Cli
             LogMemoryConfiguration();
             LogDrives();
 
-            if(startupInfo.TimedAssembly != null)
+            // It's possible that IsEnabled returns true if an out-of-process collector such as ETW is enabled.
+            // If the perf log hasn't been enabled, then startupInfo will be null, so protect against nullref here.
+            if (startupInfo != null)
             {
-                AssemblyLoad(startupInfo.TimedAssembly.GetName().Name, startupInfo.AssemblyLoadTime.TotalMilliseconds);
-            }
+                if (startupInfo.TimedAssembly != null)
+                {
+                    AssemblyLoad(startupInfo.TimedAssembly.GetName().Name, startupInfo.AssemblyLoadTime.TotalMilliseconds);
+                }
 
-            TimeSpan latency = startupInfo.MainTimeStamp - currentProcess.StartTime;
-            HostLatency(latency.TotalMilliseconds);
+                Process currentProcess = Process.GetCurrentProcess();
+                TimeSpan latency = startupInfo.MainTimeStamp - currentProcess.StartTime;
+                HostLatency(latency.TotalMilliseconds);
+            }
         }
 
-        // TODO: This is duplicated from Program.cs
         [NonEvent]
         private static string GetDisplayRid(DotnetVersionFile versionFile)
         {
@@ -123,13 +126,13 @@ namespace Microsoft.DotNet.Cli
         }
 
         [Event(11)]
-        internal void TelemetrySendIfEnabledStart()
+        internal void TelemetrySaveIfEnabledStart()
         {
             WriteEvent(11);
         }
 
         [Event(12)]
-        internal void TelemetrySendIfEnabledStop()
+        internal void TelemetrySaveIfEnabledStop()
         {
             WriteEvent(12);
         }
@@ -222,6 +225,7 @@ namespace Microsoft.DotNet.Cli
                     }
                     catch
                     {
+                        // If we fail to log a drive, skip it and continue.
                     }
                 }
             }
@@ -242,14 +246,25 @@ namespace Microsoft.DotNet.Cli
         [NonEvent]
         internal void LogMemoryConfiguration()
         {
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (IsEnabled())
             {
-                Interop.MEMORYSTATUSEX memoryStatusEx = new Interop.MEMORYSTATUSEX();
-                memoryStatusEx.dwLength = (uint)Marshal.SizeOf(memoryStatusEx);
-
-                if(Interop.GlobalMemoryStatusEx(ref memoryStatusEx))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    MemoryConfiguration((int)memoryStatusEx.dwMemoryLoad, (int)(memoryStatusEx.ullAvailPhys / 1024 / 1024), (int)(memoryStatusEx.ullTotalPhys / 1024 / 1024));
+                    Interop.MEMORYSTATUSEX memoryStatusEx = new Interop.MEMORYSTATUSEX();
+                    memoryStatusEx.dwLength = (uint)Marshal.SizeOf(memoryStatusEx);
+
+                    if (Interop.GlobalMemoryStatusEx(ref memoryStatusEx))
+                    {
+                        MemoryConfiguration((int)memoryStatusEx.dwMemoryLoad, (int)(memoryStatusEx.ullAvailPhys / 1024 / 1024), (int)(memoryStatusEx.ullTotalPhys / 1024 / 1024));
+                    }
+                }
+                else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    ProcMemInfo memInfo = new ProcMemInfo();
+                    if(memInfo.Valid)
+                    {
+                        MemoryConfiguration(memInfo.MemoryLoad, memInfo.AvailableMemoryMB, memInfo.TotalMemoryMB);
+                    }
                 }
             }
         }
@@ -258,6 +273,39 @@ namespace Microsoft.DotNet.Cli
         internal void MemoryConfiguration(int memoryLoad, int availablePhysicalMB, int totalPhysicalMB)
         {
             WriteEvent(26, memoryLoad, availablePhysicalMB, totalPhysicalMB);
+        }
+
+        [NonEvent]
+        internal void LogMSBuildStart(ProcessStartInfo startInfo)
+        {
+            if (IsEnabled())
+            {
+                MSBuildStart($"{startInfo.FileName} {startInfo.Arguments}");
+            }
+        }
+
+        [Event(27)]
+        internal void MSBuildStart(string cmdline)
+        {
+            WriteEvent(27, cmdline);
+        }
+
+        [Event(28)]
+        internal void MSBuildStop(int exitCode)
+        {
+            WriteEvent(28, exitCode);
+        }
+
+        [Event(29)]
+        internal void CreateBuildCommandStart()
+        {
+            WriteEvent(29);
+        }
+
+        [Event(30)]
+        internal void CreateBuildCommandStop()
+        {
+            WriteEvent(30);
         }
     }
 
@@ -318,6 +366,9 @@ namespace Microsoft.DotNet.Cli
         }
     }
 
+    /// <summary>
+    /// Global memory statistics on Windows.
+    /// </summary>
     internal static class Interop
     {
         [StructLayout(LayoutKind.Sequential)]
@@ -337,5 +388,74 @@ namespace Microsoft.DotNet.Cli
 
         [DllImport("kernel32.dll")]
         internal static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX lpBuffer);
+    }
+
+    /// <summary>
+    /// Global memory statistics on Linux.
+    /// </summary>
+    internal sealed class ProcMemInfo
+    {
+        private const string MemTotal = "MemTotal:";
+        private const string MemAvailable = "MemAvailable:";
+
+        private short _matchingLineCount = 0;
+
+        internal ProcMemInfo()
+        {
+            Initialize();
+        }
+
+        /// <summary>
+        /// The data in this class is valid if we parsed the file, found, and properly parsed the two matching lines.
+        /// </summary>
+        internal bool Valid
+        {
+            get { return _matchingLineCount == 2; }
+        }
+
+        internal int MemoryLoad
+        {
+            get { return (int)((double)(TotalMemoryMB - AvailableMemoryMB) / TotalMemoryMB * 100); }
+        }
+
+        internal int AvailableMemoryMB
+        {
+            get;
+            private set;
+        }
+
+        internal int TotalMemoryMB
+        {
+            get;
+            private set;
+        }
+
+        private void Initialize()
+        {
+            using (StreamReader reader = new StreamReader(File.OpenRead("/proc/meminfo")))
+            {
+                string line;
+                while (!Valid && ((line = reader.ReadLine()) != null))
+                {
+                    if (line.StartsWith(MemTotal) || line.StartsWith(MemAvailable))
+                    {
+                        string[] tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        if (tokens.Length == 3)
+                        {
+                            if (MemTotal.Equals(tokens[0]))
+                            {
+                                TotalMemoryMB = (int)Convert.ToUInt64(tokens[1]) / 1024;
+                                _matchingLineCount++;
+                            }
+                            else if (MemAvailable.Equals(tokens[0]))
+                            {
+                                AvailableMemoryMB = (int)Convert.ToUInt64(tokens[1]) / 1024;
+                                _matchingLineCount++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

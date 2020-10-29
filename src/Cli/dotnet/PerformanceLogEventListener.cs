@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.Utils
@@ -34,7 +31,7 @@ namespace Microsoft.DotNet.Cli.Utils
         private StreamWriter _writer;
 
         [ThreadStatic]
-        private StringBuilder s_builder;
+        private static StringBuilder s_builder = new StringBuilder();
 
         internal static PerformanceLogEventListener Create(IFileSystem fileSystem, string logDirectory)
         {
@@ -73,9 +70,10 @@ namespace Microsoft.DotNet.Cli.Utils
 
         internal void Initialize(IFileSystem fileSystem, string logDirectory)
         {
-            // TODO: Should we choose something that is guaranteed to be unique?
             _processIDStr = Process.GetCurrentProcess().Id.ToString();
-            string logFilePath = Path.Combine(logDirectory, $"perf-{_processIDStr}.log");
+
+            // Use a GUID disambiguator to make sure that we have a unique file name.
+            string logFilePath = Path.Combine(logDirectory, $"perf-{_processIDStr}-{Guid.NewGuid().ToString("N")}.log");
 
             Stream outputStream = fileSystem.File.OpenFile(
                 logFilePath,
@@ -117,7 +115,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
             catch
             {
-                // TODO
+                // If we fail to enable, just skip it and continue.
             }
 
             base.OnEventSourceCreated(eventSource);
@@ -156,7 +154,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
             catch
             {
-                // TODO
+                // If we fail to log an event, just skip it and continue.
             }
 
             base.OnEventWritten(eventData);

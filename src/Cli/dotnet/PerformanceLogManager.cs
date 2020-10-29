@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.ShellShim;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.Utils
@@ -16,12 +12,11 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         internal const string PerfLogDirEnvVar = "DOTNET_PERFLOG_DIR";
         private const string PerfLogRoot = "PerformanceLogs";
-        private const int NumLogsToKeep = 10;
+        private const int DefaultNumLogsToKeep = 10;
 
         private IFileSystem _fileSystem;
         private string _perfLogRoot;
         private string _currentLogDir;
-        private DateTime _initializationTime;
 
         internal static PerformanceLogManager Instance
         {
@@ -58,7 +53,6 @@ namespace Microsoft.DotNet.Cli.Utils
 
         internal PerformanceLogManager(IFileSystem fileSystem)
         {
-            _initializationTime = DateTime.Now;
             _fileSystem = fileSystem;
         }
 
@@ -92,18 +86,31 @@ namespace Microsoft.DotNet.Cli.Utils
                 List<DirectoryInfo> logDirectories = new List<DirectoryInfo>();
                 foreach(string directoryPath in _fileSystem.Directory.EnumerateDirectories(_perfLogRoot))
                 {
-                    // TODO: Convert to abstraction.
                     logDirectories.Add(new DirectoryInfo(directoryPath));
                 }
 
                 // Sort the list.
                 logDirectories.Sort(new LogDirectoryComparer());
 
-                // Skip the first NumLogsToKeep elements.
-                if(logDirectories.Count > NumLogsToKeep)
+                // Figure out how many logs to keep.
+                int numLogsToKeep;
+                string strNumLogsToKeep = Env.GetEnvironmentVariable("DOTNET_PERF_LOG_COUNT");
+                if(!int.TryParse(strNumLogsToKeep, out numLogsToKeep))
+                {
+                    numLogsToKeep = DefaultNumLogsToKeep;
+
+                    // -1 == keep all logs
+                    if(numLogsToKeep == -1)
+                    {
+                        numLogsToKeep = int.MaxValue;
+                    }
+                }
+
+                // Skip the first numLogsToKeep elements.
+                if(logDirectories.Count > numLogsToKeep)
                 {
                     // Prune the old logs.
-                    for(int i = logDirectories.Count - NumLogsToKeep - 1; i>=0; i--)
+                    for(int i = logDirectories.Count - numLogsToKeep - 1; i>=0; i--)
                     {
                         try
                         {
@@ -111,24 +118,18 @@ namespace Microsoft.DotNet.Cli.Utils
                         }
                         catch
                         {
-                            // TODO: Log.
+                            // Do nothing if a log can't be deleted.
+                            // We'll get another chance next time around.
                         }
                     }
                 }
             }
         }
-
-        internal void AddLogDir(ProcessStartInfo startInfo)
-        {
-            Debug.Assert(_currentLogDir != null);
-
-            if (_perfLogRoot != null)
-            {
-                startInfo.EnvironmentVariables.Add(PerfLogDirEnvVar, _currentLogDir);
-            }
-        }
     }
 
+    /// <summary>
+    /// Used to sort log directories when deciding which ones to delete.
+    /// </summary>
     internal sealed class LogDirectoryComparer : IComparer<DirectoryInfo>
     {
         int IComparer<DirectoryInfo>.Compare(DirectoryInfo x, DirectoryInfo y)

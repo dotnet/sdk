@@ -72,7 +72,13 @@ namespace Microsoft.DotNet.Tools.MSBuild
             // Forwarding commands will just spawn the child process and exit
             Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
 
-            return GetProcessStartInfo().Execute();
+            ProcessStartInfo startInfo = GetProcessStartInfo();
+
+            PerformanceLogEventSource.Log.LogMSBuildStart(startInfo);
+            int exitCode = startInfo.Execute();
+            PerformanceLogEventSource.Log.MSBuildStop(exitCode);
+
+            return exitCode;
         }
     }
 }
