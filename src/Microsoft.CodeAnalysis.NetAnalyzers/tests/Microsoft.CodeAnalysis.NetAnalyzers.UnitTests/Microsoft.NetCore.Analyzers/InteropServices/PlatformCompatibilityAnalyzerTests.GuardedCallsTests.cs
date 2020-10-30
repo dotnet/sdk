@@ -3644,6 +3644,38 @@ namespace Repro
             await VerifyAnalyzerAsyncCs(source);
         }
 
+        [Fact, WorkItem(4372, "https://github.com/dotnet/roslyn-analyzers/issues/4372")]
+        public async Task LoopWithinGuardCheck_03()
+        {
+            var source = @"
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+
+namespace Repro
+{
+    public class C
+    {
+        public static void M()
+        {
+            if (OperatingSystemHelper.IsWindows())
+            {
+                for (var i = 0; i < 2; i++)
+                {
+                    WindowsSupported();
+                }
+            }
+        }
+
+        [SupportedOSPlatform(""windows"")]
+        public static void WindowsSupported() { }
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
         [Fact(Skip = "TODO: Analysis value not returned, needs to be fixed")]
         public async Task InterproceduralAnalysisTest_LogicalOr()
         {
