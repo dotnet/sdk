@@ -75,8 +75,8 @@ A symbol for which the config provides literal and/or default values.
 |`dataType`|	Supported values: <br />- `bool`: boolean type, possible values: `true`/`false`. <br />- `choice`: enumeration, possible values are defined in `choices` property.<br />- `float`: double-precision floating format number. Accepts any value that can be parsed by `double.TryParse()`.<br />- `int`/`integer`: 64-bit signed integer. Accepts any value that can be parsed by `long.TryParse()`.<br />- `hex`: hex number. Accepts any value that can be parsed by `long.TryParse(value.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex)`.<br />- `text`/`string`: string type.<br />- `<any other>`: treated as string.
 |`defaultValue`|The value assigned to the symbol if no parameter is provided by the user or host.|
 |`binding`|The name of the host property to take the value from.|	
-|`replaces`|The text to replace with the value of this symbol.|	 
-|`fileRename`|The element defines the portion of file names which will be replaced by symbol value.| 
+|`replaces`|The text to be replaced by the symbol value in the template files content|	 
+|`fileRename`|The portion of template filenames to be replaced by the symbol value.| 
 |`description`|Human readable text describing the meaning of the symbol. This has no effect on template generation.|
 |`isRequired`|Indicates if the parameter is required or not.|
 |`choices`|List of available choices. Applicable only when `datatype=choice.` Contains array of the elements: <br />- `choice`: possible value of the symbol.<br />- `description`: human readable text describing the meaning of the choice. This has no effect on template generation. <br /> If not provided, there are no valid choices for the symbol, so it can never be assigned a value.|
@@ -144,8 +144,8 @@ A symbol that defines transformation of another symbol.  The value of this symbo
 |`type`|`derived`|
 |`valueSource`|The name of the other symbol whose value will be used to derive this value.|
 |`valueTransform`|The name of the value form to apply to the source value.|
-|`replaces`|The text to replace with the value of this symbol.|	 
-|`fileRename`|The element defines the portion of file names which will be replaced by symbol value.| 
+|`replaces`|The text to be replaced by the symbol value in the template files content|	 
+|`fileRename`|The portion of template filenames to be replaced by the symbol value.| 
 |`description`|Human readable text describing the meaning of the symbol. This has no effect on template generation.|
 
 ##### Examples
@@ -184,13 +184,19 @@ A symbol whose value gets computed by a built-in symbol value generator. [Detail
 |`generator`|Generator to use:<br />- [casing](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#casing) - enables changing the casing of a string.<br />- [coalesce](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#coalesce) - behaves like the C# ?? operator.<br />- [constant](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#constant) - constant value.<br />- [evaluate](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#evaluate) - evaluates a code expression (using C style syntax).<br />- [port](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#port) - generates a port number that can be used by web projects.<br />- [guid](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#guid) creates a new guid.<br />- [now](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#now) - get the current date/time.<br />- [random](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#random) - generate random integer value.<br />- [regex](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#regex) - processes a regular expression.<br />- [switch](https://github.com/dotnet/templating/wiki/Reference-for-available-macros#switch) - behaves like a C# switch statement.|
 |`parameters`|The parameters for generator. See [description](https://github.com/dotnet/templating/wiki/Reference-for-available-macros) for each generator for details.|
 |`description`|Human readable text describing the meaning of the symbol. This has no effect on template generation.|
+|`replaces`|The text to be replaced by the symbol value in the template files content|	 
+|`fileRename`|(supported in 5.0.200 or higher) The portion of template filenames to be replaced by the symbol value.| 
 
 ##### Example
  
 - `myconstant`: replaces `1234` with `5001`
-- `ownername`: replaces `John Smith (a)` with value of `ownername` parameter
-- `nameUpper`: replaces `John Smith (U)` with value of `ownername` parameter in upper case
-- `nameLower`: replaces `John Smith (l)` with value of `ownername` parameter in lower case
+- `ownername`: replaces `John Smith (a)` with the value of the `ownername` parameter
+- `nameUpper`: 
+    - replaces `John Smith (U)` with the value of the `ownername` parameter in upper case in template files content
+    - replaces `author_uc` with the value of the `ownername` parameter in upper case in filenames
+- `nameLower`: 
+    - replaces `John Smith (l)` with the value of the `ownername` parameter in lower case in template files content
+    - replaces `author_lc` with the value of the `ownername` parameter in lower case in filenames
  
 ```json
 "symbols":{
@@ -215,7 +221,8 @@ A symbol whose value gets computed by a built-in symbol value generator. [Detail
       "source":"ownername",
       "toLower": false
     },
-    "replaces":"John Smith (U)"
+    "replaces":"John Smith (U)",
+    "fileRename": "author_uc"
   },
   "nameLower":{
     "type": "generated",
@@ -224,7 +231,8 @@ A symbol whose value gets computed by a built-in symbol value generator. [Detail
       "source":"ownername",
       "toLower": true
     },
-    "replaces":"John Smith (l)"
+    "replaces":"John Smith (l)",
+    "fileRename": "author_lc"
   }
 }
 ```
@@ -310,7 +318,7 @@ Values of `OrganizationalAuth`, `WindowsAuth`, `MultiOrgAuth`, `SingleOrgAuth`, 
 |---|---|
 |`type`|`bind`|
 |`binding`|The name of the host property to take the value from.|
-|`replaces`|The text to replace with the value of this symbol.|
+|`replaces`|The text to be replaced by the symbol value in the template files content|	 
 
  
 ##### Example  
