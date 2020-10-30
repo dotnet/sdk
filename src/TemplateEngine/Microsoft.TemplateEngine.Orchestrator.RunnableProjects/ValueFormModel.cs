@@ -41,6 +41,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             x = new UpperCaseInvariantValueFormModel();
             lookup[x.Identifier] = x;
 
+            x = new FirstLowerCaseValueFormModel();
+            lookup[x.Identifier] = x;
+            x = new FirstUpperCaseValueFormModel();
+            lookup[x.Identifier] = x;
+            x = new FirstLowerCaseInvariantValueFormModel();
+            lookup[x.Identifier] = x;
+            x = new FirstUpperCaseInvariantValueFormModel();
+            lookup[x.Identifier] = x;
+            x = new KebabCaseValueFormModel();
+            lookup[x.Identifier] = x;
+            x = new TitleCaseValueFormModel();
+            lookup[x.Identifier] = x;
+
             return lookup;
         }
 

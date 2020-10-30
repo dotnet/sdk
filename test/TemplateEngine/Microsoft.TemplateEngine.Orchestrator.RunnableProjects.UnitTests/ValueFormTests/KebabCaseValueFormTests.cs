@@ -21,8 +21,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("ABBREVIATIONAndSomeName", "abbreviation-and-some-name")]
         [InlineData("NoNoNoNoNoNoNoName", "no-no-no-no-no-no-no-name")]
         [InlineData("AnotherNewNewNewNewNewProjectName", "another-new-new-new-new-new-project-name")]
+        [InlineData("Param1TestValue", "param-1-test-value")]
+        [InlineData("Windows10", "windows-10")]
+        [InlineData("WindowsServer2016R2", "windows-server-2016-r-2")]
         [InlineData("", "")]
         [InlineData(null, null)]
+        [InlineData(";MyWord;", "my-word")]
+        [InlineData("My Word", "my-word")]
+        [InlineData("My    Word", "my-word")]
+        [InlineData(";;;;;", "")]
+        [InlineData ("       ", "")]
+        [InlineData("Simple TEXT_here", "simple-text-here")]
+        [InlineData("НоваяПеременная", "новая-переменная")]
+
 
         public void KebabCaseWorksAsExpected(string input, string expected)
         {

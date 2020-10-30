@@ -61,3 +61,55 @@ upperCase - Upper cases a value
 ```
             `identifier`  -> `upperCase` or `upperCaseInvariant`
 ```
+
+`firstLowerCase` - converts the first letter of the value to lowercase using the casing rules of the current culture. Available since version 5.0.200.
+```
+    "forms": {
+        "first_lc": {
+          "identifier": "firstLowerCase"
+        }
+    }
+```
+`firstLowerCaseInvariant` - converts the first letter of the value to lowercase using the casing rules of the invariant culture. Available since version 5.0.200.
+```
+    "forms": {
+        "first_lc": {
+          "identifier": "firstLowerCaseInvariant"
+        }
+    }
+```
+
+`firstUpperCase` - converts the first letter of the value to uppercase using the casing rules of the current culture. Available since version 5.0.200.
+```
+    "forms": {
+        "first_uc": {
+          "identifier": "firstUpperCase"
+        }
+    }
+```
+`firstUpperCaseInvariant` - converts the first letter of the value to uppercase using the casing rules of the invariant culture. Available since version 5.0.200.
+```
+    "forms": {
+        "first_uc": {
+          "identifier": "firstUpperCaseInvariant"
+        }
+    }
+```
+
+`titleCase` - converts the value to title case using the casing rules of the current culture. See [TextInfo.ToTitleCase(String) documentation](https://docs.microsoft.com/dotnet/api/system.globalization.textinfo.totitlecase) for more details. Available since version 5.0.200.
+```
+    "forms": {
+        "title": {
+          "identifier": "titleCase"
+        }
+    }
+```
+
+`kebabCase` - converts the value to kebab case using the casing rules of the invariant culture. Available since version 5.0.200.
+```
+    "forms": {
+        "kebab": {
+          "identifier": "kebabCase"
+        }
+    }
+```

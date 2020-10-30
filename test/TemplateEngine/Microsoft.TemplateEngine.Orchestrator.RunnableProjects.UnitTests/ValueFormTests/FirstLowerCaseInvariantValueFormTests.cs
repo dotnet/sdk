@@ -4,17 +4,17 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
-    public class FirstUpperCaseValueFormTests
+    public class FirstLowerCaseInvariantValueFormTests
     {
         [Theory]
-        [InlineData("a", "A", null)]
-        [InlineData("no", "No", null)]
-        [InlineData("new", "New", null)]
+        [InlineData("A", "a", null)]
+        [InlineData("NO", "nO", null)]
+        [InlineData("NEW", "nEW", null)]
         [InlineData("", "", null)]
         [InlineData(null, null, null)]
-        [InlineData("indigo", "İndigo", "tr-TR")]
-        [InlineData("ındigo", "Indigo", "tr-TR")]
-        public void FirstUpperCaseWorksAsExpected(string input, string expected, string culture)
+        [InlineData("Indigo", "indigo", "tr-TR")]
+        [InlineData("İndigo", "İndigo", "tr-TR")]
+        public void FirstLowerCaseInvariantWorksAsExpected(string input, string expected, string culture)
         {
             if (!string.IsNullOrEmpty(culture))
             {
@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
                 }
             }
 
-            var model = new FirstUpperCaseValueFormModel();
+            var model = new FirstLowerCaseInvariantValueFormModel();
             string actual = model.Process(null, input);
             Assert.Equal(expected, actual);
         }

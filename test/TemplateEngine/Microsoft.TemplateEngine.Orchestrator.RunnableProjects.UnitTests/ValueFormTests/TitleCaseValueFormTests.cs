@@ -9,6 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("project x", "Project X")]
         [InlineData("x project x", "X Project X")]
         [InlineData("new project name", "New Project Name")]
+        [InlineData("new-project%name", "New-Project%Name")]
         [InlineData("", "")]
         [InlineData(null, null)]
         public void TitleCaseWorksAsExpected(string input, string expected)

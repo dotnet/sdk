@@ -732,7 +732,13 @@
                     "lowerCase",
                     "identity",
                     "upperCase",
-                    "jsonEncode"
+                    "jsonEncode",
+                    "firstLowerCase",
+                    "firstLowerCaseInvariant",
+                    "firstUpperCase",
+                    "firstUpperCaseInvariant",
+                    "titleCase",
+                    "kebabCase"
                   ]
                 }
               }
@@ -848,6 +854,54 @@
             "properties": {
               "identifier": {
                 "enum": [ "jsonEncode" ]
+              }
+            }
+          },
+          {
+            "description": "Converts the first letter of the value to lowercase using the casing rules of the current culture.",
+            "properties": {
+              "identifier": {
+                "enum": [ "firstLowerCase" ]
+              }
+            }
+          },
+          {
+            "description": "Converts the first letter of the value to lowercase using the casing rules of the invariant culture.",
+            "properties": {
+              "identifier": {
+                "enum": [ "firstLowerCaseInvariant" ]
+              }
+            }
+          },
+          {
+            "description": "Converts the first letter of the value to uppercase using the casing rules of the current culture.",
+            "properties": {
+              "identifier": {
+                "enum": [ "firstUpperCase" ]
+              }
+            }
+          },
+          {
+            "description": "Converts the first letter of the value to uppercase using the casing rules of the invariant culture.",
+            "properties": {
+              "identifier": {
+                "enum": [ "firstUpperCaseInvariant" ]
+              }
+            }
+          },
+          {
+            "description": "Converts the value to title case using the casing rules of the current culture.",
+            "properties": {
+              "identifier": {
+                "enum": [ "titleCase" ]
+              }
+            }
+          },
+          {
+            "description": "Converts the value to kebab case using the casing rules of the invariant culture.",
+            "properties": {
+              "identifier": {
+                "enum": [ "kebabCase" ]
               }
             }
           }
