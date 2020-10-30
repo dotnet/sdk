@@ -3,54 +3,13 @@
      <PackageReference Include="Microsoft.DotNet.SignTool" Version="$(MicrosoftDotNetSignToolVersion)" PrivateAssets="All"  />
   </ItemGroup>
 
+  <!-- Import Arcade's Sign.props, when then imports the eng/Signing.props for this repo -->
+  <Import Project="../tools/Sign.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+    
   <Target Name="SetSignProps"
           Condition="'$(SignCoreSdk)' == 'true'">
 
     <MakeDir Directories="$(ArtifactsTmpDir)" Condition="!Exists('$(ArtifactsTmpDir)')" />
-    
-    <PropertyGroup>
-      <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
-      <InternalCertificateId Condition="'$(InternalCertificateId)' == ''">Microsoft400</InternalCertificateId>
-      <NugetCertificateId Condition="'$(NugetCertificateId)' == ''">NuGet</NugetCertificateId>
-    </PropertyGroup>
-
-
-    <!-- Logic copied from https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Arcade.Sdk/tools/Sign.proj -->
-
-    <ItemGroup>
-      <!--
-      This is intended to hold information about the certificates used for signing.
-      For now the only information required is whether or not the certificate can be
-      used for signing already signed files - DualSigningAllowed==true.
-    -->
-      <CertificatesSignInfo Include="3PartyDual" DualSigningAllowed="true" />
-      <CertificatesSignInfo Include="3PartySHA2" DualSigningAllowed="true" />
-
-      <!-- List of container files that will be opened and checked for files that need to be signed. -->
-      <!--<ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
-      <ItemsToSign Include="$(VisualStudioSetupOutputPath)**\*.vsix" />-->
-
-      <!--
-      Map of file extensions to default certificate name. Files with these extensions are
-      signed with the specified certificate. Particularly useful for files that don't have
-      a public key token.
-      The certificate can be overriden using the StrongNameSignInfo or the FileSignInfo item group.
-    -->
-      <FileExtensionSignInfo Include=".jar" CertificateName="MicrosoftJAR" />
-      <FileExtensionSignInfo Include=".js;.ps1;.psd1;.psm1;.psc1;.py" CertificateName="Microsoft400" />
-      <FileExtensionSignInfo Include=".dll;.exe" CertificateName="Microsoft400" />
-      <FileExtensionSignInfo Include=".nupkg" CertificateName="NuGet" />
-      <FileExtensionSignInfo Include=".vsix" CertificateName="VsixSHA2" />
-      <FileExtensionSignInfo Include=".zip" CertificateName="None" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <!-- Control whether an empty ItemsToSign item group is allowed when calling SignToolTask. -->
-      <AllowEmptySignList>false</AllowEmptySignList>
-    </PropertyGroup>
-
-    <!-- Allow repository to customize signing configuration -->
-    <!--<Import Project="$(RepositoryEngineeringDir)Signing.props" Condition="Exists('$(RepositoryEngineeringDir)Signing.props')" />-->
 
     <!-- Logic copied from https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Arcade.Sdk/tools/Sign.proj -->
     <Error Text="The value of DotNetSignType is invalid: '$(DotNetSignType)'"
@@ -81,53 +40,41 @@
   </Target>
   
   <Target Name="SignLayout"
-          Condition="'$(SignCoreSdk)' == 'true'"
+          Condition="'$(SignCoreSdk)' == 'true' and '$(PostBuildSign)' != 'true'"
           DependsOnTargets="SetSignProps">
 
     <ItemGroup>
-      <!-- External files -->
-      <LayoutFilesToSign Include="$(SdkOutputDirectory)**/Newtonsoft.Json.dll;
-                            $(SdkOutputDirectory)**/MessagePack.Annotations.dll;
-                            $(SdkOutputDirectory)**/MessagePack.dll;
-                            $(SdkOutputDirectory)**/Nerdbank.Streams.dll;
-                            $(SdkOutputDirectory)**/StreamJsonRpc.dll">
-        <CertificateName>$(ExternalCertificateId)</CertificateName>
-      </LayoutFilesToSign>
-      <!-- Built binaries -->
       <LayoutFilesToSign Include="$(SdkOutputDirectory)**/csc.exe;
-                            $(SdkOutputDirectory)**/csc.dll;
-                            $(SdkOutputDirectory)**/VBCSCompiler.dll;
-                            $(SdkOutputDirectory)**/vbc.exe;
-                            $(SdkOutputDirectory)**/vbc.dll;
-                            $(SdkOutputDirectory)**/fsc.exe;
-                            $(SdkOutputDirectory)**/fsi.exe;
-                            $(SdkOutputDirectory)**/FSharp.*.dll;
-                            $(SdkOutputDirectory)**/Interactive.DependencyManager.dll;
-                            $(SdkOutputDirectory)**/dotnet.dll;
-                            $(SdkOutputDirectory)**/dotnet.resources.dll;
-                            $(SdkOutputDirectory)**/System.*.dll;
-                            $(SdkOutputDirectory)**/Microsoft.*.dll;
-                            $(SdkOutputDirectory)**/NuGet*.dll;
-                            $(SdkOutputDirectory)**/datacollector.dll;
-                            $(SdkOutputDirectory)**/datacollector.exe;
-                            $(SdkOutputDirectory)**/MSBuild.dll;
-                            $(SdkOutputDirectory)**/MSBuild.resources.dll;
-                            $(SdkOutputDirectory)**/PresentationBuildTasks.dll;
-                            $(SdkOutputDirectory)**/redist.dll;
-                            $(SdkOutputDirectory)**/rzc.dll;
-                            $(SdkOutputDirectory)**/testhost.dll;
-                            $(SdkOutputDirectory)**/testhost.exe;
-                            $(SdkOutputDirectory)**/testhost.x86.exe;
-                            $(SdkOutputDirectory)**/vstest.console.dll;
-                            $(SdkOutputDirectory)**/vstest.console.resources.dll">
-        <CertificateName>$(InternalCertificateId)</CertificateName>
-      </LayoutFilesToSign>
-
-      
-      <LayoutFileSignInfo Include="@(LayoutFilesToSign->'%(Filename)%(Extension)')">
-        <CertificateName>%(CertificateName)</CertificateName>
-      </LayoutFileSignInfo>
-      <DistinctLayoutFileSignInfo Include="@(LayoutFileSignInfo->Distinct())" />
+                                  $(SdkOutputDirectory)**/csc.dll;
+                                  $(SdkOutputDirectory)**/VBCSCompiler.dll;
+                                  $(SdkOutputDirectory)**/vbc.exe;
+                                  $(SdkOutputDirectory)**/vbc.dll;
+                                  $(SdkOutputDirectory)**/fsc.exe;
+                                  $(SdkOutputDirectory)**/fsi.exe;
+                                  $(SdkOutputDirectory)**/FSharp.*.dll;
+                                  $(SdkOutputDirectory)**/Interactive.DependencyManager.dll;
+                                  $(SdkOutputDirectory)**/dotnet.dll;
+                                  $(SdkOutputDirectory)**/dotnet.resources.dll;
+                                  $(SdkOutputDirectory)**/System.*.dll;
+                                  $(SdkOutputDirectory)**/Microsoft.*.dll;
+                                  $(SdkOutputDirectory)**/NuGet*.dll;
+                                  $(SdkOutputDirectory)**/datacollector.dll;
+                                  $(SdkOutputDirectory)**/datacollector.exe;
+                                  $(SdkOutputDirectory)**/MSBuild.dll;
+                                  $(SdkOutputDirectory)**/MSBuild.resources.dll;
+                                  $(SdkOutputDirectory)**/PresentationBuildTasks.dll;
+                                  $(SdkOutputDirectory)**/redist.dll;
+                                  $(SdkOutputDirectory)**/rzc.dll;
+                                  $(SdkOutputDirectory)**/testhost.dll;
+                                  $(SdkOutputDirectory)**/testhost.exe;
+                                  $(SdkOutputDirectory)**/testhost.x86.exe;
+                                  $(SdkOutputDirectory)**/vstest.console.dll;
+                                  $(SdkOutputDirectory)**/vstest.console.resources.dll;
+                                  $(SdkOutputDirectory)**/Newtonsoft.Json.dll;
+                                  $(SdkOutputDirectory)**/MessagePack.Annotations.dll;
+                                  $(SdkOutputDirectory)**/MessagePack.dll;
+                                  $(SdkOutputDirectory)**/Nerdbank.Streams.dll;
+                                  $(SdkOutputDirectory)**/StreamJsonRpc.dll" />
     </ItemGroup>
 
     <Error Condition="'$(AllowEmptySignList)' != 'true' AND '@(LayoutFilesToSign)' == ''"
@@ -136,10 +83,10 @@
     <Microsoft.DotNet.SignTool.SignToolTask
       DryRun="$(_DryRun)"
       TestSign="$(_TestSign)"
-      CertificatesSignInfo="$(CertificatesSignInfo)"
+      CertificatesSignInfo="@(CertificatesSignInfo)"
       ItemsToSign="@(LayoutFilesToSign)"
       StrongNameSignInfo="@(StrongNameSignInfo)"
-      FileSignInfo="@(DistinctLayoutFileSignInfo)"
+      FileSignInfo="@(FileSignInfo)"
       FileExtensionSignInfo="@(FileExtensionSignInfo)"
       TempDir="$(ArtifactsTmpDir)"
       LogDir="$(ArtifactsLogDir)"
@@ -150,25 +97,20 @@
   </Target>
 
   <Target Name="SignSdkMsi"
-        Condition="'$(SignCoreSdk)' == 'true'"
+        Condition="'$(SignCoreSdk)' == 'true' and '$(PostBuildSign)' != 'true'"
         DependsOnTargets="SetSignProps">
 
     <ItemGroup>
       <SdkMsiFilesToSign Include="$(SdkMSIInstallerFile)" />
-
-      <SdkMsiFileSignInfo Include="@(SdkMsiFilesToSign->'%(Filename)%(Extension)')">
-        <CertificateName>$(InternalCertificateId)</CertificateName>
-      </SdkMsiFileSignInfo>
-      <DistinctSdkMsiFileSignInfo Include="@(SdkMsiFileSignInfo->Distinct())" />
     </ItemGroup>
 
     <Microsoft.DotNet.SignTool.SignToolTask
         DryRun="$(_DryRun)"
         TestSign="$(_TestSign)"
-        CertificatesSignInfo="$(CertificatesSignInfo)"
+        CertificatesSignInfo="@(CertificatesSignInfo)"
         ItemsToSign="@(SdkMsiFilesToSign)"
         StrongNameSignInfo="@(StrongNameSignInfo)"
-        FileSignInfo="@(DistinctSdkMsiFileSignInfo)"
+        FileSignInfo="@(FileSignInfo)"
         FileExtensionSignInfo="@(FileExtensionSignInfo)"
         TempDir="$(ArtifactsTmpDir)"
         LogDir="$(ArtifactsLogDir)"
@@ -179,27 +121,20 @@
   </Target>
 
   <Target Name="SignTemplatesMsis"
-      Condition="'$(SignCoreSdk)' == 'true'"
+      Condition="'$(SignCoreSdk)' == 'true' and '$(PostBuildSign)' != 'true'"
       DependsOnTargets="SetSignProps;SetupTemplatesMsis">
 
     <ItemGroup>
       <TemplatesMsiFilesToSign Include="@(TemplatesMsiComponent->'%(MSIInstallerFile)')" />
     </ItemGroup>
 
-    <ItemGroup>
-      <TemplatesMsiFileSignInfo Include="@(TemplatesMsiFilesToSign->'%(Filename)%(Extension)')">
-        <CertificateName>$(InternalCertificateId)</CertificateName>
-      </TemplatesMsiFileSignInfo>
-      <DistinctTemplatesMsiFileSignInfo Include="@(TemplatesMsiFileSignInfo->Distinct())" />
-    </ItemGroup>
-
     <Microsoft.DotNet.SignTool.SignToolTask
         DryRun="$(_DryRun)"
         TestSign="$(_TestSign)"
-        CertificatesSignInfo="$(CertificatesSignInfo)"
+        CertificatesSignInfo="@(CertificatesSignInfo)"
         ItemsToSign="@(TemplatesMsiFilesToSign)"
         StrongNameSignInfo="@(StrongNameSignInfo)"
-        FileSignInfo="@(DistinctTemplatesMsiFileSignInfo)"
+        FileSignInfo="@(FileSignInfo)"
         FileExtensionSignInfo="@(FileExtensionSignInfo)"
         TempDir="$(ArtifactsTmpDir)"
         LogDir="$(ArtifactsLogDir)"
@@ -210,7 +145,7 @@
   </Target>
 
   <Target Name="SignSdkBundle"
-      Condition="'$(SignCoreSdk)' == 'true'"
+      Condition="'$(SignCoreSdk)' == 'true' and '$(PostBuildSign)' != 'true'"
       DependsOnTargets="SetSignProps">
 
     <!-- Extract engine from bundle -->
@@ -219,16 +154,14 @@
     <!-- Sign engine-->
     <ItemGroup>
       <EngineFileToSign Include="$(CombinedFrameworkSdkHostBundleEngineName)" />
-      <EngineFileSignInfo Include="$([System.IO.Path]::GetFileName('$(CombinedFrameworkSdkHostBundleEngineName)'))"
-                          CertificateName="$(InternalCertificateId)"/>
     </ItemGroup>
     <Microsoft.DotNet.SignTool.SignToolTask
         DryRun="$(_DryRun)"
         TestSign="$(_TestSign)"
-        CertificatesSignInfo="$(CertificatesSignInfo)"
+        CertificatesSignInfo="@(CertificatesSignInfo)"
         ItemsToSign="@(EngineFileToSign)"
         StrongNameSignInfo="@(StrongNameSignInfo)"
-        FileSignInfo="@(EngineFileSignInfo)"
+        FileSignInfo="@(FileSignInfo)"
         FileExtensionSignInfo="@(FileExtensionSignInfo)"
         TempDir="$(ArtifactsTmpDir)"
         LogDir="$(ArtifactsLogDir)"
@@ -242,17 +175,15 @@
     <!-- Sign bundle -->
     <ItemGroup>
       <BundleFileToSign Include="$(CombinedFrameworkSdkHostMSIInstallerFile)" />
-      <BundleFileSignInfo Include="$([System.IO.Path]::GetFileName('$(CombinedFrameworkSdkHostMSIInstallerFile)'))"
-                          CertificateName="$(InternalCertificateId)"/>
     </ItemGroup>
 
     <Microsoft.DotNet.SignTool.SignToolTask
         DryRun="$(_DryRun)"
         TestSign="$(_TestSign)"
-        CertificatesSignInfo="$(CertificatesSignInfo)"
+        CertificatesSignInfo="@(CertificatesSignInfo)"
         ItemsToSign="@(BundleFileToSign)"
         StrongNameSignInfo="@(StrongNameSignInfo)"
-        FileSignInfo="@(BundleFileSignInfo)"
+        FileSignInfo="@(FileSignInfo)"
         FileExtensionSignInfo="@(FileExtensionSignInfo)"
         TempDir="$(ArtifactsTmpDir)"
         LogDir="$(ArtifactsLogDir)"
@@ -263,25 +194,20 @@
   </Target>
 
   <Target Name="SignSdkPlaceholderMsi"
-      Condition="'$(SignCoreSdk)' == 'true'"
+      Condition="'$(SignCoreSdk)' == 'true' and '$(PostBuildSign)' != 'true'"
       DependsOnTargets="SetSignProps">
 
     <ItemGroup>
       <SdkPlaceholderMsiFilesToSign Include="$(SdkPlaceholderMSIInstallerFile)" />
-
-      <SdkPlaceholderMsiFileSignInfo Include="@(SdkPlaceholderMsiFilesToSign->'%(Filename)%(Extension)')">
-        <CertificateName>$(InternalCertificateId)</CertificateName>
-      </SdkPlaceholderMsiFileSignInfo>
-      <DistinctSdkPlaceholderMsiFileSignInfo Include="@(SdkPlaceholderMsiFileSignInfo->Distinct())" />
     </ItemGroup>
 
     <Microsoft.DotNet.SignTool.SignToolTask
         DryRun="$(_DryRun)"
         TestSign="$(_TestSign)"
-        CertificatesSignInfo="$(CertificatesSignInfo)"
+        CertificatesSignInfo="@(CertificatesSignInfo)"
         ItemsToSign="@(SdkPlaceholderMsiFilesToSign)"
         StrongNameSignInfo="@(StrongNameSignInfo)"
-        FileSignInfo="@(DistinctSdkPlaceholderMsiFileSignInfo)"
+        FileSignInfo="@(FileSignInfo)"
         FileExtensionSignInfo="@(FileExtensionSignInfo)"
         TempDir="$(ArtifactsTmpDir)"
         LogDir="$(ArtifactsLogDir)"

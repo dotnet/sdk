@@ -23,6 +23,8 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         public FileInfo FileInfo => _fileInfo;
 
+        private static DateTime defaultUtcTime = new DateTime(1601, 1, 1, 0, 0, 0);
+
         public AndConstraint<FileInfoAssertions> Exist(string because = "", params object[] reasonArgs)
         {
             Execute.Assertion

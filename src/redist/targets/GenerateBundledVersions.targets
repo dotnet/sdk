@@ -40,9 +40,9 @@
       <_AspNet50RuntimePackVersion>5.0.0-rc.2.20475.17</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0-rc.2.20475.17</_AspNet50TargetingPackVersion>
 
-      <_NETCoreApp31RuntimePackVersion>3.1.7</_NETCoreApp31RuntimePackVersion>
+      <_NETCoreApp31RuntimePackVersion>3.1.9</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
-      <_WindowsDesktop31RuntimePackVersion>3.1.2</_WindowsDesktop31RuntimePackVersion>
+      <_WindowsDesktop31RuntimePackVersion>3.1.9</_WindowsDesktop31RuntimePackVersion>
       <_WindowsDesktop31TargetingPackVersion>3.1.0</_WindowsDesktop31TargetingPackVersion>
       <_AspNet31RuntimePackVersion>3.1.9</_AspNet31RuntimePackVersion>
       <_AspNet31TargetingPackVersion>3.1.8</_AspNet31TargetingPackVersion>
@@ -159,7 +159,7 @@
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.0"
-                               LatestVersion="2.1.17" />
+                               LatestVersion="2.1.23" />
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
@@ -167,11 +167,11 @@
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.17"/>
+                               LatestVersion="2.1.23"/>
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.17"/>
+                               LatestVersion="2.1.23"/>
 
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.2"
