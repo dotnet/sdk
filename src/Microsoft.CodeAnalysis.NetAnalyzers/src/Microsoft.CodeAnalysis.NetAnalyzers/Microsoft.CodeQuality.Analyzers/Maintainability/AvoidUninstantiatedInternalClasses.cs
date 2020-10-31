@@ -346,6 +346,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return true;
             }
 
+            if (type.IsStaticHolderType())
+            {
+                return true;
+            }
+
             return false;
         }
         public static bool IsMefExported(
