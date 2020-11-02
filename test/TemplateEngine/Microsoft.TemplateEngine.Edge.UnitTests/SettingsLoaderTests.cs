@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using AutoFixture;
 using AutoFixture.Kernel;
 using FakeItEasy;
@@ -21,7 +22,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class SettingsLoaderTests : TestBase
     {
-        private const string BaseDir = @"C:\BaseDir";
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly MockFileSystem _fileSystem;
         private readonly IFixture _fixture;
@@ -43,7 +43,20 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 .Returns(BaseDir);
         }
 
-        //[Fact(DisplayName = nameof(RebuildCacheIfNotCurrentScansAll))]
+        public string BaseDir
+        {
+            get
+            {
+                bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                string profileDir = Environment.GetEnvironmentVariable(isWindows
+                    ? "USERPROFILE"
+                    : "HOME");
+
+                return Path.Combine(profileDir, ".tetestrunner");
+            }
+        }
+
+        [Fact(DisplayName = nameof(RebuildCacheIfNotCurrentScansAll))]
         public void RebuildCacheIfNotCurrentScansAll()
         {
             _fixture.Customizations.Add(new MountPointInfoBuilder());
@@ -62,7 +75,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
 
-        //[Fact(DisplayName = nameof(RebuildCacheIfForceRebuildScansAll))]
+        [Fact(DisplayName = nameof(RebuildCacheIfForceRebuildScansAll))]
         public void RebuildCacheIfForceRebuildScansAll()
         {
             _fixture.Customizations.Add(new MountPointInfoBuilder());
@@ -80,7 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             AssertMountPointsWereScanned(mountPoints);
         }
 
-        //[Fact(DisplayName = nameof(RebuildCacheFromSettingsOnlyScansOutOfDateFileSystemMountPoints))]
+        [Fact(DisplayName = nameof(RebuildCacheFromSettingsOnlyScansOutOfDateFileSystemMountPoints))]
         public void RebuildCacheFromSettingsOnlyScansOutOfDateFileSystemMountPoints()
         {
             _fixture.Customizations.Add(new MountPointInfoBuilder(FileSystemMountPointFactory.FactoryId));
@@ -187,7 +200,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     pi.ParameterType == typeof(string) &&
                     pi.Name == "place")
                 {
-                    return Path.Combine(@"C:\", context.Create<string>(), context.Create<string>());
+                    bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                    if (isWindows)
+                    {
+                        return Path.Combine(@"C:\", context.Create<string>(), context.Create<string>());
+                    }
+                    else
+                    {
+                        return Path.Combine(@"/", context.Create<string>(), context.Create<string>());
+                    }    
                 }
 
                 if (pi.Member.DeclaringType == typeof(MountPointInfo) &&
