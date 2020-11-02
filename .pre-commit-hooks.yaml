@@ -1,0 +1,7 @@
+---
+
+- id: dotnet-format
+  name: dotnet format
+  language: dotnet
+  types: ['c#']
+  entry: dotnet-format
