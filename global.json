@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "6.0.100-alpha.1.20527.2",
+    "dotnet": "6.0.100-alpha.1.20553.11",
     "runtimes": {
       "dotnet": [
         "$(MicrosoftNETCoreAppInternalPackageVersion)"
