@@ -413,6 +413,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(ThreadPoolMaxThreads)' != ''"
                                     Value="$(ThreadPoolMaxThreads)" />
 
+    <RuntimeHostConfigurationOption Include="System.StartupHookProvider.IsSupported"
+                                    Condition="'$(StartupHookSupport)' != ''"
+                                    Value="$(StartupHookSupport)"
+                                    Trim="true" />
   </ItemGroup>
 
   <!--
