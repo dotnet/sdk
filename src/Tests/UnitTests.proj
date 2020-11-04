@@ -110,4 +110,10 @@
 
     </ItemGroup>
   </Target>
+
+  <Target Name="CreateLocalHelixTestLayout" DependsOnTargets="AppendHelixPreCommand">
+    <CreateLocalHelixTestLayout
+        HelixCorrelationPayload="@(HelixCorrelationPayload)"
+        TestOutputDirectory="$(RepoRoot)\artifacts\bin\localHelixTestLayout" />
+  </Target>
 </Project>
