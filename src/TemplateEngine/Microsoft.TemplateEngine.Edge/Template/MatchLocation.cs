@@ -12,6 +12,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
         Context,
         OtherParameter,
         Baseline,
-        DefaultLanguage
+        DefaultLanguage,
+        Author
     }    
 }
