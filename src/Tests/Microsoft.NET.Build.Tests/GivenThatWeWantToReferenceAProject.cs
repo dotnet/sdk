@@ -251,14 +251,14 @@ namespace Microsoft.NET.Build.Tests
             var targetFramework = "net5.0";
             var testProjectA = new TestProject()
             {
-                Name = "A",
+                Name = "ProjectA",
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true
             };
 
             var testProjectB = new TestProject()
             {
-                Name = "B",
+                Name = "ProjectB",
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true
             };
@@ -266,7 +266,7 @@ namespace Microsoft.NET.Build.Tests
 
             var testProjectC = new TestProject()
             {
-                Name = "C",
+                Name = "ProjectC",
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true
             };
@@ -274,7 +274,7 @@ namespace Microsoft.NET.Build.Tests
             testProjectC.ReferencedProjects.Add(testProjectB);
             var testAsset = _testAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
             { 
-                if (path.Contains(testProjectA.Name))
+                if (Path.GetFileNameWithoutExtension(path) == testProjectA.Name)
                 {
                     var ns = p.Root.Name.Namespace;
                     p.Root.Add(new XElement(ns + "ItemGroup",
