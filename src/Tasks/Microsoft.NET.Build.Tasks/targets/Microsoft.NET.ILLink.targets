@@ -26,7 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        switch can flow to the runtimeconfig.json. Startup hooks are disabled
        by default since they may require assemblies, types or members that
        could be removed by the linker, causing a trimmed app to crash. -->
-  <PropertyGroup Condition="'$(EnableUnsafeBinaryFormatterSerialization)' == '' And
+  <PropertyGroup Condition="'$(StartupHookSupport)' == '' And
                             '$(PublishTrimmed)' == 'true'">
     <StartupHookSupport>false</StartupHookSupport>
   </PropertyGroup>
