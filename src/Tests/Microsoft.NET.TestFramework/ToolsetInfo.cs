@@ -280,10 +280,22 @@ namespace Microsoft.NET.TestFramework
                 ret.MicrosoftNETBuildExtensionsPathOverride = Path.Combine(buildExtensionsSdkPath, "msbuildExtensions", "Microsoft", "Microsoft.NET.Build.Extensions");
             }
 
+            var envMsbuildAdditionalSdkRsolverFolder = Environment.GetEnvironmentVariable("MSBUILDADDITIONALSDKRESOLVERSFOLDER");
             if (ret.ShouldUseFullFrameworkMSBuild)
             {
-                // Find path to MSBuildSdkResolver for full framework
-                ret.SdkResolverPath = Path.Combine(repoArtifactsDir, "bin", "Microsoft.DotNet.MSBuildSdkResolver", configuration, "net472", "SdkResolvers");
+                if (repoRoot != null)
+                {
+                    // Find path to MSBuildSdkResolver for full framework
+                    ret.SdkResolverPath = Path.Combine(repoArtifactsDir, "bin", "Microsoft.DotNet.MSBuildSdkResolver", configuration, "net472", "SdkResolvers");
+                }
+                else if (!string.IsNullOrWhiteSpace(envMsbuildAdditionalSdkRsolverFolder))
+                {
+                    ret.SdkResolverPath = Path.Combine(envMsbuildAdditionalSdkRsolverFolder, configuration, "net472", "SdkResolvers");
+                }
+                else
+                {
+                    throw new ApplicationException("Microsoft.DotNet.MSBuildSdkResolver path is not provided, set MSBUILDADDITIONALSDKRESOLVERSFOLDER or set repoRoot");
+                }
             }
 
             if (repoRoot != null)
