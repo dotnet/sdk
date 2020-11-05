@@ -1,22 +1,14 @@
-﻿<Project>
-
-  <PropertyGroup>
-    <EnableDefaultItems>false</EnableDefaultItems>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <AssemblyName>Microsoft.NET.Sdk.Publish.Tasks.Tests</AssemblyName>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-    <EndToEndTestsDisabled>true</EndToEndTestsDisabled>
-  </PropertyGroup>
-  
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <TargetFrameworks>net472;$(ToolsetTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(ToolsetTargetFramework)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
+
+    <AssemblyName>Microsoft.NET.Sdk.Publish.Tasks.Tests</AssemblyName>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <EndToEndTestsDisabled>true</EndToEndTestsDisabled>
   </PropertyGroup>
   
   <ItemGroup>
@@ -40,19 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" Exclude="$(GlobalExclude)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="**\*.resx" Exclude="$(GlobalExclude)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="Resources\TestPublishContents.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>
