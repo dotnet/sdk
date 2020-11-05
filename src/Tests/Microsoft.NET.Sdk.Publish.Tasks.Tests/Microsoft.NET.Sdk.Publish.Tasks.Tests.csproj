@@ -15,7 +15,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <TargetFrameworks>net472;$(SdkTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
   </PropertyGroup>
   
   <ItemGroup>
