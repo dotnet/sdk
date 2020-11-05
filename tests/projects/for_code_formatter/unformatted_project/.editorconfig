@@ -2,7 +2,7 @@
 root = true
 
 # C# files
-[{Program.cs,other_items/*.cs,obj/**/*.cs}]
+[{Program.cs,GeneratedTest.cs,other_items/*.cs,obj/**/*.cs}]
 
 #### Core EditorConfig Options ####
 
