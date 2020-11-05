@@ -203,16 +203,17 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.DependsOnTargets = "Build";
             getValuesCommand.Execute().Should().Pass();
 
-            var valuesResult = getValuesCommand.GetValuesWithMetadata().Select(pair => pair.value);
+            var valuesResult = getValuesCommand.GetValuesWithMetadata().Select(pair => Path.GetFullPath(pair.value));
             if (copyConflictingTransitiveContent)
             {
                 valuesResult.Count().Should().Be(2);
-                valuesResult.Should().BeEquivalentTo(Path.Combine(parentAsset.Path, parentProject.Name, contentName), Path.Combine(childAsset.Path, childProject.Name, contentName));
+                valuesResult.Should().BeEquivalentTo(Path.GetFullPath(Path.Combine(parentAsset.Path, parentProject.Name, contentName)),
+                                                     Path.GetFullPath(Path.Combine(childAsset.Path, childProject.Name, contentName)));
             }
             else
             {
                 valuesResult.Count().Should().Be(1);
-                valuesResult.First().Should().Contain(Path.Combine(parentAsset.Path, parentProject.Name, contentName));
+                valuesResult.First().Should().Contain(Path.GetFullPath(Path.Combine(parentAsset.Path, parentProject.Name, contentName)));
             }
         }
 
