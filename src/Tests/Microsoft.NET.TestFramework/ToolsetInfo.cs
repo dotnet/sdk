@@ -266,8 +266,18 @@ namespace Microsoft.NET.TestFramework
             {
                 ret.FullFrameworkMSBuildPath = ResolveCommand("MSBuild");
             }
+<<<<<<< HEAD
        
             if (repoRoot != null && ret.ShouldUseFullFrameworkMSBuild)
+=======
+
+            var microsoftNETBuildExtensionsTargetsFromEnvironment = Environment.GetEnvironmentVariable("MicrosoftNETBuildExtensionsTargets");
+            if (!string.IsNullOrWhiteSpace(microsoftNETBuildExtensionsTargetsFromEnvironment))
+            {
+                ret.MicrosoftNETBuildExtensionsPathOverride = Path.GetDirectoryName(microsoftNETBuildExtensionsTargetsFromEnvironment);
+            }
+            else if (repoRoot != null && ret.ShouldUseFullFrameworkMSBuild)
+>>>>>>> 275f58fde... Pass down MicrosoftNETBuildExtensionsTargets from env
             {
                 //  Find path to Microsoft.NET.Build.Extensions for full framework
                 string sdksPath = Path.Combine(repoArtifactsDir, "bin", configuration, "Sdks");
