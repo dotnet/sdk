@@ -1,4 +1,4 @@
-## Welcome to dotnet sdk
+## Welcome to dotnet sdk test CI
 
 This repo contains core functionality needed to create .NET projects that is shared between VisualStudio and CLI.
 
