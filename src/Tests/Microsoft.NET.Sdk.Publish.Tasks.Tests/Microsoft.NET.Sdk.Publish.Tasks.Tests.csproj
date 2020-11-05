@@ -9,6 +9,7 @@
     <AssemblyName>Microsoft.NET.Sdk.Publish.Tasks.Tests</AssemblyName>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <EndToEndTestsDisabled>true</EndToEndTestsDisabled>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   
   <ItemGroup>
