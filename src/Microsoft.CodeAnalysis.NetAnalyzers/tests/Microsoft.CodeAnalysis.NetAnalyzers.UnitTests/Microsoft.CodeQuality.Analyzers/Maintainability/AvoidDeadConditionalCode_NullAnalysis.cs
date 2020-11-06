@@ -4215,6 +4215,27 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4415, "https://github.com/dotnet/roslyn-analyzers/issues/4415")]
+        public async Task NullCheck_AfterDirectCast_NullableValueType_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+
+internal class Class1
+{
+    public static void M(object obj)
+    {
+        var d = (DateTime?)obj;
+        if (d != null)
+        {
+        }
+    }
+}
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
         public async Task NullCheck_AfterDirectCast_Diagnostic()
         {
