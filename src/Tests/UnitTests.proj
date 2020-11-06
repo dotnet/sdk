@@ -72,7 +72,6 @@
       <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/RunTestsOnHelix.sh;$(HelixPreCommands)</HelixPreCommands>
       <TestDotnetRoot>$(RepoRoot)\artifacts\bin\redist\$(Configuration)\dotnet</TestDotnetRoot>
       <TestDotnetVersion>$(Version)</TestDotnetVersion>
-      <SdksDir>$(TestDotnetRoot)\sdk\$(TestDotnetVersion)\Sdks</SdksDir>
       <MSBuildSdkResolverDir>$(RepoRoot)\artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)\artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
       <MicrosoftNETBuildExtensions>$(RepoRoot)\artifacts\bin\$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MicrosoftNETBuildExtensions>
@@ -97,11 +96,6 @@
       <HelixCorrelationPayload Condition="'$(OS)' == 'Windows_NT'" Include="$(TestDotnetRoot)">
         <PayloadDirectory>$(TestDotnetRoot)</PayloadDirectory>
         <Destination>d</Destination>
-      </HelixCorrelationPayload>
-
-      <HelixCorrelationPayload Include="$(SdksDir)">
-        <PayloadDirectory>$(SdksDir)</PayloadDirectory>
-        <Destination>s</Destination>
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="$(MicrosoftNETBuildExtensions)">
