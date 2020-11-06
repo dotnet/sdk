@@ -3360,6 +3360,45 @@ class B : A
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4411, "https://github.com/dotnet/roslyn-analyzers/issues/4411")]
+        public async Task NullCheck_AfterTryCast_04_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+internal static class Class1
+{
+    public static ReadOnlyDictionary<TKey, ReadOnlyCollection<TValue>> AsReadOnlyItems<TKey, TValue>(this IDictionary<TKey, IList<TValue>> self, IEqualityComparer<TKey> keyComparer = null)
+    {
+        _ = self ?? throw new ArgumentNullException(nameof(self));
+
+        keyComparer ??= (self as Dictionary<TKey, TValue>)?.Comparer;
+        var copy = new Dictionary<TKey, ReadOnlyCollection<TValue>>(self.Count, keyComparer);
+        foreach (var kvp in self)
+        {
+            if (kvp.Value is null)
+            {
+                copy.Add(kvp.Key, null);
+                continue;
+            }
+
+            var readOnlyValue = kvp.Value as ReadOnlyCollection<TValue> ?? new ReadOnlyCollection<TValue>(kvp.Value);
+            copy.Add(kvp.Key, readOnlyValue);
+        }
+
+        return new ReadOnlyDictionary<TKey, ReadOnlyCollection<TValue>>(copy);
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
         public async Task NullCheck_AfterTryCast_Diagnostic()
         {
