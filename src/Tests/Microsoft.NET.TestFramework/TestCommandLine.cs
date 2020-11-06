@@ -33,6 +33,8 @@ namespace Microsoft.NET.TestFramework
 
         public string TestExecutionDirectory { get; set; }
 
+        public string MsbuildAdditionalSdkRsolverFolder { get; set; }
+
         public List<string> TestConfigFiles { get; private set; } = new List<string>();
 
         public HashSet<string> TestListsToRun { get; private set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -83,6 +85,10 @@ namespace Microsoft.NET.TestFramework
                 else if (arg.Equals("-testExecutionDirectory", StringComparison.CurrentCultureIgnoreCase))
                 {
                     ret.TestExecutionDirectory = argStack.Pop();
+                }
+                else if (arg.Equals("-msbuildAdditionalSdkRsolverFolder", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    ret.MsbuildAdditionalSdkRsolverFolder = argStack.Pop();
                 }
                 else if (arg.Equals("-testConfigFile", StringComparison.CurrentCultureIgnoreCase) ||
                          arg.Equals("-testConfig", StringComparison.CurrentCultureIgnoreCase))
@@ -295,6 +301,9 @@ Other options:
   -testConfigFile         : XML file with tests to skip, or test lists that can be run (can specify multiple)
   -testList               : List of tests (from config file) which should be run (can specify multiple)
   -testExecutionDirectory : Folder for tests to create and build projects
+  -msbuildAdditionalSdkRsolverFolder
+                          : Folder for tests to override 'MsbuildAdditionalSdkRsolverFolder' environment variable in tests
+                            in order to test build built sdk resolvers.
   -showSdkInfo            : Shows SDK info (dotnet --info) for SDK which will be used
   -help                   : Show help");
         }

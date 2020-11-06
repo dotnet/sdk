@@ -134,13 +134,15 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             string msBuildSDKsPath = IsPosixShell ? "-MSBuildSDKsPath $TestSubjectMSBuildSDKsPath" : "-MSBuildSDKsPath %TestSubjectMSBuildSDKsPath%";
 
+            string msbuildAdditionalSdkRsolverFolder = IsPosixShell ? "" : "-msbuildAdditionalSdkRsolverFolder %HELIX_CORRELATION_PAYLOAD%\\r";
+
             var scheduler = new AssemblyScheduler(methodLimit: 40);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
-                string command = $"{driver}{assemblyName} {testExecutionDirectory} {msBuildSDKsPath} {(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
+                string command = $"{driver}{assemblyName} {testExecutionDirectory} {msBuildSDKsPath} {msbuildAdditionalSdkRsolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
