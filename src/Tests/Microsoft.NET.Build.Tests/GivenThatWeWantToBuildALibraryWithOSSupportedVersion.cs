@@ -277,7 +277,7 @@ namespace Microsoft.NET.Build.Tests
             return expected;
         }
 
-        private static TestProject SetUpProject(string targetFramework = "net63.0")
+        private static TestProject SetUpProject(string targetFramework = "net6.0")
         {
             TestProject testProject = new TestProject()
             {
