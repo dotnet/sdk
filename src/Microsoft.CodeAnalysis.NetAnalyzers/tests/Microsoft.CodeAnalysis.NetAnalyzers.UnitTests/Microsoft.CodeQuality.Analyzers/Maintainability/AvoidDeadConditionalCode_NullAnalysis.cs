@@ -3337,6 +3337,29 @@ End Class");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4411, "https://github.com/dotnet/roslyn-analyzers/issues/4411")]
+        public async Task NullCheck_AfterTryCast_03_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+class A
+{
+    void M(object o)
+    {
+        if (o is A a)
+        {
+            _ = (a as B)?.ToString();
+        }
+    }
+}
+
+class B : A
+{
+}
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
         public async Task NullCheck_AfterTryCast_Diagnostic()
         {
