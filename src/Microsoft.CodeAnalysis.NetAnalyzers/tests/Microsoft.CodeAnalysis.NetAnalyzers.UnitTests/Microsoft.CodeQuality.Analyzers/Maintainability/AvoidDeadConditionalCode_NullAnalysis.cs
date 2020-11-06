@@ -5504,6 +5504,26 @@ class Class1
         }
 #endif
 
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4382, "https://github.com/dotnet/roslyn-analyzers/issues/4382")]
+        public async Task TestCompilerGeneratedNullCheckNotFlagged_03()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+
+class C
+{
+    void F(IDisposable x)
+    {
+        if (x != null)
+        {
+            using (x) { }
+        }
+    }
+}");
+        }
+
         [Fact]
         public async Task StaticObjectReferenceEquals_Diagnostic()
         {

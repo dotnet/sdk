@@ -153,10 +153,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         }
 
                                         var originalOperation = operationRoot.SemanticModel.GetOperation(operation.Syntax, operationBlockContext.CancellationToken);
-                                        if (originalOperation is IAssignmentOperation or
-                                            IVariableDeclaratorOperation or IInvocationOperation)
+                                        if (originalOperation.Parent is null || !ShouldAnalyze(originalOperation.Parent))
                                         {
-                                            // Skip compiler generated IsNull operation for assignment/variable declaration/invocation within a using.
+                                            // Skip compiler generated IsNull operation.
                                             continue;
                                         }
 
