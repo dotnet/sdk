@@ -3360,7 +3360,7 @@ class B : A
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
-        [Fact, WorkItem(4411, "https://github.com/dotnet/roslyn-analyzers/issues/4411")]
+        [Fact, WorkItem(4383, "https://github.com/dotnet/roslyn-analyzers/issues/4383")]
         public async Task NullCheck_AfterTryCast_04_NoDiagnostic()
         {
             await new VerifyCS.Test
