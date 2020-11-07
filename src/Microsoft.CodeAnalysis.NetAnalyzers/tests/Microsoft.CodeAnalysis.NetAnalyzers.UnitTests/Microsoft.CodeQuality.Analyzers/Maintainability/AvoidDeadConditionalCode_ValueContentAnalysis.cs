@@ -3093,6 +3093,7 @@ public class Test
             }.RunAsync();
         }
 
+#if NETCOREAPP
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact, WorkItem(4387, "https://github.com/dotnet/roslyn-analyzers/issues/4387")]
         public async Task RangeAndIndexOperation_NoDiagnostic()
@@ -3119,5 +3120,6 @@ internal class Class1
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+#endif
     }
 }
