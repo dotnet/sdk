@@ -3092,5 +3092,32 @@ public class Test
                 LanguageVersion = CSharpLanguageVersion.CSharp9
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(4387, "https://github.com/dotnet/roslyn-analyzers/issues/4387")]
+        public async Task RangeAndIndexOperation_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+internal class Class1
+{
+    private static bool TryParseUnit(string unit)
+    {
+        char last = unit[^1];
+        if (last != 'b')
+            return false;
+
+        string subUnit = unit[1..];
+        if (subUnit != ""b"")
+            return false;
+
+        return true;
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
     }
 }
