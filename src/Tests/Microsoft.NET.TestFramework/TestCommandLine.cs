@@ -29,8 +29,6 @@ namespace Microsoft.NET.TestFramework
 
         public string SdkVersion { get; private set; }
 
-        public string MSBuildSDKsPath { get; private set; }
-
         public string TestExecutionDirectory { get; set; }
 
         public string MsbuildAdditionalSdkRsolverFolder { get; set; }
@@ -69,10 +67,6 @@ namespace Microsoft.NET.TestFramework
                 else if (arg.Equals("-sdkConfig", StringComparison.InvariantCultureIgnoreCase) && argStack.Any())
                 {
                     ret.SDKRepoConfiguration = argStack.Pop();
-                }
-                else if (arg.Equals("-MSBuildSDKsPath", StringComparison.InvariantCultureIgnoreCase) && argStack.Any())
-                {
-                    ret.MSBuildSDKsPath = argStack.Pop();
                 }
                 else if (arg.Equals("-noRepoInference", StringComparison.CurrentCultureIgnoreCase))
                 {

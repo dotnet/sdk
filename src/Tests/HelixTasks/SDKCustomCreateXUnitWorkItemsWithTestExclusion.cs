@@ -132,8 +132,6 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             // but on Windows, if we running against working item diretory, we would hit long path.
             string testExecutionDirectory = IsPosixShell ? "-testExecutionDirectory $TestExecutionDirectory" : "-testExecutionDirectory %TestExecutionDirectory%";
 
-            string msBuildSDKsPath = IsPosixShell ? "-MSBuildSDKsPath $TestSubjectMSBuildSDKsPath" : "-MSBuildSDKsPath %TestSubjectMSBuildSDKsPath%";
-
             string msbuildAdditionalSdkRsolverFolder = IsPosixShell ? "" : "-msbuildAdditionalSdkRsolverFolder %HELIX_CORRELATION_PAYLOAD%\\r";
 
             var scheduler = new AssemblyScheduler(methodLimit: 40);
@@ -142,7 +140,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
-                string command = $"{driver}{assemblyName} {testExecutionDirectory} {msBuildSDKsPath} {msbuildAdditionalSdkRsolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
+                string command = $"{driver}{assemblyName} {testExecutionDirectory} {msbuildAdditionalSdkRsolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
