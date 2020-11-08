@@ -100,71 +100,72 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 continue;
                             }
 
-                            foreach (var operation in cfg.DescendantOperations())
+                            foreach (var block in cfg.Blocks)
                             {
-                                // Skip implicit operations.
-                                // However, 'IsNull' operations are compiler generated operations corresponding to
-                                // non-implicit conditional access operations, so we should not skip them.
-                                if (operation.IsImplicit && operation.Kind != OperationKind.IsNull)
+                                foreach (var operation in block.DescendantOperations())
                                 {
-                                    continue;
-                                }
+                                    // Skip implicit operations.
+                                    // However, 'IsNull' operations are compiler generated operations corresponding to
+                                    // non-implicit conditional access operations, so we should not skip them.
+                                    if (operation.IsImplicit && operation.Kind != OperationKind.IsNull)
+                                    {
+                                        continue;
+                                    }
 
-                                switch (operation.Kind)
-                                {
-                                    case OperationKind.BinaryOperator:
-                                        var binaryOperation = (IBinaryOperation)operation;
-                                        PredicateValueKind predicateKind = GetPredicateKind(binaryOperation);
-                                        if (predicateKind != PredicateValueKind.Unknown &&
-                                            (binaryOperation.LeftOperand is not IBinaryOperation leftBinary || GetPredicateKind(leftBinary) == PredicateValueKind.Unknown) &&
-                                            (binaryOperation.RightOperand is not IBinaryOperation rightBinary || GetPredicateKind(rightBinary) == PredicateValueKind.Unknown))
-                                        {
-                                            ReportAlwaysTrueFalseOrNullDiagnostic(operation, predicateKind);
-                                        }
+                                    switch (operation.Kind)
+                                    {
+                                        case OperationKind.BinaryOperator:
+                                            var binaryOperation = (IBinaryOperation)operation;
+                                            PredicateValueKind predicateKind = GetPredicateKind(binaryOperation);
+                                            if (predicateKind != PredicateValueKind.Unknown &&
+                                                (binaryOperation.LeftOperand is not IBinaryOperation leftBinary || GetPredicateKind(leftBinary) == PredicateValueKind.Unknown) &&
+                                                (binaryOperation.RightOperand is not IBinaryOperation rightBinary || GetPredicateKind(rightBinary) == PredicateValueKind.Unknown))
+                                            {
+                                                ReportAlwaysTrueFalseOrNullDiagnostic(operation, predicateKind);
+                                            }
 
-                                        break;
+                                            break;
 
-                                    case OperationKind.Invocation:
-                                    case OperationKind.IsPattern:
-                                        predicateKind = GetPredicateKind(operation);
-                                        if (predicateKind != PredicateValueKind.Unknown)
-                                        {
-                                            ReportAlwaysTrueFalseOrNullDiagnostic(operation, predicateKind);
-                                        }
+                                        case OperationKind.Invocation:
+                                        case OperationKind.IsPattern:
+                                            predicateKind = GetPredicateKind(operation);
+                                            if (predicateKind != PredicateValueKind.Unknown)
+                                            {
+                                                ReportAlwaysTrueFalseOrNullDiagnostic(operation, predicateKind);
+                                            }
 
-                                        break;
+                                            break;
 
-                                    case OperationKind.IsNull:
-                                        // '{0}' is always/never '{1}'. Remove or refactor the condition(s) to avoid dead code.
-                                        predicateKind = GetPredicateKind(operation);
-                                        DiagnosticDescriptor rule;
-                                        switch (predicateKind)
-                                        {
-                                            case PredicateValueKind.AlwaysTrue:
-                                                rule = AlwaysTrueFalseOrNullRule;
-                                                break;
+                                        case OperationKind.IsNull:
+                                            // '{0}' is always/never '{1}'. Remove or refactor the condition(s) to avoid dead code.
+                                            predicateKind = GetPredicateKind(operation);
+                                            DiagnosticDescriptor rule;
+                                            switch (predicateKind)
+                                            {
+                                                case PredicateValueKind.AlwaysTrue:
+                                                    rule = AlwaysTrueFalseOrNullRule;
+                                                    break;
 
-                                            case PredicateValueKind.AlwaysFalse:
-                                                rule = NeverNullRule;
-                                                break;
+                                                case PredicateValueKind.AlwaysFalse:
+                                                    rule = NeverNullRule;
+                                                    break;
 
-                                            default:
+                                                default:
+                                                    continue;
+                                            }
+
+                                            // Skip IsNull operations in compiler generated finally region for using statement
+                                            if (block.IsFirstBlockOfCompilerGeneratedFinally(cfg))
+                                            {
                                                 continue;
-                                        }
+                                            }
 
-                                        var originalOperation = operationRoot.SemanticModel.GetOperation(operation.Syntax, operationBlockContext.CancellationToken);
-                                        if (originalOperation is IAssignmentOperation or
-                                            IVariableDeclaratorOperation)
-                                        {
-                                            // Skip compiler generated IsNull operation for assignment/variable declaration within a using.
-                                            continue;
-                                        }
-
-                                        var arg1 = operation.Syntax.ToString();
-                                        var arg2 = operation.Language == LanguageNames.VisualBasic ? "Nothing" : "null";
-                                        var diagnostic = operation.CreateDiagnostic(rule, arg1, arg2);
-                                        operationBlockContext.ReportDiagnostic(diagnostic);
-                                        break;
+                                            var arg1 = operation.Syntax.ToString();
+                                            var arg2 = operation.Language == LanguageNames.VisualBasic ? "Nothing" : "null";
+                                            var diagnostic = operation.CreateDiagnostic(rule, arg1, arg2);
+                                            operationBlockContext.ReportDiagnostic(diagnostic);
+                                            break;
+                                    }
                                 }
                             }
 
