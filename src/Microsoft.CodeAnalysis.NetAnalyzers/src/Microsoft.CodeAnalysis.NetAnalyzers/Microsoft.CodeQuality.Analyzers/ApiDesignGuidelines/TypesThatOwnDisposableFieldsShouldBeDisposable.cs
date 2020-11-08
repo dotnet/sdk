@@ -90,6 +90,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     SemanticModel model = symbolContext.Compilation.GetSemanticModel(classDecl.SyntaxTree);
                     IEnumerable<string> disposableFieldNames = classDecl.DescendantNodes(n => !(n is TTypeDeclarationSyntax) || ReferenceEquals(n, classDecl))
                         .SelectMany(n => GetDisposableFieldCreations(n, model, disposableFieldsHashSet, symbolContext.CancellationToken))
+                        .Where(field => !symbolContext.Options.IsConfiguredToSkipAnalysis(Rule, field.Type, namedType, symbolContext.Compilation, symbolContext.CancellationToken))
                         .Select(field => field.Name);
 
                     if (disposableFieldNames.Any())
