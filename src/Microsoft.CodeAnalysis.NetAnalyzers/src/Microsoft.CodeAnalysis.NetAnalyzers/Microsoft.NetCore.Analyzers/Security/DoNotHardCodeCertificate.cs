@@ -17,6 +17,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
+            isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeCertificateDescription));
 
         protected override SinkKind SinkKind { get { return SinkKind.HardcodedCertificate; } }

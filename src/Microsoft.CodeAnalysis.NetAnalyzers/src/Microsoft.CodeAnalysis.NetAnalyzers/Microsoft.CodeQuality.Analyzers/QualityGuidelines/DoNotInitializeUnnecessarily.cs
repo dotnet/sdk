@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotInitializeUnnecessarilyTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
             new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotInitializeUnnecessarilyMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
             DiagnosticCategory.Performance,
-            RuleLevel.IdeSuggestion,
+            RuleLevel.IdeHidden_BulkConfigurable,
             new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotInitializeUnnecessarilyDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
             isPortedFxCopRule: true,
             isDataflowRule: false);

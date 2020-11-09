@@ -32,7 +32,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              RuleLevel.Disabled,    // Code coverage tools provide superior results when done correctly.
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+                                                                             isDataflowRule: false,
+                                                                             isReportedAtCompilationEnd: true);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -99,7 +100,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 {
                     var type = (INamedTypeSymbol)context.Symbol;
                     if (!type.IsExternallyVisible() &&
-                        !IsOkToBeUnused(type, compilation,
+                        !IsOkToBeUninstantiated(type, compilation,
                             systemAttributeSymbol,
                             iConfigurationSectionHandlerSymbol,
                             configurationSectionSymbol,
@@ -281,7 +282,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             return false;
         }
 
-        public static bool IsOkToBeUnused(
+        private static bool IsOkToBeUninstantiated(
             INamedTypeSymbol type,
             Compilation compilation,
             INamedTypeSymbol? systemAttributeSymbol,
@@ -292,7 +293,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             INamedTypeSymbol? mef1ExportAttributeSymbol,
             INamedTypeSymbol? mef2ExportAttributeSymbol)
         {
-            if (type.TypeKind != TypeKind.Class || type.IsAbstract)
+            if (type.TypeKind != TypeKind.Class || type.IsAbstract || type.IsStatic)
             {
                 return true;
             }

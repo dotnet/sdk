@@ -31,6 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
+            isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWeakKDFInsufficientIterationCountDescription));
         internal static DiagnosticDescriptor MaybeUseWeakKDFInsufficientIterationCountRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5388",
@@ -40,6 +41,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
+            isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWeakKDFInsufficientIterationCountDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(

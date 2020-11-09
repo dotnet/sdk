@@ -3337,6 +3337,68 @@ End Class");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4411, "https://github.com/dotnet/roslyn-analyzers/issues/4411")]
+        public async Task NullCheck_AfterTryCast_03_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+class A
+{
+    void M(object o)
+    {
+        if (o is A a)
+        {
+            _ = (a as B)?.ToString();
+        }
+    }
+}
+
+class B : A
+{
+}
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4383, "https://github.com/dotnet/roslyn-analyzers/issues/4383")]
+        public async Task NullCheck_AfterTryCast_04_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+internal static class Class1
+{
+    public static ReadOnlyDictionary<TKey, ReadOnlyCollection<TValue>> AsReadOnlyItems<TKey, TValue>(this IDictionary<TKey, IList<TValue>> self, IEqualityComparer<TKey> keyComparer = null)
+    {
+        _ = self ?? throw new ArgumentNullException(nameof(self));
+
+        keyComparer ??= (self as Dictionary<TKey, TValue>)?.Comparer;
+        var copy = new Dictionary<TKey, ReadOnlyCollection<TValue>>(self.Count, keyComparer);
+        foreach (var kvp in self)
+        {
+            if (kvp.Value is null)
+            {
+                copy.Add(kvp.Key, null);
+                continue;
+            }
+
+            var readOnlyValue = kvp.Value as ReadOnlyCollection<TValue> ?? new ReadOnlyCollection<TValue>(kvp.Value);
+            copy.Add(kvp.Key, readOnlyValue);
+        }
+
+        return new ReadOnlyDictionary<TKey, ReadOnlyCollection<TValue>>(copy);
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
         public async Task NullCheck_AfterTryCast_Diagnostic()
         {
@@ -4144,6 +4206,27 @@ class Test
     void M1(int value)
     {
         if ((sbyte)value == value)
+        {
+        }
+    }
+}
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4415, "https://github.com/dotnet/roslyn-analyzers/issues/4415")]
+        public async Task NullCheck_AfterDirectCast_NullableValueType_NoDiagnostic()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+
+internal class Class1
+{
+    public static void M(object obj)
+    {
+        var d = (DateTime?)obj;
+        if (d != null)
         {
         }
     }
@@ -5471,6 +5554,54 @@ public class C : IDisposable
         // We should not flag compiler generate operations as redundant.
         using (c = new C())
         {
+        }
+    }
+}");
+        }
+
+#if NETCOREAPP
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4327, "https://github.com/dotnet/roslyn-analyzers/issues/4327")]
+        public async Task TestCompilerGeneratedNullCheckNotFlagged_02()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+class Class1
+{
+    static async IAsyncEnumerable<int> M(IAsyncEnumerable<int> iae)
+    {
+        await foreach (int i in iae.ConfigureAwait(false))
+        {
+            if (i > 0)
+                yield return i;
+        }
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+#endif
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
+        [Fact, WorkItem(4382, "https://github.com/dotnet/roslyn-analyzers/issues/4382")]
+        public async Task TestCompilerGeneratedNullCheckNotFlagged_03()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+
+class C
+{
+    void F(IDisposable x)
+    {
+        if (x != null)
+        {
+            using (x) { }
         }
     }
 }");

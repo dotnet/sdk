@@ -43,7 +43,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -69,7 +69,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -98,7 +98,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -120,7 +120,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -149,7 +149,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -171,7 +171,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -208,7 +208,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -236,7 +236,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -267,7 +267,7 @@ namespace TestNamespace
             var test = new VerifyCS.Test
             {
                 TestCode = csInput,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await test.RunAsync();
 
@@ -290,7 +290,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -344,7 +344,7 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 FixedState = { Sources = { csFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -385,7 +385,7 @@ End Class
             {
                 TestState = { Sources = { vbInput } },
                 FixedState = { Sources = { vbFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -425,7 +425,7 @@ End Class
             {
                 TestState = { Sources = { vbInput } },
                 FixedState = { Sources = { vbFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
 
@@ -457,7 +457,7 @@ End Class
             {
                 TestState = { Sources = { vbInput } },
                 FixedState = { Sources = { vbFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
 
@@ -489,7 +489,7 @@ End Class
             {
                 TestState = { Sources = { vbInput } },
                 FixedState = { Sources = { vbFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
 
@@ -521,7 +521,7 @@ End Class
             {
                 TestState = { Sources = { vbInput } },
                 FixedState = { Sources = { vbFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -566,7 +566,7 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 FixedState = { Sources = { csFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -604,7 +604,7 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 FixedState = { Sources = { csFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -642,7 +642,7 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 FixedState = { Sources = { csFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -680,7 +680,7 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 FixedState = { Sources = { csFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
         }
@@ -720,7 +720,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
         }
@@ -751,7 +751,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -774,7 +774,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -805,7 +805,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -828,7 +828,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -919,7 +919,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
         }
@@ -946,7 +946,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
         }
@@ -973,7 +973,7 @@ namespace TestNamespace
             var test = new VerifyCS.Test
             {
                 TestCode = csInput,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             await test.RunAsync();
         }
@@ -1013,7 +1013,7 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 FixedState = { Sources = { csFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testCulture.RunAsync();
 
@@ -1045,7 +1045,7 @@ End Class
             {
                 TestState = { Sources = { vbInput } },
                 FixedState = { Sources = { vbFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -1085,7 +1085,7 @@ namespace TestNamespace
             {
                 TestState = { Sources = { csInput } },
                 FixedState = { Sources = { csFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testCulture.RunAsync();
 
@@ -1117,7 +1117,7 @@ End Class
             {
                 TestState = { Sources = { vbInput } },
                 FixedState = { Sources = { vbFix } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -1146,7 +1146,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -1168,7 +1168,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }
@@ -1197,7 +1197,7 @@ namespace TestNamespace
             var testOrdinal = new VerifyCS.Test
             {
                 TestState = { Sources = { csInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal.RunAsync();
 
@@ -1219,7 +1219,7 @@ End Class
             var testOrdinal_vb = new VerifyVB.Test
             {
                 TestState = { Sources = { vbInput } },
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
             };
             await testOrdinal_vb.RunAsync();
         }

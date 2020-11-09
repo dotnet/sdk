@@ -85,7 +85,7 @@ CA1724 | Naming | Disabled | TypeNamesShouldNotMatchNamespacesAnalyzer, [Documen
 CA1725 | Naming | Hidden | ParameterNamesShouldMatchBaseDeclarationAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1725)
 CA1801 | Usage | Disabled | ReviewUnusedParametersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1801)
 CA1802 | Performance | Disabled | UseLiteralsWhereAppropriateAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1802)
-CA1805 | Performance | Info | DoNotInitializeUnnecessarilyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1805)
+CA1805 | Performance | Hidden | DoNotInitializeUnnecessarilyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1805)
 CA1806 | Performance | Info | DoNotIgnoreMethodResultsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1806)
 CA1810 | Performance | Disabled | InitializeStaticFieldsInlineAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1810)
 CA1812 | Performance | Disabled | AvoidUninstantiatedInternalClassesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1812)
