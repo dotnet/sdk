@@ -848,14 +848,9 @@ End Module");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_EmptyInternalStaticClass()
+        public async Task CA1812_CSharp_NoDiagnostic_EmptyInternalStaticClass()
         {
-            // Note that this is not considered a "static holder class"
-            // because it doesn't actually have any static members.
-            await VerifyCS.VerifyAnalyzerAsync(
-@"internal static class S { }",
-
-                GetCSharpResultAt(1, 23, "S"));
+            await VerifyCS.VerifyAnalyzerAsync("internal static class S { }");
         }
 
         [Fact]
