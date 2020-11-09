@@ -7,6 +7,7 @@ using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Logging;
@@ -23,6 +24,8 @@ namespace Microsoft.CodeAnalysis.Tools
         internal const int CheckFailedExitCode = 2;
         internal const int UnableToLocateMSBuildExitCode = 3;
         internal const int UnableToLocateDotNetCliExitCode = 4;
+
+        private static readonly string[] s_standardInputKeywords = { "/dev/stdin", "-" };
 
         private static ParseResult? s_parseResult;
 
@@ -148,6 +151,8 @@ namespace Microsoft.CodeAnalysis.Tools
                     fixType |= FixCategory.Whitespace;
                 }
 
+                HandleStandardInput(logger, ref include, ref exclude);
+
                 var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
 
                 var formatOptions = new FormatOptions(
@@ -186,6 +191,53 @@ namespace Microsoft.CodeAnalysis.Tools
                 {
                     Environment.CurrentDirectory = currentDirectory;
                 }
+            }
+        }
+
+        private static void HandleStandardInput(ILogger logger, ref string[] include, ref string[] exclude)
+        {
+            var isStandardMarkerUsed = false;
+            if (include.Length == 1 && s_standardInputKeywords.Contains(include[0]))
+            {
+                if (TryReadFromStandardInput(ref include))
+                {
+                    isStandardMarkerUsed = true;
+                }
+            }
+
+            if (exclude.Length == 1 && s_standardInputKeywords.Contains(exclude[0]))
+            {
+                if (isStandardMarkerUsed)
+                {
+                    logger.LogCritical(Resources.Standard_input_used_multiple_times);
+                    Environment.Exit(CheckFailedExitCode);
+                }
+
+                TryReadFromStandardInput(ref exclude);
+            }
+
+            static bool TryReadFromStandardInput(ref string[] subject)
+            {
+                if (!Console.IsInputRedirected)
+                {
+                    return false; // pass
+                }
+
+                // reset the subject array
+                Array.Clear(subject, 0, subject.Length);
+                Array.Resize(ref subject, 0);
+
+                Console.InputEncoding = Encoding.UTF8;
+                using var reader = new StreamReader(Console.OpenStandardInput(8192));
+                Console.SetIn(reader);
+
+                for (var i = 0; Console.In.Peek() != -1; ++i)
+                {
+                    Array.Resize(ref subject, subject.Length + 1);
+                    subject[i] = Console.In.ReadLine();
+                }
+
+                return true;
             }
         }
 
