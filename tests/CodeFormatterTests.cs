@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 codeStyleSeverity: DiagnosticSeverity.Error,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -113,8 +113,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 exclude: EmptyFilesList,
                 includeGenerated: true,
                 expectedExitCode: 0,
-                expectedFilesFormatted: 4,
-                expectedFileCount: 5);
+                expectedFilesFormatted: 5,
+                expectedFileCount: 6);
 
             var logLines = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
             Assert.Contains(logLines, line => line.Contains("unformatted_project.AssemblyInfo.cs"));
@@ -131,7 +131,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -193,7 +193,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -208,7 +208,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -223,7 +223,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -238,7 +238,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
 
             var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
             var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
@@ -257,7 +257,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
 
             var formatLocations = log.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
                 .Where(line => FindFormattingLogLine.Match(line).Success)
@@ -328,7 +328,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 1,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
 
             var pattern = string.Format(Resources.Formatted_code_file_0, @"(.*)");
             var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
@@ -349,7 +349,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -365,7 +365,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
@@ -381,7 +381,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 includeGenerated: false,
                 expectedExitCode: 0,
                 expectedFilesFormatted: 0,
-                expectedFileCount: 5);
+                expectedFileCount: 6);
         }
 
         [Fact]
