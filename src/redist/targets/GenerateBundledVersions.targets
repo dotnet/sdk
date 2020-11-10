@@ -43,8 +43,8 @@
       <_AspNet30RuntimePackVersion>3.0.3</_AspNet30RuntimePackVersion>
       <_AspNet30TargetingPackVersion>3.0.1</_AspNet30TargetingPackVersion>
       
-      <_AspNet31RuntimePackVersion>3.1.9</_AspNet31RuntimePackVersion>
-      <_AspNet31TargetingPackVersion>3.1.8</_AspNet31TargetingPackVersion>
+      <_AspNet31RuntimePackVersion>3.1.10</_AspNet31RuntimePackVersion>
+      <_AspNet31TargetingPackVersion>3.1.10</_AspNet31TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->
       <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
