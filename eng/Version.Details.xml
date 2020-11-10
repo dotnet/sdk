@@ -121,29 +121,29 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>7ef6d50b312217d2f7c17b9697891fa8ab98a19d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="5.0.0">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="5.0.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>5848b16d1fc803ea4892692b3b5dd9ee79955428</Sha>
+      <Sha>342bf53a6b46c183de3f97099789c75dbdab2eab</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.0-rtm.20529.4">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.1-servicing.20559.3">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>5848b16d1fc803ea4892692b3b5dd9ee79955428</Sha>
+      <Sha>342bf53a6b46c183de3f97099789c75dbdab2eab</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="5.0.0">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>5848b16d1fc803ea4892692b3b5dd9ee79955428</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-rtm.20529.5" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="5.0.0-rtm.20559.2" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>61553660e51cd7fe9a733d6cdbc20e537710b8a8</Sha>
+      <Sha>ddf3b347edcc5db3dca110839b334b22c2ed3bff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="5.0.0-rtm.20529.5" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="5.0.0-rtm.20559.2" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>61553660e51cd7fe9a733d6cdbc20e537710b8a8</Sha>
+      <Sha>ddf3b347edcc5db3dca110839b334b22c2ed3bff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="5.0.0-rtm.20529.3" CoherentParentDependency="Microsoft.WindowsDesktop.App">
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="5.0.1-servicing.20559.3" CoherentParentDependency="Microsoft.WindowsDesktop.App">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>7d4355bb5f5c1f98ded2fb0497f8795cd1b0305f</Sha>
+      <Sha>da561f28fed1f58e5b70609b40fb8f036393af62</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="5.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -199,21 +199,21 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20510.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20560.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>6813f5aa511a7a4498fa217a54219b5704a01f83</Sha>
+      <Sha>6f54e001de0c52e52578e5252cb279f5bc9a2eb6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20510.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20560.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>6813f5aa511a7a4498fa217a54219b5704a01f83</Sha>
+      <Sha>6f54e001de0c52e52578e5252cb279f5bc9a2eb6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="5.0.0-beta.20510.1">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="5.0.0-beta.20560.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>6813f5aa511a7a4498fa217a54219b5704a01f83</Sha>
+      <Sha>6f54e001de0c52e52578e5252cb279f5bc9a2eb6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="5.0.0-beta.20510.1">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="5.0.0-beta.20560.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>6813f5aa511a7a4498fa217a54219b5704a01f83</Sha>
+      <Sha>6f54e001de0c52e52578e5252cb279f5bc9a2eb6</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
