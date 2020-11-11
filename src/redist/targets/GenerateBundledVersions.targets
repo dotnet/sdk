@@ -28,17 +28,15 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <!-- TODO: Once .NET 5.0 has released, update these version numbers to 5.0.0
-           https://github.com/dotnet/installer/issues/8974 -->
-      <_NET50DefaultRuntimeFrameworkVersion>5.0.0-rc.2.20475.5</_NET50DefaultRuntimeFrameworkVersion>
-      <_NET50RuntimePackVersion>5.0.0-rc.2.20475.5</_NET50RuntimePackVersion>
-      <_NET50TargetingPackVersion>5.0.0-rc.2.20475.5</_NET50TargetingPackVersion>
-      <_WindowsDesktop50DefaultRuntimeFrameworkVersion>5.0.0-rc.2.20475.6</_WindowsDesktop50DefaultRuntimeFrameworkVersion>
-      <_WindowsDesktop50RuntimePackVersion>5.0.0-rc.2.20475.6</_WindowsDesktop50RuntimePackVersion>
-      <_WindowsDesktop50TargetingPackVersion>5.0.0-rc.2.20475.6</_WindowsDesktop50TargetingPackVersion>
-      <_AspNet50DefaultRuntimeFrameworkVersion>5.0.0-rc.2.20475.17</_AspNet50DefaultRuntimeFrameworkVersion>
-      <_AspNet50RuntimePackVersion>5.0.0-rc.2.20475.17</_AspNet50RuntimePackVersion>
-      <_AspNet50TargetingPackVersion>5.0.0-rc.2.20475.17</_AspNet50TargetingPackVersion>
+      <_NET50DefaultRuntimeFrameworkVersion>5.0.0</_NET50DefaultRuntimeFrameworkVersion>
+      <_NET50RuntimePackVersion>5.0.0</_NET50RuntimePackVersion>
+      <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
+      <_WindowsDesktop50DefaultRuntimeFrameworkVersion>5.0.0</_WindowsDesktop50DefaultRuntimeFrameworkVersion>
+      <_WindowsDesktop50RuntimePackVersion>5.0.0</_WindowsDesktop50RuntimePackVersion>
+      <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
+      <_AspNet50DefaultRuntimeFrameworkVersion>5.0.0</_AspNet50DefaultRuntimeFrameworkVersion>
+      <_AspNet50RuntimePackVersion>5.0.0</_AspNet50RuntimePackVersion>
+      <_AspNet50TargetingPackVersion>5.0.0</_AspNet50TargetingPackVersion>
 
       <_NETCoreApp31RuntimePackVersion>3.1.9</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
