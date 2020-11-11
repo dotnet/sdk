@@ -8,8 +8,8 @@
   <PropertyGroup>
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
     <AspNetCoreBlobVersion>$(VSRedistCommonAspNetCoreSharedFrameworkx6460PackageVersion)</AspNetCoreBlobVersion>
-    <CoreSetupBlobVersion>$(MicrosoftNETCoreAppInternalPackageVersion)</CoreSetupBlobVersion>
-    <WindowsDesktopBlobVersion>$(MicrosoftWindowsDesktopAppPackageVersion)</WindowsDesktopBlobVersion>
+    <CoreSetupBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx6460PackageVersion)</CoreSetupBlobVersion>
+    <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx6460PackageVersion)</WindowsDesktopBlobVersion>
 
     <!-- Change these individually to or $(CoreSetupBlobVersion), $(AspNetCoreBlobVersion), or appropriate fixed version depending if corresponding .Ref packages are unpinned. -->
     <NETCoreAppTargetingPackBlobVersion>$(CoreSetupBlobVersion)</NETCoreAppTargetingPackBlobVersion>
