@@ -1,4 +1,6 @@
-dir "C:\Program Files (x86)\Microsoft Visual Studio\
+dir "C:\Program Files (x86)\Microsoft Visual Studio\"
+dir "C:\Program Files (x86)\Microsoft Visual Studio\2019"
+dir "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview"
 
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
