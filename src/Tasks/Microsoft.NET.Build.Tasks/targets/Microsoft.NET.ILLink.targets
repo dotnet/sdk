@@ -27,7 +27,8 @@ Copyright (c) .NET Foundation. All rights reserved.
        by default since they may require assemblies, types or members that
        could be removed by the linker, causing a trimmed app to crash. -->
   <PropertyGroup Condition="'$(StartupHookSupport)' == '' And
-                            '$(PublishTrimmed)' == 'true'">
+                            '$(PublishTrimmed)' == 'true' And
+                            '$(_TargetFrameworkVersionWithoutV)' >= '6.0'">
     <StartupHookSupport>false</StartupHookSupport>
   </PropertyGroup>
 
