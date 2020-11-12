@@ -56,6 +56,10 @@ namespace Microsoft.DotNet.Cli.Utils
             {
                 using (var reaper = new ProcessReaper(_process))
                 {
+                    if (!File.Exists(_process.StartInfo.FileName))
+                    {
+                        throw new ApplicationException($"Cannot start the process. The missing file is {_process.StartInfo.FileName}, {_process.StartInfo.Arguments}, {_process.StartInfo.WorkingDirectory}");
+                    }
                     _process.Start();
                     if (processStarted != null)
                     {
