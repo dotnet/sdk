@@ -173,27 +173,6 @@ jobs:
           BuildConfig: $(_BuildConfig)
           BlobFeedUrl: $(PB_PublishBlobFeedUrl)
           PublishType: $(_PublishType)
-      - script: eng/runTestsCannotRunOnHelix.sh
-                  --configuration $(_BuildConfig)
-                  --ci
-                  $(_OfficialBuildIdArgs)
-        displayName: Run Tests Cannot Run On Helix
-        env:
-          BuildConfig: $(_BuildConfig)
-      - script: eng/common/build.sh
-              --configuration $(_BuildConfig)
-              --prepareMachine
-              --ci
-              --restore
-              --test
-              --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
-              /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
-              /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-        displayName: Run Tests in Helix
-        condition: succeededOrFailed()
-        env:
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: ''
 
     - task: PublishTestResults@2
       displayName: Publish Test Results	
