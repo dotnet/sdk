@@ -18,7 +18,7 @@
     <!-- Change these individually to or $(CoreSetupBlobVersion), $(AspNetCoreBlobVersion), or appropriate fixed version depending if corresponding .Ref packages are unpinned. -->
     <NETCoreAppTargetingPackBlobVersion>$(CoreSetupBlobVersion)</NETCoreAppTargetingPackBlobVersion>
     <AspNetCoreTargetingPackBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreTargetingPackBlobVersion>
-    <WindowsDesktopTargetingPackBlobVersion>$(WindowsDesktopBlobVersion)</WindowsDesktopTargetingPackBlobVersion>
+    <WindowsDesktopTargetingPackBlobVersion>$(VSRedistCommonWindowsDesktopTargetingPackx6450PackageVersion)</WindowsDesktopTargetingPackBlobVersion>
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
 
@@ -298,7 +298,7 @@
       </BundledLayoutPackage>
 
       <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
-        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopTargetingPackBlobVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopBlobVersion)</BaseUrl>
         <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
       </BundledLayoutComponent>
 
