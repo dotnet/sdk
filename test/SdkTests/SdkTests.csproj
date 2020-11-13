@@ -72,11 +72,11 @@
       <Supports1xRuntimes>false</Supports1xRuntimes>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22openSUSE Leap%22'))">
+    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22openSUSE%20Leap%22'))">
       <Supports1xRuntimes>false</Supports1xRuntimes>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Alpine Linux%22'))">
+    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Alpine%20Linux%22'))">
       <Supports1xRuntimes>false</Supports1xRuntimes>
     </PropertyGroup>
 
@@ -93,7 +93,8 @@
       <RuntimeVersionToInstall Include="2.1.0" />
       <RuntimeVersionToInstall Include="2.2.5" />
       <RuntimeVersionToInstall Include="3.0.0" />
-      <RuntimeVersionToInstall Include="3.1.0-preview1.19506.1" />
+      <RuntimeVersionToInstall Include="3.1.0" />
+      <RuntimeVersionToInstall Include="5.0.0" />
     </ItemGroup>
     
   </Target>
@@ -224,12 +225,9 @@
 
     <PropertyGroup>
       <SdkTestPackageVersion>$(MicrosoftNETSdkPackageVersion)</SdkTestPackageVersion>
-      <SdkTestPackageFeed>https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json</SdkTestPackageFeed>
       
       <InstallToolCommand>dotnet tool install --local $(ToolCommandName)</InstallToolCommand>
-      
       <InstallToolCommand>$(InstallToolCommand) --version $(SdkTestPackageVersion)</InstallToolCommand>
-      <InstallToolCommand>$(InstallToolCommand) --add-source $(SdkTestPackageFeed)</InstallToolCommand>
     </PropertyGroup>
     
     <Exec Command="$(ToolRunPrefix)$(InstallToolCommand)"
