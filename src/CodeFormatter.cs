@@ -194,7 +194,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     addedFilePaths.Add(document.FilePath);
 
                     var isFileIncluded = formatOptions.WorkspaceType == WorkspaceType.Folder ||
-                        (formatOptions.FileMatcher.Match(document.FilePath).HasMatches && File.Exists(document.FilePath));
+                        (formatOptions.FileMatcher.HasMatches(document.FilePath) && File.Exists(document.FilePath));
                     if (!isFileIncluded || !document.SupportsSyntaxTree)
                     {
                         continue;
