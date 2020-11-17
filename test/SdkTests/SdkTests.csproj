@@ -193,6 +193,7 @@
     <MSBuild Projects="@(TestProjectToRun)"
              Targets="RunTestsAsTool"
              BuildInParallel="true"
+             Condition = "false"
              />
   </Target>
   
