@@ -106,7 +106,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             CancellationToken cancellationToken)
         {
             var result = new CodeAnalysisResult();
-            foreach (var project in solution.Projects)
+            var projects = options.WorkspaceType == WorkspaceType.Solution
+                ? solution.Projects
+                : solution.Projects.Where(project => project.FilePath == options.WorkspaceFilePath);
+            foreach (var project in projects)
             {
                 var analyzers = projectAnalyzers[project.Id];
                 if (analyzers.IsEmpty)
