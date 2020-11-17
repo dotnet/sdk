@@ -37,6 +37,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _installUnitDescriptorCache = new InstallUnitDescriptorCache(environmentSettings);
         }
 
+        internal SettingsLoader(IEngineEnvironmentSettings environmentSettings, IMountPointManager mountPointManager) : this (environmentSettings)
+        {
+            _mountPointManager = mountPointManager;
+        }
+
         public void Save()
         {
             Save(_userTemplateCache);
@@ -159,8 +164,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             using (Timing.Over(_environmentSettings.Host, "Init Component manager"))
                 _componentManager = new ComponentManager(this, _userSettings);
-            using (Timing.Over(_environmentSettings.Host, "Init Mount Point manager"))
-                _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
+
+            if (_mountPointManager == null)
+            {
+                using (Timing.Over(_environmentSettings.Host, "Init Mount Point manager"))
+                    _mountPointManager = new MountPointManager(_environmentSettings, _componentManager);
+            }
 
             using (Timing.Over(_environmentSettings.Host, "Demand template load"))
                 EnsureTemplatesLoaded();
@@ -268,6 +277,15 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     // TODO: This should never happen - throw an error?
                     continue;
                 }
+
+                //try to demand mount point: if the mount point is not available, the method returns false
+                //if the mount point is not available, we skip it so it doesn't cause exception when scanning it
+                if (!_mountPointManager.TryDemandMountPoint(mountPoint, out IMountPoint mp))
+                {
+                    continue;
+                }
+                _mountPointManager.ReleaseMountPoint(mp);
+
                 if (forceScanAll)
                 {
                     yield return mountPoint;

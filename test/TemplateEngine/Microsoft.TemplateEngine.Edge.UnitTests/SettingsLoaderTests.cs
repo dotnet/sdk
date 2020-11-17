@@ -9,12 +9,10 @@ using AutoFixture.Kernel;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
-using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Edge.Mount.FileSystem;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
-using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -66,12 +64,37 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             SetupUserSettings(isCurrentVersion: false, mountPoints: mountPoints);
             SetupTemplates(templates);
 
-            SettingsLoader subject = new SettingsLoader(_environmentSettings);
+            MockMountPointManager mockMountPointManager = new MockMountPointManager(_environmentSettings);
+            SettingsLoader subject = new SettingsLoader(_environmentSettings, mockMountPointManager);
 
             subject.RebuildCacheFromSettingsIfNotCurrent(false);
 
             // All mount points should have been scanned
             AssertMountPointsWereScanned(mountPoints);
+        }
+
+        [Fact(DisplayName = nameof(RebuildCacheSkipsNonAccessibleMounts))]
+        public void RebuildCacheSkipsNonAccessibleMounts()
+        {
+            _fixture.Customizations.Add(new MountPointInfoBuilder());
+            List<MountPointInfo> availableMountPoints = _fixture.CreateMany<MountPointInfo>().ToList();
+            List<MountPointInfo> unavailableMountPoints = _fixture.CreateMany<MountPointInfo>().ToList();
+            List<MountPointInfo> allMountPoints = availableMountPoints.Concat(unavailableMountPoints).ToList();
+
+            List<TemplateInfo> templates = TemplatesFromMountPoints(allMountPoints);
+
+            SetupUserSettings(isCurrentVersion: false, mountPoints: allMountPoints);
+            SetupTemplates(templates);
+
+            MockMountPointManager mockMountPointManager = new MockMountPointManager(_environmentSettings);
+            mockMountPointManager.UnavailableMountPoints.AddRange(unavailableMountPoints);
+            SettingsLoader subject = new SettingsLoader(_environmentSettings, mockMountPointManager);
+
+            subject.RebuildCacheFromSettingsIfNotCurrent(false);
+
+            // All mount points should have been scanned
+            AssertMountPointsWereScanned(availableMountPoints);
+            AssertMountPointsWereNotScanned(unavailableMountPoints);
         }
 
 
@@ -85,7 +108,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             SetupUserSettings(isCurrentVersion: true, mountPoints: mountPoints);
             SetupTemplates(templates);
 
-            SettingsLoader subject = new SettingsLoader(_environmentSettings);
+            MockMountPointManager mockMountPointManager = new MockMountPointManager(_environmentSettings);
+            SettingsLoader subject = new SettingsLoader(_environmentSettings, mockMountPointManager);
 
             subject.RebuildCacheFromSettingsIfNotCurrent(true);
 
@@ -126,7 +150,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             SetupUserSettings(isCurrentVersion: true, mountPoints: mountPoints);
             SetupTemplates(templates);
 
-            SettingsLoader subject = new SettingsLoader(_environmentSettings);
+            MockMountPointManager mockMountPointManager = new MockMountPointManager(_environmentSettings);
+            SettingsLoader subject = new SettingsLoader(_environmentSettings, mockMountPointManager);
 
             subject.RebuildCacheFromSettingsIfNotCurrent(false);
 
@@ -178,6 +203,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 .ToArray();
 
             Assert.Equal(expectedScannedDirectories, actualScannedDirectories);
+        }
+        private void AssertMountPointsWereNotScanned(IEnumerable<MountPointInfo> mountPoints)
+        {
+            IEnumerable <string> expectedScannedDirectories = mountPoints.Select(x => x.Place);
+            IEnumerable<string> actualScannedDirectories = _fileSystem.DirectoriesScanned.Select(dir => Path.Combine(dir.DirectoryName, dir.Pattern));
+            Assert.Empty(actualScannedDirectories.Intersect(expectedScannedDirectories));
         }
 
         public class MountPointInfoBuilder : ISpecimenBuilder
