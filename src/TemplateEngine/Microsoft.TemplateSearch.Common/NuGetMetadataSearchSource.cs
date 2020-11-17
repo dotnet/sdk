@@ -20,7 +20,7 @@ namespace Microsoft.TemplateSearch.Common
             _searchInfoFileProvider = new BlobStoreSourceFileProvider();
         }
 
-        public override string DisplayName => "NuGet";
+        public override string DisplayName => "NuGet.org";
 
         public async override Task<bool> TryConfigure(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IInstallUnitDescriptor> existingInstallDescriptors)
         {

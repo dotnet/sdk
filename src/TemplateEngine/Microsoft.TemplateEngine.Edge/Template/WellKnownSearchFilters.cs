@@ -183,13 +183,23 @@ namespace Microsoft.TemplateEngine.Edge.Template
             };
         }
 
+        /// <summary>
+        /// Creates predicate for matching the template and given author value
+        /// </summary>
+        /// <param name="author">author to use for match</param>
+        /// <returns>A predicate that returns if the given template matches defined author</returns>
         public static Func<ITemplateInfo, MatchInfo?> AuthorFilter(string author)
         {
             return (template) =>
             {
-                if (string.IsNullOrEmpty(author) || string.IsNullOrWhiteSpace(template.Author))
+                if (string.IsNullOrWhiteSpace(author))
                 {
                     return null;
+                }
+
+                if (string.IsNullOrWhiteSpace(template.Author))
+                {
+                    return new MatchInfo { Location = MatchLocation.Author, Kind = MatchKind.Mismatch };
                 }
 
                 int authorIndex = template.Author.IndexOf(author, StringComparison.OrdinalIgnoreCase);

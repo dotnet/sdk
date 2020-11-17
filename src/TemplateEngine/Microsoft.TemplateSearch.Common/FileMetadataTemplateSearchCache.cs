@@ -50,6 +50,11 @@ namespace Microsoft.TemplateSearch.Common
         {
             EnsureInitialized();
 
+            if (string.IsNullOrWhiteSpace(searchName))
+            {
+                return _templateDiscoveryMetadata.TemplateCache;
+            }
+
             return _templateDiscoveryMetadata.TemplateCache.Where(template => template.Name.IndexOf(searchName, StringComparison.OrdinalIgnoreCase) >= 0
                                                     || template.ShortName.IndexOf(searchName, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
         }

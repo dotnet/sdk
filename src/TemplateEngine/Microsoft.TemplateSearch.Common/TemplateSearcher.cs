@@ -25,12 +25,6 @@ namespace Microsoft.TemplateSearch.Common
         public async Task<SearchResults> SearchForTemplatesAsync(IReadOnlyList<IInstallUnitDescriptor> existingInstallDescriptors, string inputTemplateName)
         {
             List<TemplateSourceSearchResult> matchesForAllSources = new List<TemplateSourceSearchResult>();
-
-            if (string.IsNullOrEmpty(inputTemplateName))
-            {
-                return new SearchResults();
-            }
-
             bool anySearchersConfigured = false;
 
             foreach (ITemplateSearchSource searchSource in _environmentSettings.SettingsLoader.Components.OfType<ITemplateSearchSource>())
