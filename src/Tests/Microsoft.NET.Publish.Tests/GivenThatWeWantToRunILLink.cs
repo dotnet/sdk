@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
@@ -20,6 +21,8 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
+using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -284,7 +287,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("net5.0")]
+        [InlineData("net6.0")]
         public void ILLink_verify_analysis_warnings_hello_world_app(string targetFramework)
         {
             var projectName = "AnalysisWarningsOnHelloWorldApp";
@@ -334,24 +337,17 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2080: System.Resources.ResourceReader.<>c.<InitializeBinaryFormatter>b__6_1(",
                     "ILLink : Trim analysis warning IL2060: System.Resources.ResourceReader.<>c.<InitializeBinaryFormatter>b__6_1(",
                     "ILLink : Trim analysis warning IL2075: System.Diagnostics.Tracing.EventSource.CreateManifestAndDescriptors(Type,String,EventSource,EventManifestOptions",
-                    "ILLink : Trim analysis warning IL2055: System.RuntimeTypeHandle.GetTypeHelper(Type,Type[],IntPtr,Int32",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.Associates.AssignAssociates(Int32,RuntimeType,RuntimeType",
-                    "ILLink : Trim analysis warning IL2065: System.Reflection.CustomAttribute.AddCustomAttributes(ListBuilder`1&,RuntimeModule,Int32,RuntimeType,Boolean,RuntimeType.ListBuilder<Object>",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.CustomAttribute.FilterCustomAttributeRecord(MetadataToken,MetadataImport&,RuntimeModule,MetadataToken,RuntimeType,Boolean,ListBuilder`1&,RuntimeType&,IRuntimeMethodInfo&,Boolean&",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.CustomAttribute.GetAttributeUsage(RuntimeType",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.CustomAttributeData.CustomAttributeData(RuntimeModule,MetadataToken,ConstArray&",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetMemberRefToken(MethodBase,IEnumerable<Type>",
-                    "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.NullableTypeInfo.WriteData(TraceLoggingDataCollector,PropertyValue",
-                    "ILLink : Trim analysis warning IL2070: System.RuntimeType.GetMethodBase(RuntimeType,RuntimeMethodHandleInternal",
-                    "ILLink : Trim analysis warning IL2055: System.Reflection.SignatureTypeExtensions.TryMakeGenericType(Type,Type[]",
-                    "ILLink : Trim analysis warning IL2055: System.Reflection.Emit.TypeBuilderInstantiation.Substitute(Type[]"
+                    "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.NullableTypeInfo.WriteData(PropertyValue",
+                    "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetGenericMethodBaseDefinition(MethodBase",
+                    "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetGenericMethodBaseDefinition(MethodBase",
+                    "ILLink : Trim analysis warning IL2055: System.RuntimeTypeHandle.GetTypeHelper(Type,Type[],IntPtr,Int32"
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var result = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name)).Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false");
-
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", $"/p:SelfContained=true", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false");
             result.Should().Pass();
             //This function doesn't use an XML file like the runtime
             //to silence warnings since will make the test to fail only
@@ -362,21 +358,41 @@ namespace Microsoft.NET.Publish.Tests
             var warnings = result.StdOut.Split('\n','\r', ')').Where(line => line.StartsWith("ILLink :"));
             var extraWarnings = warnings.Except(expectedOutput);
             var missingWarnings = expectedOutput.Except(warnings);
+            
+            StringBuilder errorMessage = new StringBuilder();
 
-            string errorMessage = $"The execution of a hello world app generated a diff in the number of warnings the app produces{Environment.NewLine}{Environment.NewLine}";
+            if (missingWarnings.Any() || extraWarnings.Any()) {
+                // Print additional information to recognize which framework assemblies are being used.
+                errorMessage.Append($"Target framework from test: {targetFramework}{Environment.NewLine}");
+                errorMessage.Append($"Runtime identifier: {rid}{Environment.NewLine}");
+
+                // Get the array of runtime assemblies inside the publish folder.
+                string[] runtimeAssemblies = Directory.GetFiles(publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName, "*.dll");
+                var paths = new List<string>(runtimeAssemblies);
+                var resolver = new PathAssemblyResolver(paths);
+                var mlc = new MetadataLoadContext(resolver, "System.Private.CoreLib");
+                using (mlc)
+                {
+                    Assembly assembly = mlc.LoadFromAssemblyPath(Path.Combine(publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName, "System.Private.CoreLib.dll"));
+                    string assemblyVersionInfo = (string) assembly.CustomAttributes.Where(ca => ca.AttributeType.Name == "AssemblyInformationalVersionAttribute").Select(ca => ca.ConstructorArguments[0].Value).FirstOrDefault();
+                    errorMessage.Append($"Runtime Assembly Informational Version: {assemblyVersionInfo}{Environment.NewLine}");
+                }
+                errorMessage.Append($"The execution of a hello world app generated a diff in the number of warnings the app produces{Environment.NewLine}{Environment.NewLine}");
+            }
             if (missingWarnings.Any())
             {
-                errorMessage += $"This is a list of missing linker warnings generated with your change using a console app, if you are working on make things linker" +
-                    $" friendly please also submit a PR deleting these warnings:{Environment.NewLine}";
+                errorMessage.Append($"This is a list of missing linker warnings generated with your change using a console app, if you are working on make things linker" +
+                    $" friendly please also submit a PR deleting these warnings:{Environment.NewLine}");
                 foreach (var missingWarning in missingWarnings)
-                    errorMessage += "-  " + missingWarning + Environment.NewLine;
+                    errorMessage.Append("-  " + missingWarning + Environment.NewLine);
             }
-            if (extraWarnings.Any()) { 
-                errorMessage += $"This is a list of extra linker warnings generated with your change using a console app:{Environment.NewLine}";
+            if (extraWarnings.Any())
+            {
+                errorMessage.Append($"This is a list of extra linker warnings generated with your change using a console app:{Environment.NewLine}");
                 foreach (var extraWarning in extraWarnings)
-                    errorMessage += "+  " + extraWarning + Environment.NewLine;
+                    errorMessage.Append("+  " + extraWarning + Environment.NewLine);
             }
-            Assert.True(!missingWarnings.Any() && !extraWarnings.Any(), errorMessage);
+            Assert.True(!missingWarnings.Any() && !extraWarnings.Any(), errorMessage.ToString());
         }
 
         [Theory]
