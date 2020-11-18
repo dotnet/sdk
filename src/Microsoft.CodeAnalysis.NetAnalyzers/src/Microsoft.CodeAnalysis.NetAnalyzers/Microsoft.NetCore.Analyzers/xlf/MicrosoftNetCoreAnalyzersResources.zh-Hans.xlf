@@ -138,7 +138,7 @@
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
-        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).</source>
+        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">表示 Dispose 实现的方法没有调用 GC.SuppressFinalize；或不表示 Dispose 实现的方法调用了 GC.SuppressFinalize；或方法调用了 GC.SuppressFinalize 并传递 this (在 Visual Basic 中是 Me)以外的某个值。</target>
         <note />
       </trans-unit>

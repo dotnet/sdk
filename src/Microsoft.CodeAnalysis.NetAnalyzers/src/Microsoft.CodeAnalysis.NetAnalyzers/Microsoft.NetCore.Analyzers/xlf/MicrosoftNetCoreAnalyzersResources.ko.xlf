@@ -138,7 +138,7 @@
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
-        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).</source>
+        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">Dispose를 구현하는 메서드는 GC.SuppressFinalize를 호출하지 않지만 Dispose를 구현하지 않는 메서드는 GC.SuppressFinalize를 호출합니다. 메서드는 GC.SuppressFinalize를 호출하고 다른 개체(Visual Basic의 경우 Me)를 전달합니다.</target>
         <note />
       </trans-unit>

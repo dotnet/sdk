@@ -439,7 +439,7 @@
     <value>Dispose methods should call SuppressFinalize</value>
   </data>
   <data name="CallGCSuppressFinalizeCorrectlyDescription" xml:space="preserve">
-    <value>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).</value>
+    <value>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</value>
   </data>
   <data name="CallGCSuppressFinalizeCorrectlyMessageNotCalledWithFinalizer" xml:space="preserve">
     <value>Change {0} to call {1}. This will prevent unnecessary finalization of the object once it has been disposed and it has fallen out of scope.</value>
