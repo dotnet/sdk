@@ -18,7 +18,7 @@ REM use build env to have stage 0 dotnet on the PATH
 .\artifacts\sdk-build-env.bat
 
 REM run the special test target CreateLocalHelixTestLayout. To have the test layout created on disk.
-dotnet msbuild /restore /t:CreateLocalHelixTestLayout .\src\Tests\UnitTests.proj /p:creator=dotnetsdkdev  /p:_CustomHelixTargetQueue=Windows.Server.Amd64.VS2019.BT.Open /bl
+dotnet msbuild /restore /t:CreateLocalHelixTestLayout .\src\Tests\UnitTests.proj /p:creator=dotnetsdkdev  /p:_CustomHelixTargetQueue=Windows.Server.Amd64.VS2019.Pre.Open /bl
 ```
 
 Copy the result of `artifacts\bin\localHelixTestLayout` to another directory or VM. For example to `C:\helix\localHelixTestLayout`. See "Folders under localHelixTestLayout" for the content. This is _correlation_ payload in helix term.
