@@ -10,7 +10,6 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
@@ -22,7 +21,6 @@ using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -292,7 +290,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var projectName = "AnalysisWarningsOnHelloWorldApp";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            List<string> expectedOutput = new List<string> () {
+            List<string> expectedOutput = new List<string>() {
                     "ILLink : Trim analysis warning IL2059: System.Reflection.RuntimeConstructorInfo.Invoke(Object,BindingFlags,Binder,Object[],CultureInfo",
                     "ILLink : Trim analysis warning IL2070: System.Reflection.RuntimeAssembly.AddPublicNestedTypes(Type,List<Type>,List<Exception>",
                     "ILLink : Trim analysis warning IL2026: System.Reflection.RuntimeModule.ResolveLiteralField(Int32,Type[],Type[]",
@@ -355,13 +353,14 @@ namespace Microsoft.NET.Publish.Tests
             //missing warnings also. It doesn't use BeEquivalentTo
             //function that warns for any new or missing warnings
             //since the error experience is not good for a developer
-            var warnings = result.StdOut.Split('\n','\r', ')').Where(line => line.StartsWith("ILLink :"));
+            var warnings = result.StdOut.Split('\n', '\r', ')').Where(line => line.StartsWith("ILLink :"));
             var extraWarnings = warnings.Except(expectedOutput);
             var missingWarnings = expectedOutput.Except(warnings);
-            
+
             StringBuilder errorMessage = new StringBuilder();
 
-            if (missingWarnings.Any() || extraWarnings.Any()) {
+            if (missingWarnings.Any() || extraWarnings.Any())
+            {
                 // Print additional information to recognize which framework assemblies are being used.
                 errorMessage.Append($"Target framework from test: {targetFramework}{Environment.NewLine}");
                 errorMessage.Append($"Runtime identifier: {rid}{Environment.NewLine}");
@@ -374,7 +373,7 @@ namespace Microsoft.NET.Publish.Tests
                 using (mlc)
                 {
                     Assembly assembly = mlc.LoadFromAssemblyPath(Path.Combine(publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName, "System.Private.CoreLib.dll"));
-                    string assemblyVersionInfo = (string) assembly.CustomAttributes.Where(ca => ca.AttributeType.Name == "AssemblyInformationalVersionAttribute").Select(ca => ca.ConstructorArguments[0].Value).FirstOrDefault();
+                    string assemblyVersionInfo = (string)assembly.CustomAttributes.Where(ca => ca.AttributeType.Name == "AssemblyInformationalVersionAttribute").Select(ca => ca.ConstructorArguments[0].Value).FirstOrDefault();
                     errorMessage.Append($"Runtime Assembly Informational Version: {assemblyVersionInfo}{Environment.NewLine}");
                 }
                 errorMessage.Append($"The execution of a hello world app generated a diff in the number of warnings the app produces{Environment.NewLine}{Environment.NewLine}");
@@ -1086,7 +1085,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var ns = project.Root.Name.Namespace;
 
-            project.Root.Add (new XElement(ns + "ItemGroup",
+            project.Root.Add(new XElement(ns + "ItemGroup",
                                 new XElement("EmbeddedResource",
                                     new XAttribute("Include", substitutionsFilename),
                                     new XElement("LogicalName", substitutionsFilename))));
@@ -1110,11 +1109,11 @@ namespace Microsoft.NET.Publish.Tests
         {
             var ns = project.Root.Name.Namespace;
 
-            project.Root.Add (new XElement(ns + "ItemGroup",
+            project.Root.Add(new XElement(ns + "ItemGroup",
                                 new XElement("RuntimeHostConfigurationOption",
                                     new XAttribute("Include", "DisableFeature"),
                                     new XAttribute("Value", "true"),
-                                    new XAttribute("Trim", trim.ToString ()))));
+                                    new XAttribute("Trim", trim.ToString()))));
         }
 
         private TestProject CreateTestProjectWithAnalysisWarnings(string targetFramework, string projectName)
@@ -1208,7 +1207,8 @@ public class Program
 }
 ";
 
-            if (referenceProjectName == null) {
+            if (referenceProjectName == null)
+            {
                 return testProject;
             }
 
