@@ -138,7 +138,7 @@
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
-        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).</source>
+        <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">Метод, являющийся реализацией Dispose, не вызывает GC.SuppressFinalize, метод, не являющийся реализацией Dispose, вызывает GC.SuppressFinalize, либо метод вызывает GC.SuppressFinalize и передает нечто иное (Me в Visual Basic).</target>
         <note />
       </trans-unit>
