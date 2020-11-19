@@ -6,7 +6,7 @@
       PackageId is used by Restore. If we set it to Microsoft.CodeQuality.Analyzers
       Restore would conclude that there is a cyclic dependency between us and the Microsoft.CodeQuality.Analyzers nuget package.
     -->
-    <PackageId>*$(MSBuildProjectFullPath)*</PackageId>
+    <PackageId>*$(MSBuildProjectFile)*</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.CodeQuality.CSharp.Analyzers" />
