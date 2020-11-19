@@ -208,5 +208,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>72b28b7e023d4c3fffa0a0b9748a7d4e8cc799be</Sha>
     </Dependency>
+    <Dependency Name="System.Reflection.MetadataLoadContext" Version="5.0.0">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>20aa7ad9fd4890be28ab4673a796e9b5928ceabd</Sha>
+    </Dependency>
   </ToolsetDependencies>
 </Dependencies>

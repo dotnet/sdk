@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="5.0.0" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="$(SystemReflectionMetadataLoadContextVersion)" />
   </ItemGroup>
 
   <ItemGroup>
