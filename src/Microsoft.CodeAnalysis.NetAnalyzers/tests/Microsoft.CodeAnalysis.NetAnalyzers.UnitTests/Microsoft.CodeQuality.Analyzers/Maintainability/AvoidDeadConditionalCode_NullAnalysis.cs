@@ -6912,5 +6912,31 @@ public class Class1
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
             }.RunAsync();
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(3845, "https://github.com/dotnet/roslyn-analyzers/issues/3845")]
+        public async Task ParamArrayNullCheckIsNotFlagged()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    public void M(params int[] p)
+    {
+        if (p == null)
+        {
+        }
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class C
+    Public Sub M(ParamArray p As Integer())
+        If p is Nothing Then
+        End If
+    End Sub
+End Class
+");
+        }
     }
 }

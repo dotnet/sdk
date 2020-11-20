@@ -5970,22 +5970,24 @@ public class C
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
-        [Fact, WorkItem(2528, "https://github.com/dotnet/roslyn-analyzers/issues/2528")]
-        public async Task ParamArrayIsNotFlagged()
+        [Fact]
+        [WorkItem(2528, "https://github.com/dotnet/roslyn-analyzers/issues/2528")]
+        [WorkItem(3845, "https://github.com/dotnet/roslyn-analyzers/issues/3845")]
+        public async Task ParamArrayIsFlagged()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
     public void M(params int[] p)
     {
-        var x = p.Length;
+        var x = [|p|].Length;
     }
 }");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
     Public Sub M(ParamArray p As Integer())
-        Dim x = p.Length
+        Dim x = [|p|].Length
     End Sub
 End Class
 ");
