@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Template
 {
@@ -75,21 +76,14 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 {
                     return null;
                 }
-
-                if (template.Tags != null && template.Tags.TryGetValue("type", out ICacheTag typeTag))
+                if (template.GetTemplateType()?.Equals(context, StringComparison.OrdinalIgnoreCase) ?? false)
                 {
-                    if (typeTag.ChoicesAndDescriptions.ContainsKey(context))
-                    {
-                        return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Exact };
-                    }
-                    else
-                    {
-                        return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Mismatch };
-                    }
+                    return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Exact };
                 }
-
-                // type is specified for the filter, but missing in template
-                return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Mismatch };
+                else
+                {
+                    return new MatchInfo { Location = MatchLocation.Context, Kind = MatchKind.Mismatch };
+                }
             };
         }
 
@@ -105,19 +99,12 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     return null;
                 }
 
-                if (template.Tags != null && template.Tags.TryGetValue("language", out ICacheTag languageTag))
+                if (template.GetLanguage()?.Equals(language, StringComparison.OrdinalIgnoreCase) ?? false)
                 {
-                    if (languageTag.ChoicesAndDescriptions.ContainsKey(language))
-                    {
-                        return new MatchInfo { Location = MatchLocation.Language, Kind = MatchKind.Exact };
-                    }
-                    else
-                    {
-                        return new MatchInfo { Location = MatchLocation.Language, Kind = MatchKind.Mismatch };
-                    }
+                    return new MatchInfo { Location = MatchLocation.Language, Kind = MatchKind.Exact };
                 }
                 else
-                {   // user specified a language, but the template didnt.
+                {
                     return new MatchInfo { Location = MatchLocation.Language, Kind = MatchKind.Mismatch };
                 }
             };
