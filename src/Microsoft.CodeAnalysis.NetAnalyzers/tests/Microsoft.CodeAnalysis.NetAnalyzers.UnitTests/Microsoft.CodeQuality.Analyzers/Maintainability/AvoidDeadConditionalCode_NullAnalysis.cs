@@ -6885,7 +6885,7 @@ public class Class1
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
-        [Theory(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3685")]
+        [Theory, WorkItem(3685, "https://github.com/dotnet/roslyn-analyzers/issues/3685")]
         [InlineData("IsNullOrWhiteSpace")]
         [InlineData("IsNullOrEmpty")]
         public async Task StringNullCheckApis(string apiName)
