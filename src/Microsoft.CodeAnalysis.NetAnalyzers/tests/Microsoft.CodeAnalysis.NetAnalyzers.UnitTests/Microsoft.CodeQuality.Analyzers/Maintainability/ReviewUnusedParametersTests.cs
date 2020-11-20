@@ -965,7 +965,7 @@ End Class"
                     .AddAnalyzerConfigDocument(
                         ".editorconfig",
                         SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
-                        filePath: @"z:\.editorconfig")
+                         filePath: @"/tmp/.editorconfig")
                     .Project.Solution;
             }
         }
@@ -1053,7 +1053,7 @@ End Class"
                     .AddAnalyzerConfigDocument(
                         ".editorconfig",
                         SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
-                        filePath: @"z:\.editorconfig")
+                        filePath: @"/tmp/.editorconfig")
                     .Project.Solution;
             }
         }
