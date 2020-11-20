@@ -168,6 +168,11 @@
                                DefaultVersion="2.2.0"
                                LatestVersion="2.2.8"/>
     </ItemGroup>
+    
+    <PropertyGroup>
+      <PortableProduktMonikerRid Condition="'$(PortableProduktMonikerRid)' == ''">$(ProductMonikerRid)</PortableProduktMonikerRid>
+    </PropertyGroup>
+      
 
     <PropertyGroup>
       <BundledVersionsPropsContent>
@@ -197,6 +202,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
     <NETCoreSdkVersion>$(Version)</NETCoreSdkVersion>
     <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
+    <NETCoreSdkPortableRuntimeIdentifier>$(PortableProduktMonikerRid)</NETCoreSdkPortableRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkBeingBuiltIsPreview)</_NETCoreSdkIsPreview>
   </PropertyGroup>
   <ItemGroup>
