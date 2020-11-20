@@ -25,9 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Dictionary<string, string> allRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
             IProcessor sourceRenameProcessor = SetupRenameProcessor(environmentSettings, fileRenames);
-
-            IReadOnlyDictionary<string, string> symbolBasedRenames = SetupSymbolBasedRenames(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet, symbolBasedFileRenames);
-            IProcessor symbolRenameProcessor = SetupRenameProcessor(environmentSettings, symbolBasedRenames);
+            IProcessor symbolRenameProcessor = SetupSymbolBasedRenameProcessor(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet, symbolBasedFileRenames);
 
             IDirectory sourceBaseDirectoryInfo = configFile.Parent.Parent.DirectoryInfo(sourceDirectory.TrimEnd('/'));
 
@@ -62,56 +60,55 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        // Creates and returns the processor used to create the file rename mapping.
+        // Creates and returns the processor used to create the file rename mapping for source based file renames.
         private static IProcessor SetupRenameProcessor(IEngineEnvironmentSettings environmentSettings, IReadOnlyDictionary<string, string> substringReplacementMap)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
-
             foreach (KeyValuePair<string, string> replacement in substringReplacementMap)
             {
                 IOperationProvider replacementOperation = new Replacement(replacement.Key.TokenConfig(), replacement.Value, null, true);
                 operations.Add(replacementOperation);
             }
-
-            IVariableCollection variables = new VariableCollection();
-            EngineConfig config = new EngineConfig(environmentSettings, variables);
-            IProcessor processor = Processor.Create(config, operations);
-            return processor;
+            return SetupProcessor(environmentSettings, operations);
         }
 
-        // Generates a mapping from source to target substrings in filenames, based on the parameters with FileRename defined.
-        // Also sets up rename concerns for the target directory.
-        private static IReadOnlyDictionary<string, string> SetupSymbolBasedRenames(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet, IReadOnlyList<IReplacementTokens> symbolBasedFileRenames)
+        // Creates and returns the processor used to create the file rename mapping based on the symbols with fileRename defined.
+        // Also sets up rename for the target directory.
+        private static IProcessor SetupSymbolBasedRenameProcessor(IEngineEnvironmentSettings environmentSettings, string sourceName, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameterSet, IReadOnlyList<IReplacementTokens> symbolBasedFileRenames)
         {
-            Dictionary<string, string> substringRenames = new Dictionary<string, string>(StringComparer.Ordinal);
+            List<IOperationProvider> operations = new List<IOperationProvider>();
+            SetupRenameForTargetDirectory(sourceName, resolvedNameParamValue, ref targetDirectory, operations);
 
-            SetupRenameForTargetDirectory(sourceName, resolvedNameParamValue, ref targetDirectory, substringRenames);
-
-            if (symbolBasedFileRenames == null)
+            if (symbolBasedFileRenames != null)
             {
-                return substringRenames;
-            }
-
-            foreach (IReplacementTokens fileRenameToken in symbolBasedFileRenames)
-            {
-                if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object value) && value is string valueString)
+                foreach (IReplacementTokens fileRenameToken in symbolBasedFileRenames)
                 {
-                    substringRenames.Add(fileRenameToken.OriginalValue.Value, valueString);
+                    if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object value) && value is string valueString)
+                    {
+                        operations.Add(new Replacement(fileRenameToken.OriginalValue, valueString, null, true));
+                    }
                 }
             }
-            return substringRenames;
+            return SetupProcessor(environmentSettings, operations);
         }
 
         // Sets up a rename for the target directory based on the "name" parameter.
-        private static void SetupRenameForTargetDirectory(string sourceName, object resolvedNameParamValue, ref string targetDirectory, Dictionary<string, string> substringRenames)
+        private static void SetupRenameForTargetDirectory(string sourceName, object resolvedNameParamValue, ref string targetDirectory, List<IOperationProvider> operations)
         {
-            // setup the rename of the base directory to the output "name" param directory
             if (resolvedNameParamValue != null && sourceName != null)
             {
                 string targetName = ((string)resolvedNameParamValue).Trim();
                 targetDirectory = targetDirectory.Replace(sourceName, targetName);
-                substringRenames.Add(sourceName, targetName);
+                operations.Add(new Replacement(sourceName.TokenConfig(), targetName, null, true));
             }
+        }
+
+        private static IProcessor SetupProcessor(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IOperationProvider> operations)
+        {
+            IVariableCollection variables = new VariableCollection();
+            EngineConfig config = new EngineConfig(environmentSettings, variables);
+            IProcessor processor = Processor.Create(config, operations);
+            return processor;
         }
     }
 }

@@ -309,6 +309,59 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal("testproject2_file.txt", allChanges["replace2_file.txt"]);
         }
 
+        [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_WhenFormsResultInSameValue))]
+        public void CanGenerateFileRenamesForSymbolBasedRenames_WhenFormsResultInSameValue()
+        {
+            //environment
+            IEngineEnvironmentSettings environment = TemplateConfigTestHelpers.GetTestEnvironment();
+
+            //simulate template files
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            // template.json
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, String.Empty);
+            // content
+            templateSourceFiles.Add("replace1_file.txt", null);
+            templateSourceFiles.Add("replace2_file.txt", null);
+            TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
+            setup.WriteSource();
+
+            //get target directory
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+
+            //prepare parameters
+            ParameterSet parameters = new ParameterSet(SimpleConfigModel.FromJObject(environment, JObject.Parse("{}")));
+            Parameter nameParameter = new Parameter()
+            {
+                Name = "name"
+            };
+            Parameter testParameterIdentity = new Parameter()
+            {
+                Name = "test{-VALUE-FORMS-}identity"
+            };
+            Parameter testParameterLC = new Parameter()
+            {
+                Name = "test{-VALUE-FORMS-}lc"
+            };
+            parameters.AddParameter(nameParameter);
+            parameters.AddParameter(testParameterIdentity);
+            parameters.AddParameter(testParameterLC);
+            parameters.ResolvedValues[nameParameter] = "testName";
+            parameters.ResolvedValues[testParameterIdentity] = "testproject";
+            parameters.ResolvedValues[testParameterLC] = "testproject";
+
+            //prepare renames configuration
+            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
+            symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}identity", TokenConfig.FromValue("replace")));
+            symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace")));
+
+
+            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
+            Assert.Equal(2, allChanges.Count);
+            Assert.Equal("testproject1_file.txt", allChanges["replace1_file.txt"]);
+            Assert.Equal("testproject2_file.txt", allChanges["replace2_file.txt"]);
+        }
+
         [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames_Multiple))]
         public void CanGenerateFileRenamesForSymbolBasedRenames_Multiple()
         {
