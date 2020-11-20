@@ -520,7 +520,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/runtime.json"
           DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json" 
-          SkipUnchangedFiles="true"/> 
+          SkipUnchangedFiles="true"/>
+
+    <GenerateSdkRuntimeIdentifierChain
+          RuntimeIdentifier="$(PortableProduktMonikerRid)"
+          RuntimeIdentifierGraphPath="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
+          RuntimeIdentifierChainOutputPath="$(SdkOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt"/>
     
   </Target>
 </Project>
