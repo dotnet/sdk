@@ -200,7 +200,7 @@ public class Test
 {
     public void M1(C c)
     {
-        var str = ""a\na"";
+        var str = ""a\r\na"";
         c.M(str);
     }
 }
@@ -1819,7 +1819,7 @@ public class Test
     private string str;
     public void M1(C c)
     {
-        str = ""a\na"";
+        str = ""a\r\na"";
         c.M(str);
     }
 }
