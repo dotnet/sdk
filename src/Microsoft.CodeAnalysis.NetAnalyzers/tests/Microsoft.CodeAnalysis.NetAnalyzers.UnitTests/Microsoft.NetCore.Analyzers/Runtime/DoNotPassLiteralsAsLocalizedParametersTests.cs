@@ -204,7 +204,7 @@ public class Test
         c.M(str);
     }
 }
-",
+".NormalizeLineEndings(),
                 // Test0.cs(16,13): warning CA1303: Method 'void Test.M1(C c)' passes a literal string as parameter 'param' of a call to 'void C.M(string param)'. Retrieve the following string(s) from a resource table instead: "a a".
                 GetCSharpResultAt(16, 13, "void Test.M1(C c)", "param", "void C.M(string param)", "a a"));
 
@@ -223,7 +223,7 @@ Public Class Test
         c.M(str)
     End Sub
 End Class
-",
+".NormalizeLineEndings(),
                 // Test0.vb(13,13): warning CA1303: Method 'Sub Test.M1(c As C)' passes a literal string as parameter 'param' of a call to 'Sub C.M(param As String)'. Retrieve the following string(s) from a resource table instead: "a a".
                 GetBasicResultAt(13, 13, "Sub Test.M1(c As C)", "param", "Sub C.M(param As String)", "a a"));
         }
@@ -1823,7 +1823,7 @@ public class Test
         c.M(str);
     }
 }
-";
+".NormalizeLineEndings();
             var csTest = new VerifyCS.Test()
             {
                 TestCode = csCode,
@@ -1855,7 +1855,7 @@ Public Class Test
         c.M(str)
     End Sub
 End Class
-";
+".NormalizeLineEndings();
             var vbTest = new VerifyVB.Test()
             {
                 TestCode = vbCode,
