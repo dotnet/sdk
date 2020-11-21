@@ -523,7 +523,7 @@ class TestClass
         }
 
         // [DllImport] is set with an absolute path, which will let the [DefaultDllImportSearchPaths] be ignored.
-        [Fact]
+        [Fact(Skip = "user32.dll isn't available on linux")]
         public async Task Test_DllImportAttributeWithAbsolutePath_DefaultDllImportSearchPaths_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -544,7 +544,7 @@ class TestClass
         }
 
         // [DllImport] is set with an absolute path.
-        [Fact]
+        [Fact(Skip = "user32.dll isn't available on linux")]
         public async Task Test_DllImportAttributeWithAbsolutePath_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -563,7 +563,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [Fact(Skip = "user32.dll isn't available on linux")]
         public async Task Test_UsingNonexistentAbsolutePath_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
