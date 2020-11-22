@@ -75,7 +75,7 @@ Recursos
   <String Id="InstallationNoteTitle">Nota de instalación</String>
   <String Id="InstallationNote">Se ejecutará un comando durante el proceso de instalación que mejorará la velocidad de restauración del proyecto y permitirá el acceso sin conexión. La operación tardará hasta un minuto en completarse.
   </String>
-  <String Id="VisualStudioWarning">Si tiene previsto usar .NET 5.0 con Visual Studio, se requiere Visual Studio 2019 16.8 o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Más información&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si tiene previsto usar .NET 6.0 con Visual Studio, se requiere Visual Studio 2019 16.8 o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Más información&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Al hacer clic en Instalar, acepta los términos siguientes.</String>
 </WixLocalization>

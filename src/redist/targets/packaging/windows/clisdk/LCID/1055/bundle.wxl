@@ -75,7 +75,7 @@ Kaynaklar
   <String Id="InstallationNoteTitle">Yükleme notu</String>
   <String Id="InstallationNote">Yükleme işlemi sırasında, proje geri yükleme hızını artıran ve çevrimdışı erişimi etkinleştiren bir komut çalıştırılır. Tamamlanması bir dakikanızı alır.
   </String>
-  <String Id="VisualStudioWarning">Visual Studio ile .NET 5.0 kullanmayı planlıyorsanız Visual Studio 2019 16.8 veya daha yeni bir sürüm gerekir. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Daha Fazla Bilgi&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Visual Studio ile .NET 6.0 kullanmayı planlıyorsanız Visual Studio 2019 16.8 veya daha yeni bir sürüm gerekir. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Daha Fazla Bilgi&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz.</String>
 </WixLocalization>
