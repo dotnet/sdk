@@ -3,17 +3,17 @@
   <ProductDependencies>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.20570.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.20570.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>6afe5f93699b6512ee07362fa451317a2ce34f7b</Sha>
+      <Sha>1ceac96c54fcf33eb745649c4e7b8d7507a9b730</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.20570.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.20570.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>6afe5f93699b6512ee07362fa451317a2ce34f7b</Sha>
+      <Sha>1ceac96c54fcf33eb745649c4e7b8d7507a9b730</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="1.0.0-beta.20570.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="1.0.0-beta.20570.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>6afe5f93699b6512ee07362fa451317a2ce34f7b</Sha>
+      <Sha>1ceac96c54fcf33eb745649c4e7b8d7507a9b730</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.HostModel" Version="3.1.6">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
