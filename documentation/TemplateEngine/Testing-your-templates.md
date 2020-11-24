@@ -1,4 +1,5 @@
-As part of the dotnet/templating local and CI build processes, various template creation tests are run to ensure that content is properly generated. These tests are mostly run on the templates included in this repo, but tests can be setup for 3rd-party templates as long as the templates can be installed using `dotnet new --install <template pack identifier>`. The framework used to configure these tests makes it easy to setup tests to do any of the following:
+dotnet/templating repo includes the test framework (ProjectTestRunner) which allows automated testing for the custom templates. The source code is available in [tools subfolder](https://github.com/dotnet/templating/tree/master/tools/ProjectTestRunner).
+The default test set includes the templates shipped with dotnet SDK, but tests can be setup for 3rd-party templates as long as the templates can be installed using `dotnet new --install <template pack identifier>`. The framework used to configure these tests makes it easy to setup tests to do any of the following:
 * Install a template pack
 * Instantiate an installed template with parameters specified
   * Check the created template output for:
@@ -13,11 +14,8 @@ As part of the dotnet/templating local and CI build processes, various template 
 * Find a running process
 * Kill a running process
 
-Setting up tests for a template is accomplished by creating a .json file which configures the tests to be performed. The file should be located in this repo in the appropriate subdirectory under the path:
-
+Setting up tests for a template is accomplished by creating a .json file which configures the tests to be performed. The file should be located in the appropriate subdirectory under the path:
 `tools/ProjectTestRunner/TestCases/3rdParty/`
-
-If interested in contributing tests for your templates, please make a pull request with your test file(s) in the above location.
 
 The format for the file is as follows:
 ```
@@ -31,6 +29,7 @@ The format for the file is as follows:
    ]  
 }
 ```
+At the moment the tests included to this framework are not run as part of local or CI build process for dotnet/templating repo, however can be used for testing the custom templates by template authors.
 
 ## Configuring Test Tasks
 The various tests available each have a unique name, called a "handler" in the task configuration. In addition to identifying the basic test type to run, the handler name/value pair is required in all test tasks. The other optional or required parameters are specific to the various tests, as explained below. In task configurations, all paths are assumed to be relative to the base directory of the created template (unless otherwise stated).
