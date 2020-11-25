@@ -7,10 +7,14 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class ListExtensions
     {
-        public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TElement, TKey>(this IEnumerable<TElement> elements, Func<TElement, TKey> grouper, Func<TElement, bool> hasGroupKey)
+        public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TElement, TKey>(this IEnumerable<TElement> elements, Func<TElement, TKey> grouper, Func<TElement, bool> hasGroupKey, IEqualityComparer<TKey> comparer = null)
             where TKey : IEquatable<TKey>
         {
-            Dictionary<ValueWrapper<TKey>, List<TElement>> groups = new Dictionary<ValueWrapper<TKey>, List<TElement>>();
+            if (comparer == null)
+            {
+                comparer = EqualityComparer<TKey>.Default;
+            }
+            Dictionary<ValueWrapper<TKey>, List<TElement>> groups = new Dictionary<ValueWrapper<TKey>, List<TElement>>(new ValueWrapperComparer<TKey>(comparer));
             List<TElement> ungrouped = new List<TElement>();
 
             foreach (TElement element in elements)
@@ -65,6 +69,37 @@ namespace Microsoft.TemplateEngine.Utils
 
 
             public T Val { get; private set; }
+        }
+
+        private class ValueWrapperComparer<T> : IEqualityComparer<ValueWrapper<T>>
+        {
+            private IEqualityComparer<T> _comparer;
+            public ValueWrapperComparer(IEqualityComparer<T> comparer)
+            {
+                _comparer = comparer;
+            }
+
+            public bool Equals(ValueWrapper<T> x, ValueWrapper<T> y)
+            {
+                if (x.Val == null && y.Val == null)
+                {
+                    return true;
+                }
+                if (x.Val == null || y.Val == null)
+                {
+                    return false;
+                }
+                return _comparer.Equals(x.Val, y.Val);
+            }
+
+            public int GetHashCode(ValueWrapper<T> obj)
+            {
+                if (obj.Val == null)
+                {
+                    return 0;
+                }
+                return _comparer.GetHashCode(obj.Val);
+            }
         }
 
         private class Grouping<TKey, TElement> : IGrouping<TKey, TElement>
