@@ -29,7 +29,7 @@ the `template.json` file. This requires that a few changes have to be done on th
 |---|---|---|
 |sources|The set of mappings in the template content to user directories. It's defined as any array of [Source](#source-definition) |If not specified, an implicit source is created with `"source": "./"` and `"target": "./"`, all other properties in the source are set to their defaults|
 |guids|A list of guids which appear in the template source and should be replaced in the template output. For each guid listed, a replacement guid is generated, and replaces all occurrences of the source guid in the output|
-|symbols|[See Below](#symbols-introduction)|
+|symbols|[See Below](#symbols)|
 
 #### Source Definition
 |Name|Description|Default|
