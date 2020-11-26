@@ -431,5 +431,39 @@ class A
 }
 ");
         }
+
+        [Fact, WorkItem(4461, "https://github.com/dotnet/roslyn-analyzers/issues/4461")]
+        public async Task CA2227_CSharp_InitPropertyRecord()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode = @"
+using System.Collections.Generic;
+
+public record MyRecord(IList<int> Items);",
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4461, "https://github.com/dotnet/roslyn-analyzers/issues/4461")]
+        public async Task CA2227_CSharp_InitProperty()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode = @"
+using System.Collections.Generic;
+
+class C
+{
+    public IList<int> L { get; init; }
+}
+
+struct S
+{
+    public IList<int> L { get; init; }
+}",
+            }.RunAsync();
+        }
     }
 }
