@@ -438,6 +438,7 @@ class A
             await new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System.Collections.Generic;
 
@@ -451,6 +452,7 @@ public record MyRecord(IList<int> Items);",
             await new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System.Collections.Generic;
 
