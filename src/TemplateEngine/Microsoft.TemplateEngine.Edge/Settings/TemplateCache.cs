@@ -327,6 +327,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 localizedTemplate.ShortNameList = templateWithShortNameList.ShortNameList;
             }
 
+            if (template is ITemplateWithTimestamp templateWithTimestamp)
+            {
+                localizedTemplate.ConfigTimestampUtc = templateWithTimestamp.ConfigTimestampUtc;
+            }
+
             return localizedTemplate;
         }
 

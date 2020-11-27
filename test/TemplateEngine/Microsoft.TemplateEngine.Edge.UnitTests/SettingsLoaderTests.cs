@@ -159,6 +159,51 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             AssertMountPointsWereScanned(mountPoints.Take(1));
         }
 
+
+
+        [Fact(DisplayName = nameof(EnsureCacheRoundtripPerservesTemplateWithLocaleTimestamp))]
+        public void EnsureCacheRoundtripPerservesTemplateWithLocaleTimestamp()
+        {
+            var environmentSettings = A.Fake<IEngineEnvironmentSettings>();
+
+            A.CallTo(() => environmentSettings.Host.FileSystem)
+                .Returns(_fileSystem);
+            A.CallTo(() => environmentSettings.Paths.BaseDir)
+                .Returns(BaseDir);
+            A.CallTo(() => environmentSettings.Host.Locale)
+                .Returns("en-GB");
+
+            _fixture.Customizations.Add(new MountPointInfoBuilder(FileSystemMountPointFactory.FactoryId));
+            List<MountPointInfo> mountPoints = _fixture.Build<MountPointInfo>()
+                .CreateMany()
+                .ToList();
+            List<TemplateInfo> templates = TemplatesFromMountPoints(mountPoints);
+
+            DateTime timestamp = new DateTime(2018, 1, 1);
+            foreach (TemplateInfo templateInfo in templates)
+            {
+                MountPointInfo mountPoint =
+                    mountPoints.Single(mp => mp.MountPointId == templateInfo.ConfigMountPointId);
+
+                templateInfo.ConfigTimestampUtc = timestamp;
+
+                string pathToTemplateFile = Path.Combine(mountPoint.Place, templateInfo.ConfigPlace.TrimStart('/'));
+                _fileSystem.Add(pathToTemplateFile, "{}", lastWriteTime: timestamp);
+            }
+
+            SetupUserSettings(isCurrentVersion: true, mountPoints: mountPoints);
+            SetupTemplates(templates);
+            SettingsLoader subject = new SettingsLoader(environmentSettings);
+            A.CallTo(() => environmentSettings.SettingsLoader)
+                .Returns(subject);
+            subject.Reload();
+            subject.Save();
+            subject.RebuildCacheFromSettingsIfNotCurrent(false);
+
+            // Only the first mount point should have been scanned
+            AssertMountPointsWereScanned(Enumerable.Empty<MountPointInfo>());
+        }
+
         private void SetupUserSettings(bool isCurrentVersion = true, IEnumerable<MountPointInfo> mountPoints = null)
         {
             SettingsStore userSettings = new SettingsStore();
