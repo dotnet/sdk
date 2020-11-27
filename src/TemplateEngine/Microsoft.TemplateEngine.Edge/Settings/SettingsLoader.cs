@@ -269,7 +269,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 allTemplates.UnionWith(_userTemplateCache.GetTemplatesForLocale(locale, _userSettings.Version));
             }
-
+            var returnedPoints = new HashSet<MountPointInfo>();
             foreach (TemplateInfo template in allTemplates)
             {
                 if (!_mountPoints.TryGetValue(template.ConfigMountPointId, out MountPointInfo mountPoint))
@@ -288,7 +288,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 if (forceScanAll)
                 {
-                    yield return mountPoint;
+                    if (returnedPoints.Add(mountPoint))
+                        yield return mountPoint;
                     continue;
                 }
 
@@ -312,7 +313,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     || (timestampOnDisk.HasValue && template.ConfigTimestampUtc.Value < timestampOnDisk))
                 {
                     // Template on disk is more recent
-                    yield return mountPoint;
+                    if (returnedPoints.Add(mountPoint))
+                        yield return mountPoint;
                 }
             }
         }
