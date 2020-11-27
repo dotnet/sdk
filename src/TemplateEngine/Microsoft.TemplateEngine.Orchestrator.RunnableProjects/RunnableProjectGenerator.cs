@@ -21,6 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
         private static readonly string GeneratorVersion = "1.0.0.0";
+        private static readonly Guid FileSystemMountPointFactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
 
         public Guid Id => GeneratorId;
 
@@ -279,9 +280,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 // Record the timestamp of the template file so we
                 // know to reload it if it changes
-                if (host.FileSystem is IFileLastWriteTimeSource timeSource)
+                if (templateFile.MountPoint.Info.MountPointFactoryId == FileSystemMountPointFactoryId &&
+                    host.FileSystem is IFileLastWriteTimeSource timeSource)
                 {
-                    runnableProjectTemplate.ConfigTimestampUtc = timeSource.GetLastWriteTimeUtc(templateFile.FullPath);
+                    var physicalPath = Path.Combine(templateFile.MountPoint.Info.Place, templateFile.FullPath.TrimStart('/'));
+                    runnableProjectTemplate.ConfigTimestampUtc = timeSource.GetLastWriteTimeUtc(physicalPath);
                 }
 
                 template = runnableProjectTemplate;
