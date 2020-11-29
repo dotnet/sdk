@@ -10,6 +10,7 @@ using Analyzer.Utilities;
 using Microsoft.NetFramework.Analyzers.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.NetFramework.Analyzers
 {
@@ -140,11 +141,7 @@ namespace Microsoft.NetFramework.Analyzers
                             );
 
                             context.ReportDiagnostic(
-                                Diagnostic.Create(
-                                    RuleDoNotUseInsecureXSLTScriptExecution,
-                                    node.GetLocation(),
-                                    message
-                                )
+                                node.CreateDiagnostic(RuleDoNotUseInsecureXSLTScriptExecution, message)
                             );
                         }
                     }

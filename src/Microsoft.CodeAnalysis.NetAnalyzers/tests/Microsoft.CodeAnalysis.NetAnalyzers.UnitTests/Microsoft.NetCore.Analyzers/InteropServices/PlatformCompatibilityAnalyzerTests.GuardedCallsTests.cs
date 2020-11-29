@@ -60,6 +60,79 @@ class Test
         }
 
         [Fact]
+        public async Task MethodsWithOsDependentTypeParameterGuarded()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows"")]
+class WindowsOnlyType {}
+
+class GenericClass<T> {}
+
+public class Test
+{
+    void GenericMethod<T>() {}
+    void GenericMethod2<T1, T2>() {}
+    void M1()
+    {
+        if (OperatingSystemHelper.IsWindows())
+        {
+            GenericMethod<WindowsOnlyType>();
+            GenericMethod2<Test, WindowsOnlyType>();
+            GenericClass<WindowsOnlyType> obj = new GenericClass<WindowsOnlyType>();
+        }
+        else
+        {
+            [|GenericMethod<WindowsOnlyType>()|];
+            [|GenericMethod2<Test, WindowsOnlyType>()|];
+            GenericClass<WindowsOnlyType> obj = [|new GenericClass<WindowsOnlyType>()|];
+        }
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task PlatformDependentMethodsAndTypeParametersGuarded()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""browser"")]
+class BrowserOnlyType {}
+[SupportedOSPlatform(""windows"")]
+class WindowsOnlyType {}
+
+public class Test
+{
+    [SupportedOSPlatform(""windows"")]
+    void WindowsOnlyMethod<T>() {}
+    void GenericMethod<T1, T2>() {}
+    void M1()
+    {
+        if (OperatingSystemHelper.IsWindows())
+        {
+            [|WindowsOnlyMethod<BrowserOnlyType>()|];  // should flag for BrowserOnlyType parameter
+            [|GenericMethod<WindowsOnlyType, BrowserOnlyType>()|]; // same
+        }
+        else
+        {
+            [|WindowsOnlyMethod<BrowserOnlyType>()|];  // should flag for WindowsOnlyMethod method and BrowserOnlyType parameter
+            [|GenericMethod<WindowsOnlyType, BrowserOnlyType>()|]; // should flag for WindowsOnlyType and BrowserOnlyType parameters
+        }
+    }
+}
+" + MockAttributesCsSource + MockOperatingSystemApiSource;
+            await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(24, 13).WithArguments("BrowserOnlyType", "'browser'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(25, 13).WithArguments("WindowsOnlyType", "'windows'"));
+        }
+
+        [Fact]
         public async Task SupportedUnsupportedRange_GuardedWithOr()
         {
             var source = @"
@@ -3537,6 +3610,130 @@ class Test
 }" + MockAttributesCsSource + MockOperatingSystemApiSource;
 
             await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5");
+        }
+
+        [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]
+        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldNotAnalyzed_WithoutInterproceduralAnalysis()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+
+class Test
+{
+    public delegate void VoidCallback();
+ 
+    public void DelegateAsArgument(VoidCallback callback) 
+    {
+        callback(); // even call back invoked here could not guarantee it called from guarded context
+    }
+
+    [SupportedOSPlatform(""windows"")]
+    private void WindowsOnly() { }
+
+    public void GuardedCalls()
+    {
+        if (OperatingSystemHelper.IsWindows())
+        {
+            Action a = () =>
+            {
+                [|WindowsOnly()|]; // Warns, not invoked
+            };
+
+            Func<string> greetings = () =>
+            {
+                WindowsOnly(); // Not warn, invoked below
+                return  ""Hi"";
+            };
+            greetings();
+
+            DelegateAsArgument(() => [|WindowsOnly()|]); // Warns, couldn'd analyze
+        }
+    }
+
+    public void AssertedCalls()
+    {
+        Debug.Assert(OperatingSystemHelper.IsWindows());
+
+        Action a = () =>
+        {
+            WindowsOnly(); // Not warn, invoked below
+        };
+        a();
+            
+        Func<string> greetings = () =>
+        {
+            [|WindowsOnly()|]; // Warns, not invoked
+            return ""Hi"";
+        };
+
+        DelegateAsArgument(() => [|WindowsOnly()|]); // Warns, couldn'd analyze
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source);
+        }
+
+        [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]
+        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldAnalyzed_WithInterproceduralAnalysis()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+
+class Test
+{
+    public delegate void VoidCallback();
+ 
+    public void DelegateAsArgument(VoidCallback callback) 
+    {
+        callback(); // interprocedural analysis would help keep track of context
+    }
+
+    [SupportedOSPlatform(""windows"")]
+    private void WindowsOnly() { }
+
+    public void GuardedCalls()
+    {
+        if (OperatingSystemHelper.IsWindows())
+        {
+            Action a = () =>
+            {
+                WindowsOnly(); // Not warn, interprocedural analysis enabled
+            };
+
+            Func<string> greetings = () =>
+            {
+                WindowsOnly(); // Same
+                return  ""Hi"";
+            };
+
+            DelegateAsArgument(() => WindowsOnly()); // Same
+        }
+    }
+
+    public void AssertedCalls()
+    {
+        Debug.Assert(OperatingSystemHelper.IsWindows());
+
+        Action a = () =>
+        {
+            WindowsOnly(); // Not warn, interprocedural analysis enabled
+        };
+            
+        Func<string> greetings = () =>
+        {
+            WindowsOnly();
+            return ""Hi"";
+        };
+
+        DelegateAsArgument(() => WindowsOnly());
+    }
+}" + MockAttributesCsSource + MockOperatingSystemApiSource;
+
+            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
         }
 
         [Fact, WorkItem(4182, "https://github.com/dotnet/roslyn-analyzers/issues/4182")]

@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     if (symbol is IMethodSymbol method && method.IsFinalizer())
                     {
-                        addDiagnostic(Diagnostic.Create(Rule, method.Locations[0], method.Name));
+                        addDiagnostic(method.CreateDiagnostic(Rule, method.Name));
                         break;
                     }
                 }

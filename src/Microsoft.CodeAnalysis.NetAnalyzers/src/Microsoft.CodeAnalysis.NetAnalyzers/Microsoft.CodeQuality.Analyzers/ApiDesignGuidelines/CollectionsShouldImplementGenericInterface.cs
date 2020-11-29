@@ -99,7 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
             // FxCop compat: only fire on externally visible types by default.
-            if (!namedTypeSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation, context.CancellationToken))
             {
                 return;
             }

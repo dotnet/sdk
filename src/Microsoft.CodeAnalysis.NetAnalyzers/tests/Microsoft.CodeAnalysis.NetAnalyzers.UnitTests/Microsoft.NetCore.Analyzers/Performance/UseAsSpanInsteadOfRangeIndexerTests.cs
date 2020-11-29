@@ -846,7 +846,7 @@ public class TestClass
             var test = new VerifyCS.Test
             {
                 TestCode = source,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = LanguageVersion.Preview,
                 FixedCode = corrected,
             };
@@ -860,7 +860,7 @@ public class TestClass
             var test = new VerifyCS.Test
             {
                 TestCode = source,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = LanguageVersion.Preview,
             };
 

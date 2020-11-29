@@ -71,7 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                             ISymbol owningSymbol = operationBlockStartContext.OwningSymbol;
                             AnalyzerOptions options = operationBlockStartContext.Options;
                             CancellationToken cancellationToken = operationBlockStartContext.CancellationToken;
-                            if (owningSymbol.IsConfiguredToSkipAnalysis(options, TaintedDataEnteringSinkDescriptor, compilation, cancellationToken))
+                            if (options.IsConfiguredToSkipAnalysis(TaintedDataEnteringSinkDescriptor, owningSymbol, compilation, cancellationToken))
                             {
                                 return;
                             }

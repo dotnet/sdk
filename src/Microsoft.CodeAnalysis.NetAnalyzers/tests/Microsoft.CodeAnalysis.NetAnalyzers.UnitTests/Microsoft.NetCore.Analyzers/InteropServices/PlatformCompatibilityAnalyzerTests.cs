@@ -132,6 +132,193 @@ namespace CallerTargetsBelow5_0
         }
 
         [Fact]
+        public async Task MethodsWithOsDependentTypeParameterWarns()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows"")]
+class WindowsOnlyType {}
+
+public class Test
+{
+    void GenericMethod<T>() {}
+    void GenericMethod2<T1, T2>() {}
+    void M1()
+    {
+        [|GenericMethod<WindowsOnlyType>()|];
+        [|GenericMethod2<Test, WindowsOnlyType>()|];
+        [|GenericMethod<Action<WindowsOnlyType>>()|];
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
+        public async Task ConstructorWithOsDependentTypeParameterWarns()
+        {
+            var csSource = @"
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows"")]
+class WindowsOnlyType {}
+
+class GenericClass<T> {}
+
+public class Test
+{
+    void MethodWithGenericParameter(GenericClass<WindowsOnlyType> a) {}
+
+    void M1()
+    {
+        GenericClass<WindowsOnlyType> obj = [|new GenericClass<WindowsOnlyType>()|];
+        MethodWithGenericParameter([|new GenericClass<WindowsOnlyType>()|]);
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
+        public async Task ApiContainingTypeHasOsDependentTypeParameterWarns()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows"")]
+class WindowsOnlyType {}
+
+class GenericClass<T>
+{
+    public static void M<V>() { }
+    public static void M2() {}
+    public static int Field;
+    public static int Property {get;}
+    public static event EventHandler SampleEvent
+    {
+        add { }
+        remove { }
+    }
+}
+
+public class Test
+{
+    public static void WindowsEventHandler(object sender, EventArgs e) { }
+
+    void M1()
+    {
+        [|GenericClass<WindowsOnlyType>.M<int>()|];
+        [|GenericClass<WindowsOnlyType>.M2()|];
+        [|GenericClass<Action<WindowsOnlyType>>.M2()|];
+        [|GenericClass<WindowsOnlyType>.Field|] = 1;
+        var val = [|GenericClass<WindowsOnlyType>.Property|];
+        [|GenericClass<WindowsOnlyType>.SampleEvent|] += WindowsEventHandler;
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
+        public async Task AssemblyLevelAttribteWithPropertyEventNotWarn()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[assembly: SupportedOSPlatform(""windows"")]
+namespace WindowsOnlyAssembly
+{
+    public class Test
+    {
+        private bool _enabled;
+        private int _field = 9;
+        public int Property
+        {
+            get => _field;
+            set
+            {
+                _field = value;
+            }
+        }
+        public void WindowsEventHandler(object sender, EventArgs e) { }
+        public event EventHandler SampleEvent
+        {
+            add { }
+            remove { }
+        }
+
+        public int TestProperty
+        {
+            get
+            {
+                Property = _field;
+                return Property;
+            }
+            set
+            {
+                SampleEvent += WindowsEventHandler;
+                _field = value;
+            }
+        }
+
+        public bool Enabled
+        {
+            get
+            {
+                return _enabled;
+            }
+            set
+            {
+                _enabled = value;
+            }
+        }
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
+        public async Task ApiContainingMultipleNestedTypeParameter()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows"")]
+class WindowsOnlyType {}
+
+class GenericClass<T>
+{
+    public static void M<V>() { }
+    public static void M2() {}
+}
+
+class GenericType<T> { }
+class AnotherType<T> { }
+
+public class Test
+{
+    public static void WindowsEventHandler(object sender, EventArgs e) { }
+
+    void M1()
+    {
+        [|GenericClass<GenericType<AnotherType<WindowsOnlyType>>>.M<int>()|];
+        [|GenericClass<GenericType<AnotherType<int>>>.M<GenericClass<GenericType<AnotherType<WindowsOnlyType>>>>()|];
+        [|GenericClass<GenericType<AnotherType<Action<WindowsOnlyType>>>>.M2()|];
+        [|GenericClass<GenericType<Action<GenericClass<GenericClass<GenericType<Action<GenericClass<WindowsOnlyType>>>>>>>>.M2()|];
+        GenericClass<GenericType<Action<GenericClass<GenericClass<GenericType<Action<GenericClass<int>>>>>>>>.M2();
+    }
+}
+" + MockAttributesCsSource;
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
         public async Task OsDependentMethodsCalledWarns()
         {
             var csSource = @"
@@ -2404,7 +2591,7 @@ public class Test
             var test = new VerifyCS.Test
             {
                 TestCode = sourceCode,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
                 TestState = { }
             };
@@ -2444,7 +2631,7 @@ public class Test
             var test = new VerifyVB.Test
             {
                 TestCode = sourceCode,
-                ReferenceAssemblies = ReferenceAssemblies.NetCore.NetCoreApp50,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 MarkupOptions = MarkupOptions.UseFirstDescriptor,
                 TestState = { },
             };

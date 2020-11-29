@@ -23,8 +23,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     /// <summary>
     /// CA1416: Analyzer that informs developers when they use platform-specific APIs from call sites where the API might not be available
-    /// 
-    /// It finds usage of platform-specific or unsupported APIs and diagnoses if the 
+    ///
+    /// It finds usage of platform-specific or unsupported APIs and diagnoses if the
     /// API is guarded by platform check or if it is annotated with corresponding platform specific attribute.
     /// If using the platform-specific API is not safe it reports diagnostics.
     ///
@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly LocalizableString s_localizableUnsupportedCsReachable = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityUnsupportedCsReachableMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        // We are adding the new attributes into older versions of .Net 5.0, so there could be multiple referenced assemblies each with their own 
+        // We are adding the new attributes into older versions of .Net 5.0, so there could be multiple referenced assemblies each with their own
         // version of internal attribute type which will cause ambiguity, to avoid that we are comparing the attributes by their name
         private const string SupportedOSPlatformAttribute = nameof(SupportedOSPlatformAttribute);
         private const string UnsupportedOSPlatformAttribute = nameof(UnsupportedOSPlatformAttribute);
@@ -144,11 +144,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         return;
                     }
                 }
-                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOSPlatform, out var osPlatformType) ||
-                    !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesRuntimeInformation, out var runtimeInformationType))
-                {
-                    return;
-                }
+
+                var osPlatformType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOSPlatform);
+                var runtimeInformationType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesRuntimeInformation);
 
                 var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
                 if (stringType == null)
@@ -157,25 +155,24 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
 
                 var msBuildPlatforms = GetSupportedPlatforms(context.Options, context.Compilation, context.CancellationToken);
-                var runtimeIsOSPlatformMethod = runtimeInformationType.GetMembers().OfType<IMethodSymbol>().Where(m =>
-                    IsOSPlatform == m.Name &&
-                    m.IsStatic &&
-                    m.ReturnType.SpecialType == SpecialType.System_Boolean &&
-                    m.Parameters.Length == 1 &&
-                    m.Parameters[0].Type.Equals(osPlatformType)).FirstOrDefault();
+                var runtimeIsOSPlatformMethod = runtimeInformationType?.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(m =>
+                        IsOSPlatform == m.Name &&
+                        m.IsStatic &&
+                        m.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                        m.Parameters.Length == 1 &&
+                        m.Parameters[0].Type.Equals(osPlatformType));
 
-                var guardMethods = GetOperatingSystemGuardMethods(runtimeIsOSPlatformMethod, operatingSystemType!);
+                var guardMethods = GetOperatingSystemGuardMethods(runtimeIsOSPlatformMethod, operatingSystemType);
                 var platformSpecificMembers = new ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?>();
-                var osPlatformTypeArray = ImmutableArray.Create(osPlatformType);
-                var osPlatformCreateMethod = osPlatformType.GetMembers("Create").OfType<IMethodSymbol>().Where(m =>
+                var osPlatformCreateMethod = osPlatformType?.GetMembers("Create").OfType<IMethodSymbol>().FirstOrDefault(m =>
                     m.IsStatic &&
                     m.ReturnType.Equals(osPlatformType) &&
                     m.Parameters.Length == 1 &&
-                    m.Parameters[0].Type.SpecialType == SpecialType.System_String).FirstOrDefault();
+                    m.Parameters[0].Type.SpecialType == SpecialType.System_String);
 
                 context.RegisterOperationBlockStartAction(
                     context => AnalyzeOperationBlock(context, guardMethods, runtimeIsOSPlatformMethod, osPlatformCreateMethod,
-                                    osPlatformTypeArray, stringType, platformSpecificMembers, msBuildPlatforms));
+                                    osPlatformType, stringType, platformSpecificMembers, msBuildPlatforms));
             });
 
             static ImmutableArray<IMethodSymbol> GetOperatingSystemGuardMethods(IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol operatingSystemType)
@@ -227,13 +224,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             ImmutableArray<IMethodSymbol> guardMethods,
             IMethodSymbol? runtimeIsOSPlatformMethod,
             IMethodSymbol? osPlatformCreateMethod,
-            ImmutableArray<INamedTypeSymbol> osPlatformTypeArray,
+            INamedTypeSymbol? osPlatformType,
             INamedTypeSymbol stringType,
             ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers,
             ImmutableArray<string> msBuildPlatforms)
         {
-            var osPlatformType = osPlatformTypeArray[0];
-            var platformSpecificOperations = PooledConcurrentDictionary<IOperation, (SmallDictionary<string, PlatformAttributes> attributes,
+            var osPlatformTypeArray = osPlatformType != null ? ImmutableArray.Create(osPlatformType) : ImmutableArray<INamedTypeSymbol>.Empty;
+            var platformSpecificOperations = PooledConcurrentDictionary<KeyValuePair<IOperation, ISymbol>, (SmallDictionary<string, PlatformAttributes> attributes,
                 SmallDictionary<string, PlatformAttributes>? csAttributes)>.GetInstance();
 
             context.RegisterOperationAction(context =>
@@ -270,7 +267,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         pessimisticAnalysis: false,
                         context.CancellationToken, out var valueContentAnalysisResult,
                         additionalSupportedValueTypes: osPlatformTypeArray,
-                        getValueContentValueForAdditionalSupportedValueTypeOperation: GetValueContentValue);
+                        getValueContentValueForAdditionalSupportedValueTypeOperation: osPlatformTypeArray.IsEmpty ? null : GetValueContentValue);
 
                     if (analysisResult == null)
                     {
@@ -279,12 +276,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                     foreach (var (platformSpecificOperation, pair) in platformSpecificOperations)
                     {
-                        var value = analysisResult[platformSpecificOperation.Kind, platformSpecificOperation.Syntax];
+                        var value = analysisResult[platformSpecificOperation.Key.Kind, platformSpecificOperation.Key.Syntax];
                         var csAttributes = pair.csAttributes != null ? CopyAttributes(pair.csAttributes) : null;
 
                         if ((value.Kind == GlobalFlowStateAnalysisValueSetKind.Known && IsKnownValueGuarded(pair.attributes, ref csAttributes, value)) ||
-                           (value.Kind == GlobalFlowStateAnalysisValueSetKind.Unknown && HasGuardedLambdaOrLocalFunctionResult(platformSpecificOperation,
-                            pair.attributes, ref csAttributes, analysisResult)))
+                           (value.Kind == GlobalFlowStateAnalysisValueSetKind.Unknown && HasGuardedLambdaOrLocalFunctionResult(platformSpecificOperation.Key,
+                           pair.attributes, ref csAttributes, analysisResult)))
                         {
                             continue;
                         }
@@ -355,7 +352,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return true;
         }
 
-        private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods, IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol osPlatformType)
+        private static bool ComputeNeedsValueContentAnalysis(IOperation operationBlock, ImmutableArray<IMethodSymbol> guardMethods, IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol? osPlatformType)
         {
             Debug.Assert(runtimeIsOSPlatformMethod == null || guardMethods.Contains(runtimeIsOSPlatformMethod));
 
@@ -587,59 +584,34 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static bool IsEmptyVersion(Version version) => version.Major == 0 && version.Minor == 0;
 
-        private static void ReportDiagnosticsForAll(PooledConcurrentDictionary<IOperation,
+        private static void ReportDiagnosticsForAll(PooledConcurrentDictionary<KeyValuePair<IOperation, ISymbol>,
             (SmallDictionary<string, PlatformAttributes> attributes, SmallDictionary<string, PlatformAttributes>? csAttributes)> platformSpecificOperations,
             OperationBlockAnalysisContext context, ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers)
         {
-            foreach (var operation in platformSpecificOperations)
+            foreach (var (operation, pair) in platformSpecificOperations)
             {
-                ReportDiagnostics(operation.Key, operation.Value.attributes, operation.Value.csAttributes, context, platformSpecificMembers);
+                ReportDiagnostics(operation, pair.attributes, pair.csAttributes, context, platformSpecificMembers);
             }
         }
 
-        private static void ReportDiagnostics(IOperation operation, SmallDictionary<string, PlatformAttributes> attributes,
+        private static void ReportDiagnostics(KeyValuePair<IOperation, ISymbol> operationToSymbol, SmallDictionary<string, PlatformAttributes> attributes,
             SmallDictionary<string, PlatformAttributes>? csAttributes, OperationBlockAnalysisContext context,
             ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers)
         {
-            var symbol = GetOperationSymbol(operation);
-
-            if (symbol == null)
-            {
-                return;
-            }
-
-            if (symbol is IPropertySymbol property)
-            {
-                symbol = GetAccessorMethod(platformSpecificMembers, symbol, GetPropertyAccessors(property, operation));
-            }
-
-            if (symbol is IEventSymbol iEvent)
-            {
-                var accessor = GetEventAccessor(iEvent, operation);
-                if (accessor != null)
-                {
-                    symbol = accessor;
-                }
-            }
+            var symbol = operationToSymbol.Value is IMethodSymbol method && method.IsConstructor() ? operationToSymbol.Value.ContainingType : operationToSymbol.Value;
+            var operationName = symbol.ToDisplayString(GetLanguageSpecificFormat(operationToSymbol.Key));
 
             var originalAttributes = platformSpecificMembers[symbol] ?? attributes;
-
-            if (operation is IObjectCreationOperation creation)
-            {
-                symbol = creation.Constructor.ContainingType;
-            }
-
-            var operationName = symbol.ToDisplayString(GetLanguageSpecificFormat(operation));
 
             foreach (var attribute in originalAttributes.Values)
             {
                 if (AllowList(attribute))
                 {
-                    ReportSupportedDiagnostic(operation, context, operationName, attributes, csAttributes);
+                    ReportSupportedDiagnostic(operationToSymbol.Key, context, operationName, attributes, csAttributes);
                 }
                 else
                 {
-                    ReportUnsupportedDiagnostic(operation, context, operationName, attributes, csAttributes);
+                    ReportUnsupportedDiagnostic(operationToSymbol.Key, context, operationName, attributes, csAttributes);
                 }
                 break;
             }
@@ -880,19 +852,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             static SymbolDisplayFormat GetLanguageSpecificFormat(IOperation operation) =>
                 operation.Language == LanguageNames.CSharp ? SymbolDisplayFormat.CSharpShortErrorMessageFormat : SymbolDisplayFormat.VisualBasicShortErrorMessageFormat;
 
-            static ISymbol GetAccessorMethod(ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers, ISymbol symbol, IEnumerable<ISymbol> accessors)
-            {
-                foreach (var accessor in accessors)
-                {
-                    if (accessor != null && platformSpecificMembers.TryGetValue(accessor, out var attribute) && attribute != null)
-                    {
-                        return accessor;
-                    }
-                }
-
-                return symbol;
-            }
-
             static bool HasSameVersionedPlatformSupport(SmallDictionary<string, PlatformAttributes> attributes, string pName, bool checkSupport)
             {
                 if (attributes.TryGetValue(pName, out var attribute))
@@ -975,16 +934,18 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return iEvent;
         }
 
-        private static void AnalyzeOperation(IOperation operation, OperationAnalysisContext context, PooledConcurrentDictionary<IOperation,
+        private static void AnalyzeOperation(IOperation operation, OperationAnalysisContext context, PooledConcurrentDictionary<KeyValuePair<IOperation, ISymbol>,
             (SmallDictionary<string, PlatformAttributes> attributes, SmallDictionary<string, PlatformAttributes>? csAttributes)> platformSpecificOperations,
             ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers, ImmutableArray<string> msBuildPlatforms)
         {
             var symbol = GetOperationSymbol(operation);
 
-            if (symbol == null)
+            if (symbol == null || symbol is ITypeSymbol type && type.SpecialType != SpecialType.None)
             {
                 return;
             }
+
+            CheckOperationAttributes(operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, symbol, checkParents: true);
 
             if (symbol is IPropertySymbol property)
             {
@@ -992,7 +953,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (accessor != null)
                     {
-                        CheckOperationAttributes(operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, accessor);
+                        CheckOperationAttributes(operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, accessor, checkParents: false);
                     }
                 }
             }
@@ -1002,36 +963,75 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 if (accessor != null)
                 {
-                    CheckOperationAttributes(operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, accessor);
-                }
-                else
-                {
-                    CheckOperationAttributes(operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, iEvent);
+                    CheckOperationAttributes(operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, accessor, checkParents: false);
                 }
             }
-            else
+            else if (symbol is IMethodSymbol method && method.IsGenericMethod)
             {
-                CheckOperationAttributes(operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, symbol);
+                CheckTypeArguments(method.TypeArguments, operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms);
             }
 
-            static void CheckOperationAttributes(IOperation operation, OperationAnalysisContext context, PooledConcurrentDictionary<IOperation,
-                 (SmallDictionary<string, PlatformAttributes> attributes, SmallDictionary<string, PlatformAttributes>? csAttributes)> platformSpecificOperations,
-                ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers, ImmutableArray<string> msBuildPlatforms, ISymbol symbol)
+            if (symbol.ContainingSymbol is INamedTypeSymbol namedType && namedType.IsGenericType)
             {
-                if (TryGetOrCreatePlatformAttributes(symbol, platformSpecificMembers, out var operationAttributes))
+                CheckTypeArguments(namedType.TypeArguments, operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms);
+            }
+
+            static void CheckTypeArguments(ImmutableArray<ITypeSymbol> typeArguments, IOperation operation, OperationAnalysisContext context,
+                PooledConcurrentDictionary<KeyValuePair<IOperation, ISymbol>, (SmallDictionary<string, PlatformAttributes> attributes,
+                SmallDictionary<string, PlatformAttributes>? csAttributes)> platformSpecificOperations,
+                ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers, ImmutableArray<string> msBuildPlatforms)
+            {
+                using var workingSet = PooledHashSet<ITypeSymbol>.GetInstance();
+                CheckTypeArgumentsCore(typeArguments, operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, workingSet);
+            }
+
+            static void CheckTypeArgumentsCore(ImmutableArray<ITypeSymbol> typeArguments, IOperation operation, OperationAnalysisContext context,
+                PooledConcurrentDictionary<KeyValuePair<IOperation, ISymbol>, (SmallDictionary<string, PlatformAttributes> attributes,
+                SmallDictionary<string, PlatformAttributes>? csAttributes)> platformSpecificOperations, ConcurrentDictionary<ISymbol,
+                SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers, ImmutableArray<string> msBuildPlatforms, PooledHashSet<ITypeSymbol> workingSet)
+            {
+                foreach (var typeArgument in typeArguments)
                 {
-                    if (TryGetOrCreatePlatformAttributes(context.ContainingSymbol, platformSpecificMembers, out var callSiteAttributes))
+                    if (!workingSet.Contains(typeArgument))
+                    {
+                        workingSet.Add(typeArgument);
+                        if (typeArgument.SpecialType == SpecialType.None)
+                        {
+                            CheckOperationAttributes(operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, typeArgument, checkParents: true);
+
+                            if (typeArgument is INamedTypeSymbol nType && nType.IsGenericType)
+                            {
+                                CheckTypeArgumentsCore(nType.TypeArguments, operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, workingSet);
+                            }
+                        }
+                    }
+                }
+            }
+
+            static void CheckOperationAttributes(IOperation operation, OperationAnalysisContext context, PooledConcurrentDictionary<KeyValuePair<IOperation, ISymbol>,
+                (SmallDictionary<string, PlatformAttributes> attributes, SmallDictionary<string, PlatformAttributes>? csAttributes)> platformSpecificOperations,
+                ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers, ImmutableArray<string> msBuildPlatforms, ISymbol symbol, bool checkParents)
+            {
+                if (TryGetOrCreatePlatformAttributes(symbol, checkParents, platformSpecificMembers, out var operationAttributes))
+                {
+                    var containingSymbol = context.ContainingSymbol;
+                    if (containingSymbol is IMethodSymbol method && method.IsAccessorMethod())
+                    {
+                        containingSymbol = method.AssociatedSymbol;
+                    }
+
+                    if (TryGetOrCreatePlatformAttributes(containingSymbol, true, platformSpecificMembers, out var callSiteAttributes))
                     {
                         if (IsNotSuppressedByCallSite(operationAttributes, callSiteAttributes, msBuildPlatforms, out var notSuppressedAttributes))
                         {
-                            platformSpecificOperations.TryAdd(operation, (notSuppressedAttributes, callSiteAttributes));
+                            platformSpecificOperations.TryAdd(new KeyValuePair<IOperation, ISymbol>(operation, symbol), (notSuppressedAttributes, callSiteAttributes));
                         }
                     }
                     else
                     {
                         if (TryCopyAttributesNotSuppressedByMsBuild(operationAttributes, msBuildPlatforms, out var copiedAttributes))
                         {
-                            platformSpecificOperations.TryAdd(operation, (copiedAttributes, null));
+                            platformSpecificOperations.TryAdd(new KeyValuePair<IOperation, ISymbol>(operation, symbol), (copiedAttributes, null));
                         }
                     }
                 }
@@ -1141,7 +1141,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         }
                         else
                         {
-                            // Call site has no attributes for this platform, check if MsBuild list has it, 
+                            // Call site has no attributes for this platform, check if MsBuild list has it,
                             // then if call site has deny list, it should support its later support
                             if (msBuildPlatforms.Contains(platformName) &&
                                 callSiteAttributes.Any(ca => DenyList(ca.Value)))
@@ -1249,7 +1249,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 callSiteAttribute.SupportedFirst != null && callSiteAttribute.SupportedFirst >= attribute.SupportedFirst ||
                 SuppressedByCallSiteUnsupported(callSiteAttribute, attribute.UnsupportedFirst!);
 
-            // As optianal if call site supports that platform, their versions should match
+            // As optional if call site supports that platform, their versions should match
             static bool OptionalOsSupportSuppressed(PlatformAttributes callSiteAttribute, PlatformAttributes attribute) =>
                 (callSiteAttribute.SupportedFirst == null || attribute.SupportedFirst <= callSiteAttribute.SupportedFirst) &&
                 (callSiteAttribute.SupportedSecond == null || attribute.SupportedFirst <= callSiteAttribute.SupportedSecond);
@@ -1280,34 +1280,30 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             bo.OperatorKind == BinaryOperatorKind.LessThanOrEqual);
 
         private static bool TryGetOrCreatePlatformAttributes(
-            ISymbol symbol,
+            ISymbol symbol, bool checkParents,
             ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers,
             [NotNullWhen(true)] out SmallDictionary<string, PlatformAttributes>? attributes)
         {
             if (!platformSpecificMembers.TryGetValue(symbol, out attributes))
             {
-                var container = symbol.ContainingSymbol;
-
-                if (symbol is IMethodSymbol method && method.IsAccessorMethod())
+                if (checkParents)
                 {
-                    // Add attributes for the associated Property
-                    container = method.AssociatedSymbol;
-                }
+                    var container = symbol.ContainingSymbol;
 
-                // Namespaces do not have attributes
-                while (container is INamespaceSymbol)
-                {
-                    container = container.ContainingSymbol;
-                }
+                    // Namespaces do not have attributes
+                    while (container is INamespaceSymbol)
+                    {
+                        container = container.ContainingSymbol;
+                    }
 
-                if (container != null &&
-                    TryGetOrCreatePlatformAttributes(container, platformSpecificMembers, out var containerAttributes))
-                {
-                    attributes = CopyAttributes(containerAttributes);
+                    if (container != null &&
+                        TryGetOrCreatePlatformAttributes(container, checkParents, platformSpecificMembers, out var containerAttributes))
+                    {
+                        attributes = CopyAttributes(containerAttributes);
+                    }
                 }
 
                 MergePlatformAttributes(symbol.GetAttributes(), ref attributes);
-
                 attributes = platformSpecificMembers.GetOrAdd(symbol, attributes);
             }
 
@@ -1361,7 +1357,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             // only attributes with same platform matter, could narrow the list
                             if (childAttributes.TryGetValue(platform, out var childAttribute))
                             {
-                                // only later versions could narrow, other versions ignored 
+                                // only later versions could narrow, other versions ignored
                                 if (childAttribute.SupportedFirst > attributes.SupportedFirst)
                                 {
                                     attributes.SupportedSecond = childAttribute.SupportedFirst;
@@ -1485,7 +1481,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             if (attributes.SupportedFirst != null && attributes.SupportedFirst < version)
                             {
-                                // We should ignore second attribute in case like [UnsupportedOSPlatform(""windows""), 
+                                // We should ignore second attribute in case like [UnsupportedOSPlatform(""windows""),
                                 // [UnsupportedOSPlatform(""windows11.0"")] which doesn't have supported in between
                                 attributes.UnsupportedSecond = version;
                             }

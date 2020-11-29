@@ -2855,6 +2855,67 @@ public class Test
             }.RunAsync();
         }
 
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task TestNegationPattern_ExplicitConversionInFlowCapture_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    void M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch ((bool)t)
+        {
+            case not true:
+                result = (bool)t == false;  // Consider: this should report a diagnostic
+                break;
+        }
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task Test_ExplicitConversionInFlowCapture_ConditionalExpression()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+public class Test
+{
+    private object M(string str)
+    {
+        int? intVal = int.TryParse(str, out var outInt) ? outInt : (int?)null;
+        return (intVal.HasValue ? (object)intVal.Value : (object)str);
+    }
+}
+");
+        }
+
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task Test_ExplicitConversionInFlowCapture_ConditionalExpression_02()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+public class Test
+{
+    private object M(Test t, int? intVal)
+    {
+        return (intVal.HasValue ? (object)intVal.Value : (object)t);
+    }
+}
+");
+        }
+
         [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
         public async Task TestRelationalPattern()
         {
@@ -3031,5 +3092,34 @@ public class Test
                 LanguageVersion = CSharpLanguageVersion.CSharp9
             }.RunAsync();
         }
+
+#if NETCOREAPP
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(4387, "https://github.com/dotnet/roslyn-analyzers/issues/4387")]
+        public async Task RangeAndIndexOperation_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+internal class Class1
+{
+    private static bool TryParseUnit(string unit)
+    {
+        char last = unit[^1];
+        if (last != 'b')
+            return false;
+
+        string subUnit = unit[1..];
+        if (subUnit != ""b"")
+            return false;
+
+        return true;
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+#endif
     }
 }

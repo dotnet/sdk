@@ -66,7 +66,7 @@ End Structure
 public class Class1
 {
     private readonly static int field = 1;
-    static Class1() // No static field initalization
+    static Class1() // No static field initialization
     {
         Class1_Method();
         var field2 = 1;
@@ -329,6 +329,45 @@ Class C
         s2 = string.Empty
     End Sub
 End Class");
+        }
+
+        [Fact, WorkItem(3852, "https://github.com/dotnet/roslyn-analyzers/issues/3852")]
+        public async Task CA1810_EventSubscriptionInStaticCtorPreventsDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+                TestCode = @"
+using System;
+using System.Windows.Forms;
+
+public class C1
+{
+    private static readonly int field;
+
+    static C1()
+    {
+        Application.ThreadExit += new EventHandler(OnThreadExit);
+        field = 42;
+    }
+
+    private static void OnThreadExit(object sender, EventArgs e) {}
+}
+
+public class C2
+{
+    private static readonly int field;
+
+    static C2()
+    {
+        Application.ThreadExit -= new EventHandler(OnThreadExit);
+        field = 42;
+    }
+
+    private static void OnThreadExit(object sender, EventArgs e) {}
+}
+",
+            }.RunAsync();
         }
 
         #endregion
