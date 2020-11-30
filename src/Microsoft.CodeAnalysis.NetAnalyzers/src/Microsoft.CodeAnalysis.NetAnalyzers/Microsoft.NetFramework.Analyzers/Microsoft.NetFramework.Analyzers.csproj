@@ -2,12 +2,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <DefineConstants>$(DefineConstants),NET_FRAMEWORK_ANALYZERS</DefineConstants>
     <!--
       PackageId is used by Restore. If we set it to Microsoft.NetFramework.Analyzers,
       Restore would conclude that there is a cyclic dependency between us and the Microsoft.NetFramework.Analyzers nuget package.
     -->
     <PackageId>*$(MSBuildProjectFile)*</PackageId>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\Microsoft.CodeAnalysis.FxCopAnalyzers\DeprecationAnalyzer.cs" Link="DeprecationAnalyzer.cs" />
+  </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.NetFramework.CSharp.Analyzers" />
     <InternalsVisibleTo Include="Microsoft.NetFramework.VisualBasic.Analyzers" />
