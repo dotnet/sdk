@@ -52,7 +52,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 (!type.Constructors.Any() || type.Constructors.Any(c => c.GetResultantVisibility().IsAtLeastAsVisibleAs(SymbolVisibility.Public))))
             {
                 // look for implementations of interfaces members declared on this type
-                foreach (var iface in type.Interfaces)
+                foreach (var iface in type.AllInterfaces)
                 {
                     // only matters if the interface is defined to be internal
                     if (iface.DeclaredAccessibility == Accessibility.Internal)
