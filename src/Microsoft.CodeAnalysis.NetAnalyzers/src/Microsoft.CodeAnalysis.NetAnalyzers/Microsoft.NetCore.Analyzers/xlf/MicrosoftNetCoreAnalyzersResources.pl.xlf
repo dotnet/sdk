@@ -172,6 +172,11 @@
         <target state="translated">Niezawodność</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommaSeparator">
+        <source>, </source>
+        <target state="new">, </target>
+        <note>Separator used for separating list of platform names: {API} is only supported on: {‘windows’, ‘browser’, ‘linux’}</note>
+      </trans-unit>
       <trans-unit id="DataSetDataTableInDeserializableObjectGraphMessage">
         <source>When deserializing untrusted input, deserializing a {0} object is insecure. '{1}' either is or derives from {0}</source>
         <target state="translated">Deserializowanie obiektu {0} podczas deserializacji niezaufanych danych wejściowych nie jest bezpieczne. Element „{1}” jest elementem {0} lub pochodzi od niego</target>
@@ -1512,35 +1517,70 @@
         <target state="translated">Elementy P/Invoke nie powinny być widoczne</target>
         <note />
       </trans-unit>
-      <trans-unit id="PlatformCompatibilityCheckDescription">
+      <trans-unit id="PlatformCompatibilityAllVersions">
+        <source>'{0}' all versions</source>
+        <target state="new">'{0}' all versions</target>
+        <note>This call site is reachable on: 'Windows' all versions.</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityDescription">
         <source>Using platform dependent API on a component makes the code no longer work across all platforms.</source>
-        <target state="translated">Użycie w składniku interfejsu API zależnego od platformy powoduje, że kod nie działa na różnych platformach.</target>
+        <target state="new">Using platform dependent API on a component makes the code no longer work across all platforms.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PlatformCompatibilityCheckSupportedOsMessage">
-        <source>'{0}' is supported on '{1}'</source>
-        <target state="translated">Element „{0}” jest obsługiwany przez system „{1}”</target>
-        <note />
+      <trans-unit id="PlatformCompatibilityFromVersionToVersion">
+        <source>'{0}' from version {1} to {2}</source>
+        <target state="new">'{0}' from version {1} to {2}</target>
+        <note>'SupportedOnWindows1903UnsupportedOn2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</note>
       </trans-unit>
-      <trans-unit id="PlatformCompatibilityCheckSupportedOsVersionMessage">
-        <source>'{0}' is supported on '{1}' {2} and later</source>
-        <target state="translated">Element „{0}” jest obsługiwany przez system „{1}” {2} i nowsze</target>
-        <note />
+      <trans-unit id="PlatformCompatibilityOnlySupportedCsAllPlatformMessage">
+        <source>This call site is reachable on all platforms. '{0}' is only supported on: {1}.</source>
+        <target state="new">This call site is reachable on all platforms. '{0}' is only supported on: {1}.</target>
+        <note>This call site is reachable on all platforms. 'SupportedOnWindowsAndBrowser()' is only supported on: 'windows', 'browser' .</note>
       </trans-unit>
-      <trans-unit id="PlatformCompatibilityCheckTitle">
+      <trans-unit id="PlatformCompatibilityOnlySupportedCsReachableMessage">
+        <source>This call site is reachable on: {2}. '{0}' is only supported on: {1}.</source>
+        <target state="new">This call site is reachable on: {2}. '{0}' is only supported on: {1}.</target>
+        <note>This call site is reachable on: 'windows' all versions.'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityOnlySupportedCsUnreachableMessage">
+        <source>This call site is unreachable on: {2}. '{0}' is only supported on: {1}.</source>
+        <target state="new">This call site is unreachable on: {2}. '{0}' is only supported on: {1}.</target>
+        <note>This call site is unreachable on: 'browser'. 'SupportedOnWindowsAndBrowser()' is only supported on: 'browser', 'windows'.</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilitySupportedCsAllPlatformMessage">
+        <source>This call site is reachable on all platforms. '{0}' is supported on: {1}.</source>
+        <target state="new">This call site is reachable on all platforms. '{0}' is supported on: {1}.</target>
+        <note>This call site is reachable on all platforms. 'SupportedOnWindows1903UnsupportedFrom2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilitySupportedCsReachableMessage">
+        <source>This call site is reachable on: {2}. '{0}' is supported on: {1}.</source>
+        <target state="new">This call site is reachable on: {2}. '{0}' is supported on: {1}.</target>
+        <note>This call site is reachable on: 'windows' 10.0.2000 and before. 'UnsupportedOnWindowsSupportedOn1903()' is supported on: 'windows' 10.0.1903 and later.</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityTitle">
         <source>Validate platform compatibility</source>
-        <target state="translated">Weryfikuj zgodność z platformą</target>
+        <target state="new">Validate platform compatibility</target>
         <note />
       </trans-unit>
-      <trans-unit id="PlatformCompatibilityCheckUnsupportedOsMessage">
-        <source>'{0}' is unsupported on '{1}'</source>
-        <target state="translated">Element „{0}” nie jest obsługiwany przez system „{1}”</target>
-        <note />
+      <trans-unit id="PlatformCompatibilityUnsupportedCsAllPlatformMessage">
+        <source>This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</source>
+        <target state="new">This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</target>
+        <note>This call site is reachable on all platforms. 'UnsupportedOnWindows()' is unsupported on: 'windows'</note>
       </trans-unit>
-      <trans-unit id="PlatformCompatibilityCheckUnsupportedOsVersionMessage">
-        <source>'{0}' is unsupported on '{1}' {2} and later</source>
-        <target state="translated">Element „{0}” nie jest obsługiwany przez system „{1}” {2} i nowsze</target>
-        <note />
+      <trans-unit id="PlatformCompatibilityUnsupportedCsReachableMessage">
+        <source>This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</source>
+        <target state="new">This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</target>
+        <note>This call site is reachable on: 'windows', 'browser'. 'UnsupportedOnBrowser()' is unsupported on: 'browser'.</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityVersionAndBefore">
+        <source>'{0}' {1} and before</source>
+        <target state="new">'{0}' {1} and before</target>
+        <note>'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before.</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityVersionAndLater">
+        <source>'{0}' {1} and later</source>
+        <target state="new">'{0}' {1} and later</target>
+        <note>'SupportedOnWindows10()' is only supported on: 'windows' 10.0 and later.</note>
       </trans-unit>
       <trans-unit id="PotentialReferenceCycleInDeserializedObjectGraphDescription">
         <source>Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.</source>

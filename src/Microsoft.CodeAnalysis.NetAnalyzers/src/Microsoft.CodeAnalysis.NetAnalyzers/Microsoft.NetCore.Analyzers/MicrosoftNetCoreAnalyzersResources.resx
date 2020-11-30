@@ -1434,17 +1434,19 @@
   <data name="UseAsSpanInsteadOfRangeIndexerOnAnArrayCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on an array</value>
   </data>
-  <data name="PlatformCompatibilityCheckTitle" xml:space="preserve">
+  <data name="PlatformCompatibilityTitle" xml:space="preserve">
     <value>Validate platform compatibility</value>
   </data>
-  <data name="PlatformCompatibilityCheckDescription" xml:space="preserve">
+  <data name="PlatformCompatibilityDescription" xml:space="preserve">
     <value>Using platform dependent API on a component makes the code no longer work across all platforms.</value>
   </data>
-  <data name="PlatformCompatibilityCheckSupportedOsVersionMessage" xml:space="preserve">
-    <value>'{0}' is supported on '{1}' {2} and later</value>
+  <data name="PlatformCompatibilityOnlySupportedCsUnreachableMessage" xml:space="preserve">
+    <value>This call site is unreachable on: {2}. '{0}' is only supported on: {1}.</value>
+    <comment>This call site is unreachable on: 'browser'. 'SupportedOnWindowsAndBrowser()' is only supported on: 'browser', 'windows'.</comment>
   </data>
-  <data name="PlatformCompatibilityCheckUnsupportedOsVersionMessage" xml:space="preserve">
-    <value>'{0}' is unsupported on '{1}' {2} and later</value>
+  <data name="PlatformCompatibilityUnsupportedCsAllPlatformMessage" xml:space="preserve">
+    <value>This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</value>
+    <comment>This call site is reachable on all platforms. 'UnsupportedOnWindows()' is unsupported on: 'windows'</comment>
   </data>
   <data name="DoNotUseOutAttributeStringPInvokeParametersDescription" xml:space="preserve">
     <value>String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.</value>
@@ -1473,13 +1475,47 @@
   <data name="AvoidAssemblyGetFilesInSingleFileMessage" xml:space="preserve">
     <value>'{0}' will throw for assemblies embedded in a single-file app</value>
   </data>
-  <data name="PlatformCompatibilityCheckUnsupportedOsMessage" xml:space="preserve">
-    <value>'{0}' is unsupported on '{1}'</value>
+  <data name="PlatformCompatibilityOnlySupportedCsReachableMessage" xml:space="preserve">
+    <value>This call site is reachable on: {2}. '{0}' is only supported on: {1}.</value>
+    <comment>This call site is reachable on: 'windows' all versions.'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before</comment>
   </data>
-  <data name="PlatformCompatibilityCheckSupportedOsMessage" xml:space="preserve">
-    <value>'{0}' is supported on '{1}'</value>
+  <data name="PlatformCompatibilityOnlySupportedCsAllPlatformMessage" xml:space="preserve">
+    <value>This call site is reachable on all platforms. '{0}' is only supported on: {1}.</value>
+    <comment>This call site is reachable on all platforms. 'SupportedOnWindowsAndBrowser()' is only supported on: 'windows', 'browser' .</comment>
   </data>
   <data name="PreferStringContainsOverIndexOfCodeFixTitle" xml:space="preserve">
     <value>Replace with 'string.Contains'</value>
+  </data>
+  <data name="CommaSeparator" xml:space="preserve">
+    <value>, </value>
+    <comment>Separator used for separating list of platform names: {API} is only supported on: {‘windows’, ‘browser’, ‘linux’}</comment>
+  </data>
+  <data name="PlatformCompatibilityFromVersionToVersion" xml:space="preserve">
+    <value>'{0}' from version {1} to {2}</value>
+    <comment>'SupportedOnWindows1903UnsupportedOn2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</comment>
+  </data>
+  <data name="PlatformCompatibilitySupportedCsAllPlatformMessage" xml:space="preserve">
+    <value>This call site is reachable on all platforms. '{0}' is supported on: {1}.</value>
+    <comment>This call site is reachable on all platforms. 'SupportedOnWindows1903UnsupportedFrom2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</comment>
+  </data>
+  <data name="PlatformCompatibilitySupportedCsReachableMessage" xml:space="preserve">
+    <value>This call site is reachable on: {2}. '{0}' is supported on: {1}.</value>
+    <comment>This call site is reachable on: 'windows' 10.0.2000 and before. 'UnsupportedOnWindowsSupportedOn1903()' is supported on: 'windows' 10.0.1903 and later.</comment>
+  </data>
+  <data name="PlatformCompatibilityUnsupportedCsReachableMessage" xml:space="preserve">
+    <value>This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</value>
+    <comment>This call site is reachable on: 'windows', 'browser'. 'UnsupportedOnBrowser()' is unsupported on: 'browser'.</comment>
+  </data>
+  <data name="PlatformCompatibilityVersionAndBefore" xml:space="preserve">
+    <value>'{0}' {1} and before</value>
+    <comment>'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before.</comment>
+  </data>
+  <data name="PlatformCompatibilityVersionAndLater" xml:space="preserve">
+    <value>'{0}' {1} and later</value>
+    <comment>'SupportedOnWindows10()' is only supported on: 'windows' 10.0 and later.</comment>
+  </data>
+  <data name="PlatformCompatibilityAllVersions" xml:space="preserve">
+    <value>'{0}' all versions</value>
+    <comment>This call site is reachable on: 'Windows' all versions.</comment>
   </data>
 </root>
