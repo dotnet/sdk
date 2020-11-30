@@ -269,9 +269,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 allTemplates.UnionWith(_userTemplateCache.GetTemplatesForLocale(locale, _userSettings.Version));
             }
-            var returnedPoints = new HashSet<MountPointInfo>();
+            var returnedPoints = new HashSet<Guid>();
             foreach (TemplateInfo template in allTemplates)
             {
+                if (returnedPoints.Contains(template.ConfigMountPointId))
+                    continue;
+
                 if (!_mountPoints.TryGetValue(template.ConfigMountPointId, out MountPointInfo mountPoint))
                 {
                     // TODO: This should never happen - throw an error?
@@ -288,8 +291,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 if (forceScanAll)
                 {
-                    if (returnedPoints.Add(mountPoint))
-                        yield return mountPoint;
+                    returnedPoints.Add(template.ConfigMountPointId);
+                    yield return mountPoint;
                     continue;
                 }
 
@@ -313,8 +316,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     || (timestampOnDisk.HasValue && template.ConfigTimestampUtc.Value < timestampOnDisk))
                 {
                     // Template on disk is more recent
-                    if (returnedPoints.Add(mountPoint))
-                        yield return mountPoint;
+                    returnedPoints.Add(template.ConfigMountPointId);
+                    yield return mountPoint;
                 }
             }
         }
