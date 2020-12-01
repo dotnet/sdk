@@ -175,10 +175,10 @@ namespace Microsoft.NET.Build.Tests
 
         [Theory(Skip = "https://github.com/dotnet/coreclr/issues/27275")]
         [InlineData("netstandard1.6", new[] { "NETSTANDARD", "NETSTANDARD1_6" }, false)]
-        [InlineData("net45", new[] { "NETFRAMEWORK", "NET45" }, true)]
-        [InlineData("net461", new[] { "NETFRAMEWORK", "NET461" }, true)]
-        [InlineData("netcoreapp2.0", new[] { "NETCOREAPP", "NETCOREAPP2_0" }, false)]
-        [InlineData("net5.0", new[] { "NETCOREAPP", "NET", "NET5_0" }, false)]
+        [InlineData("net45", new[] { "NETFRAMEWORK", "NET45", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER" }, true)]
+        [InlineData("net461", new[] { "NETFRAMEWORK", "NET461", "NET20_OR_GREATER", "NET30_OR_GREATER", "NET35_OR_GREATER", "NET40_OR_GREATER", "NET45_OR_GREATER", "NET451_OR_GREATER", "NET452_OR_GREATER", "NET46_OR_GREATER", "NET461_OR_GREATER" }, true)]
+        [InlineData("netcoreapp2.0", new[] { "NETCOREAPP", "NETCOREAPP2_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER" }, false)]
+        [InlineData("net5.0", new[] { "NETCOREAPP", "NET", "NET5_0", "NETCOREAPP1_0_OR_GREATER", "NETCOREAPP1_1_OR_GREATER", "NETCOREAPP2_0_OR_GREATER", "NETCOREAPP2_1_OR_GREATER", "NETCOREAPP2_2_OR_GREATER", "NETCOREAPP3_0_OR_GREATER", "NETCOREAPP3_1_OR_GREATER", "NET5_0_OR_GREATER" }, false)]
         public void It_implicitly_defines_compilation_constants_for_the_target_framework(string targetFramework, string[] expectedDefines, bool buildOnlyOnWindows)
         {
             bool shouldCompile = true;
@@ -233,7 +233,8 @@ namespace Microsoft.NET.Build.Tests
             var getValuesCommand = new GetValuesCommand(Log, libraryProjectDirectory,
                 targetFramework, "DefineConstants")
             {
-                ShouldCompile = shouldCompile
+                ShouldCompile = shouldCompile,
+                DependsOnTargets = "AddImplicitDefineConstants"
             };
 
             getValuesCommand
