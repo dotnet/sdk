@@ -47,7 +47,9 @@ Available built-in generators for computing generated symbols values are:
 | [now](#now) | Get the current date/time. |
 | [random](#random) | Generate random int. |
 | [regex](#regex) | Process a regular expression. |
+| [regexMatch](#regexmatch) | Process a regular expression with matching. |
 | [switch](#switch) | Behaves like a C# `switch` statement. |
+| [join](#join) | Joins multiple symbols or constants. |
 
 ## Casing
 Changes the case of the text of the source value to all upper-case or all lower-case.  It does not affect spaces (i.e. does not do any sort of Camel Casing).
@@ -406,6 +408,36 @@ Replacement steps
 [`Implementation class`](https://github.com/dotnet/templating/blob/master/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/RegexMacro.cs)
 [`RegEx.Replace Documentation`](https://msdn.microsoft.com/en-us/library/xwewhkd1(v=vs.110).aspx)     
 
+## RegexMatch
+Tries to match regex pattern against value of source symbol and returns `True` if matched otherwise `False`.
+
+#### Parameters
+| Name     |Data Type| Description   |
+|----------|------|---------------|
+|source|string|data source|
+|pattern|string|match pattern|
+
+### Samples
+
+```
+"symbols": {
+    "isMatch": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "dataType": "bool",
+      "replaces": "test.value1",
+      "parameters": {
+        "source": "name",
+        "pattern": "^hello$"
+      }
+    }
+  }
+```
+
+### Related
+[`Implementation class`](https://github.com/dotnet/templating/blob/master/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/RegexMatchMacro.cs)
+[`Regex.IsMatch Documentation`](https://docs.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regex.ismatch)     
+
 ## Switch
 
 Defines a set of conditions to be evaluated, and the value to return if the condition is met. The first condition to evaluate to true is used. To include a default case, add a condition that always evaluates to true as the last entry in `cases`.
@@ -458,3 +490,69 @@ In this case, if the user enters the value `123` as the value of the parameter `
 
 ### Related
 [`Implementation class`](https://github.com/dotnet/templating/blob/master/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/SwitchMacro.cs)
+
+## Join
+
+Concatenates multiple symbols or constants with defined separator into new symbol.
+
+#### Parameters
+| Name     |Data Type| Description   |    
+|----------|---------|---------------|    
+|symbols   |array    |all values to concatenate|
+|separator |string   |any string, can also be empty|
+
+Symbols definition
+
+| Name |Data Type| Description   |    
+|------|---------|---------------|    
+|type  |string   |`ref` to reference value from another symbol or `const` for string constant, defaults to `const`.|
+|value |string   |either name of another symbol or string constant|
+
+### Samples
+
+This sample shows how to change the replacement value based on evaluating conditions using other symbols:
+
+```
+  "symbols": {
+    "company": {
+      "type": "parameter",
+      "dataType": "string",
+      "defaultValue": "Microsoft"
+    },
+    "product": {
+      "type": "parameter",
+      "dataType": "string",
+      "defaultValue": "Visual Studio"
+    },
+    "joinedRename": {
+      "type": "generated",
+      "generator": "join",
+      "fileRename": "Api",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "const",
+            "value": "Source"
+          },
+          {
+            "type": "const",
+            "value": "Api"
+          },
+          {
+            "type": "ref",
+            "value": "company"
+          },
+          {
+            "type": "ref",
+            "value": "product"
+          }
+        ],
+        "separator": "/"
+      }
+    }
+  }
+```
+This sample will rename folder called `Api` into `Source/Api/Microsoft/Visual Studio`. Notice that File API will automatically change `/` into `\` on Windows.
+
+### Related
+[`Implementation class`](https://github.com/dotnet/templating/blob/master/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/JoinMacro.cs)
