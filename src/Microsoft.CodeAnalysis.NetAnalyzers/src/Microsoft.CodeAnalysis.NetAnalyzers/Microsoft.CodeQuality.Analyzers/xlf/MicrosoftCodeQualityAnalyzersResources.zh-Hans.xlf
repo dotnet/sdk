@@ -2,6 +2,16 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-HANS" original="../MicrosoftCodeQualityAnalyzersResources.resx">
     <body>
+      <trans-unit id="AnalyzerPackageDeprecationMessage">
+        <source>FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</source>
+        <target state="new">FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AnalyzerPackageDeprecationTitle">
+        <source>Analyzer package has been deprecated</source>
+        <target state="new">Analyzer package has been deprecated</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AppendConfigureAwaitTrue">
         <source>Append .ConfigureAwait(true)</source>
         <target state="translated">附加 .ConfigureAwait(true)</target>
