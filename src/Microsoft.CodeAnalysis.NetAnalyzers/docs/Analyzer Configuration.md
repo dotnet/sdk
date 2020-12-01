@@ -80,6 +80,7 @@ Configurable Rules:
 [CA1056](https://docs.microsoft.com/visualstudio/code-quality/ca1056),
 [CA1058](https://docs.microsoft.com/visualstudio/code-quality/ca1058),
 [CA1063](https://docs.microsoft.com/visualstudio/code-quality/ca1063),
+[CA1068](https://docs.microsoft.com/visualstudio/code-quality/ca1068),
 [CA1070](https://docs.microsoft.com/visualstudio/code-quality/ca1070),
 [CA1700](https://docs.microsoft.com/visualstudio/code-quality/ca1700),
 [CA1707](https://docs.microsoft.com/visualstudio/code-quality/ca1707),
