@@ -27,13 +27,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         {
             var source = @"
 using System.Threading;
-public class T
+class T
 {
-    public void {|#0:M|}(CancellationToken t, int i)
+    void M(CancellationToken t, int i)
     {
     }
 }";
-            var expected = VerifyCS.Diagnostic().WithLocation(0).WithArguments("T.M(System.Threading.CancellationToken, int)");
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int)");
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
@@ -42,13 +42,13 @@ public class T
         {
             var source = @"
 using System.Threading;
-public class T
+class T
 {
-    public void {|#0:M|}(CancellationToken t1, int i, CancellationToken t2)
+    void M(CancellationToken t1, int i, CancellationToken t2)
     {
     }
 }";
-            var expected = VerifyCS.Diagnostic().WithLocation(0).WithArguments("T.M(System.Threading.CancellationToken, int, System.Threading.CancellationToken)");
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("T.M(System.Threading.CancellationToken, int, System.Threading.CancellationToken)");
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
@@ -57,9 +57,9 @@ public class T
         {
             var test = @"
 using System.Threading;
-public class T
+class T
 {
-    public void M(int i, CancellationToken t)
+    void M(int i, CancellationToken t)
     {
     }
 }";
@@ -71,9 +71,9 @@ public class T
         {
             var test = @"
 using System.Threading;
-public class T
+class T
 {
-    public void M(CancellationToken t)
+    void M(CancellationToken t)
     {
     }
 }";
@@ -85,9 +85,9 @@ public class T
         {
             var test = @"
 using System.Threading;
-public class T
+class T
 {
-    public void M(CancellationToken t, params object[] args)
+    void M(CancellationToken t, params object[] args)
     {
     }
 }";
@@ -99,9 +99,9 @@ public class T
         {
             var test = @"
 using System.Threading;
-public class T
+class T
 {
-    public void M(CancellationToken t, out int i)
+    void M(CancellationToken t, out int i)
     {
         i = 2;
     }
@@ -114,9 +114,9 @@ public class T
         {
             var test = @"
 using System.Threading;
-public class T
+class T
 {
-    public void M(CancellationToken t, ref int x, ref int y)
+    void M(CancellationToken t, ref int x, ref int y)
     {
     }
 }";
@@ -128,9 +128,9 @@ public class T
         {
             var test = @"
 using System.Threading;
-public class T
+class T
 {
-    public void M(CancellationToken t, int x = 0)
+    void M(CancellationToken t, int x = 0)
     {
     }
 }";
@@ -142,18 +142,18 @@ public class T
         {
             var test = @"
 using System.Threading;
-public class B
+class B
 {
-    protected virtual void {|#0:M|}(CancellationToken t, int i) { }
+    protected virtual void M(CancellationToken t, int i) { }
 }
 
-public class T : B
+class T : B
 {
     protected override void M(CancellationToken t, int i) { }
 }";
 
             // One diagnostic for the virtual, but none for the override.
-            var expected = VerifyCS.Diagnostic().WithLocation(0).WithArguments("B.M(System.Threading.CancellationToken, int)");
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 28).WithArguments("B.M(System.Threading.CancellationToken, int)");
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -162,18 +162,18 @@ public class T : B
         {
             var test = @"
 using System.Threading;
-public interface I
+interface I
 {
-    void {|#0:M|}(CancellationToken t, int i);
+    void M(CancellationToken t, int i);
 }
 
-public class T : I
+class T : I
 {
     public void M(CancellationToken t, int i) { }
 }";
 
             // One diagnostic for the interface, but none for the implementation.
-            var expected = VerifyCS.Diagnostic().WithLocation(0).WithArguments("I.M(System.Threading.CancellationToken, int)");
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("I.M(System.Threading.CancellationToken, int)");
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -182,18 +182,18 @@ public class T : I
         {
             var test = @"
 using System.Threading;
-public interface I
+interface I
 {
-    void {|#0:M|}(CancellationToken t, int i);
+    void M(CancellationToken t, int i);
 }
 
-public class T : I
+class T : I
 {
     void I.M(CancellationToken t, int i) { }
 }";
 
             // One diagnostic for the interface, but none for the implementation.
-            var expected = VerifyCS.Diagnostic().WithLocation(0).WithArguments("I.M(System.Threading.CancellationToken, int)");
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 10).WithArguments("I.M(System.Threading.CancellationToken, int)");
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -202,7 +202,7 @@ public class T : I
         {
             var test = @"
 using System.Threading;
-public static class C1
+static class C1
 {
     public static void M1(this CancellationToken p1, object p2)
     {
@@ -216,7 +216,7 @@ public static class C1
         {
             var test = @"
 using System.Threading;
-public static class C1
+static class C1
 {
     public static void M1(object p1, CancellationToken token1, CancellationToken token2) { }
     public static void M2(object p1, CancellationToken token1, CancellationToken token2, CancellationToken token3) { }
@@ -232,14 +232,14 @@ public static class C1
         {
             var test = @"
 using System.Threading;
-public static class C1
+static class C1
 {
-    public static void {|#0:M1|}(this object p1, CancellationToken p2, object p3)
+    public static void M1(this object p1, CancellationToken p2, object p3)
     {
     }
 }";
 
-            var expected = VerifyCS.Diagnostic().WithLocation(0).WithArguments("C1.M1(object, System.Threading.CancellationToken, object)");
+            var expected = VerifyCS.Diagnostic().WithLocation(5, 24).WithArguments("C1.M1(object, System.Threading.CancellationToken, object)");
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
@@ -281,12 +281,12 @@ using System.Threading.Tasks;
 
 public class C
 {
-    public Task {|#0:SomeAsync|}(CancellationToken cancellationToken, object o, IProgress<int> progress)
+    public Task SomeAsync(CancellationToken cancellationToken, object o, IProgress<int> progress)
     {
         throw new NotImplementedException();
     }
 }",
-            VerifyCS.Diagnostic().WithLocation(0)
+            VerifyCS.Diagnostic().WithLocation(8, 17)
                 .WithArguments("C.SomeAsync(System.Threading.CancellationToken, object, System.IProgress<int>)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -295,11 +295,11 @@ Imports System.Threading
 Imports System.Threading.Tasks
 
 Public Class C
-    Public Function {|#0:SomeAsync|}(ByVal cancellationToken As CancellationToken, ByVal o As Object, ByVal progress As IProgress(Of Integer)) As Task
+    Public Function SomeAsync(ByVal cancellationToken As CancellationToken, ByVal o As Object, ByVal progress As IProgress(Of Integer)) As Task
         Throw New NotImplementedException()
     End Function
 End Class",
-            VerifyVB.Diagnostic().WithLocation(0)
+            VerifyVB.Diagnostic().WithLocation(7, 21)
                 .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, o As Object, progress As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
 
@@ -313,12 +313,12 @@ using System.Threading.Tasks;
 
 public class C
 {
-    public Task {|#0:SomeAsync|}(CancellationToken cancellationToken, IProgress<int> progress1, IProgress<int> progress2)
+    public Task SomeAsync(CancellationToken cancellationToken, IProgress<int> progress1, IProgress<int> progress2)
     {
         throw new NotImplementedException();
     }
 }",
-            VerifyCS.Diagnostic().WithLocation(0)
+            VerifyCS.Diagnostic().WithLocation(8, 17)
                 .WithArguments("C.SomeAsync(System.Threading.CancellationToken, System.IProgress<int>, System.IProgress<int>)"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -327,11 +327,11 @@ Imports System.Threading
 Imports System.Threading.Tasks
 
 Public Class C
-    Public Function {|#0:SomeAsync|}(ByVal cancellationToken As CancellationToken, ByVal progress1 As IProgress(Of Integer), ByVal progress2 As IProgress(Of Integer)) As Task
+    Public Function SomeAsync(ByVal cancellationToken As CancellationToken, ByVal progress1 As IProgress(Of Integer), ByVal progress2 As IProgress(Of Integer)) As Task
         Throw New NotImplementedException()
     End Function
 End Class",
-            VerifyVB.Diagnostic().WithLocation(0)
+            VerifyVB.Diagnostic().WithLocation(7, 21)
                 .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, progress1 As System.IProgress(Of Integer), progress2 As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
 
@@ -420,6 +420,11 @@ public class C
         }
 
         [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
+        // Empty editorconfig
+        [InlineData("public", "")]
+        [InlineData("protected", "")]
+        [InlineData("internal", "")]
+        [InlineData("private", "")]
         // General analyzer option
         [InlineData("public", "dotnet_code_quality.api_surface = public")]
         [InlineData("public", "dotnet_code_quality.api_surface = private, internal, public")]
@@ -466,6 +471,11 @@ public class C
         }
 
         [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
+        // Empty editorconfig
+        [InlineData("Public", "")]
+        [InlineData("Protected", "")]
+        [InlineData("Friend", "")]
+        [InlineData("Private", "")]
         // General analyzer option
         [InlineData("Public", "dotnet_code_quality.api_surface = Public")]
         [InlineData("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]

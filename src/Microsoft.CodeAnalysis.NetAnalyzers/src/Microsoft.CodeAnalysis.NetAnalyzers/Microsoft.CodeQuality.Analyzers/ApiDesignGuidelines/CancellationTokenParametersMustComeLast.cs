@@ -63,7 +63,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
-                    if (!symbolContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, symbolContext.Compilation, symbolContext.CancellationToken))
+                    if (!symbolContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, symbolContext.Compilation, symbolContext.CancellationToken,
+                            defaultRequiredVisibility: SymbolVisibilityGroup.All))
                     {
                         return;
                     }
