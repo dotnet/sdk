@@ -152,7 +152,7 @@
         "parameters": {
           "properties": {
             "source": {
-              "description": "The name of a different parameter in the template configuration. Its value will be used by this generator's regex to evaluate if there is a match. The value of the source parameter is not modified",
+              "description": "The symbol to search for a match. Its value will be used by this generator's regex to evaluate if there is a match. The value of the source parameter is not modified",
               "type": "string"
             },
             "pattern": {
@@ -269,7 +269,7 @@
         "parameters": {
           "properties": {
             "separator": {
-              "description": "Any string, can also be empty",
+              "description": "The value used as the separator between the values to be concatenated, notice that you can use \"/\" as folder seperator also on Windows since File API will convert it into \"\\\"",
               "default": "",
               "type": "string"
             },

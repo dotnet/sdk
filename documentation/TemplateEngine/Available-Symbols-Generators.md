@@ -47,9 +47,9 @@ Available built-in generators for computing generated symbols values are:
 | [now](#now) | Get the current date/time. |
 | [random](#random) | Generate random int. |
 | [regex](#regex) | Process a regular expression. |
-| [regexMatch](#regexmatch) | Process a regular expression with matching. |
+| [regexMatch](#regexmatch) | Checks if the value matches the regex pattern. |
 | [switch](#switch) | Behaves like a C# `switch` statement. |
-| [join](#join) | Joins multiple symbols or constants. |
+| [join](#join) | Concatenates multiple symbols or constants. |
 
 ## Casing
 Changes the case of the text of the source value to all upper-case or all lower-case.  It does not affect spaces (i.e. does not do any sort of Camel Casing).
@@ -409,7 +409,7 @@ Replacement steps
 [`RegEx.Replace Documentation`](https://msdn.microsoft.com/en-us/library/xwewhkd1(v=vs.110).aspx)     
 
 ## RegexMatch
-Tries to match regex pattern against value of source symbol and returns `True` if matched otherwise `False`.
+Tries to match regex pattern against value of source symbol and returns `True` if matched, otherwise `False`.
 
 #### Parameters
 | Name     |Data Type| Description   |
@@ -496,10 +496,10 @@ In this case, if the user enters the value `123` as the value of the parameter `
 Concatenates multiple symbols or constants with defined separator into new symbol.
 
 #### Parameters
-| Name     |Data Type| Description   |    
-|----------|---------|---------------|    
-|symbols   |array    |all values to concatenate|
-|separator |string   |any string, can also be empty|
+| Name     |Data Type| Optional | Description   |    
+|----------|---------|----------|-----|    
+|symbols   |array    |no     |all values to concatenate|
+|separator |string   |yes      |the value used as the separator between the values to be concatenated, notice that you can use `/` as folder seperator also on Windows since File API will convert it into `\` |
 
 Symbols definition
 
