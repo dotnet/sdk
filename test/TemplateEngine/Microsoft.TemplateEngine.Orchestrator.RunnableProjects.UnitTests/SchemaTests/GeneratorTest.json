@@ -185,6 +185,42 @@
           }
         ]
       }
+    },
+    "joinedRename": {
+      "type": "generated",
+      "generator": "join",
+      "fileRename": "Api",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "const",
+            "value": "Source"
+          },
+          {
+            "type": "const",
+            "value": "Api"
+          },
+          {
+            "type": "ref",
+            "value": "company"
+          },
+          {
+            "type": "ref",
+            "value": "product"
+          }
+        ],
+        "separator": "/"
+      }
+    },
+    "isMatch": {
+      "type": "generated",
+      "generator": "regexMatch",
+      "dataType": "bool",
+      "replaces": "test.value1",
+      "parameters": {
+        "source": "name",
+        "pattern": "^hello$"
+      }
     }
   },
   "guids": [
