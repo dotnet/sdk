@@ -136,13 +136,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 var typeName = WellKnownTypeNames.SystemOperatingSystem;
 
-                // TODO: remove 'typeName + "Helper"' after tests able to consume the real new APIs
-                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(typeName + "Helper", out var operatingSystemType))
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(typeName, out var operatingSystemType))
                 {
-                    if (!context.Compilation.TryGetOrCreateTypeByMetadataName(typeName, out operatingSystemType))
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 var osPlatformType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesOSPlatform);

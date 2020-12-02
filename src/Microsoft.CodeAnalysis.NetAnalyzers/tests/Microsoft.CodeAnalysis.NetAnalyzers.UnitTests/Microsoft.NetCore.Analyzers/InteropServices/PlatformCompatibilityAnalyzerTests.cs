@@ -29,15 +29,11 @@ using System.Runtime.InteropServices;
 public class Test
 {
     [[|SupportedOSPlatform(""Linux"", ""Windows"")|]]
-    public void MethodWithTwoArguments()
-    {
-    }
+    public void MethodWithTwoArguments() { }
+
     [UnsupportedOSPlatform([|new string[]{""Linux"", ""Windows""}|])]
-    public void MethodWithArrayArgument()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void MethodWithArrayArgument() { }
+}";
 
             await VerifyAnalyzerAsyncCs(csSource);
         }
@@ -80,8 +76,7 @@ namespace CallerTargetsBelow5_0
         [SupportedOSPlatform(""windows"")]
         public static void WindowsOnlyMethod() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source, tfm);
         }
 
@@ -126,8 +121,7 @@ namespace CallerTargetsBelow5_0
         [SupportedOSPlatform(""windows"")]
         public static void WindowsOnlyMethod() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source, tfmAndOption);
         }
 
@@ -139,20 +133,19 @@ using System;
 using System.Runtime.Versioning;
 
 [SupportedOSPlatform(""windows"")]
-class WindowsOnlyType {}
+class WindowsOnlyType { }
 
 public class Test
 {
-    void GenericMethod<T>() {}
-    void GenericMethod2<T1, T2>() {}
+    void GenericMethod<T>() { }
+    void GenericMethod2<T1, T2>() { }
     void M1()
     {
         [|GenericMethod<WindowsOnlyType>()|];
         [|GenericMethod2<Test, WindowsOnlyType>()|];
         [|GenericMethod<Action<WindowsOnlyType>>()|];
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(csSource);
         }
 
@@ -163,9 +156,9 @@ public class Test
 using System.Runtime.Versioning;
 
 [SupportedOSPlatform(""windows"")]
-class WindowsOnlyType {}
+class WindowsOnlyType { }
 
-class GenericClass<T> {}
+class GenericClass<T> { }
 
 public class Test
 {
@@ -176,8 +169,7 @@ public class Test
         GenericClass<WindowsOnlyType> obj = [|new GenericClass<WindowsOnlyType>()|];
         MethodWithGenericParameter([|new GenericClass<WindowsOnlyType>()|]);
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(csSource);
         }
 
@@ -189,12 +181,12 @@ using System;
 using System.Runtime.Versioning;
 
 [SupportedOSPlatform(""windows"")]
-class WindowsOnlyType {}
+class WindowsOnlyType { }
 
 class GenericClass<T>
 {
     public static void M<V>() { }
-    public static void M2() {}
+    public static void M2() { }
     public static int Field;
     public static int Property {get;}
     public static event EventHandler SampleEvent
@@ -217,8 +209,7 @@ public class Test
         var val = [|GenericClass<WindowsOnlyType>.Property|];
         [|GenericClass<WindowsOnlyType>.SampleEvent|] += WindowsEventHandler;
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(csSource);
         }
 
@@ -277,8 +268,7 @@ namespace WindowsOnlyAssembly
             }
         }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(csSource);
         }
 
@@ -290,12 +280,12 @@ using System;
 using System.Runtime.Versioning;
 
 [SupportedOSPlatform(""windows"")]
-class WindowsOnlyType {}
+class WindowsOnlyType { }
 
 class GenericClass<T>
 {
     public static void M<V>() { }
-    public static void M2() {}
+    public static void M2() { }
 }
 
 class GenericType<T> { }
@@ -313,8 +303,7 @@ public class Test
         [|GenericClass<GenericType<Action<GenericClass<GenericClass<GenericType<Action<GenericClass<WindowsOnlyType>>>>>>>>.M2()|];
         GenericClass<GenericType<Action<GenericClass<GenericClass<GenericType<Action<GenericClass<int>>>>>>>>.M2();
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(csSource);
         }
 
@@ -334,15 +323,11 @@ public class Test
     }
     
     [UnsupportedOSPlatform(""Linux4.1"")]
-    public void Unsupported()
-    {
-    }
+    public void Unsupported() { }
+
     [SupportedOSPlatform(""Windows10.1.1.1"")]
-    public void WindowsOnly()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void WindowsOnly() { }
+}";
             await VerifyAnalyzerAsyncCs(csSource);
 
             var vbSource = @"
@@ -362,8 +347,7 @@ Public Class Test
     <UnsupportedOSPlatform(""Linux4.1"")>
     Public Sub Unsupported()
     End Sub
-End Class
-" + MockAttributesVbSource;
+End Class";
             await VerifyAnalyzerAsyncVb(vbSource);
         }
 
@@ -388,40 +372,31 @@ public class Test
         UnattributedFunction();
     }
     public void UnattributedFunction() { }
+
     [UnsupportedOSPlatform(""Windows"")]
-    public void NotForWindows()
-    {
-    }
+    public void NotForWindows() { }
+
     [SupportedOSPlatform(""Windows10"")]
-    public void Windows10()
-    {
-    }
+    public void Windows10() { }
+
     [SupportedOSPlatform(""Windows1.2.3.4.5"")]
-    public void Windows1_2_3_4_5()
-    {
-    }
+    public void Windows1_2_3_4_5() { }
+
     [SupportedOSPlatform(""Ios-4.1"")]
-    public void UnsupportedOSPlatformIosDash4_1()
-    {
-    }
+    public void UnsupportedOSPlatformIosDash4_1() { }
+
     [SupportedOSPlatform(""Ios*4.1"")]
-    public void UnsupportedOSPlatformIosStar4_1()
-    {
-    }
+    public void UnsupportedOSPlatformIosStar4_1() { }
+
     [SupportedOSPlatform(null)]
-    public void UnsupportedOSPlatformWithNullString()
-    {
-    }
+    public void UnsupportedOSPlatformWithNullString() { }
+
     [SupportedOSPlatform(""Linu4.1"")]
-    public void SupportedLinu4_1()
-    {
-    }
+    public void SupportedLinu4_1() { }
+
     [UnsupportedOSPlatform("""")]
-    public void UnsupportedWithEmptyString()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void UnsupportedWithEmptyString() { }
+}";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
@@ -453,8 +428,7 @@ public class Test
     {
         return option;
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -504,8 +478,7 @@ public class Test
     {
         return option;
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
 
             var vbSource = @"
@@ -553,8 +526,7 @@ Public Class Test
     Public Function M2(ByVal[option] As Boolean) As Boolean
         Return[option]
     End Function
-End Class
-" + MockAttributesVbSource;
+End Class";
             await VerifyAnalyzerAsyncVb(vbSource);
         }
 
@@ -581,8 +553,7 @@ public class Test
     {
         return option;
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
@@ -620,8 +591,7 @@ public enum PlatformEnum
     [SupportedOSPlatform(""linux4.8"")]
     Linux48,
     NoPlatform
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
@@ -655,8 +625,7 @@ public enum PlatformEnum
     [SupportedOSPlatform(""Linux4.8"")]
     Linux48,
     NoPlatform
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
 
             var vbSource = @"
@@ -678,11 +647,10 @@ End Class
 Public Enum PlatformEnum
     <SupportedOSPlatform(""Windows10.0"")>
     Windows10
-    < SupportedOSPlatform(""Linux4.8"") >
+    <SupportedOSPlatform(""Linux4.8"") >
     Linux48
     NoPlatform
-End Enum
-" + MockAttributesVbSource;
+End Enum";
             await VerifyAnalyzerAsyncVb(vbSource);
         }
 
@@ -715,8 +683,7 @@ public class Test
     {
         return option;
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -737,11 +704,8 @@ public class Test
 public class B
 {
     [SupportedOSPlatform(""Windows10.1.1.1"")]
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -766,12 +730,9 @@ namespace Ns
     public class B
     {
         [SupportedOSPlatform(""Windows10.1.1.1"")]
-        public void M2()
-        {
-        }
+        public void M2() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
 
             var vbSource = @"
@@ -792,8 +753,7 @@ Namespace Ns
         Public Sub M2()
         End Sub
     End Class
-End Namespace
-" + MockAttributesVbSource;
+End Namespace";
             await VerifyAnalyzerAsyncVb(vbSource);
         }
 
@@ -815,14 +775,10 @@ public class Test
 public class C
 {
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public C()
-    {
-    }
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public C() { }
+
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -843,11 +799,8 @@ public class Test
 [SupportedOSPlatform(""Windows10.1.2.3"")]
 public class OsDependentClass
 {
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
 
             var vbSource = @"
@@ -865,7 +818,7 @@ Public Class OsDependentClass
     Public Sub M2()
     End Sub
 End Class
-" + MockAttributesVbSource;
+";
             await VerifyAnalyzerAsyncVb(vbSource);
         }
 
@@ -887,11 +840,8 @@ public class Test
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -914,11 +864,8 @@ public class Test
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -942,13 +889,10 @@ public class Test
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void M2()
-    {
-    }
+    public void M2() { }
 
     public void M3(Action a) { a(); }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -970,11 +914,8 @@ public class Test
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -999,11 +940,8 @@ public class Test
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1029,11 +967,8 @@ public class C
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1057,13 +992,10 @@ public class Test
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void M2()
-    {
-    }
+    public void M2() { }
 
     public void M3(Action a) { a(); }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1085,11 +1017,8 @@ public class Test
     }
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1117,11 +1046,8 @@ public class Test
         [|SampleEvent|]?.Invoke();
     }
 
-    public void M3()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M3() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
 
             var vbSource = @"
@@ -1143,8 +1069,7 @@ Public Class Test
 
     Public Sub M3()
     End Sub
-End Class"
-+ MockAttributesVbSource;
+End Class";
             await VerifyAnalyzerAsyncVb(vbSource);
         }
 
@@ -1171,8 +1096,7 @@ public class C
         [|Test.WindowsOnlyEvent|] += WindowsEventHandler;
         [|Test.WindowsOnlyEvent|] -= WindowsEventHandler;
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1218,8 +1142,7 @@ public class Test
         WindowsOnlyEventAdd -= WindowsEventHandler;
         [|WindowsOnlyEventRemove|] -= WindowsEventHandler;
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1234,16 +1157,14 @@ public class Test
     public delegate void Del(); // The attribute not supported on delegates, so no tests for that
 
     [SupportedOSPlatform(""Windows10.1.2.3"")]
-    public void DelegateMethod()
-    {
-    }
+    public void DelegateMethod() { }
+
     public void M1()
     {
         Del handler = [|DelegateMethod|];
         handler();
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1272,8 +1193,7 @@ class UnsupportedOnBrowserType
     public static void SupportedOnBrowser() {}
     [SupportedOSPlatform(""tvos4.0"")]    
     public static void SupportedOnTvos4() {}
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1333,8 +1253,7 @@ class UnsupportedOnBrowserType
     public static void UnsupportedOnBrowser() {}
     [SupportedOSPlatform(""tvos4.0"")]    
     public static void SupportedOnTvos4() {}
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1383,8 +1302,7 @@ class UnsupportedOnBrowserSupportedOnWindowType
     public static void SupportedOnIosTvos() {}
     [SupportedOSPlatform(""tvos4.0"")]    // same here
     public static void SupportedOnTvos4() {}
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1417,8 +1335,7 @@ namespace CallerSupportsSubsetOfTarget
         [SupportedOSPlatform(""browser""), SupportedOSPlatform(""windows"")]
         public static void SupportedOnWindowsAndBrowser() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1443,8 +1360,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
         [UnsupportedOSPlatform(""windows""), SupportedOSPlatform(""windows11.0"")]
         public static void UnsupportedOnWindowsUntilWindows11() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
@@ -1478,8 +1394,7 @@ namespace CallerUnsupportsSubsetOfTarget
         [SupportedOSPlatform(""windows"")]
         public static void FunctionSupportedOnWindowsSameVersion() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
@@ -1509,8 +1424,7 @@ namespace CallerUnsupportsNonSubsetOfTarget
         [SupportedOSPlatform(""windows"")]
         public static void FunctionSupportedOnWindowsSameVersion() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
@@ -1569,8 +1483,7 @@ namespace CallerSupportsSubsetOfTarget
         [UnsupportedOSPlatform(""windows""), SupportedOSPlatform(""windows11.0"")]
         public static void UnsupportedOnWindowsUntilWindows11() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("Target.SupportedOnWindows()", "'windows'", ""),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsUnreachable).WithLocation(1).WithArguments("Target.SupportedOnBrowser()", "'browser'", "'browser'"),
@@ -1635,8 +1548,7 @@ namespace CallerSupportsSubsetOfTarget
         [UnsupportedOSPlatform(""windows""), UnsupportedOSPlatform(""browser"")]
         public static void UnsupportedOnWindowsAndBrowser() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1663,8 +1575,7 @@ class Some
 
     [UnsupportedOSPlatform(""tvos"")] // Not ignored, suppresses parent
     public static void Api2() {}
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1718,8 +1629,7 @@ namespace PlatformCompatDemo.Bugs
         [SupportedOSPlatform(""browser"")]
         public static void FunctionSupportedOnBrowser() { }
     }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1750,8 +1660,7 @@ namespace PlatformCompatDemo
 
     [UnsupportedOSPlatform(""linux"")] // must be ignored
     public class NonLinuxApis { }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1780,11 +1689,8 @@ namespace PlatformCompatDemo
     }
 
     [SupportedOSPlatform(""browser"")]
-    public class BrowserApis
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public class BrowserApis { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1808,8 +1714,7 @@ class SomeWindowsSpecific
 {
     [UnsupportedOSPlatform(""windows"")] // This will not be ignored
     public static void NotForWindows() { }
-}
-" + MockAttributesCsSource;
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1827,19 +1732,15 @@ static class Program
         [|Some.Windows10SpecificApi()|];
         WindowsSpecificApi();
     }
-    public static void WindowsSpecificApi()
-    {
-    }
+
+    public static void WindowsSpecificApi() { }
 }
 
 [SupportedOSPlatform(""windows10.0"")] // This attribute will not be ignored
 static class Some
 {
-    public static void Windows10SpecificApi()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public static void Windows10SpecificApi() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
@@ -1862,46 +1763,34 @@ static class Program
 static class Some
 {
     [SupportedOSPlatform(""windows11.0"")]
-    public static void WindowsSpecificApi11()
-    {
-    }
+    public static void WindowsSpecificApi11() { }
 
     [SupportedOSPlatform(""windows1.0"")]
-    public static void WindowsSpecificApi1()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public static void WindowsSpecificApi1() { }
+}";
             await VerifyAnalyzerAsyncCs(source);
         }
 
-        [Fact(Skip = "TODO: enable when tests could consume new attribute applied to runtime assemblies")]
+        [Fact]
         public async Task MethodOfOsDependentAssemblyCalledWithoutSuppressionWarns()
         {
             var source = @"
-            using System.Runtime.Versioning;
-            using ns;
-            public class Test
-            {
-                public void M1()
-                {
-                    OsDependentClass odc = new OsDependentClass();
-                    odc.M2();
-                }
-            }
-            [assembly:SupportedOSPlatform(""Windows10.1.2.3"")]
-            namespace ns
-            {
-                public class OsDependentClass
-                {
-                    public void M2()
-                    {
-                    }
-                }
-            }
-" + MockAttributesCsSource;
-            await VerifyCS.VerifyAnalyzerAsync(source,
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithSpan(10, 21, 10, 29).WithArguments("M2", "Windows", "10.1.2.3"));
+using System.Threading;
+
+namespace ns
+{
+    public class Test
+    {
+        public void M1()
+        {
+            var foo = {|#0:new Overlapped()|};
+            var result = {|#1:foo.AsyncResult|};
+        }
+    }
+}
+";
+            await VerifyAnalyzerAsyncCs(source, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("Overlapped", "'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("Overlapped.AsyncResult", "'windows'"));
         }
 
         public static IEnumerable<object[]> SupportedOsAttributeTestData()
@@ -1943,11 +1832,8 @@ public class Test
 [SupportedOSPlatform(""" + platform + version + @""")]
 public class OsDependentClass
 {
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
 
             if (warn)
             {
@@ -1999,11 +1885,8 @@ public class Test
 [UnsupportedOSPlatform(""" + platform + version + @""")]
 public class OsDependentClass
 {
-    public void M2()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void M2() { }
+}";
 
             if (warn)
             {
@@ -2059,8 +1942,7 @@ public class C
         [UnsupportedOSPlatform(""linux"")]
         public static void LinuxMethod() { }
     }
-}
-" + MockAttributesCsSource;
+}";
 
             await VerifyAnalyzerAsyncCs(source, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).
                 WithLocation(11, 9).WithArguments("C.StaticClass.LinuxMethod()", "'linux'", "'Linux'"),
@@ -2125,11 +2007,8 @@ public class C
     [UnsupportedOSPlatform(""windows"")]
     [SupportedOSPlatform(""windows10.0.1903"")]
     [UnsupportedOSPlatform(""windows10.0.2004"")]
-    public void DoesNotWorkOnWindows()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void DoesNotWorkOnWindows() { }
+}";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsReachable).WithLocation(18, 9).
                 WithArguments("C.DoesNotWorkOnWindows()", "'windows' 10.0.1903 and later", "'windows' 10.0.2000 and before"),
@@ -2186,11 +2065,8 @@ public class C
 {
     [SupportedOSPlatform(""windows"")]
     [UnsupportedOSPlatform(""windows10.0.2004"")]
-    public void WindowsOnlyUnsupportedFrom2004()
-    {
-    }
-}
-" + MockAttributesCsSource;
+    public void WindowsOnlyUnsupportedFrom2004() { }
+}";
             await VerifyAnalyzerAsyncCs(source,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0).
                 WithArguments("C.WindowsOnlyUnsupportedFrom2004()", "'windows' 10.0.2004 and before", "'Linux'"),
@@ -2285,7 +2161,7 @@ namespace PlatformCompatDemo.SupportedUnupported
         }
     }
 }
-" + TargetTypesForTest + MockAttributesCsSource;
+" + TargetTypesForTest;
 
             await VerifyAnalyzerAsyncCs(source,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).
@@ -2353,7 +2229,7 @@ namespace PlatformCompatDemo.SupportedUnupported
         }
     }
 }
-" + TargetTypesForTest + MockAttributesCsSource;
+" + TargetTypesForTest;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(0).
@@ -2407,7 +2283,7 @@ public class Test
         {|#6:AllowList.Windows10OnlyUnsupportedFrom11()|}; // This call site is reachable on all platforms. 'AllowList.Windows10OnlyUnsupportedFrom11()' is only supported on: 'windows' from version 10.0 to 11.0.
     }
 }
-" + AllowDenyListTestClasses + MockAttributesCsSource;
+" + AllowDenyListTestClasses;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", "'windows'", ""),
@@ -2439,7 +2315,7 @@ public class Test
         {|#5:AllowList.Windows10OnlyUnsupportedFrom11()|}; // This call site is reachable on: 'windows' all versions. 'AllowList.Windows10OnlyUnsupportedFrom11()' is only supported on: 'windows' from version 10.0 to 11.0.
     }
 }
-" + AllowDenyListTestClasses + MockAttributesCsSource;
+" + AllowDenyListTestClasses;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", "'windows'", "'windows'"),
@@ -2470,7 +2346,7 @@ public class Test
         {|#5:AllowList.Windows10OnlyUnsupportedFrom11()|}; // This call site is reachable on: 'windows' 9.0 and later. 'AllowList.Windows10OnlyUnsupportedFrom11()' is only supported on: 'windows' from version 10.0 to 11.0.
     }
 }
-" + AllowDenyListTestClasses + MockAttributesCsSource;
+" + AllowDenyListTestClasses;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", "'windows' all versions", "'windows' 9.0 and later"),
@@ -2515,7 +2391,7 @@ public class Test
         AllowList.Windows10OnlyUnsupportedFrom11();
     }
 }
-" + AllowDenyListTestClasses + MockAttributesCsSource;
+" + AllowDenyListTestClasses;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("DenyList.UnsupportedWindows()", "'windows' all versions", "'windows' 10.0 and before"),
@@ -2548,7 +2424,7 @@ public class Test
         {|#3:AllowList.Windows10OnlyUnsupportedFrom11()|}; // This call site is unreachable on: 'windows' all versions. 'AllowList.Windows10OnlyUnsupportedFrom11()' is only supported on: 'windows' from version 10.0 to 11.0.
     }
 }
-" + AllowDenyListTestClasses + MockAttributesCsSource;
+" + AllowDenyListTestClasses;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsUnreachable).WithLocation(0).WithArguments("AllowList.WindowsOnly()", "'windows'", "'windows'"),
@@ -2577,7 +2453,7 @@ public class Test
         {|#3:AllowList.Windows10OnlyUnsupportedFrom11()|}; // This call site is unreachable on: 'windows' 9.0 and later. 'AllowList.Windows10OnlyUnsupportedFrom11()' is only supported on: 'windows' from version 10.0 to 11.0.
     }
 }
-" + AllowDenyListTestClasses + MockAttributesCsSource;
+" + AllowDenyListTestClasses;
 
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsUnreachable).WithLocation(0).WithArguments("AllowList.WindowsOnly()", "'windows' all versions", "'windows' 9.0 and later"),
@@ -2670,101 +2546,5 @@ public class AllowList
     [UnsupportedOSPlatform(""windows11.0"")]
     public static void Windows10OnlyUnsupportedFrom11() { }
 }";
-
-        private readonly string MockAttributesCsSource = @"
-namespace System.Runtime.Versioning
-{
-    public abstract class OSPlatformAttribute : Attribute
-    {
-        private protected OSPlatformAttribute(string platformName)
-        {
-            PlatformName = platformName;
-        }
-
-        public string PlatformName { get; }
-    }
-
-    [AttributeUsage(AttributeTargets.Assembly,
-                    AllowMultiple = false, Inherited = false)]
-    public sealed class TargetPlatformAttribute : OSPlatformAttribute
-    {
-        public TargetPlatformAttribute(string platformName) : base(platformName)
-        { }
-    }
-
-    [AttributeUsage(AttributeTargets.Assembly |
-                    AttributeTargets.Class |
-                    AttributeTargets.Constructor |
-                    AttributeTargets.Event |
-                    AttributeTargets.Method |
-                    AttributeTargets.Module |
-                    AttributeTargets.Property |
-                    AttributeTargets.Field |
-                    AttributeTargets.Struct,
-                    AllowMultiple = true, Inherited = false)]
-    public sealed class SupportedOSPlatformAttribute : OSPlatformAttribute
-    {
-        public SupportedOSPlatformAttribute(string platformName) : base(platformName)
-        { }
-    }
-
-    [AttributeUsage(AttributeTargets.Assembly |
-                    AttributeTargets.Class |
-                    AttributeTargets.Constructor |
-                    AttributeTargets.Event |
-                    AttributeTargets.Method |
-                    AttributeTargets.Module |
-                    AttributeTargets.Property |
-                    AttributeTargets.Field |
-                    AttributeTargets.Struct,
-                    AllowMultiple = true, Inherited = false)]
-    public sealed class UnsupportedOSPlatformAttribute : OSPlatformAttribute
-    {
-        public UnsupportedOSPlatformAttribute(string platformName) : base(platformName)
-        { }
-    }
-}
-";
-
-        private readonly string MockAttributesVbSource = @"
-Namespace System.Runtime.Versioning
-    Public MustInherit Class OSPlatformAttribute
-        Inherits Attribute
-
-        Private Protected Sub New(ByVal platformName As String)
-            PlatformName = platformName
-        End Sub
-
-        Public ReadOnly Property PlatformName As String
-    End Class
-
-    <AttributeUsage(AttributeTargets.Assembly, AllowMultiple:=False, Inherited:=False)>
-    Public NotInheritable Class TargetPlatformAttribute
-        Inherits OSPlatformAttribute
-
-        Public Sub New(ByVal platformName As String)
-            MyBase.New(platformName)
-        End Sub
-    End Class
-
-    <AttributeUsage(AttributeTargets.Assembly Or AttributeTargets.[Class] Or AttributeTargets.Constructor Or AttributeTargets.[Event] Or AttributeTargets.Method Or AttributeTargets.[Module] Or AttributeTargets.[Property] Or AttributeTargets.Field Or AttributeTargets.Struct, AllowMultiple:=True, Inherited:=False)>
-    Public NotInheritable Class SupportedOSPlatformAttribute
-        Inherits OSPlatformAttribute
-
-        Public Sub New(ByVal platformName As String)
-            MyBase.New(platformName)
-        End Sub
-    End Class
-
-    <AttributeUsage(AttributeTargets.Assembly Or AttributeTargets.[Class] Or AttributeTargets.Constructor Or AttributeTargets.[Event] Or AttributeTargets.Method Or AttributeTargets.[Module] Or AttributeTargets.[Property] Or AttributeTargets.Field Or AttributeTargets.Struct, AllowMultiple:=True, Inherited:=False)>
-    Public NotInheritable Class UnsupportedOSPlatformAttribute
-        Inherits OSPlatformAttribute
-
-        Public Sub New(ByVal platformName As String)
-            MyBase.New(platformName)
-        End Sub
-    End Class
-End Namespace
-";
     }
 }
