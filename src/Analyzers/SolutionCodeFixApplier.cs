@@ -29,37 +29,57 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return solution;
             }
 
-            var document = result.Diagnostics
+            var diagnostic = result.Diagnostics
                 .SelectMany(kvp => kvp.Value)
-                .Select(diagnostic => solution.GetDocument(diagnostic.Location.SourceTree))
+                .Where(diagnostic => diagnostic.Location.SourceTree != null)
                 .FirstOrDefault();
+
+            if (diagnostic is null)
+            {
+                return solution;
+            }
+
+            var document = solution.GetDocument(diagnostic.Location.SourceTree);
 
             if (document is null)
             {
                 return solution;
             }
 
+            CodeAction? action = null;
+            var context = new CodeFixContext(document, diagnostic,
+                (a, _) =>
+                {
+                    if (action == null)
+                    {
+                        action = a;
+                    }
+                },
+                cancellationToken);
+
+            await codeFix.RegisterCodeFixesAsync(context).ConfigureAwait(false);
+
             var fixAllContext = new FixAllContext(
                 document: document,
                 codeFixProvider: codeFix,
                 scope: FixAllScope.Solution,
-                codeActionEquivalenceKey: null!, // FixAllState supports null equivalence key. This should still be supported.
+                codeActionEquivalenceKey: action?.EquivalenceKey!, // FixAllState supports null equivalence key. This should still be supported.
                 diagnosticIds: new[] { diagnosticId },
                 fixAllDiagnosticProvider: new DiagnosticProvider(result),
                 cancellationToken: cancellationToken);
 
             try
             {
-                var action = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
-                if (action is null)
+                var fixAllAction = await fixAllProvider.GetFixAsync(fixAllContext).ConfigureAwait(false);
+                if (fixAllAction is null)
                 {
                     logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action, diagnosticId, codeFix.GetType().Name);
                     return solution;
                 }
 
-                var operations = await action.GetOperationsAsync(cancellationToken).ConfigureAwait(false);
+                var operations = await fixAllAction.GetOperationsAsync(cancellationToken).ConfigureAwait(false);
                 var applyChangesOperation = operations.OfType<ApplyChangesOperation>().SingleOrDefault();
-                if (action is null)
+                if (applyChangesOperation is null)
                 {
                     logger.LogWarning(Resources.Unable_to_fix_0_Code_fix_1_returned_an_unexpected_operation, diagnosticId, codeFix.GetType().Name);
                     return solution;
