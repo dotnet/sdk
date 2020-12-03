@@ -140,7 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
                                                                         operationAnalysisContext.Options,
                                                                         SupportedDiagnostics,
-                                                                        protocolsArgumentOperation.Syntax.SyntaxTree,
+                                                                        protocolsArgumentOperation,
                                                                         operationAnalysisContext.Compilation,
                                                                         defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
                                                                         cancellationToken: operationAnalysisContext.CancellationToken,

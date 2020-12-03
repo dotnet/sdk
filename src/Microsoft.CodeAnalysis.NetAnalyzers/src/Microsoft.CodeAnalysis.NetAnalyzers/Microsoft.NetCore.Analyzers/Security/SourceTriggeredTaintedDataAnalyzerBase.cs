@@ -77,13 +77,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                             }
 
                             WellKnownTypeProvider wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
-                            InterproceduralAnalysisConfiguration interproceduralAnalysisConfiguration = InterproceduralAnalysisConfiguration.Create(
-                                                                    options,
-                                                                    SupportedDiagnostics,
-                                                                    owningSymbol,
-                                                                    operationBlockStartContext.Compilation,
-                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                                                    cancellationToken: cancellationToken);
                             Lazy<ControlFlowGraph?> controlFlowGraphFactory = new Lazy<ControlFlowGraph?>(
                                 () => operationBlockStartContext.OperationBlocks.GetControlFlowGraph());
                             Lazy<PointsToAnalysisResult?> pointsToFactory = new Lazy<PointsToAnalysisResult?>(
@@ -94,6 +87,13 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         return null;
                                     }
 
+                                    InterproceduralAnalysisConfiguration interproceduralAnalysisConfiguration = InterproceduralAnalysisConfiguration.Create(
+                                                                    options,
+                                                                    SupportedDiagnostics,
+                                                                    controlFlowGraphFactory.Value,
+                                                                    operationBlockStartContext.Compilation,
+                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
+                                                                    cancellationToken: cancellationToken);
                                     return PointsToAnalysis.TryGetOrComputeResult(
                                                                 controlFlowGraphFactory.Value,
                                                                 owningSymbol,
@@ -111,6 +111,13 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         return (null, null);
                                     }
 
+                                    InterproceduralAnalysisConfiguration interproceduralAnalysisConfiguration = InterproceduralAnalysisConfiguration.Create(
+                                                                    options,
+                                                                    SupportedDiagnostics,
+                                                                    controlFlowGraphFactory.Value,
+                                                                    operationBlockStartContext.Compilation,
+                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
+                                                                    cancellationToken: cancellationToken);
                                     ValueContentAnalysisResult? valuecontentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(
                                                                     controlFlowGraphFactory.Value,
                                                                     owningSymbol,
