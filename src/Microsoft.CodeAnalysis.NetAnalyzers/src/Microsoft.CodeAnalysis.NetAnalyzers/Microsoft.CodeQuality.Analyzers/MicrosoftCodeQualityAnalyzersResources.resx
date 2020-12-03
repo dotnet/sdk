@@ -1451,4 +1451,13 @@
   <data name="DoNotIgnoreMethodResultsMessageUserDefinedMethod" xml:space="preserve">
     <value>'{0}' calls '{1}' but does not use the value the method returns. This method is defined as a user-option. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</value>
   </data>
+  <data name="MarkAttributesWithAttributeUsageCodeFix" xml:space="preserve">
+    <value>Apply 'AttributeUsageAttribute'</value>
+  </data>
+  <data name="AnalyzerPackageDeprecationMessage" xml:space="preserve">
+    <value>FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</value>
+  </data>
+  <data name="AnalyzerPackageDeprecationTitle" xml:space="preserve">
+    <value>Analyzer package has been deprecated</value>
+  </data>
 </root>

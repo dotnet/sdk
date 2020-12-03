@@ -2,6 +2,16 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
     <body>
+      <trans-unit id="AnalyzerPackageDeprecationMessage">
+        <source>FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</source>
+        <target state="new">FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AnalyzerPackageDeprecationTitle">
+        <source>Analyzer package has been deprecated</source>
+        <target state="new">Analyzer package has been deprecated</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyMessageBoxOptionsTitle">
         <source>Specify MessageBoxOptions</source>
         <target state="translated">MessageBoxOptions を指定します</target>
@@ -313,8 +323,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">XmlDocument の派生クラス {0} が、コンストラクターを明示的に定義していません。</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">XmlDocument の派生クラス {0} が、コンストラクターを明示的に定義していません。</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +338,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">XmlTextReader の派生クラス {0} が、コンストラクターを明示的に定義していません。</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">XmlTextReader の派生クラス {0} が、コンストラクターを明示的に定義していません。</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +353,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">セキュリティで保護されていない XsltSettings インスタンスとセキュリティで保護されていない XmlResolver インスタンスを XslCompiledTransform.Load メソッドに指定すると、XSL 内でのスクリプトの処理が許可されるため、安全でない可能性があります。信頼できない XSL 入力では、悪意のあるコードが実行される場合があります。セキュリティで保護されていない XsltSettings 引数を XsltSettings.Default、または document 関数とスクリプトの実行が無効になっているインスタンスに置き換えるか、XmlResolver 引数を null または XmlSecureResolver インスタンスに置き換えます。このメッセージは、信頼できるソースからの入力であることがわかっていて、事前にはわからない場所からの外部リソース解決が必ずサポートされている場合には表示されないことがあります。</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">セキュリティで保護されていない XsltSettings インスタンスとセキュリティで保護されていない XmlResolver インスタンスを XslCompiledTransform.Load メソッドに指定すると、XSL 内でのスクリプトの処理が許可されるため、安全でない可能性があります。信頼できない XSL 入力では、悪意のあるコードが実行される場合があります。セキュリティで保護されていない XsltSettings 引数を XsltSettings.Default、または document 関数とスクリプトの実行が無効になっているインスタンスに置き換えるか、XmlResolver 引数を null または XmlSecureResolver インスタンスに置き換えます。このメッセージは、信頼できるソースからの入力であることがわかっていて、事前にはわからない場所からの外部リソース解決が必ずサポートされている場合には表示されないことがあります。</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">

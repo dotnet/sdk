@@ -2,6 +2,16 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
     <body>
+      <trans-unit id="AnalyzerPackageDeprecationMessage">
+        <source>FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</source>
+        <target state="new">FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AnalyzerPackageDeprecationTitle">
+        <source>Analyzer package has been deprecated</source>
+        <target state="new">Analyzer package has been deprecated</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyMessageBoxOptionsTitle">
         <source>Specify MessageBoxOptions</source>
         <target state="translated">Określ argument MessageBoxOptions</target>
@@ -313,8 +323,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">Klasa pochodna {0} elementu XmlDocument nie określa jawnie konstruktora.</target>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">Klasa pochodna {0} elementu XmlDocument nie określa jawnie konstruktora.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -328,8 +338,8 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
-        <target state="translated">Klasa pochodna {0} elementu XmlTextReader nie określa jawnie konstruktora.</target>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
+        <target state="needs-review-translation">Klasa pochodna {0} elementu XmlTextReader nie określa jawnie konstruktora.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -343,8 +353,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">Dostarczanie niezabezpieczonego wystąpienia XsltSettings i niezabezpieczonego wystąpienia XmlResolver do metody XslCompiledTransform.Load jest potencjalnie niebezpieczne, ponieważ umożliwia przetwarzanie skryptu w elemencie XSL, co w przypadku niezaufanych danych wejściowych XSL może prowadzić do uruchomienia złośliwego kodu. Zastąp niezabezpieczony argument XsltSettings elementem XsltSettings.Default lub wystąpieniem, które wyłączyło funkcję dokumentu i wykonywanie skryptu, albo zastąp argument XmlResolver wartością null lub wystąpieniem XmlSecureResolver. Ten komunikat może zostać pominięty, jeśli wiadomo, że dane wejściowe pochodzą z zaufanego źródła, i musi być obsługiwane rozpoznawanie zasobów zewnętrznych pochodzących z lokalizacji, które nie są wcześniej znane.</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="needs-review-translation">Dostarczanie niezabezpieczonego wystąpienia XsltSettings i niezabezpieczonego wystąpienia XmlResolver do metody XslCompiledTransform.Load jest potencjalnie niebezpieczne, ponieważ umożliwia przetwarzanie skryptu w elemencie XSL, co w przypadku niezaufanych danych wejściowych XSL może prowadzić do uruchomienia złośliwego kodu. Zastąp niezabezpieczony argument XsltSettings elementem XsltSettings.Default lub wystąpieniem, które wyłączyło funkcję dokumentu i wykonywanie skryptu, albo zastąp argument XmlResolver wartością null lub wystąpieniem XmlSecureResolver. Ten komunikat może zostać pominięty, jeśli wiadomo, że dane wejściowe pochodzą z zaufanego źródła, i musi być obsługiwane rozpoznawanie zasobów zewnętrznych pochodzących z lokalizacji, które nie są wcześniej znane.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">

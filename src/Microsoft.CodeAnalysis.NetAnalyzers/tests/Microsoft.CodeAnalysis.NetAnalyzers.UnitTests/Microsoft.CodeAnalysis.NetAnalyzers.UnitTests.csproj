@@ -9,7 +9,7 @@
     <Compile Include="..\Core\Microsoft.CodeQuality.Analyzers\ApiDesignGuidelines\EnumsShouldHavePluralNames.cs" Link="Microsoft.CodeQuality.Analyzers\ApiDesignGuidelines\EnumsShouldHavePluralNames.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisForShippedApisVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersionForTests)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Test.Utilities\Test.Utilities.csproj" />

@@ -1267,6 +1267,25 @@ public class C1
 }");
         }
 
+        [Fact, WorkItem(4304, "https://github.com/dotnet/roslyn-analyzers/pull/4304")]
+        public async Task SkippableFactAttribute()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit,
+                TestCode = @"
+using Xunit;
+
+public class SkippableFactAttribute : FactAttribute {}
+
+public class C
+{
+    [SkippableFact]
+    public void M() {}
+}",
+            }.RunAsync();
+        }
+
         private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)

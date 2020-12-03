@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.SealMethodsThatSatisfyPrivateInterfacesAnalyzer,
@@ -421,6 +422,45 @@ Public Class C
     End Sub
 End Class
 ");
+        }
+
+        [Fact, WorkItem(4406, "https://github.com/dotnet/roslyn-analyzers/issues/4406")]
+        public async Task CA2119_ExtendedInterface()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+namespace FxCopRule
+{
+    internal interface IInternal1
+    {
+        void Method();
+    }
+
+    internal interface IInternal2 : IInternal1
+    {
+    }
+
+    public abstract class ImplementationBase : IInternal2
+    {
+        public abstract void [|Method|]();
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Namespace FxCopRule
+    Friend Interface IInternal1
+        Sub Method()
+    End Interface
+
+    Friend Interface IInternal2
+        Inherits IInternal1
+    End Interface
+
+    Public MustInherit Class ImplementationBase
+        Implements IInternal2
+
+        Public MustOverride Sub [|Method|]() Implements IInternal1.Method
+    End Class
+End Namespace");
         }
 
         // TODO:

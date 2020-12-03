@@ -133,7 +133,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                         continue;
                                     }
 
-                                    context.ReportDiagnostic(Diagnostic.Create(Rule, field.Locations[0], field.Name));
+                                    context.ReportDiagnostic(field.CreateDiagnostic(Rule, field.Name));
                                 }
                             });
                         },

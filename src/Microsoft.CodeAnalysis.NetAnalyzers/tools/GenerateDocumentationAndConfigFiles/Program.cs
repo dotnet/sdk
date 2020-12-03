@@ -22,7 +22,8 @@ namespace GenerateDocumentationAndConfigFiles
     {
         public static int Main(string[] args)
         {
-            const int expectedArguments = 17;
+            const int expectedArguments = 18;
+            const string validateOnlyPrefix = "-validateOnly:";
 
             if (args.Length != expectedArguments)
             {
@@ -30,27 +31,40 @@ namespace GenerateDocumentationAndConfigFiles
                 return 1;
             }
 
-            string analyzerRulesetsDir = args[0];
-            string analyzerEditorconfigsDir = args[1];
-            string binDirectory = args[2];
-            string configuration = args[3];
-            string tfm = args[4];
-            var assemblyList = args[5].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            string propsFileDir = args[6];
-            string propsFileName = args[7];
-            string propsFileToDisableNetAnalyzersInNuGetPackageName = args[8];
-            string analyzerDocumentationFileDir = args[9];
-            string analyzerDocumentationFileName = args[10];
-            string analyzerSarifFileDir = args[11];
-            string analyzerSarifFileName = args[12];
-            var analyzerVersion = args[13];
-            var analyzerPackageName = args[14];
-            if (!bool.TryParse(args[15], out var containsPortedFxCopRules))
+            if (!args[0].StartsWith("-validateOnly:", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.Error.WriteLine($"Excepted the first argument to start with `{validateOnlyPrefix}`. found `{args[0]}`.");
+                return 1;
+            }
+
+            if (!bool.TryParse(args[0][validateOnlyPrefix.Length..], out var validateOnly))
+            {
+                validateOnly = false;
+            }
+
+            var fileNamesWithValidationFailures = new List<string>();
+
+            string analyzerRulesetsDir = args[1];
+            string analyzerEditorconfigsDir = args[2];
+            string binDirectory = args[3];
+            string configuration = args[4];
+            string tfm = args[5];
+            var assemblyList = args[6].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            string propsFileDir = args[7];
+            string propsFileName = args[8];
+            string propsFileToDisableNetAnalyzersInNuGetPackageName = args[9];
+            string analyzerDocumentationFileDir = args[10];
+            string analyzerDocumentationFileName = args[11];
+            string analyzerSarifFileDir = args[12];
+            string analyzerSarifFileName = args[13];
+            var analyzerVersion = args[14];
+            var analyzerPackageName = args[15];
+            if (!bool.TryParse(args[16], out var containsPortedFxCopRules))
             {
                 containsPortedFxCopRules = false;
             }
 
-            if (!bool.TryParse(args[16], out var generateAnalyzerRulesMissingDocumentationFile))
+            if (!bool.TryParse(args[17], out var generateAnalyzerRulesMissingDocumentationFile))
             {
                 generateAnalyzerRulesMissingDocumentationFile = false;
             }
@@ -163,11 +177,18 @@ namespace GenerateDocumentationAndConfigFiles
                 createAnalyzerRulesMissingDocumentationFile();
             }
 
+            if (fileNamesWithValidationFailures.Count > 0)
+            {
+                Console.Error.WriteLine("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:");
+                fileNamesWithValidationFailures.ForEach(fileName => Console.Error.WriteLine($"    {fileName}"));
+                return 1;
+            }
+
             return 0;
 
             // Local functions.
             static void AnalyzerFileReference_AnalyzerLoadFailed(object? sender, AnalyzerLoadFailureEventArgs e)
-                => throw e.Exception;
+                => throw e.Exception ?? new NotSupportedException(e.Message);
 
             void createRulesetAndEditorconfig(
                 string fileName,
@@ -199,6 +220,8 @@ $@"<Project>
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
+
+                // This doesn't need validation as the generated file is part of artifacts.
                 File.WriteAllText(fileWithPath, fileContents);
 
                 if (!string.IsNullOrEmpty(disableNetAnalyzersImport))
@@ -217,6 +240,7 @@ $@"<Project>
     <{NetAnalyzersNugetAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersNugetAssemblyVersionPropertyName}>
   </PropertyGroup>
 </Project>";
+                    // This doesn't need validation as the generated file is part of artifacts.
                     File.WriteAllText(fileWithPath, fileContents);
                 }
 
@@ -336,7 +360,14 @@ $@"<Project>
                     builder.AppendLine("---");
                 }
 
-                File.WriteAllText(fileWithPath, builder.ToString());
+                if (validateOnly)
+                {
+                    Validate(fileWithPath, builder.ToString(), fileNamesWithValidationFailures);
+                }
+                else
+                {
+                    File.WriteAllText(fileWithPath, builder.ToString());
+                }
             }
 
             // based on https://github.com/dotnet/roslyn/blob/master/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
@@ -349,10 +380,16 @@ $@"<Project>
                 }
 
                 var culture = new CultureInfo("en-us");
+                string tempAnalyzerSarifFileName = analyzerSarifFileName;
+                if (validateOnly)
+                {
+                    // In validate only mode, we write the sarif file in a temp file and compare it with
+                    // the existing content in `analyzerSarifFileName`.
+                    tempAnalyzerSarifFileName = $"temp-{analyzerSarifFileName}";
+                }
 
                 var directory = Directory.CreateDirectory(analyzerSarifFileDir);
-                var fileWithPath = Path.Combine(directory.FullName, analyzerSarifFileName);
-
+                var fileWithPath = Path.Combine(directory.FullName, tempAnalyzerSarifFileName);
                 using var textWriter = new StreamWriter(fileWithPath, false, Encoding.UTF8);
                 using var writer = new Roslyn.Utilities.JsonWriter(textWriter);
                 writer.WriteObjectStart(); // root
@@ -385,9 +422,9 @@ $@"<Project>
                         writer.WriteObjectStart(descriptor.Id); // rule
                         writer.Write("id", descriptor.Id);
 
-                        writer.Write("shortDescription", descriptor.Title.ToString(culture));
+                        writer.Write("shortDescription", descriptor.Title.ToString(CultureInfo.InvariantCulture));
 
-                        string fullDescription = descriptor.Description.ToString(culture);
+                        string fullDescription = descriptor.Description.ToString(CultureInfo.InvariantCulture);
                         writer.Write("fullDescription", !string.IsNullOrEmpty(fullDescription) ? fullDescription : descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture));
 
                         writer.Write("defaultLevel", getLevel(descriptor.DefaultSeverity));
@@ -440,6 +477,15 @@ $@"<Project>
                 writer.WriteArrayEnd(); // runs
                 writer.WriteObjectEnd(); // root
 
+                if (validateOnly)
+                {
+                    // Close is needed to be able to read the file. Dispose() should do the same job.
+                    // Note: Although a using statement exists for the textWriter, its scope is the whole method.
+                    // So Dispose isn't called before the whole method returns.
+                    textWriter.Close();
+                    Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                }
+
                 return;
                 static string getLevel(DiagnosticSeverity severity)
                 {
@@ -481,6 +527,11 @@ $@"<Project>
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|
 ");
+                string[]? actualContent = null;
+                if (validateOnly)
+                {
+                    actualContent = File.ReadAllLines(fileWithPath);
+                }
 
                 foreach (var ruleById in allRulesById)
                 {
@@ -495,10 +546,31 @@ Rule ID | Missing Help Link | Title |
                         continue;
                     }
 
-                    builder.AppendLine($"{ruleId} | {helpLinkUri} | {descriptor.Title} |");
+                    var line = $"{ruleId} | {helpLinkUri} | {descriptor.Title.ToString(CultureInfo.InvariantCulture)} |";
+                    if (validateOnly)
+                    {
+                        // The validation for RulesMissingDocumentation.md is different than others.
+                        // We consider having "extra" entries as valid. This is to prevent CI failures due to rules being documented.
+                        // However, we consider "missing" entries as invalid. This is to force updating the file when new rules are added.
+                        if (!actualContent.Contains(line))
+                        {
+                            Console.Error.WriteLine($"Missing entry in {fileWithPath}");
+                            Console.Error.WriteLine(line);
+                            // The file is missing an entry. Mark it as invalid and break the loop as there is no need to continue validating.
+                            fileNamesWithValidationFailures.Add(fileWithPath);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        builder.AppendLine(line);
+                    }
                 }
 
-                File.WriteAllText(fileWithPath, builder.ToString());
+                if (!validateOnly)
+                {
+                    File.WriteAllText(fileWithPath, builder.ToString());
+                }
                 return;
 
                 static bool checkHelpLink(string helpLink)
@@ -550,6 +622,8 @@ Rule ID | Missing Help Link | Title |
 
             var directory = Directory.CreateDirectory(analyzerRulesetsDir);
             var rulesetFilePath = Path.Combine(directory.FullName, rulesetFileName);
+
+            // This doesn't need validation as the generated file is part of artifacts.
             File.WriteAllText(rulesetFilePath, text);
             return;
 
@@ -613,6 +687,8 @@ Rule ID | Missing Help Link | Title |
 
             var directory = Directory.CreateDirectory(Path.Combine(analyzerEditorconfigsDir, editorconfigFolder));
             var editorconfigFilePath = Path.Combine(directory.FullName, ".editorconfig");
+
+            // This doesn't need validation as the generated file is part of artifacts.
             File.WriteAllText(editorconfigFilePath, text);
             return;
 
@@ -798,6 +874,23 @@ Rule ID | Missing Help Link | Title |
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Validates whether <paramref name="fileContents"/> matches the contents of <paramref name="fileWithPath"/>.
+        /// If they don't match, <paramref name="fileWithPath"/> is added to <paramref name="fileNamesWithValidationFailures"/>.
+        /// The validation process is run within CI, so that the CI build fails when the auto-generated files are out of date.
+        /// </summary>
+        /// <remarks>
+        /// Don't call this method with auto-generated files that are part of the artifacts because it's expected that they don't initially exist.
+        /// </remarks>
+        private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
+        {
+            string actual = File.ReadAllText(fileWithPath);
+            if (actual != fileContents)
+            {
+                fileNamesWithValidationFailures.Add(fileWithPath);
             }
         }
 

@@ -166,6 +166,6 @@ namespace Microsoft.NetCore.Analyzers.Security
         }
 
         private static bool IsConfiguredToSkipAnalysis(DiagnosticDescriptor rule, OperationAnalysisContext context)
-            => context.ContainingSymbol.IsConfiguredToSkipAnalysis(context.Options, rule, context.Compilation, context.CancellationToken);
+            => context.Options.IsConfiguredToSkipAnalysis(rule, context.ContainingSymbol, context.Compilation, context.CancellationToken);
     }
 }

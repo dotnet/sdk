@@ -52,7 +52,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 (!type.Constructors.Any() || type.Constructors.Any(c => c.GetResultantVisibility().IsAtLeastAsVisibleAs(SymbolVisibility.Public))))
             {
                 // look for implementations of interfaces members declared on this type
-                foreach (var iface in type.Interfaces)
+                foreach (var iface in type.AllInterfaces)
                 {
                     // only matters if the interface is defined to be internal
                     if (iface.DeclaredAccessibility == Accessibility.Internal)
@@ -67,13 +67,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                             {
                                 if (member.ContainingType != null && member.ContainingType.Equals(type))
                                 {
-                                    context.ReportDiagnostic(Diagnostic.Create(Rule, member.Locations[0]));
+                                    context.ReportDiagnostic(member.CreateDiagnostic(Rule));
                                 }
                                 else
                                 {
-                                    // we have a member and its not declared on this type?  
+                                    // we have a member and its not declared on this type?
                                     // must be implicit implementation of base member
-                                    context.ReportDiagnostic(Diagnostic.Create(Rule, type.Locations[0]));
+                                    context.ReportDiagnostic(type.CreateDiagnostic(Rule));
                                 }
                             }
                         }

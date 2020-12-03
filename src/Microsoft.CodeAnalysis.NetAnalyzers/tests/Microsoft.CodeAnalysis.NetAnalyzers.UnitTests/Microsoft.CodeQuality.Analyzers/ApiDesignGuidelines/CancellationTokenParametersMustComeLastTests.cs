@@ -334,5 +334,190 @@ End Class",
             VerifyVB.Diagnostic().WithLocation(7, 21)
                 .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, progress1 As System.IProgress(Of Integer), progress2 As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
+
+        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        public async Task CA1068_CallerAttributesWithNonOptionalCancellationToken()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(CancellationToken cancellationToken,
+        [CallerMemberName] string memberName = """",
+        [CallerFilePath] string sourceFilePath = """",
+        [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+
+        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        public async Task CA1068_CallerAttributesWithOptionalCancellationToken()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync(CancellationToken cancellationToken = default,
+        [CallerMemberName] string memberName = """",
+        [CallerFilePath] string sourceFilePath = """",
+        [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+
+        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsLastParameter()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync([CallerMemberName] string memberName = """",
+        [CallerFilePath] string sourceFilePath = """",
+        [CallerLineNumber] int sourceLineNumber = 0,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+
+        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsMiddleParameter()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    public Task SomeAsync([CallerMemberName] string memberName = """",
+        [CallerFilePath] string sourceFilePath = """",
+        CancellationToken cancellationToken = default,
+        [CallerLineNumber] int sourceLineNumber = 0)
+    {
+        throw new NotImplementedException();
+    }
+}");
+        }
+
+        [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
+        // Empty editorconfig
+        [InlineData("public", "")]
+        [InlineData("protected", "")]
+        [InlineData("internal", "")]
+        [InlineData("private", "")]
+        // General analyzer option
+        [InlineData("public", "dotnet_code_quality.api_surface = public")]
+        [InlineData("public", "dotnet_code_quality.api_surface = private, internal, public")]
+        [InlineData("public", "dotnet_code_quality.api_surface = all")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = public")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = private, internal, public")]
+        [InlineData("protected", "dotnet_code_quality.api_surface = all")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = internal")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = private, internal")]
+        [InlineData("internal", "dotnet_code_quality.api_surface = all")]
+        [InlineData("private", "dotnet_code_quality.api_surface = private")]
+        [InlineData("private", "dotnet_code_quality.api_surface = private, public")]
+        [InlineData("private", "dotnet_code_quality.api_surface = all")]
+        // Specific analyzer option
+        [InlineData("internal", "dotnet_code_quality.CA1068.api_surface = all")]
+        [InlineData("internal", "dotnet_code_quality.Design.api_surface = all")]
+        // General + Specific analyzer option
+        [InlineData("internal", @"dotnet_code_quality.api_surface = private
+                                  dotnet_code_quality.CA1068.api_surface = all")]
+        // Case-insensitive analyzer option
+        [InlineData("internal", "DOTNET_code_quality.CA1068.API_SURFACE = ALL")]
+        // Invalid analyzer option ignored
+        [InlineData("internal", @"dotnet_code_quality.api_surface = all
+                                  dotnet_code_quality.CA1068.api_surface_2 = private")]
+        public async Task CA1068_CSharp_ApiSurface_Diagnostic(string accessibility, string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+using System.Threading;
+
+public class C
+{{
+    {accessibility} void [|M|](CancellationToken t, int i) {{}}
+}}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
+        // Empty editorconfig
+        [InlineData("Public", "")]
+        [InlineData("Protected", "")]
+        [InlineData("Friend", "")]
+        [InlineData("Private", "")]
+        // General analyzer option
+        [InlineData("Public", "dotnet_code_quality.api_surface = Public")]
+        [InlineData("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [InlineData("Public", "dotnet_code_quality.api_surface = All")]
+        [InlineData("Protected", "dotnet_code_quality.api_surface = Public")]
+        [InlineData("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [InlineData("Protected", "dotnet_code_quality.api_surface = All")]
+        [InlineData("Friend", "dotnet_code_quality.api_surface = Friend")]
+        [InlineData("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
+        [InlineData("Friend", "dotnet_code_quality.api_surface = All")]
+        [InlineData("Private", "dotnet_code_quality.api_surface = Private")]
+        [InlineData("Private", "dotnet_code_quality.api_surface = Private, Public")]
+        [InlineData("Private", "dotnet_code_quality.api_surface = All")]
+        // Specific analyzer option
+        [InlineData("Friend", "dotnet_code_quality.CA1068.api_surface = All")]
+        [InlineData("Friend", "dotnet_code_quality.Design.api_surface = All")]
+        // General + Specific analyzer option
+        [InlineData("Friend", @"dotnet_code_quality.api_surface = Private
+                                dotnet_code_quality.CA1068.api_surface = All")]
+        // Case-insensitive analyzer option
+        [InlineData("Friend", "DOTNET_code_quality.CA1068.API_SURFACE = ALL")]
+        // Invalid analyzer option ignored
+        [InlineData("Friend", @"dotnet_code_quality.api_surface = All
+                                dotnet_code_quality.CA1068.api_surface_2 = Private")]
+        public async Task CA1068_VisualBasic_ApiSurface_Diagnostic(string accessibility, string editorConfigText)
+        {
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Imports System.Threading
+Public Class C
+    {accessibility} Sub [|M|](t As CancellationToken, i As Integer)
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            }.RunAsync();
+        }
     }
 }

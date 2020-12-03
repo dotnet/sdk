@@ -458,29 +458,49 @@ Module C
     Sub M()
         Dim b As Boolean
 
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count.Equals(IntegerZero)|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count().Equals(IntegerZero)|}}
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count.Equals(UIntegerZero)|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count().Equals(UIntegerZero)|}}
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count.Equals(LongZero)|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count().Equals(LongZero)|}}
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count.Equals(ULongZero)|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count().Equals(ULongZero)|}}
 
+        b = {{|{this.Verifier.DiagnosticId}:IntegerZero.Equals(GetData().Count)|}}
         b = {{|{this.Verifier.DiagnosticId}:IntegerZero.Equals(GetData().Count())|}}
+        b = {{|{this.Verifier.DiagnosticId}:UIntegerZero.Equals(GetData().Count)|}}
         b = {{|{this.Verifier.DiagnosticId}:UIntegerZero.Equals(GetData().Count())|}}
+        b = {{|{this.Verifier.DiagnosticId}:LongZero.Equals(GetData().Count)|}}
         b = {{|{this.Verifier.DiagnosticId}:LongZero.Equals(GetData().Count())|}}
+        b = {{|{this.Verifier.DiagnosticId}:ULongZero.Equals(GetData().Count)|}}
         b = {{|{this.Verifier.DiagnosticId}:ULongZero.Equals(GetData().Count())|}}
 
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count = IntegerZero|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count() = IntegerZero|}}
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count >= IntegerOne|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count() >= IntegerOne|}}
+        b = {{|{this.Verifier.DiagnosticId}:IntegerZero = GetData().Count|}}
         b = {{|{this.Verifier.DiagnosticId}:IntegerZero = GetData().Count()|}}
+        b = {{|{this.Verifier.DiagnosticId}:IntegerOne > GetData().Count|}}
         b = {{|{this.Verifier.DiagnosticId}:IntegerOne > GetData().Count()|}}
 
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count = UIntegerZero|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count() = UIntegerZero|}}
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count >= UIntegerOne|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count() >= UIntegerOne|}}
+        b = {{|{this.Verifier.DiagnosticId}:UIntegerZero = GetData().Count|}}
         b = {{|{this.Verifier.DiagnosticId}:UIntegerZero = GetData().Count()|}}
+        b = {{|{this.Verifier.DiagnosticId}:UIntegerOne > GetData().Count|}}
         b = {{|{this.Verifier.DiagnosticId}:UIntegerOne > GetData().Count()|}}
 
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count = LongZero|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count() = LongZero|}}
+        b = {{|{this.Verifier.DiagnosticId}:GetData().Count >= LongOne|}}
         b = {{|{this.Verifier.DiagnosticId}:GetData().Count() >= LongOne|}}
+        b = {{|{this.Verifier.DiagnosticId}:LongZero = GetData().Count|}}
         b = {{|{this.Verifier.DiagnosticId}:LongZero = GetData().Count()|}}
+        b = {{|{this.Verifier.DiagnosticId}:LongOne > GetData().Count|}}
         b = {{|{this.Verifier.DiagnosticId}:LongOne > GetData().Count()|}}
     End Sub
 End Module
@@ -506,24 +526,44 @@ Module C
         b = Not GetData().Any()
         b = Not GetData().Any()
         b = Not GetData().Any()
-
         b = Not GetData().Any()
         b = Not GetData().Any()
         b = Not GetData().Any()
         b = Not GetData().Any()
 
         b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = GetData().Any()
         b = GetData().Any()
         b = Not GetData().Any()
         b = Not GetData().Any()
-
-        b = Not GetData().Any()
-        b = GetData().Any()
         b = Not GetData().Any()
         b = Not GetData().Any()
 
         b = Not GetData().Any()
+        b = Not GetData().Any()
         b = GetData().Any()
+        b = GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+
+        b = Not GetData().Any()
+        b = Not GetData().Any()
+        b = GetData().Any()
+        b = GetData().Any()
+        b = Not GetData().Any()
+        b = Not GetData().Any()
         b = Not GetData().Any()
         b = Not GetData().Any()
     End Sub
@@ -990,29 +1030,49 @@ Namespace System.Data.Entity
         Async Sub M()
             Dim b As Boolean
 
+            b = {{|{this.Verifier.DiagnosticId}:(Await GetData().CountAsync).Equals(IntegerZero)|}}
             b = {{|{this.Verifier.DiagnosticId}:(Await GetData().CountAsync()).Equals(IntegerZero)|}}
+            b = {{|{this.Verifier.DiagnosticId}:(Await GetData().CountAsync).Equals(UIntegerZero)|}}
             b = {{|{this.Verifier.DiagnosticId}:(Await GetData().CountAsync()).Equals(UIntegerZero)|}}
+            b = {{|{this.Verifier.DiagnosticId}:(Await GetData().CountAsync).Equals(LongZero)|}}
             b = {{|{this.Verifier.DiagnosticId}:(Await GetData().CountAsync()).Equals(LongZero)|}}
+            b = {{|{this.Verifier.DiagnosticId}:(Await GetData().CountAsync).Equals(ULongZero)|}}
             b = {{|{this.Verifier.DiagnosticId}:(Await GetData().CountAsync()).Equals(ULongZero)|}}
 
+            b = {{|{this.Verifier.DiagnosticId}:IntegerZero.Equals( Await GetData().CountAsync)|}}
             b = {{|{this.Verifier.DiagnosticId}:IntegerZero.Equals( Await GetData().CountAsync())|}}
+            b = {{|{this.Verifier.DiagnosticId}:UIntegerZero.Equals( Await GetData().CountAsync)|}}
             b = {{|{this.Verifier.DiagnosticId}:UIntegerZero.Equals( Await GetData().CountAsync())|}}
+            b = {{|{this.Verifier.DiagnosticId}:LongZero.Equals( Await GetData().CountAsync)|}}
             b = {{|{this.Verifier.DiagnosticId}:LongZero.Equals( Await GetData().CountAsync())|}}
+            b = {{|{this.Verifier.DiagnosticId}:ULongZero.Equals( Await GetData().CountAsync)|}}
             b = {{|{this.Verifier.DiagnosticId}:ULongZero.Equals( Await GetData().CountAsync())|}}
 
+            b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync = IntegerZero|}}
             b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync() = IntegerZero|}}
+            b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync >= IntegerOne|}}
             b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync() >= IntegerOne|}}
+            b = {{|{this.Verifier.DiagnosticId}:IntegerZero = Await GetData().CountAsync|}}
             b = {{|{this.Verifier.DiagnosticId}:IntegerZero = Await GetData().CountAsync()|}}
+            b = {{|{this.Verifier.DiagnosticId}:IntegerOne > Await GetData().CountAsync|}}
             b = {{|{this.Verifier.DiagnosticId}:IntegerOne > Await GetData().CountAsync()|}}
 
+            b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync = UIntegerZero|}}
             b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync() = UIntegerZero|}}
+            b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync >= UIntegerOne|}}
             b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync() >= UIntegerOne|}}
+            b = {{|{this.Verifier.DiagnosticId}:UIntegerZero = Await GetData().CountAsync|}}
             b = {{|{this.Verifier.DiagnosticId}:UIntegerZero = Await GetData().CountAsync()|}}
+            b = {{|{this.Verifier.DiagnosticId}:UIntegerOne > Await GetData().CountAsync|}}
             b = {{|{this.Verifier.DiagnosticId}:UIntegerOne > Await GetData().CountAsync()|}}
 
+            b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync = LongZero|}}
             b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync() = LongZero|}}
+            b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync >= LongOne|}}
             b = {{|{this.Verifier.DiagnosticId}:Await GetData().CountAsync() >= LongOne|}}
+            b = {{|{this.Verifier.DiagnosticId}:LongZero = Await GetData().CountAsync|}}
             b = {{|{this.Verifier.DiagnosticId}:LongZero = Await GetData().CountAsync()|}}
+            b = {{|{this.Verifier.DiagnosticId}:LongOne > Await GetData().CountAsync|}}
             b = {{|{this.Verifier.DiagnosticId}:LongOne > Await GetData().CountAsync()|}}
         End Sub
     End Module
@@ -1051,24 +1111,44 @@ Namespace System.Data.Entity
             b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
-
             b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
 
             b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Await GetData().AnyAsync()
             b = Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
-
-            b = Not Await GetData().AnyAsync()
-            b = Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
 
             b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
             b = Await GetData().AnyAsync()
+            b = Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Await GetData().AnyAsync()
+            b = Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
+            b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
             b = Not Await GetData().AnyAsync()
         End Sub

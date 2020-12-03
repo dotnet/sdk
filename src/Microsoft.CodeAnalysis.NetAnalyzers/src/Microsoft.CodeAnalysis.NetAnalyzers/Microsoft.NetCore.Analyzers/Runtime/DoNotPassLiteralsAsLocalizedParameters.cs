@@ -61,8 +61,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
                     if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
-                        containingMethod.IsConfiguredToSkipAnalysis(operationBlockStartContext.Options,
-                            Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
+                        operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
                     {
                         return;
                     }
@@ -109,7 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     // Local functions
                     bool ShouldAnalyze(ISymbol? symbol)
-                        => symbol != null && !symbol.IsConfiguredToSkipAnalysis(operationBlockStartContext.OwningSymbol, operationBlockStartContext.Options, Rule, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
+                        => symbol != null && !operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, symbol, operationBlockStartContext.OwningSymbol, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
 
                     static bool GetUseNamingHeuristicOption(OperationAnalysisContext operationContext)
                         => operationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule,
@@ -334,7 +333,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var literals = new StringBuilder();
             foreach (string literal in literalValues.Order())
             {
-                // sanitize the literal to ensure it's not multiline
+                // sanitize the literal to ensure it's not multi-line
                 // replace any newline characters with a space
                 var sanitizedLiteral = literal.Replace(Environment.NewLine, " ");
                 sanitizedLiteral = sanitizedLiteral.Replace((char)13, ' ');
