@@ -70,11 +70,11 @@
       <Uri>https://github.com/dotnet/CliCommandLineParser</Uri>
       <Sha>0e89c2116ad28e404ba56c14d1c3f938caa25a01</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="16.9.0-preview-20603-03">
+    <Dependency Name="Microsoft.Build" Version="16.9.0-preview-20603-07">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>cd297218cc01e0fbbe4c1e27380f7d6983c5260d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="16.9.0-preview-20603-03">
+    <Dependency Name="Microsoft.Build.Localization" Version="16.9.0-preview-20603-07">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>cd297218cc01e0fbbe4c1e27380f7d6983c5260d</Sha>
     </Dependency>
