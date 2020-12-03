@@ -3792,5 +3792,11 @@ public class MyController
                 },
             }.RunAsync();
         }
+
+        [Fact, WorkItem(4491, "https://github.com/dotnet/roslyn-analyzers/issues/4491")]
+        public async Task AssemblyAttributeRegressionTest()
+        {
+            await VerifyVisualBasicWithDependenciesAsync(@"<Assembly: System.Reflection.AssemblyTitle(""Title"")>");
+        }
     }
 }
