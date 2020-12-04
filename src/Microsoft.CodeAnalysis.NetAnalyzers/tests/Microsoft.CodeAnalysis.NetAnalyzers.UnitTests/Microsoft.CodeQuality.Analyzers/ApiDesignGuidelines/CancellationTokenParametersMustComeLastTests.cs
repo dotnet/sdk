@@ -519,5 +519,71 @@ End Class"
                 },
             }.RunAsync();
         }
+
+        [Theory, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
+        // No configuration - validate diagnostics in default configuration
+        [InlineData(@"")]
+        // Exclude all ctors
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
+        // Exclude all members starting with C
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = C*")]
+        // Exclude classes C1 and C2
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:C1|T:C2")]
+        public async Task CA1068_ExcludedSymbolNames_Diagnostic(string editorConfigText)
+        {
+            var prefix = editorConfigText.Length == 0 ? "[|" : "";
+            var suffix = editorConfigText.Length == 0 ? "|]" : "";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Threading;
+
+public class C1
+{
+    public " + prefix + "C1" + suffix + @"(CancellationToken t, int i) {}
+
+    public " + prefix + "C1" + suffix + @"(CancellationToken t, float f) {}
+}
+
+public class C2
+{
+    public " + prefix + "C2" + suffix + @"(CancellationToken t, int i) {}
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Imports System.Threading
+
+Public Class C1
+    Public Sub " + prefix + "New" + suffix + @"(t As CancellationToken, i As Integer)
+    End Sub
+
+    Public Sub " + prefix + "New" + suffix + @"(t As CancellationToken, i As Single)
+    End Sub
+End Class
+
+Public Class C2
+    Public Sub " + prefix + "New" + suffix + @"(t As CancellationToken, i As Integer)
+    End Sub
+End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            }.RunAsync();
+        }
     }
 }

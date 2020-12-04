@@ -264,6 +264,7 @@ Option Name: `excluded_symbol_names`
 Configurable Rules:
 [CA1001](https://docs.microsoft.com/visualstudio/code-quality/ca1001),
 [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062),
+[CA1068](https://docs.microsoft.com/visualstudio/code-quality/ca1068),
 [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303),
 [CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304),
 [CA1508](https://docs.microsoft.com/visualstudio/code-quality/ca1508),
@@ -339,6 +340,7 @@ Option Name: `excluded_type_names_with_derived_types`
 Configurable Rules:
 [CA1001](https://docs.microsoft.com/visualstudio/code-quality/ca1001),
 [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062),
+[CA1068](https://docs.microsoft.com/visualstudio/code-quality/ca1068),
 [CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303),
 [CA1304](https://docs.microsoft.com/visualstudio/code-quality/ca1304),
 [CA1508](https://docs.microsoft.com/visualstudio/code-quality/ca1508),
