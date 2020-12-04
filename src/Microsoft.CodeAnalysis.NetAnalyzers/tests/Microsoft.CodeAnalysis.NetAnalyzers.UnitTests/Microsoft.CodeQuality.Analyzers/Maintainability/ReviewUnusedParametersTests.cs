@@ -9,10 +9,10 @@ using Microsoft.CodeAnalysis.Text;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.ReviewUnusedParametersAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpReviewUnusedParametersAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpReviewUnusedParametersFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.ReviewUnusedParametersAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicReviewUnusedParametersAnalyzer,
     Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicReviewUnusedParametersFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests

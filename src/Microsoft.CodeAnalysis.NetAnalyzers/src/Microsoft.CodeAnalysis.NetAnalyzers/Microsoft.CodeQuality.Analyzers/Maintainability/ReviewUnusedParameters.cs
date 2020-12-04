@@ -15,8 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// <summary>
     /// CA1801: Review unused parameters
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class ReviewUnusedParametersAnalyzer : DiagnosticAnalyzer
+    public abstract class ReviewUnusedParametersAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1801";
 
@@ -34,9 +33,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext context)
+        public sealed override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
 
@@ -163,7 +162,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         }
 
 #pragma warning disable RS1012 // Start action has no registered actions.
-        private static bool ShouldAnalyzeMethod(
+        private bool ShouldAnalyzeMethod(
             IMethodSymbol method,
             OperationBlockStartAnalysisContext startOperationBlockContext,
             INamedTypeSymbol? eventsArgSymbol,
@@ -192,6 +191,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             // Ignore property accessors.
             if (method.IsPropertyAccessor())
+            {
+                return false;
+            }
+
+            // Ignore body-less record definition
+            if (IsInlineRecord(method))
             {
                 return false;
             }
@@ -241,5 +246,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             return true;
         }
+
+        protected abstract bool IsInlineRecord(IMethodSymbol methodSymbol);
     }
 }
