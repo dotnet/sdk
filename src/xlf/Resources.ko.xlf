@@ -217,6 +217,11 @@
         <target state="translated">dotnet CLI 버전은 '{0}'입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="The_dotnet_format_version_is_0">
+        <source>The dotnet format version is '{0}'.</source>
+        <target state="new">The dotnet format version is '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="The_dotnet_runtime_version_is_0">
         <source>The dotnet runtime version is '{0}'.</source>
         <target state="new">The dotnet runtime version is '{0}'.</target>

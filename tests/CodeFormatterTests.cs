@@ -14,28 +14,28 @@ using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
-    public class CodeFormatterTests : IClassFixture<TestProjectsPathFixture>
+    public class CodeFormatterTests
     {
-        private const string FormattedProjectPath = "for_code_formatter/formatted_project/";
-        private const string FormattedProjectFilePath = FormattedProjectPath + "formatted_project.csproj";
-        private const string FormattedSolutionFilePath = "for_code_formatter/formatted_solution/formatted_solution.sln";
+        private static readonly string s_formattedProjectPath = Path.Combine("for_code_formatter", "formatted_project");
+        private static readonly string s_formattedProjectFilePath = Path.Combine(s_formattedProjectPath, "formatted_project.csproj");
+        private static readonly string s_formattedSolutionFilePath = Path.Combine("for_code_formatter", "formatted_solution", "formatted_solution.sln");
 
-        private const string UnformattedProjectPath = "for_code_formatter/unformatted_project/";
-        private const string UnformattedProjectFilePath = UnformattedProjectPath + "unformatted_project.csproj";
-        private const string UnformattedProgramFilePath = UnformattedProjectPath + "program.cs";
-        private const string UnformattedSolutionFilePath = "for_code_formatter/unformatted_solution/unformatted_solution.sln";
+        private static readonly string s_unformattedProjectPath = Path.Combine("for_code_formatter", "unformatted_project");
+        private static readonly string s_unformattedProjectFilePath = Path.Combine(s_unformattedProjectPath, "unformatted_project.csproj");
+        private static readonly string s_unformattedProgramFilePath = Path.Combine(s_unformattedProjectPath, "program.cs");
+        private static readonly string s_unformattedSolutionFilePath = Path.Combine("for_code_formatter", "unformatted_solution", "unformatted_solution.sln");
 
-        private const string FSharpProjectPath = "for_code_formatter/fsharp_project/";
-        private const string FSharpProjectFilePath = FSharpProjectPath + "fsharp_project.fsproj";
+        private static readonly string s_fSharpProjectPath = Path.Combine("for_code_formatter", "fsharp_project");
+        private static readonly string s_fSharpProjectFilePath = Path.Combine(s_fSharpProjectPath, "fsharp_project.fsproj");
 
-        private const string GeneratedProjectPath = "for_code_formatter/generated_project/";
-        private const string GeneratedProjectFilePath = GeneratedProjectPath + "generated_project.csproj";
+        private static readonly string s_generatedProjectPath = Path.Combine("for_code_formatter", "generated_project");
+        private static readonly string s_generatedProjectFilePath = Path.Combine(s_generatedProjectPath, "generated_project.csproj");
 
-        private const string CodeStyleSolutionPath = "for_code_formatter/codestyle_solution/";
-        private const string CodeStyleSolutionFilePath = CodeStyleSolutionPath + "codestyle_solution.sln";
+        private static readonly string s_codeStyleSolutionPath = Path.Combine("for_code_formatter", "codestyle_solution");
+        private static readonly string s_codeStyleSolutionFilePath = Path.Combine(s_codeStyleSolutionPath, "codestyle_solution.sln");
 
-        private const string AnalyzersSolutionPath = "for_code_formatter/analyzers_solution/";
-        private const string AnalyzersSolutionFilePath = AnalyzersSolutionPath + "analyzers_solution.sln";
+        private static readonly string s_analyzersSolutionPath = Path.Combine("for_code_formatter", "analyzers_solution");
+        private static readonly string s_analyzersSolutionFilePath = Path.Combine(s_analyzersSolutionPath, "analyzers_solution.sln");
 
         private static string[] EmptyFilesList => Array.Empty<string>();
 
@@ -43,18 +43,16 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
         private readonly ITestOutputHelper _output;
 
-        public CodeFormatterTests(ITestOutputHelper output, TestProjectsPathFixture testProjectsPathFixture)
+        public CodeFormatterTests(ITestOutputHelper output)
         {
             _output = output;
-
-            testProjectsPathFixture.SetCurrentDirectory();
         }
 
         [Fact]
         public async Task NoFilesFormattedInFormattedProject()
         {
             await TestFormatWorkspaceAsync(
-                FormattedProjectFilePath,
+                s_formattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -67,7 +65,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task NoFilesFormattedInFormattedSolution()
         {
             await TestFormatWorkspaceAsync(
-                FormattedSolutionFilePath,
+                s_formattedSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -80,7 +78,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task FilesFormattedInUnformattedProject()
         {
             await TestFormatWorkspaceAsync(
-                UnformattedProjectFilePath,
+                s_unformattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -93,7 +91,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task NoFilesFormattedInUnformattedProjectWhenFixingCodeStyle()
         {
             await TestFormatWorkspaceAsync(
-                UnformattedProjectFilePath,
+                s_unformattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -108,7 +106,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task GeneratedFilesFormattedInUnformattedProject()
         {
             var log = await TestFormatWorkspaceAsync(
-                UnformattedProjectFilePath,
+                s_unformattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: true,
@@ -125,7 +123,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task FilesFormattedInUnformattedSolution()
         {
             await TestFormatWorkspaceAsync(
-                UnformattedSolutionFilePath,
+                s_unformattedSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -139,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             // Since the code files are beneath the project folder, files are found and formatted.
             await TestFormatWorkspaceAsync(
-                Path.GetDirectoryName(UnformattedProjectFilePath),
+                Path.GetDirectoryName(s_unformattedProjectFilePath),
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -153,7 +151,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         {
             // Since the code files are outside the solution folder, no files are found or formatted.
             await TestFormatWorkspaceAsync(
-                Path.GetDirectoryName(UnformattedSolutionFilePath),
+                Path.GetDirectoryName(s_unformattedSolutionFilePath),
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -166,7 +164,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task FSharpProjectsDoNotCreateException()
         {
             var log = await TestFormatWorkspaceAsync(
-                FSharpProjectFilePath,
+                s_fSharpProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -178,16 +176,17 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var match = new Regex(pattern, RegexOptions.Multiline).Match(log);
 
             Assert.True(match.Success, log);
-            Assert.Equal(match.Groups[1].Value, Path.GetFullPath(FSharpProjectFilePath));
+            Assert.EndsWith(s_fSharpProjectFilePath, match.Groups[1].Value);
         }
 
         [Fact]
         public async Task OnlyFormatPathsFromList()
         {
-            var include = new[] { UnformattedProjectPath };
+            // To match a folder pattern it needs to end with a directory separator.
+            var include = new[] { s_unformattedProjectPath + Path.DirectorySeparatorChar };
 
             await TestFormatWorkspaceAsync(
-                UnformattedProjectFilePath,
+                s_unformattedProjectFilePath,
                 include,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -199,10 +198,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task OnlyFormatFilesFromList()
         {
-            var include = new[] { UnformattedProgramFilePath };
+            var include = new[] { s_unformattedProgramFilePath };
 
             await TestFormatWorkspaceAsync(
-                UnformattedProjectFilePath,
+                s_unformattedProjectFilePath,
                 include,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -214,10 +213,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedWhenNotInList()
         {
-            var include = new[] { Path.Combine(UnformattedProjectPath, "does_not_exist.cs") };
+            var include = new[] { Path.Combine(s_unformattedProjectPath, "does_not_exist.cs") };
 
             await TestFormatWorkspaceAsync(
-                UnformattedProjectFilePath,
+                s_unformattedProjectFilePath,
                 include,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -229,10 +228,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task OnlyLogFormattedFiles()
         {
-            var include = new[] { UnformattedProgramFilePath };
+            var include = new[] { s_unformattedProgramFilePath };
 
             var log = await TestFormatWorkspaceAsync(
-                UnformattedSolutionFilePath,
+                s_unformattedSolutionFilePath,
                 include,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -251,7 +250,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task FormatLocationsLoggedInUnformattedProject()
         {
             var log = await TestFormatWorkspaceAsync(
-                UnformattedProjectFilePath,
+                s_unformattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -302,7 +301,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task FormatLocationsNotLoggedInFormattedProject()
         {
             var log = await TestFormatWorkspaceAsync(
-                FormattedProjectFilePath,
+                s_formattedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -319,10 +318,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task LogFilesThatDontMatchExclude()
         {
-            var include = new[] { UnformattedProgramFilePath };
+            var include = new[] { s_unformattedProgramFilePath };
 
             var log = await TestFormatWorkspaceAsync(
-                UnformattedSolutionFilePath,
+                s_unformattedSolutionFilePath,
                 include,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -340,10 +339,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task IgnoreFileWhenListedInExcludeList()
         {
-            var include = new[] { UnformattedProgramFilePath };
+            var include = new[] { s_unformattedProgramFilePath };
 
             await TestFormatWorkspaceAsync(
-                UnformattedSolutionFilePath,
+                s_unformattedSolutionFilePath,
                 include: include,
                 exclude: include,
                 includeGenerated: false,
@@ -355,11 +354,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task IgnoreFileWhenContainingFolderListedInExcludeList()
         {
-            var include = new[] { UnformattedProgramFilePath };
-            var exclude = new[] { UnformattedProjectPath };
+            var include = new[] { s_unformattedProgramFilePath };
+            var exclude = new[] { s_unformattedProjectPath };
 
             await TestFormatWorkspaceAsync(
-                UnformattedSolutionFilePath,
+                s_unformattedSolutionFilePath,
                 include: include,
                 exclude: exclude,
                 includeGenerated: false,
@@ -371,11 +370,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task IgnoreAllFileWhenExcludingAllFiles()
         {
-            var include = new[] { UnformattedProgramFilePath };
+            var include = new[] { s_unformattedProgramFilePath };
             var exclude = new[] { "**/*.*" };
 
             await TestFormatWorkspaceAsync(
-                UnformattedSolutionFilePath,
+                s_unformattedSolutionFilePath,
                 include: include,
                 exclude: exclude,
                 includeGenerated: false,
@@ -388,7 +387,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task NoFilesFormattedInGeneratedProject_WhenNotIncludingGeneratedCode()
         {
             await TestFormatWorkspaceAsync(
-                GeneratedProjectFilePath,
+                s_generatedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -401,7 +400,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         public async Task FilesFormattedInGeneratedProject_WhenIncludingGeneratedCode()
         {
             await TestFormatWorkspaceAsync(
-                GeneratedProjectFilePath,
+                s_generatedProjectFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: true,
@@ -413,11 +412,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
         {
-            var restoreExitCode = await PerformNuGetRestore(CodeStyleSolutionFilePath);
+            var restoreExitCode = await PerformNuGetRestore(s_codeStyleSolutionFilePath);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
-                CodeStyleSolutionFilePath,
+                s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -430,11 +429,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
         {
-            var restoreExitCode = await PerformNuGetRestore(CodeStyleSolutionFilePath);
+            var restoreExitCode = await PerformNuGetRestore(s_codeStyleSolutionFilePath);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
-                CodeStyleSolutionFilePath,
+                s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -448,11 +447,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await PerformNuGetRestore(CodeStyleSolutionFilePath);
+            var restoreExitCode = await PerformNuGetRestore(s_codeStyleSolutionFilePath);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
-                CodeStyleSolutionFilePath,
+                s_codeStyleSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -466,11 +465,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
         {
-            var restoreExitCode = await PerformNuGetRestore(AnalyzersSolutionFilePath);
+            var restoreExitCode = await PerformNuGetRestore(s_analyzersSolutionFilePath);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
-                AnalyzersSolutionFilePath,
+                s_analyzersSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -483,11 +482,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
         {
-            var restoreExitCode = await PerformNuGetRestore(AnalyzersSolutionFilePath);
+            var restoreExitCode = await PerformNuGetRestore(s_analyzersSolutionFilePath);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
-                AnalyzersSolutionFilePath,
+                s_analyzersSolutionFilePath,
                 include: EmptyFilesList,
                 exclude: EmptyFilesList,
                 includeGenerated: false,
@@ -500,8 +499,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
         internal async Task<int> PerformNuGetRestore(string workspaceFilePath)
         {
-            var processInfo = ProcessRunner.CreateProcess("dotnet", $"restore \"{workspaceFilePath}\"", captureOutput: true, displayWindow: false);
+            var workspacePath = Path.Combine(TestProjectsPathHelper.GetProjectsDirectory(), workspaceFilePath);
+
+            var processInfo = ProcessRunner.CreateProcess("dotnet", $"restore \"{workspacePath}\"", captureOutput: true, displayWindow: false);
             var restoreResult = await processInfo.Result;
+
+            _output.WriteLine(string.Join(Environment.NewLine, restoreResult.OutputLines));
 
             return restoreResult.ExitCode;
         }
@@ -518,6 +521,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
+            var currentDirectory = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = TestProjectsPathHelper.GetProjectsDirectory();
+
             var workspacePath = Path.GetFullPath(workspaceFilePath);
 
             WorkspaceType workspaceType;
@@ -552,9 +558,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 reportPath: string.Empty,
                 includeGenerated);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
+            Environment.CurrentDirectory = currentDirectory;
 
             var log = logger.GetLog();
-
             _output.WriteLine(log);
 
             Assert.Equal(expectedExitCode, formatResult.ExitCode);

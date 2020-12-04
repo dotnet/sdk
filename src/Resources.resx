@@ -294,4 +294,7 @@
   <data name="Run_whitespace_formatting_Run_by_default_when_not_applying_fixes" xml:space="preserve">
     <value>Run whitespace formatting. Run by default when not applying fixes.</value>
   </data>
+  <data name="The_dotnet_format_version_is_0" xml:space="preserve">
+    <value>The dotnet format version is '{0}'.</value>
+  </data>
 </root>

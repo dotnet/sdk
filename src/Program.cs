@@ -7,6 +7,7 @@ using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,6 +78,8 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 currentDirectory = Environment.CurrentDirectory;
 
+                var formatVersion = GetVersion();
+                logger.LogDebug(Resources.The_dotnet_format_version_is_0, formatVersion);
 
                 string? workspaceDirectory;
                 string workspacePath;
@@ -112,7 +115,6 @@ namespace Microsoft.CodeAnalysis.Tools
                 if (workspaceType != WorkspaceType.Folder)
                 {
                     var runtimeVersion = GetRuntimeVersion();
-
                     logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
 
                     // Load MSBuild
@@ -296,6 +298,13 @@ namespace Microsoft.CodeAnalysis.Tools
             var logger = serviceProvider.GetService<ILogger<Program>>();
 
             return logger!;
+        }
+
+        private static string GetVersion()
+        {
+            return Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                .InformationalVersion;
         }
 
         private static bool TryGetDotNetCliVersion([NotNullWhen(returnValue: true)] out string? dotnetVersion)
