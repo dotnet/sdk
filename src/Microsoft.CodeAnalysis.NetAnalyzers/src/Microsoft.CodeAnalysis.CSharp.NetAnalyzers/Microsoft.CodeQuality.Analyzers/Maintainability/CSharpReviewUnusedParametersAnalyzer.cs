@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.Maintainability
     {
         private const SyntaxKind RecordDeclaration = (SyntaxKind)9063;
 
-        protected override bool IsInlineRecord(IMethodSymbol methodSymbol)
+        protected override bool IsPositionalRecordPrimaryConstructor(IMethodSymbol methodSymbol)
         {
             if (methodSymbol.MethodKind != MethodKind.Constructor)
             {

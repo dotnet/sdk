@@ -1204,7 +1204,10 @@ public class Class1
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"public record Person(string Name, int Age = 0);",
+                TestCode = @"
+public record Person(string Name, int Age = 0);
+
+public record Person2(string Name, int Age = 0) {}",
             }.RunAsync();
         }
 

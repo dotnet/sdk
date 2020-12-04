@@ -195,8 +195,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return false;
             }
 
-            // Ignore body-less record definition
-            if (IsInlineRecord(method))
+            // Ignore primary constructor (body-less) of positional records.
+            if (IsPositionalRecordPrimaryConstructor(method))
             {
                 return false;
             }
@@ -247,6 +247,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             return true;
         }
 
-        protected abstract bool IsInlineRecord(IMethodSymbol methodSymbol);
+        protected abstract bool IsPositionalRecordPrimaryConstructor(IMethodSymbol methodSymbol);
     }
 }

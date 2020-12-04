@@ -13,7 +13,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability
     Public NotInheritable Class BasicReviewUnusedParametersAnalyzer
         Inherits ReviewUnusedParametersAnalyzer
 
-        Protected Overrides Function IsInlineRecord(methodSymbol As IMethodSymbol) As Boolean
+        Protected Overrides Function IsPositionalRecordPrimaryConstructor(methodSymbol As IMethodSymbol) As Boolean
             Return False
         End Function
     End Class
