@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -580,6 +581,34 @@ Public Class C2
     Public Sub " + prefix + "New" + suffix + @"(t As CancellationToken, i As Integer)
     End Sub
 End Class"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
+        // No configuration - validate diagnostics in default configuration
+        [InlineData(@"")]
+        // Exclude all ctors
+        [InlineData(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
+        public async Task CA1068_ExcludedSymbolNames_Record_NoDiagnostic(string editorConfigText)
+        {
+            var prefix = editorConfigText.Length == 0 ? "[|" : "";
+            var suffix = editorConfigText.Length == 0 ? "|]" : "";
+
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.Threading;
+
+public record " + prefix + "R" + suffix + @"(CancellationToken t, int i) {}"
                     },
                     AdditionalFiles = { (".editorconfig", editorConfigText) }
                 },
