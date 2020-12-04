@@ -6,6 +6,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
     {
         IEnumerable<IInstalledPackInfo> CandidatePacks { get; }
 
+        int CandidatePacksCount { get; }
+
         void DeleteDownloadedPacks();
     }
 }

@@ -30,6 +30,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 if (!Directory.Exists(reportPath))
                 {
                     Directory.CreateDirectory(reportPath);
+                    Console.WriteLine($"Created directory:{reportPath}");
                 }
 
                 return TryWriteSearchMetadata(packSourceCheckResults, reportPath)
@@ -50,6 +51,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 JObject toSerialize = JObject.FromObject(searchMetadata);
                 string outputFileName = Path.Combine(reportPath, SearchMetadataFilename);
                 File.WriteAllText(outputFileName, toSerialize.ToString());
+                Console.WriteLine($"Search cache file created: {outputFileName}");
 
                 return true;
             }
@@ -117,6 +119,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
                 string outputFileName = Path.Combine(reportPath, NonTemplatePacksFileName);
                 File.WriteAllText(outputFileName, serializedContent);
+                Console.WriteLine($"Non template pack list was created: {outputFileName}");
             }
             catch
             {

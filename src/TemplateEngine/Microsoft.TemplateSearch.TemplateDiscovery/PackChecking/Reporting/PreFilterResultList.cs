@@ -25,5 +25,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting
                 return Results.Any(r => r.IsFiltered);
             }
         }
+
+        public string Reason
+        {
+            get
+            {
+                return string.Join("; ", Results.Where(r => r.IsFiltered && !string.IsNullOrWhiteSpace(r.Reason)).Select(r => r.Reason));
+            }
+        }
     }
 }

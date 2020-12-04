@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
@@ -31,18 +32,36 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             HashSet<string> alreadySeenTemplateIdentities = new HashSet<string>();
 
             int count = 0;
+            Console.WriteLine($"{_packProvider.CandidatePacksCount} packs discovered, starting processing");
 
             foreach (IInstalledPackInfo packInfo in _packProvider.CandidatePacks)
             {
                 PackCheckResult preFilterResult = PrefilterPackInfo(packInfo);
                 if (preFilterResult.PreFilterResults.ShouldBeFiltered)
                 {
+                    Verbose.WriteLine($"{packInfo.Id}::{packInfo.Version} is skipped, {preFilterResult.PreFilterResults.Reason}");
                     checkResultList.Add(preFilterResult);
                 }
                 else
                 {
                     PackCheckResult packCheckResult = _packChecker.TryGetTemplatesInPack(packInfo, _additionalDataProducers, alreadySeenTemplateIdentities);
                     checkResultList.Add(packCheckResult);
+
+
+                    Verbose.WriteLine($"{packCheckResult.PackInfo.Id}::{packCheckResult.PackInfo.Version} was processed");
+                    if (packCheckResult.FoundTemplates.Any())
+                    {
+                        Verbose.WriteLine("Found templates:");
+                        foreach (ITemplateInfo template in packCheckResult.FoundTemplates)
+                        {
+                            Verbose.WriteLine($"  - {template.Identity} ({template.ShortName}) by {template.Author}, group: {(string.IsNullOrWhiteSpace(template.GroupIdentity) ? "<not set>" : template.GroupIdentity)}, precedence: {template.Precedence}");
+                        }
+                    }
+                    else
+                    {
+                        Verbose.WriteLine("No templates were found");
+                    }
+
 
                     // Record the found identities - to skip these templates when checking additional packs.
                     // Some template identities are the same in multiple packs on nuget.
@@ -56,10 +75,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                     Console.WriteLine($"{count} packs processed");
                 }
             }
+            Console.WriteLine("All packs processed");
 
             if (!_saveCandidatePacks)
             {
+                Console.WriteLine("Removing downloaded packs");
                 _packProvider.DeleteDownloadedPacks();
+                Console.WriteLine("Downloaded packs were removed");
             }
 
             return new PackSourceCheckResult(checkResultList, _additionalDataProducers);

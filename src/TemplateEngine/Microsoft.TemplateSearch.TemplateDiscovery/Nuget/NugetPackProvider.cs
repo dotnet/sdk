@@ -96,6 +96,23 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
             }
         }
 
+        public int CandidatePacksCount
+        {
+            get
+            {
+                string queryString = string.Format(SearchUrlFormat, 0, _pageSize, _includePreviewPacks);
+                Uri queryUri = new Uri(queryString);
+                using (HttpClient client = new HttpClient())
+                using (HttpResponseMessage response = client.GetAsync(queryUri).Result)
+                {
+                    response.EnsureSuccessStatusCode();
+                    string responseText = response.Content.ReadAsStringAsync().Result;
+                    NugetPackageSearchResult resultsForPage = JsonConvert.DeserializeObject<NugetPackageSearchResult>(responseText);
+                    return resultsForPage.TotalHits;
+                }
+            }
+        }
+
         private bool TryDownloadPackage(NugetPackageSourceInfo packinfo, out string packageFilePath)
         {
             string downloadUrl = string.Format(DownloadUrlFormat, packinfo.Id, packinfo.Version);
