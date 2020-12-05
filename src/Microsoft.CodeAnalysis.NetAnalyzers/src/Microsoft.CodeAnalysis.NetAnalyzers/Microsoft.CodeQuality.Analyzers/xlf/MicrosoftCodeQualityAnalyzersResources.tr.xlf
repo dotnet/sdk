@@ -2,16 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../MicrosoftCodeQualityAnalyzersResources.resx">
     <body>
-      <trans-unit id="AnalyzerPackageDeprecationMessage">
-        <source>FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</source>
-        <target state="new">FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AnalyzerPackageDeprecationTitle">
-        <source>Analyzer package has been deprecated</source>
-        <target state="new">Analyzer package has been deprecated</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AppendConfigureAwaitTrue">
         <source>Append .ConfigureAwait(true)</source>
         <target state="translated">Ekle .ConfigureAwait(true)</target>
@@ -1272,21 +1262,6 @@
         <target state="translated">{1} üye adındaki '{0}' sonekini önerilen '{2}' alternatifi ile değiştirin ya da soneki tamamen kaldırın</target>
         <note />
       </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">Bayrak sabit listeleri çoğul adlara sahip olmalıdır</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesDescription">
-        <source>A public enumeration has the System.FlagsAttribute attribute, and its name does not end in ""s"". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.</source>
-        <target state="translated">Bir genel sabit listesi System.FlagsAttribute özniteliğine sahip ve adı ""s"" ile bitmiyor. FlagsAttribute kullanılarak işaretlenen türler, öznitelik birden fazla değerin belirtilebileceğini gösterdiğinden çoğul olan adlara sahip olur.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesMessage">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">Bayrak sabit listeleri çoğul adlara sahip olmalıdır</target>
-        <note />
-      </trans-unit>
       <trans-unit id="IdentifiersShouldNotMatchKeywordsTitle">
         <source>Identifiers should not match keywords</source>
         <target state="translated">Tanımlayıcılar anahtar sözcüklerle eşleşmemelidir</target>
@@ -1315,21 +1290,6 @@
       <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageNamespace">
         <source>Rename namespace {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a namespace makes it harder for consumers in other languages to use the namespace.</source>
         <target state="translated">{0} ad alanını, ayrılmış dil anahtar sözcüğü '{1}' ile çakışmayacak şekilde yeniden adlandırın. Bir ad alanının adı olarak ayrılmış bir anahtar sözcüğün kullanılması, diğer dillerde kullanıcıların ad alanını kullanmasını zorlaştırır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesTitle">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Yalnızca FlagsAttribute sabit listeleri çoğul adlara sahip olmalıdır</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesDescription">
-        <source>Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.</source>
-        <target state="translated">Adlandırma kurallarına göre bir sabit listesinin çoğul ada sahip olması, aynı anda birden çok sabit listesi değeri belirtilebileceğini gösterir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesMessage">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Yalnızca FlagsAttribute sabit listeleri çoğul adlara sahip olmalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyNamesShouldNotMatchGetMethodsTitle">

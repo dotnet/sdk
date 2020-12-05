@@ -6,9 +6,6 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\Core\Microsoft.CodeQuality.Analyzers\ApiDesignGuidelines\EnumsShouldHavePluralNames.cs" Link="Microsoft.CodeQuality.Analyzers\ApiDesignGuidelines\EnumsShouldHavePluralNames.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersionForTests)" />
   </ItemGroup>
   <ItemGroup>

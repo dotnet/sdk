@@ -24,7 +24,19 @@
     <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
     <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" />
 	</ItemGroup>
-  
+
+  <ItemGroup>
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\AllRules.ruleset" />
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\BasicCorrectnessRules.ruleset" />
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\BasicDesignGuidelineRules.ruleset" />
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\ExtendedCorrectnessRules.ruleset" />
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\ExtendedDesignGuidelineRules.ruleset" />
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\GlobalizationRules.ruleset" />
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\ManagedMinimumRules.ruleset" />
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\MinimumRecommendedRules.ruleset" />
+    <AnalyzerLegacyRuleset Include="LegacyRulesets\SecurityRules.ruleset" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\NetAnalyzers\Core\Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
     <ProjectReference Include="..\..\src\NetAnalyzers\CSharp\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" /> 
