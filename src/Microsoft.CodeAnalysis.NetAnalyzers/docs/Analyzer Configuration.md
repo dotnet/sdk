@@ -257,9 +257,7 @@ Default Value: `false`
 
 Example: `dotnet_code_quality.try_determine_additional_string_formatting_methods_automatically = true`
 
-### Excluded symbol names
-
-Option Name: `excluded_symbol_names`
+### Excluded symbols
 
 Configurable Rules:
 [CA1001](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001),
@@ -304,6 +302,10 @@ Configurable Rules:
 [CA5388](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5388),
 [CA5389](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5389),
 [CA5390](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5390)
+
+#### Excluded symbol names
+
+Option Name: `excluded_symbol_names`
 
 Option Values: Names of symbols (separated by '|') that are excluded for analysis.
 Allowed symbol name formats:
@@ -332,53 +334,9 @@ Examples:
 
 Additionally, all the dataflow analysis based rules can be configured with a single entry `dotnet_code_quality.dataflow.excluded_symbol_names = ...`
 
-### Excluded type names with derived types
+#### Excluded type names with derived types
 
 Option Name: `excluded_type_names_with_derived_types`
-
-Configurable Rules:
-[CA1001](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001),
-[CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062),
-[CA1303](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1303),
-[CA1304](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1304),
-[CA1508](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508),
-[CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000),
-[CA2100](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100),
-[CA2301](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2301),
-[CA2302](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2302),
-[CA2311](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2311),
-[CA2312](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2312),
-[CA2321](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2321),
-[CA2322](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2322),
-[CA2327](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2327),
-[CA2328](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2328),
-[CA2329](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2329),
-[CA2330](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2330),
-[CA3001](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3001),
-[CA3002](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3002),
-[CA3003](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3003),
-[CA3004](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3004),
-[CA3005](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3005),
-[CA3006](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3006),
-[CA3007](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3007),
-[CA3008](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3008),
-[CA3009](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3009),
-[CA3010](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3010),
-[CA3011](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3011),
-[CA3012](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3012),
-[CA5361](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5361),
-[CA5376](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5376),
-[CA5377](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5377),
-[CA5378](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5378),
-[CA5380](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5380),
-[CA5381](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5381),
-[CA5382](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5382),
-[CA5383](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5383),
-[CA5384](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5384),
-[CA5387](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5387),
-[CA5388](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5388),
-[CA5389](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5389),
-[CA5390](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5390)
 
 Option Values: Names of types (separated by '|'), such that the type and all its derived types are excluded for analysis.
 Allowed symbol name formats:
