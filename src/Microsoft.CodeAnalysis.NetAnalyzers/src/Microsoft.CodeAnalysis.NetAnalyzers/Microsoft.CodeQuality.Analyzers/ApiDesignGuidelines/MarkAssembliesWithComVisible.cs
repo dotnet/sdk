@@ -27,7 +27,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                        description: s_localizableDescription,
                                                                                        isPortedFxCopRule: true,
                                                                                        isDataflowRule: false,
-                                                                                       isEnabledByDefaultInFxCopAnalyzers: false,
                                                                                        isEnabledByDefaultInAggressiveMode: false,
                                                                                        isReportedAtCompilationEnd: true);
 
@@ -39,7 +38,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                        description: s_localizableDescription,
                                                                                        isPortedFxCopRule: true,
                                                                                        isDataflowRule: false,
-                                                                                       isEnabledByDefaultInFxCopAnalyzers: false,
                                                                                        isEnabledByDefaultInAggressiveMode: false,
                                                                                        isReportedAtCompilationEnd: true);
 
