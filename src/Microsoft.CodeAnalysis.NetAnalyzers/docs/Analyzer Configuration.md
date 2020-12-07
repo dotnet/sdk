@@ -740,7 +740,7 @@ Examples:
 
 Option Name: `analyzed_symbol_kinds`
 
-Configurable Rules: [CA1716](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1716)
+Configurable Rules: [CA1716](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1716)
 
 Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](https://roslynsourceindex.azurewebsites.net/#Microsoft.CodeAnalysis/Symbols/SymbolKind.cs,30fd9c0834bef6ff) as a comma separated list.
 
@@ -764,7 +764,7 @@ Example: `dotnet_code_quality.CA1303.use_naming_heuristic = true`
 
 Option Name: `additional_use_results_methods`
 
-Configurable Rules: [CA1806](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1806)
+Configurable Rules: [CA1806](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1806)
 
 Option Values: Names of additional methods (separated by '|') for CA1806.
 Allowed method name formats:
@@ -822,7 +822,7 @@ Example: `dotnet_code_quality.CA1051.exclude_structs = true`
 
 Option Name: `exclude_ordefault_methods`
 
-Configurable Rules: [CA1826](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1826)
+Configurable Rules: [CA1826](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1826)
 
 Option Values: Boolean values
 
