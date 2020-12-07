@@ -1,6 +1,7 @@
 
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -1084,7 +1085,7 @@ End Class",
                 SymbolKind.MemberParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.MemberParameterRule,
                 SymbolKind.TypeTypeParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.TypeTypeParameterRule,
                 SymbolKind.MethodTypeParameter => IdentifiersShouldNotContainUnderscoresAnalyzer.MethodTypeParameterRule,
-                _ => throw new System.Exception("Unknown Symbol Kind"),
+                _ => throw new NotSupportedException("Unknown Symbol Kind"),
             };
         }
 
