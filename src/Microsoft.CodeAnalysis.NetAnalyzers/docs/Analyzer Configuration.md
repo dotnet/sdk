@@ -334,7 +334,7 @@ Examples:
 
 Additionally, all the dataflow analysis based rules can be configured with a single entry `dotnet_code_quality.dataflow.excluded_symbol_names = ...`
 
-#### excluded type names with derived types
+#### Excluded type names with derived types
 
 Option Name: `excluded_type_names_with_derived_types`
 
