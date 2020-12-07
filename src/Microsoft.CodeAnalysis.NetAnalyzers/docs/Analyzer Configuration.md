@@ -621,7 +621,7 @@ Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algo
 
 Option Name: `enum_values_prefix_trigger`
 
-Configurable Rules: [CA1712](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1712)
+Configurable Rules: [CA1712](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1712)
 
 Option Values:
 
@@ -711,7 +711,7 @@ Examples:
 
 Option Name: `additional_inheritance_excluded_symbol_names`
 
-Configurable Rules: [CA1501](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1501)
+Configurable Rules: [CA1501](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501)
 
 Option Values: Names of types or namespaces (separated by '|'), such that the type or type's namespace doesn't count in the inheritance hierarchy tree.
 Allowed symbol name formats:
@@ -740,7 +740,7 @@ Examples:
 
 Option Name: `analyzed_symbol_kinds`
 
-Configurable Rules: [CA1716](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1716)
+Configurable Rules: [CA1716](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1716)
 
 Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](https://roslynsourceindex.azurewebsites.net/#Microsoft.CodeAnalysis/Symbols/SymbolKind.cs,30fd9c0834bef6ff) as a comma separated list.
 
@@ -752,7 +752,7 @@ Example: `dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace, Property
 
 Option Name: `use_naming_heuristic`
 
-Configurable Rules: [CA1303](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1303)
+Configurable Rules: [CA1303](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1303)
 
 Option Values: Boolean values
 
@@ -764,7 +764,7 @@ Example: `dotnet_code_quality.CA1303.use_naming_heuristic = true`
 
 Option Name: `additional_use_results_methods`
 
-Configurable Rules: [CA1806](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1806)
+Configurable Rules: [CA1806](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1806)
 
 Option Values: Names of additional methods (separated by '|') for CA1806.
 Allowed method name formats:
