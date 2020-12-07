@@ -9,10 +9,10 @@ using Microsoft.CodeAnalysis.Text;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.ReviewUnusedParametersAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpReviewUnusedParametersAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpReviewUnusedParametersFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.ReviewUnusedParametersAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicReviewUnusedParametersAnalyzer,
     Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicReviewUnusedParametersFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
@@ -1197,6 +1197,20 @@ public class Class1
             }.RunAsync();
         }
 
+        [Fact, WorkItem(4462, "https://github.com/dotnet/roslyn-analyzers/issues/4462")]
+        public async Task CA1801_CSharp_ImplicitRecord()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+public record Person(string Name, int Age = 0);
+
+public record Person2(string Name, int Age = 0) {}",
+            }.RunAsync();
+        }
+
         #endregion
 
         #region Unit tests for analyzer diagnostic(s)
@@ -1369,6 +1383,24 @@ public class C
         }
     }
 }");
+        }
+
+        [Fact, WorkItem(4462, "https://github.com/dotnet/roslyn-analyzers/issues/4462")]
+        public async Task CA1801_CSharp_Record()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+public record OtherPerson
+{
+    public string Name { get; init; }
+
+    public OtherPerson(string name, int [|age|] = 0)
+        => Name = name;
+}",
+            }.RunAsync();
         }
 
         #endregion
