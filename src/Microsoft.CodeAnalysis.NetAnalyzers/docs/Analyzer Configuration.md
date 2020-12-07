@@ -262,6 +262,7 @@ Example: `dotnet_code_quality.try_determine_additional_string_formatting_methods
 Configurable Rules:
 [CA1001](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001),
 [CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062),
+[CA1068](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1068),
 [CA1303](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1303),
 [CA1304](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1304),
 [CA1508](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508),
