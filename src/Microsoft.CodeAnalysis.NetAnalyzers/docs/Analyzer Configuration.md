@@ -26,7 +26,7 @@ For example, end users can configure the analyzed API surface for analyzers usin
 
 ### VS2019 16.3 and later + Analyzer package version 3.3.x and later
 
-End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/use-roslyn-analyzers#rule-severity) for more details.
+End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
 
 ### Prior to VS2019 16.3 or using an analyzer package version prior to 3.3.x
 
