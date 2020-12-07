@@ -70,6 +70,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 var overloadMap = GetWellKnownStringOverloads(csaContext.Compilation, stringType, stringComparisonType);
 
+                var iqueryableType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqIQueryable1);
+
                 csaContext.RegisterOperationAction(oaContext =>
                 {
                     var invocationExpression = (IInvocationOperation)oaContext.Operation;
@@ -80,6 +82,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         targetMethod.ContainingType.IsErrorType())
                     {
                         return;
+                    }
+
+                    if (iqueryableType != null)
+                    {
+                        var ancestorInvocation = invocationExpression.GetAncestor<IInvocationOperation>(OperationKind.Invocation);
+
+                        // If we are in a IQueryable context, it's possible that the underlying call doesn't have the comparison
+                        // option so we want to bail-out to be safe.
+                        if (ancestorInvocation != null && iqueryableType.Equals(ancestorInvocation.Type?.OriginalDefinition))
+                        {
+                            return;
+                        }
                     }
 
                     // Report correctness issue CA1310 for known string comparison methods that default to culture specific string comparison:

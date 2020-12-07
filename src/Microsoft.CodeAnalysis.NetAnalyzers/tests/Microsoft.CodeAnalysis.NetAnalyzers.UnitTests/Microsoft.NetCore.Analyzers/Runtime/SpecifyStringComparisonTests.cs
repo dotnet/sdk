@@ -478,6 +478,90 @@ GetCA1307BasicResultsAt(7, 9, "StringComparisonTests.DoNothing(String)",
                               "StringComparisonTests.DoNothing(Of T)(String, System.StringComparison)"));
         }
 
+        [Fact, WorkItem(3492, "https://github.com/dotnet/roslyn-analyzers/issues/3492")]
+        public async Task CA1307_CA1310_SimpleIQueryable_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Linq;
+
+public class C
+{
+    public string Name { get; }
+
+    public void DoSomething(IQueryable<C> data)
+    {
+        var result1 = data.Where(c => c.Name.StartsWith(""Hello""));
+        var result2 = data.Where(c => c.M(""Hello""));
+    }
+
+    public bool M(string s) => false;
+    public bool M(string s, StringComparison sc) => false;
+}");
+        }
+
+        [Fact, WorkItem(3492, "https://github.com/dotnet/roslyn-analyzers/issues/3492")]
+        public async Task CA1307_CA1310_IQueryableOfIEnumerable_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public string Name { get; }
+
+    public void DoSomething(IQueryable<IEnumerable<C>> data)
+    {
+        var result1 = data.Where(x => x.Any(y => y.Name.StartsWith(""Hello"")));
+        var result2 = data.Where(x => x.Any(y => y.M(""Hello"")));
+    }
+
+    public bool M(string s) => false;
+    public bool M(string s, StringComparison sc) => false;
+}",
+                GetCA1310CSharpResultsAt(12, 50,
+                    "string.StartsWith(string)",
+                    "C.DoSomething(System.Linq.IQueryable<System.Collections.Generic.IEnumerable<C>>)",
+                    "string.StartsWith(string, System.StringComparison)"),
+                GetCA1307CSharpResultsAt(13, 50,
+                    "C.M(string)",
+                    "C.DoSomething(System.Linq.IQueryable<System.Collections.Generic.IEnumerable<C>>)",
+                    "C.M(string, System.StringComparison)"));
+        }
+
+        [Fact, WorkItem(3492, "https://github.com/dotnet/roslyn-analyzers/issues/3492")]
+        public async Task CA1307_CA1310_IQueryableAsEnumerable_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public string Name { get; }
+
+    public void DoSomething(IQueryable<C> data)
+    {
+        var result1 = data.AsEnumerable().Where(c => c.Name.StartsWith(""Hello""));
+        var result2 = data.AsEnumerable().Where(c => c.M(""Hello""));
+    }
+
+    public bool M(string s) => false;
+    public bool M(string s, StringComparison sc) => false;
+}",
+                GetCA1310CSharpResultsAt(12, 54,
+                    "string.StartsWith(string)",
+                    "C.DoSomething(System.Linq.IQueryable<C>)",
+                    "string.StartsWith(string, System.StringComparison)"),
+                GetCA1307CSharpResultsAt(13, 54,
+                    "C.M(string)",
+                    "C.DoSomething(System.Linq.IQueryable<C>)",
+                    "C.M(string, System.StringComparison)"));
+        }
+
         private static DiagnosticResult GetCA1307CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
             VerifyCS.Diagnostic(SpecifyStringComparisonAnalyzer.Rule_CA1307)
                 .WithLocation(line, column)
