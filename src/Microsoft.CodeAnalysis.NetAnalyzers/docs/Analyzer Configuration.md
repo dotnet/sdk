@@ -53,58 +53,58 @@ This section documents the list of supported .editorconfig key-value options for
 Option Name: `api_surface`
 
 Configurable Rules:
-[CA1000](https://docs.microsoft.com/visualstudio/code-quality/ca1000),
-[CA1002](https://docs.microsoft.com/visualstudio/code-quality/ca1002),
-[CA1003](https://docs.microsoft.com/visualstudio/code-quality/ca1003),
-[CA1005](https://docs.microsoft.com/visualstudio/code-quality/ca1005),
-[CA1008](https://docs.microsoft.com/visualstudio/code-quality/ca1008),
-[CA1010](https://docs.microsoft.com/visualstudio/code-quality/ca1010),
-[CA1012](https://docs.microsoft.com/visualstudio/code-quality/ca1012),
-[CA1021](https://docs.microsoft.com/visualstudio/code-quality/ca1021),
-[CA1024](https://docs.microsoft.com/visualstudio/code-quality/ca1024),
-[CA1027](https://docs.microsoft.com/visualstudio/code-quality/ca1027),
-[CA1028](https://docs.microsoft.com/visualstudio/code-quality/ca1028),
-[CA1030](https://docs.microsoft.com/visualstudio/code-quality/ca1030),
-[CA1036](https://docs.microsoft.com/visualstudio/code-quality/ca1036),
-[CA1040](https://docs.microsoft.com/visualstudio/code-quality/ca1040),
-[CA1041](https://docs.microsoft.com/visualstudio/code-quality/ca1041),
-[CA1043](https://docs.microsoft.com/visualstudio/code-quality/ca1043),
-[CA1044](https://docs.microsoft.com/visualstudio/code-quality/ca1044),
-[CA1045](https://docs.microsoft.com/visualstudio/code-quality/ca1045),
-[CA1046](https://docs.microsoft.com/visualstudio/code-quality/ca1046),
-[CA1047](https://docs.microsoft.com/visualstudio/code-quality/ca1047),
-[CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051),
-[CA1052](https://docs.microsoft.com/visualstudio/code-quality/ca1052),
-[CA1054](https://docs.microsoft.com/visualstudio/code-quality/ca1054),
-[CA1055](https://docs.microsoft.com/visualstudio/code-quality/ca1055),
-[CA1056](https://docs.microsoft.com/visualstudio/code-quality/ca1056),
-[CA1058](https://docs.microsoft.com/visualstudio/code-quality/ca1058),
-[CA1063](https://docs.microsoft.com/visualstudio/code-quality/ca1063),
-[CA1068](https://docs.microsoft.com/visualstudio/code-quality/ca1068),
-[CA1070](https://docs.microsoft.com/visualstudio/code-quality/ca1070),
-[CA1700](https://docs.microsoft.com/visualstudio/code-quality/ca1700),
-[CA1707](https://docs.microsoft.com/visualstudio/code-quality/ca1707),
-[CA1708](https://docs.microsoft.com/visualstudio/code-quality/ca1708),
-[CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710),
-[CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711),
-[CA1714](https://docs.microsoft.com/visualstudio/code-quality/ca1714),
-[CA1715](https://docs.microsoft.com/visualstudio/code-quality/ca1715),
-[CA1716](https://docs.microsoft.com/visualstudio/code-quality/ca1716),
-[CA1717](https://docs.microsoft.com/visualstudio/code-quality/ca1717),
-[CA1720](https://docs.microsoft.com/visualstudio/code-quality/ca1720),
-[CA1721](https://docs.microsoft.com/visualstudio/code-quality/ca1721),
-[CA1725](https://docs.microsoft.com/visualstudio/code-quality/ca1725),
-[CA1801](https://docs.microsoft.com/visualstudio/code-quality/ca1801),
-[CA1802](https://docs.microsoft.com/visualstudio/code-quality/ca1802),
-[CA1815](https://docs.microsoft.com/visualstudio/code-quality/ca1815),
-[CA1819](https://docs.microsoft.com/visualstudio/code-quality/ca1819),
-[CA1822](https://docs.microsoft.com/visualstudio/code-quality/ca1822),
-[CA2208](https://docs.microsoft.com/visualstudio/code-quality/ca2208),
-[CA2217](https://docs.microsoft.com/visualstudio/code-quality/ca2217),
-[CA2225](https://docs.microsoft.com/visualstudio/code-quality/ca2225),
-[CA2226](https://docs.microsoft.com/visualstudio/code-quality/ca2226),
-[CA2231](https://docs.microsoft.com/visualstudio/code-quality/ca2231),
-[CA2234](https://docs.microsoft.com/visualstudio/code-quality/ca2234)
+[CA1000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1000),
+[CA1002](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1002),
+[CA1003](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1003),
+[CA1005](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1005),
+[CA1008](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1008),
+[CA1010](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1010),
+[CA1012](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1012),
+[CA1021](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1021),
+[CA1024](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1024),
+[CA1027](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1027),
+[CA1028](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1028),
+[CA1030](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1030),
+[CA1036](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1036),
+[CA1040](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1040),
+[CA1041](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1041),
+[CA1043](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1043),
+[CA1044](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1044),
+[CA1045](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1045),
+[CA1046](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1046),
+[CA1047](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1047),
+[CA1051](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1051),
+[CA1052](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1052),
+[CA1054](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1054),
+[CA1055](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1055),
+[CA1056](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1056),
+[CA1058](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1058),
+[CA1063](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1063),
+[CA1068](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1068),
+[CA1070](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1070),
+[CA1700](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700),
+[CA1707](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1707),
+[CA1708](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1708),
+[CA1710](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1710),
+[CA1711](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1711),
+[CA1714](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1714),
+[CA1715](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1715),
+[CA1716](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1716),
+[CA1717](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1717),
+[CA1720](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1720),
+[CA1721](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1721),
+[CA1725](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1725),
+[CA1801](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801),
+[CA1802](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802),
+[CA1815](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1815),
+[CA1819](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1819),
+[CA1822](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822),
+[CA2208](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2208),
+[CA2217](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2217),
+[CA2225](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2225),
+[CA2226](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2226),
+[CA2231](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2231),
+[CA2234](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2234)
 
 Option Values:
 
@@ -125,7 +125,7 @@ Users can also provide a comma separated list of above option values. For exampl
 
 Option Name: `output_kind`
 
-Configurable Rules: [CA2007](https://docs.microsoft.com/visualstudio/code-quality/ca2007)
+Configurable Rules: [CA2007](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007)
 
 Option Values: One or more fields of enum [Microsoft.CodeAnalysis.CompilationOptions.OutputKind](http://source.roslyn.io/#q=Microsoft.CodeAnalysis.OutputKind) as a comma separated list.
 
@@ -137,7 +137,7 @@ Example: `dotnet_code_quality.CA2007.output_kind = ConsoleApplication, Dynamical
 
 Option Name: `required_modifiers`
 
-Configurable Rules: [CA1802](https://docs.microsoft.com/visualstudio/code-quality/ca1802)
+Configurable Rules: [CA1802](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802)
 
 Option Values: Comma separated listed of one or more modifier values from the below table. Note that not all values are applicable for every configurable rule.
 
@@ -164,7 +164,7 @@ Example: `dotnet_code_quality.CA1802.required_modifiers = none`.
 
 Option Name: `exclude_async_void_methods`
 
-Configurable Rules: [CA2007](https://docs.microsoft.com/visualstudio/code-quality/ca2007)
+Configurable Rules: [CA2007](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007)
 
 Option Values: `true` or `false`
 
@@ -176,7 +176,7 @@ Example: `dotnet_code_quality.CA2007.exclude_async_void_methods = true`
 
 Option Name: `exclude_single_letter_type_parameters`
 
-Configurable Rules: [CA1715](https://docs.microsoft.com/visualstudio/code-quality/ca1715)
+Configurable Rules: [CA1715](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1715)
 
 Option Values: `true` or `false`
 
@@ -188,7 +188,7 @@ Example: `dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = tru
 
 Option Name: `exclude_extension_method_this_parameter`
 
-Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062)
+Configurable Rules: [CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062)
 
 Option Values: `true` or `false`
 
@@ -200,7 +200,7 @@ Example: `dotnet_code_quality.CA1062.exclude_extension_method_this_parameter = t
 
 Option Name: `null_check_validation_methods`
 
-Configurable Rules: [CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062)
+Configurable Rules: [CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062)
 
 Option Values: Names of null check validation methods (separated by '|') that validate arguments passed to the method are non-null.
 Allowed method name formats:
@@ -224,7 +224,7 @@ Examples:
 
 Option Name: `additional_string_formatting_methods`
 
-Configurable Rules: [CA2241](https://docs.microsoft.com/visualstudio/code-quality/ca2241)
+Configurable Rules: [CA2241](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2241)
 
 Option Values: Names of additional string formatting methods (separated by '|').
 Allowed method name formats:
@@ -249,7 +249,7 @@ Option Name: `try_determine_additional_string_formatting_methods_automatically`
 Boolean option to enable heuristically detecting of additional string formatting methods
 A method is considered a string formatting method if it has a 'string format' parameter followed by a 'params object[]' parameter.
 
-Configurable Rules: [CA2241](https://docs.microsoft.com/visualstudio/code-quality/ca2241)
+Configurable Rules: [CA2241](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2241)
 
 Option Values: Boolean values
 
@@ -405,7 +405,7 @@ Examples:
 
 Option Name: `unsafe_DllImportSearchPath_bits`
 
-Configurable Rules: [CA5393](https://docs.microsoft.com/visualstudio/code-quality/ca5393)
+Configurable Rules: [CA5393](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5393)
 
 Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
 
@@ -417,7 +417,7 @@ Example: `dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770`
 
 Option Name: `exclude_aspnet_core_mvc_controllerbase`
 
-Configurable Rules: [CA5391](https://docs.microsoft.com/visualstudio/code-quality/ca5391)
+Configurable Rules: [CA5391](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5391)
 
 Option Values: Boolean values
 
@@ -429,7 +429,7 @@ Example: `dotnet_code_quality.CA5391.exclude_aspnet_core_mvc_controllerbase = fa
 
 Option Name: `disallowed_symbol_names`
 
-Configurable Rules: [CA1031](https://docs.microsoft.com/visualstudio/code-quality/ca1031)
+Configurable Rules: [CA1031](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1031)
 
 Option Values: Names of symbols (separated by '|') that are disallowed in the context of the analysis.
 Allowed symbol name formats:
@@ -453,12 +453,12 @@ Examples:
 ### Dataflow analysis
 
 Configurable Rules:
-[CA1062](https://docs.microsoft.com/visualstudio/code-quality/ca1062),
-[CA1303](https://docs.microsoft.com/visualstudio/code-quality/ca1303),
-[CA1508](https://docs.microsoft.com/visualstudio/code-quality/ca1508),
-[CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000),
-[CA2100](https://docs.microsoft.com/visualstudio/code-quality/ca2100),
-[CA2213](https://docs.microsoft.com/visualstudio/code-quality/ca2213),
+[CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062),
+[CA1303](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1303),
+[CA1508](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508),
+[CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000),
+[CA2100](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100),
+[CA2213](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2213),
 Taint analysis rules
 
 #### Interprocedural analysis Kind
@@ -501,7 +501,7 @@ Example: `dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_
 
 Option Name: `dispose_analysis_kind`
 
-Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000)
+Configurable Rules: [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000)
 
 Option Values:
 
@@ -520,7 +520,7 @@ Example: `dotnet_code_quality.dispose_analysis_kind = AllPaths`
 
 Option Name: `dispose_ownership_transfer_at_constructor`
 
-Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000)
+Configurable Rules: [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000)
 
 Option Values: `true` or `false`
 
@@ -556,7 +556,7 @@ class Test
 
 Option Name: `dispose_ownership_transfer_at_method_call`
 
-Configurable Rules: [CA2000](https://docs.microsoft.com/visualstudio/code-quality/ca2000)
+Configurable Rules: [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000)
 
 Option Values: `true` or `false`
 
@@ -623,7 +623,7 @@ Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algo
 
 Option Name: `enum_values_prefix_trigger`
 
-Configurable Rules: [CA1712](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1712)
+Configurable Rules: [CA1712](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1712)
 
 Option Values:
 
@@ -641,7 +641,7 @@ Example: `dotnet_code_quality.CA1712.enum_values_prefix_trigger = AnyEnumValue`
 
 Option Name: `exclude_indirect_base_types`
 
-Configurable Rules: [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710)
+Configurable Rules: [CA1710](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1710)
 
 Option Values: `true` or `false`
 
@@ -670,7 +670,7 @@ public class MyClass : MyBaseClass
 
 Option Name: `additional_required_suffixes`
 
-Configurable Rules: [CA1710](https://docs.microsoft.com/visualstudio/code-quality/ca1710)
+Configurable Rules: [CA1710](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1710)
 
 Option Values: List (separated by '|') of type names with their required suffix (separated by '->').
 Allowed type name formats:
@@ -692,7 +692,7 @@ Examples:
 
 Option Name: `additional_required_generic_interfaces`
 
-Configurable Rules: [CA1010](https://docs.microsoft.com/visualstudio/code-quality/ca1010)
+Configurable Rules: [CA1010](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1010)
 
 Option Values: List (separated by '|') of interface names with their required generic fully qualified interface (separated by '->').
 Allowed interface formats:
@@ -713,7 +713,7 @@ Examples:
 
 Option Name: `additional_inheritance_excluded_symbol_names`
 
-Configurable Rules: [CA1501](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1501)
+Configurable Rules: [CA1501](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501)
 
 Option Values: Names of types or namespaces (separated by '|'), such that the type or type's namespace doesn't count in the inheritance hierarchy tree.
 Allowed symbol name formats:
@@ -742,7 +742,7 @@ Examples:
 
 Option Name: `analyzed_symbol_kinds`
 
-Configurable Rules: [CA1716](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1716)
+Configurable Rules: [CA1716](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1716)
 
 Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](https://roslynsourceindex.azurewebsites.net/#Microsoft.CodeAnalysis/Symbols/SymbolKind.cs,30fd9c0834bef6ff) as a comma separated list.
 
@@ -754,7 +754,7 @@ Example: `dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace, Property
 
 Option Name: `use_naming_heuristic`
 
-Configurable Rules: [CA1303](https://docs.microsoft.com/en-us/visualstudio/code-quality/ca1303)
+Configurable Rules: [CA1303](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1303)
 
 Option Values: Boolean values
 
@@ -766,7 +766,7 @@ Example: `dotnet_code_quality.CA1303.use_naming_heuristic = true`
 
 Option Name: `additional_use_results_methods`
 
-Configurable Rules: [CA1806](https://docs.microsoft.com/en-us/visualstudio/code-quality/CA1806)
+Configurable Rules: [CA1806](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1806)
 
 Option Values: Names of additional methods (separated by '|') for CA1806.
 Allowed method name formats:
@@ -790,7 +790,7 @@ Examples:
 
 Option Name: `allowed_suffixes`
 
-Configurable Rules: [CA1711](https://docs.microsoft.com/visualstudio/code-quality/ca1711)
+Configurable Rules: [CA1711](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1711)
 
 Option Values: List (separated by '|') of allowed suffixes
 
@@ -800,7 +800,7 @@ Example: `dotnet_code_quality.CA1711.allowed_suffixes = Flag|Flags`
 
 Option Name: `enable_platform_analyzer_on_pre_net5_target`
 
-Configurable Rules: [CA14016](https://docs.microsoft.com/visualstudio/code-quality/ca1416)
+Configurable Rules: [CA14016](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1416)
 
 Option Values: Boolean values
 
@@ -812,7 +812,7 @@ Example: `dotnet_code_quality.enable_platform_analyzer_on_pre_net5_target = true
 
 Option Name: `exclude_structs`
 
-Configurable Rules: [CA1051](https://docs.microsoft.com/visualstudio/code-quality/ca1051)
+Configurable Rules: [CA1051](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1051)
 
 Option Values: Boolean values
 
@@ -824,7 +824,7 @@ Example: `dotnet_code_quality.CA1051.exclude_structs = true`
 
 Option Name: `exclude_ordefault_methods`
 
-Configurable Rules: [CA1826](https://docs.microsoft.com/visualstudio/code-quality/CA1826)
+Configurable Rules: [CA1826](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1826)
 
 Option Values: Boolean values
 

@@ -718,8 +718,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
-        <target state="translated">Zaimplementuj operatory równości i ustaw ich zachowanie na identyczne z metodą „Equals”</target>
+        <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
+        <target state="needs-review-translation">Zaimplementuj operatory równości i ustaw ich zachowanie na identyczne z metodą „Equals”</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
