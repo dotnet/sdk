@@ -34,8 +34,8 @@
       <_WindowsDesktop50DefaultRuntimeFrameworkVersion>5.0.0</_WindowsDesktop50DefaultRuntimeFrameworkVersion>
       <_WindowsDesktop50RuntimePackVersion>5.0.0</_WindowsDesktop50RuntimePackVersion>
       <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
-      <_AspNet50DefaultRuntimeFrameworkVersion>5.0.0</_AspNet50DefaultRuntimeFrameworkVersion>
-      <_AspNet50RuntimePackVersion>5.0.0</_AspNet50RuntimePackVersion>
+      <_AspNet50DefaultRuntimeFrameworkVersion>5.0.1</_AspNet50DefaultRuntimeFrameworkVersion>
+      <_AspNet50RuntimePackVersion>5.0.1</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0</_AspNet50TargetingPackVersion>
 
       <_NETCoreApp31RuntimePackVersion>3.1.9</_NETCoreApp31RuntimePackVersion>
