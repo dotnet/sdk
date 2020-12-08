@@ -3666,6 +3666,25 @@ public class MyController
         }
 
         [Fact]
+        public async Task AspNetMvcController_HasPropertySetter()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Data.SqlClient;
+
+public class MyController
+{
+    public void DoSomething(string input)
+    {
+    }
+
+    public string AString 
+    {
+        set { _ = value; }
+    }
+}");
+        }
+
+        [Fact]
         public async Task TaintFunctionArguments()
         {
             await VerifyCSharpWithDependenciesAsync(@"
