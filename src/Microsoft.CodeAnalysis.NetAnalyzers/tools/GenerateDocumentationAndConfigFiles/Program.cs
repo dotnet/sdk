@@ -1074,7 +1074,7 @@ Rule ID | Missing Help Link | Title |
         {
             Debug.Assert(editorconfigFileName.EndsWith(".editorconfig", StringComparison.Ordinal));
 
-            var text = GetEditorconfigText(
+            var text = GetGlobalconfigText(
                 editorconfigTitle,
                 editorconfigDescription,
                 analysisMode,
@@ -1086,7 +1086,7 @@ Rule ID | Missing Help Link | Title |
             return;
 
             // Local functions
-            static string GetEditorconfigText(
+            static string GetGlobalconfigText(
                 string editorconfigTitle,
                 string editorconfigDescription,
                 AnalysisMode analysisMode,
