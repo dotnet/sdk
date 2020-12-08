@@ -12,5 +12,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         protected override CompilationOptions CreateCompilationOptions()
             => new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true);
+
+        protected override ParseOptions CreateParseOptions()
+            => new CSharpParseOptions(LanguageVersion.Default, DocumentationMode.Diagnose);
     }
 }

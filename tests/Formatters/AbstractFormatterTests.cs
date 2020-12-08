@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host.Mef;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.Tools.Formatters;
@@ -23,12 +22,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public abstract class AbstractFormatterTest
     {
-        private static MetadataReference CorlibReference => MetadataReference.CreateFromFile(typeof(object).Assembly.Location).WithAliases(ImmutableArray.Create("global", "corlib"));
-        private static MetadataReference SystemReference => MetadataReference.CreateFromFile(typeof(System.Diagnostics.Debug).Assembly.Location).WithAliases(ImmutableArray.Create("global", "system"));
-        private static MetadataReference SystemCoreReference => MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
-        private static MetadataReference CodeAnalysisReference => MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
-
-        private static MetadataReference SystemCollectionsImmutableReference => MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location);
         private static MetadataReference MicrosoftVisualBasicReference => MetadataReference.CreateFromFile(typeof(Microsoft.VisualBasic.Strings).Assembly.Location);
 
         private static Lazy<IExportProviderFactory> ExportProviderFactory { get; }
@@ -49,6 +42,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
+        protected virtual ReferenceAssemblies ReferenceAssemblies => ReferenceAssemblies.Default;
+
         protected virtual string DefaultFilePathPrefix => "Test";
 
         protected virtual string DefaultTestProjectName => "TestProject";
@@ -59,7 +54,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         protected virtual string DefaultTestProjectPath => Path.Combine(DefaultFolderPath, $"{DefaultTestProjectName}.{DefaultFileExt}proj");
 
-        protected virtual string DefaultEditorConfigPath => Path.Combine(DefaultFolderPath + ".editorconfig");
+        protected virtual string DefaultEditorConfigPath => Path.Combine(DefaultFolderPath, ".editorconfig");
 
         protected virtual string DefaultFilePath => Path.Combine(DefaultFolderPath, $"{DefaultFilePathPrefix}0.{DefaultFileExt}");
 
@@ -77,7 +72,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// </summary>
         public abstract string Language { get; }
 
-        private static ILogger Logger => new TestLogger();
+        private static TestLogger Logger => new TestLogger();
 
         public SolutionState TestState { get; }
 
@@ -129,7 +124,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var fileMatcher = SourceFileMatcher.CreateMatcher(new[] { document.FilePath }, exclude: Array.Empty<string>());
             var formatOptions = new FormatOptions(
                 workspaceFilePath: project.FilePath,
-                workspaceType: WorkspaceType.Folder,
+                workspaceType: WorkspaceType.Solution,
                 logLevel: LogLevel.Trace,
                 fixCategory,
                 codeStyleSeverity,
@@ -173,12 +168,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// comments.</para>
         /// </remarks>
         public Dictionary<string, string> XmlReferences { get; } = new Dictionary<string, string>();
-
-        /// <summary>
-        /// Gets a collection of transformation functions to apply to <see cref="Workspace.Options"/> during diagnostic
-        /// or code fix test setup.
-        /// </summary>
-        public List<Func<OptionSet, OptionSet>> OptionsTransforms { get; } = new List<Func<OptionSet, OptionSet>>();
 
         /// <summary>
         /// Given an array of strings as sources and a language, turn them into a <see cref="Project"/> and return the
@@ -252,7 +241,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             {
                 (var newFileName, var source) = sources[i];
                 var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
-                solution = solution.AddDocument(documentId, newFileName, source, filePath: Path.Combine(DefaultTestProjectPath, newFileName));
+                solution = solution.AddDocument(documentId, newFileName, source, filePath: Path.Combine(DefaultFolderPath, newFileName));
             }
 
             for (var i = 0; i < additionalFiles.Length; i++)
@@ -274,15 +263,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <returns>The created solution.</returns>
         protected virtual Solution CreateSolution(ProjectId projectId, string language, SourceText editorConfigText)
         {
-            var compilationOptions = CreateCompilationOptions();
-
             var xmlReferenceResolver = new TestXmlReferenceResolver();
             foreach (var xmlReference in XmlReferences)
             {
                 xmlReferenceResolver.XmlReferences.Add(xmlReference.Key, xmlReference.Value);
             }
 
-            compilationOptions = compilationOptions.WithXmlReferenceResolver(xmlReferenceResolver);
+            var compilationOptions = CreateCompilationOptions()
+                .WithXmlReferenceResolver(xmlReferenceResolver)
+                .WithAssemblyIdentityComparer(ReferenceAssemblies.AssemblyIdentityComparer);
+
+            var parseOptions = CreateParseOptions();
+            var referenceAssemblies = ReferenceAssemblies.ResolveAsync(language, CancellationToken.None).GetAwaiter().GetResult();
 
             var editorConfigDocument = DocumentInfo.Create(
                 DocumentId.CreateNewId(projectId, DefaultEditorConfigPath),
@@ -290,31 +282,29 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 loader: TextLoader.From(TextAndVersion.Create(editorConfigText, VersionStamp.Create())),
                 filePath: DefaultEditorConfigPath);
 
-            var projectInfo = ProjectInfo.Create(projectId, VersionStamp.Create(), DefaultTestProjectName, DefaultTestProjectName, language, filePath: DefaultTestProjectPath)
+            var projectInfo = ProjectInfo.Create(
+                projectId,
+                VersionStamp.Create(),
+                name: DefaultTestProjectName,
+                assemblyName: DefaultTestProjectName,
+                language,
+                filePath: DefaultTestProjectPath,
+                outputFilePath: Path.ChangeExtension(DefaultTestProjectPath, "dll"),
+                compilationOptions: compilationOptions,
+                parseOptions: parseOptions,
+                metadataReferences: referenceAssemblies,
+                isSubmission: false)
+                .WithDefaultNamespace(DefaultTestProjectName)
                 .WithAnalyzerConfigDocuments(ImmutableArray.Create(editorConfigDocument));
 
             var solution = CreateWorkspace()
                 .CurrentSolution
-                .AddProject(projectInfo)
-                .WithProjectCompilationOptions(projectId, compilationOptions)
-                .AddMetadataReference(projectId, CorlibReference)
-                .AddMetadataReference(projectId, SystemReference)
-                .AddMetadataReference(projectId, SystemCoreReference)
-                .AddMetadataReference(projectId, CodeAnalysisReference)
-                .AddMetadataReference(projectId, SystemCollectionsImmutableReference);
+                .AddProject(projectInfo);
 
             if (language == LanguageNames.VisualBasic)
             {
                 solution = solution.AddMetadataReference(projectId, MicrosoftVisualBasicReference);
             }
-
-            foreach (var transform in OptionsTransforms)
-            {
-                solution.Workspace.TryApplyChanges(solution.WithOptions(transform(solution.Workspace.Options)));
-            }
-
-            var parseOptions = solution.GetProject(projectId).ParseOptions;
-            solution = solution.WithProjectParseOptions(projectId, parseOptions.WithDocumentationMode(DocumentationMode.Diagnose));
 
             return solution;
         }
@@ -327,5 +317,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         }
 
         protected abstract CompilationOptions CreateCompilationOptions();
+
+        protected abstract ParseOptions CreateParseOptions();
     }
 }
