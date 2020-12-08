@@ -1094,11 +1094,11 @@ Rule ID | Missing Help Link | Title |
                 (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version)? shippedReleaseData)
             {
                 var result = new StringBuilder();
-                StartEditorconfig();
+                StartGlobalconfig();
                 AddRules(analysisMode);
                 return result.ToString();
 
-                void StartEditorconfig()
+                void StartGlobalconfig()
                 {
                     result.AppendLine(@"# NOTE: Requires **VS2019 16.7** or later");
                     result.AppendLine();
