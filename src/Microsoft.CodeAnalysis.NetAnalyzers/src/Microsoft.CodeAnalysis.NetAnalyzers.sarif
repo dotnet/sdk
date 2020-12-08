@@ -147,26 +147,6 @@
             ]
           }
         },
-        "CA1801": {
-          "id": "CA1801",
-          "shortDescription": "Review unused parameters",
-          "fullDescription": "Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": false,
-            "typeName": "CSharpReviewUnusedParametersAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA1812": {
           "id": "CA1812",
           "shortDescription": "Avoid uninstantiated internal classes",
@@ -5204,26 +5184,6 @@
               "Visual Basic"
             ],
             "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA1801": {
-          "id": "CA1801",
-          "shortDescription": "Review unused parameters",
-          "fullDescription": "Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": false,
-            "typeName": "BasicReviewUnusedParametersAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
