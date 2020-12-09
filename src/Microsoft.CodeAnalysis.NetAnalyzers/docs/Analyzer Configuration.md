@@ -4,7 +4,7 @@ All the analyzer NuGet packages produced in this repo support _.editorconfig bas
 
 ## .editorconfig format
 
-Analyzer configuration options from an .editorconfig file are parsed into _general_ and _specific_ configuration options. General configuration enables configuring the behavior of all CA rules for which the provided option is valid. Specific configuration enables configuring each CA rule ID or CA rules belonging to each rule category, such as 'Naming', 'Design', 'Performance', etc. or CA rules with a specific custom tag, such as 'Dataflow'. Our options are _case-insensitive_. Below are the supported formats:
+Analyzer configuration options from an `.editorconfig` file are parsed into _general_ and _specific_ configuration options. General configuration enables configuring the behavior of all CA rules for which the provided option is valid. Specific configuration enables configuring each CA rule ID or CA rules belonging to each rule category, such as `Naming`, `Design`, `Performance`, etc. or CA rules with a specific custom tag, such as `Dataflow`. Our options are _case-insensitive_. Below are the supported formats:
 
    1. General configuration option:
       1. `dotnet_code_quality.OptionName = OptionValue`
@@ -26,12 +26,12 @@ For example, end users can configure the analyzed API surface for analyzers usin
 
 ### VS2019 16.3 and later + Analyzer package version 3.3.x and later
 
-End users can enable .editorconfig based configuration for individual documents, folders, projects, solution or entire repo by creating an .editorconfig file with the options in the corresponding directory. This file can also contain .editorconfig based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
+End users can enable `.editorconfig` based configuration for individual documents, folders, projects, solution or entire repo by creating an `.editorconfig` file with the options in the corresponding directory. This file can also contain `.editorconfig` based diagnostic severity configuration entries. See [here](https://docs.microsoft.com/visualstudio/code-quality/use-roslyn-analyzers#rule-severity) for more details.
 
 ### Prior to VS2019 16.3 or using an analyzer package version prior to 3.3.x
 
-1. Per-project .editorconfig file: End users can enable .editorconfig based configuration for individual projects by just copying the .editorconfig file with the options to the project root directory.
-2. Shared .editorconfig file: If you would like to share a common .editorconfig file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
+1. Per-project `.editorconfig` file: End users can enable `.editorconfig` based configuration for individual projects by just copying the `.editorconfig` file with the options to the project root directory.
+2. Shared `.editorconfig` file: If you would like to share a common `.editorconfig` file between projects, say `<%PathToSharedEditorConfig%>\.editorconfig`, then you should add the following MSBuild property group and item group to a shared props file that is imported _before_ the FxCop analyzer props files (that come from the FxCop analyzer NuGet package reference):
 
 ```xml
   <PropertyGroup>
@@ -46,7 +46,7 @@ Note that this additional file based approach is also supported on VS2019 16.3 a
 
 ## Supported .editorconfig options
 
-This section documents the list of supported .editorconfig key-value options for CA rules.
+This section documents the list of supported `.editorconfig` key-value options for CA rules.
 
 ### Analyzed API surface
 
@@ -127,9 +127,9 @@ Option Name: `output_kind`
 
 Configurable Rules: [CA2007](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007)
 
-Option Values: One or more fields of enum [Microsoft.CodeAnalysis.CompilationOptions.OutputKind](http://source.roslyn.io/#q=Microsoft.CodeAnalysis.OutputKind) as a comma separated list.
+Option Values: One or more fields of enum [Microsoft.CodeAnalysis.CompilationOptions.OutputKind](https://docs.microsoft.com/dotnet/api/microsoft.codeanalysis.outputkind) as a comma separated list.
 
-Default Value: All output kinds
+Default Value: _All output kinds_
 
 Example: `dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary`
 
@@ -156,7 +156,7 @@ Option Values: Comma separated listed of one or more modifier values from the be
 
 Default Value: Depends on each configurable rule:
 
-   1. CA1802: default value is 'static'. Set the value to 'none' to allow flagging instance fields.
+   1. CA1802: default value is `static`. Set the value to `none` to allow flagging instance fields.
 
 Example: `dotnet_code_quality.CA1802.required_modifiers = none`.
 
@@ -205,20 +205,20 @@ Configurable Rules: [CA1062](https://docs.microsoft.com/dotnet/fundamentals/code
 Option Values: Names of null check validation methods (separated by '|') that validate arguments passed to the method are non-null.
 Allowed method name formats:
 
-  1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
+  1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
   2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
-     with an optional "M:" prefix.
+     with an optional `M:` prefix.
 
-Default Value: None
+Default Value: _None_
 
 Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named 'Validate' in the compilation
-|`dotnet_code_quality.null_check_validation_methods = Validate1\|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation
-|`dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)\|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+| `dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named 'Validate' in the compilation. |
+| `dotnet_code_quality.null_check_validation_methods = Validate1|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation. |
+| `dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature. |
+| `dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature. |
 
 ### Additional string formatting methods
 
@@ -229,29 +229,29 @@ Configurable Rules: [CA2241](https://docs.microsoft.com/dotnet/fundamentals/code
 Option Values: Names of additional string formatting methods (separated by '|').
 Allowed method name formats:
 
-  1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
+  1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
   2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
-     with an optional "M:" prefix.
+     with an optional `M:` prefix.
 
-Default Value: None
+Default Value: _None_
 
 Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.additional_string_formatting_methods = MyFormat` | Matches all methods named 'MyFormat' in the compilation
-|`dotnet_code_quality.additional_string_formatting_methods = MyFormat1\|MyFormat2` | Matches all methods named either 'MyFormat1' or 'MyFormat2' in the compilation
-|`dotnet_code_quality.additional_string_formatting_methods = NS.MyType.MyFormat(ParamType)` | Matches specific method 'MyFormat' with given fully qualified signature
-|`dotnet_code_quality.additional_string_formatting_methods = NS1.MyType1.MyFormat1(ParamType)\|NS2.MyType2.MyFormat2(ParamType)` | Matches specific methods 'MyFormat1' and 'MyFormat2' with respective fully qualified signature
+| `dotnet_code_quality.additional_string_formatting_methods = MyFormat` | Matches all methods named 'MyFormat' in the compilation. |
+| `dotnet_code_quality.additional_string_formatting_methods = MyFormat1|MyFormat2` | Matches all methods named either 'MyFormat1' or 'MyFormat2' in the compilation. |
+| `dotnet_code_quality.additional_string_formatting_methods = NS.MyType.MyFormat(ParamType)` | Matches specific method 'MyFormat' with given fully qualified signature. |
+| `dotnet_code_quality.additional_string_formatting_methods = NS1.MyType1.MyFormat1(ParamType)|NS2.MyType2.MyFormat2(ParamType)` | Matches specific methods 'MyFormat1' and 'MyFormat2' with respective fully qualified signature. |
 
 Option Name: `try_determine_additional_string_formatting_methods_automatically`
 
 Boolean option to enable heuristically detecting of additional string formatting methods
-A method is considered a string formatting method if it has a 'string format' parameter followed by a 'params object[]' parameter.
+A method is considered a string formatting method if it has a `string format` parameter followed by a `params object[]` parameter.
 
 Configurable Rules: [CA2241](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2241)
 
-Option Values: Boolean values
+Option Values: `true` or `false`
 
 Default Value: `false`
 
@@ -311,27 +311,27 @@ Option Name: `excluded_symbol_names`
 Option Values: Names of symbols (separated by '|') that are excluded for analysis.
 Allowed symbol name formats:
 
-  1. Symbol name (includes all symbols with the name, regardless of the containing type or name3pace)
-  2. Symbol name ending with a wildcard symbol (includes all symbols whose name starts with the given name, regardless of the containing type or namespace)
+  1. Symbol name (includes all symbols with the name, regardless of the containing type or namespace).
+  2. Symbol name ending with a wildcard symbol (includes all symbols whose name starts with the given name, regardless of the containing type or namespace).
   3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format).
-    Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
+    Note that each symbol name requires a symbol kind prefix, such as `M:` prefix for methods, `T:` prefix for types, `N:` prefix for namespaces, etc.
   4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) and ending with the wildcard symbol.
-    Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
-  5. `.ctor` for constructors and `.cctor` for static constructors
+    Note that each symbol name requires a symbol kind prefix, such as `M:` prefix for methods, `T:` prefix for types, `N:` prefix for namespaces, etc.
+  5. `.ctor` for constructors and `.cctor` for static constructors.
 
-Default Value: None
+Default Value: _None_
 
 Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.excluded_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation
-|`dotnet_code_quality.excluded_symbol_names = Validate1\|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
-|`dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
-|`dotnet_code_quality.excluded_symbol_names = My*` | Matches all symbols whose name starts with 'My' |
-|`dotnet_code_quality.excluded_symbol_names = T:NS.My*` | Matches all type symbols whose name starts with 'My' in the namespace 'NS' |
-|`dotnet_code_quality.excluded_symbol_names = N:My*` | Matches all symbols whose containing namespace starts with 'My' |
+| `dotnet_code_quality.excluded_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation. |
+| `dotnet_code_quality.excluded_symbol_names = Validate1|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation. |
+| `dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature. |
+| `dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature. |
+| `dotnet_code_quality.excluded_symbol_names = My*` | Matches all symbols whose name starts with 'My'. |
+| `dotnet_code_quality.excluded_symbol_names = T:NS.My*` | Matches all type symbols whose name starts with 'My' in the namespace 'NS'. |
+| `dotnet_code_quality.excluded_symbol_names = N:My*` | Matches all symbols whose containing namespace starts with 'My'. |
 
 Additionally, all the dataflow analysis based rules can be configured with a single entry `dotnet_code_quality.dataflow.excluded_symbol_names = ...`
 
@@ -342,21 +342,21 @@ Option Name: `excluded_type_names_with_derived_types`
 Option Values: Names of types (separated by '|'), such that the type and all its derived types are excluded for analysis.
 Allowed symbol name formats:
 
-  1. Type name only (includes all types with the name, regardless of the containing type or namespace)
-  2. Type name only ending with the wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace)
-  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix.
-  4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix and ending with the wildcard symbol.
+  1. Type name only (includes all types with the name, regardless of the containing type or namespace).
+  2. Type name only ending with the wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace).
+  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
+  4. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix and ending with the wildcard symbol.
 
-Default Value: None
+Default Value: _None_
 
 Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType` | Matches all types named 'MyType' and all of its derived types in the compilation
-|`dotnet_code_quality.excluded_type_names_with_derived_types = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation
-|`dotnet_code_quality.excluded_type_names_with_derived_types = T:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types
-|`dotnet_code_quality.excluded_type_names_with_derived_types = T:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types
+| `dotnet_code_quality.excluded_type_names_with_derived_types = MyType` | Matches all types named 'MyType' and all of its derived types in the compilation. |
+| `dotnet_code_quality.excluded_type_names_with_derived_types = MyType1|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation. |
+| `dotnet_code_quality.excluded_type_names_with_derived_types = T:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types. |
+| `dotnet_code_quality.excluded_type_names_with_derived_types = T:NS1.MyType1|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types. |
 
 ### Unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
 
@@ -364,9 +364,9 @@ Option Name: `unsafe_DllImportSearchPath_bits`
 
 Configurable Rules: [CA5393](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5393)
 
-Option Values: Integer values of System.Runtime.InteropServices.DllImportSearchPath
+Option Values: Integer values of `System.Runtime.InteropServices.DllImportSearchPath`
 
-Default Value: '770', which is AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory
+Default Value: `770` (i.e. `AssemblyDirectory | UseDllDirectoryForDependencies | ApplicationDirectory`)
 
 Example: `dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770`
 
@@ -376,7 +376,7 @@ Option Name: `exclude_aspnet_core_mvc_controllerbase`
 
 Configurable Rules: [CA5391](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5391)
 
-Option Values: Boolean values
+Option Values: `true` or `false`
 
 Default Value: `true`
 
@@ -391,21 +391,21 @@ Configurable Rules: [CA1031](https://docs.microsoft.com/dotnet/fundamentals/code
 Option Values: Names of symbols (separated by '|') that are disallowed in the context of the analysis.
 Allowed symbol name formats:
 
-  1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace)
+  1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace).
   2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format).
-     Note that each symbol name requires a symbol kind prefix, such as "M:" prefix for methods, "T:" prefix for types, "N:" prefix for namespaces, etc.
-  3. `.ctor` for constructors and `.cctor` for static constructors
+     Note that each symbol name requires a symbol kind prefix, such as `M:` prefix for methods, `T:` prefix for types, `N:` prefix for namespaces, etc.
+  3. `.ctor` for constructors and `.cctor` for static constructors.
 
-Default Value: None
+Default Value: _None_
 
 Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.disallowed_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation
-|`dotnet_code_quality.disallowed_symbol_names = Validate1\|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation
-|`dotnet_code_quality.disallowed_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature
-|`dotnet_code_quality.disallowed_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature
+| `dotnet_code_quality.disallowed_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation. |
+| `dotnet_code_quality.disallowed_symbol_names = Validate1|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation. |
+| `dotnet_code_quality.disallowed_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature. |
+| `dotnet_code_quality.disallowed_symbol_names = M:NS1.MyType1.Validate1(ParamType)|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature. |
 
 ### Dataflow analysis
 
@@ -430,7 +430,7 @@ Option Values:
 | `NonContextSensitive` | Performs non-context sensitive interprocedural analysis for all source method invocations. |
 | `ContextSensitive` | Performs context sensitive interprocedural analysis for all source method invocations. |
 
-Default Value: Specific to each configurable rule.
+Default Value: _Specific to each configurable rule_
 
 Example: `dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive`
 
@@ -440,7 +440,7 @@ Option Name: `max_interprocedural_method_call_chain`
 
 Option Values: Unsigned integer
 
-Default Value: 3
+Default Value: `3`
 
 Example: `dotnet_code_quality.max_interprocedural_method_call_chain = 5`
 
@@ -450,7 +450,7 @@ Option Name: `max_interprocedural_lambda_or_local_function_call_chain`
 
 Option Values: Unsigned integer
 
-Default Value: 3
+Default Value: `3`
 
 Example: `dotnet_code_quality.max_interprocedural_lambda_or_local_function_call_chain = 5`
 
@@ -469,7 +469,7 @@ Option Values:
 | `NonExceptionPaths` | Track and report missing dispose violations only on non-exception program paths. Additionally, also flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
 | `NonExceptionPathsOnlyNotDisposed` | Track and report missing dispose violations only on non-exception program paths. Do not flag use of non-recommended dispose patterns that may cause potential dispose leaks. |
 
-Default Value: `NonExceptionPaths`.
+Default Value: `NonExceptionPaths`
 
 Example: `dotnet_code_quality.dispose_analysis_kind = AllPaths`
 
@@ -552,7 +552,7 @@ Option Values:
 | `PartialWithoutTrackingFieldsAndProperties` | Partial analysis that does not track PointsToData for fields and properties for improved performance. |
 | `Complete` | Complete analysis that also tracks PointsToData for fields and properties. |
 
-Default Value: Depends on each rule.
+Default Value:  _Specific to each configurable rule_
 
 Example: `dotnet_code_quality.points_to_analysis_kind = Complete`
 
@@ -562,7 +562,7 @@ Option Name: `copy_analysis`
 
 Option Values: `true` or `false`
 
-Default Value: Specific to each configurable rule ('true' by default for most rules)
+Default Value:  _Specific to each configurable rule_ (`true` for most rules)
 
 Example: `dotnet_code_quality.copy_analysis = true`
 
@@ -572,7 +572,7 @@ Option Name: `sufficient_IterationCount_for_weak_KDF_algorithm`
 
 Option Values: integral values
 
-Default Value: Specific to each configurable rule ('100000' by default for most rules)
+Default Value:  _Specific to each configurable rule_ (`100000` for most rules)
 
 Example: `dotnet_code_quality.CA5387.sufficient_IterationCount_for_weak_KDF_algorithm = 100000`
 
@@ -632,18 +632,18 @@ Configurable Rules: [CA1710](https://docs.microsoft.com/dotnet/fundamentals/code
 Option Values: List (separated by '|') of type names with their required suffix (separated by '->').
 Allowed type name formats:
 
-  1. Type name only (includes all types with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix.
+  1. Type name only (includes all types with the name, regardless of the containing type or namespace).
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
 
-Default Value: None
+Default Value: _None_
 
 Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix |
-|`dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class|MyNamespace.IPath->Path` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix AND all types implementing 'MyNamespace.IPath' are expected to have the 'Path' suffix. |
-|`dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}` | Allows to override built-in suffixes, in this case, all types implementing 'IDataReader' are no longer expected to end in 'Collection' |
+| `dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix. |
+| `dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class|MyNamespace.IPath->Path` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix AND all types implementing 'MyNamespace.IPath' are expected to have the 'Path' suffix. |
+| `dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}` | Allows to override built-in suffixes, in this case, all types implementing 'IDataReader' are no longer expected to end in 'Collection'. |
 
 ### Additional required generic interfaces
 
@@ -654,17 +654,19 @@ Configurable Rules: [CA1010](https://docs.microsoft.com/dotnet/fundamentals/code
 Option Values: List (separated by '|') of interface names with their required generic fully qualified interface (separated by '->').
 Allowed interface formats:
 
-  1. Interface name only (includes all interfaces with the name, regardless of the containing type or namespace)
-  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix.
+  1. Interface name only (includes all interfaces with the name, regardless of the containing type or namespace).
+  2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix.
 
-Default Value: None
+Default Value: _None_
 
 Examples:
 
+<!-- Following markdown table does not render correctly in VS Code but is valid in GitHub -->
+
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.CA1010.additional_required_generic_interfaces = ISomething->System.Collections.Generic.IEnumerable`\``1` | All types implementing 'ISomething' regardless of its namespace are expected to also implement 'System.Collections.Generic.IEnumerable`1'. |
-|`dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`\``2` | All types implementing 'System.Collections.Generic.IDictionary' are expected to also implement 'System.Collections.Generic.IDictionary`2'. |
+| ``dotnet_code_quality.CA1010.additional_required_generic_interfaces = ISomething->System.Collections.Generic.IEnumerable`1`` | All types implementing 'ISomething' regardless of its namespace are expected to also implement 'System.Collections.Generic.IEnumerable\`1'. |
+| ```dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2``` | All types implementing 'System.Collections.Generic.IDictionary' are expected to also implement 'System.Collections.Generic.IDictionary`2'. |
 
 ### Inheritance excluded type or namespace names
 
@@ -675,10 +677,10 @@ Configurable Rules: [CA1501](https://docs.microsoft.com/dotnet/fundamentals/code
 Option Values: Names of types or namespaces (separated by '|'), such that the type or type's namespace doesn't count in the inheritance hierarchy tree.
 Allowed symbol name formats:
 
-  1. Type or namespace name (includes all types with the name, regardless of the containing type or namespace and all types whose namespace contains the name)
-  2. Type or namespace name ending with a wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace and all types whose namespace contains the name)
-  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional "T:" prefix for types or "N:" prefix for namespaces.
-  4. Fully qualified type or namespace name with an optional "T:" prefix for type or "N:" prefix for namespace and ending with the wildcard symbol (includes all types whose fully qualified name starts with the given suffix)
+  1. Type or namespace name (includes all types with the name, regardless of the containing type or namespace and all types whose namespace contains the name).
+  2. Type or namespace name ending with a wildcard symbol (includes all types whose name starts with the given name, regardless of the containing type or namespace and all types whose namespace contains the name).
+  3. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format) with an optional `T:` prefix for types or `N:` prefix for namespaces.
+  4. Fully qualified type or namespace name with an optional `T:` prefix for type or `N:` prefix for namespace and ending with the wildcard symbol (includes all types whose fully qualified name starts with the given suffix).
 
 Default Value: `N:System.*` (note that this value is always automatically added to the value provided)
 
@@ -686,14 +688,14 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType` | Matches all types named 'MyType' or whose containing namespace contains 'MyType' and all types from the 'System' namespace |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' or whose containing namespace contains either 'MyType1' or 'MyType2' and all types from the 'System' namespace |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.MyType` | Matches specific type 'MyType' in the namespace 'NS' and all types from the 'System' namespace |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS1.MyType1\|T:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all types from the 'System' namespace |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:NS` | Matches all types from the 'NS' namespace and all types from the 'System' namespace |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' and all types from the 'System' namespace |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' and all types from the 'System' namespace |
-|`dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' and all types from the 'System' namespace |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType` | Matches all types named 'MyType' or whose containing namespace contains 'MyType' and all types from the 'System' namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType1|MyType2` | Matches all types named either 'MyType1' or 'MyType2' or whose containing namespace contains either 'MyType1' or 'MyType2' and all types from the 'System' namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.MyType` | Matches specific type 'MyType' in the namespace 'NS' and all types from the 'System' namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS1.MyType1|T:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all types from the 'System' namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:NS` | Matches all types from the 'NS' namespace and all types from the 'System' namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' and all types from the 'System' namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' and all types from the 'System' namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' and all types from the 'System' namespace. |
 
 ### Analyzed symbol kinds
 
@@ -703,7 +705,7 @@ Configurable Rules: [CA1716](https://docs.microsoft.com/dotnet/fundamentals/code
 
 Option Values: One or more fields of enum [Microsoft.CodeAnalysis.SymbolKind](https://roslynsourceindex.azurewebsites.net/#Microsoft.CodeAnalysis/Symbols/SymbolKind.cs,30fd9c0834bef6ff) as a comma separated list.
 
-Default Value: Namespace, NamedType, Method, Property, Event, Parameter
+Default Value: `Namespace, NamedType, Method, Property, Event, Parameter`
 
 Example: `dotnet_code_quality.CA1716.analyzed_symbol_kinds = Namespace, Property`
 
@@ -713,7 +715,7 @@ Option Name: `use_naming_heuristic`
 
 Configurable Rules: [CA1303](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1303)
 
-Option Values: Boolean values
+Option Values: `true` or `false`
 
 Default Value: `false`
 
@@ -725,23 +727,23 @@ Option Name: `additional_use_results_methods`
 
 Configurable Rules: [CA1806](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1806)
 
-Option Values: Names of additional methods (separated by '|') for CA1806.
+Option Values: Names of additional methods (separated by '|').
 Allowed method name formats:
 
-  1. Method name only (includes all methods with the name, regardless of the containing type or namespace)
+  1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
   2. Fully qualified names in the [symbol's documentation ID format](https://github.com/dotnet/csharplang/blob/master/spec/documentation-comments.md#id-string-format)
-     with an optional "M:" prefix.
+     with an optional `M:` prefix.
 
-Default Value: None
+Default Value: _None_
 
 Examples:
 
 | Option Value | Summary |
 | --- | --- |
-|`dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod` | Matches all methods named 'MyMethod' in the compilation
-|`dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod1\|MyMethod2` | Matches all methods named either 'MyMethod1' or 'MyMethod2' in the compilation
-|`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS.MyType.MyMethod(ParamType)` | Matches specific method 'MyMethod' with given fully qualified signature
-|`dotnet_code_quality.CA1806.additional_use_results_methods = M:NS1.MyType1.MyMethod1(ParamType)\|M:NS2.MyType2.MyMethod2(ParamType)` | Matches specific methods 'MyMethod1' and 'MyMethod2' with respective fully qualified signature
+| `dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod` | Matches all methods named 'MyMethod' in the compilation. |
+| `dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod1|MyMethod2` | Matches all methods named either 'MyMethod1' or 'MyMethod2' in the compilation. |
+| `dotnet_code_quality.CA1806.additional_use_results_methods = M:NS.MyType.MyMethod(ParamType)` | Matches specific method 'MyMethod' with given fully qualified signature. |
+| `dotnet_code_quality.CA1806.additional_use_results_methods = M:NS1.MyType1.MyMethod1(ParamType)|M:NS2.MyType2.MyMethod2(ParamType)` | Matches specific methods 'MyMethod1' and 'MyMethod2' with respective fully qualified signature. |
 
 ### Allowed suffixes
 
@@ -759,7 +761,7 @@ Option Name: `enable_platform_analyzer_on_pre_net5_target`
 
 Configurable Rules: [CA14016](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1416)
 
-Option Values: Boolean values
+Option Values: `true` or `false`
 
 Default Value: `false`
 
@@ -771,7 +773,7 @@ Option Name: `exclude_structs`
 
 Configurable Rules: [CA1051](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1051)
 
-Option Values: Boolean values
+Option Values: `true` or `false`
 
 Default Value: `false`
 
@@ -783,7 +785,7 @@ Option Name: `exclude_ordefault_methods`
 
 Configurable Rules: [CA1826](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1826)
 
-Option Values: Boolean values
+Option Values: `true` or `false`
 
 Default Value: `false`
 
