@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterWarning()
         {
-            var solution = GetSolution();
+            var solution = await GetSolutionAsync();
             var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
             var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         [Fact]
         public async Task TestFilterError()
         {
-            var solution = GetSolution();
+            var solution = await GetSolutionAsync();
             var projectAnalyzersAndFixers = await GetProjectAnalyzersAndFixersAsync(solution);
             var project = solution.Projects.First();
             var formattablePaths = ImmutableHashSet.Create(project.Documents.First().FilePath);
@@ -64,12 +64,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
         }
 
-        private Solution GetSolution()
+        private Task<Solution> GetSolutionAsync()
         {
             var text = SourceText.From("");
             TestState.Sources.Add(text);
 
-            return GetSolution(
+            return GetSolutionAsync(
                 TestState.Sources.ToArray(),
                 TestState.AdditionalFiles.ToArray(),
                 TestState.AdditionalReferences.ToArray(),

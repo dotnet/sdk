@@ -42,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        protected virtual ReferenceAssemblies ReferenceAssemblies => ReferenceAssemblies.Default;
+        protected virtual ReferenceAssemblies ReferenceAssemblies => ReferenceAssemblies.NetStandard.NetStandard20;
 
         protected virtual string DefaultFilePathPrefix => "Test";
 
@@ -117,7 +117,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var text = SourceText.From(testCode, encoding ?? Encoding.UTF8);
             TestState.Sources.Add(text);
 
-            var solution = GetSolution(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), editorConfig);
+            var solution = await GetSolutionAsync(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), editorConfig);
             var project = solution.Projects.Single();
             var document = project.Documents.Single();
 
@@ -178,9 +178,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
         /// <param name="editorConfig">The .editorconfig to apply to this solution.</param>
         /// <returns>A solution containing a project with the specified sources and additional files.</returns>
-        private protected Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, IReadOnlyDictionary<string, string> editorConfig)
+        private protected async Task<Solution> GetSolutionAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, IReadOnlyDictionary<string, string> editorConfig)
         {
-            return GetSolution(sources, additionalFiles, additionalMetadataReferences, ToEditorConfig(editorConfig));
+            return await GetSolutionAsync(sources, additionalFiles, additionalMetadataReferences, ToEditorConfig(editorConfig));
         }
 
         /// <summary>
@@ -192,9 +192,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
         /// <param name="editorConfig">The .editorconfig to apply to this solution.</param>
         /// <returns>A solution containing a project with the specified sources and additional files.</returns>
-        private protected Solution GetSolution((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string editorConfig)
+        private protected async Task<Solution> GetSolutionAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string editorConfig)
         {
-            var project = CreateProject(sources, additionalFiles, additionalMetadataReferences, Language, SourceText.From(editorConfig, Encoding.UTF8));
+            var project = await CreateProjectAsync(sources, additionalFiles, additionalMetadataReferences, Language, SourceText.From(editorConfig, Encoding.UTF8));
             return project.Solution;
         }
 
@@ -213,10 +213,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="editorConfigText">The .editorconfig to apply to this project.</param>
         /// <returns>A <see cref="Project"/> created out of the <see cref="Document"/>s created from the source
         /// strings.</returns>
-        protected Project CreateProject((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language, SourceText editorConfigText)
+        protected async Task<Project> CreateProjectAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language, SourceText editorConfigText)
         {
             language ??= Language;
-            return CreateProjectImpl(sources, additionalFiles, additionalMetadataReferences, language, editorConfigText);
+            return await CreateProjectImplAsync(sources, additionalFiles, additionalMetadataReferences, language, editorConfigText);
         }
 
         /// <summary>
@@ -230,10 +230,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="editorConfigText">The .editorconfig to apply to this project.</param>
         /// <returns>A <see cref="Project"/> created out of the <see cref="Document"/>s created from the source
         /// strings.</returns>
-        protected virtual Project CreateProjectImpl((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language, SourceText editorConfigText)
+        protected virtual async Task<Project> CreateProjectImplAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language, SourceText editorConfigText)
         {
             var projectId = ProjectId.CreateNewId(debugName: DefaultTestProjectName);
-            var solution = CreateSolution(projectId, language, editorConfigText);
+            var solution = await CreateSolutionAsync(projectId, language, editorConfigText);
 
             solution = solution.AddMetadataReferences(projectId, additionalMetadataReferences);
 
@@ -261,7 +261,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="language">The language for which the solution is being created.</param>
         /// <param name="editorConfigText">The .editorconfig to apply to this solution.</param>
         /// <returns>The created solution.</returns>
-        protected virtual Solution CreateSolution(ProjectId projectId, string language, SourceText editorConfigText)
+        protected virtual async Task<Solution> CreateSolutionAsync(ProjectId projectId, string language, SourceText editorConfigText)
         {
             var xmlReferenceResolver = new TestXmlReferenceResolver();
             foreach (var xmlReference in XmlReferences)
@@ -274,7 +274,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 .WithAssemblyIdentityComparer(ReferenceAssemblies.AssemblyIdentityComparer);
 
             var parseOptions = CreateParseOptions();
-            var referenceAssemblies = ReferenceAssemblies.ResolveAsync(language, CancellationToken.None).GetAwaiter().GetResult();
+            var referenceAssemblies = await ReferenceAssemblies.ResolveAsync(language, CancellationToken.None);
 
             var editorConfigDocument = DocumentInfo.Create(
                 DocumentId.CreateNewId(projectId, DefaultEditorConfigPath),
