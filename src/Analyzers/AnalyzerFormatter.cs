@@ -16,6 +16,20 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal class AnalyzerFormatter : ICodeFormatter
     {
+        public static AnalyzerFormatter CodeStyleFormatter => new AnalyzerFormatter(
+            Resources.Code_Style,
+            FixCategory.CodeStyle,
+            new CodeStyleInformationProvider(),
+            new AnalyzerRunner(),
+            new SolutionCodeFixApplier());
+
+        public static AnalyzerFormatter ThirdPartyFormatter => new AnalyzerFormatter(
+            Resources.Analyzer_Reference,
+            FixCategory.Analyzers,
+            new AnalyzerReferenceInformationProvider(),
+            new AnalyzerRunner(),
+            new SolutionCodeFixApplier());
+
         private readonly string _name;
         private readonly IAnalyzerInformationProvider _informationProvider;
         private readonly IAnalyzerRunner _runner;
