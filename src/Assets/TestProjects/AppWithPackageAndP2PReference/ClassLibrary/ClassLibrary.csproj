@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Copyright>© Microsoft</Copyright>
+    <Product>Razor Test</Product>
+    <Company>Microsoft</Company>
+    <Description>ClassLibrary Description</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BinariesRoot>$(RepoRoot)\artifacts\bin\Microsoft.NET.Sdk.Razor.Tests.MvcShim.ClassLib\$(Configuration)\netstandard2.0</BinariesRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'!=''">
+    <Reference Include="$(BinariesRoot)\Microsoft.NET.Sdk.Razor.Tests.ComponentShim.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.NET.Sdk.Razor.Tests.MvcShim.ClassLib.dll"/>
+  </ItemGroup>
+
+</Project>

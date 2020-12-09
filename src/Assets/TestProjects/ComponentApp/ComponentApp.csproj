@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BinariesRoot>$(RepoRoot)\artifacts\bin\Microsoft.NET.Sdk.Razor.Tests.MvcShim.ClassLib\$(Configuration)\netstandard2.0</BinariesRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'!=''">
+    <Reference Include="$(BinariesRoot)\Microsoft.NET.Sdk.Razor.Tests.ComponentShim.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.NET.Sdk.Razor.Tests.MvcShim.ClassLib.dll"/>
+  </ItemGroup>
+
+  <Target Name="_IntrospectGetCopyToOutputDirectoryItems">
+    <Message Text="AllItemsFullPathWithTargetPath: %(AllItemsFullPathWithTargetPath.TargetPath)" Importance="High" />
+  </Target>
+
+  <Target Name="_IntrospectWatchItems" DependsOnTargets="_RazorSdkCustomCollectWatchItems">
+    <Message Text="Watch: %(Watch.FileName)%(Watch.Extension)" Importance="High" />
+  </Target>
+
+</Project>

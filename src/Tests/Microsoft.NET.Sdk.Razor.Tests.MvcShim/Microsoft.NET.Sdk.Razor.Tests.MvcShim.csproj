@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(SdkTargetFramework);net461</TargetFrameworks>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.0" />
+
+    <ProjectReference Include="..\Microsoft.NET.Sdk.Razor.Tests.ComponentShim\Microsoft.NET.Sdk.Razor.Tests.ComponentShim.csproj" />
+  </ItemGroup>
+
+</Project>
