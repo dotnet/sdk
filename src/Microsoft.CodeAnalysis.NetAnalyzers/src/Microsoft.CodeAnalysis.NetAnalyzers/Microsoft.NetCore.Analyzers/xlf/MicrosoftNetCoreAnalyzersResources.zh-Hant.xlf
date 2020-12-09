@@ -1608,8 +1608,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
-        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
-        <target state="translated">若要判斷物件是否包含項目，建議使用 'IsEmpty'，而不要使用 'Count'</target>
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
+        <target state="needs-review-translation">若要判斷物件是否包含項目，建議使用 'IsEmpty'，而不要使用 'Count'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">

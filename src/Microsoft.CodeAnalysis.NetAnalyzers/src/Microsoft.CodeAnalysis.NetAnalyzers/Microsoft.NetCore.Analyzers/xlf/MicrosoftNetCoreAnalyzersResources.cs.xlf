@@ -1608,8 +1608,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
-        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
-        <target state="translated">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
+        <target state="needs-review-translation">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
