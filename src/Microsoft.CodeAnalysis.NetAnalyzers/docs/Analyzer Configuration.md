@@ -146,15 +146,15 @@ Option Values: Comma separated listed of one or more modifier values from the be
 | Option Value | Summary |
 | --- | --- |
 | `none` | No modifier requirement. |
-| `static` or `Shared` | Must be declared as 'static' ('Shared' in Visual Basic). |
-| `const` | Must be declared as 'const'. |
-| `readonly` | Must be declared as 'readonly'. |
-| `abstract` | Must be declared as 'abstract'. |
-| `virtual` | Must be declared as 'virtual'. |
-| `override` | Must be declared as 'override'. |
-| `sealed` | Must be declared as 'sealed'. |
-| `extern` | Must be declared as 'extern'. |
-| `async` | Must be declared as 'async'. |
+| `static` or `Shared` | Must be declared as `static` (`Shared` in Visual Basic). |
+| `const` | Must be declared as `const`. |
+| `readonly` | Must be declared as `readonly`. |
+| `abstract` | Must be declared as `abstract`. |
+| `virtual` | Must be declared as `virtual`. |
+| `override` | Must be declared as `override`. |
+| `sealed` | Must be declared as `sealed`. |
+| `extern` | Must be declared as `extern`. |
+| `async` | Must be declared as `async`. |
 
 Default Value: Depends on each configurable rule:
 
@@ -204,7 +204,7 @@ Option Name: `null_check_validation_methods`
 
 Configurable Rules: [CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062)
 
-Option Values: Names of null check validation methods (separated by '|') that validate arguments passed to the method are non-null.
+Option Values: Names of null check validation methods (separated by `|`) that validate arguments passed to the method are non-null.
 Allowed method name formats:
 
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
@@ -217,10 +217,10 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| `dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named 'Validate' in the compilation. |
-| `dotnet_code_quality.null_check_validation_methods = Validate1\|Validate2` | Matches all methods named either 'Validate1' or 'Validate2' in the compilation. |
-| `dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature. |
-| `dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)\|NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature. |
+| `dotnet_code_quality.null_check_validation_methods = Validate` | Matches all methods named `Validate` in the compilation. |
+| `dotnet_code_quality.null_check_validation_methods = Validate1\|Validate2` | Matches all methods named either `Validate1` or `Validate2` in the compilation. |
+| `dotnet_code_quality.null_check_validation_methods = NS.MyType.Validate(ParamType)` | Matches specific method `Validate` with given fully qualified signature. |
+| `dotnet_code_quality.null_check_validation_methods = NS1.MyType1.Validate1(ParamType)\|NS2.MyType2.Validate2(ParamType)` | Matches specific methods `Validate1` and `Validate2` with respective fully qualified signature. |
 
 ### Additional string formatting methods
 
@@ -228,7 +228,7 @@ Option Name: `additional_string_formatting_methods`
 
 Configurable Rules: [CA2241](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2241)
 
-Option Values: Names of additional string formatting methods (separated by '|').
+Option Values: Names of additional string formatting methods (separated by `|`).
 Allowed method name formats:
 
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
@@ -241,10 +241,10 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| `dotnet_code_quality.additional_string_formatting_methods = MyFormat` | Matches all methods named 'MyFormat' in the compilation. |
-| `dotnet_code_quality.additional_string_formatting_methods = MyFormat1\|MyFormat2` | Matches all methods named either 'MyFormat1' or 'MyFormat2' in the compilation. |
-| `dotnet_code_quality.additional_string_formatting_methods = NS.MyType.MyFormat(ParamType)` | Matches specific method 'MyFormat' with given fully qualified signature. |
-| `dotnet_code_quality.additional_string_formatting_methods = NS1.MyType1.MyFormat1(ParamType)\|NS2.MyType2.MyFormat2(ParamType)` | Matches specific methods 'MyFormat1' and 'MyFormat2' with respective fully qualified signature. |
+| `dotnet_code_quality.additional_string_formatting_methods = MyFormat` | Matches all methods named `MyFormat` in the compilation. |
+| `dotnet_code_quality.additional_string_formatting_methods = MyFormat1\|MyFormat2` | Matches all methods named either `MyFormat1` or `MyFormat2` in the compilation. |
+| `dotnet_code_quality.additional_string_formatting_methods = NS.MyType.MyFormat(ParamType)` | Matches specific method `MyFormat` with given fully qualified signature. |
+| `dotnet_code_quality.additional_string_formatting_methods = NS1.MyType1.MyFormat1(ParamType)\|NS2.MyType2.MyFormat2(ParamType)` | Matches specific methods `MyFormat1` and `MyFormat2` with respective fully qualified signature. |
 
 Option Name: `try_determine_additional_string_formatting_methods_automatically`
 
@@ -310,7 +310,7 @@ Configurable Rules:
 
 Option Name: `excluded_symbol_names`
 
-Option Values: Names of symbols (separated by '|') that are excluded for analysis.
+Option Values: Names of symbols (separated by `|`) that are excluded for analysis.
 Allowed symbol name formats:
 
   1. Symbol name (includes all symbols with the name, regardless of the containing type or namespace).
@@ -327,13 +327,13 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| `dotnet_code_quality.excluded_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation. |
-| `dotnet_code_quality.excluded_symbol_names = Validate1\|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation. |
-| `dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature. |
-| `dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature. |
-| `dotnet_code_quality.excluded_symbol_names = My*` | Matches all symbols whose name starts with 'My'. |
-| `dotnet_code_quality.excluded_symbol_names = T:NS.My*` | Matches all type symbols whose name starts with 'My' in the namespace 'NS'. |
-| `dotnet_code_quality.excluded_symbol_names = N:My*` | Matches all symbols whose containing namespace starts with 'My'. |
+| `dotnet_code_quality.excluded_symbol_names = Validate` | Matches all symbols named `Validate` in the compilation. |
+| `dotnet_code_quality.excluded_symbol_names = Validate1\|Validate2` | Matches all symbols named either `Validate1` or `Validate2` in the compilation. |
+| `dotnet_code_quality.excluded_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method `Validate` with given fully qualified signature. |
+| `dotnet_code_quality.excluded_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods `Validate1` and `Validate2` with respective fully qualified signature. |
+| `dotnet_code_quality.excluded_symbol_names = My*` | Matches all symbols whose name starts with `My`. |
+| `dotnet_code_quality.excluded_symbol_names = T:NS.My*` | Matches all type symbols whose name starts with `My` in the namespace `NS`. |
+| `dotnet_code_quality.excluded_symbol_names = N:My*` | Matches all symbols whose containing namespace starts with `My`. |
 
 Additionally, all the dataflow analysis based rules can be configured with a single entry `dotnet_code_quality.dataflow.excluded_symbol_names = ...`
 
@@ -341,7 +341,7 @@ Additionally, all the dataflow analysis based rules can be configured with a sin
 
 Option Name: `excluded_type_names_with_derived_types`
 
-Option Values: Names of types (separated by '|'), such that the type and all its derived types are excluded for analysis.
+Option Values: Names of types (separated by `|`), such that the type and all its derived types are excluded for analysis.
 Allowed symbol name formats:
 
   1. Type name only (includes all types with the name, regardless of the containing type or namespace).
@@ -355,10 +355,10 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| `dotnet_code_quality.excluded_type_names_with_derived_types = MyType` | Matches all types named 'MyType' and all of its derived types in the compilation. |
-| `dotnet_code_quality.excluded_type_names_with_derived_types = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' and all of their derived types in the compilation. |
-| `dotnet_code_quality.excluded_type_names_with_derived_types = T:NS.MyType` | Matches specific type 'MyType' with given fully qualified name and all of its derived types. |
-| `dotnet_code_quality.excluded_type_names_with_derived_types = T:NS1.MyType1\|M:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all of their derived types. |
+| `dotnet_code_quality.excluded_type_names_with_derived_types = MyType` | Matches all types named `MyType` and all of its derived types in the compilation. |
+| `dotnet_code_quality.excluded_type_names_with_derived_types = MyType1\|MyType2` | Matches all types named either `MyType1` or `MyType2` and all of their derived types in the compilation. |
+| `dotnet_code_quality.excluded_type_names_with_derived_types = T:NS.MyType` | Matches specific type `MyType` with given fully qualified name and all of its derived types. |
+| `dotnet_code_quality.excluded_type_names_with_derived_types = T:NS1.MyType1\|M:NS2.MyType2` | Matches specific types `MyType1` and `MyType2` with respective fully qualified names and all of their derived types. |
 
 ### Unsafe DllImportSearchPath bits when using DefaultDllImportSearchPaths attribute
 
@@ -390,7 +390,7 @@ Option Name: `disallowed_symbol_names`
 
 Configurable Rules: [CA1031](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1031)
 
-Option Values: Names of symbols (separated by '|') that are disallowed in the context of the analysis.
+Option Values: Names of symbols (separated by `|`) that are disallowed in the context of the analysis.
 Allowed symbol name formats:
 
   1. Symbol name only (includes all symbols with the name, regardless of the containing type or namespace).
@@ -404,10 +404,10 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| `dotnet_code_quality.disallowed_symbol_names = Validate` | Matches all symbols named 'Validate' in the compilation. |
-| `dotnet_code_quality.disallowed_symbol_names = Validate1\|Validate2` | Matches all symbols named either 'Validate1' or 'Validate2' in the compilation. |
-| `dotnet_code_quality.disallowed_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method 'Validate' with given fully qualified signature. |
-| `dotnet_code_quality.disallowed_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods 'Validate1' and 'Validate2' with respective fully qualified signature. |
+| `dotnet_code_quality.disallowed_symbol_names = Validate` | Matches all symbols named `Validate` in the compilation. |
+| `dotnet_code_quality.disallowed_symbol_names = Validate1\|Validate2` | Matches all symbols named either `Validate1` or `Validate2` in the compilation. |
+| `dotnet_code_quality.disallowed_symbol_names = M:NS.MyType.Validate(ParamType)` | Matches specific method `Validate` with given fully qualified signature. |
+| `dotnet_code_quality.disallowed_symbol_names = M:NS1.MyType1.Validate1(ParamType)\|M:NS2.MyType2.Validate2(ParamType)` | Matches specific methods `Validate1` and `Validate2` with respective fully qualified signature. |
 
 ### Dataflow analysis
 
@@ -631,7 +631,7 @@ Option Name: `additional_required_suffixes`
 
 Configurable Rules: [CA1710](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1710)
 
-Option Values: List (separated by '|') of type names with their required suffix (separated by '->').
+Option Values: List (separated by `|`) of type names with their required suffix (separated by `->`).
 Allowed type name formats:
 
   1. Type name only (includes all types with the name, regardless of the containing type or namespace).
@@ -643,9 +643,9 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| `dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix. |
-| `dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class\|MyNamespace.IPath->Path` | All types inheriting from 'MyClass' are expected to have the 'Class' suffix AND all types implementing 'MyNamespace.IPath' are expected to have the 'Path' suffix. |
-| `dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}` | Allows to override built-in suffixes, in this case, all types implementing 'IDataReader' are no longer expected to end in 'Collection'. |
+| `dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class` | All types inheriting from `MyClass` are expected to have the `Class` suffix. |
+| `dotnet_code_quality.CA1710.additional_required_suffixes = MyClass->Class\|MyNamespace.IPath->Path` | All types inheriting from `MyClass` are expected to have the `Class` suffix AND all types implementing `MyNamespace.IPath` are expected to have the `Path` suffix. |
+| `dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}` | Allows to override built-in suffixes, in this case, all types implementing `IDataReader` are no longer expected to end in `Collection`. |
 
 ### Additional required generic interfaces
 
@@ -653,7 +653,7 @@ Option Name: `additional_required_generic_interfaces`
 
 Configurable Rules: [CA1010](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1010)
 
-Option Values: List (separated by '|') of interface names with their required generic fully qualified interface (separated by '->').
+Option Values: List (separated by `|`) of interface names with their required generic fully qualified interface (separated by `->`).
 Allowed interface formats:
 
   1. Interface name only (includes all interfaces with the name, regardless of the containing type or namespace).
@@ -665,8 +665,8 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| ``dotnet_code_quality.CA1010.additional_required_generic_interfaces = ISomething->System.Collections.Generic.IEnumerable`1`` | All types implementing 'ISomething' regardless of its namespace are expected to also implement 'System.Collections.Generic.IEnumerable\`1'. |
-| ``dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2`` | All types implementing 'System.Collections.Generic.IDictionary' are expected to also implement 'System.Collections.Generic.IDictionary`2'. |
+| ``dotnet_code_quality.CA1010.additional_required_generic_interfaces = ISomething->System.Collections.Generic.IEnumerable`1`` | All types implementing `ISomething` regardless of its namespace are expected to also implement ``System.Collections.Generic.IEnumerable\`1``. |
+| ``dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2`` | All types implementing `System.Collections.Generic.IDictionary` are expected to also implement ``System.Collections.Generic.IDictionary`2``. |
 
 ### Inheritance excluded type or namespace names
 
@@ -674,7 +674,7 @@ Option Name: `additional_inheritance_excluded_symbol_names`
 
 Configurable Rules: [CA1501](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501)
 
-Option Values: Names of types or namespaces (separated by '|'), such that the type or type's namespace doesn't count in the inheritance hierarchy tree.
+Option Values: Names of types or namespaces (separated by `|`), such that the type or type's namespace does not count in the inheritance hierarchy tree.
 Allowed symbol name formats:
 
   1. Type or namespace name (includes all types with the name, regardless of the containing type or namespace and all types whose namespace contains the name).
@@ -688,14 +688,14 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType` | Matches all types named 'MyType' or whose containing namespace contains 'MyType' and all types from the 'System' namespace. |
-| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType1\|MyType2` | Matches all types named either 'MyType1' or 'MyType2' or whose containing namespace contains either 'MyType1' or 'MyType2' and all types from the 'System' namespace. |
-| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.MyType` | Matches specific type 'MyType' in the namespace 'NS' and all types from the 'System' namespace. |
-| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS1.MyType1\|T:NS2.MyType2` | Matches specific types 'MyType1' and 'MyType2' with respective fully qualified names and all types from the 'System' namespace. |
-| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:NS` | Matches all types from the 'NS' namespace and all types from the 'System' namespace. |
-| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = My*` | Matches all types whose name starts with 'My' or whose containing namespace parts starts with 'My' and all types from the 'System' namespace. |
-| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with 'My' in the namespace 'NS' and all types from the 'System' namespace. |
-| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with 'My' and all types from the 'System' namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType` | Matches all types named `MyType` or whose containing namespace contains `MyType` and all types from the `System` namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = MyType1\|MyType2` | Matches all types named either `MyType1` or `MyType2` or whose containing namespace contains either `MyType1` or `MyType2` and all types from the `System` namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.MyType` | Matches specific type `MyType` in the namespace `NS` and all types from the `System` namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS1.MyType1\|T:NS2.MyType2` | Matches specific types `MyType1` and `MyType2` with respective fully qualified names and all types from the `System` namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:NS` | Matches all types from the `NS` namespace and all types from the `System` namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = My*` | Matches all types whose name starts with `My` or whose containing namespace parts starts with `My` and all types from the `System` namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:NS.My*` | Matches all types whose name starts with `My` in the namespace `NS` and all types from the `System` namespace. |
+| `dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:My*` | Matches all types whose containing namespace starts with `My` and all types from the `System` namespace. |
 
 ### Analyzed symbol kinds
 
@@ -727,7 +727,7 @@ Option Name: `additional_use_results_methods`
 
 Configurable Rules: [CA1806](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1806)
 
-Option Values: Names of additional methods (separated by '|').
+Option Values: Names of additional methods (separated by `|`).
 Allowed method name formats:
 
   1. Method name only (includes all methods with the name, regardless of the containing type or namespace).
@@ -740,10 +740,10 @@ Examples:
 
 | Option Value | Summary |
 | --- | --- |
-| `dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod` | Matches all methods named 'MyMethod' in the compilation. |
-| `dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod1\|MyMethod2` | Matches all methods named either 'MyMethod1' or 'MyMethod2' in the compilation. |
-| `dotnet_code_quality.CA1806.additional_use_results_methods = M:NS.MyType.MyMethod(ParamType)` | Matches specific method 'MyMethod' with given fully qualified signature. |
-| `dotnet_code_quality.CA1806.additional_use_results_methods = M:NS1.MyType1.MyMethod1(ParamType)\|M:NS2.MyType2.MyMethod2(ParamType)` | Matches specific methods 'MyMethod1' and 'MyMethod2' with respective fully qualified signature. |
+| `dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod` | Matches all methods named `MyMethod` in the compilation. |
+| `dotnet_code_quality.CA1806.additional_use_results_methods = MyMethod1\|MyMethod2` | Matches all methods named either `MyMethod1` or `MyMethod2` in the compilation. |
+| `dotnet_code_quality.CA1806.additional_use_results_methods = M:NS.MyType.MyMethod(ParamType)` | Matches specific method `MyMethod` with given fully qualified signature. |
+| `dotnet_code_quality.CA1806.additional_use_results_methods = M:NS1.MyType1.MyMethod1(ParamType)\|M:NS2.MyType2.MyMethod2(ParamType)` | Matches specific methods `MyMethod1` and `MyMethod2` with respective fully qualified signature. |
 
 ### Allowed suffixes
 
@@ -751,7 +751,7 @@ Option Name: `allowed_suffixes`
 
 Configurable Rules: [CA1711](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1711)
 
-Option Values: List (separated by '|') of allowed suffixes
+Option Values: List (separated by `|`) of allowed suffixes
 
 Example: `dotnet_code_quality.CA1711.allowed_suffixes = Flag|Flags`
 
