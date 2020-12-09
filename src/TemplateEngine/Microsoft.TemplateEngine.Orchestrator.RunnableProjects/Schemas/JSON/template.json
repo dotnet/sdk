@@ -269,7 +269,7 @@
         "parameters": {
           "properties": {
             "separator": {
-              "description": "The value used as the separator between the values to be concatenated, notice that you can use \"/\" as folder seperator also on Windows since File API will convert it into \"\\\"",
+              "description": "The value used as the separator between the values to be concatenated, notice that you can use \"/\" as folder separator also on Windows since File API will convert it into \"\\\"",
               "default": "",
               "type": "string"
             },

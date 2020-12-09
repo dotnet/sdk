@@ -493,13 +493,13 @@ In this case, if the user enters the value `123` as the value of the parameter `
 
 ## Join
 
-Concatenates multiple symbols or constants with defined separator into new symbol.
+Concatenates multiple symbols or constants with the defined separator into a new symbol.
 
 #### Parameters
 | Name     |Data Type| Optional | Description   |    
 |----------|---------|----------|-----|    
 |symbols   |array    |no     |all values to concatenate|
-|separator |string   |yes      |the value used as the separator between the values to be concatenated, notice that you can use `/` as folder seperator also on Windows since File API will convert it into `\` |
+|separator |string   |yes      |the value used as the separator between the values to be concatenated, notice that you can use `/` as folder separator also on Windows since File API will convert it into `\` |
 
 Symbols definition
 
