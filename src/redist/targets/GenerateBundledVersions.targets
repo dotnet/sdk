@@ -180,6 +180,11 @@
                                DefaultVersion="2.2.0"
                                LatestVersion="2.2.8"/>
     </ItemGroup>
+    
+    <PropertyGroup>
+      <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(ProductMonikerRid)</PortableProductMonikerRid>
+    </PropertyGroup>
+      
 
     <PropertyGroup>
       <BundledVersionsPropsContent>
@@ -209,6 +214,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
     <NETCoreSdkVersion>$(Version)</NETCoreSdkVersion>
     <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
+    <NETCoreSdkPortableRuntimeIdentifier>$(PortableProductMonikerRid)</NETCoreSdkPortableRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkBeingBuiltIsPreview)</_NETCoreSdkIsPreview>
   </PropertyGroup>
   <ItemGroup>
@@ -642,7 +648,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/runtime.json"
           DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json" 
-          SkipUnchangedFiles="true"/> 
+          SkipUnchangedFiles="true"/>
+
+    <GenerateSdkRuntimeIdentifierChain
+          RuntimeIdentifier="$(PortableProductMonikerRid)"
+          RuntimeIdentifierGraphPath="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
+          RuntimeIdentifierChainOutputPath="$(SdkOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt"/>
     
   </Target>
 </Project>

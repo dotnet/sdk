@@ -38,5 +38,6 @@
   <UsingTask TaskName="GenerateMSBuildExtensionsSWR" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GetLinuxNativeInstallerDependencyVersions" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="CollatePackageDownloads" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="GenerateSdkRuntimeIdentifierChain" AssemblyFile="$(CoreSdkTaskDll)"/>
 
 </Project>
