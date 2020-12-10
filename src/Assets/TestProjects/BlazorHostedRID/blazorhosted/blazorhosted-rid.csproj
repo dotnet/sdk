@@ -2,10 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <!--
-      Specify the RID in the project file to allow the runtime pack to be restored during repo restore.
-      We do not want the rid-specific package to be restored as part of the test.
-    -->
     <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
