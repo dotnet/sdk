@@ -1,7 +1,7 @@
 <Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard2.0;net45</TargetFrameworks>
-        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard2.0</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <Description>Contracts for extending Template Engine</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>

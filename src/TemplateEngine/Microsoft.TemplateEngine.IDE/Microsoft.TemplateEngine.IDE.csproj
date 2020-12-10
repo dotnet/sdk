@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard2.0;net45</TargetFrameworks>
-        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard2.0</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <Description>Helper package for adding Template Engine to IDEs</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>

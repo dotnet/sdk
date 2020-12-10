@@ -1,7 +1,7 @@
 <Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">netstandard2.0;net45</TargetFrameworks>
-        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">netstandard2.0</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
+        <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <Description>Helper package for adding Template Engine to consuming applications</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
@@ -18,6 +18,6 @@
     <ItemGroup>
         <PackageReference Include="System.IO.Compression" />
         <PackageReference Include="Newtonsoft.Json" />
-        <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != 'net45'"/>
+        <PackageReference Include="System.Runtime.Loader" Condition="'$(TargetFramework)' != '$(NETFullTargetFramework)'"/>
     </ItemGroup>
 </Project>

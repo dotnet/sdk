@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>$(NETStandardTargetFramework)</TargetFramework>
         <Description>This package contains the localized satellite assemblies for Microsoft.TemplateEngine.Cli. Reference this package only if you want msbuild output to be localized in cs;de;es;fr;it;ja;ko;pl;pt-BR;ru;tr;zh-Hans;zh-Hant.</Description>
         <IncludeBuildOutput>False</IncludeBuildOutput>
         <IncludeSource>False</IncludeSource>
@@ -20,13 +20,5 @@
     <ItemGroup>
         <Compile Remove="$(GitInfoFile)" />
         <Compile Remove="$(SrcDir)GitInfo.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <!--<Content Include="$(ArtifactsDir)\localize\**\Microsoft.TemplateEngine.Cli.resources.dll">
-            <Pack>true</Pack>
-            <PackagePath>lib\netstandard2.0</PackagePath>
-        </Content>
-        <Content Remove="$(ArtifactsDir)\localize\ploc\Microsoft.TemplateEngine.Cli.resources.dll" />-->
     </ItemGroup>
 </Project>
