@@ -6938,5 +6938,32 @@ Public Class C
 End Class
 ");
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(4509, "https://github.com/dotnet/roslyn-analyzers/issues/4509")]
+        public async Task GenericFieldNullCheckIsNotFlagged()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class MyClass<T>
+{
+    private T m_myValue;
+
+    public void M()
+    {
+        var x = this.m_myValue?.ToString();
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class [MyClass](Of T)
+    Private m_myValue As T
+
+    Public Sub M()
+        Dim x = Me.m_myValue?.ToString()
+    End Sub
+End Class
+");
+        }
     }
 }
