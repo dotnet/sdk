@@ -11,7 +11,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability
         Inherits AvoidUninstantiatedInternalClassesAnalyzer
 
         <System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisPerformance", "RS1012:Start action has no registered actions.", Justification:="End action is registered in parent class.")>
-        Public Overrides Sub RegisterLanguageSpecificChecks(startContext As CompilationStartAnalysisContext, instantiatedTypes As ConcurrentDictionary(Of INamedTypeSymbol, Object))
+        Public Overrides Sub RegisterLanguageSpecificChecks(context As CompilationStartAnalysisContext, instantiatedTypes As ConcurrentDictionary(Of INamedTypeSymbol, Object))
             ' No Visual Basic specific check
         End Sub
     End Class
