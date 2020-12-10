@@ -713,7 +713,9 @@ Rule ID | Missing Help Link | Title |
                         {
                             CreateGlobalconfig(
                                 analyzerGlobalconfigsDir,
-                                $"AnalysisLevel_{analysisLevelVersionString}_{analysisMode}.editorconfig",
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                                $"AnalysisLevel_{analysisLevelVersionString}_{analysisMode!.ToString()!.ToLowerInvariant()}.editorconfig",
+#pragma warning restore CA1308 // Normalize strings to uppercase
                                 $"Rules from '{version}' release with '{analysisMode}' analysis mode",
                                 $"Rules with enabled-by-default state from '{version}' release with '{analysisMode}' analysis mode. Rules that are first released in a version later than '{version}' are disabled.",
                                 (AnalysisMode)analysisMode!,
@@ -1145,17 +1147,41 @@ Rule ID | Missing Help Link | Title |
 
                     (bool isEnabledByDefault, DiagnosticSeverity effectiveSeverity) GetEnabledByDefaultAndSeverity(DiagnosticDescriptor rule, AnalysisMode analysisMode)
                     {
-                        if (analysisMode == AnalysisMode.AllDisabledByDefault)
-                        {
-                            return (isEnabledByDefault: false, DiagnosticSeverity.Warning);
-                        }
-
                         var isEnabledByDefault = rule.IsEnabledByDefault;
                         var effectiveSeverity = rule.DefaultSeverity;
 
-                        var isEnabledRuleInAggressiveMode = analysisMode == AnalysisMode.AllEnabledByDefault &&
-                            rule.CustomTags.Contains(WellKnownDiagnosticTagsExtensions.EnabledRuleInAggressiveMode);
-                        if (isEnabledRuleInAggressiveMode)
+                        bool isEnabledRuleForNonDefaultAnalysisMode;
+                        switch (analysisMode)
+                        {
+                            case AnalysisMode.None:
+                                // Disable all rules by default.
+                                return (isEnabledByDefault: false, DiagnosticSeverity.Warning);
+
+                            case AnalysisMode.All:
+                                // Escalate all rules with a special custom tag to be build warnings.
+                                isEnabledRuleForNonDefaultAnalysisMode = rule.CustomTags.Contains(WellKnownDiagnosticTagsExtensions.EnabledRuleInAggressiveMode);
+                                break;
+
+                            case AnalysisMode.Minimum:
+                                // Escalate all enabled, non-hidden rules to be build warnings.
+                                isEnabledRuleForNonDefaultAnalysisMode = isEnabledByDefault && effectiveSeverity != DiagnosticSeverity.Hidden;
+                                break;
+
+                            case AnalysisMode.Recommended:
+                                // Escalate all enabled rules to be build warnings.
+                                isEnabledRuleForNonDefaultAnalysisMode = isEnabledByDefault;
+                                break;
+
+                            case AnalysisMode.Default:
+                                // Retain the default severity and enabled by default values.
+                                isEnabledRuleForNonDefaultAnalysisMode = false;
+                                break;
+
+                            default:
+                                throw new NotSupportedException();
+                        }
+
+                        if (isEnabledRuleForNonDefaultAnalysisMode)
                         {
                             isEnabledByDefault = true;
                             effectiveSeverity = DiagnosticSeverity.Warning;
@@ -1163,7 +1189,7 @@ Rule ID | Missing Help Link | Title |
 
                         if (shippedReleaseData != null)
                         {
-                            isEnabledByDefault = isEnabledRuleInAggressiveMode;
+                            isEnabledByDefault = isEnabledRuleForNonDefaultAnalysisMode;
                             var maxVersion = shippedReleaseData.Value.version;
                             foreach (var shippedFile in shippedReleaseData.Value.shippedFiles)
                             {
@@ -1174,7 +1200,7 @@ Rule ID | Missing Help Link | Title |
                                     isEnabledByDefault = releaseTrackingLine.EnabledByDefault.Value && !releaseTrackingLine.IsRemovedRule;
                                     effectiveSeverity = releaseTrackingLine.DefaultSeverity.Value;
 
-                                    if (isEnabledRuleInAggressiveMode && !releaseTrackingLine.IsRemovedRule)
+                                    if (isEnabledRuleForNonDefaultAnalysisMode && !releaseTrackingLine.IsRemovedRule)
                                     {
                                         isEnabledByDefault = true;
                                         effectiveSeverity = DiagnosticSeverity.Warning;
@@ -1248,7 +1274,10 @@ $@"<Project>{GetCommonContents(packageName)}{GetPackageSpecificContents(packageN
     <!-- PropertyGroup to compute global analyzer config file to be used -->
     <PropertyGroup>{propertyStringForSettingDefaultPropertyValue}
       <!-- Set the default analysis mode, if not set by the user -->
-      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>$(AnalysisMode)</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>$(AnalysisLevelSuffix)</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">$(AnalysisMode)</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllEnabledByDefault'"">{nameof(AnalysisMode.All)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllDisabledByDefault'"">{nameof(AnalysisMode.None)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
       <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">{nameof(AnalysisMode.Default)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
 
       <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
@@ -1435,8 +1464,10 @@ $@"<Project>{GetCommonContents(packageName)}{GetPackageSpecificContents(packageN
         private enum AnalysisMode
         {
             Default,
-            AllDisabledByDefault,
-            AllEnabledByDefault,
+            None,
+            Minimum,
+            Recommended,
+            All
         }
 
         private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
