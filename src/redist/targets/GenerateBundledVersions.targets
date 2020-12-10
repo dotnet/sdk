@@ -29,7 +29,7 @@
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
       <_NET50DefaultRuntimeFrameworkVersion>5.0.0</_NET50DefaultRuntimeFrameworkVersion>
-      <_NET50RuntimePackVersion>5.0.0</_NET50RuntimePackVersion>
+      <_NET50RuntimePackVersion>5.0.1</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
       <_WindowsDesktop50DefaultRuntimeFrameworkVersion>5.0.0</_WindowsDesktop50DefaultRuntimeFrameworkVersion>
       <_WindowsDesktop50RuntimePackVersion>5.0.0</_WindowsDesktop50RuntimePackVersion>
