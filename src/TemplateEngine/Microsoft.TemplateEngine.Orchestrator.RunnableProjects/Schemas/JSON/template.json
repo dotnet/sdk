@@ -141,6 +141,28 @@
         }
       }
     },
+    "generatorRegexMatch": {
+      "properties": {
+        "generator": {
+          "enum": [ "regexMatch" ]
+        },
+        "datatype":{
+          "enum": [ "bool" ]
+        },
+        "parameters": {
+          "properties": {
+            "source": {
+              "description": "The symbol to search for a match. Its value will be used by this generator's regex to evaluate if there is a match. The value of the source parameter is not modified",
+              "type": "string"
+            },
+            "pattern": {
+              "description": "The regular expression to use to match",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "generatorCoalesce": {
       "properties": {
         "generator": { "enum": [ "coalesce" ] },
@@ -232,6 +254,38 @@
                   },
                   "value": {
                     "description": "The value to return if the condition evaluates to true",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "generatorJoin": {
+      "properties": {
+        "generator": { "enum": [ "join" ] },
+        "parameters": {
+          "properties": {
+            "separator": {
+              "description": "The value used as the separator between the values to be concatenated, notice that you can use \"/\" as folder separator also on Windows since File API will convert it into \"\\\"",
+              "default": "",
+              "type": "string"
+            },
+            "symbols": {
+              "description": "All values to concatenate",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [ "value" ],
+                "properties": {
+                  "type": {
+                    "description": "\"ref\" to reference value from another symbol or \"const\" for string constant, defaults to \"const\".",
+                    "enum": [ "ref", "const" ]
+                  },
+                  "value": {
+                    "description": "Either name of another symbol or string constant",
                     "type": "string"
                   }
                 }
@@ -870,7 +924,9 @@
               { "$ref": "#/definitions/generatorPort" },
               { "$ref": "#/definitions/generatorRandom" },
               { "$ref": "#/definitions/generatorRegex" },
-              { "$ref": "#/definitions/generatorSwitch" }
+              { "$ref": "#/definitions/generatorRegexMatch" },
+              { "$ref": "#/definitions/generatorSwitch" },
+              { "$ref": "#/definitions/generatorJoin" }
             ]
           },
           {
