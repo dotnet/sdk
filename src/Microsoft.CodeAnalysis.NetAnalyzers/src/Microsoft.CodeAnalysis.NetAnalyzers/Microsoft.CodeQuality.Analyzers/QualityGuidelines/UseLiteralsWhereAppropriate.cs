@@ -71,7 +71,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 var initializerValue = fieldInitializerValue.ConstantValue.Value;
 
                 // Though null is const we don't fire the diagnostic to be FxCop Compact
-                if (initializerValue != null)
+                if (initializerValue != null &&
+                    IsConstantCompatibleType(fieldInitializerValue.Type))
                 {
                     if (fieldInitializerValue.Type?.SpecialType == SpecialType.System_String &&
                         ((string)initializerValue).Length == 0)
@@ -85,5 +86,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             },
             OperationKind.FieldInitializer);
         }
+
+        private static bool IsConstantCompatibleType(ITypeSymbol? typeSymbol)
+            => typeSymbol?.SpecialType is not SpecialType.System_IntPtr
+                and not SpecialType.System_UIntPtr;
     }
 }

@@ -169,6 +169,26 @@ End Class
             await vbTest.RunAsync();
         }
 
+        [Fact]
+        public async Task CA1802_CSharp_IntPtr_UIntPtr_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+using System;
+
+public class Class1
+{
+	internal static readonly IntPtr field1 = (nint)0;
+	internal static readonly UIntPtr field2 = (nuint)0;
+    internal static readonly nint field3 = (nint)0;
+	internal static readonly nuint field4 = (nuint)0;
+}",
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)
             => VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule)
                 .WithLocation(line, column)
