@@ -4,6 +4,7 @@
         <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <Description>Helper package for adding Template Engine to consuming applications</Description>
         <IsPackable>true</IsPackable>
+        <DefineConstants Condition="'$(TargetFramework)' == '$(NETFullTargetFramework)'">$(DefineConstants);NETFULL</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

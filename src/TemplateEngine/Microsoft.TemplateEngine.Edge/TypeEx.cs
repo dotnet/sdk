@@ -1,6 +1,6 @@
 using System;
 using System.Reflection;
-#if !NET45
+#if !NETFULL
 using System.Runtime.Loader;
 #endif
 
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Edge
             if (!ReflectionLoadProbingPath.HasLoaded(asmName))
             {
                 AssemblyName name = new AssemblyName(asmName);
-#if !NET45
+#if !NETFULL
                 AssemblyLoadContext.Default.LoadFromAssemblyName(name);
 #else
                 AppDomain.CurrentDomain.Load(name);

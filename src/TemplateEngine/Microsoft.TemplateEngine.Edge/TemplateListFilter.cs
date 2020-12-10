@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-#if NET45
+#if NETFULL
 using System.Linq;
 #endif
 using Microsoft.TemplateEngine.Abstractions;
@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Edge
                 }
             }
 
-#if !NET45
+#if !NETFULL
             return matchingTemplates;
 #else
             return matchingTemplates.ToList();
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Edge
                 }
             }
 
-#if !NET45
+#if !NETFULL
             return matchingTemplates;
 #else
             return matchingTemplates.ToList();

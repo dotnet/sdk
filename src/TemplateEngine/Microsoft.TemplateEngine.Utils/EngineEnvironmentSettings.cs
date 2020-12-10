@@ -3,9 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-#if !NET45
 using System.Runtime.InteropServices;
-#endif
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -51,11 +49,7 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     if (_userProfileDir == null)
                     {
-#if !NET45
                         bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#else
-                        bool isWindows = System.IO.Path.DirectorySeparatorChar == '\\';
-#endif
 
                         string profileDir = _parent.Environment.GetEnvironmentVariable(isWindows
                             ? "USERPROFILE"

@@ -1,11 +1,11 @@
-﻿#if NET45
+#if NETFULL
 using System;
 #endif
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-#if !NET45
+#if !NETFULL
 using System.Runtime.Loader;
 #endif
 
@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Edge
     {
         public static Assembly Load(string path)
         {
-#if !NET45
+#if !NETFULL
             return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
 #else
             return Assembly.LoadFile(path);
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromCodebase(Paths paths, out IEnumerable<string> loadFailures, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
-#if !NET45
+#if !NETFULL
             return AssemblyLoadContext.Default.LoadAllFromCodebase(paths, out loadFailures, pattern, searchOption);
 #else
             return AppDomain.CurrentDomain.LoadAllFromCodebase(paths, out loadFailures, pattern, searchOption);
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         public static IEnumerable<KeyValuePair<string, Assembly>> LoadAllFromPath(Paths paths, out IEnumerable<string> loadFailures, string path, string pattern = "*.dll", SearchOption searchOption = SearchOption.AllDirectories)
         {
-#if !NET45
+#if !NETFULL
             return AssemblyLoadContext.Default.LoadAllFromPath(paths, out loadFailures, path, pattern, searchOption);
 #else
             return AppDomain.CurrentDomain.LoadAllFromPath(paths, out loadFailures, path, pattern, searchOption);
