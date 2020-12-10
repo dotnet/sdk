@@ -183,9 +183,30 @@ public class Class1
 {
 	internal static readonly IntPtr field1 = (nint)0;
 	internal static readonly UIntPtr field2 = (nuint)0;
-    internal static readonly nint field3 = (nint)0;
-	internal static readonly nuint field4 = (nuint)0;
 }",
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task CA1802_CSharp_nint_nuint_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+using System;
+
+public class Class1
+{
+    internal static readonly nint field1 = (nint)0;
+	internal static readonly nuint field2 = (nuint)0;
+}",
+                ExpectedDiagnostics =
+                {
+                    GetCSharpDefaultResultAt(6, 35, "field1"),
+                    GetCSharpDefaultResultAt(7, 33, "field2"),
+                }
             }.RunAsync();
         }
 

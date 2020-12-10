@@ -48,43 +48,52 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterOperationAction(saContext =>
+            analysisContext.RegisterCompilationStartAction(analysisContext =>
             {
-                var fieldInitializer = saContext.Operation as IFieldInitializerOperation;
+                var builder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
+                builder.Add(analysisContext.Compilation.GetSpecialType(SpecialType.System_IntPtr));
+                builder.Add(analysisContext.Compilation.GetSpecialType(SpecialType.System_UIntPtr));
 
-                // Diagnostics are reported on the last initialized field to retain the previous FxCop behavior
-                // Note all the descriptors/rules for this analyzer have the same ID and category and hence
-                // will always have identical configured visibility.
-                var lastField = fieldInitializer?.InitializedFields.LastOrDefault();
-                var fieldInitializerValue = fieldInitializer?.Value;
-                if (fieldInitializerValue == null ||
-                    lastField == null ||
-                    lastField.IsConst ||
-                    !lastField.IsReadOnly ||
-                    !fieldInitializerValue.ConstantValue.HasValue ||
-                    !saContext.Options.MatchesConfiguredVisibility(DefaultRule, lastField, saContext.Compilation, saContext.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private) ||
-                    !saContext.Options.MatchesConfiguredModifiers(DefaultRule, lastField, saContext.Compilation, saContext.CancellationToken, defaultRequiredModifiers: SymbolModifiers.Static))
+                var constantIncompatibleTypes = builder.ToImmutable();
+
+                analysisContext.RegisterOperationAction(saContext =>
                 {
-                    return;
-                }
+                    var fieldInitializer = saContext.Operation as IFieldInitializerOperation;
 
-                var initializerValue = fieldInitializerValue.ConstantValue.Value;
-
-                // Though null is const we don't fire the diagnostic to be FxCop Compact
-                if (initializerValue != null &&
-                    IsConstantCompatibleType(fieldInitializerValue.Type))
-                {
-                    if (fieldInitializerValue.Type?.SpecialType == SpecialType.System_String &&
-                        ((string)initializerValue).Length == 0)
+                    // Diagnostics are reported on the last initialized field to retain the previous FxCop behavior
+                    // Note all the descriptors/rules for this analyzer have the same ID and category and hence
+                    // will always have identical configured visibility.
+                    var lastField = fieldInitializer?.InitializedFields.LastOrDefault();
+                    var fieldInitializerValue = fieldInitializer?.Value;
+                    if (fieldInitializerValue == null ||
+                        lastField == null ||
+                        lastField.IsConst ||
+                        !lastField.IsReadOnly ||
+                        !fieldInitializerValue.ConstantValue.HasValue ||
+                        !saContext.Options.MatchesConfiguredVisibility(DefaultRule, lastField, saContext.Compilation, saContext.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private) ||
+                        !saContext.Options.MatchesConfiguredModifiers(DefaultRule, lastField, saContext.Compilation, saContext.CancellationToken, defaultRequiredModifiers: SymbolModifiers.Static))
                     {
-                        saContext.ReportDiagnostic(lastField.CreateDiagnostic(EmptyStringRule, lastField.Name));
                         return;
                     }
 
-                    saContext.ReportDiagnostic(lastField.CreateDiagnostic(DefaultRule, lastField.Name));
-                }
-            },
-            OperationKind.FieldInitializer);
+                    var initializerValue = fieldInitializerValue.ConstantValue.Value;
+
+                    // Though null is const we don't fire the diagnostic to be FxCop Compact
+                    if (initializerValue != null &&
+                        !constantIncompatibleTypes.Contains(fieldInitializerValue.Type))
+                    {
+                        if (fieldInitializerValue.Type?.SpecialType == SpecialType.System_String &&
+                            ((string)initializerValue).Length == 0)
+                        {
+                            saContext.ReportDiagnostic(lastField.CreateDiagnostic(EmptyStringRule, lastField.Name));
+                            return;
+                        }
+
+                        saContext.ReportDiagnostic(lastField.CreateDiagnostic(DefaultRule, lastField.Name));
+                    }
+                },
+                OperationKind.FieldInitializer);
+            });
         }
 
         private static bool IsConstantCompatibleType(ITypeSymbol? typeSymbol)
