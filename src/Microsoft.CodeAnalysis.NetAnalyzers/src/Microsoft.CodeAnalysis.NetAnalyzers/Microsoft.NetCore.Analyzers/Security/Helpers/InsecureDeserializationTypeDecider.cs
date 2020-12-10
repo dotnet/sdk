@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         };
 
         private static readonly BoundedCacheWithFactory<Compilation, InsecureDeserializationTypeDecider> BoundedCache =
-            new BoundedCacheWithFactory<Compilation, InsecureDeserializationTypeDecider>();
+            new();
 
         /// <summary>
         /// Gets a cached <see cref="InsecureDeserializationTypeDecider"/> for the given compilation.
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             return BoundedCache.GetOrCreateValue(compilation, Create);
 
             // Local functions.
-            static InsecureDeserializationTypeDecider Create(Compilation c) => new InsecureDeserializationTypeDecider(c);
+            static InsecureDeserializationTypeDecider Create(Compilation c) => new(c);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         // Key: typeSymbol in IsTypeInsecure()
         // Value: insecureTypeSymbol in IsTypeInsecure()
         private readonly ConcurrentDictionary<ITypeSymbol, ITypeSymbol?> IsTypeInsecureCache =
-            new ConcurrentDictionary<ITypeSymbol, ITypeSymbol?>();
+            new();
 
         /// <summary>
         /// Determines if the given type is insecure when deserialized, without looking at its child fields and properties.
@@ -163,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         // Key: (rootType, options) arguments in IsObjectGraphInsecure()
         // Value: results argument in IsObjectGraphInsecure().
         private readonly ConcurrentDictionary<(ITypeSymbol, ObjectGraphOptions), ImmutableArray<InsecureObjectGraphResult>> IsObjectGraphInsecureCache =
-            new ConcurrentDictionary<(ITypeSymbol, ObjectGraphOptions), ImmutableArray<InsecureObjectGraphResult>>();
+            new();
 
         /// <summary>
         /// Determines if a type's object graph contains an insecure type, by walking through its serializable members.

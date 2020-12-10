@@ -47,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, EmptyRule);
 
         private static readonly List<ValueValidator> s_tokensToValueValidator =
-            new List<ValueValidator>(
+            new(
                 new[] { new ValueValidator(ImmutableArray.Create("guid"), "Guid", GuidValueValidator),
                         new ValueValidator(ImmutableArray.Create("url", "uri", "urn"), "Uri", UrlValueValidator, "UriTemplate")});
 

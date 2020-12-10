@@ -211,8 +211,8 @@ public class C
 ");
         }
 
-        private static readonly DiagnosticResult s_diagnosticCA1014 = new DiagnosticResult(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule);
+        private static readonly DiagnosticResult s_diagnosticCA1014 = new(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule);
 
-        private static readonly DiagnosticResult s_diagnosticCA1016 = new DiagnosticResult(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule);
+        private static readonly DiagnosticResult s_diagnosticCA1016 = new(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule);
     }
 }

@@ -79,7 +79,7 @@ namespace Microsoft.NetFramework.Analyzers
         {
             // .NET frameworks >= 4.5.2 have secure default settings for XmlTextReader:
             //      DtdProcessing is enabled with null resolver
-            private static readonly Version s_minSecureFxVersion = new Version(4, 5, 2);
+            private static readonly Version s_minSecureFxVersion = new(4, 5, 2);
 
             private readonly CompilationSecurityTypes _xmlTypes;
             private readonly SyntaxNodeHelper _syntaxNodeHelper;
@@ -87,8 +87,8 @@ namespace Microsoft.NetFramework.Analyzers
 
             // key: symbol for type derived from XmlDocument/XmlTextReader (exclude base type itself)
             // value: if it has explicitly defined constructor
-            private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlDocumentDerivedTypes = new ConcurrentDictionary<INamedTypeSymbol, bool>();
-            private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlTextReaderDerivedTypes = new ConcurrentDictionary<INamedTypeSymbol, bool>();
+            private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlDocumentDerivedTypes = new();
+            private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlTextReaderDerivedTypes = new();
 
 
             public SymbolAndNodeAnalyzer(CompilationSecurityTypes xmlTypes, SyntaxNodeHelper helper, Version targetFrameworkVersion)

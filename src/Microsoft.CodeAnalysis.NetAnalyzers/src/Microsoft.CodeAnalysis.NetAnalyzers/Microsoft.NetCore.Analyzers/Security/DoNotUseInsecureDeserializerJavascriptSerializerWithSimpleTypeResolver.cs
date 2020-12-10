@@ -49,7 +49,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 DefinitelyWithSimpleTypeResolver,
                 MaybeWithSimpleTypeResolver);
 
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
+        private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "...dummy name",    // There isn't *really* a property for what we're tracking; just the constructor argument.
                 (PointsToAbstractValue v) => PropertySetAbstractValueKind.Unknown));

@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
 {
     public class DoNotCallToImmutableCollectionOnAnImmutableCollectionValueFixerTests
     {
-        public static readonly TheoryData<string> CollectionNames_Arity1 = new TheoryData<string>
+        public static readonly TheoryData<string> CollectionNames_Arity1 = new()
         {
             nameof(ImmutableArray),
             nameof(ImmutableHashSet),
@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
             nameof(ImmutableSortedSet)
         };
 
-        public static readonly TheoryData<string> CollectionNames_Arity2 = new TheoryData<string>
+        public static readonly TheoryData<string> CollectionNames_Arity2 = new()
         {
             nameof(ImmutableDictionary),
             nameof(ImmutableSortedDictionary)
