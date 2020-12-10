@@ -206,7 +206,15 @@ public class Class1
                 {
                     GetCSharpDefaultResultAt(6, 35, "field1"),
                     GetCSharpDefaultResultAt(7, 33, "field2"),
-                }
+                },
+                FixedCode = @"
+using System;
+
+public class Class1
+{
+    internal const nint field1 = (nint)0;
+	internal const nuint field2 = (nuint)0;
+}",
             }.RunAsync();
         }
 

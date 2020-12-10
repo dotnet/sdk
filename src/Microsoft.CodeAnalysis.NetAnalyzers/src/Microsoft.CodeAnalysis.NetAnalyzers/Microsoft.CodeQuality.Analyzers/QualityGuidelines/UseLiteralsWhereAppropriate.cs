@@ -43,22 +43,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, EmptyStringRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(analysisContext =>
+            context.RegisterCompilationStartAction(context =>
             {
                 var builder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
-                builder.Add(analysisContext.Compilation.GetSpecialType(SpecialType.System_IntPtr));
-                builder.Add(analysisContext.Compilation.GetSpecialType(SpecialType.System_UIntPtr));
+                builder.Add(context.Compilation.GetSpecialType(SpecialType.System_IntPtr));
+                builder.Add(context.Compilation.GetSpecialType(SpecialType.System_UIntPtr));
 
                 var constantIncompatibleTypes = builder.ToImmutable();
 
-                analysisContext.RegisterOperationAction(saContext =>
+                context.RegisterOperationAction(context =>
                 {
-                    var fieldInitializer = saContext.Operation as IFieldInitializerOperation;
+                    var fieldInitializer = context.Operation as IFieldInitializerOperation;
 
                     // Diagnostics are reported on the last initialized field to retain the previous FxCop behavior
                     // Note all the descriptors/rules for this analyzer have the same ID and category and hence
@@ -70,8 +70,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         lastField.IsConst ||
                         !lastField.IsReadOnly ||
                         !fieldInitializerValue.ConstantValue.HasValue ||
-                        !saContext.Options.MatchesConfiguredVisibility(DefaultRule, lastField, saContext.Compilation, saContext.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private) ||
-                        !saContext.Options.MatchesConfiguredModifiers(DefaultRule, lastField, saContext.Compilation, saContext.CancellationToken, defaultRequiredModifiers: SymbolModifiers.Static))
+                        !context.Options.MatchesConfiguredVisibility(DefaultRule, lastField, context.Compilation, context.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.Internal | SymbolVisibilityGroup.Private) ||
+                        !context.Options.MatchesConfiguredModifiers(DefaultRule, lastField, context.Compilation, context.CancellationToken, defaultRequiredModifiers: SymbolModifiers.Static))
                     {
                         return;
                     }
@@ -85,19 +85,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         if (fieldInitializerValue.Type?.SpecialType == SpecialType.System_String &&
                             ((string)initializerValue).Length == 0)
                         {
-                            saContext.ReportDiagnostic(lastField.CreateDiagnostic(EmptyStringRule, lastField.Name));
+                            context.ReportDiagnostic(lastField.CreateDiagnostic(EmptyStringRule, lastField.Name));
                             return;
                         }
 
-                        saContext.ReportDiagnostic(lastField.CreateDiagnostic(DefaultRule, lastField.Name));
+                        context.ReportDiagnostic(lastField.CreateDiagnostic(DefaultRule, lastField.Name));
                     }
                 },
                 OperationKind.FieldInitializer);
             });
         }
-
-        private static bool IsConstantCompatibleType(ITypeSymbol? typeSymbol)
-            => typeSymbol?.SpecialType is not SpecialType.System_IntPtr
-                and not SpecialType.System_UIntPtr;
     }
 }
