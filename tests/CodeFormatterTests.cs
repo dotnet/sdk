@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.IO;
@@ -412,7 +412,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenNotFixingCodeStyle()
         {
-            var restoreExitCode = await PerformNuGetRestore(s_codeStyleSolutionFilePath);
+            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
@@ -429,7 +429,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInCodeStyleSolution_WhenFixingCodeStyleErrors()
         {
-            var restoreExitCode = await PerformNuGetRestore(s_codeStyleSolutionFilePath);
+            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
@@ -447,7 +447,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task FilesFormattedInCodeStyleSolution_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await PerformNuGetRestore(s_codeStyleSolutionFilePath);
+            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
@@ -465,7 +465,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task NoFilesFormattedInAnalyzersSolution_WhenNotFixingAnalyzers()
         {
-            var restoreExitCode = await PerformNuGetRestore(s_analyzersSolutionFilePath);
+            var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
@@ -482,7 +482,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [Fact]
         public async Task FilesFormattedInAnalyzersSolution_WhenFixingAnalyzerErrors()
         {
-            var restoreExitCode = await PerformNuGetRestore(s_analyzersSolutionFilePath);
+            var restoreExitCode = await NuGetHelper.PerformRestore(s_analyzersSolutionFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
@@ -495,18 +495,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedFileCount: 7,
                 fixCategory: FixCategory.Whitespace | FixCategory.Analyzers,
                 analyzerSeverity: DiagnosticSeverity.Error);
-        }
-
-        internal async Task<int> PerformNuGetRestore(string workspaceFilePath)
-        {
-            var workspacePath = Path.Combine(TestProjectsPathHelper.GetProjectsDirectory(), workspaceFilePath);
-
-            var processInfo = ProcessRunner.CreateProcess("dotnet", $"restore \"{workspacePath}\"", captureOutput: true, displayWindow: false);
-            var restoreResult = await processInfo.Result;
-
-            _output.WriteLine(string.Join(Environment.NewLine, restoreResult.OutputLines));
-
-            return restoreResult.ExitCode;
         }
 
         internal async Task<string> TestFormatWorkspaceAsync(
