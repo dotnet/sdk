@@ -13,7 +13,8 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
     internal static class MSBuildWorkspaceLoader
     {
-        private static readonly SemaphoreSlim s_guard = new SemaphoreSlim(1, 1);
+        // Used in tests for locking around MSBuild invocations
+        internal static readonly SemaphoreSlim Guard = new SemaphoreSlim(1, 1);
 
         public static async Task<Workspace?> LoadAsync(
             string solutionOrProjectPath,
@@ -31,44 +32,34 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 { "AlwaysCompileMarkupFilesInSeparateDomain", bool.FalseString },
             };
 
-            MSBuildWorkspace workspace;
+            var workspace = MSBuildWorkspace.Create(properties);
 
-            await s_guard.WaitAsync();
-            try
+            Build.Framework.ILogger? binlog = null;
+            if (createBinaryLog)
             {
-                workspace = MSBuildWorkspace.Create(properties);
-
-                Build.Framework.ILogger? binlog = null;
-                if (createBinaryLog)
+                binlog = new Build.Logging.BinaryLogger()
                 {
-                    binlog = new Build.Logging.BinaryLogger()
-                    {
-                        Parameters = Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog"),
-                        Verbosity = Build.Framework.LoggerVerbosity.Diagnostic,
-                    };
-                }
-
-                if (workspaceType == WorkspaceType.Solution)
-                {
-                    await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    try
-                    {
-                        await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        logger.LogError(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, solutionOrProjectPath);
-                        workspace.Dispose();
-                        return null;
-                    }
-                }
+                    Parameters = Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog"),
+                    Verbosity = Build.Framework.LoggerVerbosity.Diagnostic,
+                };
             }
-            finally
+
+            if (workspaceType == WorkspaceType.Solution)
             {
-                s_guard.Release();
+                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                try
+                {
+                    await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                catch (InvalidOperationException)
+                {
+                    logger.LogError(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, solutionOrProjectPath);
+                    workspace.Dispose();
+                    return null;
+                }
             }
 
             LogWorkspaceDiagnostics(logger, logWorkspaceWarnings, workspace.Diagnostics);
@@ -98,6 +89,28 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                         logger.LogWarning(diagnostic.Message);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// This is for use in tests so that MSBuild is only invoked serially
+        /// </summary>
+        internal static async Task<Workspace?> LockedLoadAsync(
+            string solutionOrProjectPath,
+            WorkspaceType workspaceType,
+            bool createBinaryLog,
+            bool logWorkspaceWarnings,
+            ILogger logger,
+            CancellationToken cancellationToken)
+        {
+            await Guard.WaitAsync();
+            try
+            {
+                return await LoadAsync(solutionOrProjectPath, workspaceType, createBinaryLog, logWorkspaceWarnings, logger, cancellationToken);
+            }
+            finally
+            {
+                Guard.Release();
             }
         }
     }
