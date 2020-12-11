@@ -227,11 +227,11 @@ using System;
 
 public class Class1
 {
-	internal static readonly nuint field = (nuint)0;
+    internal static readonly nuint field = (nuint)0;
 }",
                 ExpectedDiagnostics =
                 {
-                    GetCSharpDefaultResultAt(6, 33, "field"),
+                    GetCSharpDefaultResultAt(6, 36, "field"),
                 },
                 FixedCode = @"
 using System;
