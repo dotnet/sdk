@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
     <PropertyGroup>
         <TargetFrameworks Condition="'$(PackSpecific)' != 'true'">$(NETStandardTargetFramework);$(NETFullTargetFramework)</TargetFrameworks>
         <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <IsPackable>true</IsPackable>
 		<IsShipping>false</IsShipping>
+        <IsTestProject>false</IsTestProject>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,4 +14,9 @@
         <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Edge\Microsoft.TemplateEngine.Edge.csproj" />
         <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Utils\Microsoft.TemplateEngine.Utils.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit" />
+    </ItemGroup>
+
 </Project>
