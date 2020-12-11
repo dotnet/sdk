@@ -260,7 +260,7 @@ namespace Microsoft.TemplateEngine.Edge
                     if (_baseDir == null)
                     {
                         Assembly asm = typeof(Paths).GetTypeInfo().Assembly;
-                        Uri codebase = new Uri(asm.CodeBase, UriKind.Absolute);
+                        Uri codebase = new Uri(asm.Location, UriKind.Absolute);
                         string localPath = codebase.LocalPath;
                         _baseDir = Path.GetDirectoryName(localPath);
                     }
