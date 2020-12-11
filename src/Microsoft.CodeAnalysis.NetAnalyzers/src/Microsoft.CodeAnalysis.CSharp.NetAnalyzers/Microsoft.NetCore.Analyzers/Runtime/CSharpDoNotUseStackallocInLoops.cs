@@ -7,12 +7,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.NetCore.Analyzers;
 
-namespace Microsoft.NetCore.Analyzers.Runtime
+namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
     /// <summary>CA2014: Do Not Use Stackalloc In Loops.</summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public sealed class DoNotUseStackallocInLoopsAnalyzer : DiagnosticAnalyzer
+    public sealed class CSharpDoNotUseStackallocInLoopsAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2014";
 

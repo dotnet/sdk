@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.NetCore.Analyzers.Security.Helpers
 {
@@ -87,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             else if (this.InsecureAttributeTypedConstant != null)
             {
                 TypedConstant t = (TypedConstant)this.InsecureAttributeTypedConstant!;
-                return t.ToCSharpString();
+                return t.ToString(); // TODO: What to do here
             }
             else
             {

@@ -8,7 +8,9 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
+#pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer - Construct is invalid in VB.NET
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
+#pragma warning restore RS1004 // Recommend adding language support to diagnostic analyzer
     public sealed class DoNotDeclareEventFieldsAsVirtual : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1070";

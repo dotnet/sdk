@@ -13,7 +13,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     /// <summary>
     /// CA2244: Do not duplicate indexed element initializations
     /// </summary>
+#pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer - Construct impossible in VB.NET
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
+#pragma warning restore RS1004 // Recommend adding language support to diagnostic analyzer
     public sealed class AvoidDuplicateElementInitialization : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2244";
