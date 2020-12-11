@@ -13,6 +13,8 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
     internal static class MSBuildWorkspaceLoader
     {
+        private static readonly SemaphoreSlim s_guard = new SemaphoreSlim(1, 1);
+
         public static async Task<Workspace?> LoadAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
@@ -29,34 +31,44 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 { "AlwaysCompileMarkupFilesInSeparateDomain", bool.FalseString },
             };
 
-            var workspace = MSBuildWorkspace.Create(properties);
+            MSBuildWorkspace workspace;
 
-            Build.Framework.ILogger? binlog = null;
-            if (createBinaryLog)
+            await s_guard.WaitAsync();
+            try
             {
-                binlog = new Build.Logging.BinaryLogger()
-                {
-                    Parameters = Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog"),
-                    Verbosity = Build.Framework.LoggerVerbosity.Diagnostic,
-                };
-            }
+                workspace = MSBuildWorkspace.Create(properties);
 
-            if (workspaceType == WorkspaceType.Solution)
-            {
-                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                Build.Framework.ILogger? binlog = null;
+                if (createBinaryLog)
+                {
+                    binlog = new Build.Logging.BinaryLogger()
+                    {
+                        Parameters = Path.Combine(Environment.CurrentDirectory, "formatDiagnosticLog.binlog"),
+                        Verbosity = Build.Framework.LoggerVerbosity.Diagnostic,
+                    };
+                }
+
+                if (workspaceType == WorkspaceType.Solution)
+                {
+                    await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    try
+                    {
+                        await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        logger.LogError(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, solutionOrProjectPath);
+                        workspace.Dispose();
+                        return null;
+                    }
+                }
             }
-            else
+            finally
             {
-                try
-                {
-                    await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
-                }
-                catch (InvalidOperationException)
-                {
-                    logger.LogError(Resources.Could_not_format_0_Format_currently_supports_only_CSharp_and_Visual_Basic_projects, solutionOrProjectPath);
-                    workspace.Dispose();
-                    return null;
-                }
+                s_guard.Release();
             }
 
             LogWorkspaceDiagnostics(logger, logWorkspaceWarnings, workspace.Diagnostics);
