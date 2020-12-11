@@ -202,7 +202,7 @@ namespace GenerateDocumentationAndConfigFiles
                 return 2;
             }
 
-            CreateTargetsFile(targetsFileDir, targetsFileName, analyzerPackageName);
+            CreateTargetsFile(targetsFileDir, targetsFileName, analyzerPackageName, categories.OrderBy(c => c));
 
             return 0;
 
@@ -639,28 +639,16 @@ Rule ID | Missing Help Link | Title |
                 }
 
                 // Compute descriptors by rule ID and shipped analyzer release versions and shipped data.
-                var allRulesById = new SortedList<string, DiagnosticDescriptor>();
                 var sawShippedFile = false;
                 foreach (string assembly in assemblyList)
                 {
                     var assemblyPath = GetAssemblyPath(assembly);
-                    var analyzerFileReference = new AnalyzerFileReference(assemblyPath, AnalyzerAssemblyLoader.Instance);
-                    analyzerFileReference.AnalyzerLoadFailed += AnalyzerFileReference_AnalyzerLoadFailed;
-                    var analyzers = analyzerFileReference.GetAnalyzersForAllLanguages();
-
-                    foreach (var analyzer in analyzers)
-                    {
-                        foreach (var rule in analyzer.SupportedDiagnostics)
-                        {
-                            allRulesById[rule.Id] = rule;
-                        }
-                    }
-
                     var assemblyDir = Path.GetDirectoryName(assemblyPath);
                     if (assemblyDir is null)
                     {
                         continue;
                     }
+
                     var assemblyName = Path.GetFileNameWithoutExtension(assembly);
                     var shippedFile = Path.Combine(assemblyDir, "AnalyzerReleases", assemblyName, ReleaseTrackingHelper.ShippedFileName);
                     if (File.Exists(shippedFile))
@@ -711,16 +699,11 @@ Rule ID | Missing Help Link | Title |
 
                         foreach (var analysisMode in Enum.GetValues(typeof(AnalysisMode)))
                         {
-                            CreateGlobalconfig(
-                                analyzerGlobalconfigsDir,
-#pragma warning disable CA1308 // Normalize strings to uppercase
-                                $"AnalysisLevel_{analysisLevelVersionString}_{analysisMode!.ToString()!.ToLowerInvariant()}.editorconfig",
-#pragma warning restore CA1308 // Normalize strings to uppercase
-                                $"Rules from '{version}' release with '{analysisMode}' analysis mode",
-                                $"Rules with enabled-by-default state from '{version}' release with '{analysisMode}' analysis mode. Rules that are first released in a version later than '{version}' are disabled.",
-                                (AnalysisMode)analysisMode!,
-                                allRulesById,
-                                (shippedFilesData, version));
+                            CreateGlobalConfig(version, analysisLevelVersionString, (AnalysisMode)analysisMode!, shippedFilesData, category: null);
+                            foreach (var category in categories)
+                            {
+                                CreateGlobalConfig(version, analysisLevelVersionString, (AnalysisMode)analysisMode!, shippedFilesData, category);
+                            }
                         }
                     }
                 }
@@ -728,6 +711,37 @@ Rule ID | Missing Help Link | Title |
                 return true;
 
                 // Local functions.
+
+                void CreateGlobalConfig(
+                    Version version,
+                    string analysisLevelVersionString,
+                    AnalysisMode analysisMode,
+                    ImmutableArray<ReleaseTrackingData> shippedFilesData,
+                    string? category)
+                {
+                    var analysisLevelPropName = "AnalysisLevel";
+                    var title = $"Rules from '{version}' release with '{analysisMode}' analysis mode";
+                    var description = $"Rules with enabled-by-default state from '{version}' release with '{analysisMode}' analysis mode. Rules that are first released in a version later than '{version}' are disabled.";
+                    if (category != null)
+                    {
+                        analysisLevelPropName += category;
+                        title = $"'{category}' {title}";
+                        description = $"'{category}' {description}";
+                    }
+
+                    CreateGlobalconfig(
+                        analyzerGlobalconfigsDir,
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                                $"{analysisLevelPropName}_{analysisLevelVersionString}_{analysisMode!.ToString()!.ToLowerInvariant()}.editorconfig",
+#pragma warning restore CA1308 // Normalize strings to uppercase
+                                    title,
+                        description,
+                        analysisMode,
+                        category,
+                        allRulesById,
+                        (shippedFilesData, version));
+                }
+
                 static string GetNormalizedVersionStringForEditorconfigFileNameSuffix(Version version)
                 {
                     var fieldCount = GetVersionFieldCount(version);
@@ -753,9 +767,6 @@ Rule ID | Missing Help Link | Title |
                         return 1;
                     }
                 }
-
-                static void AnalyzerFileReference_AnalyzerLoadFailed(object? sender, AnalyzerLoadFailureEventArgs e)
-                    => throw e.Exception ?? new InvalidOperationException(e.Message);
 
                 string GetAssemblyPath(string assembly)
                 {
@@ -1071,6 +1082,7 @@ Rule ID | Missing Help Link | Title |
             string editorconfigTitle,
             string editorconfigDescription,
             AnalysisMode analysisMode,
+            string? category,
             SortedList<string, DiagnosticDescriptor> sortedRulesById,
             (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version) shippedReleaseData)
         {
@@ -1080,6 +1092,7 @@ Rule ID | Missing Help Link | Title |
                 editorconfigTitle,
                 editorconfigDescription,
                 analysisMode,
+                category,
                 sortedRulesById,
                 shippedReleaseData);
             var directory = Directory.CreateDirectory(folder);
@@ -1092,12 +1105,13 @@ Rule ID | Missing Help Link | Title |
                 string editorconfigTitle,
                 string editorconfigDescription,
                 AnalysisMode analysisMode,
+                string? category,
                 SortedList<string, DiagnosticDescriptor> sortedRulesById,
                 (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version)? shippedReleaseData)
             {
                 var result = new StringBuilder();
                 StartGlobalconfig();
-                AddRules(analysisMode);
+                AddRules(analysisMode, category);
                 return result.ToString();
 
                 void StartGlobalconfig()
@@ -1109,16 +1123,25 @@ Rule ID | Missing Help Link | Title |
                     result.AppendLine();
                     result.AppendLine($@"is_global = true");
                     result.AppendLine();
+
+                    // Append 'global_level' to ensure conflicts are properly resolved between different global configs:
+                    //   1. Lowest precedence (-2): Category-agnostic config generated by us.
+                    //   2. Higher precedence (-1): Category-specific config generated by us.
+                    //   3. Highest predence (non-negative integer): User provided config.
+                    // See https://github.com/dotnet/roslyn/issues/48634 for further details.
+                    var globalLevel = category != null ? -1 : -2;
+                    result.AppendLine($@"global_level = {globalLevel}");
+                    result.AppendLine();
                 }
 
-                bool AddRules(AnalysisMode analysisMode)
+                bool AddRules(AnalysisMode analysisMode, string? category)
                 {
                     Debug.Assert(sortedRulesById.Count > 0);
 
                     var addedRule = false;
                     foreach (var rule in sortedRulesById)
                     {
-                        if (AddRule(rule.Value))
+                        if (AddRule(rule.Value, category))
                         {
                             addedRule = true;
                         }
@@ -1126,8 +1149,14 @@ Rule ID | Missing Help Link | Title |
 
                     return addedRule;
 
-                    bool AddRule(DiagnosticDescriptor rule)
+                    bool AddRule(DiagnosticDescriptor rule, string? category)
                     {
+                        if (category != null &&
+                            !string.Equals(rule.Category, category, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return false;
+                        }
+
                         var (isEnabledByDefault, severity) = GetEnabledByDefaultAndSeverity(rule, analysisMode);
                         if (rule.IsEnabledByDefault == isEnabledByDefault &&
                             severity == rule.DefaultSeverity)
@@ -1246,7 +1275,7 @@ Rule ID | Missing Help Link | Title |
             }
         }
 
-        private static void CreateTargetsFile(string targetsFileDir, string targetsFileName, string packageName)
+        private static void CreateTargetsFile(string targetsFileDir, string targetsFileName, string packageName, IOrderedEnumerable<string> categories)
         {
             if (string.IsNullOrEmpty(targetsFileDir) || string.IsNullOrEmpty(targetsFileName))
             {
@@ -1254,34 +1283,73 @@ Rule ID | Missing Help Link | Title |
             }
 
             var fileContents =
-$@"<Project>{GetCommonContents(packageName)}{GetPackageSpecificContents(packageName)}
+$@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificContents(packageName)}
 </Project>";
             var directory = Directory.CreateDirectory(targetsFileDir);
             var fileWithPath = Path.Combine(directory.FullName, targetsFileName);
             File.WriteAllText(fileWithPath, fileContents);
 
-            static string GetCommonContents(string packageName)
-                => GetGlobalAnalyzerConfigTargetContents(packageName) + GetMSBuildContentForPropertyAndItemOptions() + GetCodeAnalysisTreatWarningsAsErrorsTargetContents();
-
-            static string GetGlobalAnalyzerConfigTargetContents(string packageName)
+            static string GetCommonContents(string packageName, IOrderedEnumerable<string> categories)
             {
+                var stringBuilder = new StringBuilder();
+
+                stringBuilder.Append(GetGlobalAnalyzerConfigTargetContents(packageName, category: null));
+                foreach (var category in categories)
+                {
+                    stringBuilder.Append(GetGlobalAnalyzerConfigTargetContents(packageName, category));
+                }
+
+                stringBuilder.Append(GetMSBuildContentForPropertyAndItemOptions());
+                stringBuilder.Append(GetCodeAnalysisTreatWarningsAsErrorsTargetContents());
+                return stringBuilder.ToString();
+            }
+
+            static string GetGlobalAnalyzerConfigTargetContents(string packageName, string? category)
+            {
+                var analysisLevelPropName = "AnalysisLevel";
+                var analysisLevelPrefixPropName = "AnalysisLevelPrefix";
+                var analysisLevelSuffixPropName = "AnalysisLevelSuffix";
+                var analysisModePropName = nameof(AnalysisMode);
+                var effectiveAnalysisLevelPropName = "EffectiveAnalysisLevel";
+                var targetCondition = "'$(SkipGlobalAnalyzerConfigForPackage)' != 'true'";
+                var afterTargets = string.Empty;
                 var trimmedPackageName = packageName.Replace(".", string.Empty, StringComparison.Ordinal);
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    analysisLevelPropName += category;
+                    analysisLevelPrefixPropName += category;
+                    analysisLevelSuffixPropName += category;
+                    analysisModePropName += category;
+                    effectiveAnalysisLevelPropName += category;
+
+                    // For category-specific target, we also check if end-user has overriden category-specific AnalysisLevel or AnalysisMode.
+                    targetCondition += $" and ('$({analysisLevelPropName})' != '' or '$({analysisModePropName})' != '')";
+
+                    // Ensure that category-specific target executes after category-agnostic target
+                    afterTargets += $@"AfterTargets=""AddGlobalAnalyzerConfigForPackage_{trimmedPackageName}"" ";
+
+                    trimmedPackageName += category;
+                }
+
                 var packageVersionPropName = trimmedPackageName + "RulesVersion";
-                var propertyStringForSettingDefaultPropertyValue = GetPropertyStringForSettingDefaultPropertyValue(packageName, packageVersionPropName);
+                var propertyStringForSettingDefaultPropertyValues = GetPropertyStringForSettingDefaultPropertyValues(
+                    packageName, packageVersionPropName, category, analysisLevelPropName,
+                    analysisLevelPrefixPropName, analysisLevelSuffixPropName, effectiveAnalysisLevelPropName);
 
                 return $@"
-  <Target Name=""AddGlobalAnalyzerConfigForPackage_{trimmedPackageName}"" BeforeTargets=""CoreCompile"" Condition=""'$(SkipGlobalAnalyzerConfigForPackage)' != 'true'"">
+  <Target Name=""AddGlobalAnalyzerConfigForPackage_{trimmedPackageName}"" BeforeTargets=""CoreCompile"" {afterTargets}Condition=""{targetCondition}"">
     <!-- PropertyGroup to compute global analyzer config file to be used -->
-    <PropertyGroup>{propertyStringForSettingDefaultPropertyValue}
+    <PropertyGroup>{propertyStringForSettingDefaultPropertyValues}
       <!-- Set the default analysis mode, if not set by the user -->
-      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>$(AnalysisLevelSuffix)</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
-      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">$(AnalysisMode)</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>$({analysisLevelSuffixPropName})</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">$({analysisModePropName})</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
       <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllEnabledByDefault'"">{nameof(AnalysisMode.All)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
       <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllDisabledByDefault'"">{nameof(AnalysisMode.None)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
       <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">{nameof(AnalysisMode.Default)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
 
       <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
-      <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">AnalysisLevel_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
       
       <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
       <_GlobalAnalyzerConfigFile_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})' != ''"">$(_GlobalAnalyzerConfigDir_{trimmedPackageName})\$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})</_GlobalAnalyzerConfigFile_{trimmedPackageName}>
@@ -1293,14 +1361,60 @@ $@"<Project>{GetCommonContents(packageName)}{GetPackageSpecificContents(packageN
   </Target>
 ";
 
-                static string GetPropertyStringForSettingDefaultPropertyValue(string packageName, string packageVersionPropName)
+                static string GetPropertyStringForSettingDefaultPropertyValues(
+                    string packageName,
+                    string packageVersionPropName,
+                    string? category,
+                    string analysisLevelPropName,
+                    string analysisLevelPrefixPropName,
+                    string analysisLevelSuffixPropName,
+                    string effectiveAnalysisLevelPropName)
                 {
                     if (packageName == NetAnalyzersPackageName)
                     {
-                        return $@"
-      <!-- Default '{packageVersionPropName}' to 'EffectiveAnalysisLevel' with trimmed trailing '.0' -->
-      <{packageVersionPropName} Condition=""'$({packageVersionPropName})' == '' and $(EffectiveAnalysisLevel) != ''"">$([System.Text.RegularExpressions.Regex]::Replace($(EffectiveAnalysisLevel), '(.0)*$', ''))</{packageVersionPropName}>
+                        var propertyStr = string.Empty;
+
+                        if (!string.IsNullOrEmpty(category))
+                        {
+                            // For category-specific logic, we need to duplicate logic from SDK targets to set
+                            // category-specific AnalysisLevel property values. In future, we should consider removing similar logic from
+                            // SDK targets for core AnalysisLevel and instead generalize this logic.
+
+                            propertyStr += $@"
+      <!-- Default '{analysisLevelPropName}' to the core 'AnalysisLevel' and compute '{analysisLevelPrefixPropName}', '{analysisLevelSuffixPropName}' and '{effectiveAnalysisLevelPropName}' -->
+      <{analysisLevelPropName} Condition=""$({analysisLevelPropName}) == ''"">$(AnalysisLevel)</{analysisLevelPropName}>
+
+      <!-- {analysisLevelPropName} can also contain compound values with a prefix and suffix separated by a '-' character.
+           The prefix indicates the core AnalysisLevel for '{category}' rules and the suffix indicates the bucket of
+           rules to enable for '{category}' rules by default. For example, some valid compound values for {analysisLevelPropName} are:
+             1. '5-all' - Indicates core {analysisLevelPropName} = '5' with 'all' the '{category}' rules enabled by default.
+             2. 'latest-none' - Indicates core {analysisLevelPropName} = 'latest' with 'none' of the '{category}' rules enabled by default.
+           {analysisLevelPrefixPropName} is used to set the {effectiveAnalysisLevelPropName} below.
+           {analysisLevelSuffixPropName} is used to map to the correct global config.
+      -->
+      <{analysisLevelPrefixPropName} Condition=""$({analysisLevelPropName}.Contains('-'))"">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '-(.)*', ''))</{analysisLevelPrefixPropName}>
+      <{analysisLevelSuffixPropName} Condition=""'$({analysisLevelPrefixPropName})' != ''"">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '$({analysisLevelPrefixPropName})-', ''))</{analysisLevelSuffixPropName}>
+
+      <!-- {effectiveAnalysisLevelPropName} is used to differentiate from user specified strings (such as 'none')
+           and an implied numerical option (such as '4') -->
+      <!-- TODO: Remove hard-coded constants such as 4.0, 5.0 and 6.0 used below once these are exposed as properties from the SDK -->
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">4.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">5.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">6.0</{effectiveAnalysisLevelPropName}>
+
+      <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
+      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And 
+                                         '$({analysisLevelPrefixPropName})' != ''"">$({analysisLevelPrefixPropName})</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And 
+                                         '$({analysisLevelPropName})' != ''"">$({analysisLevelPropName})</{effectiveAnalysisLevelPropName}>
 ";
+                        }
+
+                        propertyStr += $@"
+      <!-- Default '{packageVersionPropName}' to '{effectiveAnalysisLevelPropName}' with trimmed trailing '.0' -->
+      <{packageVersionPropName} Condition=""'$({packageVersionPropName})' == '' and $({effectiveAnalysisLevelPropName}) != ''"">$([System.Text.RegularExpressions.Regex]::Replace($({effectiveAnalysisLevelPropName}), '(.0)*$', ''))</{packageVersionPropName}>
+";
+                        return propertyStr;
                     }
 
                     return string.Empty;
