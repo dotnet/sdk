@@ -231,8 +231,8 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                         projectXml.Root.Add(packageReferenceItemGroup);
                     }
                     var item = new XElement(ns + additionalItem.Key);
-                    foreach (var (attributeKey, attributeValue) in additionalItem.Value)
-                        item.Add(new XAttribute(attributeKey, attributeValue));
+                    foreach (var attribute in additionalItem.Value)
+                        item.Add(new XAttribute(attribute.Key, attribute.Value));
                     additionalItemGroup.Add(item);
                 }
             }
