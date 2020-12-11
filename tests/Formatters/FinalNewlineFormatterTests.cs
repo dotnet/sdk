@@ -4,12 +4,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public class FinalNewlineFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new FinalNewlineFormatter();
+
+        public FinalNewlineFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
 
         [Fact]
         public async Task WhenFinalNewlineUnspecified_AndFinalNewlineMissing_NoChange()

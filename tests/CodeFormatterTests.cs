@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.IO;
@@ -549,11 +549,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Environment.CurrentDirectory = currentDirectory;
 
             var log = logger.GetLog();
-            _output.WriteLine(log);
 
-            Assert.Equal(expectedExitCode, formatResult.ExitCode);
-            Assert.Equal(expectedFilesFormatted, formatResult.FilesFormatted);
-            Assert.Equal(expectedFileCount, formatResult.FileCount);
+            try
+            {
+                Assert.Equal(expectedExitCode, formatResult.ExitCode);
+                Assert.Equal(expectedFilesFormatted, formatResult.FilesFormatted);
+                Assert.Equal(expectedFileCount, formatResult.FileCount);
+            }
+            catch
+            {
+                _output.WriteLine(log);
+                throw;
+            }
 
             return log;
         }

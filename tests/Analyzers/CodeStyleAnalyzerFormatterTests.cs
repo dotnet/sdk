@@ -6,12 +6,18 @@ using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Formatters;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
     public class CodeStyleAnalyzerFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => AnalyzerFormatter.CodeStyleFormatter;
+
+        public CodeStyleAnalyzerFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
 
         [Fact]
         public async Task TestUseVarCodeStyle_AppliesWhenNotUsingVar()
