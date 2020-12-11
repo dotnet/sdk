@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
@@ -16,6 +17,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticPrefix + "." + AnalyzerOptionsExtensions.CategoryPrefix + "-" + UnnecessaryImportsFormatter.Style + "." + AnalyzerOptionsExtensions.SeveritySuffix;
 
         private protected override ICodeFormatter Formatter => new UnnecessaryImportsFormatter();
+
+        public UnnecessaryImportsFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
 
         [Fact]
         public async Task WhenNotFixingCodeSyle_AndHasUnusedImports_NoChange()

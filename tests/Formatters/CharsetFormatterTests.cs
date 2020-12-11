@@ -5,12 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public class CharsetFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new CharsetFormatter();
+
+        public CharsetFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
 
         [Theory]
         [InlineData("latin1", "utf-8")]

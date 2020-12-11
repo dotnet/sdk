@@ -5,12 +5,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public class OrganizeImportsFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new OrganizeImportsFormatter();
+
+        public OrganizeImportsFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
 
         [Fact]
         public async Task WhenOptionsDisabled_AndImportsNotSorted_ImportsSorted()

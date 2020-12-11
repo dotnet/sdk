@@ -4,12 +4,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public class EndOfLineFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new EndOfLineFormatter();
+
+        public EndOfLineFormatterTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
 
         [Theory]
         [InlineData("\n", "\n", "lf")]

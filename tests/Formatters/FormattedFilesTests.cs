@@ -11,6 +11,7 @@ using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
@@ -23,6 +24,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             ["insert_final_newline"] = "true",
             ["end_of_line"] = "lf",
         };
+
+        public FormattedFilesTests(ITestOutputHelper output)
+        {
+            TestOutputHelper = output;
+        }
 
         [Fact]
         public async Task ReturnsItem_WhenFileFormatted()
