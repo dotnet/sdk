@@ -1382,7 +1382,7 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
                             propertyStr += $@"
       <!-- Default '{analysisLevelPropName}' to the core 'AnalysisLevel' and compute '{analysisLevelPrefixPropName}', '{analysisLevelSuffixPropName}' and '{effectiveAnalysisLevelPropName}' -->
-      <{analysisLevelPropName} Condition=""$({analysisLevelPropName}) == ''"">$(AnalysisLevel)</{analysisLevelPropName}>
+      <{analysisLevelPropName} Condition=""'$({analysisLevelPropName})' == ''"">$(AnalysisLevel)</{analysisLevelPropName}>
 
       <!-- {analysisLevelPropName} can also contain compound values with a prefix and suffix separated by a '-' character.
            The prefix indicates the core AnalysisLevel for '{category}' rules and the suffix indicates the bucket of
