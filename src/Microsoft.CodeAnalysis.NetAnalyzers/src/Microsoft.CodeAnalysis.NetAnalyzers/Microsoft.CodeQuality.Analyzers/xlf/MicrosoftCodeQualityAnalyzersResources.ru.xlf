@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesMessage">
         <source>'{0}' is a new protected member in the 'NonInheritable' class '{1}'</source>
-        <target state="translated">"{0}" — новый защищенный член в "ненаследуемом" классе "{1}".</target>
+        <target state="translated">"{0}" — новый защищенный элемент в "ненаследуемом" классе "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDeclareProtectedMembersInSealedTypesTitle">
@@ -129,7 +129,7 @@
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
-        <target state="translated">"{0}" вызывает "{1}", но не использует значение, возвращаемое методом. Методы Linq не имеют побочных эффектов. Используйте результат в условном операторе, присвойте его переменной или передайте его в качестве аргумента другому методу.</target>
+        <target state="translated">"{0}" вызывает "{1}", но не использует значение, возвращаемое методом. Методы Linq не имеют известных побочных эффектов. Используйте результат в условном операторе, присвойте его переменной или передайте его в качестве аргумента другому методу.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
@@ -299,7 +299,7 @@
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
         <source>Apply 'AttributeUsageAttribute'</source>
-        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <target state="translated">Применить "AttributeUsageAttribute"</target>
         <note />
       </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
@@ -709,7 +709,7 @@
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
         <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
-        <target state="needs-review-translation">Реализуйте операторы равенства и сделайте их поведение идентичным поведению метода "Equals".</target>
+        <target state="new">Implement the equality operators and make their behavior identical to that of the Equals method</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
