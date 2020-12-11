@@ -2,9 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using FluentAssertions;
+
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+
 using System.IO;
 using System.Linq;
+
 using Xunit;
 
 namespace ManifestReaderTests
@@ -12,6 +15,8 @@ namespace ManifestReaderTests
     public class ManifestTests
     {
         private const string fakeRootPath = "fakeRootPath";
+
+        public static readonly string[] TEST_RUNTIME_IDENTIFIER_CHAIN = new[] { "win-x64", "win", "any", "base" };
 
         [Fact]
         public void ItCanDeserialize()
@@ -33,10 +38,9 @@ namespace ManifestReaderTests
         public void AliasedPackPath()
         {
             var manifestProvider = new FakeManifestProvider(Path.Combine("Manifests", "Sample.json"));
-            var resolver = new WorkloadResolver(manifestProvider, fakeRootPath);
+            var resolver = WorkloadResolver.CreateForTests(manifestProvider, fakeRootPath, TEST_RUNTIME_IDENTIFIER_CHAIN);
 
             resolver.ReplaceFilesystemChecksForTest(_ => true, _ => true);
-            resolver.ReplacePlatformIdsForTest(new[] { "win-x64", "*" });
 
             var buildToolsPack = resolver.GetInstalledWorkloadPacksOfKind(WorkloadPackKind.Sdk).FirstOrDefault(pack => pack.Id == "Xamarin.Android.BuildTools");
 
