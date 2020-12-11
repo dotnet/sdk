@@ -7,10 +7,10 @@ using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriateFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicUseLiteralsWhereAppropriateFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
@@ -188,7 +188,7 @@ public class Class1
         }
 
         [Fact]
-        public async Task CA1802_CSharp_nint_nuint_Diagnostic()
+        public async Task CA1802_CSharp_nint_Diagnostic()
         {
             await new VerifyCS.Test
             {
@@ -199,21 +199,46 @@ using System;
 
 public class Class1
 {
-    internal static readonly nint field1 = (nint)0;
-	internal static readonly nuint field2 = (nuint)0;
+    internal static readonly nint field = (nint)0;
 }",
                 ExpectedDiagnostics =
                 {
-                    GetCSharpDefaultResultAt(6, 35, "field1"),
-                    GetCSharpDefaultResultAt(7, 33, "field2"),
+                    GetCSharpDefaultResultAt(6, 35, "field"),
                 },
                 FixedCode = @"
 using System;
 
 public class Class1
 {
-    internal const nint field1 = (nint)0;
-	internal const nuint field2 = (nuint)0;
+    internal const nint field = (nint)0;
+}",
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task CA1802_CSharp_nuint_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+using System;
+
+public class Class1
+{
+	internal static readonly nuint field = (nuint)0;
+}",
+                ExpectedDiagnostics =
+                {
+                    GetCSharpDefaultResultAt(6, 33, "field"),
+                },
+                FixedCode = @"
+using System;
+
+public class Class1
+{
+    internal const nuint field = (nuint)0;
 }",
             }.RunAsync();
         }
