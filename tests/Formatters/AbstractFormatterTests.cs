@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
@@ -17,6 +18,9 @@ using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Composition;
 using Xunit;
+using Xunit.Abstractions;
+
+#nullable enable
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
@@ -62,6 +66,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         private protected abstract ICodeFormatter Formatter { get; }
 
+        protected ITestOutputHelper? TestOutputHelper { get; set; }
+
         protected AbstractFormatterTest()
         {
             TestState = new SolutionState(DefaultFilePathPrefix, DefaultFileExt);
@@ -71,8 +77,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// Gets the language name used for the test.
         /// </summary>
         public abstract string Language { get; }
-
-        private static TestLogger Logger => new TestLogger();
 
         public SolutionState TestState { get; }
 
@@ -85,45 +89,48 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         private protected Task<SourceText> AssertCodeUnchangedAsync(
             string code,
             IReadOnlyDictionary<string, string> editorConfig,
-            Encoding encoding = null,
+            Encoding? encoding = null,
             FixCategory fixCategory = FixCategory.Whitespace,
+            IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            return AssertCodeChangedAsync(code, code, ToEditorConfig(editorConfig), encoding, fixCategory, codeStyleSeverity, analyzerSeverity);
+            return AssertCodeChangedAsync(code, code, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
         }
 
         private protected Task<SourceText> AssertCodeChangedAsync(
             string testCode,
             string expectedCode,
             IReadOnlyDictionary<string, string> editorConfig,
-            Encoding encoding = null,
+            Encoding? encoding = null,
             FixCategory fixCategory = FixCategory.Whitespace,
+            IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
-            return AssertCodeChangedAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding, fixCategory, codeStyleSeverity, analyzerSeverity);
+            return AssertCodeChangedAsync(testCode, expectedCode, ToEditorConfig(editorConfig), encoding, fixCategory, analyzerReferences, codeStyleSeverity, analyzerSeverity);
         }
 
         private protected async Task<SourceText> AssertCodeChangedAsync(
             string testCode,
             string expectedCode,
             string editorConfig,
-            Encoding encoding = null,
+            Encoding? encoding = null,
             FixCategory fixCategory = FixCategory.Whitespace,
+            IEnumerable<AnalyzerReference>? analyzerReferences = null,
             DiagnosticSeverity codeStyleSeverity = DiagnosticSeverity.Error,
             DiagnosticSeverity analyzerSeverity = DiagnosticSeverity.Error)
         {
             var text = SourceText.From(testCode, encoding ?? Encoding.UTF8);
             TestState.Sources.Add(text);
 
-            var solution = await GetSolutionAsync(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), editorConfig);
+            var solution = await GetSolutionAsync(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), editorConfig, analyzerReferences);
             var project = solution.Projects.Single();
             var document = project.Documents.Single();
 
-            var fileMatcher = SourceFileMatcher.CreateMatcher(new[] { document.FilePath }, exclude: Array.Empty<string>());
+            var fileMatcher = SourceFileMatcher.CreateMatcher(new[] { document.FilePath! }, exclude: Array.Empty<string>());
             var formatOptions = new FormatOptions(
-                workspaceFilePath: project.FilePath,
+                workspaceFilePath: project.FilePath!,
                 workspaceType: WorkspaceType.Solution,
                 logLevel: LogLevel.Trace,
                 fixCategory,
@@ -137,11 +144,21 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var pathsToFormat = GetOnlyFileToFormat(solution);
 
-            var formattedSolution = await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, Logger, new List<FormattedFile>(), default);
+            var logger = new TestLogger();
+
+            var formattedSolution = await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, logger, new List<FormattedFile>(), default);
             var formattedDocument = GetOnlyDocument(formattedSolution);
             var formattedText = await formattedDocument.GetTextAsync();
 
-            Assert.Equal(expectedCode, formattedText.ToString());
+            try
+            {
+                Assert.Equal(expectedCode, formattedText.ToString());
+            }
+            catch
+            {
+                TestOutputHelper?.WriteLine(logger.GetLog());
+                throw;
+            }
 
             return formattedText;
         }
@@ -178,9 +195,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
         /// <param name="editorConfig">The .editorconfig to apply to this solution.</param>
         /// <returns>A solution containing a project with the specified sources and additional files.</returns>
-        private protected async Task<Solution> GetSolutionAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, IReadOnlyDictionary<string, string> editorConfig)
+        private protected async Task<Solution> GetSolutionAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, IReadOnlyDictionary<string, string> editorConfig, IEnumerable<AnalyzerReference>? analyzerReferences = null)
         {
-            return await GetSolutionAsync(sources, additionalFiles, additionalMetadataReferences, ToEditorConfig(editorConfig));
+            return await GetSolutionAsync(sources, additionalFiles, additionalMetadataReferences, ToEditorConfig(editorConfig), analyzerReferences);
         }
 
         /// <summary>
@@ -192,9 +209,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="additionalMetadataReferences">Additional metadata references to include in the project.</param>
         /// <param name="editorConfig">The .editorconfig to apply to this solution.</param>
         /// <returns>A solution containing a project with the specified sources and additional files.</returns>
-        private protected async Task<Solution> GetSolutionAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string editorConfig)
+        private protected async Task<Solution> GetSolutionAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string editorConfig, IEnumerable<AnalyzerReference>? analyzerReferences = null)
         {
-            var project = await CreateProjectAsync(sources, additionalFiles, additionalMetadataReferences, Language, SourceText.From(editorConfig, Encoding.UTF8));
+            analyzerReferences ??= Enumerable.Empty<AnalyzerReference>();
+            var project = await CreateProjectAsync(sources, additionalFiles, additionalMetadataReferences, analyzerReferences, Language, SourceText.From(editorConfig, Encoding.UTF8));
             return project.Solution;
         }
 
@@ -213,10 +231,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="editorConfigText">The .editorconfig to apply to this project.</param>
         /// <returns>A <see cref="Project"/> created out of the <see cref="Document"/>s created from the source
         /// strings.</returns>
-        protected async Task<Project> CreateProjectAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language, SourceText editorConfigText)
+        protected async Task<Project> CreateProjectAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, IEnumerable<AnalyzerReference> analyzerReferences, string language, SourceText editorConfigText)
         {
             language ??= Language;
-            return await CreateProjectImplAsync(sources, additionalFiles, additionalMetadataReferences, language, editorConfigText);
+            return await CreateProjectImplAsync(sources, additionalFiles, additionalMetadataReferences, analyzerReferences, language, editorConfigText);
         }
 
         /// <summary>
@@ -230,12 +248,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         /// <param name="editorConfigText">The .editorconfig to apply to this project.</param>
         /// <returns>A <see cref="Project"/> created out of the <see cref="Document"/>s created from the source
         /// strings.</returns>
-        protected virtual async Task<Project> CreateProjectImplAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, string language, SourceText editorConfigText)
+        protected virtual async Task<Project> CreateProjectImplAsync((string filename, SourceText content)[] sources, (string filename, SourceText content)[] additionalFiles, MetadataReference[] additionalMetadataReferences, IEnumerable<AnalyzerReference> analyzerReferences, string language, SourceText editorConfigText)
         {
             var projectId = ProjectId.CreateNewId(debugName: DefaultTestProjectName);
-            var solution = await CreateSolutionAsync(projectId, language, editorConfigText);
-
-            solution = solution.AddMetadataReferences(projectId, additionalMetadataReferences);
+            var solution = (await CreateSolutionAsync(projectId, language, editorConfigText))
+                .AddAnalyzerReferences(projectId, analyzerReferences)
+                .AddMetadataReferences(projectId, additionalMetadataReferences);
 
             for (var i = 0; i < sources.Length; i++)
             {
@@ -251,7 +269,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 solution = solution.AddAdditionalDocument(documentId, newFileName, source);
             }
 
-            return solution.GetProject(projectId);
+            return solution.GetProject(projectId)!;
         }
 
         /// <summary>
