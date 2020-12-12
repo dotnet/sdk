@@ -7,11 +7,11 @@
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
       <_crossDir Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' != 'arm64'">/x64_arm64</_crossDir>
       <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">/x86_arm</_crossDir>
-      <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">/x64_arm</_crossDir>
+      <_crossDir Condition="'$(Architecture)' == 'arm' And '$(OSName)' != 'win'">/x64_arm</_crossDir>
       <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools$(_crossDir)/crossgen$(ExeExtension)</CrossgenPath>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm64' and '$(BuildArchitecture)' == 'x64'">x64_arm64</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'win'">x86_arm</LibCLRJitRid>
-      <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' == 'linux'">x64_arm</LibCLRJitRid>
+      <LibCLRJitRid Condition="'$(Architecture)' == 'arm' And '$(OSName)' != 'win'">x64_arm</LibCLRJitRid>
       <LibCLRJitRid Condition="'$(LibCLRJitRid)' == ''">$(SharedFrameworkRid)</LibCLRJitRid>
       <LibCLRJitPath>$(NuGetPackageRoot)/$(RuntimeNETCoreAppPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/$(LibCLRJitRid)/native/$(DynamicLibPrefix)clrjit$(DynamicLibExtension)</LibCLRJitPath>
       <SharedFrameworkNameVersionPath>$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>

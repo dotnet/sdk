@@ -67,7 +67,7 @@
 
       <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
       <SharedFrameworkRid>$(CoreSetupRid)</SharedFrameworkRid>
-      <SharedFrameworkRid Condition=" '$(ProductMonikerRid)' == 'linux-musl-x64' ">$(ProductMonikerRid)</SharedFrameworkRid>
+      <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
       <CombinedFrameworkHostArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>

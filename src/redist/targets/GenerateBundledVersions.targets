@@ -77,6 +77,7 @@
       
       <NetCore5RuntimePackRids Include="
           @(NetCore5AppHostRids);
+          linux-musl-arm;
           ios-arm64;
           ios-arm;
           ios-x64;
@@ -108,7 +109,7 @@
       <Crossgen2SupportedRids Include="linux-musl-x64;linux-x64;win-x64" />
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
-      <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);win-arm64" />
+      <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore50RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />

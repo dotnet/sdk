@@ -12,11 +12,11 @@
         OR $(Rid.StartsWith('ubuntu.18.04')))">true</SkipBuildingInstallers>
       <SkipBuildingInstallers Condition=" '$(SkipBuildingInstallers)' == '' ">false</SkipBuildingInstallers>
 
-      <UsePortableLinuxSharedFramework Condition=" '$(UsePortableLinuxSharedFramework)' == '' AND '$(IsLinux)' == 'True' AND '$(Rid)' != 'rhel.6-x64' AND '$(Rid)' != 'linux-musl-x64' ">true</UsePortableLinuxSharedFramework>
+      <UsePortableLinuxSharedFramework Condition=" '$(UsePortableLinuxSharedFramework)' == '' AND '$(IsLinux)' == 'True' AND '$(Rid)' != 'rhel.6-x64' AND !$(Rid.StartsWith('linux-musl')) ">true</UsePortableLinuxSharedFramework>
       <!--<IncludeSharedFrameworksForBackwardsCompatibilityTests Condition=" $(IncludeSharedFrameworksForBackwardsCompatibilityTests) == ''
         AND '$(Rid)' != 'linux-x64'
         AND '$(Rid)' != 'rhel.6-x64'
-        AND '$(Rid)' != 'linux-musl-x64'
+        AND (!$(Rid.StartsWith('linux-musl')))
         AND '$(Rid)' != 'ubuntu.18.04-x64'">true</IncludeSharedFrameworksForBackwardsCompatibilityTests>-->
       <HighEntropyVA>true</HighEntropyVA>
 
