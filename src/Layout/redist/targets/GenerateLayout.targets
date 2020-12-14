@@ -190,7 +190,7 @@
 
   <Target Name="MoveBlazorWasmTools" AfterTargets="PublishBlazorWasmTools">
     <ItemGroup>
-      <_WebAssemblyToolsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly.Tool\$(Configuration)\$(SdkTargetFramework)\publish\Microsoft.*" />
+      <_WebAssemblyToolsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly.Tool\$(Configuration)\$(SdkTargetFramework)\publish\*.*" />
     </ItemGroup>
 
     <Error

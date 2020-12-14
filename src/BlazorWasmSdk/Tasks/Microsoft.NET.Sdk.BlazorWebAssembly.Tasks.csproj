@@ -13,6 +13,17 @@
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AdditionalContent Include="$(BlazorWasmSdkRoot)\Targets\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>targets</PackagePath>
+    </AdditionalContent>
+    <AdditionalContent Include="$(BlazorWasmSdkRoot)\Sdk\**\*.*">
+      <Pack>true</Pack>
+      <PackagePath>Sdk</PackagePath>
+    </AdditionalContent>
+  </ItemGroup>
+
   <PropertyGroup>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -46,7 +57,15 @@
     <Compile Include="**\*.cs" />
   </ItemGroup>
 
-    <Target Name="CopyAdditionalFilesToLayout" Condition="'$(TargetFramework)' == ''"  AfterTargets="Build" Inputs="@(LayoutFile)" Outputs="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
+  <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <LayoutFile Include="@(AdditionalContent)" Condition="'%(AdditionalContent.PackagePath)' != '' and '%(AdditionalContent.PackagePath)' != 'Icon.png'">
+        <TargetPath>%(AdditionalContent.PackagePath)\%(AdditionalContent.RecursiveDir)%(AdditionalContent.Filename)%(AdditionalContent.Extension)</TargetPath>
+      </LayoutFile>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyAdditionalFilesToLayout" Condition="'$(TargetFramework)' == ''" DependsOnTargets="PrepareAdditionalFilesToLayout" AfterTargets="Build" Inputs="@(LayoutFile)" Outputs="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
     <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
     </Copy>
