@@ -89,7 +89,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // Instance fields initialized in constructor/method body with a locally created disposable object must be disposed.
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
-                    if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
+                    if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         !ShouldAnalyze(containingMethod.ContainingType, operationBlockStartContext.Options, operationBlockStartContext.CancellationToken))
                     {
                         return;

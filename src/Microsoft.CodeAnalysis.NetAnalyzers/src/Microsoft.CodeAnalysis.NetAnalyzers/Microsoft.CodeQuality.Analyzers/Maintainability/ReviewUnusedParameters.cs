@@ -84,7 +84,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 compilationStartContext.RegisterOperationBlockStartAction(startOperationBlockContext =>
                 {
                     // We only care about methods.
-                    if (!(startOperationBlockContext.OwningSymbol is IMethodSymbol method))
+                    if (startOperationBlockContext.OwningSymbol is not IMethodSymbol method)
                     {
                         return;
                     }

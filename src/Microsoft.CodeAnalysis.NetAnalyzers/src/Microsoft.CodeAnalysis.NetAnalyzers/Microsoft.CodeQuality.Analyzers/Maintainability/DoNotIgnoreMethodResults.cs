@@ -131,7 +131,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                 compilationContext.RegisterOperationBlockStartAction(osContext =>
                 {
-                    if (!(osContext.OwningSymbol is IMethodSymbol method))
+                    if (osContext.OwningSymbol is not IMethodSymbol method)
                     {
                         return;
                     }
@@ -234,7 +234,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             // Get the enclosing block.
-            if (!(operationContext.Operation.Parent is IBlockOperation enclosingBlock))
+            if (operationContext.Operation.Parent is not IBlockOperation enclosingBlock)
             {
                 return false;
             }

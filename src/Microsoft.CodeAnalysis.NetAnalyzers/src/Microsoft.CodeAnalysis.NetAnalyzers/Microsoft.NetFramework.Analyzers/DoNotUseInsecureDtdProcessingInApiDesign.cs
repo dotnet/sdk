@@ -122,7 +122,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SemanticModel model = context.SemanticModel;
 
 
-                if (!(SyntaxNodeHelper.GetDeclaredSymbol(node, model) is IMethodSymbol methodSymbol) ||
+                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
                     methodSymbol.MethodKind != MethodKind.Constructor ||
                     !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true)))
                 {
@@ -175,7 +175,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SemanticModel model = context.SemanticModel;
 
 
-                if (!(SyntaxNodeHelper.GetDeclaredSymbol(node, model) is IMethodSymbol methodSymbol) ||
+                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
                     // skip constructors since we report on the absence of secure assignment in AnalyzeNodeForXmlDocumentDerivedTypeConstructorDecl
                     methodSymbol.MethodKind == MethodKind.Constructor ||
                     !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true)))
@@ -222,7 +222,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SemanticModel model = context.SemanticModel;
 
 
-                if (!(SyntaxNodeHelper.GetDeclaredSymbol(node, model) is IMethodSymbol methodSymbol) ||
+                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
                     methodSymbol.MethodKind != MethodKind.Constructor ||
                     !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true)))
                 {
@@ -292,7 +292,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SemanticModel model = context.SemanticModel;
 
 
-                if (!(SyntaxNodeHelper.GetDeclaredSymbol(node, model) is IMethodSymbol methodSymbol) ||
+                if (SyntaxNodeHelper.GetDeclaredSymbol(node, model) is not IMethodSymbol methodSymbol ||
                    !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true)))
                 {
                     return;
@@ -335,7 +335,7 @@ namespace Microsoft.NetFramework.Analyzers
                     if (isTargetProperty)
                     {
                         hasSetXmlResolver = true;
-                        hasSetInsecureXmlResolver &= ret; // use 'AND' to avoid false positives (but imcrease false negative rate) 
+                        hasSetInsecureXmlResolver &= ret; // use 'AND' to avoid false positives (but imcrease false negative rate)
                         if (ret)
                         {
                             if (locs == null)
@@ -384,7 +384,7 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     return;
                 }
-                // didn't explicitly set either one of XmlResolver and DtdProcessing to secure value 
+                // didn't explicitly set either one of XmlResolver and DtdProcessing to secure value
                 // but explicitly set XmlResolver and/or DtdProcessing to insecure value
                 else
                 {
@@ -508,8 +508,8 @@ namespace Microsoft.NetFramework.Analyzers
 
                 // Here's an example that needs some extra check:
                 //
-                //    class TestClass : XmlDocument 
-                //    { 
+                //    class TestClass : XmlDocument
+                //    {
                 //        private XmlDocument doc = new XmlDocument();
                 //        public TestClass(XmlDocument doc)
                 //        {
@@ -525,7 +525,7 @@ namespace Microsoft.NetFramework.Analyzers
                 //   If the target is a member access node, then the only pattern we are looking for is "this.Property"
                 SyntaxNode memberAccessNode = _syntaxNodeHelper.GetDescendantMemberAccessExpressionNodes(left).FirstOrDefault();
 
-                // if assignment target doesn't have any member access node, 
+                // if assignment target doesn't have any member access node,
                 // then we treat it as an instance property access without explicit 'this' ('Me' in VB)
                 if (memberAccessNode == null)
                 {

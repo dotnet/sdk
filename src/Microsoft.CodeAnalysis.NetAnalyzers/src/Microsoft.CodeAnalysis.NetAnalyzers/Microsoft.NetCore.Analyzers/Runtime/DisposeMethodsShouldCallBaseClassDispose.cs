@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
     /// CA2215: Dispose methods should call base class dispose
-    /// 
+    ///
     /// A type that implements System.IDisposable inherits from a type that also implements IDisposable.
     /// The Dispose method of the inheriting type does not call the Dispose method of the parent type.
     /// To fix a violation of this rule, call base.Dispose in your Dispose method.
@@ -52,7 +52,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 compilationContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
                 {
-                    if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod) ||
+                    if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         containingMethod.OverriddenMethod == null ||
                         containingMethod.OverriddenMethod.IsAbstract)
                     {
@@ -101,7 +101,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             // Ensure that method '{0}' calls '{1}' in all possible control flow paths.
                             var arg1 = containingMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                             var baseKeyword = containingMethod.Language == LanguageNames.CSharp ? "base" : "MyBase";
-                            var disposeMethodParam = (disposeMethodKind == DisposeMethodKind.DisposeBool || disposeMethodKind == DisposeMethodKind.DisposeCoreAsync) ?
+                            var disposeMethodParam = (disposeMethodKind is DisposeMethodKind.DisposeBool or DisposeMethodKind.DisposeCoreAsync) ?
                                 containingMethod.Language == LanguageNames.CSharp ? "bool" : "Boolean" :
                                 string.Empty;
                             var disposeMethodName = disposeMethodKind == DisposeMethodKind.DisposeBool ?

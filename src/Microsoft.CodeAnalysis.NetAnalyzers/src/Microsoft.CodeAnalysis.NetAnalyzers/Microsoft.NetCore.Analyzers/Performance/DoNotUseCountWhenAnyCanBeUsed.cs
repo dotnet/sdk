@@ -508,11 +508,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 constant = default;
 
-                if (operation?.Type?.SpecialType != SpecialType.System_Int32 &&
-                    operation?.Type?.SpecialType != SpecialType.System_Int64 &&
-                    operation?.Type?.SpecialType != SpecialType.System_UInt32 &&
-                    operation?.Type?.SpecialType != SpecialType.System_UInt64 &&
-                    operation?.Type?.SpecialType != SpecialType.System_Object)
+                if (operation?.Type?.SpecialType is not SpecialType.System_Int32 and
+                    not SpecialType.System_Int64 and
+                    not SpecialType.System_UInt32 and
+                    not SpecialType.System_UInt64 and
+                    not SpecialType.System_Object)
                 {
                     return false;
                 }
@@ -530,7 +530,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     case int intValue:
 
-                        if (intValue >= 0 && intValue <= 1)
+                        if (intValue is >= 0 and <= 1)
                         {
                             constant = intValue;
                             return true;
@@ -540,7 +540,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     case uint uintValue:
 
-                        if (uintValue >= 0 && uintValue <= 1)
+                        if (uintValue is >= 0 and <= 1)
                         {
                             constant = (int)uintValue;
                             return true;
@@ -550,7 +550,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     case long longValue:
 
-                        if (longValue >= 0 && longValue <= 1)
+                        if (longValue is >= 0 and <= 1)
                         {
                             constant = (int)longValue;
                             return true;
@@ -560,7 +560,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     case ulong ulongValue:
 
-                        if (ulongValue >= 0 && ulongValue <= 1)
+                        if (ulongValue is >= 0 and <= 1)
                         {
                             constant = (int)ulongValue;
                             return true;

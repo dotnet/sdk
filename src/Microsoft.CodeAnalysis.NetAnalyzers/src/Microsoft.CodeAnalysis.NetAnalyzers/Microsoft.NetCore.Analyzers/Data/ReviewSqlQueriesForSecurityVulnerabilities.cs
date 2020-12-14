@@ -114,7 +114,7 @@ namespace Microsoft.NetCore.Analyzers.Data
                         }
 
                         // Make sure we're in assignment statement
-                        if (!(propertyReference.Parent is IAssignmentOperation assignment))
+                        if (propertyReference.Parent is not IAssignmentOperation assignment)
                         {
                             return;
                         }
