@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         };
 
         private static readonly BoundedCacheWithFactory<Compilation, InsecureDeserializationTypeDecider> BoundedCache =
-            new BoundedCacheWithFactory<Compilation, InsecureDeserializationTypeDecider>();
+            new();
 
         /// <summary>
         /// Gets a cached <see cref="InsecureDeserializationTypeDecider"/> for the given compilation.
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             return BoundedCache.GetOrCreateValue(compilation, Create);
 
             // Local functions.
-            static InsecureDeserializationTypeDecider Create(Compilation c) => new InsecureDeserializationTypeDecider(c);
+            static InsecureDeserializationTypeDecider Create(Compilation c) => new(c);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         // Key: typeSymbol in IsTypeInsecure()
         // Value: insecureTypeSymbol in IsTypeInsecure()
         private readonly ConcurrentDictionary<ITypeSymbol, ITypeSymbol?> IsTypeInsecureCache =
-            new ConcurrentDictionary<ITypeSymbol, ITypeSymbol?>();
+            new();
 
         /// <summary>
         /// Determines if the given type is insecure when deserialized, without looking at its child fields and properties.
@@ -163,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         // Key: (rootType, options) arguments in IsObjectGraphInsecure()
         // Value: results argument in IsObjectGraphInsecure().
         private readonly ConcurrentDictionary<(ITypeSymbol, ObjectGraphOptions), ImmutableArray<InsecureObjectGraphResult>> IsObjectGraphInsecureCache =
-            new ConcurrentDictionary<(ITypeSymbol, ObjectGraphOptions), ImmutableArray<InsecureObjectGraphResult>>();
+            new();
 
         /// <summary>
         /// Determines if a type's object graph contains an insecure type, by walking through its serializable members.
@@ -334,10 +334,14 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                     foreach (AttributeData knownTypeAttributeData in typeSymbol.GetAttributes(this.KnownTypeAttributeTypeSymbol))
                     {
                         if (knownTypeAttributeData.AttributeConstructor.Parameters.Length != 1
-                            || knownTypeAttributeData.ConstructorArguments.Length != 1
-                            || !(knownTypeAttributeData.ConstructorArguments[0] is TypedConstant typedConstant)
-                            || typedConstant.Kind != TypedConstantKind.Type    // Not handling the string methodName overload
-                            || !(typedConstant.Value is ITypeSymbol typedConstantTypeSymbol))
+                            || knownTypeAttributeData.ConstructorArguments.Length != 1)
+                        {
+                            continue;
+                        }
+
+                        var typedConstant = knownTypeAttributeData.ConstructorArguments[0];
+                        if (typedConstant.Kind != TypedConstantKind.Type    // Not handling the string methodName overload
+                            || typedConstant.Value is not ITypeSymbol typedConstantTypeSymbol)
                         {
                             continue;
                         }
@@ -365,10 +369,14 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                         in typeSymbol.GetAttributes(this.XmlSerializationAttributeTypes.XmlIncludeAttribute))
                     {
                         if (xmlIncludeAttributeData.AttributeConstructor.Parameters.Length != 1
-                          || xmlIncludeAttributeData.ConstructorArguments.Length != 1
-                          || !(xmlIncludeAttributeData.ConstructorArguments[0] is TypedConstant typedConstant)
-                          || typedConstant.Kind != TypedConstantKind.Type
-                          || !(typedConstant.Value is ITypeSymbol typedConstantTypeSymbol))
+                          || xmlIncludeAttributeData.ConstructorArguments.Length != 1)
+                        {
+                            continue;
+                        }
+
+                        var typedConstant = xmlIncludeAttributeData.ConstructorArguments[0];
+                        if (typedConstant.Kind != TypedConstantKind.Type
+                          || typedConstant.Value is not ITypeSymbol typedConstantTypeSymbol)
                         {
                             continue;
                         }

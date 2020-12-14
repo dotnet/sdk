@@ -74,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 compilationStartContext.RegisterOperationBlockStartAction(operationBlockContext =>
                 {
-                    if (!(operationBlockContext.OwningSymbol is IMethodSymbol methodSymbol))
+                    if (operationBlockContext.OwningSymbol is not IMethodSymbol methodSymbol)
                     {
                         return;
                     }

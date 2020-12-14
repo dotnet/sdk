@@ -40,12 +40,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 var assignmentOperation = (IAssignmentOperation)operationContext.Operation;
 
-                if (!(assignmentOperation.Target is IPropertyReferenceOperation operationTarget))
+                if (assignmentOperation.Target is not IPropertyReferenceOperation operationTarget)
                 {
                     return;
                 }
 
-                if (!(assignmentOperation.Value is IPropertyReferenceOperation operationValue))
+                if (assignmentOperation.Value is not IPropertyReferenceOperation operationValue)
                 {
                     return;
                 }

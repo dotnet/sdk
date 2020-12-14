@@ -91,7 +91,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         private sealed class ConstantArgumentEqualityComparer : IEqualityComparer<ImmutableArray<object>>
         {
-            public static readonly ConstantArgumentEqualityComparer Instance = new ConstantArgumentEqualityComparer();
+            public static readonly ConstantArgumentEqualityComparer Instance = new();
 
             private readonly EqualityComparer<object> _objectComparer = EqualityComparer<object>.Default;
 

@@ -67,7 +67,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                 compilationContext.RegisterOperationBlockStartAction(blockStartContext =>
                 {
-                    if (!(blockStartContext.OwningSymbol is IMethodSymbol methodSymbol) || !ShouldAnalyze(methodSymbol, blockStartContext.Compilation, skippedAttributes))
+                    if (blockStartContext.OwningSymbol is not IMethodSymbol methodSymbol || !ShouldAnalyze(methodSymbol, blockStartContext.Compilation, skippedAttributes))
                     {
                         return;
                     }

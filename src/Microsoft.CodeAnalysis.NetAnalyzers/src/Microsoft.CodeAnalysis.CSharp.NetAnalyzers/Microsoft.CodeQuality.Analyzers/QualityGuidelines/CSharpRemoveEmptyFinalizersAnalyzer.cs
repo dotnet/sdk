@@ -75,7 +75,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
 
         private static bool IsConditionalInvocation(InvocationExpressionSyntax invocationExpr, SemanticModel semanticModel)
         {
-            if (!(semanticModel.GetSymbolInfo(invocationExpr).Symbol is IMethodSymbol invocationSymbol))
+            if (semanticModel.GetSymbolInfo(invocationExpr).Symbol is not IMethodSymbol invocationSymbol)
             {
                 // Presumably, if the user has typed something but it doesn't have a symbol yet, the body won't be empty
                 // once all compile errors are corrected, so we return false here.

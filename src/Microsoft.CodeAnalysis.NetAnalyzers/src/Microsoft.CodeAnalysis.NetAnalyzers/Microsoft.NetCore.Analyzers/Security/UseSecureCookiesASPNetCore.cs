@@ -45,11 +45,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                                         DefinitelyUseSecureCookiesASPNetCoreRule,
                                                                                         MaybeUseSecureCookiesASPNetCoreRule);
 
-        private static readonly ConstructorMapper constructorMapper = new ConstructorMapper(
+        private static readonly ConstructorMapper constructorMapper = new(
                                                                         ImmutableArray.Create<PropertySetAbstractValueKind>(
                                                                             PropertySetAbstractValueKind.Flagged));
 
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
+        private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "Secure",
                 (ValueContentAbstractValue valueContentAbstractValue) =>

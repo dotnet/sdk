@@ -168,7 +168,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
         public static bool IsExpressionEqualsIntZero([NotNullWhen(returnValue: true)] IOperation? operation)
         {
 
-            if (!(operation is ILiteralOperation literal) || !literal.ConstantValue.HasValue)
+            if (operation is not ILiteralOperation literal || !literal.ConstantValue.HasValue)
             {
                 return false;
             }

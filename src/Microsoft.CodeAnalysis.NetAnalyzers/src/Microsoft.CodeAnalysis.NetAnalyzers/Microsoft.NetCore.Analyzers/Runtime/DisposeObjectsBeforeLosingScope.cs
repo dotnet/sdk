@@ -81,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var reportedLocations = new ConcurrentDictionary<Location, bool>();
                 compilationContext.RegisterOperationBlockAction(operationBlockContext =>
                 {
-                    if (!(operationBlockContext.OwningSymbol is IMethodSymbol containingMethod) ||
+                    if (operationBlockContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         !disposeAnalysisHelper.HasAnyDisposableCreationDescendant(operationBlockContext.OperationBlocks, containingMethod) ||
                         containingMethod.IsConfiguredToSkipAnalysis(operationBlockContext.Options,
                             NotDisposedRule, operationBlockContext.Compilation, operationBlockContext.CancellationToken))

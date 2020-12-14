@@ -76,8 +76,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// </summary>
         private static void AnalyzeBinaryExpression(IBinaryOperation binaryOperation, Action<Diagnostic> reportDiagnostic)
         {
-            if (binaryOperation.OperatorKind != BinaryOperatorKind.Equals &&
-                binaryOperation.OperatorKind != BinaryOperatorKind.NotEquals)
+            if (binaryOperation.OperatorKind is not BinaryOperatorKind.Equals and
+                not BinaryOperatorKind.NotEquals)
             {
                 return;
             }

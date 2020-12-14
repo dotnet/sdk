@@ -120,7 +120,7 @@ namespace Microsoft.NetFramework.Analyzers
                         (SymbolAnalysisContext symbolContext) =>
                         {
                             // TODO enhancements: Consider looking at IAsyncResult-based action methods.
-                            if (!(symbolContext.Symbol is IMethodSymbol methodSymbol)
+                            if (symbolContext.Symbol is not IMethodSymbol methodSymbol
                                 || methodSymbol.MethodKind != MethodKind.Ordinary
                                 || methodSymbol.IsStatic
                                 || !methodSymbol.IsPublic()

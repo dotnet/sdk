@@ -38,7 +38,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
                                 catchClause.Declaration != null &&
                                 catchClause.Declaration.Identifier.RawKind != 0)
                             {
-                                if (!(context.SemanticModel.GetSymbolInfo(expr).Symbol is ILocalSymbol local)
+                                if (context.SemanticModel.GetSymbolInfo(expr).Symbol is not ILocalSymbol local
                                     || local.Locations.IsEmpty
                                     || context.SemanticModel.AnalyzeDataFlow(catchClause.Block).WrittenInside.Contains(local))
                                 {

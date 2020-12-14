@@ -69,7 +69,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static SyntaxNode RemoveFlagsAttribute(SyntaxGenerator generator, SemanticModel model, SyntaxNode enumTypeSyntax, INamedTypeSymbol flagsAttributeType, CancellationToken cancellationToken)
         {
-            if (!(model.GetDeclaredSymbol(enumTypeSyntax, cancellationToken) is INamedTypeSymbol enumType))
+            if (model.GetDeclaredSymbol(enumTypeSyntax, cancellationToken) is not INamedTypeSymbol enumType)
             {
                 return enumTypeSyntax;
             }

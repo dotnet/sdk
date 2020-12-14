@@ -172,14 +172,14 @@ namespace Microsoft.NetFramework.Analyzers
             #endregion
 
             // .NET frameworks >= 4.5.2 have secure default settings
-            private static readonly Version s_minSecureFxVersion = new Version(4, 5, 2);
+            private static readonly Version s_minSecureFxVersion = new(4, 5, 2);
 
             private readonly CompilationSecurityTypes _xmlTypes;
             private readonly bool _isFrameworkSecure;
-            private readonly HashSet<IOperation> _objectCreationOperationsAnalyzed = new HashSet<IOperation>();
-            private readonly Dictionary<ISymbol, XmlDocumentEnvironment> _xmlDocumentEnvironments = new Dictionary<ISymbol, XmlDocumentEnvironment>();
-            private readonly Dictionary<ISymbol, XmlTextReaderEnvironment> _xmlTextReaderEnvironments = new Dictionary<ISymbol, XmlTextReaderEnvironment>();
-            private readonly Dictionary<ISymbol, XmlReaderSettingsEnvironment> _xmlReaderSettingsEnvironments = new Dictionary<ISymbol, XmlReaderSettingsEnvironment>();
+            private readonly HashSet<IOperation> _objectCreationOperationsAnalyzed = new();
+            private readonly Dictionary<ISymbol, XmlDocumentEnvironment> _xmlDocumentEnvironments = new();
+            private readonly Dictionary<ISymbol, XmlTextReaderEnvironment> _xmlTextReaderEnvironments = new();
+            private readonly Dictionary<ISymbol, XmlReaderSettingsEnvironment> _xmlReaderSettingsEnvironments = new();
 
             public OperationAnalyzer(CompilationSecurityTypes xmlTypes, Version targetFrameworkVersion)
             {
@@ -291,7 +291,7 @@ namespace Microsoft.NetFramework.Analyzers
 
             private void AnalyzeObjectCreationInternal(OperationAnalysisContext context, ISymbol variable, IOperation valueOpt)
             {
-                if (!(valueOpt is IObjectCreationOperation objCreation))
+                if (valueOpt is not IObjectCreationOperation objCreation)
                 {
                     return;
                 }
@@ -353,7 +353,7 @@ namespace Microsoft.NetFramework.Analyzers
                         if (init is IAssignmentOperation assign)
                         {
                             var propValue = assign.Value;
-                            if (!(assign.Target is IPropertyReferenceOperation propertyReference))
+                            if (assign.Target is not IPropertyReferenceOperation propertyReference)
                             {
                                 continue;
                             }
@@ -361,7 +361,7 @@ namespace Microsoft.NetFramework.Analyzers
                             var prop = propertyReference.Property;
                             if (prop.MatchPropertyDerivedByName(_xmlTypes.XmlDocument, "XmlResolver"))
                             {
-                                if (!(propValue is IConversionOperation operation))
+                                if (propValue is not IConversionOperation operation)
                                 {
                                     return;
                                 }
@@ -430,7 +430,7 @@ namespace Microsoft.NetFramework.Analyzers
                         if (init is IAssignmentOperation assign)
                         {
                             var propValue = assign.Value;
-                            if (!(assign.Target is IPropertyReferenceOperation propertyReference))
+                            if (assign.Target is not IPropertyReferenceOperation propertyReference)
                             {
                                 continue;
                             }
@@ -499,7 +499,7 @@ namespace Microsoft.NetFramework.Analyzers
                         if (init is IAssignmentOperation assign)
                         {
                             var propValue = assign.Value;
-                            if (!(assign.Target is IPropertyReferenceOperation propertyReference))
+                            if (assign.Target is not IPropertyReferenceOperation propertyReference)
                             {
                                 continue;
                             }
@@ -511,7 +511,7 @@ namespace Microsoft.NetFramework.Analyzers
                                 )
                             {
 
-                                if (!(propValue is IConversionOperation operation))
+                                if (propValue is not IConversionOperation operation)
                                 {
                                     return;
                                 }
@@ -604,7 +604,7 @@ namespace Microsoft.NetFramework.Analyzers
             {
                 var assignment = (IAssignmentOperation)context.Operation;
 
-                if (!(assignment.Target is IPropertyReferenceOperation propRef)) // A variable/field assignment
+                if (assignment.Target is not IPropertyReferenceOperation propRef) // A variable/field assignment
                 {
                     var symbolAssignedTo = assignment.Target.GetReferencedMemberOrLocalOrParameter();
                     if (symbolAssignedTo != null)

@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
             }
 
             var semanticModel = await document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            if (!(semanticModel.GetOperation(invocationNode) is IInvocationOperation invocationOperation) ||
+            if (semanticModel.GetOperation(invocationNode) is not IInvocationOperation invocationOperation ||
                 !DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.ToImmutableMethodNames.Contains(invocationOperation.TargetMethod.Name))
             {
                 return;

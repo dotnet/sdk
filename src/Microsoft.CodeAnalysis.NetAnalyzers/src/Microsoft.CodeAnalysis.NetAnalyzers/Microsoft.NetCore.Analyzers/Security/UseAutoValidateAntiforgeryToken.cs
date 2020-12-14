@@ -40,8 +40,8 @@ namespace Microsoft.NetCore.Analyzers.Security
             isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.MissHttpVerbAttributeDescription));
 
-        private static readonly Regex s_AntiForgeryAttributeRegex = new Regex("^[a-zA-Z]*Validate[a-zA-Z]*Anti[Ff]orgery[a-zA-Z]*Attribute$", RegexOptions.Compiled);
-        private static readonly Regex s_AntiForgeryRegex = new Regex("^[a-zA-Z]*Validate[a-zA-Z]*Anti[Ff]orgery[a-zA-Z]*$", RegexOptions.Compiled);
+        private static readonly Regex s_AntiForgeryAttributeRegex = new("^[a-zA-Z]*Validate[a-zA-Z]*Anti[Ff]orgery[a-zA-Z]*Attribute$", RegexOptions.Compiled);
+        private static readonly Regex s_AntiForgeryRegex = new("^[a-zA-Z]*Validate[a-zA-Z]*Anti[Ff]orgery[a-zA-Z]*$", RegexOptions.Compiled);
         private static readonly ImmutableHashSet<string> HttpVerbAttributesMarkingOnActionModifyingMethods =
             ImmutableHashSet.Create(
                 StringComparer.Ordinal,

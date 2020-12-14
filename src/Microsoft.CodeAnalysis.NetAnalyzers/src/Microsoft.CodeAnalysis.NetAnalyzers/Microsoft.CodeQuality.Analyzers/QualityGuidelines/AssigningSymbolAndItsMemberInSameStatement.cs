@@ -45,7 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             var assignmentOperation = (ISimpleAssignmentOperation)context.Operation;
 
             // Check if there are more then one assignment in a statement
-            if (!(assignmentOperation.Target is IMemberReferenceOperation operationTarget))
+            if (assignmentOperation.Target is not IMemberReferenceOperation operationTarget)
             {
                 return;
             }
