@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
 
   <PropertyGroup>
     <BlazorWasmSdkRoot>$(RepoRoot)\src\BlazorWasmSdk\</BlazorWasmSdkRoot>
@@ -6,10 +6,35 @@
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
   </PropertyGroup>
 
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- MSBuild Task DLLs need to be versioned with every build -->
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <IsPackable>true</IsPackable>
+    <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+  </PropertyGroup>
+
   <PropertyGroup>
     <Description>SDK for building and publishing Blazor WebAssembly applications.</Description>
     <OutputType>Library</OutputType>
     <RootNamespace>Microsoft.NET.Sdk.BlazorWebAssembly</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
   </PropertyGroup>
 
@@ -23,23 +48,6 @@
       <PackagePath>Sdk</PackagePath>
     </AdditionalContent>
   </ItemGroup>
-
-  <PropertyGroup>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateDependencyFile>false</GenerateDependencyFile>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-    <!-- MSBuild Task DLLs need to be versioned with every build -->
-    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <OutputPath>$(BaseOutputPath)</OutputPath>
-    <IsPackable>true</IsPackable>
-    <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
-  </PropertyGroup>
 
   <ItemDefinitionGroup>
     <PackageReference>
@@ -77,4 +85,5 @@
     </ItemGroup>
   </Target>
 
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
