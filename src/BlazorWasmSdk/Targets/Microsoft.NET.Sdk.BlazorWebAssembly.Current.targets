@@ -583,8 +583,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       SkipIfOutputIsNewer="$(_BlazorWebAssemblyBrotliIncremental)"
       ToolAssembly="$(_BlazorWebAssemblySdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
-      ToolPath="$(_DotNetHostDirectory)"
-      LogStandardErrorAsError="true">
+      ToolPath="$(_DotNetHostDirectory)">
 
       <Output TaskParameter="CompressedFiles" ItemName="_BrotliCompressedFile" />
       <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
