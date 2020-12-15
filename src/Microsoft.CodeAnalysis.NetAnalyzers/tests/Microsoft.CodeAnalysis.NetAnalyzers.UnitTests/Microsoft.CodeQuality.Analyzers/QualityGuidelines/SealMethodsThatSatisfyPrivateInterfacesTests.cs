@@ -495,9 +495,9 @@ Namespace NS
     End Interface
 
     Public Class C
-        Implements [|IInternal|]
+        Implements IInternal
 
-        Public Overridable Sub Method1()
+        Public Overridable Sub [|Method1|]() Implements IInternal.Method1
         End Sub
     End Class
 
