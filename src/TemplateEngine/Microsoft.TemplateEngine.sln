@@ -71,6 +71,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.Sc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Common.ProjectTemplates.6.0", "template_feed\Microsoft.DotNet.Common.ProjectTemplates.6.0\Microsoft.DotNet.Common.ProjectTemplates.6.0.csproj", "{1DADD24C-5BEF-400D-9C96-8092857D346A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TestTemplates", "test\Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj", "{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -453,6 +455,18 @@ Global
 		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|x64.Build.0 = Release|Any CPU
 		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|x86.ActiveCfg = Release|Any CPU
 		{1DADD24C-5BEF-400D-9C96-8092857D346A}.Release|x86.Build.0 = Release|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Debug|x64.Build.0 = Debug|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Debug|x86.Build.0 = Debug|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Release|x64.ActiveCfg = Release|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Release|x64.Build.0 = Release|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Release|x86.ActiveCfg = Release|Any CPU
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -489,6 +503,7 @@ Global
 		{FBEBB725-F645-40DC-856C-D1BC7FB52CF3} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{95D28477-05FE-4450-86B8-D7384202AB90} = {7DAC892E-ADAE-4CEB-8A0C-EDC452A5826A}
 		{1DADD24C-5BEF-400D-9C96-8092857D346A} = {CDC477F2-3C4B-446D-A2CB-21C61A3C1064}
+		{FC7516FB-7F44-4786-ADF2-589EF06C2EDE} = {8B498D0C-F488-4B38-8A7D-B20BF9DB6F60}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6EA1A508-6033-4538-BF98-7F71B4E297AD}
