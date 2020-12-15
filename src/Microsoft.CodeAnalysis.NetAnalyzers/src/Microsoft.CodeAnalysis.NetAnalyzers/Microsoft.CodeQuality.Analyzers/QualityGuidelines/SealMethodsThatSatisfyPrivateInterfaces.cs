@@ -55,7 +55,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             // look for implementations of interfaces members declared on this type
-            foreach (var iface in type.AllInterfaces)
+            var directInterfacesAndTheirInterfaces = type.Interfaces.SelectMany(i => Enumerable.Repeat(i, 1).Concat(i.AllInterfaces))
+                .Distinct<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+            foreach (INamedTypeSymbol iface in directInterfacesAndTheirInterfaces)
             {
                 // only matters if the interface is defined to be internal
                 if (iface.DeclaredAccessibility != Accessibility.Internal)
