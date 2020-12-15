@@ -1692,11 +1692,6 @@
         <target state="translated">Der Argumenttyp, "{0}", stimmt nicht mit dem enum-Typ "{1}" überein.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
-        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="translated">Dieser Aufruf gibt immer FALSE zurück, weil der enum-Typ "{0}" nicht mit "FlagsAttribute" gekennzeichnet ist.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
         <target state="translated">Geben Sie das richtige enum-Argument für "Enum.HasFlag" an</target>

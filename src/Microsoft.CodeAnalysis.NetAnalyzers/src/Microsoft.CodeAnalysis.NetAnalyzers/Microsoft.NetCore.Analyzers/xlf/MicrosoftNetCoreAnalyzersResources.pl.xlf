@@ -1692,11 +1692,6 @@
         <target state="translated">Typ argumentu „{0}” musi być taki sam jak typ wyliczenia „{1}”.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
-        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="translated">To wywołanie będzie zawsze zwracać wartość „false”, ponieważ typ wyliczenia „{0}” nie jest oznaczony przy użyciu elementu „FlagsAttribute”</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
         <target state="translated">Podaj poprawny argument „enum” dla elementu „Enum.HasFlag”</target>

@@ -1692,11 +1692,6 @@
         <target state="translated">인수 형식 '{0}'은(는) 열거형 형식 '{1}'과(와) 같아야 합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
-        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="translated">열거형 형식 '{0}'이(가) 'FlagsAttribute'로 표시되지 않아 이 호출은 항상 'false'를 반환합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
         <target state="translated">'Enum.HasFlag'에 올바른 'enum' 인수 제공</target>

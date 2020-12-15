@@ -1692,11 +1692,6 @@
         <target state="translated">El tipo de argumento, "{0}", debe ser igual que el tipo de enumeración "{1}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
-        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="translated">Esta llamada devolverá siempre "false" porque el tipo de enumeración "{0}" no está marcado con "FlagsAttribute"</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
         <target state="translated">Proporcione el argumento "enum" correcto para "Enum.HasFlag"</target>

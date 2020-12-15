@@ -1692,11 +1692,6 @@
         <target state="translated">参数类型“{0}”必须与枚举类型“{1}”相同。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
-        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="translated">此调用将始终返回 "false"，因为枚举类型“{0}”未使用 "FlagsAttribute" 进行标记</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
         <target state="translated">向 "Enum.HasFlag" 提供正确的 "enum" 参数</target>
