@@ -23,12 +23,16 @@
 
   </Target>
 
+  <PropertyGroup>
+      <VersionFeature21>$([MSBuild]::Add($(VersionFeature), 25))</VersionFeature21>
+      <VersionFeature31>$([MSBuild]::Add($(VersionFeature), 12))</VersionFeature31>
+  </PropertyGroup>
+
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
     <PropertyGroup>
       <BundledVersionsPropsFileName>Microsoft.NETCoreSdk.BundledVersions.props</BundledVersionsPropsFileName>
     </PropertyGroup>
-   
-    
+
     <PropertyGroup>
       <_NETCoreAppPackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NETCoreAppPackageVersion>
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
@@ -37,20 +41,20 @@
       <_NETCoreApp30RuntimePackVersion>3.0.3</_NETCoreApp30RuntimePackVersion>
       <_NETCoreApp30TargetingPackVersion>3.0.0</_NETCoreApp30TargetingPackVersion>
       
-      <_NETCoreApp31RuntimePackVersion>3.1.9</_NETCoreApp31RuntimePackVersion>
+      <_NETCoreApp31RuntimePackVersion>3.1.$(VersionFeature31)</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
       
       <_WindowsDesktop30RuntimePackVersion>3.0.3</_WindowsDesktop30RuntimePackVersion>
       <_WindowsDesktop30TargetingPackVersion>3.0.0</_WindowsDesktop30TargetingPackVersion>
       
-      <_WindowsDesktop31RuntimePackVersion>3.1.9</_WindowsDesktop31RuntimePackVersion>
+      <_WindowsDesktop31RuntimePackVersion>3.1.$(VersionFeature31)</_WindowsDesktop31RuntimePackVersion>
       <_WindowsDesktop31TargetingPackVersion>3.1.0</_WindowsDesktop31TargetingPackVersion>
       
       <_AspNet30RuntimePackVersion>3.0.3</_AspNet30RuntimePackVersion>
       <_AspNet30TargetingPackVersion>3.0.1</_AspNet30TargetingPackVersion>
       
-      <_AspNet31RuntimePackVersion>3.1.10</_AspNet31RuntimePackVersion>
-      <_AspNet31TargetingPackVersion>3.1.10</_AspNet31TargetingPackVersion>
+      <_AspNet31RuntimePackVersion>3.1.$(VersionFeature31)</_AspNet31RuntimePackVersion>
+      <_AspNet31TargetingPackVersion>3.1.$(VersionFeature31)</_AspNet31TargetingPackVersion>
 
       <!-- Use only major and minor in target framework version -->
       <_NETCoreAppTargetFrameworkVersion>$(_NETCoreAppPackageVersion.Split('.')[0]).$(_NETCoreAppPackageVersion.Split('.')[1])</_NETCoreAppTargetFrameworkVersion>
@@ -154,7 +158,7 @@
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.0"
-                               LatestVersion="2.1.23" />
+                               LatestVersion="2.1.$(VersionFeature21)" />
       <ImplicitPackageVariable Include="Microsoft.NETCore.App"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
@@ -162,11 +166,11 @@
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.23"/>
+                               LatestVersion="2.1.$(VersionFeature21)"/>
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.23"/>
+                               LatestVersion="2.1.$(VersionFeature21)"/>
 
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.2"
