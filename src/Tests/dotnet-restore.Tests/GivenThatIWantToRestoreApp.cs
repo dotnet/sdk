@@ -63,7 +63,6 @@ namespace Microsoft.DotNet.Restore.Test
             {
                 Name = "RestoreToDir",
                 TargetFrameworks = "net5.0",
-                IsSdkProject = true,
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "12.0.3"));
@@ -153,6 +152,26 @@ namespace Microsoft.DotNet.Restore.Test
                  .Pass()
                  .And.NotHaveStdErr()
                  .And.NotHaveStdOut();
+        }
+
+        [Fact]
+        public void ItAcceptsArgumentsAfterProperties()
+        {
+            var rootPath = _testAssetsManager.CreateTestDirectory().Path;
+
+            string[] newArgs = new[] { "console", "-o", rootPath, "--no-restore" };
+            new DotnetCommand(Log, "new")
+                .WithWorkingDirectory(rootPath)
+                .Execute(newArgs)
+                .Should()
+                .Pass();
+
+            string[] args = new[] { "/p:prop1=true", "/m:1" };
+            new DotnetRestoreCommand(Log)
+                 .WithWorkingDirectory(rootPath)
+                 .Execute(args)
+                 .Should()
+                 .Pass();
         }
 
         private static string[] HandleStaticGraphEvaluation(bool useStaticGraphEvaluation, string[] args) =>
