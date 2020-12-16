@@ -172,10 +172,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     m.ReturnType.Equals(osPlatformType) &&
                     m.Parameters.Length == 1 &&
                     m.Parameters[0].Type.SpecialType == SpecialType.System_String).FirstOrDefault();
+                var notSupportedExceptionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotSupportedException);
 
                 context.RegisterOperationBlockStartAction(
                     context => AnalyzeOperationBlock(context, guardMethods, runtimeIsOSPlatformMethod, osPlatformCreateMethod,
-                                    osPlatformTypeArray, stringType, platformSpecificMembers, msBuildPlatforms));
+                                    osPlatformTypeArray, stringType, platformSpecificMembers, msBuildPlatforms, notSupportedExceptionType));
             });
 
             static ImmutableArray<IMethodSymbol> GetOperatingSystemGuardMethods(IMethodSymbol? runtimeIsOSPlatformMethod, INamedTypeSymbol operatingSystemType)
@@ -230,15 +231,21 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             ImmutableArray<INamedTypeSymbol> osPlatformTypeArray,
             INamedTypeSymbol stringType,
             ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers,
-            ImmutableArray<string> msBuildPlatforms)
+            ImmutableArray<string> msBuildPlatforms,
+            ITypeSymbol? notSupportedExceptionType)
         {
+            if (context.IsMethodNotImplementedOrSupported(checkPlatformNotSupported: true))
+            {
+                return;
+            }
+
             var osPlatformType = osPlatformTypeArray[0];
             var platformSpecificOperations = PooledConcurrentDictionary<IOperation, (SmallDictionary<string, PlatformAttributes> attributes,
                 SmallDictionary<string, PlatformAttributes>? csAttributes)>.GetInstance();
 
             context.RegisterOperationAction(context =>
             {
-                AnalyzeOperation(context.Operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms);
+                AnalyzeOperation(context.Operation, context, platformSpecificOperations, platformSpecificMembers, msBuildPlatforms, notSupportedExceptionType);
             },
             OperationKind.MethodReference,
             OperationKind.EventReference,
@@ -977,8 +984,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static void AnalyzeOperation(IOperation operation, OperationAnalysisContext context, PooledConcurrentDictionary<IOperation,
             (SmallDictionary<string, PlatformAttributes> attributes, SmallDictionary<string, PlatformAttributes>? csAttributes)> platformSpecificOperations,
-            ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers, ImmutableArray<string> msBuildPlatforms)
+            ConcurrentDictionary<ISymbol, SmallDictionary<string, PlatformAttributes>?> platformSpecificMembers, ImmutableArray<string> msBuildPlatforms,
+            ITypeSymbol? notSupportedExceptionType)
         {
+            if (operation.Parent is IArgumentOperation argumentOperation && UsedInCreatingNotSupportedException(argumentOperation, notSupportedExceptionType))
+            {
+                return;
+            }
+
             var symbol = GetOperationSymbol(operation);
 
             if (symbol == null)
@@ -1036,6 +1049,18 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     }
                 }
             }
+        }
+
+        private static bool UsedInCreatingNotSupportedException(IArgumentOperation operation, ITypeSymbol? notSupportedExceptionType)
+        {
+            if (operation.Parent is IObjectCreationOperation creation &&
+                operation.Parameter.Type.SpecialType == SpecialType.System_String &&
+                creation.Type.DerivesFrom(notSupportedExceptionType, baseTypesOnly: true, checkTypeParameterConstraints: false))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private static bool TryCopyAttributesNotSuppressedByMsBuild(SmallDictionary<string, PlatformAttributes> operationAttributes,
