@@ -16,7 +16,6 @@ namespace Microsoft.NetCore.Analyzers.Usage
 
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageDifferentType = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagMessageDifferentType), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageNotFlags = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagMessageNotFlags), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentToEnumHasFlagDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor DifferentTypeRule = DiagnosticDescriptorHelper.Create(
@@ -29,17 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        internal static DiagnosticDescriptor NotFlagsRule = DiagnosticDescriptorHelper.Create(
-            RuleId,
-            s_localizableTitle,
-            s_localizableMessageNotFlags,
-            DiagnosticCategory.Usage,
-            RuleLevel.IdeSuggestion,
-            description: s_localizableDescription,
-            isPortedFxCopRule: false,
-            isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DifferentTypeRule, NotFlagsRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DifferentTypeRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -54,25 +43,17 @@ namespace Microsoft.NetCore.Analyzers.Usage
                 {
                     var invocation = (IInvocationOperation)context.Operation;
 
-                    if (invocation.TargetMethod.ContainingType.SpecialType != SpecialType.System_Enum ||
-                        invocation.Arguments.Length != 1 ||
-                        invocation.Instance == null ||
-                        invocation.TargetMethod.Name != "HasFlag" ||
-                        invocation.Arguments[0].Value is not IConversionOperation conversion ||
-                        invocation.Instance.Type == null ||
-                        invocation.Instance.Type.TypeKind == TypeKind.TypeParameter ||
-                        conversion.Operand.Type?.TypeKind == TypeKind.TypeParameter)
-                    {
-                        return;
-                    }
-
-                    if (!invocation.Instance.Type.Equals(conversion.Operand.Type))
+                    if (invocation.TargetMethod.ContainingType.SpecialType == SpecialType.System_Enum &&
+                        invocation.Arguments.Length == 1 &&
+                        invocation.Instance != null &&
+                        invocation.TargetMethod.Name == "HasFlag" &&
+                        invocation.Arguments[0].Value is IConversionOperation conversion &&
+                        invocation.Instance.Type != null &&
+                        invocation.Instance.Type.TypeKind != TypeKind.TypeParameter &&
+                        conversion.Operand.Type?.TypeKind != TypeKind.TypeParameter &&
+                        !invocation.Instance.Type.Equals(conversion.Operand.Type))
                     {
                         context.ReportDiagnostic(invocation.CreateDiagnostic(DifferentTypeRule, GetArgumentTypeName(conversion), invocation.Instance.Type.Name));
-                    }
-                    else if (flagsAttributeType != null && !invocation.Instance.Type.HasAttribute(flagsAttributeType))
-                    {
-                        context.ReportDiagnostic(invocation.CreateDiagnostic(NotFlagsRule, invocation.Instance.Type.Name));
                     }
                 }, OperationKind.Invocation);
             });

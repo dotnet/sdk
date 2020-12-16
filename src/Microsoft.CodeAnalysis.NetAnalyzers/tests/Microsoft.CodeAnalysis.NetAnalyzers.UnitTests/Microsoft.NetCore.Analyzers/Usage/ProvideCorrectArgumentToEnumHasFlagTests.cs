@@ -104,10 +104,9 @@ public class C
 
     public void Method(MyEnum m)
     {
-        {|#0:m.HasFlag(MyEnum.A)|};
+        m.HasFlag(MyEnum.A);
     }
-}",
-                VerifyCS.Diagnostic(ProvideCorrectArgumentToEnumHasFlag.NotFlagsRule).WithLocation(0).WithArguments("MyEnum"));
+}");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -119,11 +118,10 @@ Public Class C
     End Enum
 
     Public Sub Method(ByVal m As MyEnum)
-        {|#0:m.HasFlag(MyEnum.A)|}
+        m.HasFlag(MyEnum.A)
     End Sub
 End Class
-",
-                VerifyVB.Diagnostic(ProvideCorrectArgumentToEnumHasFlag.NotFlagsRule).WithLocation(0).WithArguments("MyEnum"));
+");
         }
 
         [Fact]

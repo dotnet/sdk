@@ -74,7 +74,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1501,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -86,7 +85,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1502,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -98,7 +96,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1505,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -110,7 +107,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1506,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -122,7 +118,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1509,
                                                                      isPortedFxCopRule: false,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
