@@ -467,6 +467,46 @@ End Namespace");
 
         // sealed overrides - no diagnostic
 
+        [Fact, WorkItem(4566, "https://github.com/dotnet/roslyn-analyzers/issues/4566")]
+        public async Task CA2119_BaseClassInterface_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+namespace NS
+{
+    internal interface IInternal
+    {
+        void Method1();
+    }
+
+    public class C : IInternal
+    {
+        public virtual void [|Method1|]() { }
+    }
+
+    public class InheritFromC : C
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Namespace NS
+    Friend Interface IInternal
+        Sub Method1()
+    End Interface
+
+    Public Class C
+        Implements IInternal
+
+        Public Overridable Sub [|Method1|]() Implements IInternal.Method1
+        End Sub
+    End Class
+
+    Public Class InheritFromC
+        Inherits C
+    End Class
+End Namespace");
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column);

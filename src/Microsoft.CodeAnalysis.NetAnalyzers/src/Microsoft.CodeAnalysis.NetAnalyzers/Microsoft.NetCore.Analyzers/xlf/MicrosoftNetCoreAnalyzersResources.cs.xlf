@@ -12,16 +12,6 @@
         <target state="translated">Přidat atribut Serializable</target>
         <note />
       </trans-unit>
-      <trans-unit id="AnalyzerPackageDeprecationMessage">
-        <source>FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</source>
-        <target state="new">FxCopAnalyzers package has been deprecated in favor of 'Microsoft.CodeAnalysis.NetAnalyzers', that ships with the .NET SDK. Please refer to https://docs.microsoft.com/visualstudio/code-quality/migrate-from-fxcop-analyzers-to-net-analyzers to migrate to .NET analyzers.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AnalyzerPackageDeprecationTitle">
-        <source>Analyzer package has been deprecated</source>
-        <target state="new">Analyzer package has been deprecated</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ApprovedCipherMode">
         <source>Review cipher mode usage with cryptography experts</source>
         <target state="translated">Zkontrolovat využití režimu šifrování s odborníky na kryptografii</target>
@@ -1618,8 +1608,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
-        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object contains or not any items</source>
-        <target state="translated">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
+        <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
+        <target state="needs-review-translation">Při zjišťování, jestli objekt obsahuje nějaké položky, používejte spíše než Count vlastnost IsEmpty.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
@@ -1700,11 +1690,6 @@
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType">
         <source>The argument type, '{0}', must be the same as the enum type '{1}'</source>
         <target state="translated">Typ argumentu {0} musí být stejný jako typ výčtu {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
-        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="translated">Toto volání vždy vrátí false, protože typ výčtu {0} není označený jako FlagsAttribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">

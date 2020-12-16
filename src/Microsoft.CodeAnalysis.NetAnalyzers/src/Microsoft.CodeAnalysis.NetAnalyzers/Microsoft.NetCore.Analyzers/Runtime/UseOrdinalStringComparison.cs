@@ -24,8 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
 
         internal const string CompareMethodName = "Compare";
         internal const string EqualsMethodName = "Equals";

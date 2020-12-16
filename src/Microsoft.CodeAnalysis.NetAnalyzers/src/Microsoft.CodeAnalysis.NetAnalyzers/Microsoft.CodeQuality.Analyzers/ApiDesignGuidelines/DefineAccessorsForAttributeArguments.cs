@@ -37,8 +37,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                     RuleLevel.Disabled,
                                                                                     description: null,
                                                                                     isPortedFxCopRule: true,
-                                                                                    isDataflowRule: false,
-                                                                                    isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                                    isDataflowRule: false);
 
         internal static DiagnosticDescriptor IncreaseVisibilityRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                s_localizableTitle,
@@ -47,8 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                                RuleLevel.Disabled,
                                                                                                description: null,
                                                                                                isPortedFxCopRule: true,
-                                                                                               isDataflowRule: false,
-                                                                                               isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                                               isDataflowRule: false);
 
         internal static DiagnosticDescriptor RemoveSetterRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                          s_localizableTitle,
@@ -57,8 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                          RuleLevel.Disabled,
                                                                                          description: null,
                                                                                          isPortedFxCopRule: true,
-                                                                                         isDataflowRule: false,
-                                                                                         isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                                         isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, IncreaseVisibilityRule, RemoveSetterRule);
 

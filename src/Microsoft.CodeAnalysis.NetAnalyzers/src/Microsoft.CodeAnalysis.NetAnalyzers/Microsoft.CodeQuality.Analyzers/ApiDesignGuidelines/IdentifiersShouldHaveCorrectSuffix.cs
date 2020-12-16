@@ -171,13 +171,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
 
         private static bool TryGetTypeSuffix(IEnumerable<INamedTypeSymbol> typeSymbols, ImmutableDictionary<INamedTypeSymbol, SuffixInfo> hardcodedMap,
-            SymbolNamesWithValueOption<string> userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
+            SymbolNamesWithValueOption<string?> userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
         {
             foreach (var type in typeSymbols)
             {
                 // User specific mapping has higher priority than hardcoded one
                 if (userMap.TryGetValue(type.OriginalDefinition, out var suffix) &&
-                    !string.IsNullOrWhiteSpace(suffix))
+                    !RoslynString.IsNullOrWhiteSpace(suffix))
                 {
                     suffixInfo = SuffixInfo.Create(suffix, canSuffixBeCollection: false);
                     return true;

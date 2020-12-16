@@ -8,10 +8,7 @@ namespace GenerateDocumentationAndConfigFiles
         public const string NetAnalyzersNugetAssemblyVersionPropertyName = "_NETAnalyzersNuGetAssemblyVersion";
         public const string NetAnalyzersSDKAssemblyVersionPropertyName = "_NETAnalyzersSDKAssemblyVersion";
 
-        public const string FxCopAnalyzersPackageName = "Microsoft.CodeAnalysis.FxCopAnalyzers";
-        public const string NetCoreAnalyzersPackageName = "Microsoft.NetCore.Analyzers";
-        public const string NetFrameworkAnalyzersPackageName = "Microsoft.NetFramework.Analyzers";
-        public const string CodeQualityAnalyzersPackageName = "Microsoft.CodeQuality.Analyzers";
+        public const string TextAnalyzersPackageName = "Text.Analyzers";
 
         public const string CodeAnalysisAnalyzersPackageName = "Microsoft.CodeAnalysis.Analyzers";
         public const string PublicApiAnalyzersPackageName = "Microsoft.CodeAnalysis.PublicApiAnalyzers";
