@@ -8,6 +8,11 @@ Param(
     [string]$stage  # Valid values are "prepare", "format-workspace", "format-folder"
 )
 
+if ($stage -eq "prepare") {
+    Write-Output "$(Get-Date) - Building dotnet-format."
+    dotnet.exe build ./src -c Release
+}
+
 $currentLocation = Get-Location
 
 if (!(Test-Path $testPath)) {
@@ -19,14 +24,17 @@ try {
     $folderName = $repoName.Split("/")[1]
     $repoPath = Join-Path $testPath $folderName
 
-    if ($stage -eq "prepare") {
-        Write-Output "$(Get-Date) - Cloning $repoName."
-        git.exe clone $repo $repoPath -b $branchName --single-branch --no-tags
+    if (!(Test-Path $repoPath)) {
+        New-Item -ItemType Directory -Force -Path $repoPath | Out-Null
     }
 
     Set-Location $repoPath
 
     if ($stage -eq "prepare") {
+        Write-Output "$(Get-Date) - Cloning $repoName."
+        git.exe init
+        git.exe remote add origin $repo
+        git.exe fetch --progress --no-tags --depth=1 origin $sha
         git.exe checkout $sha
     }
 
@@ -62,7 +70,7 @@ try {
 
             if ($stage -eq "format-workspace") {
                 Write-Output "$(Get-Date) - $solutionFile - Formatting Workspace"
-                $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- $solution -wsa -v diag --check | Out-String
+                $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/netcoreapp2.1/dotnet-format.dll" $solution -wsa -v diag --check | Out-String
                 Write-Output $output.TrimEnd()
 
                 # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
@@ -84,7 +92,7 @@ try {
 
     if ($stage -eq "format-folder") {
         Write-Output "$(Get-Date) - $folderName - Formatting Folder"
-        $output = dotnet.exe run -p "$currentLocation\src\dotnet-format.csproj" -c Release -- -f $repoPath -v diag --check | Out-String
+        $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/netcoreapp2.1/dotnet-format.dll" -f $repoPath -v diag --check | Out-String
         Write-Output $output.TrimEnd()
 
         # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
