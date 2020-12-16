@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Test.Utilities;
 using Xunit;
@@ -1030,7 +1031,8 @@ static class Some
 
             await VerifyAnalyzerAsyncCs(source,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsReachable).WithLocation(0).
-                WithArguments("Some.WindowsSpecificApi()", "'windows' 10.0 and later", "'windows' all versions"));
+                WithArguments("Some.WindowsSpecificApi()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"),
+                GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows")));
         }
 
         [Fact]
