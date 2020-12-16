@@ -62,7 +62,7 @@ namespace Microsoft.NetFramework.Analyzers
             private readonly CompilationSecurityTypes _xmlTypes;
             private readonly SyntaxNodeHelper _syntaxNodeHelper;
 
-            private readonly Dictionary<ISymbol, XsltSettingsEnvironment> _xsltSettingsEnvironments = new Dictionary<ISymbol, XsltSettingsEnvironment>();
+            private readonly Dictionary<ISymbol, XsltSettingsEnvironment> _xsltSettingsEnvironments = new();
 
             public SyntaxNodeAnalyzer(CompilationSecurityTypes xmlTypes, SyntaxNodeHelper helper)
             {

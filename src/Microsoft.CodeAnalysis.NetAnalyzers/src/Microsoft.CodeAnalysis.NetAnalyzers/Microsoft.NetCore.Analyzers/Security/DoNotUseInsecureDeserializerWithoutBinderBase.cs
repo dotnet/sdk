@@ -62,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         /// <summary>
         /// For PropertySetAnalysis dataflow analysis; new instances always start out as flagged.
         /// </summary>
-        private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(ImmutableArray.Create(PropertySetAbstractValueKind.Flagged));
+        private static readonly ConstructorMapper ConstructorMapper = new(ImmutableArray.Create(PropertySetAbstractValueKind.Flagged));
 
         public sealed override void Initialize(AnalysisContext context)
         {
