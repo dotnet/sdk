@@ -1692,11 +1692,6 @@
         <target state="translated">'{0}' bağımsız değişken türü, '{1}' sabit listesi türüyle aynı olmalıdır.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
-        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="translated">'{0}' sabit listesi türü 'FlagsAttribute' ile işaretlenmediğinden bu çağrı her zaman 'false' döndürür</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
         <target state="translated">'Enum.HasFlag' için doğru 'sabit listesi' bağımsız değişkenini belirtin</target>

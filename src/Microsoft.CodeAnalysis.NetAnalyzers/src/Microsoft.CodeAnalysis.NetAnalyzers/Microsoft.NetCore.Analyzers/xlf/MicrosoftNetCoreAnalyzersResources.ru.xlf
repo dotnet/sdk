@@ -1692,11 +1692,6 @@
         <target state="translated">Тип аргумента "{0}" не совпадает с типом перечисления "{1}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProvideCorrectArgumentToEnumHasFlagMessageNotFlags">
-        <source>This call will always returns 'false' because the enum type '{0}' is not marked with 'FlagsAttribute'</source>
-        <target state="translated">Этот вызов будет всегда возвращать "false", так как тип перечисления "{0}" не помечен как "FlagsAttribute"</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagTitle">
         <source>Provide correct 'enum' argument to 'Enum.HasFlag'</source>
         <target state="translated">Укажите правильный аргумент "enum" для "Enum.HasFlag"</target>
