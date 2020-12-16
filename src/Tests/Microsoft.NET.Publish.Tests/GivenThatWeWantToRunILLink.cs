@@ -291,7 +291,6 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "AnalysisWarningsOnHelloWorldApp";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             List<string> expectedOutput = new List<string> () {
-                    "ILLink : Trim analysis warning IL2059: System.Reflection.RuntimeConstructorInfo.Invoke(Object,BindingFlags,Binder,Object[],CultureInfo",
                     "ILLink : Trim analysis warning IL2070: System.Reflection.RuntimeAssembly.AddPublicNestedTypes(Type,List<Type>,List<Exception>",
                     "ILLink : Trim analysis warning IL2026: System.Reflection.RuntimeModule.ResolveLiteralField(Int32,Type[],Type[]",
                     "ILLink : Trim analysis warning IL2075: System.Reflection.RuntimeModule.ResolveLiteralField(Int32,Type[],Type[]",
@@ -317,12 +316,8 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.SerializationEvents.GetMethodsWithAttribute(Type,Type",
                     "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.FormatterServices.GetSerializableFields(Type",
                     "ILLink : Trim analysis warning IL2082: System.Reflection.Emit.TypeBuilder.DefineConstructorNoLock(MethodAttributes,CallingConventions,Type[],Type[][],Type[][]",
-                    "ILLink : Trim analysis warning IL2026: System.TypeNameParser.ResolveType(Assembly,String[],Func<Assembly,String,Boolean,Type>,Boolean,Boolean,StackCrawlMark&",
-                    "ILLink : Trim analysis warning IL2075: System.TypeNameParser.ResolveType(Assembly,String[],Func<Assembly,String,Boolean,Type>,Boolean,Boolean,StackCrawlMark&",
                     "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetTypeNoLock(String,Boolean,Boolean",
                     "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetTypeNoLock(String,Boolean,Boolean",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.CustomAttributeData.Init(Object",
-                    "ILLink : Trim analysis warning IL2075: System.Diagnostics.StackTrace.TryResolveStateMachineMethod(MethodBase&,Type&",
                     "ILLink : Trim analysis warning IL2057: System.Resources.ResourceReader.FindType(Int32",
                     "ILLink : Trim analysis warning IL2057: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
                     "ILLink : Trim analysis warning IL2072: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
@@ -330,9 +325,6 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2072: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
                     "ILLink : Trim analysis warning IL2077: System.Resources.ResourceReader.InitializeBinaryFormatter(",
                     "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
-                    "ILLink : Trim analysis warning IL2075: System.Attribute.GetParentDefinition(PropertyInfo,Type[]",
-                    "ILLink : Trim analysis warning IL2075: System.Attribute.GetParentDefinition(EventInfo",
-                    "ILLink : Trim analysis warning IL2060: System.Resources.ResourceReader.InitializeBinaryFormatter(",
                     "ILLink : Trim analysis warning IL2075: System.Diagnostics.Tracing.EventSource.CreateManifestAndDescriptors(Type,String,EventSource,EventManifestOptions",
                     "ILLink : Trim analysis warning IL2055: System.RuntimeTypeHandle.GetTypeHelper(Type,Type[],IntPtr,Int32",
                     "ILLink : Trim analysis warning IL2026: System.Reflection.Associates.AssignAssociates(Int32,RuntimeType,RuntimeType",
