@@ -93,6 +93,38 @@ End Class
         }
 
         [Fact]
+        public async Task CA2248_EnumTypesAreSameButNotFlag_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public enum MyEnum { A, B, }
+
+    public void Method(MyEnum m)
+    {
+        m.HasFlag(MyEnum.A);
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    Public Enum MyEnum
+        A
+        B
+    End Enum
+
+    Public Sub Method(ByVal m As MyEnum)
+        m.HasFlag(MyEnum.A)
+    End Sub
+End Class
+");
+        }
+
+        [Fact]
         public async Task CA2248_EnumTypesAreDifferentAndNotFlags_Diagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
