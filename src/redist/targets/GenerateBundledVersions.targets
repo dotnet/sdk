@@ -28,13 +28,10 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <_NET50DefaultRuntimeFrameworkVersion>5.0.0</_NET50DefaultRuntimeFrameworkVersion>
       <_NET50RuntimePackVersion>5.0.0</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
-      <_WindowsDesktop50DefaultRuntimeFrameworkVersion>5.0.0</_WindowsDesktop50DefaultRuntimeFrameworkVersion>
       <_WindowsDesktop50RuntimePackVersion>5.0.0</_WindowsDesktop50RuntimePackVersion>
       <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
-      <_AspNet50DefaultRuntimeFrameworkVersion>5.0.1</_AspNet50DefaultRuntimeFrameworkVersion>
       <_AspNet50RuntimePackVersion>5.0.1</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0</_AspNet50TargetingPackVersion>
 
@@ -409,7 +406,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
                               TargetFramework="net5.0-windows10.0.17763.0"
                               RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
-                              DefaultRuntimeFrameworkVersion="5.0.0"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
                               TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
                               TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
@@ -422,7 +419,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
                               TargetFramework="net5.0-windows10.0.18362.0"
                               RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
-                              DefaultRuntimeFrameworkVersion="5.0.0"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
                               TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
                               TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
@@ -435,7 +432,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
                               TargetFramework="net5.0-windows10.0.19041.0"
                               RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
-                              DefaultRuntimeFrameworkVersion="5.0.0"
+                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
                               LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
                               TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
                               TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
