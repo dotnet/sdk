@@ -34,8 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              RuleLevel.Disabled,
                                                                              description: s_localizableCA1307Description,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
 
         private static readonly LocalizableString s_localizableCA1310Title = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Title), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_localizableCA1310Message = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Message), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));

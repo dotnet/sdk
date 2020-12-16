@@ -27,8 +27,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                                         RuleLevel.IdeHidden_BulkConfigurable, // Only for users explicitly targeting performance - addressing violation is non-trivial
                                                         description: s_localizableDescription,
                                                         isPortedFxCopRule: false,
-                                                        isDataflowRule: false,
-                                                        isEnabledByDefaultInFxCopAnalyzers: false);
+                                                        isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

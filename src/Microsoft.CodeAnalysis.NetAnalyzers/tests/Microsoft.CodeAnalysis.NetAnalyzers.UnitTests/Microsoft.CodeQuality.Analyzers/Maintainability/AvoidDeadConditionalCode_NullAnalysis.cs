@@ -6938,5 +6938,98 @@ Public Class C
 End Class
 ");
         }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(4509, "https://github.com/dotnet/roslyn-analyzers/issues/4509")]
+        public async Task GenericFieldNullCheckIsNotFlagged()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class MyClass<T>
+{
+    private T m_myValue;
+
+    public void M()
+    {
+        var x = this.m_myValue?.ToString();
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Class [MyClass](Of T)
+    Private m_myValue As T
+
+    Public Sub M()
+        Dim x = Me.m_myValue?.ToString()
+    End Sub
+End Class
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(4548, "https://github.com/dotnet/roslyn-analyzers/issues/4548")]
+        public async Task ActivatorCreateInstanceNullCheckIsNotFlagged()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class C
+{
+    public void M()
+    {
+        var value = Activator.CreateInstance(typeof(int?));
+        if (value is null)
+        {
+        }
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    Public Sub M()
+        Dim value = Activator.CreateInstance(GetType(Integer?))
+
+        If value Is Nothing Then
+        End If
+    End Sub
+End Class
+");
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [Fact]
+        [WorkItem(4548, "https://github.com/dotnet/roslyn-analyzers/issues/4548")]
+        public async Task FactoryMethodWithNullableReturnIsNotFlagged()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+#nullable enable
+
+public class C
+{
+    public void M(bool flag)
+    {
+        var value = CreateC(flag);
+        if (value is null)
+        {
+        }
+    }
+
+    public static C? CreateC(bool flag)
+    {
+        return flag ? new C() : null;
+    }
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+            await VerifyCS.VerifyAnalyzerAsync(@"
+");
+        }
     }
 }

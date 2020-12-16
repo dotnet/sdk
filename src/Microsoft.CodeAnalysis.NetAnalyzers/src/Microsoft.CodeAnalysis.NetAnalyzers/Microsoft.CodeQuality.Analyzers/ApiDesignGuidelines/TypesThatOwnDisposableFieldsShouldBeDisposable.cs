@@ -59,7 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             private readonly DisposeAnalysisHelper _disposeAnalysisHelper;
 
-            public DisposableFieldAnalyzer(Compilation compilation)
+            protected DisposableFieldAnalyzer(Compilation compilation)
             {
                 DisposeAnalysisHelper.TryGetOrCreate(compilation, out _disposeAnalysisHelper!);
                 RoslynDebug.Assert(_disposeAnalysisHelper != null);

@@ -36,7 +36,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                 description: s_Description,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
-                isEnabledByDefaultInFxCopAnalyzers: false,
                 isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
