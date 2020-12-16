@@ -562,6 +562,31 @@ public class C
                     "C.M(string, System.StringComparison)"));
         }
 
+        [Fact, WorkItem(3492, "https://github.com/dotnet/roslyn-analyzers/issues/3492")]
+        public async Task CA1307_CA1310_ExpressionFunc_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class C
+{
+    public string Name { get; }
+
+    public void DoSomething()
+    {
+        F(c => c.Name.StartsWith(""Hello""));
+        F(c => c.M(""Hello""));
+    }
+
+    public bool M(string s) => false;
+    public bool M(string s, StringComparison sc) => false;
+
+    private void F(Expression<Func<C, bool>> e) {}
+}");
+        }
+
         private static DiagnosticResult GetCA1307CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
             VerifyCS.Diagnostic(SpecifyStringComparisonAnalyzer.Rule_CA1307)
                 .WithLocation(line, column)
