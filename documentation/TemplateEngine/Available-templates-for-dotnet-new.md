@@ -9,7 +9,7 @@ Here is a list (alpha sorted) of templates which are available for use with `dot
 | [Auth0 Templates](https://github.com/auth0-community/auth0-dotnet-templates) | `dotnet new -i "Auth0.Templates::*"` |
 | [AWS Lambda .NET Core Templates](https://github.com/aws/aws-lambda-dotnet/tree/master/Blueprints) | `dotnet new -i "Amazon.Lambda.Templates::*"`|
 | [Blazor](http://blazor.net) - Full stack web development with C# and WebAssembly | `dotnet new -i "Microsoft.AspNetCore.Blazor.Templates::3.0.0-*"`|
-| [Cake.Frosting](https://github.com/cake-build/frosting) | `dotnet new -i "Cake.Frosting.Template::*"` |
+| [Cake.Frosting](https://github.com/cake-build/cake) | `dotnet new -i "Cake.Frosting.Template::*"` |
 | [Carter](https://github.com/CarterCommunity/Carter) - Carter is a library that allows Nancy-esque routing for use with ASP.Net Core. | `dotnet new -i "CarterTemplate::*"`|
 | [cloudscribe](https://www.cloudscribe.com/docs/introduction) | `dotnet new -i "cloudscribe.templates::*"` |
 | [DotVVM](https://github.com/riganti/dotvvm) - Open source MVVM framework for line of business web applications | `dotnet new -i "DotVVM.Templates::*"` |
