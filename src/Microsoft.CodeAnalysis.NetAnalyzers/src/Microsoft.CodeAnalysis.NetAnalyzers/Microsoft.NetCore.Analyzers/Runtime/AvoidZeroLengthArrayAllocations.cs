@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// <summary>The name of the Empty method on System.Array.</summary>
         internal const string ArrayEmptyMethodName = "Empty";
 
-        private static readonly SymbolDisplayFormat ReportFormat = new SymbolDisplayFormat(
+        private static readonly SymbolDisplayFormat ReportFormat = new(
             memberOptions: SymbolDisplayMemberOptions.IncludeContainingType | SymbolDisplayMemberOptions.IncludeParameters,
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
             miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);

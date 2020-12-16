@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        private static readonly List<string> s_exceptionTypeNames = new List<string>()
+        private static readonly List<string> s_exceptionTypeNames = new()
         {
             "System.Exception",
             "System.SystemException",
