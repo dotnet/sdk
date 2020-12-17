@@ -28,14 +28,11 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <_NET50DefaultRuntimeFrameworkVersion>5.0.0</_NET50DefaultRuntimeFrameworkVersion>
       <_NET50RuntimePackVersion>5.0.1</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
-      <_WindowsDesktop50DefaultRuntimeFrameworkVersion>5.0.0</_WindowsDesktop50DefaultRuntimeFrameworkVersion>
-      <_WindowsDesktop50RuntimePackVersion>5.0.0</_WindowsDesktop50RuntimePackVersion>
+      <_WindowsDesktop50RuntimePackVersion>5.0.1</_WindowsDesktop50RuntimePackVersion>
       <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
-      <_AspNet50DefaultRuntimeFrameworkVersion>5.0.0</_AspNet50DefaultRuntimeFrameworkVersion>
-      <_AspNet50RuntimePackVersion>5.0.0</_AspNet50RuntimePackVersion>
+      <_AspNet50RuntimePackVersion>5.0.1</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0</_AspNet50TargetingPackVersion>
 
       <_NETCoreApp31RuntimePackVersion>3.1.9</_NETCoreApp31RuntimePackVersion>
@@ -180,6 +177,11 @@
                                DefaultVersion="2.2.0"
                                LatestVersion="2.2.8"/>
     </ItemGroup>
+    
+    <PropertyGroup>
+      <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(ProductMonikerRid)</PortableProductMonikerRid>
+    </PropertyGroup>
+      
 
     <PropertyGroup>
       <BundledVersionsPropsContent>
@@ -209,6 +211,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
     <NETCoreSdkVersion>$(Version)</NETCoreSdkVersion>
     <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
+    <NETCoreSdkPortableRuntimeIdentifier>$(PortableProductMonikerRid)</NETCoreSdkPortableRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkBeingBuiltIsPreview)</_NETCoreSdkIsPreview>
   </PropertyGroup>
   <ItemGroup>
@@ -334,7 +337,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
-                              DefaultRuntimeFrameworkVersion="$(_NET50DefaultRuntimeFrameworkVersion)"
+                              DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_NET50RuntimePackVersion)"
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(_NET50TargetingPackVersion)"
@@ -360,7 +363,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop50DefaultRuntimeFrameworkVersion)"
+                              DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop50TargetingPackVersion)"
@@ -372,7 +375,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop50DefaultRuntimeFrameworkVersion)"
+                              DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop50TargetingPackVersion)"
@@ -385,7 +388,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop50DefaultRuntimeFrameworkVersion)"
+                              DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop50RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop50TargetingPackVersion)"
@@ -398,7 +401,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
                               TargetFramework="net5.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
-                              DefaultRuntimeFrameworkVersion="$(_AspNet50DefaultRuntimeFrameworkVersion)"
+                              DefaultRuntimeFrameworkVersion="5.0.0"
                               LatestRuntimeFrameworkVersion="$(_AspNet50RuntimePackVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(_AspNet50TargetingPackVersion)"
@@ -642,7 +645,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/runtime.json"
           DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json" 
-          SkipUnchangedFiles="true"/> 
+          SkipUnchangedFiles="true"/>
+
+    <GenerateSdkRuntimeIdentifierChain
+          RuntimeIdentifier="$(PortableProductMonikerRid)"
+          RuntimeIdentifierGraphPath="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
+          RuntimeIdentifierChainOutputPath="$(SdkOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt"/>
     
   </Target>
 </Project>
