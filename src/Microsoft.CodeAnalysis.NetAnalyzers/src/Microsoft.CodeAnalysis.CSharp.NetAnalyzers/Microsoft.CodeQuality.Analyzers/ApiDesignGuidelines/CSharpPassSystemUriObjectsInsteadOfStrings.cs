@@ -13,10 +13,10 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpPassSystemUriObjectsInsteadOfStringsAnalyzer : PassSystemUriObjectsInsteadOfStringsAnalyzer
     {
-        protected override SyntaxNode? GetInvocationExpression(SyntaxNode node)
+        protected override SyntaxNode? GetInvocationExpression(SyntaxNode invocationNode)
         {
-            var invocationNode = node as InvocationExpressionSyntax;
-            return invocationNode?.Expression;
+            var invocationExpression = invocationNode as InvocationExpressionSyntax;
+            return invocationExpression?.Expression;
         }
     }
 }

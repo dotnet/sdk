@@ -922,7 +922,7 @@ public class C
 
             if (expectDiagnostic)
             {
-                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"z:\Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"/Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
             }
 
             await csTest.RunAsync();
@@ -945,7 +945,7 @@ End Class"
 
             if (expectDiagnostic)
             {
-                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"z:\Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"/Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
             }
 
             await vbTest.RunAsync();
@@ -954,18 +954,18 @@ End Class"
             Solution WithAnalyzerConfigDocument(Solution solution, ProjectId projectId)
             {
                 var project = solution.GetProject(projectId)!;
-                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"/Test.csproj" : @"/Test.vbproj";
                 solution = solution.WithProjectFilePath(projectId, projectFilePath);
 
                 var documentId = project.DocumentIds.Single();
                 var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
-                solution = solution.WithDocumentFilePath(documentId, $@"z:\Test0.{documentExtension}");
+                solution = solution.WithDocumentFilePath(documentId, $@"/Test0.{documentExtension}");
 
                 return solution.GetProject(projectId)!
                     .AddAnalyzerConfigDocument(
                         ".editorconfig",
                         SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
-                        filePath: @"z:\.editorconfig")
+                         filePath: @"/.editorconfig")
                     .Project.Solution;
             }
         }
@@ -1009,7 +1009,7 @@ public class C
 
             if (expectDiagnostic)
             {
-                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"z:\Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"/Test0.cs", 4, 23, 4, 29).WithArguments("unused", "M"));
             }
 
             await csTest.RunAsync();
@@ -1033,7 +1033,7 @@ End Class"
 
             if (expectDiagnostic)
             {
-                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"z:\Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"/Test0.vb", 3, 18, 3, 24).WithArguments("unused", "M"));
             }
 
             await vbTest.RunAsync();
@@ -1042,18 +1042,18 @@ End Class"
             Solution WithAnalyzerConfigDocument(Solution solution, ProjectId projectId)
             {
                 var project = solution.GetProject(projectId)!;
-                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"/Test.csproj" : @"/Test.vbproj";
                 solution = solution.WithProjectFilePath(projectId, projectFilePath);
 
                 var documentId = project.DocumentIds.Single();
                 var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
-                solution = solution.WithDocumentFilePath(documentId, $@"z:\Test0.{documentExtension}");
+                solution = solution.WithDocumentFilePath(documentId, $@"/Test0.{documentExtension}");
 
                 return solution.GetProject(projectId)!
                     .AddAnalyzerConfigDocument(
                         ".editorconfig",
                         SourceText.From($"[*.{documentExtension}]" + Environment.NewLine + editorConfigText),
-                        filePath: @"z:\.editorconfig")
+                        filePath: @"/.editorconfig")
                     .Project.Solution;
             }
         }

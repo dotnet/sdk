@@ -24,7 +24,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     /// </summary>
     public abstract class MarkMembersAsStaticFixer : CodeFixProvider
     {
-        private static readonly SyntaxAnnotation s_annotationForFixedDeclaration = new SyntaxAnnotation();
+        private static readonly SyntaxAnnotation s_annotationForFixedDeclaration = new();
 
         protected abstract IEnumerable<SyntaxNode>? GetTypeArguments(SyntaxNode node);
         protected abstract SyntaxNode? GetExpressionOfInvocation(SyntaxNode invocation);

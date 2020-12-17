@@ -114,7 +114,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private sealed class NamespaceRuleAnalyzer
         {
             private readonly ISet<string> _namespaceWithKeywordSet = new HashSet<string>();
-            private readonly object _lockGuard = new object();
+            private readonly object _lockGuard = new();
 
             public void Analyze(SymbolAnalysisContext context)
             {
