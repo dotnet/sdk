@@ -132,6 +132,7 @@ namespace CallerTargetsBelow5_0
             var csSource = @"
 using System;
 using System.Runtime.Versioning;
+
 [SupportedOSPlatform(""Browser"")]
 public class Test
 {
@@ -333,8 +334,10 @@ public class Test
             var csSource = @"
 using System;
 using System.Runtime.Versioning;
+
 [SupportedOSPlatform(""windows"")]
 class WindowsOnlyType { }
+
 public class Test
 {
     void GenericMethod<T>() { }
@@ -354,12 +357,16 @@ public class Test
         {
             var csSource = @"
 using System.Runtime.Versioning;
+
 [SupportedOSPlatform(""windows"")]
 class WindowsOnlyType { }
+
 class GenericClass<T> { }
+
 public class Test
 {
     void MethodWithGenericParameter(GenericClass<WindowsOnlyType> a) {}
+
     void M1()
     {
         GenericClass<WindowsOnlyType> obj = [|new GenericClass<WindowsOnlyType>()|];
@@ -375,8 +382,10 @@ public class Test
             var csSource = @"
 using System;
 using System.Runtime.Versioning;
+
 [SupportedOSPlatform(""windows"")]
 class WindowsOnlyType { }
+
 class GenericClass<T>
 {
     public static void M<V>() { }
@@ -389,9 +398,11 @@ class GenericClass<T>
         remove { }
     }
 }
+
 public class Test
 {
     public static void WindowsEventHandler(object sender, EventArgs e) { }
+
     void M1()
     {
         [|GenericClass<WindowsOnlyType>.M<int>()|];
@@ -411,6 +422,7 @@ public class Test
             var csSource = @"
 using System;
 using System.Runtime.Versioning;
+
 [assembly: SupportedOSPlatform(""windows"")]
 namespace WindowsOnlyAssembly
 {
@@ -432,6 +444,7 @@ namespace WindowsOnlyAssembly
             add { }
             remove { }
         }
+
         public int TestProperty
         {
             get
@@ -445,6 +458,7 @@ namespace WindowsOnlyAssembly
                 _field = value;
             }
         }
+
         public bool Enabled
         {
             get
@@ -467,18 +481,23 @@ namespace WindowsOnlyAssembly
             var csSource = @"
 using System;
 using System.Runtime.Versioning;
+
 [SupportedOSPlatform(""windows"")]
 class WindowsOnlyType { }
+
 class GenericClass<T>
 {
     public static void M<V>() { }
     public static void M2() { }
 }
+
 class GenericType<T> { }
 class AnotherType<T> { }
+
 public class Test
 {
     public static void WindowsEventHandler(object sender, EventArgs e) { }
+
     void M1()
     {
         [|GenericClass<GenericType<AnotherType<WindowsOnlyType>>>.M<int>()|];
