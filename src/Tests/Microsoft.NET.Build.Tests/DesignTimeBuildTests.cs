@@ -81,6 +81,26 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+        //  Regression test for https://github.com/dotnet/sdk/issues/13513
+        [Fact]
+        public void DesignTimeBuildSucceedsWhenTargetingNetCore21WithRuntimeIdentifier()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "DesignTimePackageDependencies",
+                TargetFrameworks = "netcoreapp2.1",
+                IsSdkProject = true,
+                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            new MSBuildCommand(testAsset, "ResolvePackageDependenciesDesignTime")
+                .Execute()
+                .Should()
+                .Pass();
+       }
+
         [Theory]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
@@ -92,7 +112,6 @@ namespace Microsoft.NET.Build.Tests
             {
                 Name = "DesignTimePackageDependencies",
                 TargetFrameworks = targetFramework,
-                IsSdkProject = true
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "12.0.2", privateAssets: "All"));
@@ -130,7 +149,6 @@ namespace Microsoft.NET.Build.Tests
             {
                 Name = "DesignTimePackageDependencies",
                 TargetFrameworks = targetFramework,
-                IsSdkProject = true
             };
 
             //  Downgrade will cause an error
@@ -176,7 +194,6 @@ namespace Microsoft.NET.Build.Tests
             {
                 Name = "App",
                 TargetFrameworks = "netcoreapp3.0",
-                IsSdkProject = true,
                 IsExe = true
             };
 

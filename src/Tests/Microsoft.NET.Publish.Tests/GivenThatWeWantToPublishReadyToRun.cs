@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -59,7 +60,7 @@ namespace Microsoft.NET.Publish.Tests
                 "ClassLib");
 
             testProject.AdditionalProperties["PublishReadyToRun"] = "True";
-            testProject.AdditionalItems["PublishReadyToRunExclude"] = "Classlib.dll";
+            testProject.AdditionalItems["PublishReadyToRunExclude"] = new Dictionary<string, string> { ["Include"] = "Classlib.dll" };
 
             var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
 
@@ -117,7 +118,6 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "FailingToCrossgen",
                 TargetFrameworks = "netcoreapp3.0",
                 IsExe = true,
-                IsSdkProject = true,
             };
 
             if (platform.Contains("win"))
@@ -158,13 +158,12 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Fact]
-        public void It_warns_when_targetting_netcoreapp_2_x()
+        public void It_warns_when_targetting_netcoreapp_2_x_readytorun()
         {
             var testProject = new TestProject()
             {
                 Name = "ConsoleApp",
                 TargetFrameworks = "netcoreapp2.2",
-                IsSdkProject = true,
                 IsExe = true,
             };
 
@@ -291,7 +290,6 @@ namespace Microsoft.NET.Publish.Tests
             {
                 Name = referenceProjectName,
                 TargetFrameworks = targetFramework,
-                IsSdkProject = true,
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
 using System;
@@ -308,7 +306,6 @@ public class Classlib
                 Name = mainProjectName,
                 TargetFrameworks = targetFramework,
                 IsExe = isExeProject,
-                IsSdkProject = true,
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework),
                 ReferencedProjects = { referenceProject },
             };
