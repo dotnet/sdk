@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="6.0.0-alpha.1.20614.5">
+    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="6.0.0-alpha.1.20616.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2581a77494154781e11a240665183e5b94335236</Sha>
+      <Sha>0ade9a302b8d582ea0c04295de343620b12d91b7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="6.0.0-alpha.1.20614.5">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="6.0.0-alpha.1.20616.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2581a77494154781e11a240665183e5b94335236</Sha>
+      <Sha>0ade9a302b8d582ea0c04295de343620b12d91b7</Sha>
       <Sha>31980633108a1bef00c798136fcd30a873c90fa3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Cli.Localization" Version="6.0.0-alpha.1.20614.5">
+    <Dependency Name="Microsoft.TemplateEngine.Cli.Localization" Version="6.0.0-alpha.1.20616.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2581a77494154781e11a240665183e5b94335236</Sha>
+      <Sha>0ade9a302b8d582ea0c04295de343620b12d91b7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="6.0.0-alpha.1.20614.5">
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="6.0.0-alpha.1.20616.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2581a77494154781e11a240665183e5b94335236</Sha>
+      <Sha>0ade9a302b8d582ea0c04295de343620b12d91b7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="6.0.0-alpha.1.20614.5">
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="6.0.0-alpha.1.20616.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2581a77494154781e11a240665183e5b94335236</Sha>
+      <Sha>0ade9a302b8d582ea0c04295de343620b12d91b7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="6.0.0-alpha.1.20614.5">
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="6.0.0-alpha.1.20616.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2581a77494154781e11a240665183e5b94335236</Sha>
+      <Sha>0ade9a302b8d582ea0c04295de343620b12d91b7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="6.0.0-alpha.1.20614.5">
+    <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="6.0.0-alpha.1.20616.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2581a77494154781e11a240665183e5b94335236</Sha>
+      <Sha>0ade9a302b8d582ea0c04295de343620b12d91b7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.0-alpha.1.20560.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -50,9 +50,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>72b7d236ad634c2280c73499ebfc2b594995ec06</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="6.0.0-beta.20610.4">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="6.0.0-beta.20614.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3346d7b4ff047c854913fb2ded6e3aa726da6d11</Sha>
+      <Sha>b2d5bf0342fa65d70ed2c3ddbdb3841d7ca0b382</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.HostModel" Version="6.0.0-alpha.1.20560.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -82,9 +82,9 @@
       <Uri>https://github.com/dotnet/fsharp</Uri>
       <Sha>7fd0736d33a20f55b013494fa35c504f9f19b4e5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.9.0-3.20611.16">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.9.0-3.20617.8">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>f27619580ad5b2bdc4043ad867bc145a48d21af6</Sha>
+      <Sha>c666a9c57fe0c1de5df0e5b9656a50ea8f5a265e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="6.0.0-alpha.1.20608.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -106,9 +106,9 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>57c4e48042efec946a993ef31b609f296fb7279c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="6.0.0-alpha.1.20608.3">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="6.0.0-alpha.1.20616.1">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>a86658f4602e616d71e5d6db23a30940534132e2</Sha>
+      <Sha>61b68d8b899b318f3ee09ed7f174131696e8ece1</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="6.0.0-alpha.1.20560.10">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -196,17 +196,17 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.20610.4">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.20614.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3346d7b4ff047c854913fb2ded6e3aa726da6d11</Sha>
+      <Sha>b2d5bf0342fa65d70ed2c3ddbdb3841d7ca0b382</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="6.0.0-beta.20610.4">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="6.0.0-beta.20614.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3346d7b4ff047c854913fb2ded6e3aa726da6d11</Sha>
+      <Sha>b2d5bf0342fa65d70ed2c3ddbdb3841d7ca0b382</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="6.0.0-beta.20610.4">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="6.0.0-beta.20614.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3346d7b4ff047c854913fb2ded6e3aa726da6d11</Sha>
+      <Sha>b2d5bf0342fa65d70ed2c3ddbdb3841d7ca0b382</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
