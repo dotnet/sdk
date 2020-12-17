@@ -183,7 +183,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public async Task ParameterWithLocalizableAttribute_MultipleLineStringLiteralArgument_Method_Diagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1793,7 +1793,7 @@ public class Test
             await csharpTest.RunAsync();
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
         [InlineData(null)]
         [InlineData(PointsToAnalysisKind.None)]
         [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
