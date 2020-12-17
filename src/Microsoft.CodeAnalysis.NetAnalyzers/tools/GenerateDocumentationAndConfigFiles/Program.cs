@@ -1350,7 +1350,7 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
       <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
       <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
-      
+
       <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
       <_GlobalAnalyzerConfigFile_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})' != ''"">$(_GlobalAnalyzerConfigDir_{trimmedPackageName})\$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})</_GlobalAnalyzerConfigFile_{trimmedPackageName}>
     </PropertyGroup>
@@ -1403,9 +1403,9 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
       <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">6.0</{effectiveAnalysisLevelPropName}>
 
       <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
-      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And 
+      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And
                                          '$({analysisLevelPrefixPropName})' != ''"">$({analysisLevelPrefixPropName})</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And 
+      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And
                                          '$({analysisLevelPropName})' != ''"">$({analysisLevelPropName})</{effectiveAnalysisLevelPropName}>
 ";
                         }
@@ -1495,17 +1495,15 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
   <Target Name=""_CodeAnalysisTreatWarningsNotAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false' AND ('$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true')"">
     <PropertyGroup>
       <WarningsNotAsErrors>$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
-    </PropertyGroup>    
+    </PropertyGroup>
   </Target>
 ";
             }
 
             static string GetPackageSpecificContents(string packageName)
-            {
-                switch (packageName)
+                => packageName switch
                 {
-                    case CodeAnalysisAnalyzersPackageName:
-                        return @"
+                    CodeAnalysisAnalyzersPackageName => @"
   <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
   <Target Name=""AddAllResxFilesAsAdditionalFiles"" BeforeTargets=""CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'"">
     <ItemGroup>
@@ -1520,10 +1518,8 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
   </ItemGroup>
   <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Unshipped.md')"" >
 	<AdditionalFiles Include=""AnalyzerReleases.Unshipped.md"" />
-  </ItemGroup>";
-
-                    case PublicApiAnalyzersPackageName:
-                        return @"
+  </ItemGroup>",
+                    PublicApiAnalyzersPackageName => @"
 
   <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
   <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt')"" >
@@ -1531,10 +1527,8 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
   </ItemGroup>
   <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt')"" >
 	<AdditionalFiles Include=""PublicAPI.Unshipped.txt"" />
-  </ItemGroup>";
-
-                    case PerformanceSensitiveAnalyzersPackageName:
-                        return @"
+  </ItemGroup>",
+                    PerformanceSensitiveAnalyzersPackageName => @"
   <PropertyGroup>
     <GeneratePerformanceSensitiveAttribute Condition=""'$(GeneratePerformanceSensitiveAttribute)' == ''"">true</GeneratePerformanceSensitiveAttribute>
     <PerformanceSensitiveAttributePath Condition=""'$(PerformanceSensitiveAttributePath)' == ''"">$(MSBuildThisFileDirectory)PerformanceSensitiveAttribute$(DefaultLanguageSourceExtension)</PerformanceSensitiveAttributePath>
@@ -1542,25 +1536,20 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
   <ItemGroup Condition=""'$(GeneratePerformanceSensitiveAttribute)' == 'true' and Exists($(PerformanceSensitiveAttributePath))"">
     <Compile Include=""$(PerformanceSensitiveAttributePath)"" Visible=""false"" />
-    
+
     <!-- Make sure the source file is embedded in PDB to support Source Link -->
     <EmbeddedFiles Condition=""'$(DebugType)' != 'none'"" Include=""$(PerformanceSensitiveAttributePath)"" />
-  </ItemGroup>";
-
-                    case NetAnalyzersPackageName:
-                        return $@"
+  </ItemGroup>",
+                    NetAnalyzersPackageName => $@"
   <!-- Target to report a warning when SDK NetAnalyzers version is higher than the referenced NuGet NetAnalyzers version -->
   <Target Name=""_ReportUpgradeNetAnalyzersNuGetWarning"" BeforeTargets=""CoreCompile"" Condition=""'$(_SkipUpgradeNetAnalyzersNuGetWarning)' != 'true' "">
     <Warning Text =""The .NET SDK has newer analyzers with version '$({NetAnalyzersSDKAssemblyVersionPropertyName})' than what version '$({NetAnalyzersNugetAssemblyVersionPropertyName})' of '{NetAnalyzersPackageName}' package provides. Update or remove this package reference.""
              Condition=""'$({NetAnalyzersNugetAssemblyVersionPropertyName})' != '' AND
                          '$({NetAnalyzersSDKAssemblyVersionPropertyName})' != '' AND
                           $({NetAnalyzersNugetAssemblyVersionPropertyName}) &lt; $({NetAnalyzersSDKAssemblyVersionPropertyName})""/>
-  </Target>";
-
-                    default:
-                        return string.Empty;
-                }
-            }
+  </Target>",
+                    _ => string.Empty,
+                };
         }
 
         private enum RulesetKind
