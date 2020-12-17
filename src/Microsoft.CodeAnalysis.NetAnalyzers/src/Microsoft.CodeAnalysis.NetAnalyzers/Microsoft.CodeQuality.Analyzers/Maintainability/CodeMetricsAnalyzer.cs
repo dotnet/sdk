@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
         /// <summary>
         /// Configuration file to configure custom threshold values for supported code metrics.
         /// For example, the below entry changes the maximum allowed inheritance depth from the default value of 5 to 10:
-        /// 
+        ///
         ///     # FORMAT:
         ///     # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
         ///
@@ -241,45 +241,22 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
                 static bool isApplicableByDefault(string ruleId, SymbolKind symbolKind)
                 {
-                    switch (ruleId)
+                    return ruleId switch
                     {
-                        case CA1501RuleId:
-                            return symbolKind == SymbolKind.NamedType;
-
-                        case CA1502RuleId:
-                            return symbolKind == SymbolKind.Method;
-
-                        case CA1505RuleId:
-                            switch (symbolKind)
-                            {
-                                case SymbolKind.NamedType:
-                                case SymbolKind.Method:
-                                case SymbolKind.Field:
-                                case SymbolKind.Property:
-                                case SymbolKind.Event:
-                                    return true;
-
-                                default:
-                                    return false;
-                            }
-
-                        case CA1506RuleId:
-                            switch (symbolKind)
-                            {
-                                case SymbolKind.NamedType:
-                                case SymbolKind.Method:
-                                case SymbolKind.Field:
-                                case SymbolKind.Property:
-                                case SymbolKind.Event:
-                                    return true;
-
-                                default:
-                                    return false;
-                            }
-
-                        default:
-                            throw new NotImplementedException();
-                    }
+                        CA1501RuleId => symbolKind == SymbolKind.NamedType,
+                        CA1502RuleId => symbolKind == SymbolKind.Method,
+                        CA1505RuleId => symbolKind switch
+                        {
+                            SymbolKind.NamedType or SymbolKind.Method or SymbolKind.Field or SymbolKind.Property or SymbolKind.Event => true,
+                            _ => false,
+                        },
+                        CA1506RuleId => symbolKind switch
+                        {
+                            SymbolKind.NamedType or SymbolKind.Method or SymbolKind.Field or SymbolKind.Property or SymbolKind.Event => true,
+                            _ => false,
+                        },
+                        _ => throw new NotImplementedException(),
+                    };
                 }
 
                 static uint? getDefaultThreshold(string ruleId, SymbolKind symbolKind)
