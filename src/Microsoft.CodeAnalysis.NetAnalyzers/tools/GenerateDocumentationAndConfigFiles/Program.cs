@@ -12,8 +12,12 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using Analyzer.Utilities;
+using Analyzer.Utilities.PooledObjects;
+using Analyzer.Utilities.PooledObjects.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.ReleaseTracking;
+using Microsoft.CodeAnalysis.Text;
 using static GenerateDocumentationAndConfigFiles.CommonPropertyNames;
 
 namespace GenerateDocumentationAndConfigFiles
@@ -22,7 +26,8 @@ namespace GenerateDocumentationAndConfigFiles
     {
         public static int Main(string[] args)
         {
-            const int expectedArguments = 17;
+            const int expectedArguments = 22;
+            const string validateOnlyPrefix = "-validateOnly:";
 
             if (args.Length != expectedArguments)
             {
@@ -30,29 +35,51 @@ namespace GenerateDocumentationAndConfigFiles
                 return 1;
             }
 
-            string analyzerRulesetsDir = args[0];
-            string analyzerEditorconfigsDir = args[1];
-            string binDirectory = args[2];
-            string configuration = args[3];
-            string tfm = args[4];
-            var assemblyList = args[5].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-            string propsFileDir = args[6];
-            string propsFileName = args[7];
-            string propsFileToDisableNetAnalyzersInNuGetPackageName = args[8];
-            string analyzerDocumentationFileDir = args[9];
-            string analyzerDocumentationFileName = args[10];
-            string analyzerSarifFileDir = args[11];
-            string analyzerSarifFileName = args[12];
-            var analyzerVersion = args[13];
-            var analyzerPackageName = args[14];
-            if (!bool.TryParse(args[15], out var containsPortedFxCopRules))
+            if (!args[0].StartsWith("-validateOnly:", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.Error.WriteLine($"Excepted the first argument to start with `{validateOnlyPrefix}`. found `{args[0]}`.");
+                return 1;
+            }
+
+            if (!bool.TryParse(args[0][validateOnlyPrefix.Length..], out var validateOnly))
+            {
+                validateOnly = false;
+            }
+
+            var fileNamesWithValidationFailures = new List<string>();
+
+            string analyzerRulesetsDir = args[1];
+            string analyzerEditorconfigsDir = args[2];
+            string analyzerGlobalconfigsDir = args[3];
+            string binDirectory = args[4];
+            string configuration = args[5];
+            string tfm = args[6];
+            var assemblyList = args[7].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            string propsFileDir = args[8];
+            string propsFileName = args[9];
+            string targetsFileDir = args[10];
+            string targetsFileName = args[11];
+            string propsFileToDisableNetAnalyzersInNuGetPackageName = args[12];
+            string analyzerDocumentationFileDir = args[13];
+            string analyzerDocumentationFileName = args[14];
+            string analyzerSarifFileDir = args[15];
+            string analyzerSarifFileName = args[16];
+            var analyzerVersion = args[17];
+            var analyzerPackageName = args[18];
+            if (!bool.TryParse(args[19], out var containsPortedFxCopRules))
             {
                 containsPortedFxCopRules = false;
             }
 
-            if (!bool.TryParse(args[16], out var generateAnalyzerRulesMissingDocumentationFile))
+            if (!bool.TryParse(args[20], out var generateAnalyzerRulesMissingDocumentationFile))
             {
                 generateAnalyzerRulesMissingDocumentationFile = false;
+            }
+
+            var releaseTrackingOptOutString = args[21];
+            if (!bool.TryParse(releaseTrackingOptOutString, out bool releaseTrackingOptOut))
+            {
+                releaseTrackingOptOut = false;
             }
 
             var allRulesById = new SortedList<string, DiagnosticDescriptor>();
@@ -163,11 +190,25 @@ namespace GenerateDocumentationAndConfigFiles
                 createAnalyzerRulesMissingDocumentationFile();
             }
 
+            if (fileNamesWithValidationFailures.Count > 0)
+            {
+                Console.Error.WriteLine("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:");
+                fileNamesWithValidationFailures.ForEach(fileName => Console.Error.WriteLine($"    {fileName}"));
+                return 1;
+            }
+
+            if (!createGlobalConfigFiles())
+            {
+                return 2;
+            }
+
+            CreateTargetsFile(targetsFileDir, targetsFileName, analyzerPackageName, categories.OrderBy(c => c));
+
             return 0;
 
             // Local functions.
             static void AnalyzerFileReference_AnalyzerLoadFailed(object? sender, AnalyzerLoadFailureEventArgs e)
-                => throw e.Exception;
+                => throw e.Exception ?? new NotSupportedException(e.Message);
 
             void createRulesetAndEditorconfig(
                 string fileName,
@@ -199,6 +240,8 @@ $@"<Project>
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
+
+                // This doesn't need validation as the generated file is part of artifacts.
                 File.WriteAllText(fileWithPath, fileContents);
 
                 if (!string.IsNullOrEmpty(disableNetAnalyzersImport))
@@ -217,6 +260,7 @@ $@"<Project>
     <{NetAnalyzersNugetAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersNugetAssemblyVersionPropertyName}>
   </PropertyGroup>
 </Project>";
+                    // This doesn't need validation as the generated file is part of artifacts.
                     File.WriteAllText(fileWithPath, fileContents);
                 }
 
@@ -226,11 +270,7 @@ $@"<Project>
                 {
                     if (!string.IsNullOrEmpty(propsFileToDisableNetAnalyzersInNuGetPackageName))
                     {
-                        Debug.Assert(analyzerPackageName is NetAnalyzersPackageName or
-                            FxCopAnalyzersPackageName or
-                            NetCoreAnalyzersPackageName or
-                            NetFrameworkAnalyzersPackageName or
-                            CodeQualityAnalyzersPackageName);
+                        Debug.Assert(analyzerPackageName is NetAnalyzersPackageName or TextAnalyzersPackageName);
 
                         return $@"
   <!-- 
@@ -336,7 +376,14 @@ $@"<Project>
                     builder.AppendLine("---");
                 }
 
-                File.WriteAllText(fileWithPath, builder.ToString());
+                if (validateOnly)
+                {
+                    Validate(fileWithPath, builder.ToString(), fileNamesWithValidationFailures);
+                }
+                else
+                {
+                    File.WriteAllText(fileWithPath, builder.ToString());
+                }
             }
 
             // based on https://github.com/dotnet/roslyn/blob/master/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
@@ -349,10 +396,16 @@ $@"<Project>
                 }
 
                 var culture = new CultureInfo("en-us");
+                string tempAnalyzerSarifFileName = analyzerSarifFileName;
+                if (validateOnly)
+                {
+                    // In validate only mode, we write the sarif file in a temp file and compare it with
+                    // the existing content in `analyzerSarifFileName`.
+                    tempAnalyzerSarifFileName = $"temp-{analyzerSarifFileName}";
+                }
 
                 var directory = Directory.CreateDirectory(analyzerSarifFileDir);
-                var fileWithPath = Path.Combine(directory.FullName, analyzerSarifFileName);
-
+                var fileWithPath = Path.Combine(directory.FullName, tempAnalyzerSarifFileName);
                 using var textWriter = new StreamWriter(fileWithPath, false, Encoding.UTF8);
                 using var writer = new Roslyn.Utilities.JsonWriter(textWriter);
                 writer.WriteObjectStart(); // root
@@ -385,9 +438,9 @@ $@"<Project>
                         writer.WriteObjectStart(descriptor.Id); // rule
                         writer.Write("id", descriptor.Id);
 
-                        writer.Write("shortDescription", descriptor.Title.ToString(culture));
+                        writer.Write("shortDescription", descriptor.Title.ToString(CultureInfo.InvariantCulture));
 
-                        string fullDescription = descriptor.Description.ToString(culture);
+                        string fullDescription = descriptor.Description.ToString(CultureInfo.InvariantCulture);
                         writer.Write("fullDescription", !string.IsNullOrEmpty(fullDescription) ? fullDescription : descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture));
 
                         writer.Write("defaultLevel", getLevel(descriptor.DefaultSeverity));
@@ -440,6 +493,15 @@ $@"<Project>
                 writer.WriteArrayEnd(); // runs
                 writer.WriteObjectEnd(); // root
 
+                if (validateOnly)
+                {
+                    // Close is needed to be able to read the file. Dispose() should do the same job.
+                    // Note: Although a using statement exists for the textWriter, its scope is the whole method.
+                    // So Dispose isn't called before the whole method returns.
+                    textWriter.Close();
+                    Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                }
+
                 return;
                 static string getLevel(DiagnosticSeverity severity)
                 {
@@ -481,6 +543,11 @@ $@"<Project>
 Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|
 ");
+                string[]? actualContent = null;
+                if (validateOnly)
+                {
+                    actualContent = File.ReadAllLines(fileWithPath);
+                }
 
                 foreach (var ruleById in allRulesById)
                 {
@@ -495,10 +562,31 @@ Rule ID | Missing Help Link | Title |
                         continue;
                     }
 
-                    builder.AppendLine($"{ruleId} | {helpLinkUri} | {descriptor.Title} |");
+                    var line = $"{ruleId} | {helpLinkUri} | {descriptor.Title.ToString(CultureInfo.InvariantCulture)} |";
+                    if (validateOnly)
+                    {
+                        // The validation for RulesMissingDocumentation.md is different than others.
+                        // We consider having "extra" entries as valid. This is to prevent CI failures due to rules being documented.
+                        // However, we consider "missing" entries as invalid. This is to force updating the file when new rules are added.
+                        if (!actualContent.Contains(line))
+                        {
+                            Console.Error.WriteLine($"Missing entry in {fileWithPath}");
+                            Console.Error.WriteLine(line);
+                            // The file is missing an entry. Mark it as invalid and break the loop as there is no need to continue validating.
+                            fileNamesWithValidationFailures.Add(fileWithPath);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        builder.AppendLine(line);
+                    }
                 }
 
-                File.WriteAllText(fileWithPath, builder.ToString());
+                if (!validateOnly)
+                {
+                    File.WriteAllText(fileWithPath, builder.ToString());
+                }
                 return;
 
                 static bool checkHelpLink(string helpLink)
@@ -519,6 +607,172 @@ Rule ID | Missing Help Link | Title |
                     {
                         return false;
                     }
+                }
+            }
+
+            bool createGlobalConfigFiles()
+            {
+                using var shippedFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
+                using var versionsBuilder = PooledHashSet<Version>.GetInstance();
+
+                // Validate all assemblies exist on disk and can be loaded.
+                foreach (string assembly in assemblyList)
+                {
+                    var assemblyPath = GetAssemblyPath(assembly);
+                    if (!File.Exists(assemblyPath))
+                    {
+                        Console.Error.WriteLine($"'{assemblyPath}' does not exist");
+                        return false;
+                    }
+
+                    try
+                    {
+                        _ = Assembly.LoadFrom(assemblyPath);
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        Console.Error.WriteLine(ex.Message);
+                        return false;
+                    }
+                }
+
+                // Compute descriptors by rule ID and shipped analyzer release versions and shipped data.
+                var sawShippedFile = false;
+                foreach (string assembly in assemblyList)
+                {
+                    var assemblyPath = GetAssemblyPath(assembly);
+                    var assemblyDir = Path.GetDirectoryName(assemblyPath);
+                    if (assemblyDir is null)
+                    {
+                        continue;
+                    }
+
+                    var assemblyName = Path.GetFileNameWithoutExtension(assembly);
+                    var shippedFile = Path.Combine(assemblyDir, "AnalyzerReleases", assemblyName, ReleaseTrackingHelper.ShippedFileName);
+                    if (File.Exists(shippedFile))
+                    {
+                        sawShippedFile = true;
+
+                        if (releaseTrackingOptOut)
+                        {
+                            Console.Error.WriteLine($"'{shippedFile}' exists but was not expected");
+                            return false;
+                        }
+
+                        try
+                        {
+                            using var fileStream = File.OpenRead(shippedFile);
+                            var sourceText = SourceText.From(fileStream);
+                            var releaseTrackingData = ReleaseTrackingHelper.ReadReleaseTrackingData(shippedFile, sourceText,
+                                onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new Exception($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, _2, _3, _4) => throw new Exception($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
+                                isShippedFile: true);
+                            shippedFilesDataBuilder.Add(releaseTrackingData);
+                            versionsBuilder.AddRange(releaseTrackingData.Versions);
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types
+                        catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                        {
+                            Console.Error.WriteLine(ex.Message);
+                            return false;
+                        }
+                    }
+                }
+
+                if (!releaseTrackingOptOut && !sawShippedFile)
+                {
+                    Console.Error.WriteLine($"Could not find any 'AnalyzerReleases.Shipped.md' file");
+                    return false;
+                }
+
+                if (versionsBuilder.Count > 0)
+                {
+                    var shippedFilesData = shippedFilesDataBuilder.ToImmutable();
+
+                    // Generate global analyzer config files for each shipped version, if required.
+                    foreach (var version in versionsBuilder)
+                    {
+                        var analysisLevelVersionString = GetNormalizedVersionStringForEditorconfigFileNameSuffix(version);
+
+                        foreach (var analysisMode in Enum.GetValues(typeof(AnalysisMode)))
+                        {
+                            CreateGlobalConfig(version, analysisLevelVersionString, (AnalysisMode)analysisMode!, shippedFilesData, category: null);
+                            foreach (var category in categories)
+                            {
+                                CreateGlobalConfig(version, analysisLevelVersionString, (AnalysisMode)analysisMode!, shippedFilesData, category);
+                            }
+                        }
+                    }
+                }
+
+                return true;
+
+                // Local functions.
+
+                void CreateGlobalConfig(
+                    Version version,
+                    string analysisLevelVersionString,
+                    AnalysisMode analysisMode,
+                    ImmutableArray<ReleaseTrackingData> shippedFilesData,
+                    string? category)
+                {
+                    var analysisLevelPropName = "AnalysisLevel";
+                    var title = $"Rules from '{version}' release with '{analysisMode}' analysis mode";
+                    var description = $"Rules with enabled-by-default state from '{version}' release with '{analysisMode}' analysis mode. Rules that are first released in a version later than '{version}' are disabled.";
+                    if (category != null)
+                    {
+                        analysisLevelPropName += category;
+                        title = $"'{category}' {title}";
+                        description = $"'{category}' {description}";
+                    }
+
+                    CreateGlobalconfig(
+                        analyzerGlobalconfigsDir,
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                                $"{analysisLevelPropName}_{analysisLevelVersionString}_{analysisMode!.ToString()!.ToLowerInvariant()}.editorconfig",
+#pragma warning restore CA1308 // Normalize strings to uppercase
+                                    title,
+                        description,
+                        analysisMode,
+                        category,
+                        allRulesById,
+                        (shippedFilesData, version));
+                }
+
+                static string GetNormalizedVersionStringForEditorconfigFileNameSuffix(Version version)
+                {
+                    var fieldCount = GetVersionFieldCount(version);
+                    return version.ToString(fieldCount).Replace(".", "_", StringComparison.Ordinal);
+
+                    static int GetVersionFieldCount(Version version)
+                    {
+                        if (version.Revision > 0)
+                        {
+                            return 4;
+                        }
+
+                        if (version.Build > 0)
+                        {
+                            return 3;
+                        }
+
+                        if (version.Minor > 0)
+                        {
+                            return 2;
+                        }
+
+                        return 1;
+                    }
+                }
+
+                string GetAssemblyPath(string assembly)
+                {
+                    var assemblyName = Path.GetFileNameWithoutExtension(assembly);
+                    var assemblyDir = Path.Combine(binDirectory, assemblyName, configuration, tfm);
+                    return Path.Combine(assemblyDir, assembly);
                 }
             }
         }
@@ -550,6 +804,8 @@ Rule ID | Missing Help Link | Title |
 
             var directory = Directory.CreateDirectory(analyzerRulesetsDir);
             var rulesetFilePath = Path.Combine(directory.FullName, rulesetFileName);
+
+            // This doesn't need validation as the generated file is part of artifacts.
             File.WriteAllText(rulesetFilePath, text);
             return;
 
@@ -613,6 +869,8 @@ Rule ID | Missing Help Link | Title |
 
             var directory = Directory.CreateDirectory(Path.Combine(analyzerEditorconfigsDir, editorconfigFolder));
             var editorconfigFilePath = Path.Combine(directory.FullName, ".editorconfig");
+
+            // This doesn't need validation as the generated file is part of artifacts.
             File.WriteAllText(editorconfigFilePath, text);
             return;
 
@@ -801,6 +1059,510 @@ Rule ID | Missing Help Link | Title |
             }
         }
 
+        /// <summary>
+        /// Validates whether <paramref name="fileContents"/> matches the contents of <paramref name="fileWithPath"/>.
+        /// If they don't match, <paramref name="fileWithPath"/> is added to <paramref name="fileNamesWithValidationFailures"/>.
+        /// The validation process is run within CI, so that the CI build fails when the auto-generated files are out of date.
+        /// </summary>
+        /// <remarks>
+        /// Don't call this method with auto-generated files that are part of the artifacts because it's expected that they don't initially exist.
+        /// </remarks>
+        private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
+        {
+            string actual = File.ReadAllText(fileWithPath);
+            if (actual != fileContents)
+            {
+                fileNamesWithValidationFailures.Add(fileWithPath);
+            }
+        }
+
+        private static void CreateGlobalconfig(
+            string folder,
+            string editorconfigFileName,
+            string editorconfigTitle,
+            string editorconfigDescription,
+            AnalysisMode analysisMode,
+            string? category,
+            SortedList<string, DiagnosticDescriptor> sortedRulesById,
+            (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version) shippedReleaseData)
+        {
+            Debug.Assert(editorconfigFileName.EndsWith(".editorconfig", StringComparison.Ordinal));
+
+            var text = GetGlobalconfigText(
+                editorconfigTitle,
+                editorconfigDescription,
+                analysisMode,
+                category,
+                sortedRulesById,
+                shippedReleaseData);
+            var directory = Directory.CreateDirectory(folder);
+            var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName);
+            File.WriteAllText(editorconfigFilePath, text);
+            return;
+
+            // Local functions
+            static string GetGlobalconfigText(
+                string editorconfigTitle,
+                string editorconfigDescription,
+                AnalysisMode analysisMode,
+                string? category,
+                SortedList<string, DiagnosticDescriptor> sortedRulesById,
+                (ImmutableArray<ReleaseTrackingData> shippedFiles, Version version)? shippedReleaseData)
+            {
+                var result = new StringBuilder();
+                StartGlobalconfig();
+                AddRules(analysisMode, category);
+                return result.ToString();
+
+                void StartGlobalconfig()
+                {
+                    result.AppendLine(@"# NOTE: Requires **VS2019 16.7** or later");
+                    result.AppendLine();
+                    result.AppendLine($@"# {editorconfigTitle}");
+                    result.AppendLine($@"# Description: {editorconfigDescription}");
+                    result.AppendLine();
+                    result.AppendLine($@"is_global = true");
+                    result.AppendLine();
+
+                    // Append 'global_level' to ensure conflicts are properly resolved between different global configs:
+                    //   1. Lowest precedence (-2): Category-agnostic config generated by us.
+                    //   2. Higher precedence (-1): Category-specific config generated by us.
+                    //   3. Highest predence (non-negative integer): User provided config.
+                    // See https://github.com/dotnet/roslyn/issues/48634 for further details.
+                    var globalLevel = category != null ? -1 : -2;
+                    result.AppendLine($@"global_level = {globalLevel}");
+                    result.AppendLine();
+                }
+
+                bool AddRules(AnalysisMode analysisMode, string? category)
+                {
+                    Debug.Assert(sortedRulesById.Count > 0);
+
+                    var addedRule = false;
+                    foreach (var rule in sortedRulesById)
+                    {
+                        if (AddRule(rule.Value, category))
+                        {
+                            addedRule = true;
+                        }
+                    }
+
+                    return addedRule;
+
+                    bool AddRule(DiagnosticDescriptor rule, string? category)
+                    {
+                        if (category != null &&
+                            !string.Equals(rule.Category, category, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return false;
+                        }
+
+                        var (isEnabledByDefault, severity) = GetEnabledByDefaultAndSeverity(rule, analysisMode);
+                        if (rule.IsEnabledByDefault == isEnabledByDefault &&
+                            severity == rule.DefaultSeverity)
+                        {
+                            // Rule had the same default severity and enabled state in the release.
+                            // We do not need to generate any entry.
+                            return false;
+                        }
+
+                        string severityString = GetRuleSeverity(isEnabledByDefault, severity);
+
+                        result.AppendLine();
+                        result.AppendLine($"# {rule.Id}: {rule.Title}");
+                        result.AppendLine($@"dotnet_diagnostic.{rule.Id}.severity = {severityString}");
+                        return true;
+                    }
+
+                    (bool isEnabledByDefault, DiagnosticSeverity effectiveSeverity) GetEnabledByDefaultAndSeverity(DiagnosticDescriptor rule, AnalysisMode analysisMode)
+                    {
+                        var isEnabledByDefault = rule.IsEnabledByDefault;
+                        var effectiveSeverity = rule.DefaultSeverity;
+
+                        bool isEnabledRuleForNonDefaultAnalysisMode;
+                        switch (analysisMode)
+                        {
+                            case AnalysisMode.None:
+                                // Disable all rules by default.
+                                return (isEnabledByDefault: false, DiagnosticSeverity.Warning);
+
+                            case AnalysisMode.All:
+                                // Escalate all rules with a special custom tag to be build warnings.
+                                isEnabledRuleForNonDefaultAnalysisMode = rule.CustomTags.Contains(WellKnownDiagnosticTagsExtensions.EnabledRuleInAggressiveMode);
+                                break;
+
+                            case AnalysisMode.Minimum:
+                                // Escalate all enabled, non-hidden rules to be build warnings.
+                                isEnabledRuleForNonDefaultAnalysisMode = isEnabledByDefault && effectiveSeverity != DiagnosticSeverity.Hidden;
+                                break;
+
+                            case AnalysisMode.Recommended:
+                                // Escalate all enabled rules to be build warnings.
+                                isEnabledRuleForNonDefaultAnalysisMode = isEnabledByDefault;
+                                break;
+
+                            case AnalysisMode.Default:
+                                // Retain the default severity and enabled by default values.
+                                isEnabledRuleForNonDefaultAnalysisMode = false;
+                                break;
+
+                            default:
+                                throw new NotSupportedException();
+                        }
+
+                        if (isEnabledRuleForNonDefaultAnalysisMode)
+                        {
+                            isEnabledByDefault = true;
+                            effectiveSeverity = DiagnosticSeverity.Warning;
+                        }
+
+                        if (shippedReleaseData != null)
+                        {
+                            isEnabledByDefault = isEnabledRuleForNonDefaultAnalysisMode;
+                            var maxVersion = shippedReleaseData.Value.version;
+                            foreach (var shippedFile in shippedReleaseData.Value.shippedFiles)
+                            {
+                                if (shippedFile.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine) &&
+                                    releaseTrackingLine.EnabledByDefault.HasValue &&
+                                    releaseTrackingLine.DefaultSeverity.HasValue)
+                                {
+                                    isEnabledByDefault = releaseTrackingLine.EnabledByDefault.Value && !releaseTrackingLine.IsRemovedRule;
+                                    effectiveSeverity = releaseTrackingLine.DefaultSeverity.Value;
+
+                                    if (isEnabledRuleForNonDefaultAnalysisMode && !releaseTrackingLine.IsRemovedRule)
+                                    {
+                                        isEnabledByDefault = true;
+                                        effectiveSeverity = DiagnosticSeverity.Warning;
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        return (isEnabledByDefault, effectiveSeverity);
+                    }
+
+                    static string GetRuleSeverity(bool isEnabledByDefault, DiagnosticSeverity defaultSeverity)
+                    {
+                        if (isEnabledByDefault)
+                        {
+                            return GetSeverityString(defaultSeverity);
+                        }
+                        else
+                        {
+                            return GetSeverityString(null);
+                        }
+
+                        static string GetSeverityString(DiagnosticSeverity? severity)
+                        {
+                            if (!severity.HasValue)
+                            {
+                                return "none";
+                            }
+
+                            return severity.Value switch
+                            {
+                                DiagnosticSeverity.Error => "error",
+                                DiagnosticSeverity.Warning => "warning",
+                                DiagnosticSeverity.Info => "suggestion",
+                                DiagnosticSeverity.Hidden => "silent",
+                                _ => throw new NotImplementedException(severity.Value.ToString()),
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void CreateTargetsFile(string targetsFileDir, string targetsFileName, string packageName, IOrderedEnumerable<string> categories)
+        {
+            if (string.IsNullOrEmpty(targetsFileDir) || string.IsNullOrEmpty(targetsFileName))
+            {
+                return;
+            }
+
+            var fileContents =
+$@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificContents(packageName)}
+</Project>";
+            var directory = Directory.CreateDirectory(targetsFileDir);
+            var fileWithPath = Path.Combine(directory.FullName, targetsFileName);
+            File.WriteAllText(fileWithPath, fileContents);
+
+            static string GetCommonContents(string packageName, IOrderedEnumerable<string> categories)
+            {
+                var stringBuilder = new StringBuilder();
+
+                stringBuilder.Append(GetGlobalAnalyzerConfigTargetContents(packageName, category: null));
+                foreach (var category in categories)
+                {
+                    stringBuilder.Append(GetGlobalAnalyzerConfigTargetContents(packageName, category));
+                }
+
+                stringBuilder.Append(GetMSBuildContentForPropertyAndItemOptions());
+                stringBuilder.Append(GetCodeAnalysisTreatWarningsAsErrorsTargetContents());
+                return stringBuilder.ToString();
+            }
+
+            static string GetGlobalAnalyzerConfigTargetContents(string packageName, string? category)
+            {
+                var analysisLevelPropName = "AnalysisLevel";
+                var analysisLevelPrefixPropName = "AnalysisLevelPrefix";
+                var analysisLevelSuffixPropName = "AnalysisLevelSuffix";
+                var analysisModePropName = nameof(AnalysisMode);
+                var effectiveAnalysisLevelPropName = "EffectiveAnalysisLevel";
+                var targetCondition = "'$(SkipGlobalAnalyzerConfigForPackage)' != 'true'";
+                var afterTargets = string.Empty;
+                var trimmedPackageName = packageName.Replace(".", string.Empty, StringComparison.Ordinal);
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    analysisLevelPropName += category;
+                    analysisLevelPrefixPropName += category;
+                    analysisLevelSuffixPropName += category;
+                    analysisModePropName += category;
+                    effectiveAnalysisLevelPropName += category;
+
+                    // For category-specific target, we also check if end-user has overriden category-specific AnalysisLevel or AnalysisMode.
+                    targetCondition += $" and ('$({analysisLevelPropName})' != '' or '$({analysisModePropName})' != '')";
+
+                    // Ensure that category-specific target executes after category-agnostic target
+                    afterTargets += $@"AfterTargets=""AddGlobalAnalyzerConfigForPackage_{trimmedPackageName}"" ";
+
+                    trimmedPackageName += category;
+                }
+
+                var packageVersionPropName = trimmedPackageName + "RulesVersion";
+                var propertyStringForSettingDefaultPropertyValues = GetPropertyStringForSettingDefaultPropertyValues(
+                    packageName, packageVersionPropName, category, analysisLevelPropName,
+                    analysisLevelPrefixPropName, analysisLevelSuffixPropName, effectiveAnalysisLevelPropName);
+
+                return $@"
+  <Target Name=""AddGlobalAnalyzerConfigForPackage_{trimmedPackageName}"" BeforeTargets=""CoreCompile"" {afterTargets}Condition=""{targetCondition}"">
+    <!-- PropertyGroup to compute global analyzer config file to be used -->
+    <PropertyGroup>{propertyStringForSettingDefaultPropertyValues}
+      <!-- Set the default analysis mode, if not set by the user -->
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>$({analysisLevelSuffixPropName})</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">$({analysisModePropName})</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllEnabledByDefault'"">{nameof(AnalysisMode.All)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllDisabledByDefault'"">{nameof(AnalysisMode.None)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">{nameof(AnalysisMode.Default)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+
+      <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+      
+      <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigFile_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})' != ''"">$(_GlobalAnalyzerConfigDir_{trimmedPackageName})\$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})</_GlobalAnalyzerConfigFile_{trimmedPackageName}>
+    </PropertyGroup>
+
+    <ItemGroup Condition=""Exists('$(_GlobalAnalyzerConfigFile_{trimmedPackageName})')"">
+      <EditorConfigFiles Include=""$(_GlobalAnalyzerConfigFile_{trimmedPackageName})"" />
+    </ItemGroup>
+  </Target>
+";
+
+                static string GetPropertyStringForSettingDefaultPropertyValues(
+                    string packageName,
+                    string packageVersionPropName,
+                    string? category,
+                    string analysisLevelPropName,
+                    string analysisLevelPrefixPropName,
+                    string analysisLevelSuffixPropName,
+                    string effectiveAnalysisLevelPropName)
+                {
+                    if (packageName == NetAnalyzersPackageName)
+                    {
+                        var propertyStr = string.Empty;
+
+                        if (!string.IsNullOrEmpty(category))
+                        {
+                            // For category-specific logic, we need to duplicate logic from SDK targets to set
+                            // category-specific AnalysisLevel property values. In future, we should consider removing similar logic from
+                            // SDK targets for core AnalysisLevel and instead generalize this logic.
+
+                            propertyStr += $@"
+      <!-- Default '{analysisLevelPropName}' to the core 'AnalysisLevel' and compute '{analysisLevelPrefixPropName}', '{analysisLevelSuffixPropName}' and '{effectiveAnalysisLevelPropName}' -->
+      <{analysisLevelPropName} Condition=""'$({analysisLevelPropName})' == ''"">$(AnalysisLevel)</{analysisLevelPropName}>
+
+      <!-- {analysisLevelPropName} can also contain compound values with a prefix and suffix separated by a '-' character.
+           The prefix indicates the core AnalysisLevel for '{category}' rules and the suffix indicates the bucket of
+           rules to enable for '{category}' rules by default. For example, some valid compound values for {analysisLevelPropName} are:
+             1. '5-all' - Indicates core {analysisLevelPropName} = '5' with 'all' the '{category}' rules enabled by default.
+             2. 'latest-none' - Indicates core {analysisLevelPropName} = 'latest' with 'none' of the '{category}' rules enabled by default.
+           {analysisLevelPrefixPropName} is used to set the {effectiveAnalysisLevelPropName} below.
+           {analysisLevelSuffixPropName} is used to map to the correct global config.
+      -->
+      <{analysisLevelPrefixPropName} Condition=""$({analysisLevelPropName}.Contains('-'))"">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '-(.)*', ''))</{analysisLevelPrefixPropName}>
+      <{analysisLevelSuffixPropName} Condition=""'$({analysisLevelPrefixPropName})' != ''"">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '$({analysisLevelPrefixPropName})-', ''))</{analysisLevelSuffixPropName}>
+
+      <!-- {effectiveAnalysisLevelPropName} is used to differentiate from user specified strings (such as 'none')
+           and an implied numerical option (such as '4') -->
+      <!-- TODO: Remove hard-coded constants such as 4.0, 5.0 and 6.0 used below once these are exposed as properties from the SDK -->
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">4.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">5.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">6.0</{effectiveAnalysisLevelPropName}>
+
+      <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
+      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And 
+                                         '$({analysisLevelPrefixPropName})' != ''"">$({analysisLevelPrefixPropName})</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And 
+                                         '$({analysisLevelPropName})' != ''"">$({analysisLevelPropName})</{effectiveAnalysisLevelPropName}>
+";
+                        }
+
+                        propertyStr += $@"
+      <!-- Default '{packageVersionPropName}' to '{effectiveAnalysisLevelPropName}' with trimmed trailing '.0' -->
+      <{packageVersionPropName} Condition=""'$({packageVersionPropName})' == '' and $({effectiveAnalysisLevelPropName}) != ''"">$([System.Text.RegularExpressions.Regex]::Replace($({effectiveAnalysisLevelPropName}), '(.0)*$', ''))</{packageVersionPropName}>
+";
+                        return propertyStr;
+                    }
+
+                    return string.Empty;
+                }
+            }
+
+            static string GetMSBuildContentForPropertyAndItemOptions()
+            {
+                var builder = new StringBuilder();
+
+                AddMSBuildContentForPropertyOptions(builder);
+                AddMSBuildContentForItemOptions(builder);
+
+                return builder.ToString();
+
+                static void AddMSBuildContentForPropertyOptions(StringBuilder builder)
+                {
+                    var compilerVisibleProperties = new List<string>();
+                    foreach (var field in typeof(MSBuildPropertyOptionNames).GetFields())
+                    {
+                        compilerVisibleProperties.Add(field.Name);
+                    }
+
+                    // Add ItemGroup for MSBuild property names that are required to be threaded as analyzer config options.
+                    AddItemGroupForCompilerVisibleProperties(compilerVisibleProperties, builder);
+                }
+
+                static void AddItemGroupForCompilerVisibleProperties(List<string> compilerVisibleProperties, StringBuilder builder)
+                {
+                    builder.AppendLine($@"
+  <!-- MSBuild properties to thread to the analyzers as options --> 
+  <ItemGroup>");
+                    foreach (var compilerVisibleProperty in compilerVisibleProperties)
+                    {
+                        builder.AppendLine($@"    <CompilerVisibleProperty Include=""{compilerVisibleProperty}"" />");
+                    }
+
+                    builder.AppendLine($@"  </ItemGroup>");
+                }
+
+                static void AddMSBuildContentForItemOptions(StringBuilder builder)
+                {
+                    // Add ItemGroup and PropertyGroup for MSBuild item names that are required to be treated as analyzer config options.
+                    // The analyzer config option will have the following key/value:
+                    // - Key: Item name prefixed with an '_' and suffixed with a 'List' to reduce chances of conflicts with any existing project property.
+                    // - Value: Concatenated item metadata values, separated by a ',' character. See https://github.com/dotnet/sdk/issues/12706#issuecomment-668219422 for details.
+
+                    builder.Append($@"
+  <!-- MSBuild item metadata to thread to the analyzers as options -->
+  <PropertyGroup>
+");
+                    var compilerVisibleProperties = new List<string>();
+                    foreach (var field in typeof(MSBuildItemOptionNames).GetFields())
+                    {
+                        // Item option name: "SupportedPlatform"
+                        // Generated MSBuild property: "<_SupportedPlatformList>@(SupportedPlatform, '<separator>')</_SupportedPlatformList>"
+
+                        var itemOptionName = field.Name;
+                        var propertyName = MSBuildItemOptionNamesHelpers.GetPropertyNameForItemOptionName(itemOptionName);
+                        compilerVisibleProperties.Add(propertyName);
+                        builder.AppendLine($@"    <{propertyName}>@({itemOptionName}, '{MSBuildItemOptionNamesHelpers.ValuesSeparator}')</{propertyName}>");
+                    }
+
+                    builder.AppendLine($@"  </PropertyGroup>");
+
+                    AddItemGroupForCompilerVisibleProperties(compilerVisibleProperties, builder);
+                }
+            }
+
+            static string GetCodeAnalysisTreatWarningsAsErrorsTargetContents()
+            {
+                return $@"
+  <!--
+    Design-time target to prevent the rule ids implemented in this package to be bumped to errors in the IDE
+    when 'CodeAnalysisTreatWarningsAsErrors' = 'false'. Note that a similar 'WarningsNotAsErrors'
+    property group is present in the generated props file to ensure this functionality on command line builds.
+  -->
+  <Target Name=""_CodeAnalysisTreatWarningsNotAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false' AND ('$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true')"">
+    <PropertyGroup>
+      <WarningsNotAsErrors>$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+    </PropertyGroup>    
+  </Target>
+";
+            }
+
+            static string GetPackageSpecificContents(string packageName)
+            {
+                switch (packageName)
+                {
+                    case CodeAnalysisAnalyzersPackageName:
+                        return @"
+  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
+  <Target Name=""AddAllResxFilesAsAdditionalFiles"" BeforeTargets=""CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'"">
+    <ItemGroup>
+      <EmbeddedResourceWithResxExtension Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx'"" />
+      <AdditionalFiles Include=""%(EmbeddedResourceWithResxExtension.Identity)"" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
+  <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')"" >
+	<AdditionalFiles Include=""AnalyzerReleases.Shipped.md"" />
+  </ItemGroup>
+  <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Unshipped.md')"" >
+	<AdditionalFiles Include=""AnalyzerReleases.Unshipped.md"" />
+  </ItemGroup>";
+
+                    case PublicApiAnalyzersPackageName:
+                        return @"
+
+  <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
+  <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt')"" >
+	<AdditionalFiles Include=""PublicAPI.Shipped.txt"" />
+  </ItemGroup>
+  <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt')"" >
+	<AdditionalFiles Include=""PublicAPI.Unshipped.txt"" />
+  </ItemGroup>";
+
+                    case PerformanceSensitiveAnalyzersPackageName:
+                        return @"
+  <PropertyGroup>
+    <GeneratePerformanceSensitiveAttribute Condition=""'$(GeneratePerformanceSensitiveAttribute)' == ''"">true</GeneratePerformanceSensitiveAttribute>
+    <PerformanceSensitiveAttributePath Condition=""'$(PerformanceSensitiveAttributePath)' == ''"">$(MSBuildThisFileDirectory)PerformanceSensitiveAttribute$(DefaultLanguageSourceExtension)</PerformanceSensitiveAttributePath>
+  </PropertyGroup>
+
+  <ItemGroup Condition=""'$(GeneratePerformanceSensitiveAttribute)' == 'true' and Exists($(PerformanceSensitiveAttributePath))"">
+    <Compile Include=""$(PerformanceSensitiveAttributePath)"" Visible=""false"" />
+    
+    <!-- Make sure the source file is embedded in PDB to support Source Link -->
+    <EmbeddedFiles Condition=""'$(DebugType)' != 'none'"" Include=""$(PerformanceSensitiveAttributePath)"" />
+  </ItemGroup>";
+
+                    case NetAnalyzersPackageName:
+                        return $@"
+  <!-- Target to report a warning when SDK NetAnalyzers version is higher than the referenced NuGet NetAnalyzers version -->
+  <Target Name=""_ReportUpgradeNetAnalyzersNuGetWarning"" BeforeTargets=""CoreCompile"" Condition=""'$(_SkipUpgradeNetAnalyzersNuGetWarning)' != 'true' "">
+    <Warning Text =""The .NET SDK has newer analyzers with version '$({NetAnalyzersSDKAssemblyVersionPropertyName})' than what version '$({NetAnalyzersNugetAssemblyVersionPropertyName})' of '{NetAnalyzersPackageName}' package provides. Update or remove this package reference.""
+             Condition=""'$({NetAnalyzersNugetAssemblyVersionPropertyName})' != '' AND
+                         '$({NetAnalyzersSDKAssemblyVersionPropertyName})' != '' AND
+                          $({NetAnalyzersNugetAssemblyVersionPropertyName}) &lt; $({NetAnalyzersSDKAssemblyVersionPropertyName})""/>
+  </Target>";
+
+                    default:
+                        return string.Empty;
+                }
+            }
+        }
+
         private enum RulesetKind
         {
             AllDefault,
@@ -810,6 +1572,16 @@ Rule ID | Missing Help Link | Title |
             CategoryEnabled,
             CustomTagEnabled,
             AllDisabled,
+        }
+
+        // NOTE: **Do not** change the names of the fields for this enum - that would be a breaking change for user visible property setting for `AnalysisMode` property in MSBuild project file.
+        private enum AnalysisMode
+        {
+            Default,
+            None,
+            Minimum,
+            Recommended,
+            All
         }
 
         private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader

@@ -24,7 +24,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     /// </summary>
     public abstract class MarkMembersAsStaticFixer : CodeFixProvider
     {
-        private static readonly SyntaxAnnotation s_annotationForFixedDeclaration = new SyntaxAnnotation();
+        private static readonly SyntaxAnnotation s_annotationForFixedDeclaration = new();
 
         protected abstract IEnumerable<SyntaxNode>? GetTypeArguments(SyntaxNode node);
         protected abstract SyntaxNode? GetExpressionOfInvocation(SyntaxNode invocation);
@@ -203,7 +203,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 if (operation == null)
                 {
-                    // Null instance is replacable. For example, null instance for a static field/property reference which is used to invoke an instance member, say "SomeType.StaticField.InstanceMethod();"
+                    // Null instance is replaceable. For example, null instance for a static field/property reference which is used to invoke an instance member, say "SomeType.StaticField.InstanceMethod();"
                     return true;
                 }
 

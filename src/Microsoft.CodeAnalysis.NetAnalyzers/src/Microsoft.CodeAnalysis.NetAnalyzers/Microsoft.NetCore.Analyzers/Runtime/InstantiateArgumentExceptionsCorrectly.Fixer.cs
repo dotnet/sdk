@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                     else
                     {
-                        // Swap message and paramete name
+                        // Swap message and parameter name
                         codeAction = CodeAction.Create(
                             title: MicrosoftNetCoreAnalyzersResources.InstantiateArgumentExceptionsCorrectlyFlipArgumentOrderCodeFixTitle,
                             createChangedDocument: c => SwapArgumentsOrderAsync(context.Document, creation, paramPosition, creation.Arguments.Length, c),

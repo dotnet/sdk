@@ -45,11 +45,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                                         DefinitelyUseSecureCookiesASPNetCoreRule,
                                                                                         MaybeUseSecureCookiesASPNetCoreRule);
 
-        private static readonly ConstructorMapper constructorMapper = new ConstructorMapper(
+        private static readonly ConstructorMapper constructorMapper = new(
                                                                         ImmutableArray.Create<PropertySetAbstractValueKind>(
                                                                             PropertySetAbstractValueKind.Flagged));
 
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
+        private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "Secure",
                 (ValueContentAbstractValue valueContentAbstractValue) =>
@@ -105,10 +105,10 @@ namespace Microsoft.NetCore.Analyzers.Security
                         (OperationBlockStartAnalysisContext operationBlockStartAnalysisContext) =>
                         {
                             // TODO: Handle case when exactly one of the below rules is configured to skip analysis.
-                            if (operationBlockStartAnalysisContext.OwningSymbol.IsConfiguredToSkipAnalysis(operationBlockStartAnalysisContext.Options,
-                                    DefinitelyUseSecureCookiesASPNetCoreRule, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
-                                operationBlockStartAnalysisContext.OwningSymbol.IsConfiguredToSkipAnalysis(operationBlockStartAnalysisContext.Options,
-                                    MaybeUseSecureCookiesASPNetCoreRule, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
+                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(DefinitelyUseSecureCookiesASPNetCoreRule,
+                                    operationBlockStartAnalysisContext.OwningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
+                                operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(MaybeUseSecureCookiesASPNetCoreRule,
+                                    operationBlockStartAnalysisContext.OwningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
                             {
                                 return;
                             }

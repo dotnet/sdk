@@ -65,7 +65,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             if (method != null &&
                 (method.IsAbstract || method.IsVirtual) &&
                 Equals(method.ContainingType, containingType) &&
-                !operation.IsInsideAnonymousFunction())
+                !operation.IsWithinLambdaOrLocalFunction(out _))
             {
                 context.ReportDiagnostic(operation.Syntax.CreateDiagnostic(Rule));
             }

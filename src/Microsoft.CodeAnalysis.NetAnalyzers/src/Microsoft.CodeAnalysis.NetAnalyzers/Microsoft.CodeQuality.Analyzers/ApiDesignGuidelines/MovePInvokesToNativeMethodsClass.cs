@@ -29,7 +29,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          description: s_localizableDescription,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false,
-                                                                         isEnabledByDefaultInFxCopAnalyzers: false,
                                                                          isEnabledByDefaultInAggressiveMode: false);
 
         private const string NativeMethodsText = "NativeMethods";

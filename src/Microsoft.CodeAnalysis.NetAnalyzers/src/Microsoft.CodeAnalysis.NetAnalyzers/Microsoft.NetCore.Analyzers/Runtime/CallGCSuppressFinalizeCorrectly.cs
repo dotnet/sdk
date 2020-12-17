@@ -183,7 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return SuppressFinalizeUsage.CanCall;
                 }
 
-                if (!method.IsDisposeImplementation(_compilation))
+                if (!method.IsDisposeImplementation(_compilation) && !method.IsAsyncDisposeImplementation(_compilation))
                 {
                     return SuppressFinalizeUsage.MustNotCall;
                 }

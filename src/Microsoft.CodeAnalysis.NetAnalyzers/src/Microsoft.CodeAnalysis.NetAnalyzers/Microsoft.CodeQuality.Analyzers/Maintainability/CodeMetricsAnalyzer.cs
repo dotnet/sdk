@@ -74,7 +74,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1501,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -86,7 +85,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1502,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -98,7 +96,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1505,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -110,7 +107,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1506,
                                                                      isPortedFxCopRule: true,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -122,7 +118,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                                                                      description: s_localizableDescriptionCA1509,
                                                                      isPortedFxCopRule: false,
                                                                      isDataflowRule: false,
-                                                                     isEnabledByDefaultInFxCopAnalyzers: false,
                                                                      isEnabledByDefaultInAggressiveMode: false,
                                                                      isReportedAtCompilationEnd: true);
 
@@ -158,17 +153,8 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                     return;
                 }
 
-                // Compute code metrics.
-                // For the calculation of the inheritance tree, we are allowing specific exclusions:
-                //   - all types from System namespaces
-                //   - all types/namespaces provided by the user
-                // so that the calculation isn't unfair.
-                // For example inheriting from WPF/WinForms UserControl makes your class over the default threshold, yet there isn't anything you can do about it.
-                var inheritanceExcludedTypes = compilationContext.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule, tree, compilationContext.Compilation,
-                    defaultForcedValue: "N:System.*", compilationContext.CancellationToken);
-
                 var metricsAnalysisContext = new CodeMetricsAnalysisContext(compilationContext.Compilation, compilationContext.CancellationToken,
-                    namedType => inheritanceExcludedTypes.Contains(namedType));
+                    namedType => IsConfiguredToSkipFromInheritanceCount(namedType, compilationContext, tree));
                 var computeTask = CodeAnalysisMetricData.ComputeAsync(metricsAnalysisContext);
                 computeTask.Wait(compilationContext.CancellationToken);
 
@@ -189,7 +175,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
                             var arg1 = symbol.Name;
                             var arg2 = codeAnalysisMetricData.DepthOfInheritance;
                             var arg3 = inheritanceThreshold + 1;
-                            var arg4 = string.Join(", ", ((INamedTypeSymbol)symbol).GetBaseTypes(t => !inheritanceExcludedTypes.Contains(t)).Select(t => t.Name));
+                            var arg4 = string.Join(", ", ((INamedTypeSymbol)symbol).GetBaseTypes(t => !IsConfiguredToSkipFromInheritanceCount(t, compilationContext, tree)).Select(t => t.Name));
                             var diagnostic = symbol.CreateDiagnostic(CA1501Rule, arg1, arg2, arg3, arg4);
                             compilationContext.ReportDiagnostic(diagnostic);
                         }
@@ -503,6 +489,37 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
             }
 
             return distinctNamespaces.Count;
+        }
+
+        private static bool IsConfiguredToSkipFromInheritanceCount(ISymbol symbol,
+            CompilationAnalysisContext context, SyntaxTree tree)
+        {
+            // Compute code metrics.
+            // For the calculation of the inheritance tree, we are allowing specific exclusions:
+            //   - all types from System namespaces
+            //   - all types/namespaces provided by the user
+            // so that the calculation isn't unfair.
+            // For example inheriting from WPF/WinForms UserControl makes your class over the default threshold,
+            // yet there isn't anything you can do about it.
+            var inheritanceExcludedTypes = context.Options.GetInheritanceExcludedSymbolNamesOption(CA1501Rule,
+                tree, context.Compilation, defaultForcedValue: "N:System", context.CancellationToken);
+
+            if (inheritanceExcludedTypes.IsEmpty)
+            {
+                return false;
+            }
+
+            while (symbol != null)
+            {
+                if (inheritanceExcludedTypes.Contains(symbol))
+                {
+                    return true;
+                }
+
+                symbol = symbol.ContainingSymbol;
+            }
+
+            return false;
         }
     }
 }

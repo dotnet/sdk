@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-#pragma warning disable IDE0055 // Formatting analyzer complains about bad formatting when "BUILDING_VSIX = true". Fixing the formatting leads to it complaining about bad formatting when "BUILDING_VSIX = false".
-
-#if !BUILDING_VSIX // Analyzer not supported in the Microsoft CodeAnalysis (FxCop analyzers) VSIX
-
 using System.Threading.Tasks;
 using Test.Utilities;
 using Xunit;
@@ -1216,5 +1212,3 @@ End Class
         #endregion
     }
 }
-
-#endif

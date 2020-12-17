@@ -30,8 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          RuleLevel.Disabled,    // Heuristic based rule.
                                                                          description: s_localizableDescription,
                                                                          isPortedFxCopRule: true,
-                                                                         isDataflowRule: false,
-                                                                         isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                         isDataflowRule: false);
         private const string GetHashCodeName = "GetHashCode";
         private const string GetEnumeratorName = "GetEnumerator";
 
@@ -63,7 +62,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         methodSymbol.ReturnsVoid ||
                         methodSymbol.ReturnType.Kind == SymbolKind.ArrayType ||
                         !methodSymbol.Parameters.IsEmpty ||
-                        !methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken) ||
+                        !context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, context.Compilation, context.CancellationToken) ||
                         methodSymbol.IsAccessorMethod() ||
                         !IsPropertyLikeName(methodSymbol.Name))
                     {

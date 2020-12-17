@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.SealMethodsThatSatisfyPrivateInterfacesAnalyzer,
@@ -423,9 +424,88 @@ End Class
 ");
         }
 
+        [Fact, WorkItem(4406, "https://github.com/dotnet/roslyn-analyzers/issues/4406")]
+        public async Task CA2119_ExtendedInterface()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+namespace FxCopRule
+{
+    internal interface IInternal1
+    {
+        void Method();
+    }
+
+    internal interface IInternal2 : IInternal1
+    {
+    }
+
+    public abstract class ImplementationBase : IInternal2
+    {
+        public abstract void [|Method|]();
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Namespace FxCopRule
+    Friend Interface IInternal1
+        Sub Method()
+    End Interface
+
+    Friend Interface IInternal2
+        Inherits IInternal1
+    End Interface
+
+    Public MustInherit Class ImplementationBase
+        Implements IInternal2
+
+        Public MustOverride Sub [|Method|]() Implements IInternal1.Method
+    End Class
+End Namespace");
+        }
+
         // TODO:
 
         // sealed overrides - no diagnostic
+
+        [Fact, WorkItem(4566, "https://github.com/dotnet/roslyn-analyzers/issues/4566")]
+        public async Task CA2119_BaseClassInterface_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+namespace NS
+{
+    internal interface IInternal
+    {
+        void Method1();
+    }
+
+    public class C : IInternal
+    {
+        public virtual void [|Method1|]() { }
+    }
+
+    public class InheritFromC : C
+    {
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Namespace NS
+    Friend Interface IInternal
+        Sub Method1()
+    End Interface
+
+    Public Class C
+        Implements IInternal
+
+        Public Overridable Sub [|Method1|]() Implements IInternal.Method1
+        End Sub
+    End Class
+
+    Public Class InheritFromC
+        Inherits C
+    End Class
+End Namespace");
+        }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
             => VerifyCS.Diagnostic()

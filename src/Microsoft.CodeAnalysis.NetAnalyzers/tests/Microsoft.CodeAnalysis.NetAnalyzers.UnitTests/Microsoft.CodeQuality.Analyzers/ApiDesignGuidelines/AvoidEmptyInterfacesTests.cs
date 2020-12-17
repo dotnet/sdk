@@ -286,7 +286,7 @@ End Class"
 
             if (!hasConflict)
             {
-                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"z:\folder1\Test0.cs", 1, 26, 1, 27).WithSpan(@"z:\folder2\Test1.cs", 1, 26, 1, 27));
+                csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithSpan(@"/folder1/Test0.cs", 1, 26, 1, 27).WithSpan(@"/folder2\Test1.cs", 1, 26, 1, 27));
             }
 
             await csTest.RunAsync();
@@ -310,7 +310,7 @@ End Interface"
 
             if (!hasConflict)
             {
-                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"z:\folder1\Test0.vb", 2, 26, 2, 27).WithSpan(@"z:\folder2\Test1.vb", 2, 26, 2, 27));
+                vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic().WithSpan(@"/folder1/Test0.vb", 2, 26, 2, 27).WithSpan(@"/folder2/Test1.vb", 2, 26, 2, 27));
             }
 
             await vbTest.RunAsync();
@@ -319,7 +319,7 @@ End Interface"
             Solution ApplyTransform(Solution solution, ProjectId projectId)
             {
                 var project = solution.GetProject(projectId)!;
-                var projectFilePath = project.Language == LanguageNames.CSharp ? @"z:\Test.csproj" : @"z:\Test.vbproj";
+                var projectFilePath = project.Language == LanguageNames.CSharp ? @"/Test.csproj" : @"/Test.vbproj";
                 solution = solution.WithProjectFilePath(projectId, projectFilePath);
 
                 var documentExtension = project.Language == LanguageNames.CSharp ? "cs" : "vb";
@@ -327,7 +327,7 @@ End Interface"
                 var document2OptionValue = hasConflict ? "internal" : "public";
                 var document2EditorConfig = $"[*.{documentExtension}]" + Environment.NewLine + $"dotnet_code_quality.api_surface = {document2OptionValue}";
 
-                var document1Folder = $@"z:\folder1";
+                var document1Folder = $@"/folder1";
                 solution = solution.WithDocumentFilePath(project.DocumentIds[0], $@"{document1Folder}\Test0.{documentExtension}");
                 solution = solution.GetProject(projectId)!
                     .AddAnalyzerConfigDocument(
@@ -336,7 +336,7 @@ End Interface"
                         filePath: $@"{document1Folder}\.editorconfig")
                     .Project.Solution;
 
-                var document2Folder = $@"z:\folder2";
+                var document2Folder = $@"/folder2";
                 solution = solution.WithDocumentFilePath(project.DocumentIds[1], $@"{document2Folder}\Test1.{documentExtension}");
                 return solution.GetProject(projectId)!
                     .AddAnalyzerConfigDocument(

@@ -297,6 +297,11 @@
         <target state="translated">Odeberte finalizační metodu z typu {0}, přepište Dispose(bool disposing) a vložte finalizační logiku do cesty kódu, kde je disposing hodnoty false. V opačném případě by to mohlo vést k duplicitním voláním Dispose, protože základní typ {1} také poskytuje finalizační metodu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
+        <source>Apply 'AttributeUsageAttribute'</source>
+        <target state="translated">Použít AttributeUsageAttribute</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">Když je to možné, rozšiřte objekty CancellationToken.</target>
@@ -703,7 +708,7 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
+        <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
         <target state="translated">Implementujte operátory rovnosti a zajistěte, aby se jejich chování shodovalo s metodou Equals.</target>
         <note />
       </trans-unit>
@@ -1257,21 +1262,6 @@
         <target state="translated">Buď nahraďte příponu {0} v názvu člena {1} navrhovanou alternativou {2}, nebo příponu úplně odeberte.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">Výčty příznaků mají mít názvy v množném čísle.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesDescription">
-        <source>A public enumeration has the System.FlagsAttribute attribute, and its name does not end in ""s"". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.</source>
-        <target state="translated">Veřejný výčet obsahuje atribut System.FlagsAttribute, ale jeho název nekončí na s. Typy, které jsou označené atributem FlagsAttribute, mají názvy v množném čísle, protože tento atribut označuje, že se dá zadat více než jedna hodnota.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesMessage">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">Výčty příznaků mají mít názvy v množném čísle.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="IdentifiersShouldNotMatchKeywordsTitle">
         <source>Identifiers should not match keywords</source>
         <target state="translated">Identifikátory se nemají shodovat s klíčovými slovy.</target>
@@ -1300,21 +1290,6 @@
       <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageNamespace">
         <source>Rename namespace {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a namespace makes it harder for consumers in other languages to use the namespace.</source>
         <target state="translated">Přejmenujte názvový prostor {0} tak, aby už nebyl v konfliktu s rezervovaným klíčovým slovem {1} jazyka. Použití rezervovaného klíčového slova jako názvu názvového prostoru znesnadňuje konzumentům v jiných jazycích použití tohoto názvového prostoru.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesTitle">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Názvy v množném čísle mají mít jenom výčty FlagsAttribute.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesDescription">
-        <source>Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.</source>
-        <target state="translated">Názvy v množném čísle podle zásad vytváření názvů označují, že lze současně zadat více než jednu hodnotu výčtu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesMessage">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Názvy v množném čísle mají mít jenom výčty FlagsAttribute.</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyNamesShouldNotMatchGetMethodsTitle">
