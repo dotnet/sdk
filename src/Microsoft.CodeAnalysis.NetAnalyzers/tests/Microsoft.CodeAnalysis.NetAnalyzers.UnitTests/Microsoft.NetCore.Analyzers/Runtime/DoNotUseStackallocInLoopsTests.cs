@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.DoNotUseStackallocInLoopsAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDoNotUseStackallocInLoopsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
