@@ -299,7 +299,7 @@
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
         <source>Apply 'AttributeUsageAttribute'</source>
-        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <target state="translated">Aplicar 'AttributeUsageAttribute'</target>
         <note />
       </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
@@ -709,7 +709,7 @@
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
         <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
-        <target state="needs-review-translation">Implementar os operadores de igualdade e tornar o comportamento idêntico ao do método 'Equals'</target>
+        <target state="new">Implement the equality operators and make their behavior identical to that of the Equals method</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -1254,7 +1254,7 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageTypeNewerVersion">
         <source>Either replace the suffix '{0}' in type name {1} with the suggested numeric alternate '2' or provide a more meaningful suffix that distinguishes it from the type it replaces</source>
-        <target state="translated">Substitua o sufixo '{0}' no nome de tipo {1} pela alternativa numérica sugerida '2' ou forneça um sufixo mais significativo que o distinga do tipo que ele substitui</target>
+        <target state="translated">Substitua o sufixo '{0}' no nome de tipo {1} pela alternativa numérica sugerida '2' ou forneça um sufixo mais significativo que o diferencie do tipo que ele substitui</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixMessageMemberWithAlternate">
@@ -1399,7 +1399,7 @@
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageNamespaceNoAlternate">
         <source>Replace the term '{0}' in namespace name '{1}' with an appropriate alternate or remove it entirely</source>
-        <target state="translated">Substitua o termo '{0}' no nome de namespace '{1}' por uma alternativa apropriada ou remova-o inteiramente</target>
+        <target state="translated">Substitua o termo '{0}' no nome do namespace '{1}' por uma alternativa apropriada ou remova-o inteiramente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberParameterNoAlternate">
@@ -1414,7 +1414,7 @@
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeTypeParameterNoAlternate">
         <source>On type {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">No tipo {0}, substitua o termo '{1}' no nome de parâmetro de tipo genérico {2} por uma alternativa apropriada ou remova-o inteiramente</target>
+        <target state="translated">No tipo {0}, substitua o termo '{1}' no nome do parâmetro de tipo genérico {2} por uma alternativa apropriada ou remova-o inteiramente</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
@@ -1819,7 +1819,7 @@
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceMessage">
         <source>'{0}' has an object hierarchy '{1}' levels deep within the defining module. If possible, eliminate base classes within the hierarchy to decrease its hierarchy level below '{2}': '{3}'.</source>
-        <target state="translated">'{0}' tem uma hierarquia de objetos com '{1}' níveis no módulo de definição. Se possível, elimine as classes base na hierarquia para diminuir o nível de hierarquia abaixo '{2}': '{3}'.</target>
+        <target state="translated">'{0}' tem uma hierarquia de objetos com profundidade de '{1}' níveis no módulo de definição. Se possível, elimine as classes base na hierarquia para diminuir o nível de hierarquia abaixo de '{2}': '{3}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidExcessiveInheritanceTitle">

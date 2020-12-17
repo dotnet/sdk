@@ -314,7 +314,7 @@
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
         <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
-        <target state="needs-review-translation">Производный класс XmlDocument {0} не определяет конструктор явным образом.</target>
+        <target state="translated">Производный класс XmlDocument {0} не определяет конструктор явным образом.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -329,7 +329,7 @@
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
         <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
-        <target state="needs-review-translation">Производный класс XmlTextReader {0} не определяет конструктор явным образом.</target>
+        <target state="translated">Производный класс XmlTextReader {0} не определяет конструктор явным образом.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -344,7 +344,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
         <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="needs-review-translation">Предоставлять небезопасные экземпляры XsltSettings и XmlResolver методу XslCompiledTransform.Load рискованно, так как позволяет обработать скрипт в XSL, что при ненадежных входных данных может запустить вредоносный код. Замените небезопасный аргумент XsltSettings на XsltSettings.Default или экземпляр, в котором отключены функции документирования и выполнения скриптов, либо замените аргумент XmlResolver на Null или экземпляр XmlSecureResolver. Это сообщение можно скрыть, если известно, что входные данные получены из надежного источника, при этом должно поддерживаться разрешение внешних ресурсов из неизвестных заранее расположений.</target>
+        <target state="translated">Передача небезопасных экземпляров XsltSettings и XmlResolver в метод XslCompiledTransform.Load может представлять риск, так как это позволяет обработать скрипт в XSL, что при ненадежных входных данных может привести к запуску вредоносного кода. Замените небезопасный аргумент XsltSettings на XsltSettings.Default или на экземпляр, в котором отключены функции документирования и выполнения скриптов, либо замените аргумент XmlResolver на null или на экземпляр XmlSecureResolver. Это сообщение можно скрыть, если известно, что входные данные получены из надежного источника, при этом должно поддерживаться разрешение внешних ресурсов из неизвестных заранее расположений.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">
