@@ -39,11 +39,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalContent Include="$(BlazorWasmSdkRoot)\Targets\**\*.*">
+    <AdditionalContent Include="$(BlazorWasmSdkRoot)Targets\**\*.*">
       <Pack>true</Pack>
       <PackagePath>targets</PackagePath>
     </AdditionalContent>
-    <AdditionalContent Include="$(BlazorWasmSdkRoot)\Sdk\**\*.*">
+    <AdditionalContent Include="$(BlazorWasmSdkRoot)Sdk\**\*.*">
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>
     </AdditionalContent>
@@ -73,7 +73,11 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CopyAdditionalFilesToLayout" Condition="'$(TargetFramework)' == ''" DependsOnTargets="PrepareAdditionalFilesToLayout" AfterTargets="Build" Inputs="@(LayoutFile)" Outputs="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
+  <Target Name="CopyAdditionalFilesToLayout"
+          Condition="'$(TargetFramework)' == ''"
+          DependsOnTargets="PrepareAdditionalFilesToLayout"
+          AfterTargets="Build" Inputs="@(LayoutFile)"
+          Outputs="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
     <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
     </Copy>
