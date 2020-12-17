@@ -245,7 +245,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass()
                 .And.HaveStdOutMatching("warning IL2075.*Program.IL_2075")
                 .And.HaveStdOutMatching("warning IL2026.*Program.IL_2026.*Testing analysis warning IL2026")
-                .And.HaveStdOutMatching("warning IL2043.*Program.get_IL_2043")
+                .And.HaveStdOutMatching("warning IL2043.*Program.IL_2043.get")
                 .And.HaveStdOutMatching("warning IL2046.*Program.Derived.IL_2046")
                 .And.HaveStdOutMatching("warning IL2093.*Program.Derived.IL_2093");
         }
@@ -291,55 +291,30 @@ namespace Microsoft.NET.Publish.Tests
         {
             var projectName = "AnalysisWarningsOnHelloWorldApp";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            List<string> expectedOutput = new List<string>() {
-                    "ILLink : Trim analysis warning IL2059: System.Reflection.RuntimeConstructorInfo.Invoke(Object,BindingFlags,Binder,Object[],CultureInfo",
-                    "ILLink : Trim analysis warning IL2070: System.Reflection.RuntimeAssembly.AddPublicNestedTypes(Type,List<Type>,List<Exception>",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.RuntimeModule.ResolveLiteralField(Int32,Type[],Type[]",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.RuntimeModule.ResolveLiteralField(Int32,Type[],Type[]",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.RuntimeModule.ResolveLiteralField(Int32,Type[],Type[]",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.RuntimeModule.GetMethodInternal(String,BindingFlags,Binder,CallingConventions,Type[],ParameterModifier[]",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.RuntimeModule.GetMethodInternal(String,BindingFlags,Binder,CallingConventions,Type[],ParameterModifier[]",
-                    "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.ManifestBuilder.GetTypeName(Type",
-                    "ILLink : Trim analysis warning IL2075: System.Diagnostics.Tracing.ManifestBuilder.CreateManifestString(",
-                    "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.TypeAnalysis.TypeAnalysis(Type,EventDataAttribute,List<Type>",
-                    "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.NullableTypeInfo.NullableTypeInfo(Type,List<Type>",
-                    "ILLink : Trim analysis warning IL2077: System.Runtime.Serialization.Formatters.Binary.ObjectReader.ParseObject(ParseRecord",
-                    "ILLink : Trim analysis warning IL2075: System.Runtime.Serialization.ObjectManager.DoValueTypeFixup(FieldInfo,ObjectHolder,Object",
-                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.ObjectManager.GetDeserializationConstructor(Type",
-                    "ILLink : Trim analysis warning IL2057: System.Runtime.Serialization.Formatters.Binary.ObjectReader.GetSimplyNamedTypeFromAssembly(Assembly,String,Type&",
-                    "ILLink : Trim analysis warning IL2026: System.Runtime.Serialization.FormatterServices.GetTypeFromAssembly(Assembly,String",
-                    "ILLink : Trim analysis warning IL2055: System.Reflection.Emit.TypeBuilder.DefineDefaultConstructorNoLock(MethodAttributes",
-                    "ILLink : Trim analysis warning IL2055: System.Reflection.Emit.TypeBuilder.DefineDefaultConstructorNoLock(MethodAttributes",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.Emit.TypeBuilder.DefineDefaultConstructorNoLock(MethodAttributes",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.Emit.TypeBuilder.DefineDefaultConstructorNoLock(MethodAttributes",
+
+            // Please keep list below sorted and de-duplicated
+            List<string> expectedOutput = new List<string> () {
                     "ILLink : Trim analysis warning IL2026: System.Runtime.Serialization.Formatters.Binary.ObjectReader.TopLevelAssemblyTypeResolver.ResolveType(Assembly,String,Boolean",
-                    "ILLink : Trim analysis warning IL2075: System.Runtime.Serialization.FormatterServices.InternalGetSerializableMembers(Type",
-                    "ILLink : Trim analysis warning IL2055: System.Reflection.Emit.TypeBuilder.GetConstructor(Type,ConstructorInfo",
-                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.SerializationEvents.GetMethodsWithAttribute(Type,Type",
-                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.FormatterServices.GetSerializableFields(Type",
-                    "ILLink : Trim analysis warning IL2082: System.Reflection.Emit.TypeBuilder.DefineConstructorNoLock(MethodAttributes,CallingConventions,Type[],Type[][],Type[][]",
-                    "ILLink : Trim analysis warning IL2026: System.TypeNameParser.ResolveType(Assembly,String[],Func<Assembly,String,Boolean,Type>,Boolean,Boolean,StackCrawlMark&",
-                    "ILLink : Trim analysis warning IL2075: System.TypeNameParser.ResolveType(Assembly,String[],Func<Assembly,String,Boolean,Type>,Boolean,Boolean,StackCrawlMark&",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetTypeNoLock(String,Boolean,Boolean",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetTypeNoLock(String,Boolean,Boolean",
-                    "ILLink : Trim analysis warning IL2075: System.Reflection.CustomAttributeData.Init(Object",
-                    "ILLink : Trim analysis warning IL2075: System.Diagnostics.StackTrace.TryResolveStateMachineMethod(MethodBase&,Type&",
+                    "ILLink : Trim analysis warning IL2026: System.Runtime.Serialization.FormatterServices.GetTypeFromAssembly(Assembly,String",
+                    "ILLink : Trim analysis warning IL2057: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
                     "ILLink : Trim analysis warning IL2057: System.Resources.ResourceReader.FindType(Int32",
-                    "ILLink : Trim analysis warning IL2057: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
-                    "ILLink : Trim analysis warning IL2072: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
-                    "ILLink : Trim analysis warning IL2057: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
-                    "ILLink : Trim analysis warning IL2072: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
-                    "ILLink : Trim analysis warning IL2077: System.Resources.ResourceReader.InitializeBinaryFormatter(",
+                    "ILLink : Trim analysis warning IL2057: System.Runtime.Serialization.Formatters.Binary.ObjectReader.GetSimplyNamedTypeFromAssembly(Assembly,String,Type&",
+                    "ILLink : Trim analysis warning IL2060: System.Resources.ResourceReader.InitializeBinaryFormatter(",
+                    "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.ManifestBuilder.GetTypeName(Type",
+                    "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.NullableTypeInfo.NullableTypeInfo(Type,List<Type>",
+                    "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.TypeAnalysis.TypeAnalysis(Type,EventDataAttribute,List<Type>",
+                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.FormatterServices.GetSerializableFields(Type",
+                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.ObjectManager.GetDeserializationConstructor(Type",
+                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.SerializationEvents.GetMethodsWithAttribute(Type,Type",
                     "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
-                    "ILLink : Trim analysis warning IL2075: System.Attribute.GetParentDefinition(PropertyInfo,Type[]",
-                    "ILLink : Trim analysis warning IL2075: System.Attribute.GetParentDefinition(EventInfo",
-                    "ILLink : Trim analysis warning IL2080: System.Resources.ResourceReader.<>c.<InitializeBinaryFormatter>b__6_1(",
-                    "ILLink : Trim analysis warning IL2060: System.Resources.ResourceReader.<>c.<InitializeBinaryFormatter>b__6_1(",
-                    "ILLink : Trim analysis warning IL2075: System.Diagnostics.Tracing.EventSource.CreateManifestAndDescriptors(Type,String,EventSource,EventManifestOptions",
                     "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.NullableTypeInfo.WriteData(PropertyValue",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetGenericMethodBaseDefinition(MethodBase",
-                    "ILLink : Trim analysis warning IL2026: System.Reflection.Emit.ModuleBuilder.GetGenericMethodBaseDefinition(MethodBase",
-                    "ILLink : Trim analysis warning IL2055: System.RuntimeTypeHandle.GetTypeHelper(Type,Type[],IntPtr,Int32"
+                    "ILLink : Trim analysis warning IL2072: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
+                    "ILLink : Trim analysis warning IL2075: System.Diagnostics.Tracing.EventSource.CreateManifestAndDescriptors(Type,String,EventSource,EventManifestOptions",
+                    "ILLink : Trim analysis warning IL2075: System.Diagnostics.Tracing.ManifestBuilder.CreateManifestString(",
+                    "ILLink : Trim analysis warning IL2075: System.Runtime.Serialization.FormatterServices.InternalGetSerializableMembers(Type",
+                    "ILLink : Trim analysis warning IL2075: System.Runtime.Serialization.ObjectManager.DoValueTypeFixup(FieldInfo,ObjectHolder,Object",
+                    "ILLink : Trim analysis warning IL2077: System.Resources.ResourceReader.InitializeBinaryFormatter(",
+                    "ILLink : Trim analysis warning IL2077: System.Runtime.Serialization.Formatters.Binary.ObjectReader.ParseObject(ParseRecord",
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -493,12 +468,13 @@ namespace Microsoft.NET.Publish.Tests
             var targetFramework = "net5.0";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            // Set up a conditional feature substitution for the "FeatureDisabled" property
-            AddFeatureDefinition(testProject, referenceProjectName);
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName,
+                // Reference the classlib to ensure its XML is processed.
+                addAssemblyReference: true,
+                // Set up a conditional feature substitution for the "FeatureDisabled" property
+                modifyReferencedProject: (referencedProject) => AddFeatureDefinition(referencedProject, referenceProjectName));
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
-                .WithProjectChanges(project => EmbedSubstitutions(project))
                 // Set a matching RuntimeHostConfigurationOption, with Trim = "true"
                 .WithProjectChanges(project => AddRuntimeConfigOption(project, trim: true))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
@@ -525,12 +501,13 @@ namespace Microsoft.NET.Publish.Tests
             var targetFramework = "net5.0";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName);
-            // Set up a conditional feature substitution for the "FeatureDisabled" property
-            AddFeatureDefinition(testProject, referenceProjectName);
+            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName, referenceProjectName,
+                // Reference the classlib to ensure its XML is processed.
+                addAssemblyReference: true,
+                // Set up a conditional feature substitution for the "FeatureDisabled" property
+                modifyReferencedProject: (referencedProject) => AddFeatureDefinition(referencedProject, referenceProjectName));
             var testAsset = _testAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project => EnableNonFrameworkTrimming(project))
-                .WithProjectChanges(project => EmbedSubstitutions(project))
                 // Set a matching RuntimeHostConfigurationOption, with Trim = "false"
                 .WithProjectChanges(project => AddRuntimeConfigOption(project, trim: false))
                 .WithProjectChanges(project => AddRootDescriptor(project, $"{referenceProjectName}.xml"));
@@ -935,7 +912,6 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = new TestProject
             {
                 Name = "TestWeb",
-                IsSdkProject = true,
                 IsExe = true,
                 ProjectSdk = "Microsoft.NET.Sdk.Web",
                 TargetFrameworks = targetFramework,
@@ -1032,13 +1008,12 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Fact]
-        public void It_warns_when_targetting_netcoreapp_2_x()
+        public void It_warns_when_targetting_netcoreapp_2_x_illink()
         {
             var testProject = new TestProject()
             {
                 Name = "ConsoleApp",
                 TargetFrameworks = "netcoreapp2.2",
-                IsSdkProject = true,
                 IsExe = true,
             };
 
@@ -1116,28 +1091,23 @@ namespace Microsoft.NET.Publish.Tests
 
         static readonly string substitutionsFilename = "ILLink.Substitutions.xml";
 
-        private void EmbedSubstitutions(XDocument project)
-        {
-            var ns = project.Root.Name.Namespace;
-
-            project.Root.Add(new XElement(ns + "ItemGroup",
-                                new XElement("EmbeddedResource",
-                                    new XAttribute("Include", substitutionsFilename),
-                                    new XElement("LogicalName", substitutionsFilename))));
-        }
-
-        private void AddFeatureDefinition(TestProject testProject, string referenceAssemblyName)
+        private void AddFeatureDefinition(TestProject testProject, string assemblyName)
         {
             // Add a feature definition that replaces the FeatureDisabled property when DisableFeature is true.
             testProject.EmbeddedResources[substitutionsFilename] = $@"
 <linker>
-  <assembly fullname=""{referenceAssemblyName}"" feature=""DisableFeature"" featurevalue=""true"">
+  <assembly fullname=""{assemblyName}"" feature=""DisableFeature"" featurevalue=""true"">
     <type fullname=""ClassLib"">
       <method signature=""System.Boolean get_FeatureDisabled()"" body=""stub"" value=""true"" />
     </type>
   </assembly>
 </linker>
 ";
+
+            testProject.AdditionalItems["EmbeddedResource"] = new Dictionary<string, string> {
+                ["Include"] = substitutionsFilename,
+                ["LogicalName"] = substitutionsFilename
+            };
         }
 
         private void AddRuntimeConfigOption(XDocument project, bool trim)
@@ -1157,7 +1127,6 @@ namespace Microsoft.NET.Publish.Tests
             {
                 Name = projectName,
                 TargetFrameworks = targetFramework,
-                IsSdkProject = true,
             };
 
             testProject.SourceFiles[$"{projectName}.cs"] = @"
@@ -1221,13 +1190,14 @@ public class Program
             string referenceProjectName = null,
             bool usePackageReference = true,
             [CallerMemberName] string callingMethod = "",
-            string referenceProjectIdentifier = "")
+            string referenceProjectIdentifier = "",
+            Action<TestProject> modifyReferencedProject = null,
+            bool addAssemblyReference = false)
         {
             var testProject = new TestProject()
             {
                 Name = mainProjectName,
                 TargetFrameworks = targetFramework,
-                IsSdkProject = true,
                 IsExe = true
             };
 
@@ -1239,11 +1209,24 @@ public class Program
     {
         Console.WriteLine(""Hello world"");
     }
-}
 ";
+
+            if (addAssemblyReference)
+            {
+                testProject.SourceFiles[$"{mainProjectName}.cs"] += @"
+    public static void UseClassLib()
+    {
+        ClassLib.UsedMethod();
+    }
+}";
+            } else {
+                testProject.SourceFiles[$"{mainProjectName}.cs"] += @"}";
+            }
 
             if (referenceProjectName == null)
             {
+                if (addAssemblyReference)
+                    throw new ArgumentException("Adding an assembly reference requires a project to reference.");
                 return testProject;
             }
 
@@ -1254,12 +1237,16 @@ public class Program
                 // from the nuget cache. Set the reference project TFM to the lowest common denominator
                 // of these tests to prevent conflicts.
                 TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFramework,
-                IsSdkProject = true
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
 using System;
+
 public class ClassLib
 {
+    public static void UsedMethod()
+    {
+    }
+
     public void UnusedMethod()
     {
     }
@@ -1283,6 +1270,8 @@ public class ClassLib
     }
 }
 ";
+            if (modifyReferencedProject != null)
+                modifyReferencedProject(referenceProject);
 
             if (usePackageReference)
             {

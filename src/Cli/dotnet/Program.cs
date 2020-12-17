@@ -146,6 +146,10 @@ namespace Microsoft.DotNet.Cli
                     HelpCommand.PrintHelp();
                     return 0;
                 }
+                else if (parseResult.Directives.Count() > 0)
+                {
+                    return parseResult.Invoke();
+                }
                 else
                 {
                     PerformanceLogEventSource.Log.FirstTimeConfigurationStart();
@@ -227,7 +231,7 @@ namespace Microsoft.DotNet.Cli
                 PerformanceLogEventSource.Log.BuiltInCommandStart();
                 var topLevelCommands = new string[] { "dotnet", parseResult.RootSubCommandResult() }.Concat(Parser.DiagOption.Aliases);
 
-                exitCode = builtIn.Command(parseResult.Tokens.Select(t => t.Value).Except(topLevelCommands).ToArray());
+                exitCode = builtIn.Command(args.Where(t => !topLevelCommands.Contains(t)).ToArray());
 				PerformanceLogEventSource.Log.BuiltInCommandStop();
             }
             else
@@ -293,7 +297,7 @@ namespace Microsoft.DotNet.Cli
 
                 dotnetConfigurer.Configure();
 
-                if (isDotnetBeingInvokedFromNativeInstaller && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (isDotnetBeingInvokedFromNativeInstaller && OperatingSystem.IsWindows())
                 {
                     DotDefaultPathCorrector.Correct();
                 }

@@ -13,10 +13,11 @@ namespace Microsoft.DotNet.Cli
     internal static class CommonOptions
     {
         public static Option PropertiesOption() =>
-            new Option<string>(new string[] { "-property", "/p" })
+            new Option<string[]>(new string[] { "-property", "/p" })
             {
                 IsHidden = true
-            }.ForwardAsProperty();
+            }.ForwardAsProperty()
+            .AllowSingleArgPerToken();
 
         public static Option VerbosityOption() =>
             VerbosityOption(o => $"-verbosity:{o}");

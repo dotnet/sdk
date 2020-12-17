@@ -17,8 +17,8 @@ namespace Microsoft.DotNet.Cli
 
         public static Option ForwardAsSingle<T>(this Option<T> option, Func<T, string> format) => new ForwardedOption<T>(option).SetForwardingFunction(format);
 
-        public static Option ForwardAsProperty(this Option<string> option) => new ForwardedOption<string>(option)
-            .SetForwardingFunction((o) => new string[] { $"{option.Aliases.FirstOrDefault()}:{o.Replace("roperty:", string.Empty)}" });
+        public static Option ForwardAsProperty(this Option<string[]> option) => new ForwardedOption<string[]>(option)
+            .SetForwardingFunction((optionVals) => optionVals.SelectMany(optionVal => new string[] { $"{option.Aliases.FirstOrDefault()}:{optionVal.Replace("roperty:", string.Empty)}" }));
 
         public static Option ForwardAsMany<T>(this Option<T> option, Func<T, IEnumerable<string>> format) => new ForwardedOption<T>(option).SetForwardingFunction(format);
 
@@ -35,6 +35,12 @@ namespace Microsoft.DotNet.Cli
                 .FirstOrDefault()?
                 .GetForwardingFunction()(parseResult)
             ?? Array.Empty<string>();
+
+        public static Option AllowSingleArgPerToken(this Option option)
+        {
+            option.AllowMultipleArgumentsPerToken = false;
+            return option;
+        }
 
         private interface IForwardedOption
         {
