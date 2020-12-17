@@ -73,7 +73,7 @@ namespace Microsoft.NetFramework.Analyzers
         {
             // .NET frameworks >= 4.5.2 have secure default settings for XmlTextReader:
             //      DtdProcessing is enabled with null resolver
-            private static readonly Version s_minSecureFxVersion = new Version(4, 5, 2);
+            private static readonly Version s_minSecureFxVersion = new(4, 5, 2);
 
             private readonly CompilationSecurityTypes _xmlTypes;
             private readonly SyntaxNodeHelper _syntaxNodeHelper;
@@ -81,8 +81,8 @@ namespace Microsoft.NetFramework.Analyzers
 
             // key: symbol for type derived from XmlDocument/XmlTextReader (exclude base type itself)
             // value: if it has explicitly defined constructor
-            private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlDocumentDerivedTypes = new ConcurrentDictionary<INamedTypeSymbol, bool>();
-            private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlTextReaderDerivedTypes = new ConcurrentDictionary<INamedTypeSymbol, bool>();
+            private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlDocumentDerivedTypes = new();
+            private readonly ConcurrentDictionary<INamedTypeSymbol, bool> _xmlTextReaderDerivedTypes = new();
 
             public SymbolAndNodeAnalyzer(CompilationSecurityTypes xmlTypes, SyntaxNodeHelper helper, Version targetFrameworkVersion)
             {
@@ -324,7 +324,7 @@ namespace Microsoft.NetFramework.Analyzers
                     if (isTargetProperty)
                     {
                         hasSetXmlResolver = true;
-                        hasSetInsecureXmlResolver &= ret; // use 'AND' to avoid false positives (but imcrease false negative rate) 
+                        hasSetInsecureXmlResolver &= ret; // use 'AND' to avoid false positives (but imcrease false negative rate)
                         if (ret)
                         {
                             if (locs == null)
@@ -373,7 +373,7 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     return;
                 }
-                // didn't explicitly set either one of XmlResolver and DtdProcessing to secure value 
+                // didn't explicitly set either one of XmlResolver and DtdProcessing to secure value
                 // but explicitly set XmlResolver and/or DtdProcessing to insecure value
                 else
                 {
@@ -497,8 +497,8 @@ namespace Microsoft.NetFramework.Analyzers
 
                 // Here's an example that needs some extra check:
                 //
-                //    class TestClass : XmlDocument 
-                //    { 
+                //    class TestClass : XmlDocument
+                //    {
                 //        private XmlDocument doc = new XmlDocument();
                 //        public TestClass(XmlDocument doc)
                 //        {
@@ -514,7 +514,7 @@ namespace Microsoft.NetFramework.Analyzers
                 //   If the target is a member access node, then the only pattern we are looking for is "this.Property"
                 SyntaxNode memberAccessNode = _syntaxNodeHelper.GetDescendantMemberAccessExpressionNodes(left).FirstOrDefault();
 
-                // if assignment target doesn't have any member access node, 
+                // if assignment target doesn't have any member access node,
                 // then we treat it as an instance property access without explicit 'this' ('Me' in VB)
                 if (memberAccessNode == null)
                 {

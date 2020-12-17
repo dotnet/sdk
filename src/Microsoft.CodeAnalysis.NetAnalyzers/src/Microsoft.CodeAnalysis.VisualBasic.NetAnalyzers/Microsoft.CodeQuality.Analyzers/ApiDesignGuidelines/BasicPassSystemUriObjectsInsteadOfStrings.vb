@@ -13,9 +13,9 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
     Public NotInheritable Class BasicPassSystemUriObjectsInsteadOfStringsAnalyzer
         Inherits PassSystemUriObjectsInsteadOfStringsAnalyzer
 
-        Protected Overrides Function GetInvocationExpression(node As SyntaxNode) As SyntaxNode
-            Dim invocationNode = TryCast(node, InvocationExpressionSyntax)
-            Return invocationNode?.Expression
+        Protected Overrides Function GetInvocationExpression(invocationNode As SyntaxNode) As SyntaxNode
+            Dim invocationExpression = TryCast(invocationNode, InvocationExpressionSyntax)
+            Return invocationExpression?.Expression
         End Function
     End Class
 End Namespace
