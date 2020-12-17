@@ -121,6 +121,7 @@ CA2009 | Reliability | Info | DoNotCallToImmutableCollectionOnAnImmutableCollect
 CA2011 | Reliability | Info | AvoidInfiniteRecursion, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2011)
 CA2012 | Reliability | Info | UseValueTasksCorrectlyAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2012)
 CA2013 | Reliability | Warning | DoNotUseReferenceEqualsWithValueTypesAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2013)
+CA2014 | Reliability | Warning | CSharpDoNotUseStackallocInLoopsAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2014)
 CA2015 | Reliability | Warning | DoNotDefineFinalizersForTypesDerivedFromMemoryManager, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2015)
 CA2016 | Reliability | Info | ForwardCancellationTokenToInvocationsAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2016)
 CA2100 | Security | Disabled | ReviewSqlQueriesForSecurityVulnerabilities, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2100)
