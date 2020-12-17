@@ -45,59 +45,7 @@ namespace Microsoft.TemplateSearch.Common
 
             // use "dotnetcli" as a fallback host so the correct host specific files are read.
             DefaultTemplateEngineHost host = new DefaultTemplateEngineHost(hostIdentifier, hostVersion, CultureInfo.CurrentCulture.Name, preferences, builtIns, new[] { "dotnetcli" });
-
-            // Consider having these around for diagnostic runs.
-            //AddAuthoringLogger(host);
-            //AddInstallLogger(host);
-
             return host;
-        }
-
-        private static void AddAuthoringLogger(DefaultTemplateEngineHost host)
-        {
-            Action<string, string[]> authoringLogger = (message, additionalInfo) =>
-            {
-                Console.WriteLine(string.Format("Authoring: {0}", message));
-            };
-            host.RegisterDiagnosticLogger("Authoring", authoringLogger);
-        }
-
-        private static void AddInstallLogger(DefaultTemplateEngineHost host)
-        {
-            Action<string, string[]> installLogger = (message, additionalInfo) =>
-            {
-                Console.WriteLine(string.Format("Install: {0}", message));
-            };
-            host.RegisterDiagnosticLogger("Install", installLogger);
-        }
-
-
-        // this is mostly a copy of FirstRun() from dotnet_new3.Program.cs
-        public static void FirstRun(IEngineEnvironmentSettings environmentSettings, IInstallerBase installer)
-        {
-            List<string> toInstallList = new List<string>();
-            Paths paths = new Paths(environmentSettings);
-
-            if (paths.FileExists(paths.Global.DefaultInstallPackageList))
-            {
-                toInstallList.AddRange(paths.ReadAllText(paths.Global.DefaultInstallPackageList).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
-            }
-
-            if (paths.FileExists(paths.Global.DefaultInstallTemplateList))
-            {
-                toInstallList.AddRange(paths.ReadAllText(paths.Global.DefaultInstallTemplateList).Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
-            }
-
-            if (toInstallList.Count > 0)
-            {
-                for (int i = 0; i < toInstallList.Count; i++)
-                {
-                    toInstallList[i] = toInstallList[i].Replace("\r", "")
-                                                        .Replace('\\', Path.DirectorySeparatorChar);
-                }
-
-                installer.InstallPackages(toInstallList);
-            }
         }
     }
 }
