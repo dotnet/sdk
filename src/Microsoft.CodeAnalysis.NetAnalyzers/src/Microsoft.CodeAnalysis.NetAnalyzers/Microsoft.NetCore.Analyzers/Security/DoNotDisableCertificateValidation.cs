@@ -112,8 +112,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             return;
                                         }
 
-                                        // TODO(LINCHE): This is an issue tracked by #2009. We filter extraneous based on IsImplicit.
-                                        var targetOperations = ImmutableArray.ToImmutableArray(blockOperation.Descendants()).WithoutFullyImplicitOperations();
+                                        var targetOperations = blockOperation.Descendants().ToImmutableArray().WithoutFullyImplicitOperations();
                                         alwaysReturnTrue = AlwaysReturnTrue(targetOperations);
                                         break;
                                 }
