@@ -127,6 +127,208 @@ namespace CallerTargetsBelow5_0
         }
 
         [Fact]
+        public async Task OnlyThrowsNotSupportedWithOsDependentStringNotWarns()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""Browser"")]
+public class Test
+{
+    private static string s_message = ""Browser not supported"";
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static void ThrowPnseWithStringArgument() { throw new PlatformNotSupportedException(s_message); }
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static void ThrowNotSupportedWithStringArgument() { throw new NotSupportedException(s_message); }
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static void ThrowPnseWithStringAndExceptionArgument() { throw new PlatformNotSupportedException(s_message, new Exception(s_message)); }
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static void ThrowPnseDefaultConstructor() { throw new PlatformNotSupportedException(); }
+}";
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
+        public async Task ThrowNotSupportedWithOtherOsDependentApiUsageNotWarns()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+[assembly: SupportedOSPlatform(""browser"")]
+
+public static class SR
+{
+    public static string Message {get; set;}
+}
+
+[UnsupportedOSPlatform(""browser"")]
+public class Test
+{
+    void ThrowWithStringArgument()
+    {
+        [|SR.Message|] = ""Warns not reachable on Browser"";
+        throw new PlatformNotSupportedException(SR.Message);
+    }
+
+    void ThrowNotSupportedWithStringArgument()
+    {
+        [|SR.Message|] = ""Warns not reachable on Browser"";
+        throw new NotSupportedException(SR.Message);
+    }
+    
+    void ThrowWithNoArgument()
+    {
+        [|SR.Message|] = ""Warns not reachable on Browser"";
+        throw new PlatformNotSupportedException();
+    }
+    
+    void ThrowWithStringAndExceptionConstructor()
+    {
+        [|SR.Message|] = ""Warns not reachable on Browser"";
+        throw new PlatformNotSupportedException(SR.Message, new Exception());
+    }
+    
+    void ThrowWithAnotherExceptionUsingResourceString()
+    {
+        [|SR.Message|] = ""Warns not reachable on Browser"";
+        throw new PlatformNotSupportedException(SR.Message, new Exception([|SR.Message|]));
+    }
+}";
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
+        public async Task ThrowNotSupportedWithOtherStatementAndWithinConditionNotWarns()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows"")]
+public static class Windows
+{
+    public static string Message {get; set;}
+}
+
+[SupportedOSPlatform(""browser"")]
+public static class SR
+{
+    public static string Message {get; set;}
+    public static void M1() { }
+}
+
+public class Test
+{
+    void ThrowWithStringConstructor()
+    {
+        [|SR.M1()|];
+        if (!OperatingSystem.IsBrowser())
+        {
+            throw new PlatformNotSupportedException(SR.Message);
+        }
+        SR.M1();
+
+        [|Windows.Message|] = ""Warns supported only on Windows"";
+        if (!OperatingSystem.IsWindows())
+        {
+            throw new NotSupportedException(Windows.Message);
+        }
+        Windows.Message = ""It is windows!"";
+    }
+
+    void ThrowWithOtherConstructorWarnsForInnnerException()
+    {
+        [|SR.M1()|];
+        if (!OperatingSystem.IsBrowser())
+        {
+            throw new PlatformNotSupportedException();
+        }
+        SR.M1();
+
+        [|Windows.Message|] = ""Warns supported only on Windows"";
+        if (!OperatingSystem.IsWindows())
+        {
+            throw new NotSupportedException(Windows.Message, new Exception([|Windows.Message|]));
+        }
+    }
+}";
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
+        public async Task CreateNotSupportedWithOsDependentStringNotWarns()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""Browser"")]
+public class Test
+{
+    private static string s_message = ""Browser not supported"";
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static Exception GetPnseWithStringArgument() { return new PlatformNotSupportedException(s_message); }
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static Exception GetNotSupportedWithStringArgument()
+    {
+        [|s_message|] = ""Warns not reachable on Browser"";
+        return new NotSupportedException(s_message); 
+    }
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static Exception ThrowPnseWithStringWarnsForInnerException()
+    { 
+        return new PlatformNotSupportedException(s_message, new Exception([|s_message|]));
+    }
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static Exception ThrowPnseDefaultConstructor() { return new PlatformNotSupportedException(); }
+}";
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
+        public async Task ThrowNotSupportedWarnsForNonStringArgument()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows"")]
+public class WindowsOnlyException : Exception 
+{
+    public WindowsOnlyException() { }
+    public WindowsOnlyException(string message) { }
+    public static string Message {get; set;}
+}
+
+public class Test
+{
+    void ThrowWindowsOnlyExceptionWarns()
+    {
+        [|WindowsOnlyException.Message|] = ""Warns for message and exception"";
+        throw [|new WindowsOnlyException([|WindowsOnlyException.Message|])|];
+    }
+
+    void ThrowWithWindowsOnlyInnnerExceptionWarns()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            throw new NotSupportedException(WindowsOnlyException.Message, [|new WindowsOnlyException()|]);
+        }
+    }
+}";
+            await VerifyAnalyzerAsyncCs(csSource);
+        }
+
+        [Fact]
         public async Task MethodsWithOsDependentTypeParameterWarns()
         {
             var csSource = @"

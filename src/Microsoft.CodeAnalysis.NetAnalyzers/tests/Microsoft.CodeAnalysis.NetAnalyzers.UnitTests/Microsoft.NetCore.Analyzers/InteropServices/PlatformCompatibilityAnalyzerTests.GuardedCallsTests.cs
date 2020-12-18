@@ -714,7 +714,6 @@ class Test
     [UnsupportedOSPlatform(""ios12.1"")]
     void NotForIos12OrLater() { }
 }";
-
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
@@ -1566,7 +1565,7 @@ public class Test
             await VerifyAnalyzerAsyncCs(source);
         }
 
-        [Fact(Skip = "TODO: Failing because we cannot detect the correct local invocation being called")]
+        [Fact]
         public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromDifferentContext()
         {
             var source = @"
@@ -1576,24 +1575,17 @@ public class Test
 {
     void M()
     {
+        LocalM();
         if (OperatingSystem.IsOSPlatformVersionAtLeast(""Windows"", 10, 2))
         {
-            LocalM(true);
+            LocalM();
         }
-        LocalM(false);
         return;
 
-        void LocalM(bool suppressed)
+        void LocalM()
         {
-            if (suppressed)
-            {
-                WindowsOnlyMethod();
-            }
-            else
-            {
-                [|WindowsOnlyMethod()|];
-            }
-            
+            [|WindowsOnlyMethod()|];
+           
             if (OperatingSystem.IsOSPlatformVersionAtLeast(""Windows"", 10, 2))
             {
                 WindowsOnlyMethod();
@@ -1609,13 +1601,13 @@ public class Test
             }
         }
     }
+
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     public void WindowsOnlyMethod() { }
     [UnsupportedOSPlatform(""Windows10.0"")]
     public void UnsupportedWindows10() { }
-}
-";
-            await VerifyAnalyzerAsyncCs(source);
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
         [Fact]

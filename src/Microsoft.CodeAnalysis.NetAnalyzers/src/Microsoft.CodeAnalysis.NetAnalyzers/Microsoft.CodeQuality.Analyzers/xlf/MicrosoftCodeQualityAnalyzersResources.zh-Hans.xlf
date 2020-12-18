@@ -129,7 +129,7 @@
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageLinqMethod">
         <source>'{0}' calls '{1}' but does not use the value the method returns. Linq methods are known to not have side effects. Use the result in a conditional statement, assign the result to a variable, or pass it as an argument to another method.</source>
-        <target state="translated">“{0}”会调用“{1}”，但不使用方法返回的值。据了解，Linq 方法没有负面影响。请使用条件语句中的结果，并将结果赋给变量或将其作为自变量传递给另一个方法。</target>
+        <target state="translated">“{0}”会调用“{1}”，但不使用方法返回的值。据了解，Linq 方法没有负面影响。在条件语句中使用结果，将结果赋给变量，或将其作为实参传递给另一个方法。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotIgnoreMethodResultsMessageUserDefinedMethod">
@@ -299,7 +299,7 @@
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
         <source>Apply 'AttributeUsageAttribute'</source>
-        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <target state="translated">应用 "AttributeUsageAttribute"</target>
         <note />
       </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
@@ -709,7 +709,7 @@
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
         <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
-        <target state="needs-review-translation">实现相等运算符，并使其行为与 "Equals" 方法的行为相同</target>
+        <target state="new">Implement the equality operators and make their behavior identical to that of the Equals method</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -1419,7 +1419,7 @@
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMethodTypeParameterNoAlternate">
         <source>On method {0}, replace the term '{1}' in generic type parameter name {2} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">在方法 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为相应的替代项或者完全删除</target>
+        <target state="translated">在方法 {0} 中，将泛型类型参数名称 {2} 中的词条“{1}”替换为合适的替代项或者完全删除</target>
         <note />
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageTypeNoAlternate">
@@ -1429,7 +1429,7 @@
       </trans-unit>
       <trans-unit id="UsePreferredTermsMessageMemberNoAlternate">
         <source>Replace the term '{0}' in member name {1} with an appropriate alternate or remove it entirely</source>
-        <target state="translated">将成员名称 {1} 中的词条“{0}”替换为相应的替代项或者完全删除</target>
+        <target state="translated">将成员名称 {1} 中的词条“{0}”替换为合适的替代项或者完全删除</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideEqualsAndOperatorEqualsOnValueTypesTitle">
