@@ -176,14 +176,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         internal static bool IsPropertyExpected(string operatorName)
         {
-            switch (operatorName)
+            return operatorName switch
             {
-                case OpTrueText:
-                case OpFalseText:
-                    return true;
-                default:
-                    return false;
-            }
+                OpTrueText or OpFalseText => true,
+                _ => false,
+            };
         }
 
         internal static ExpectedAlternateMethodGroup? GetExpectedAlternateMethodGroup(string operatorName, ITypeSymbol returnType, ITypeSymbol? parameterType)
@@ -192,71 +189,47 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             // the most common case; create a static method with the already specified types
             static ExpectedAlternateMethodGroup createSingle(string methodName) => new(methodName);
-            switch (operatorName)
+            return operatorName switch
             {
-                case "op_Addition":
-                case "op_AdditonAssignment":
-                    return createSingle("Add");
-                case "op_BitwiseAnd":
-                case "op_BitwiseAndAssignment":
-                    return createSingle("BitwiseAnd");
-                case "op_BitwiseOr":
-                case "op_BitwiseOrAssignment":
-                    return createSingle("BitwiseOr");
-                case "op_Decrement":
-                    return createSingle("Decrement");
-                case "op_Division":
-                case "op_DivisionAssignment":
-                    return createSingle("Divide");
-                case "op_Equality":
-                case "op_Inequality":
-                    return createSingle("Equals");
-                case "op_ExclusiveOr":
-                case "op_ExclusiveOrAssignment":
-                    return createSingle("Xor");
-                case "op_GreaterThan":
-                case "op_GreaterThanOrEqual":
-                case "op_LessThan":
-                case "op_LessThanOrEqual":
-                    return new ExpectedAlternateMethodGroup(alternateMethod1: "CompareTo", alternateMethod2: "Compare");
-                case "op_Increment":
-                    return createSingle("Increment");
-                case "op_LeftShift":
-                case "op_LeftShiftAssignment":
-                    return createSingle("LeftShift");
-                case "op_LogicalAnd":
-                    return createSingle("LogicalAnd");
-                case "op_LogicalOr":
-                    return createSingle("LogicalOr");
-                case "op_LogicalNot":
-                    return createSingle("LogicalNot");
-                case "op_Modulus":
-                case "op_ModulusAssignment":
-                    return new ExpectedAlternateMethodGroup(alternateMethod1: "Mod", alternateMethod2: "Remainder");
-                case "op_MultiplicationAssignment":
-                case "op_Multiply":
-                    return createSingle("Multiply");
-                case "op_OnesComplement":
-                    return createSingle("OnesComplement");
-                case "op_RightShift":
-                case "op_RightShiftAssignment":
-                case "op_SignedRightShift":
-                case "op_UnsignedRightShift":
-                case "op_UnsignedRightShiftAssignment":
-                    return createSingle("RightShift");
-                case "op_Subtraction":
-                case "op_SubtractionAssignment":
-                    return createSingle("Subtract");
-                case "op_UnaryNegation":
-                    return createSingle("Negate");
-                case "op_UnaryPlus":
-                    return createSingle("Plus");
-                case "op_Implicit":
-                case "op_Explicit":
-                    return new ExpectedAlternateMethodGroup(alternateMethod1: $"To{returnType.Name}", alternateMethod2: parameterType != null ? $"From{parameterType.Name}" : null);
-                default:
-                    return null;
-            }
+                "op_Addition"
+                or "op_AdditonAssignment" => createSingle("Add"),
+                "op_BitwiseAnd"
+                or "op_BitwiseAndAssignment" => createSingle("BitwiseAnd"),
+                "op_BitwiseOr"
+                or "op_BitwiseOrAssignment" => createSingle("BitwiseOr"),
+                "op_Decrement" => createSingle("Decrement"),
+                "op_Division"
+                or "op_DivisionAssignment" => createSingle("Divide"),
+                "op_Equality"
+                or "op_Inequality" => createSingle("Equals"),
+                "op_ExclusiveOr"
+                or "op_ExclusiveOrAssignment" => createSingle("Xor"),
+                "op_GreaterThan"
+                or "op_GreaterThanOrEqual" or "op_LessThan" or "op_LessThanOrEqual" => new ExpectedAlternateMethodGroup(alternateMethod1: "CompareTo", alternateMethod2: "Compare"),
+                "op_Increment" => createSingle("Increment"),
+                "op_LeftShift"
+                or "op_LeftShiftAssignment" => createSingle("LeftShift"),
+                "op_LogicalAnd" => createSingle("LogicalAnd"),
+                "op_LogicalOr" => createSingle("LogicalOr"),
+                "op_LogicalNot" => createSingle("LogicalNot"),
+                "op_Modulus"
+                or "op_ModulusAssignment" => new ExpectedAlternateMethodGroup(alternateMethod1: "Mod", alternateMethod2: "Remainder"),
+                "op_MultiplicationAssignment"
+                or "op_Multiply" => createSingle("Multiply"),
+                "op_OnesComplement" => createSingle("OnesComplement"),
+                "op_RightShift"
+                or "op_RightShiftAssignment"
+                or "op_SignedRightShift"
+                or "op_UnsignedRightShift"
+                or "op_UnsignedRightShiftAssignment" => createSingle("RightShift"),
+                "op_Subtraction"
+                or "op_SubtractionAssignment" => createSingle("Subtract"),
+                "op_UnaryNegation" => createSingle("Negate"),
+                "op_UnaryPlus" => createSingle("Plus"),
+                "op_Implicit"
+                or "op_Explicit" => new ExpectedAlternateMethodGroup(alternateMethod1: $"To{returnType.Name}", alternateMethod2: parameterType != null ? $"From{parameterType.Name}" : null),
+                _ => null,
+            };
         }
 
         internal class ExpectedAlternateMethodGroup

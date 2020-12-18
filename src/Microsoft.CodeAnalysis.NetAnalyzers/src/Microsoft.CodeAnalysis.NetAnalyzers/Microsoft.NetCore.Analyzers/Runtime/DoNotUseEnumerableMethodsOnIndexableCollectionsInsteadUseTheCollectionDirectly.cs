@@ -91,16 +91,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
 
         /// <summary>
-        /// The Enumerable.Last method will only special case indexable types that implement <see cref="IList{T}" />.  Types 
-        /// which implement only <see cref="IReadOnlyList{T}"/> will be treated the same as IEnumerable{T} and go through a 
+        /// The Enumerable.Last method will only special case indexable types that implement <see cref="IList{T}" />.  Types
+        /// which implement only <see cref="IReadOnlyList{T}"/> will be treated the same as IEnumerable{T} and go through a
         /// full enumeration.  This method identifies such types.
-        /// 
+        ///
         /// At this point it only identifies <see cref="IReadOnlyList{T}"/> directly but could easily be extended to support
-        /// any type which has an index and count property.  
+        /// any type which has an index and count property.
         /// </summary>
         private static bool IsTypeWithInefficientLinqMethods(ITypeSymbol targetType, ITypeSymbol readonlyListType, ITypeSymbol listType)
         {
-            // If this type is simply IReadOnlyList<T> then no further checking is needed.  
+            // If this type is simply IReadOnlyList<T> then no further checking is needed.
             if (targetType.TypeKind == TypeKind.Interface && targetType.OriginalDefinition.Equals(readonlyListType))
             {
                 return true;
@@ -128,7 +128,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// Is this a method on <see cref="Enumerable" /> which takes only a single parameter?
         /// </summary>
         /// <remarks>
-        /// Many of the methods we target, like Last, have overloads that take a filter delegate.  It is 
+        /// Many of the methods we target, like Last, have overloads that take a filter delegate.  It is
         /// completely appropriate to use such methods even with <see cref="IReadOnlyList{T}" />.  Only the single parameter
         /// ones are suspect
         /// </remarks>
@@ -142,17 +142,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsPossibleLinqInvocation(IInvocationOperation invocation)
         {
-            switch (invocation.TargetMethod.Name)
+            return invocation.TargetMethod.Name switch
             {
-                case "Last":
-                case "LastOrDefault":
-                case "First":
-                case "FirstOrDefault":
-                case "Count":
-                    return true;
-                default:
-                    return false;
-            }
+                "Last" or "LastOrDefault" or "First" or "FirstOrDefault" or "Count" => true,
+                _ => false,
+            };
         }
     }
 }
