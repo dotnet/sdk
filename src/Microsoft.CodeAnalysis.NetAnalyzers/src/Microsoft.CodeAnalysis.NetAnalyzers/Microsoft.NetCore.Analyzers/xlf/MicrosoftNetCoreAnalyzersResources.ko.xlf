@@ -1018,8 +1018,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
-        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="translated">'CancellationToken' 매개 변수를 이를 사용하는 메서드로 전달하여 작업 취소 알림이 올바르게 전파되도록 하거나, 명시적으로 'CancellationToken.None'을 전달하여 의도적으로 토큰을 전파하지 않음을 나타냅니다.</target>
+        <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="needs-review-translation">'CancellationToken' 매개 변수를 이를 사용하는 메서드로 전달하여 작업 취소 알림이 올바르게 전파되도록 하거나, 명시적으로 'CancellationToken.None'을 전달하여 의도적으로 토큰을 전파하지 않음을 나타냅니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1028,8 +1028,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
-        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
-        <target state="translated">'CancellationToken' 매개 변수를 이를 사용하는 메서드로 전달</target>
+        <source>Forward the 'CancellationToken' parameter to methods</source>
+        <target state="needs-review-translation">'CancellationToken' 매개 변수를 이를 사용하는 메서드로 전달</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
