@@ -24,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureDtdProcessingInApiDesign)),
                 nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage),
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeSuggestion,
                 SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingInApiDesignDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
@@ -87,8 +87,6 @@ namespace Microsoft.NetFramework.Analyzers
 
             public void AnalyzeOperationBlock(OperationBlockStartAnalysisContext context)
             {
-                // an alternative is to do syntax analysis during the symbol analysis,
-                // which might cause AST construction on the fly
                 AnalyzeBlockForXmlDocumentDerivedTypeConstructorDecl(context);
                 AnalyzeBlockForXmlDocumentDerivedTypeMethodDecl(context);
                 if (!_isFrameworkSecure)
@@ -109,7 +107,8 @@ namespace Microsoft.NetFramework.Analyzers
             {
                 if (context.OwningSymbol is not IMethodSymbol methodSymbol
                     || methodSymbol.MethodKind != MethodKind.Constructor
-                    || !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true)))
+                    || Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)
+                    || !methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true))
                 {
                     return;
                 }
@@ -157,7 +156,8 @@ namespace Microsoft.NetFramework.Analyzers
                 if (context.OwningSymbol is not IMethodSymbol methodSymbol
                     // skip constructors since we report on the absence of secure assignment in AnalyzeBlockForXmlDocumentDerivedTypeConstructorDecl
                     || methodSymbol.MethodKind == MethodKind.Constructor
-                    || !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true)))
+                    || Equals(methodSymbol.ContainingType, _xmlTypes.XmlDocument)
+                    || !methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlDocument, baseTypesOnly: true))
                 {
                     return;
                 }
@@ -194,7 +194,8 @@ namespace Microsoft.NetFramework.Analyzers
             {
                 if (context.OwningSymbol is not IMethodSymbol methodSymbol
                     || methodSymbol.MethodKind != MethodKind.Constructor
-                    || !((!Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)) && methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true)))
+                    || Equals(methodSymbol.ContainingType, _xmlTypes.XmlTextReader)
+                    || !methodSymbol.ContainingType.DerivesFrom(_xmlTypes.XmlTextReader, baseTypesOnly: true))
                 {
                     return;
                 }
