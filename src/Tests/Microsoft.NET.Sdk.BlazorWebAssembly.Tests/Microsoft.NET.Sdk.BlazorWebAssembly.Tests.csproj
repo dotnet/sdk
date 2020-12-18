@@ -5,11 +5,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <TargetFrameworks>net472;$(ToolsetTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(ToolsetTargetFramework)</TargetFrameworks>
+    <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <!-- Strip the '-parallel none' flag here -->
     <XUnitRunnerAdditionalArguments></XUnitRunnerAdditionalArguments>
     <PackageId>testSdkBlazorWasm</PackageId>
