@@ -1067,9 +1067,7 @@ Rule ID | Missing Help Link | Title |
         /// <remarks>
         /// Don't call this method with auto-generated files that are part of the artifacts because it's expected that they don't initially exist.
         /// </remarks>
-#pragma warning disable CA1002 // Do not expose generic lists
         private static void Validate(string fileWithPath, string fileContents, List<string> fileNamesWithValidationFailures)
-#pragma warning restore CA1002 // Do not expose generic lists
         {
             string actual = File.ReadAllText(fileWithPath);
             if (actual != fileContents)

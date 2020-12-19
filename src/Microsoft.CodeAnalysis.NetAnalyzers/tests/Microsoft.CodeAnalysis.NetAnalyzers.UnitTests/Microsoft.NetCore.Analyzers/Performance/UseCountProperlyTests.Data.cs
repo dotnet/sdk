@@ -60,9 +60,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-#pragma warning disable CA1002 // Do not expose generic lists
         private static readonly List<OperatorKind> _operators = new()
-#pragma warning restore CA1002 // Do not expose generic lists
         {
             new OperatorKind((a, b) => a == b, 1, 2, BinaryOperatorKind.Equals),
             new OperatorKind((a, b) => a != b, 2, 2, BinaryOperatorKind.NotEquals),
