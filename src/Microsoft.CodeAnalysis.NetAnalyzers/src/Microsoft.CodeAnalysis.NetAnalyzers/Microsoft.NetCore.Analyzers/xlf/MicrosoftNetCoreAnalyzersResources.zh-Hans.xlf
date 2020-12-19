@@ -1018,8 +1018,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
-        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="translated">将 "CancellationToken" 参数转发给采用一个令牌来确保操作取消通知得到正确传播的方法，或者在 "CancellationToken.None" 中显式传递，以指示有意不传播令牌。</target>
+        <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="needs-review-translation">将 "CancellationToken" 参数转发给采用一个令牌来确保操作取消通知得到正确传播的方法，或者在 "CancellationToken.None" 中显式传递，以指示有意不传播令牌。</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1028,8 +1028,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
-        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
-        <target state="translated">将 "CancellationToken" 参数转发给采用令牌的方法</target>
+        <source>Forward the 'CancellationToken' parameter to methods</source>
+        <target state="needs-review-translation">将 "CancellationToken" 参数转发给采用令牌的方法</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">

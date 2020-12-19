@@ -1351,13 +1351,13 @@
     <value>Change the '{0}' method call to use the '{1}' overload</value>
   </data>
   <data name="ForwardCancellationTokenToInvocationsDescription" xml:space="preserve">
-    <value>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</value>
+    <value>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</value>
   </data>
   <data name="ForwardCancellationTokenToInvocationsMessage" xml:space="preserve">
     <value>Forward the '{0}' parameter to the '{1}' method or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token</value>
   </data>
   <data name="ForwardCancellationTokenToInvocationsTitle" xml:space="preserve">
-    <value>Forward the 'CancellationToken' parameter to methods that take one</value>
+    <value>Forward the 'CancellationToken' parameter to methods</value>
   </data>
   <data name="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle" xml:space="preserve">
     <value>Change to call the two argument constructor, pass null for the message.</value>

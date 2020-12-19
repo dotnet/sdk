@@ -1018,8 +1018,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
-        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="translated">'CancellationToken' パラメーターを、それを受け取るメソッドに転送して操作のキャンセル通知が適切に伝達されるようにするか、または 'CancellationToken.None' を明示的に渡して意図的にトークンを伝達しないことを指定します。</target>
+        <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="needs-review-translation">'CancellationToken' パラメーターを、それを受け取るメソッドに転送して操作のキャンセル通知が適切に伝達されるようにするか、または 'CancellationToken.None' を明示的に渡して意図的にトークンを伝達しないことを指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1028,8 +1028,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
-        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
-        <target state="translated">'CancellationToken' パラメーターを、それを受け取るメソッドに転送する</target>
+        <source>Forward the 'CancellationToken' parameter to methods</source>
+        <target state="needs-review-translation">'CancellationToken' パラメーターを、それを受け取るメソッドに転送する</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">

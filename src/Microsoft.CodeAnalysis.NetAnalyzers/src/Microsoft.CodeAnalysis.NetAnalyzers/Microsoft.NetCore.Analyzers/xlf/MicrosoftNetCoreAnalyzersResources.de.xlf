@@ -1018,8 +1018,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
-        <source>Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="translated">Leiten Sie den Parameter "CancellationToken" an Methoden weiter, die diesen Parameter akzeptieren. So stellen Sie sicher, dass Benachrichtigungen zum Abbruch des Vorgangs ordnungsgemäß verteilt werden. Alternativ dazu können Sie explizit "CancellationToken.None" übergeben, um festzulegen, dass das Token nicht verteilt werden soll.</target>
+        <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
+        <target state="needs-review-translation">Leiten Sie den Parameter "CancellationToken" an Methoden weiter, die diesen Parameter akzeptieren. So stellen Sie sicher, dass Benachrichtigungen zum Abbruch des Vorgangs ordnungsgemäß verteilt werden. Alternativ dazu können Sie explizit "CancellationToken.None" übergeben, um festzulegen, dass das Token nicht verteilt werden soll.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1028,8 +1028,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
-        <source>Forward the 'CancellationToken' parameter to methods that take one</source>
-        <target state="translated">Parameter "CancellationToken" an Methoden weiterleiten, die diesen Parameter akzeptieren</target>
+        <source>Forward the 'CancellationToken' parameter to methods</source>
+        <target state="needs-review-translation">Parameter "CancellationToken" an Methoden weiterleiten, die diesen Parameter akzeptieren</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
