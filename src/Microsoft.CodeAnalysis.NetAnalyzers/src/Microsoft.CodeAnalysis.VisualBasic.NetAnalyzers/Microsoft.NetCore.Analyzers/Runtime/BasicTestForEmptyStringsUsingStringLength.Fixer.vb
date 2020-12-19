@@ -14,7 +14,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
     <ExportCodeFixProvider(LanguageNames.VisualBasic), [Shared]>
     Public NotInheritable Class BasicTestForEmptyStringsUsingStringLengthFixer
         Inherits TestForEmptyStringsUsingStringLengthFixer
-        Protected Overrides Function GetBinaryExpression(node As SyntaxNode) As SyntaxNode
+        Protected Overrides Function GetExpression(node As SyntaxNode) As SyntaxNode
             Dim argumentSyntax = TryCast(node, ArgumentSyntax)
             Return If(argumentSyntax IsNot Nothing, argumentSyntax.GetExpression(), node)
         End Function
@@ -33,6 +33,19 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
         Protected Overrides Function GetRightOperand(binaryExpressionSyntax As SyntaxNode) As SyntaxNode
             Return DirectCast(binaryExpressionSyntax, BinaryExpressionSyntax).Right
+        End Function
+
+        Protected Overrides Function IsFixableBinaryExpression(node As SyntaxNode) As Boolean
+            Return (TypeOf node Is BinaryExpressionSyntax) AndAlso (IsEqualsOperator(node) Or IsNotEqualsOperator(node))
+        End Function
+
+        Protected Overrides Function IsFixableInvocationExpression(node As SyntaxNode) As Boolean
+            Return node.IsKind(SyntaxKind.InvocationExpression)
+        End Function
+
+        Protected Overrides Function GetInvocationTarget(node As SyntaxNode) As SyntaxNode
+            Dim memberAccessExpression = DirectCast(DirectCast(node, InvocationExpressionSyntax).Expression, MemberAccessExpressionSyntax)
+            Return memberAccessExpression.Expression
         End Function
     End Class
 End Namespace

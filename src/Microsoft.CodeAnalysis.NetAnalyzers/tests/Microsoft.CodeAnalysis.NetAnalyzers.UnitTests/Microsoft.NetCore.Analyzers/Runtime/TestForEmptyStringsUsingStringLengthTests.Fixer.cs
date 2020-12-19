@@ -1003,5 +1003,41 @@ End Class
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
             }.RunAsync();
         }
+
+        [Fact]
+        public async Task CA1820_FixTestEmptyStringsUsingStringLength_WhenStringEqualsMethodIsUsed()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return [|s.Equals(string.Empty)|];
     }
 }
+", @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return string.IsNullOrEmpty(s);
+    }
+}
+");
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return [|s.Equals(String.Empty)|]
+    End Function
+End Class
+", @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return String.IsNullOrEmpty(s)
+    End Function
+End Class
+");
+        }
+    }
+}
+
