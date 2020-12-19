@@ -573,7 +573,8 @@ Rule ID | Missing Help Link | Title |
                         helpLinkUri = $"<{helpLinkUri}>";
                     }
 
-                    var line = $"{ruleId} | {helpLinkUri} | {descriptor.Title.ToString(CultureInfo.InvariantCulture)} |";
+                    var escapedTitle = descriptor.Title.ToString(CultureInfo.InvariantCulture).Replace("<T>", "\\<T>");
+                    var line = $"{ruleId} | {helpLinkUri} | {escapedTitle} |";
                     if (validateOnly)
                     {
                         // The validation for RulesMissingDocumentation.md is different than others.
