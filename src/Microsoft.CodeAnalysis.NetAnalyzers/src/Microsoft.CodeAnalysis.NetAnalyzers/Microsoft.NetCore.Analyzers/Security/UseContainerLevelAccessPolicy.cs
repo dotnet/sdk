@@ -39,8 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 RuleLevel.Disabled,
                 description: s_Description,
                 isPortedFxCopRule: false,
-                isDataflowRule: true,
-                isEnabledByDefaultInFxCopAnalyzers: false);
+                isDataflowRule: true);
 
         internal static ImmutableArray<(string nspace, string policyIdentifierName)> NamespaceAndPolicyIdentifierNamePairs = ImmutableArray.Create(
                                                                                                     ("Blob", "groupPolicyIdentifier"),
@@ -141,7 +140,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
                                                                                 operationAnalysisContext.Options,
                                                                                 SupportedDiagnostics,
-                                                                                operationAnalysisContext.Operation.Syntax.SyntaxTree,
+                                                                                operationAnalysisContext.Operation,
                                                                                 operationAnalysisContext.Compilation,
                                                                                 defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
                                                                                 cancellationToken: operationAnalysisContext.CancellationToken,

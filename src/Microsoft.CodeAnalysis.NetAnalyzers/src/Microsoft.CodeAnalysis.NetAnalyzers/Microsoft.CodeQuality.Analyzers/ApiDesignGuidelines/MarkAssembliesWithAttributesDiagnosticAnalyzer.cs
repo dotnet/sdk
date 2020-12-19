@@ -39,7 +39,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          description: s_localizableDescriptionCA1014,
                                                                          isPortedFxCopRule: true,
                                                                          isDataflowRule: false,
-                                                                         isEnabledByDefaultInFxCopAnalyzers: false,
                                                                          isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1016Rule, CA1014Rule);

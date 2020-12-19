@@ -40,8 +40,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             RuleLevel.Disabled,
             description: s_localizableDescriptionForDelegate,
             isPortedFxCopRule: true,
-            isDataflowRule: false,
-            isEnabledByDefaultInFxCopAnalyzers: false);
+            isDataflowRule: false);
 
         internal static DiagnosticDescriptor RuleForEvents = DiagnosticDescriptorHelper.Create(
             RuleId,
@@ -51,8 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             RuleLevel.Disabled,
             description: s_localizableDescriptionForEvent,
             isPortedFxCopRule: true,
-            isDataflowRule: false,
-            isEnabledByDefaultInFxCopAnalyzers: false);
+            isDataflowRule: false);
 
         internal static DiagnosticDescriptor RuleForEvents2 = DiagnosticDescriptorHelper.Create(
             RuleId,
@@ -62,8 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             RuleLevel.Disabled,
             description: s_localizableDescriptionForEvent2,
             isPortedFxCopRule: true,
-            isDataflowRule: false,
-            isEnabledByDefaultInFxCopAnalyzers: false);
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleForDelegates, RuleForEvents, RuleForEvents2);
 

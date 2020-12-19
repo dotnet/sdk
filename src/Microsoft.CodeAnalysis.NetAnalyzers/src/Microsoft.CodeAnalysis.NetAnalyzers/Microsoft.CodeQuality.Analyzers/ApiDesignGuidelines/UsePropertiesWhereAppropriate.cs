@@ -30,8 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          RuleLevel.Disabled,    // Heuristic based rule.
                                                                          description: s_localizableDescription,
                                                                          isPortedFxCopRule: true,
-                                                                         isDataflowRule: false,
-                                                                         isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                         isDataflowRule: false);
         private const string GetHashCodeName = "GetHashCode";
         private const string GetEnumeratorName = "GetEnumerator";
 

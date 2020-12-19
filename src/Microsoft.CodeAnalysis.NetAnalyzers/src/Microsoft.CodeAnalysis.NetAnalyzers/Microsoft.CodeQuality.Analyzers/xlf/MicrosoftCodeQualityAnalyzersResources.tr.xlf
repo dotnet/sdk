@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
-        <target state="translated">Türleri başvuruya göre geçirmek (out veya ref kullanılarak) için işaretçiler konusunda deneyim sahibi olmak, değer ve başvuru türleri arasındaki farkları anlamak ve birden çok dönüş değeri içeren yöntemleri işlemeyi bilmek gerekir. Ayrıca out ve ref parametreleri arasındaki fark yaygın olarak anlaşılmaz.</target>
+        <target state="translated">Türleri başvuruya göre geçirmek (out veya ref kullanılarak) için işaretçiler konusunda deneyim sahibi olmak, değer ve başvuru türleri arasındaki farkları anlamak ve birden çok dönüş değeri içeren metotları işlemeyi bilmek gerekir. Ayrıca out ve ref parametreleri arasındaki fark genelde kapsamlı bir şekilde anlaşılmaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceMessage">
@@ -299,7 +299,7 @@
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
         <source>Apply 'AttributeUsageAttribute'</source>
-        <target state="new">Apply 'AttributeUsageAttribute'</target>
+        <target state="translated">'AttributeUsageAttribute' uygula</target>
         <note />
       </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
@@ -708,8 +708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
-        <source>Implement the equality operators and make their behavior identical to that of 'Equals' method</source>
-        <target state="translated">Eşitlik işleçlerini uygulayın ve davranışlarını 'Equals' yöntemininkiyle aynı yapın</target>
+        <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
+        <target state="new">Implement the equality operators and make their behavior identical to that of the Equals method</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
@@ -1262,21 +1262,6 @@
         <target state="translated">{1} üye adındaki '{0}' sonekini önerilen '{2}' alternatifi ile değiştirin ya da soneki tamamen kaldırın</target>
         <note />
       </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesTitle">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">Bayrak sabit listeleri çoğul adlara sahip olmalıdır</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesDescription">
-        <source>A public enumeration has the System.FlagsAttribute attribute, and its name does not end in ""s"". Types that are marked by using FlagsAttribute have names that are plural because the attribute indicates that more than one value can be specified.</source>
-        <target state="translated">Bir genel sabit listesi System.FlagsAttribute özniteliğine sahip ve adı ""s"" ile bitmiyor. FlagsAttribute kullanılarak işaretlenen türler, öznitelik birden fazla değerin belirtilebileceğini gösterdiğinden çoğul olan adlara sahip olur.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FlagsEnumsShouldHavePluralNamesMessage">
-        <source>Flags enums should have plural names</source>
-        <target state="translated">Bayrak sabit listeleri çoğul adlara sahip olmalıdır</target>
-        <note />
-      </trans-unit>
       <trans-unit id="IdentifiersShouldNotMatchKeywordsTitle">
         <source>Identifiers should not match keywords</source>
         <target state="translated">Tanımlayıcılar anahtar sözcüklerle eşleşmemelidir</target>
@@ -1305,21 +1290,6 @@
       <trans-unit id="IdentifiersShouldNotMatchKeywordsMessageNamespace">
         <source>Rename namespace {0} so that it no longer conflicts with the reserved language keyword '{1}'. Using a reserved keyword as the name of a namespace makes it harder for consumers in other languages to use the namespace.</source>
         <target state="translated">{0} ad alanını, ayrılmış dil anahtar sözcüğü '{1}' ile çakışmayacak şekilde yeniden adlandırın. Bir ad alanının adı olarak ayrılmış bir anahtar sözcüğün kullanılması, diğer dillerde kullanıcıların ad alanını kullanmasını zorlaştırır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesTitle">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Yalnızca FlagsAttribute sabit listeleri çoğul adlara sahip olmalıdır</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesDescription">
-        <source>Naming conventions dictate that a plural name for an enumeration indicates that more than one value of the enumeration can be specified at the same time.</source>
-        <target state="translated">Adlandırma kurallarına göre bir sabit listesinin çoğul ada sahip olması, aynı anda birden çok sabit listesi değeri belirtilebileceğini gösterir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OnlyFlagsEnumsShouldHavePluralNamesMessage">
-        <source>Only FlagsAttribute enums should have plural names</source>
-        <target state="translated">Yalnızca FlagsAttribute sabit listeleri çoğul adlara sahip olmalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="PropertyNamesShouldNotMatchGetMethodsTitle">

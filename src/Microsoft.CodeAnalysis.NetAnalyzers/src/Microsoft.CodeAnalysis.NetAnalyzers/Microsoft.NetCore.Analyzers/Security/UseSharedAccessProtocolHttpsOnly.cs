@@ -38,8 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 RuleLevel.Disabled,
                 description: s_Description,
                 isPortedFxCopRule: false,
-                isDataflowRule: true,
-                isEnabledByDefaultInFxCopAnalyzers: false);
+                isDataflowRule: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -140,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
                                                                         operationAnalysisContext.Options,
                                                                         SupportedDiagnostics,
-                                                                        protocolsArgumentOperation.Syntax.SyntaxTree,
+                                                                        protocolsArgumentOperation,
                                                                         operationAnalysisContext.Compilation,
                                                                         defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.None,
                                                                         cancellationToken: operationAnalysisContext.CancellationToken,

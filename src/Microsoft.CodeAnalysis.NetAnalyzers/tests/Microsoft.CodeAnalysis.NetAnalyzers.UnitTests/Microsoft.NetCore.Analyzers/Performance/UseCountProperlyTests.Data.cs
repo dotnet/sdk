@@ -62,12 +62,12 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         private static readonly List<OperatorKind> _operators = new List<OperatorKind>
         {
-            new OperatorKind((a,b) => a == b, 1, 2, BinaryOperatorKind.Equals),
-            new OperatorKind((a,b) => a != b, 2, 2, BinaryOperatorKind.NotEquals),
-            new OperatorKind((a,b) => a > b,  1, 1, BinaryOperatorKind.GreaterThan),
-            new OperatorKind((a,b) => a >= b, 2, 2, BinaryOperatorKind.GreaterThanOrEqual),
-            new OperatorKind((a,b) => a < b,  1, 1, BinaryOperatorKind.LessThan),
-            new OperatorKind((a,b) => a <= b, 2, 2, BinaryOperatorKind.LessThanOrEqual),
+            new OperatorKind((a, b) => a == b, 1, 2, BinaryOperatorKind.Equals),
+            new OperatorKind((a, b) => a != b, 2, 2, BinaryOperatorKind.NotEquals),
+            new OperatorKind((a, b) => a > b, 1, 1, BinaryOperatorKind.GreaterThan),
+            new OperatorKind((a, b) => a >= b, 2, 2, BinaryOperatorKind.GreaterThanOrEqual),
+            new OperatorKind((a, b) => a < b, 1, 1, BinaryOperatorKind.LessThan),
+            new OperatorKind((a, b) => a <= b, 2, 2, BinaryOperatorKind.LessThanOrEqual),
         };
     }
 

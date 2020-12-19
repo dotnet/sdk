@@ -43,13 +43,13 @@ namespace Microsoft.NetCore.Analyzers.Security
                                                                                         DefinitelyUseCreateEncryptorWithNonDefaultIVRule,
                                                                                         MaybeUseCreateEncryptorWithNonDefaultIVRule);
 
-        private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(
+        private static readonly ConstructorMapper ConstructorMapper = new(
             (IMethodSymbol constructorMethod, IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
             {
                 return PropertySetAbstractValue.GetInstance(PropertySetAbstractValueKind.Unflagged);
             });
 
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
+        private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "IV",
                 (PointsToAbstractValue pointsToAbstractValue) =>
@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     return PropertySetAbstractValueKind.Flagged;
                 }));
 
-        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new HazardousUsageEvaluatorCollection(
+        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new(
             new HazardousUsageEvaluator(
                 "CreateEncryptor",
                 (IMethodSymbol methodSymbol, PropertySetAbstractValue abstractValue) =>
@@ -161,7 +161,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,
                                             SupportedDiagnostics,
-                                            rootOperationsNeedingAnalysis.First().Item1.Syntax.SyntaxTree,
+                                            rootOperationsNeedingAnalysis.First().Item1,
                                             compilationAnalysisContext.Compilation,
                                             defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
                                             cancellationToken: compilationAnalysisContext.CancellationToken));

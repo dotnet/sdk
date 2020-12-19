@@ -63,6 +63,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
+                    if (!symbolContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, symbolContext.Compilation, symbolContext.CancellationToken,
+                            defaultRequiredVisibility: SymbolVisibilityGroup.All))
+                    {
+                        return;
+                    }
+
+                    if (symbolContext.Options.IsConfiguredToSkipAnalysis(Rule, methodSymbol,
+                            symbolContext.Compilation, symbolContext.CancellationToken))
+                    {
+                        return;
+                    }
+
                     int last = methodSymbol.Parameters.Length - 1;
                     if (last >= 0 && methodSymbol.Parameters[last].IsParams)
                     {

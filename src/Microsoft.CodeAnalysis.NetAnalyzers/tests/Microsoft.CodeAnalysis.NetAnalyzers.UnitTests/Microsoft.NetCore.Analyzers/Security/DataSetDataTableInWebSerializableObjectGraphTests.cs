@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Security.DataSetDataTableInWebSerializableObjectGraphAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInWebSerializableObjectGraphAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
@@ -90,7 +90,9 @@ public class MyClass
 
         private static async Task VerifyServiceModelCSharpAsync(string source, params DiagnosticResult[] expected)
         {
+#pragma warning disable CA5386 // Avoid hardcoding SecurityProtocolType value
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+#pragma warning restore CA5386 // Avoid hardcoding SecurityProtocolType value
             var csharpTest = new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default.AddAssemblies(
@@ -108,7 +110,9 @@ public class MyClass
 
         private static async Task VerifyWebServicesCSharpAsync(string source, params DiagnosticResult[] expected)
         {
+#pragma warning disable CA5386 // Avoid hardcoding SecurityProtocolType value
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+#pragma warning restore CA5386 // Avoid hardcoding SecurityProtocolType value
             var csharpTest = new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default.AddAssemblies(

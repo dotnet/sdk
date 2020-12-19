@@ -1058,7 +1058,7 @@ For value types, the inherited implementation of Equals uses the Reflection libr
 
 ## [CA1816](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1816): Dispose methods should call SuppressFinalize
 
-A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual?Basic).
+A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).
 
 |Item|Value|
 |-|-|
@@ -1428,9 +1428,9 @@ Adding a finalizer to a type derived from MemoryManager\<T> may permit memory to
 |CodeFix|False|
 ---
 
-## [CA2016](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016): Forward the 'CancellationToken' parameter to methods that take one
+## [CA2016](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016): Forward the 'CancellationToken' parameter to methods
 
-Forward the 'CancellationToken' parameter to methods that take one to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.
+Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.
 
 |Item|Value|
 |-|-|

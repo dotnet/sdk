@@ -8098,10 +8098,17 @@ Class Test
 End Class");
         }
 
-        [Fact, WorkItem(1602, "https://github.com/dotnet/roslyn-analyzers/issues/1602")]
-        public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnostic()
+        [Theory, WorkItem(1602, "https://github.com/dotnet/roslyn-analyzers/issues/1602")]
+        [InlineData(null)]
+        [InlineData(PointsToAnalysisKind.None)]
+        [InlineData(PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties)]
+        [InlineData(PointsToAnalysisKind.Complete)]
+        public async Task MemberReferenceInQueryFromClause_Disposed_NoDiagnostic(PointsToAnalysisKind? analysisKind)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test()
+            {
+                AnalyzerConfigDocument = GetEditorConfigContent(analysisKind),
+                TestCode = @"
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -8139,7 +8146,8 @@ class Test
         y.Dispose();
     }
 }
-");
+",
+            }.RunAsync();
         }
 
         [Fact]
