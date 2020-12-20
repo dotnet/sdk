@@ -264,6 +264,30 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
         }
 
         /// <summary>
+        /// Get non-empty class or method name which encloses the current syntax node
+        /// </summary>
+        public static string GetNonEmptyParentName(ISymbol symbol)
+        {
+            var current = symbol;
+            while (current.ContainingSymbol != null)
+            {
+                switch (current)
+                {
+                    case IMethodSymbol method:
+                        return method.MethodKind == MethodKind.Ordinary
+                            ? method.Name
+                            : method.ContainingType.Name;
+                    case INamedTypeSymbol namedType:
+                        return namedType.Name;
+                }
+
+                current = symbol.ContainingSymbol;
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the version of the target .NET framework of the compilation.
         /// </summary>
         /// <returns>
