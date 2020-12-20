@@ -147,18 +147,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsPossibleLinqInvocation(IInvocationOperation invocation, bool excludeOrDefaultMethods)
         {
-            switch (invocation.TargetMethod.Name)
+            return invocation.TargetMethod.Name switch
             {
-                case "Last":
-                case "First":
-                case "Count":
-                    return true;
-                case "LastOrDefault":
-                case "FirstOrDefault":
-                    return !excludeOrDefaultMethods;
-                default:
-                    return false;
-            }
+                "Last" or "First" or "Count" => true,
+                "LastOrDefault" or "FirstOrDefault" => !excludeOrDefaultMethods,
+                _ => false,
+            };
         }
     }
 }
