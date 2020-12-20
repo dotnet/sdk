@@ -135,7 +135,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 case null:
                     newInstance = expression;
                     break;
-                case IConditionalAccessInstanceOperation _:
+                case IConditionalAccessInstanceOperation:
                     newInstance = GetConditionalOperationInvocationExpression(invocation.Syntax);
                     break;
                 default:
@@ -156,7 +156,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return generator.ReplaceNode(root, invocation.Syntax, newInvocationWithArguments);
         }
 
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192) 
+        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
         private class MyCodeAction : DocumentChangeAction
         {
             public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
