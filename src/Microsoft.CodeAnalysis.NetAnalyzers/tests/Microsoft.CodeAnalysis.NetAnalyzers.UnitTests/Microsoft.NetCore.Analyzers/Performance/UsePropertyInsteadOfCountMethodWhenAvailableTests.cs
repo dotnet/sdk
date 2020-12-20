@@ -753,7 +753,7 @@ End Class
                 line: 10, column: 30);
 
         public static readonly IEnumerable<object[]> NoDiagnosisOnlyTestData = new BinaryExpressionTestData()
-            .Where(x => (bool)x[0] == true)
+            .Where(x => (bool)x[0])
             .Select(x => new object[] { x[1], x[2], x[3] });
 
         [Theory]
