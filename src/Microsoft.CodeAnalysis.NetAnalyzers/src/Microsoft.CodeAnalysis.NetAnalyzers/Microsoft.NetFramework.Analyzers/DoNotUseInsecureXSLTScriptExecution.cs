@@ -95,19 +95,21 @@ namespace Microsoft.NetFramework.Analyzers
                 _enclosingSymbol = enclosingSymbol;
             }
 
-            public void AnalyzeNodeForXslCompiledTransformLoad(IMethodSymbol methodSymbol, ImmutableArray<IArgumentOperation> arguments,
-                Action<Diagnostic> reportDiagnostic)
+            public void AnalyzeNodeForXslCompiledTransformLoad(IMethodSymbol methodSymbol,
+                ImmutableArray<IArgumentOperation> arguments, Action<Diagnostic> reportDiagnostic)
             {
-                if (!SecurityDiagnosticHelpers.IsXslCompiledTransformLoad(methodSymbol, _xmlTypes))
+                if (!methodSymbol.IsXslCompiledTransformLoad(_xmlTypes))
                 {
                     return;
                 }
 
-                int xmlResolverIndex = SecurityDiagnosticHelpers.GetXmlResolverParameterIndex(methodSymbol, _xmlTypes);
-                int xsltSettingsIndex = SecurityDiagnosticHelpers.GetXsltSettingsParameterIndex(methodSymbol, _xmlTypes);
+                int xmlResolverIndex = methodSymbol.GetXmlResolverParameterIndex(_xmlTypes);
+                int xsltSettingsIndex = methodSymbol.GetXsltSettingsParameterIndex(_xmlTypes);
 
-                // Overloads with no XmlResolver and XstlSettings specified are secure since they all have following behavior:
-                //  1. An XmlUrlResolver with no user credentials is used to process any xsl:import or xsl:include elements.
+                // Overloads with no XmlResolver and XstlSettings specified are secure since they all have
+                // following behavior:
+                //  1. An XmlUrlResolver with no user credentials is used to process any xsl:import
+                //     or xsl:include elements.
                 //  2. The document() function is disabled.
                 //  3. Embedded scripts are not supported.
                 if (xmlResolverIndex < 0 || xsltSettingsIndex < 0)
@@ -122,34 +124,28 @@ namespace Microsoft.NetFramework.Analyzers
                 }
 
                 var isSecureResolver = resolverArgumentOperation.HasNullConstantValue()
-                    || SecurityDiagnosticHelpers.IsXmlSecureResolverType(resolverArgumentOperation.Type, _xmlTypes);
+                    || resolverArgumentOperation.Type.IsXmlSecureResolverType(_xmlTypes);
 
                 var settingsOperation = arguments[xsltSettingsIndex].Value;
-                ISymbol? settingsSymbol = settingsOperation.Kind switch
-                {
-                    OperationKind.ParameterReference => ((IParameterReferenceOperation)settingsOperation).Parameter,
-                    OperationKind.LocalReference => ((ILocalReferenceOperation)settingsOperation).Local,
-                    OperationKind.FieldReference => ((IFieldReferenceOperation)settingsOperation).Field,
-                    OperationKind.PropertyReference => ((IPropertyReferenceOperation)settingsOperation).Property,
-                    _ => null,
-                };
+                var settingsSymbol = settingsOperation.GetReferencedMemberOrLocalOrParameter();
 
                 bool isSecureSettings;
                 bool isSetInBlock;
 
                 // 1. pass null or XsltSettings.Default as XsltSetting : secure
-                if (settingsSymbol == null || SecurityDiagnosticHelpers.IsXsltSettingsDefaultProperty(settingsSymbol as IPropertySymbol, _xmlTypes))
+                if (settingsSymbol is null || (settingsSymbol as IPropertySymbol).IsXsltSettingsDefaultProperty(_xmlTypes))
                 {
                     isSetInBlock = true;
                     isSecureSettings = true;
                 }
                 // 2. XsltSettings.TrustedXslt : insecure
-                else if (SecurityDiagnosticHelpers.IsXsltSettingsTrustedXsltProperty(settingsSymbol as IPropertySymbol, _xmlTypes))
+                else if ((settingsSymbol as IPropertySymbol).IsXsltSettingsTrustedXsltProperty(_xmlTypes))
                 {
                     isSetInBlock = true;
                     isSecureSettings = false;
                 }
-                // 3. check xsltSettingsEnvironments, if IsScriptDisabled && IsDocumentFunctionDisabled then secure, else insecure
+                // 3. check xsltSettingsEnvironments, if IsScriptDisabled && IsDocumentFunctionDisabled then secure,
+                //    else insecure
                 else if (_xsltSettingsEnvironments.TryGetValue(settingsSymbol, out XsltSettingsEnvironment env))
                 {
                     isSetInBlock = false;
@@ -172,20 +168,19 @@ namespace Microsoft.NetFramework.Analyzers
                     );
 
                     var invocationOrObjCreation = settingsOperation.Parent.Parent;
-                    reportDiagnostic(invocationOrObjCreation.CreateDiagnostic(RuleDoNotUseInsecureXSLTScriptExecution, message));
+                    RoslynDebug.Assert(invocationOrObjCreation.Kind is OperationKind.Invocation
+                        or OperationKind.ObjectCreation);
+                    reportDiagnostic(
+                        invocationOrObjCreation.CreateDiagnostic(RuleDoNotUseInsecureXSLTScriptExecution, message));
                 }
             }
 
             public void AnalyzeNodeForXsltSettings(IOperation lhs, IOperation rhs)
             {
-                ISymbol? lhsSymbol = lhs.Kind switch
+                var lhsSymbol = lhs.Kind switch
                 {
                     OperationKind.VariableDeclarator => ((IVariableDeclaratorOperation)lhs).Symbol,
-                    OperationKind.PropertyReference => ((IPropertyReferenceOperation)lhs).Property,
-                    OperationKind.ParameterReference => ((IParameterReferenceOperation)lhs).Parameter,
-                    OperationKind.LocalReference => ((ILocalReferenceOperation)lhs).Local,
-                    OperationKind.FieldReference => ((IFieldReferenceOperation)lhs).Field,
-                    _ => null,
+                    _ => lhs.GetReferencedMemberOrLocalOrParameter(),
                 };
                 if (lhsSymbol is null)
                 {
@@ -200,7 +195,7 @@ namespace Microsoft.NetFramework.Analyzers
                 };
                 IPropertySymbol? rhsPropertySymbol = (rhs as IPropertyReferenceOperation)?.Property;
 
-                if (SecurityDiagnosticHelpers.IsXsltSettingsCtor(rhsMethodSymbol, _xmlTypes))
+                if (rhsMethodSymbol.IsXsltSettingsCtor(_xmlTypes))
                 {
                     XsltSettingsEnvironment env = new XsltSettingsEnvironment();
                     _xsltSettingsEnvironments[lhsSymbol] = env;
@@ -222,16 +217,13 @@ namespace Microsoft.NetFramework.Analyzers
                             OperationKind.ObjectCreation => ((IObjectCreationOperation)rhs).Arguments,
                             _ => ImmutableArray<IArgumentOperation>.Empty,
                         };
-                        env.IsDocumentFunctionDisabled = arguments[0].Value.TryGetBoolConstantValue(out var value) && !value;
+                        env.IsDocumentFunctionDisabled = arguments[0].Value.TryGetBoolConstantValue(out var value)
+                            && !value;
                         env.IsScriptDisabled = arguments[1].Value.TryGetBoolConstantValue(out value) && !value;
                     }
 
-                    var initializers = rhs.Kind switch
-                    {
-                        OperationKind.ObjectCreation => ((IObjectCreationOperation)rhs).Initializer?.Initializers,
-                        _ => null,
-                    } ?? ImmutableArray<IOperation>.Empty;
-
+                    var initializers = (rhs as IObjectCreationOperation)?.Initializer?.Initializers
+                        ?? ImmutableArray<IOperation>.Empty;
                     foreach (var arg in initializers)
                     {
                         if (arg is not ISimpleAssignmentOperation assignment)
@@ -243,17 +235,17 @@ namespace Microsoft.NetFramework.Analyzers
                         var argRhs = assignment.Value;
 
                         // anything other than a constant false is treated as true
-                        if (SecurityDiagnosticHelpers.IsXsltSettingsEnableDocumentFunctionProperty(argLhsPropertySymbol, _xmlTypes))
+                        if (argLhsPropertySymbol.IsXsltSettingsEnableDocumentFunctionProperty(_xmlTypes))
                         {
                             env.IsDocumentFunctionDisabled = argRhs.TryGetBoolConstantValue(out var value) && !value;
                         }
-                        else if (SecurityDiagnosticHelpers.IsXsltSettingsEnableScriptProperty(argLhsPropertySymbol, _xmlTypes))
+                        else if (argLhsPropertySymbol.IsXsltSettingsEnableScriptProperty(_xmlTypes))
                         {
                             env.IsScriptDisabled = argRhs.TryGetBoolConstantValue(out var value) && !value;
                         }
                     }
                 }
-                else if (SecurityDiagnosticHelpers.IsXsltSettingsDefaultProperty(rhsPropertySymbol, _xmlTypes))
+                else if (rhsPropertySymbol.IsXsltSettingsDefaultProperty(_xmlTypes))
                 {
                     XsltSettingsEnvironment env = new XsltSettingsEnvironment();
                     _xsltSettingsEnvironments[lhsSymbol] = env;
@@ -265,7 +257,7 @@ namespace Microsoft.NetFramework.Analyzers
                     env.IsDocumentFunctionDisabled = true;
                     env.IsScriptDisabled = true;
                 }
-                else if (SecurityDiagnosticHelpers.IsXsltSettingsTrustedXsltProperty(rhsPropertySymbol, _xmlTypes))
+                else if (rhsPropertySymbol.IsXsltSettingsTrustedXsltProperty(_xmlTypes))
                 {
                     XsltSettingsEnvironment env = new XsltSettingsEnvironment();
                     _xsltSettingsEnvironments[lhsSymbol] = env;
@@ -278,8 +270,10 @@ namespace Microsoft.NetFramework.Analyzers
                 else
                 {
                     var lhsPropertySymbol = lhsSymbol as IPropertySymbol;
-                    bool isXlstSettingsEnableDocumentFunctionProperty = SecurityDiagnosticHelpers.IsXsltSettingsEnableDocumentFunctionProperty(lhsPropertySymbol, _xmlTypes);
-                    bool isXlstSettingsEnableScriptProperty = SecurityDiagnosticHelpers.IsXsltSettingsEnableScriptProperty(lhsPropertySymbol, _xmlTypes);
+                    bool isXlstSettingsEnableDocumentFunctionProperty =
+                        lhsPropertySymbol.IsXsltSettingsEnableDocumentFunctionProperty(_xmlTypes);
+                    bool isXlstSettingsEnableScriptProperty =
+                        lhsPropertySymbol.IsXsltSettingsEnableScriptProperty(_xmlTypes);
 
                     if (!isXlstSettingsEnableDocumentFunctionProperty &&
                         !isXlstSettingsEnableScriptProperty)
@@ -287,22 +281,8 @@ namespace Microsoft.NetFramework.Analyzers
                         return;
                     }
 
-                    IOperation? lhsExpression = lhs.Kind switch
-                    {
-                        OperationKind.FieldReference => ((IFieldReferenceOperation)lhs).Instance,
-                        OperationKind.PropertyReference => ((IPropertyReferenceOperation)lhs).Instance,
-                        _ => null,
-                    };
-
-                    ISymbol? lhsExpressionSymbol = lhsExpression?.Kind switch
-                    {
-                        OperationKind.ParameterReference => ((IParameterReferenceOperation)lhsExpression).Parameter,
-                        OperationKind.LocalReference => ((ILocalReferenceOperation)lhsExpression).Local,
-                        OperationKind.FieldReference => ((IFieldReferenceOperation)lhsExpression).Field,
-                        OperationKind.PropertyReference => ((IPropertyReferenceOperation)lhsExpression).Property,
-                        _ => null,
-                    };
-
+                    IOperation? lhsExpression = (lhs as IMemberReferenceOperation)?.Instance;
+                    ISymbol? lhsExpressionSymbol = lhsExpression?.GetReferencedMemberOrLocalOrParameter();
                     if (lhsExpressionSymbol is null)
                     {
                         return;
