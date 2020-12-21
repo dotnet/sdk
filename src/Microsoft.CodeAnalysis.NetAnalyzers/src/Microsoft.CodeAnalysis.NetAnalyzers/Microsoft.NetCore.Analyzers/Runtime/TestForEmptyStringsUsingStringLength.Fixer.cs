@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             SyntaxNode expressionSyntax = GetExpression(node);
 
-            if (!IsFixableBinaryExpression(node) && !IsFixableInvocationExpression(node))
+            if (!IsFixableBinaryExpression(expressionSyntax) && !IsFixableInvocationExpression(expressionSyntax))
             {
                 return;
             }
@@ -139,7 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             SyntaxNode replacementAnnotatedSyntax = replacementSyntax.WithAdditionalAnnotations(Formatter.Annotation);
 
-            editor.ReplaceNode(fixResolution.Target, replacementAnnotatedSyntax);
+            editor.ReplaceNode(fixResolution.ExpressionSyntax, replacementAnnotatedSyntax);
 
             return editor.GetChangedDocument();
         }
