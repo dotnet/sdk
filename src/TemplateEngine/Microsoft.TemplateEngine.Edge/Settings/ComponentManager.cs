@@ -19,24 +19,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         private readonly Dictionary<Type, HashSet<Guid>> _componentIdsByType;
         private readonly SettingsStore _settings;
         private readonly ISettingsLoader _loader;
-
-        private interface ICache
-        {
-            void AddPart(IIdentifiedComponent component);
-        }
-
-        private class Cache<T> : ICache
-            where T : IIdentifiedComponent
-        {
-            public static readonly Cache<T> Instance = new Cache<T>();
-
-            public readonly Dictionary<Guid, T> Parts = new Dictionary<Guid, T>();
-
-            public void AddPart(IIdentifiedComponent component)
-            {
-                Parts[component.Id] = (T)component;
-            }
-        }
+        private readonly Dictionary<Type, Dictionary<Guid, object>> _componentCache = new Dictionary<Type, Dictionary<Guid, object>>();
 
         public ComponentManager(ISettingsLoader loader, SettingsStore userSettings)
         {
@@ -80,13 +63,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             if (!ids.Contains(FileSystemMountPointFactory.FactoryId))
             {
                 ids.Add(FileSystemMountPointFactory.FactoryId);
-                Cache<IMountPointFactory>.Instance.AddPart(new FileSystemMountPointFactory());
+                AddComponent(typeof(IMountPointFactory), new FileSystemMountPointFactory());
+
             }
 
             if (!ids.Contains(ZipFileMountPointFactory.FactoryId))
             {
                 ids.Add(ZipFileMountPointFactory.FactoryId);
-                Cache<IMountPointFactory>.Instance.AddPart(new ZipFileMountPointFactory());
+                AddComponent(typeof(IMountPointFactory), new ZipFileMountPointFactory());
             }
 
             if (!ids.Contains(DefaultInstallUnitDescriptorFactory.FactoryId))
@@ -182,9 +166,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             foreach (Type interfaceType in interfaceTypesToRegisterFor)
             {
-                FieldInfo instanceField = typeof(Cache<>).MakeGenericType(interfaceType).GetTypeInfo().GetField("Instance", BindingFlags.Public | BindingFlags.Static);
-                ICache cache = (ICache)instanceField.GetValue(null);
-                cache.AddPart(instance);
+                AddComponent(interfaceType, instance);
 
                 _componentIdToAssemblyQualifiedTypeName[instance.Id] = type.AssemblyQualifiedName;
                 _settings.ComponentGuidToAssemblyQualifiedName[instance.Id.ToString()] = type.AssemblyQualifiedName;
@@ -240,24 +222,41 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         public bool TryGetComponent<T>(Guid id, out T component)
             where T : class, IIdentifiedComponent
         {
-            if (Cache<T>.Instance.Parts.TryGetValue(id, out component))
+            component = default;
+            if (_componentCache.TryGetValue(typeof(T), out Dictionary<Guid, object> typeCache) && typeCache != null
+                && typeCache.TryGetValue(id, out object resolvedComponent) && resolvedComponent != null && resolvedComponent is T t)
             {
+                component = t;
                 return true;
             }
 
             if (_componentIdToAssemblyQualifiedTypeName.TryGetValue(id, out string assemblyQualifiedName))
             {
-                Type t = TypeEx.GetType(assemblyQualifiedName);
-                component = Activator.CreateInstance(t) as T;
+                Type type = TypeEx.GetType(assemblyQualifiedName);
+                component = Activator.CreateInstance(type) as T;
 
                 if (component != null)
                 {
-                    Cache<T>.Instance.AddPart(component);
+                    AddComponent(typeof(T), component);
                     return true;
                 }
             }
-
             return false;
+        }
+
+        private void AddComponent(Type type, IIdentifiedComponent component)
+        {
+            if (!type.IsAssignableFrom(component.GetType()))
+            {
+                throw new ArgumentException($"{component.GetType().Name} should be assignable from {type.Name} type", nameof(type));
+            }
+
+            if (!_componentCache.TryGetValue(type, out Dictionary<Guid, object> typeCache))
+            {
+                typeCache = new Dictionary<Guid, object>();
+                _componentCache[type] = typeCache;
+            }
+            typeCache[component.Id] = component;
         }
     }
 }
