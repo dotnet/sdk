@@ -2159,7 +2159,7 @@ public class {|#0:C|} : ISet<int>
                 .WithArguments("C", "Set"));
         }
 
-        [Fact]
+        [Fact, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
         public async Task CA1710_IReadOnlyCollection()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
