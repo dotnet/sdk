@@ -123,7 +123,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | `dotnet format <workspace> --fix-style warn`                     | Fixes only codestyle analyzer warnings.                                                            |
 | `dotnet format <workspace> --fix-whitespace --fix-style`         | Formats and fixes codestyle analyzer errors.                                                       |
 | `dotnet format <workspace> --fix-analyzers`                      | Fixes only 3rd party analyzer errors.                                                              |
-| `dotnet format <workspace> -wsa                                  | Formats, fixes codestyle errors, and fixes 3rd party analyzer errors.                              |
+| `dotnet format <workspace> -wsa`                                 | Formats, fixes codestyle errors, and fixes 3rd party analyzer errors.                              |
 | `dotnet format -v diag`                                          | Formats with very verbose logging.                                                                 |
 | `dotnet format --include Programs.cs Utility\Logging.cs`         | Formats the files Program.cs and Utility\Logging.cs                                                |
 | `dotnet format --check`                                          | Formats but does not save. Returns a non-zero exit code if any files would have been changed.      |
