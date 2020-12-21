@@ -48,23 +48,23 @@ Here is a list (alpha sorted) of templates which are available for use with `dot
 | Name     | Quick Install |
 |----------|:--------------|
 | [ASP.NET Core WebAPI F# Template](https://github.com/MNie/FSharpNetCoreWebApiTemplate) | `dotnet new -i "WebAPI.FSharp.Template::*"` |
+| [Bolero: F# in WebAssembly](https://fsbolero.io/)| `dotnet new -i Bolero.Templates`|
 | [Eto.Forms](https://github.com/picoe/Eto) | `dotnet new -i "Eto.Forms.Templates::*"` |
 | [Expecto Template](https://github.com/MNie/Expecto.Template) | `dotnet new -i "Expecto.Template::*"`|
+| [F# TypeProvider Template](https://github.com/fsprojects/FSharp.TypeProviders.SDK#the-f-type-provider-sdk)| `dotnet new -i FSharp.TypeProviders.Templates`|
 | [Fable-elmish](https://github.com/fable-compiler/fable-elmish) | `dotnet new -i "Fable.Template.Elmish.React::*"` |
 | [Fable, F# \|> Babel](http://fable.io) | `dotnet new -i "Fable.Template::*"` |
 | [Fable Library](https://github.com/TheAngryByrd/Fable.Template.Library) - F# Template for creating and publishing Fable libraries | `dotnet new -i "Fable.Template.Library::*"` |
+| [Fabulous for Xamarin.Forms](https://github.com/fsprojects/Fabulous/tree/master/Fabulous.XamarinForms)| `dotnet new -i Fabulous.XamarinForms.Templates`|
 | [Freya](https://freya.io) | `dotnet new --install "Freya.Template::*"` |
 | [Giraffe Template](https://github.com/giraffe-fsharp/giraffe-template) | `dotnet new -i "giraffe-template::*"` |
 | [GtkSharp](https://github.com/GtkSharp/GtkSharp) | `dotnet new -i "GtkSharp.Template.FSharp"` |
 | [Interstellar](https:/github.com/jwosty/Interstellar) | `dotnet new --install "Interstellar.Template"` |
 | [MiniScaffold](https://github.com/TheAngryByrd/MiniScaffold) - F# Template for creating and publishing libraries targeting .NET Full (net45) and Core (netstandard1.6) | `dotnet new -i "MiniScaffold::*"` |
 | [NancyFx](https://github.com/MNie/NancyFxCore)| `dotnet new -i "NancyFx.Core.Template::*"`|
+| [SAFE Template](https://safe-stack.github.io/)| `dotnet new -i "SAFE.Template::*"`|
 | [vbfox's F# Templates](https://github.com/vbfox/FSharpTemplates)| `dotnet new -i "BlackFox.DotnetNew.FSharpTemplates::*"`|
 | [WebSharper](https://github.com/dotnet-websharper/core)| `dotnet new -i "WebSharper.Templates::*"`
-| [SAFE Template](https://safe-stack.github.io/)| `dotnet new -i "SAFE.Template::*"`|
-| [F# TypeProvider Template](https://github.com/fsprojects/FSharp.TypeProviders.SDK#the-f-type-provider-sdk)| `dotnet new -i FSharp.TypeProviders.Templates`|
-| [Fabulous for Xamarin.Forms](https://github.com/fsprojects/Fabulous/tree/master/Fabulous.XamarinForms)| `dotnet new -i Fabulous.XamarinForms.Templates`|
-| [Bolero: F# in WebAssembly](https://fsbolero.io/)| `dotnet new -i Bolero.Templates`|
 
 # VBNet Templates
 
