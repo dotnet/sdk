@@ -573,7 +573,7 @@ Rule ID | Missing Help Link | Title |
                         helpLinkUri = $"<{helpLinkUri}>";
                     }
 
-                    var escapedTitle = descriptor.Title.ToString(CultureInfo.InvariantCulture).Replace("<T>", "\\<T>");
+                    var escapedTitle = descriptor.Title.ToString(CultureInfo.InvariantCulture).Replace("<", "\\<");
                     var line = $"{ruleId} | {helpLinkUri} | {escapedTitle} |";
                     if (validateOnly)
                     {
