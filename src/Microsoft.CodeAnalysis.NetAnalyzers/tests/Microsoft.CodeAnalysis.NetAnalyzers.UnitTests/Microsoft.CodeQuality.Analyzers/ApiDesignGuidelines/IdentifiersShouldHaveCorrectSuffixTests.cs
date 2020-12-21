@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -1158,7 +1160,7 @@ public class C : IReadOnlyDictionary<int, string>
         }
 
         [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
-        public async Task CA1710_IReadOnlyCollection()
+        public async Task CA1710_IReadOnlyCollection_IncludeIndirectBaseTypes()
         {
             await new VerifyCS.Test
             {
@@ -2046,6 +2048,135 @@ End Namespace
 Public Class C
     Public Delegate Sub Page_Loaded(ByVal sender As Object, ByVal e As Windows.UI.Xaml.RoutedEventArgs)
 End Class");
+        }
+
+        [Fact, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
+        public async Task CA1710_ISet()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class {|#0:C|} : ISet<int>
+{
+    public int Count => throw new NotImplementedException();
+
+    public bool IsReadOnly => throw new NotImplementedException();
+
+    public bool Add(int item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Clear()
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Contains(int item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void CopyTo(int[] array, int arrayIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ExceptWith(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IEnumerator<int> GetEnumerator()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void IntersectWith(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsProperSubsetOf(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsProperSupersetOf(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsSubsetOf(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsSupersetOf(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Overlaps(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Remove(int item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool SetEquals(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SymmetricExceptWith(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void UnionWith(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    void ICollection<int>.Add(int item)
+    {
+        throw new NotImplementedException();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        throw new NotImplementedException();
+    }
+}",
+            VerifyCS.Diagnostic(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+                .WithLocation(0)
+                .WithArguments("C", "Set"));
+        }
+
+        [Fact]
+        public async Task CA1710_IReadOnlyCollection()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class {|#0:C|} : IReadOnlyCollection<int>
+{
+    public int Count => throw new System.NotImplementedException();
+
+    public IEnumerator<int> GetEnumerator() => throw new System.NotImplementedException();
+    IEnumerator IEnumerable.GetEnumerator() => throw new System.NotImplementedException();
+}",
+                VerifyCS.Diagnostic(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+                    .WithLocation(0)
+                    .WithArguments("C", "Collection"));
         }
 
         private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
