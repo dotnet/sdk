@@ -46,29 +46,30 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         // Tuple says <TypeInheritedOrImplemented, AppropriateSuffix, Bool value saying if the suffix can `Collection` or the `AppropriateSuffix`>s
         // The bool values are as mentioned in the Uri
-        private static readonly List<(string typeName, string suffix, bool canSuffixBeCollection)> s_baseTypesAndTheirSuffix = new()
-        {
-            ("System.Attribute", "Attribute", false),
-            ("System.EventArgs", "EventArgs", false),
-            ("System.Exception", "Exception", false),
-            ("System.Collections.ICollection", "Collection", false),
-            ("System.Collections.IDictionary", "Dictionary", false),
-            ("System.Collections.IEnumerable", "Collection", false),
-            ("System.Collections.Queue", "Queue", true),
-            ("System.Collections.Stack", "Stack", true),
-            ("System.Collections.Generic.Queue`1", "Queue", true),
-            ("System.Collections.Generic.Stack`1", "Stack", true),
-            ("System.Collections.Generic.ICollection`1", "Collection", false),
-            ("System.Collections.Generic.IDictionary`2", "Dictionary", false),
-            ("System.Collections.Generic.IReadOnlyCollection`1", "Collection", false),
-            ("System.Collections.Generic.IReadOnlyDictionary`2", "Dictionary", false),
-            ("System.Collections.Generic.ISet`1", "Set", false),
-            ("System.Data.DataSet", "DataSet", false),
-            ("System.Data.DataTable", "DataTable", true),
-            ("System.IO.Stream", "Stream", false),
-            ("System.Security.IPermission","Permission", false),
-            ("System.Security.Policy.IMembershipCondition", "Condition", false)
-        };
+        private static readonly List<(string typeName, string suffix, bool canSuffixBeCollection)> s_baseTypesAndTheirSuffix =
+            new()
+            {
+                (WellKnownTypeNames.SystemAttribute, "Attribute", false),
+                (WellKnownTypeNames.SystemEventArgs, "EventArgs", false),
+                (WellKnownTypeNames.SystemException, "Exception", false),
+                (WellKnownTypeNames.SystemCollectionsICollection, "Collection", false),
+                (WellKnownTypeNames.SystemCollectionsIDictionary, "Dictionary", false),
+                (WellKnownTypeNames.SystemCollectionsIEnumerable, "Collection", false),
+                (WellKnownTypeNames.SystemCollectionsQueue, "Queue", true),
+                (WellKnownTypeNames.SystemCollectionsStack, "Stack", true),
+                (WellKnownTypeNames.SystemCollectionsGenericQueue1, "Queue", true),
+                (WellKnownTypeNames.SystemCollectionsGenericStack1, "Stack", true),
+                (WellKnownTypeNames.SystemCollectionsGenericICollection1, "Collection", false),
+                (WellKnownTypeNames.SystemCollectionsGenericIDictionary2, "Dictionary", false),
+                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlyCollection1, "Collection", false),
+                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlyDictionary2, "Dictionary", false),
+                (WellKnownTypeNames.SystemCollectionsGenericISet1, "Set", false),
+                (WellKnownTypeNames.SystemDataDataSet, "DataSet", false),
+                (WellKnownTypeNames.SystemDataDataTable, "DataTable", true),
+                (WellKnownTypeNames.SystemIOStream, "Stream", false),
+                (WellKnownTypeNames.SystemSecurityIPermission, "Permission", false),
+                (WellKnownTypeNames.SystemSecurityPolicyIMembershipCondition, "Condition", false)
+            };
 
         public override void Initialize(AnalysisContext context)
         {
