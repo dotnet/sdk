@@ -76,9 +76,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     isPreviousUnderscore = true;
                     continue;
                 }
+
                 builder.Append(isPreviousUnderscore ? char.ToUpper(c, CultureInfo.InvariantCulture) : c);
                 isPreviousUnderscore = false;
             }
+
             return builder.ToString();
         }
 

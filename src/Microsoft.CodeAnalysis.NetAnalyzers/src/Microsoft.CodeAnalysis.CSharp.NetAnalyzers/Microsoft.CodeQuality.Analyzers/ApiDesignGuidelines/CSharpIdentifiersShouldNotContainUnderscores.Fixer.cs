@@ -18,7 +18,9 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
         {
             string result = RemoveUnderscores(name);
             if (result.Length == 0)
+            {
                 return string.Empty;
+            }
 
             if (!SyntaxFacts.IsValidIdentifier(result))
             {
