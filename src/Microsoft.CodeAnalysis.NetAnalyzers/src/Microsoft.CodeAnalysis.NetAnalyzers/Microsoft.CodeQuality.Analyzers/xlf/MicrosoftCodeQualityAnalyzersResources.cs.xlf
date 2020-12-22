@@ -232,6 +232,11 @@
         <target state="translated">Události by neměly mít předponu Before nebo After</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageMultiple">
+        <source>Rename {0} to end in either '{1}' or '{2}'</source>
+        <target state="new">Rename {0} to end in either '{1}' or '{2}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
         <target state="new">Remove underscores</target>
@@ -1210,11 +1215,6 @@
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
         <source>Rename {0} to end in '{1}'</source>
         <target state="translated">Přejmenujte {0} tak, aby název končil na {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
-        <source>Rename {0} to end in either 'Collection' or '{1}'</source>
-        <target state="translated">Přejmenujte {0} tak, aby název končil buď na Collection, nebo na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">

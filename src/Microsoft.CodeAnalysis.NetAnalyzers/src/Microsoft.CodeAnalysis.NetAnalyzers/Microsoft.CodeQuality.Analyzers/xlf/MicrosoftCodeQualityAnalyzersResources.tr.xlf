@@ -232,6 +232,11 @@
         <target state="translated">Olaylar 'Before' ya da 'After' ön ekine sahip olmamalıdır</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageMultiple">
+        <source>Rename {0} to end in either '{1}' or '{2}'</source>
+        <target state="new">Rename {0} to end in either '{1}' or '{2}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
         <target state="new">Remove underscores</target>
@@ -1210,11 +1215,6 @@
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
         <source>Rename {0} to end in '{1}'</source>
         <target state="translated">{0} öğesini '{1}' ile bitecek şekilde yeniden adlandırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
-        <source>Rename {0} to end in either 'Collection' or '{1}'</source>
-        <target state="translated">{0} öğesini 'Collection' veya '{1}' ile bitecek şekilde yeniden adlandırın</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">

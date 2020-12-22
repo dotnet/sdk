@@ -232,6 +232,11 @@
         <target state="translated">Ereignisse dürfen kein Präfix "Before" oder "After" aufweisen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageMultiple">
+        <source>Rename {0} to end in either '{1}' or '{2}'</source>
+        <target state="new">Rename {0} to end in either '{1}' or '{2}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
         <target state="new">Remove underscores</target>
@@ -1210,11 +1215,6 @@
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
         <source>Rename {0} to end in '{1}'</source>
         <target state="translated">Benennen Sie "{0}" so um, dass der Name auf "{1}" endet.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
-        <source>Rename {0} to end in either 'Collection' or '{1}'</source>
-        <target state="translated">Benennen Sie "{0}" so um, dass der Name entweder auf "Collection" oder auf "{1}" endet.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">

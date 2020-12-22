@@ -232,6 +232,11 @@
         <target state="translated">事件開頭不應出現 'Before' 或 'After'</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageMultiple">
+        <source>Rename {0} to end in either '{1}' or '{2}'</source>
+        <target state="new">Rename {0} to end in either '{1}' or '{2}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
         <target state="new">Remove underscores</target>
@@ -1210,11 +1215,6 @@
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
         <source>Rename {0} to end in '{1}'</source>
         <target state="translated">重新命名 {0}，使其以 '{1}' 結尾</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
-        <source>Rename {0} to end in either 'Collection' or '{1}'</source>
-        <target state="translated">重新命名 {0}，使其以 'Collection' 或 '{1}' 結尾</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">

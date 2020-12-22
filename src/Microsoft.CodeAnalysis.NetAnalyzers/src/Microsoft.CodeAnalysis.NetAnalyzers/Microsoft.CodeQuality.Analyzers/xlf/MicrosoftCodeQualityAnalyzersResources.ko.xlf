@@ -232,6 +232,11 @@
         <target state="translated">이벤트에 'Before' 또는 'After' 접두사를 사용하지 마세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageMultiple">
+        <source>Rename {0} to end in either '{1}' or '{2}'</source>
+        <target state="new">Rename {0} to end in either '{1}' or '{2}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
         <target state="new">Remove underscores</target>
@@ -1210,11 +1215,6 @@
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageDefault">
         <source>Rename {0} to end in '{1}'</source>
         <target state="translated">{0}이(가) '{1}'(으)로 끝나도록 이름을 바꾸세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection">
-        <source>Rename {0} to end in either 'Collection' or '{1}'</source>
-        <target state="translated">{0}이(가) 'Collection' 또는 '{1}'(으)로 끝나도록 이름을 바꾸세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotHaveIncorrectSuffixTitle">
