@@ -284,33 +284,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
 
-                switch (type.TypeKind)
+                return type.TypeKind switch
                 {
-                    case TypeKind.Array:
-                        return IsSerializable(((IArrayTypeSymbol)type).ElementType);
-
-                    case TypeKind.Enum:
-                        return IsSerializable(((INamedTypeSymbol)type).EnumUnderlyingType);
-
-                    case TypeKind.TypeParameter:
-                    case TypeKind.Interface:
-                        // The concrete type can't be determined statically,
-                        // so we assume true to cut down on noise.
-                        return true;
-
-                    case TypeKind.Class:
-                    case TypeKind.Struct:
-                        // Check SerializableAttribute or Serializable flag from metadata.
-                        return ((INamedTypeSymbol)type).IsSerializable;
-
-                    case TypeKind.Delegate:
-                        // delegates are always serializable, even if
-                        // they aren't actually marked [Serializable]
-                        return true;
-
-                    default:
-                        return type.GetAttributes().Any(a => a.AttributeClass.Equals(_serializableAttributeTypeSymbol));
-                }
+                    TypeKind.Array => IsSerializable(((IArrayTypeSymbol)type).ElementType),
+                    TypeKind.Enum => IsSerializable(((INamedTypeSymbol)type).EnumUnderlyingType),
+                    TypeKind.TypeParameter or TypeKind.Interface => true,// The concrete type can't be determined statically,
+                                                                         // so we assume true to cut down on noise.
+                    TypeKind.Class or TypeKind.Struct => ((INamedTypeSymbol)type).IsSerializable,// Check SerializableAttribute or Serializable flag from metadata.
+                    TypeKind.Delegate => true,// delegates are always serializable, even if
+                                              // they aren't actually marked [Serializable]
+                    _ => type.GetAttributes().Any(a => a.AttributeClass.Equals(_serializableAttributeTypeSymbol)),
+                };
             }
         }
     }

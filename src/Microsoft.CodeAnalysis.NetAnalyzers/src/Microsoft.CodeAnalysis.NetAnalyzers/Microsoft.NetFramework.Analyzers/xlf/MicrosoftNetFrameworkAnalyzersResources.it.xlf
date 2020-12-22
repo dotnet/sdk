@@ -314,7 +314,7 @@
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
         <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
-        <target state="needs-review-translation">La classe {0} derivata da XmlDocument non definisce un costruttore in modo esplicito.</target>
+        <target state="translated">La classe {0} derivata da XmlDocument non definisce un costruttore in modo esplicito.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage">
@@ -329,7 +329,7 @@
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
         <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
-        <target state="needs-review-translation">La classe {0} derivata da XmlTextReader non definisce un costruttore in modo esplicito.</target>
+        <target state="translated">La classe {0} derivata da XmlTextReader non definisce un costruttore in modo esplicito.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage">
@@ -344,7 +344,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
         <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="needs-review-translation">L'uso di un'istanza non sicura di XsltSettings e di un'istanza non sicura di XmlResolver nel metodo XslCompiledTransform.Load è potenzialmente non sicura perché consente l'elaborazione di script in XSL, che in un input XSL non attendibile potrebbe causare l'esecuzione di codice dannoso. Sostituire l'argomento XsltSettings non sicuro con XsltSettings.Default oppure con un'istanza in cui la funzione di documentazione e l'esecuzione di script siano disabilitate oppure sostituire l'argomento XmlResolver con Null o con un'istanza di XmlSecureResolver. È possibile eliminare questo messaggio se si sa che l'input proviene da un'origine attendibile e deve essere supportata la risoluzione di risorse esterne da percorso non noti in anticipo.</target>
+        <target state="translated">L'uso di un'istanza non sicura di XsltSettings e di un'istanza non sicura di XmlResolver nel metodo XslCompiledTransform.Load è potenzialmente non sicura perché consente l'elaborazione di script in XSL, che in un input XSL non attendibile potrebbe causare l'esecuzione di codice dannoso. Sostituire l'argomento XsltSettings non sicuro con XsltSettings.Default oppure con un'istanza in cui la funzione di documentazione e l'esecuzione di script siano disabilitate oppure sostituire l'argomento XmlResolver con Null o con un'istanza di XmlSecureResolver. È possibile eliminare questo messaggio se si sa che l'input proviene da un'origine attendibile e deve essere supportata la risoluzione di risorse esterne da percorso non noti in anticipo.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">

@@ -325,14 +325,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             if (!method.IsStatic || !method.IsPublic())
                 return false;
-            switch (method.Name)
+
+            return method.Name switch
             {
-                case WellKnownMemberNames.EqualityOperatorName:
-                case WellKnownMemberNames.InequalityOperatorName:
-                    return true;
-                default:
-                    return false;
-            }
+                WellKnownMemberNames.EqualityOperatorName
+                or WellKnownMemberNames.InequalityOperatorName => true,
+                _ => false,
+            };
         }
 
         private static bool IsImplicitCastOperator(IMethodSymbol method, Compilation compilation)
