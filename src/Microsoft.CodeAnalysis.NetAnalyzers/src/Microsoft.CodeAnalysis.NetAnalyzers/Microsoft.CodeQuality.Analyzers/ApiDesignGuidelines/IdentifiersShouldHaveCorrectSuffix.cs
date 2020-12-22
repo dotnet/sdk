@@ -90,18 +90,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             foreach (var (typeName, suffix, canSuffixBeCollection) in s_baseTypesAndTheirSuffix)
             {
                 var wellKnownNamedType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(typeName);
-
-                if (wellKnownNamedType != null && wellKnownNamedType.OriginalDefinition != null)
+                if (wellKnownNamedType == null || wellKnownNamedType.OriginalDefinition == null)
                 {
-                    // If the type is interface
-                    if (wellKnownNamedType.OriginalDefinition.TypeKind == TypeKind.Interface)
-                    {
-                        interfaceTypeSuffixMapBuilder.Add(wellKnownNamedType.OriginalDefinition, SuffixInfo.Create(suffix, canSuffixBeCollection));
-                    }
-                    else
-                    {
-                        baseTypeSuffixMapBuilder.Add(wellKnownNamedType.OriginalDefinition, SuffixInfo.Create(suffix, canSuffixBeCollection));
-                    }
+                    continue;
+                }
+
+                // If the type is interface
+                if (wellKnownNamedType.OriginalDefinition.TypeKind == TypeKind.Interface)
+                {
+                    interfaceTypeSuffixMapBuilder.Add(wellKnownNamedType.OriginalDefinition, SuffixInfo.Create(suffix, canSuffixBeCollection));
+                }
+                else
+                {
+                    baseTypeSuffixMapBuilder.Add(wellKnownNamedType.OriginalDefinition, SuffixInfo.Create(suffix, canSuffixBeCollection));
                 }
             }
 
@@ -156,22 +157,24 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             , SymbolKind.NamedType);
 
             var eventArgsType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemEventArgs);
-            if (eventArgsType != null)
+            if (eventArgsType == null)
             {
-                context.RegisterSymbolAction((saContext) =>
-                {
-                    const string eventHandlerString = "EventHandler";
-                    var eventSymbol = (IEventSymbol)saContext.Symbol;
-                    if (!eventSymbol.Type.Name.EndsWith(eventHandlerString, StringComparison.Ordinal) &&
-                        eventSymbol.Type.IsInSource() &&
-                        eventSymbol.Type.TypeKind == TypeKind.Delegate &&
-                        ((INamedTypeSymbol)eventSymbol.Type).DelegateInvokeMethod?.HasEventHandlerSignature(eventArgsType) == true)
-                    {
-                        saContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(DefaultRule, eventSymbol.Type.Name, eventHandlerString));
-                    }
-                },
-                SymbolKind.Event);
+                return;
             }
+
+            context.RegisterSymbolAction((saContext) =>
+            {
+                const string eventHandlerString = "EventHandler";
+                var eventSymbol = (IEventSymbol)saContext.Symbol;
+                if (!eventSymbol.Type.Name.EndsWith(eventHandlerString, StringComparison.Ordinal) &&
+                    eventSymbol.Type.IsInSource() &&
+                    eventSymbol.Type.TypeKind == TypeKind.Delegate &&
+                    ((INamedTypeSymbol)eventSymbol.Type).DelegateInvokeMethod?.HasEventHandlerSignature(eventArgsType) == true)
+                {
+                    saContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(DefaultRule, eventSymbol.Type.Name, eventHandlerString));
+                }
+            },
+            SymbolKind.Event);
         }
 
         private static bool TryGetTypeSuffix(IEnumerable<INamedTypeSymbol> typeSymbols, ImmutableDictionary<INamedTypeSymbol, SuffixInfo> hardcodedMap,
