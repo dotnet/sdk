@@ -2160,6 +2160,75 @@ public class {|#0:C|} : ISet<int>
         }
 
         [Fact, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
+        public async Task CA1710_IReadOnlySet()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+public class {|#0:C|} : IReadOnlySet<int>
+{
+    public int Count => throw new NotImplementedException();
+
+    public bool Contains(int item)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IEnumerator<int> GetEnumerator()
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsProperSubsetOf(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsProperSupersetOf(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsSubsetOf(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool IsSupersetOf(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Overlaps(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool SetEquals(IEnumerable<int> other)
+    {
+        throw new NotImplementedException();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        throw new NotImplementedException();
+    }
+}",
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
+                        .WithLocation(0)
+                        .WithArguments("C", "Set"),
+                },
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
         public async Task CA1710_IReadOnlyCollection()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

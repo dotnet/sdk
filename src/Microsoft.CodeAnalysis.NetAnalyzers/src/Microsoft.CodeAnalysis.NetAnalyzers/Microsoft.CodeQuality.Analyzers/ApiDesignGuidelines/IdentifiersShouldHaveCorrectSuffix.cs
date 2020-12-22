@@ -63,6 +63,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 (WellKnownTypeNames.SystemCollectionsGenericIDictionary2, "Dictionary", false),
                 (WellKnownTypeNames.SystemCollectionsGenericIReadOnlyCollection1, "Collection", false),
                 (WellKnownTypeNames.SystemCollectionsGenericIReadOnlyDictionary2, "Dictionary", false),
+                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlySet1, "Set", false),
                 (WellKnownTypeNames.SystemCollectionsGenericISet1, "Set", false),
                 (WellKnownTypeNames.SystemDataDataSet, "DataSet", false),
                 (WellKnownTypeNames.SystemDataDataTable, "DataTable", true),
