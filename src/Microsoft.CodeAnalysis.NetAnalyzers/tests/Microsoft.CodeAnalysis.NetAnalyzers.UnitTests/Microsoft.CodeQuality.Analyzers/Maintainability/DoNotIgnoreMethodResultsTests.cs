@@ -878,68 +878,94 @@ End Class
         #region Helpers
 
         private static DiagnosticResult GetCSharpStringCreationResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.StringCreationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetBasicStringCreationResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.StringCreationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetCSharpObjectCreationResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.ObjectCreationRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetCSharpTryParseResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.TryParseRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetBasicTryParseResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.TryParseRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetCSharpHResultOrErrorCodeResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.HResultOrErrorCodeRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetBasicHResultOrErrorCodeResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.HResultOrErrorCodeRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetCSharpPureMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.PureMethodRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetBasicPureMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.PureMethodRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetCSharpLinqMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.LinqMethodRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetBasicLinqMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.LinqMethodRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetCSharpUserDefinedMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.UserDefinedMethodRule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(containingMethodName, invokedMethodName);
 
         private static DiagnosticResult GetBasicUserDefinedMethodResultAt(int line, int column, string containingMethodName, string invokedMethodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(DoNotIgnoreMethodResultsAnalyzer.UserDefinedMethodRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, invokedMethodName);
 
         #endregion

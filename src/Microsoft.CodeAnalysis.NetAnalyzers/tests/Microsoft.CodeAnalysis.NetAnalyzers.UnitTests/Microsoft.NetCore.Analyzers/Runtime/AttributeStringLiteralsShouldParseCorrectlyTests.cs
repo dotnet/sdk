@@ -641,23 +641,31 @@ End Namespace");
         }
 
         private DiagnosticResult CA2243CSharpDefaultResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.DefaultRule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         private DiagnosticResult CA2243BasicDefaultResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
 
         private DiagnosticResult CA2243CSharpEmptyResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.EmptyRule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         private DiagnosticResult CA2243BasicEmptyResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.EmptyRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
     }
 }

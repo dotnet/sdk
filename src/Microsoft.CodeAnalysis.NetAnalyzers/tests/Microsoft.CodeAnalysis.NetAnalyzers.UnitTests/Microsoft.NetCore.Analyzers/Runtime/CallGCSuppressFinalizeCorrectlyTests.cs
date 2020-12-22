@@ -20,13 +20,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         private const string GCSuppressFinalizeMethodSignature_Basic = "GC.SuppressFinalize(Object)";
 
         private static DiagnosticResult GetCA1816CSharpResultAt(int line, int column, DiagnosticDescriptor rule, string containingMethodName, string gcSuppressFinalizeMethodName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, gcSuppressFinalizeMethodName);
 
         private static DiagnosticResult GetCA1816BasicResultAt(int line, int column, DiagnosticDescriptor rule, string containingMethodName, string gcSuppressFinalizeMethodName) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(containingMethodName, gcSuppressFinalizeMethodName);
 
         #region NoDiagnosticCases
