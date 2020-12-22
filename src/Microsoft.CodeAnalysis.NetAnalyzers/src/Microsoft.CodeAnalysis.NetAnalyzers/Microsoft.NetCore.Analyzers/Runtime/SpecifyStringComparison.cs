@@ -49,9 +49,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              isPortedFxCopRule: false,
                                                                              isDataflowRule: false);
 
-        private static readonly ImmutableArray<OperationKind> s_LambdaOrLocalFunctionKinds =
-            ImmutableArray.Create(OperationKind.AnonymousFunction, OperationKind.LocalFunction);
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule_CA1307, Rule_CA1310);
 
         public override void Initialize(AnalysisContext analysisContext)
