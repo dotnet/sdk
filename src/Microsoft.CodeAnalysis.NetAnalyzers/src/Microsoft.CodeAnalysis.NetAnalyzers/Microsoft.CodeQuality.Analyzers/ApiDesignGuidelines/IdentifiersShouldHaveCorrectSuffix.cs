@@ -124,18 +124,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var baseTypeSuffixMap = baseTypeSuffixMapBuilder.ToImmutable();
             var interfaceTypeSuffixMap = interfaceTypeSuffixMapBuilder.ToImmutable();
 
-            context.RegisterSymbolAction(saContext =>
+            context.RegisterSymbolAction(context =>
             {
-                var namedTypeSymbol = (INamedTypeSymbol)saContext.Symbol;
-                if (!saContext.Options.MatchesConfiguredVisibility(OneSuffixRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken))
+                var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+                if (!context.Options.MatchesConfiguredVisibility(OneSuffixRule, namedTypeSymbol, context.Compilation, context.CancellationToken))
                 {
-                    Debug.Assert(!saContext.Options.MatchesConfiguredVisibility(MultipleSuffixesRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
-                    Debug.Assert(!saContext.Options.MatchesConfiguredVisibility(UserSuffixRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
+                    Debug.Assert(!context.Options.MatchesConfiguredVisibility(MultipleSuffixesRule, namedTypeSymbol, context.Compilation, context.CancellationToken));
+                    Debug.Assert(!context.Options.MatchesConfiguredVisibility(UserSuffixRule, namedTypeSymbol, context.Compilation, context.CancellationToken));
                     return;
                 }
 
-                Debug.Assert(saContext.Options.MatchesConfiguredVisibility(MultipleSuffixesRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
-                Debug.Assert(saContext.Options.MatchesConfiguredVisibility(UserSuffixRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
+                Debug.Assert(context.Options.MatchesConfiguredVisibility(MultipleSuffixesRule, namedTypeSymbol, context.Compilation, context.CancellationToken));
+                Debug.Assert(context.Options.MatchesConfiguredVisibility(UserSuffixRule, namedTypeSymbol, context.Compilation, context.CancellationToken));
 
                 var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, OneSuffixRule,
                    namedTypeSymbol, context.Compilation, defaultValue: true, cancellationToken: context.CancellationToken);
@@ -144,14 +144,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     ? namedTypeSymbol.BaseType != null ? ImmutableArray.Create(namedTypeSymbol.BaseType) : ImmutableArray<INamedTypeSymbol>.Empty
                     : namedTypeSymbol.GetBaseTypes();
 
-                var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(UserSuffixRule, saContext.Symbol,
+                var userTypeSuffixMap = context.Options.GetAdditionalRequiredSuffixesOption(UserSuffixRule, context.Symbol,
                     context.Compilation, context.CancellationToken);
 
                 if (TryGetTypeSuffix(baseTypes, baseTypeSuffixMap, userTypeSuffixMap, out var typesSuffixes, out var rule))
                 {
                     if (!typesSuffixes.Any(suffix => namedTypeSymbol.Name.EndsWith(suffix, StringComparison.Ordinal)))
                     {
-                        saContext.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(rule, namedTypeSymbol.ToDisplayString(), typesSuffixes[0],
+                        context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(rule, namedTypeSymbol.ToDisplayString(), typesSuffixes[0],
                             string.Join("', '", typesSuffixes.Skip(1))));
                     }
                 }
@@ -164,7 +164,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (TryGetTypeSuffix(interfaces, interfaceTypeSuffixMap, userTypeSuffixMap, out var interfaceSuffixes, out rule) &&
                         !interfaceSuffixes.Any(suffix => namedTypeSymbol.Name.EndsWith(suffix, StringComparison.Ordinal)))
                     {
-                        saContext.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(rule, namedTypeSymbol.ToDisplayString(), interfaceSuffixes[0],
+                        context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(rule, namedTypeSymbol.ToDisplayString(), interfaceSuffixes[0],
                             string.Join("', '", interfaceSuffixes.Skip(1))));
                     }
                 }
