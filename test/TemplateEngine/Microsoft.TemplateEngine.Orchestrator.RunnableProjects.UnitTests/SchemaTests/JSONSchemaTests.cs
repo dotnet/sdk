@@ -3,6 +3,8 @@ using System.IO;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.SchemaTests
 {
@@ -24,7 +26,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
                     using (JsonTextReader jsonReader = new JsonTextReader(jsonFileStream))
                     {
                         JObject templateConfig = (JObject)JToken.ReadFrom(jsonReader);
-                        Assert.True(templateConfig.IsValid(schema), "The JSON file is not valid against the schema");
+                        Assert.True(templateConfig.IsValid(schema, out IList<string> errors),
+                            "The JSON file is not valid against the schema" +
+                            Environment.NewLine +
+                            string.Join(Environment.NewLine, errors));
                     }
                 }
 

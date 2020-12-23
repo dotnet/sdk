@@ -440,10 +440,7 @@
               },
               "args": {
                 "description": "A list of key-value pairs to use when performing the action. The specific parameters required / allowed are defined by the action itself.",
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                }
+                "type": "object"
               },
               "condition": {
                 "description": "A C++ style expression that, if it evaluates to 'false' causes the post-action to be skipped. This expression may refer to any symbols that have been defined",
@@ -606,9 +603,30 @@
                 "description": "NuGet package restore - restores NuGet packages for all primary outputs with file extensions *proj or sln",
                 "properties": {
                   "actionId": {
-                    "enum": [ "210D431B-A78B-4D2F-B762-4ED3E3EA9025" ]
+                    "enum": [
+                      "210D431B-A78B-4D2F-B762-4ED3E3EA9025"
+                    ]
                   },
-                  "args": {}
+                  "args": {
+                    "properties": {
+                      "files": {
+                        "oneOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "uniqueItems": true
+                            },
+                            "description": "An array of files that should be restored, if not specified, all primary outputs are restored"
+                          },
+                          {
+                            "type": "string",
+                            "description": "A semicolon delimited list of files that should be restored, if not specified, all primary outputs are restored"
+                          }
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               {
