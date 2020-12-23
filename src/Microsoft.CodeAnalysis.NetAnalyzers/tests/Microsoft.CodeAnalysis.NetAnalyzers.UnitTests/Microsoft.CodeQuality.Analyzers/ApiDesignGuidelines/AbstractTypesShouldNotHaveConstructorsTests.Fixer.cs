@@ -15,6 +15,32 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class CA1012FixerTests
     {
         [Fact]
+        public async Task TestCSAbstractClassWithProtectedConstructor()
+        {
+            var code = @"
+public abstract class C
+{
+    protected C()
+    {
+    }
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(code, code);
+        }
+
+        [Fact]
+        public async Task TestVBAbstractClassWithProtectedConstructor()
+        {
+            var code = @"
+Public MustInherit Class C
+    Protected Sub New()
+    End Sub
+End Class
+";
+            await VerifyVB.VerifyCodeFixAsync(code, code);
+        }
+
+        [Fact]
         public async Task TestCSPublicAbstractClass()
         {
             var code = @"
