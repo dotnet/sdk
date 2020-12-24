@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
@@ -201,21 +199,15 @@ class TestClass
                 TestState =
                 {
                     Sources = { source2 },
-                },
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
+                    AdditionalProjects =
                     {
-                        var sideProject = solution.AddProject("DependencyProject", "DependencyProject", LanguageNames.CSharp)
-                            .AddDocument("Dependency.cs", source1).Project
-                            .AddMetadataReferences(solution.GetProject(projectId).MetadataReferences)
-                            .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-                        return sideProject.Solution.GetProject(projectId)
-                            .AddProjectReference(new ProjectReference(sideProject.Id))
-                            .Solution;
-                    }
-                }
+                        ["DependencyProject"] =
+                        {
+                            Sources = { ("Dependency.cs", source1) },
+                        },
+                    },
+                    AdditionalProjectReferences = { "DependencyProject" },
+                },
             }.RunAsync();
         }
 
@@ -271,21 +263,15 @@ class TestClass
                 TestState =
                 {
                     Sources = { source2 },
-                },
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
+                    AdditionalProjects =
                     {
-                        var sideProject = solution.AddProject("DependencyProject", "DependencyProject", LanguageNames.CSharp)
-                            .AddDocument("Dependency.cs", source1).Project
-                            .AddMetadataReferences(solution.GetProject(projectId).MetadataReferences)
-                            .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-                        return sideProject.Solution.GetProject(projectId)
-                            .AddProjectReference(new ProjectReference(sideProject.Id))
-                            .Solution;
-                    }
-                }
+                        ["DependencyProject"] =
+                        {
+                            Sources = { ("Dependency.cs", source1) },
+                        },
+                    },
+                    AdditionalProjectReferences = { "DependencyProject" },
+                },
             }.RunAsync();
         }
 
