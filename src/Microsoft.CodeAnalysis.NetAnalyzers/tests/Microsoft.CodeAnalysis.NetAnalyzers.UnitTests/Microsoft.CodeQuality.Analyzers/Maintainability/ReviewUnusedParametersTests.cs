@@ -1183,17 +1183,15 @@ public class Class1
         {
             await new VerifyCS.Test()
             {
-                TestCode = @"int x = 0;",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                SolutionTransforms =
+                TestState =
                 {
-                    (solution, projectId) =>
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
                     {
-                        var project = solution.GetProject(projectId);
-                        project = project.WithCompilationOptions(project.CompilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                        return project.Solution;
+                        @"int x = 0;",
                     },
-                }
+                },
             }.RunAsync();
         }
 
