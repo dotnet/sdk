@@ -33,6 +33,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          isDataflowRule: false);
         private const string GetHashCodeName = "GetHashCode";
         private const string GetEnumeratorName = "GetEnumerator";
+        private const string GetPinnableReferenceName = "GetPinnableReference";
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -76,8 +77,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (methodSymbol.IsGenericMethod ||
                         methodSymbol.IsVirtual ||
                         methodSymbol.IsOverride ||
-                        methodSymbol.Name == GetHashCodeName ||
-                        methodSymbol.Name == GetEnumeratorName ||
+                        methodSymbol.Name is GetHashCodeName or GetEnumeratorName or GetPinnableReferenceName ||
                         methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
                         taskTypes.Contains(methodSymbol.ReturnType.OriginalDefinition) ||
                         methodSymbol.IsImplementationOfAnyImplicitInterfaceMember())

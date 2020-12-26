@@ -117,6 +117,11 @@ public class Class1 : Base
         return null;
     }
 
+    public int GetPinnableReference() // Ideally, the method return type must be `ref`.
+    {
+        return 0;
+    }
+
     // 10) Method with invocation expressions
     public int GetSomethingWithInvocation()
     {
