@@ -147,6 +147,16 @@ public class Class1 : Base
         return fileName;
     }
 }
+
+public class Class2
+{
+    private string fileName = """";
+
+    public ref readonly string GetPinnableReference() // If the method isn't ref-returning, there will be a diagnostic.
+    {
+        return ref fileName;
+    }
+}
 ");
         }
 
