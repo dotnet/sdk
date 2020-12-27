@@ -78,7 +78,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         methodSymbol.IsVirtual ||
                         methodSymbol.IsOverride ||
                         methodSymbol.Name is GetHashCodeName or GetEnumeratorName ||
-                        methodSymbol is { Name: GetPinnableReferenceName, ReturnsByRef: true } ||
+                        (methodSymbol.Name == GetPinnableReferenceName && (methodSymbol.ReturnsByRef || methodSymbol.ReturnsByRefReadonly)) ||
                         methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
                         taskTypes.Contains(methodSymbol.ReturnType.OriginalDefinition) ||
                         methodSymbol.IsImplementationOfAnyImplicitInterfaceMember())
