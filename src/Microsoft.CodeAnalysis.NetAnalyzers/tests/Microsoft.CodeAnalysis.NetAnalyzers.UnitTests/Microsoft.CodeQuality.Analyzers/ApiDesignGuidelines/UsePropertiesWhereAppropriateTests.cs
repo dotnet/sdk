@@ -117,9 +117,9 @@ public class Class1 : Base
         return null;
     }
 
-    public int GetPinnableReference() // Ideally, the method return type must be `ref`.
+    public ref string GetPinnableReference() // If the method isn't ref-returning, there will be a diagnostic.
     {
-        return 0;
+        return ref fileName;
     }
 
     // 10) Method with invocation expressions
@@ -177,12 +177,18 @@ public class Class
     {
         return fileName;
     }
+
+    public int GetPinnableReference() // Not a ref-return method.
+    {
+        return 0;
+    }
 }
 ",
             GetCA1024CSharpResultAt(6, 19, "GetFileName"),
             GetCA1024CSharpResultAt(11, 19, "Get_FileName2"),
             GetCA1024CSharpResultAt(16, 19, "Get123"),
-            GetCA1024CSharpResultAt(21, 22, "GetFileNameProtected"));
+            GetCA1024CSharpResultAt(21, 22, "GetFileNameProtected"),
+            GetCA1024CSharpResultAt(26, 16, "GetPinnableReference"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
