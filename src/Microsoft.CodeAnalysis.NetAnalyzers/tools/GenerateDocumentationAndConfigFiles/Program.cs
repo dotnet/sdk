@@ -364,7 +364,7 @@ $@"<Project>
                     // Add angle brackets around links to prevent violating MD034:
                     // https://github.com/DavidAnson/markdownlint/blob/82cf68023f7dbd2948a65c53fc30482432195de4/doc/Rules.md#md034---bare-url-used
                     // Regex taken from: https://github.com/DavidAnson/markdownlint/blob/59eaa869fc749e381fe9d53d04812dfc759595c6/helpers/helpers.js#L24
-                    description = Regex.Replace(description, @"(?:http|ftp)s?:\/\/[^\s\]""']*?(?:\/|[^\s\]""'\W])", "<$0>");
+                    description = Regex.Replace(description, @"(?:http|ftp)s?:\/\/[^\s\]""']*(?:\/|[^\s\]""'\W])", "<$0>");
                     description = description.Trim();
 
                     builder.AppendLine(description);
