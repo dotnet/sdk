@@ -77,7 +77,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (methodSymbol.IsGenericMethod ||
                         methodSymbol.IsVirtual ||
                         methodSymbol.IsOverride ||
-                        methodSymbol.Name is GetHashCodeName or GetEnumeratorName or GetPinnableReferenceName ||
+                        methodSymbol.Name is GetHashCodeName or GetEnumeratorName ||
+                        methodSymbol is { Name: GetPinnableReferenceName, ReturnsByRef: true } ||
                         methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
                         taskTypes.Contains(methodSymbol.ReturnType.OriginalDefinition) ||
                         methodSymbol.IsImplementationOfAnyImplicitInterfaceMember())
