@@ -43,8 +43,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (resolution != null)
             {
                 var methodInvocationAction = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthMessage,
-                async ct => await ConvertToMethodInvocation(context, resolution).ConfigureAwait(false),
-                equivalenceKey: "TestForEmptyStringCorrectlyUsingIsNullOrEmpty");
+                    async ct => await ConvertToMethodInvocation(context, resolution).ConfigureAwait(false),
+                    equivalenceKey: "TestForEmptyStringCorrectlyUsingIsNullOrEmpty");
 
                 context.RegisterCodeFix(methodInvocationAction, context.Diagnostics);
 
