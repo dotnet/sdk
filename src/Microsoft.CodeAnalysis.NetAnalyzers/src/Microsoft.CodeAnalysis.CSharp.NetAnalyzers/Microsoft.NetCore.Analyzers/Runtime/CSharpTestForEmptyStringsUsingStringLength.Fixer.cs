@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     /// CA1820: Test for empty strings using string length
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public class CSharpTestForEmptyStringsUsingStringLengthFixer : TestForEmptyStringsUsingStringLengthFixer
+    public sealed class CSharpTestForEmptyStringsUsingStringLengthFixer : TestForEmptyStringsUsingStringLengthFixer
     {
         protected override SyntaxNode GetExpression(SyntaxNode node)
         {
