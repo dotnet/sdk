@@ -378,7 +378,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        // save file type metadata based on the group the file appears in
+        // save file type metadata based on the group the file appears in 
         private void SaveFileKeyType(string fileKey, FileGroup fileGroup)
         {
             string fileType = fileGroup.GetTypeMetadata();
