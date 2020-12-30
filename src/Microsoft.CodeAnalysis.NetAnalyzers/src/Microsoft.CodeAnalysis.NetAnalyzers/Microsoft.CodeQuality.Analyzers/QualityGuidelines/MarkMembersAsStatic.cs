@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -228,6 +227,24 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             if (methodSymbol.IsAutoPropertyAccessor())
             {
                 return false;
+            }
+
+            // Awaitable-awaiter pattern members should not be marked as static.
+            // There is no need to check for INotifyCompletion or ICriticalNotifyCompletion members as they are already excluded.
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesINotifyCompletion, out var inotifyCompletionType)
+                && wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesICriticalNotifyCompletion, out var icriticalNotifyCompletionType))
+            {
+                if (methodSymbol.IsGetAwaiterFromAwaitablePattern(inotifyCompletionType, icriticalNotifyCompletionType)
+                    || methodSymbol.IsGetResultFromAwaiterPattern(inotifyCompletionType, icriticalNotifyCompletionType))
+                {
+                    return false;
+                }
+
+                if (methodSymbol.AssociatedSymbol is IPropertySymbol property
+                    && property.IsIsCompletedFromAwaiterPattern(inotifyCompletionType, icriticalNotifyCompletionType))
+                {
+                    return false;
+                }
             }
 
             var attributes = methodSymbol.GetAttributes();
