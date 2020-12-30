@@ -98,15 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     }
 
                     // Don't run any other check for this method if it isn't a valid analysis context
-                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes,
-                            blockStartContext.Options, isWebProject, blockStartContext.CancellationToken))
-                    {
-                        return;
-                    }
-
-                    // Don't report methods which have a single throw statement
-                    // with NotImplementedException or NotSupportedException
-                    if (blockStartContext.IsMethodNotImplementedOrSupported())
+                    if (!ShouldAnalyze(methodSymbol, wellKnownTypeProvider, skippedAttributes, isWebProject, blockStartContext))
                     {
                         return;
                     }
@@ -191,9 +183,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             IMethodSymbol methodSymbol,
             WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<INamedTypeSymbol> skippedAttributes,
-            AnalyzerOptions options,
             bool isWebProject,
-            CancellationToken cancellationToken)
+#pragma warning disable RS1012 // Start action has no registered actions
+            OperationBlockStartAnalysisContext blockStartContext)
+#pragma warning restore RS1012 // Start action has no registered actions
         {
             // Modifiers that we don't care about
             if (methodSymbol.IsStatic || methodSymbol.IsOverride || methodSymbol.IsVirtual ||
@@ -208,15 +201,31 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            // Do not analyze public APIs for web projects
-            // See https://github.com/dotnet/roslyn-analyzers/issues/3835 for details.
-            if (isWebProject && methodSymbol.IsExternallyVisible())
+            // Don't report methods which have a single throw statement
+            // with NotImplementedException or NotSupportedException
+            if (blockStartContext.IsMethodNotImplementedOrSupported())
             {
                 return false;
             }
 
-            // CA1000 says one shouldn't declare static members on generic types. So don't flag such cases.
-            if (methodSymbol.ContainingType.IsGenericType && methodSymbol.IsExternallyVisible())
+            if (methodSymbol.IsExternallyVisible())
+            {
+                // Do not analyze public APIs for web projects
+                // See https://github.com/dotnet/roslyn-analyzers/issues/3835 for details.
+                if (isWebProject)
+                {
+                    return false;
+                }
+
+                // CA1000 says one shouldn't declare static members on generic types. So don't flag such cases.
+                if (methodSymbol.ContainingType.IsGenericType)
+                {
+                    return false;
+                }
+            }
+
+            // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
+            if (methodSymbol.IsAutoPropertyAccessor())
             {
                 return false;
             }
@@ -248,14 +257,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            if (!options.MatchesConfiguredVisibility(Rule, methodSymbol, wellKnownTypeProvider.Compilation, cancellationToken,
-                    defaultRequiredVisibility: SymbolVisibilityGroup.All))
+            var hasCorrectVisibility = blockStartContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, wellKnownTypeProvider.Compilation,
+                blockStartContext.CancellationToken, defaultRequiredVisibility: SymbolVisibilityGroup.All);
+            if (!hasCorrectVisibility)
             {
                 return false;
             }
 
-            // We consider that auto-property have the intent to always be instance members so we want to workaround this issue.
-            return !methodSymbol.IsAutoPropertyAccessor();
+            return true;
         }
 
         private static bool IsExplicitlyVisibleFromCom(IMethodSymbol methodSymbol, WellKnownTypeProvider wellKnownTypeProvider)
