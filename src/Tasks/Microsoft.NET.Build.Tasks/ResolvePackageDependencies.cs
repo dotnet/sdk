@@ -163,14 +163,14 @@ namespace Microsoft.NET.Build.Tasks
                 }
             });
 
-            ReadProjectFileDependencies();
+            ReadProjectFileDependencies(TargetFramework);
             RaiseLockFileTargets();
             GetPackageAndFileDefinitions();
         }
 
-        private void ReadProjectFileDependencies()
+        private void ReadProjectFileDependencies(string frameworkAlias)
         {
-            _projectFileDependencies = LockFile.GetProjectFileDependencySet();
+            _projectFileDependencies = LockFile.GetProjectFileDependencySet(frameworkAlias);
         }
 
         // get library and file definitions
@@ -301,7 +301,7 @@ namespace Microsoft.NET.Build.Tasks
 
             var transitiveProjectRefs = new HashSet<string>(
                 target.Libraries
-                    .Where(lib => lib.IsTransitiveProjectReference(LockFile, ref _projectFileDependencies))
+                    .Where(lib => lib.IsTransitiveProjectReference(LockFile, ref _projectFileDependencies, target.TargetFramework.ToString()))
                     .Select(pkg => pkg.Name), 
                 StringComparer.OrdinalIgnoreCase);
 
