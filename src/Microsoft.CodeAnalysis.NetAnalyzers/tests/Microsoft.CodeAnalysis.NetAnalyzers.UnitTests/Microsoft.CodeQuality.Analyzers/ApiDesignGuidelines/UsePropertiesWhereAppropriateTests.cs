@@ -478,6 +478,65 @@ End Class
 ");
         }
 
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_INotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public object GetResult() => null;
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : ICriticalNotifyCompletion
+{
+    public object GetResult() => null;
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+    public void UnsafeOnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaitablePattern_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaitable
+{
+    public DummyAwaiter GetAwaiter() => new DummyAwaiter();
+}
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
         private static DiagnosticResult GetCA1024CSharpResultAt(int line, int column, string methodName)
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
