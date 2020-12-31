@@ -333,7 +333,7 @@ class Program
 
             var testAsset = _testAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
             {
-                if (path.Contains("ProjectC"))
+                if (Path.GetFileName(path).Equals("ProjectC.csproj"))
                 {
                     var ns = p.Root.Name.Namespace;
                     var itemGroup = new XElement(ns + "ItemGroup",
