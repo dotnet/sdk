@@ -163,7 +163,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             });
 
-            ReadProjectFileDependencies(TargetFramework);
+            ReadProjectFileDependencies(string.IsNullOrEmpty(TargetFramework) || !_targetNameToAliasMap.ContainsKey(TargetFramework) ? null : _targetNameToAliasMap[TargetFramework]);
             RaiseLockFileTargets();
             GetPackageAndFileDefinitions();
         }
@@ -299,9 +299,11 @@ namespace Microsoft.NET.Build.Tasks
             var resolvedPackageVersions = target.Libraries
                 .ToDictionary(pkg => pkg.Name, pkg => pkg.Version.ToNormalizedString(), StringComparer.OrdinalIgnoreCase);
 
+            string frameworkAlias = _targetNameToAliasMap[target.Name];
+
             var transitiveProjectRefs = new HashSet<string>(
                 target.Libraries
-                    .Where(lib => lib.IsTransitiveProjectReference(LockFile, ref _projectFileDependencies, target.TargetFramework.ToString()))
+                    .Where(lib => lib.IsTransitiveProjectReference(LockFile, ref _projectFileDependencies, frameworkAlias))
                     .Select(pkg => pkg.Name), 
                 StringComparer.OrdinalIgnoreCase);
 
@@ -311,8 +313,6 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (_projectFileDependencies.Contains(package.Name))
                 {
-                    string frameworkAlias = _targetNameToAliasMap[target.Name];
-
                     TaskItem item = new TaskItem(packageId);
                     item.SetMetadata(MetadataKeys.ParentTarget, frameworkAlias); // Foreign Key
                     item.SetMetadata(MetadataKeys.ParentPackage, string.Empty); // Foreign Key
