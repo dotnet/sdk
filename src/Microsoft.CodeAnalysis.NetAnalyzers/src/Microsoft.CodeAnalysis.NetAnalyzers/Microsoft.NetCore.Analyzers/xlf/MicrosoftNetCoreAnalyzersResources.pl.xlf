@@ -1019,7 +1019,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="needs-review-translation">Prześlij dalej parametr „CancellationToken” do metod, które go przyjmują, aby upewnić się, że powiadomienia o anulowaniu operacji zostaną prawidłowo rozpropagowane, lub przekaż element „CancellationToken.None” jawnie, aby wskazać celowe niepropagowanie tokenu.</target>
+        <target state="translated">Prześlij dalej parametr „CancellationToken” do metod, aby upewnić się, że powiadomienia o anulowaniu operacji zostaną prawidłowo rozpropagowane, lub przekaż element „CancellationToken.None” jawnie, aby wskazać celowe niepropagowanie tokenu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1029,7 +1029,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
-        <target state="needs-review-translation">Prześlij dalej parametr „CancellationToken” do metod, które go przyjmują</target>
+        <target state="translated">Prześlij dalej parametr „CancellationToken” do metod</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1609,7 +1609,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
-        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</target>
+        <target state="translated">Preferuj właściwość „IsEmpty” przed właściwością „Count” do określania, czy obiekt jest pusty</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">

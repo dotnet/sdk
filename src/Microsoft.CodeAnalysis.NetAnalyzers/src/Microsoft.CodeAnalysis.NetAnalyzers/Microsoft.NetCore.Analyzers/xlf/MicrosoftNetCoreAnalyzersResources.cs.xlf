@@ -1019,7 +1019,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="needs-review-translation">Přepošlete parametr CancellationToken na metody, které ho přijmou, abyste měli jistotu, že se správně rozšíří oznámení o zrušení operací. Nebo můžete předat explicitně CancellationToken.None a označit tak, že se token záměrně nebude šířit.</target>
+        <target state="translated">Přepošlete parametr CancellationToken do metod, aby se zajistilo, že se správně rozšíří oznámení o zrušení operací. Nebo můžete předat explicitně CancellationToken.None a označit tak, že se token záměrně nebude šířit.</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1029,7 +1029,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
-        <target state="needs-review-translation">Přeposlat parametr CancellationToken metodám, které ho přijmou</target>
+        <target state="translated">Přeposlat parametr CancellationToken do metod</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
