@@ -1019,7 +1019,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsDescription">
         <source>Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.</source>
-        <target state="needs-review-translation">將 'CancellationToken' 參數傳遞給使用該參數的方法，以確保正確地散佈作業取消通知，或明確傳遞 'CancellationToken.None'，以表示有意不散佈權杖。</target>
+        <target state="translated">將 'CancellationToken' 參數轉送給方法，以確保作業取消通知能正確地散佈，或明確地傳入 'CancellationToken.None'，以表示刻意不散佈權杖。</target>
         <note />
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsMessage">
@@ -1029,7 +1029,7 @@
       </trans-unit>
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
-        <target state="needs-review-translation">將 'CancellationToken' 參數傳遞給使用該參數的方法</target>
+        <target state="translated">將 'CancellationToken' 參數轉送給方法</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1609,7 +1609,7 @@
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountMessage">
         <source>Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</source>
-        <target state="new">Prefer 'IsEmpty' over 'Count' to determine whether the object is empty</target>
+        <target state="translated">若要判斷物件是否為空，建議使用 'IsEmpty'，而不要使用 'Count'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferIsEmptyOverCountTitle">
