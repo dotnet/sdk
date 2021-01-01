@@ -59,8 +59,6 @@ public class MembersTests
         set { System.Console.WriteLine(value); }
     }
 
-    public int this[int x] => 42;
-
     public event System.EventHandler<System.EventArgs> CustomEvent { add {} remove {} }
 }",
                 GetCSharpResultAt(7, 16, "Method1"),
@@ -337,6 +335,8 @@ public class MembersTests
     public void SomeNotImplementedMethod() => throw new System.NotImplementedException();
 
     public void SomeNotSupportedMethod() => throw new System.NotSupportedException();
+
+    public int this[int x] => 42;
 }
 
 public class Generic<T>
