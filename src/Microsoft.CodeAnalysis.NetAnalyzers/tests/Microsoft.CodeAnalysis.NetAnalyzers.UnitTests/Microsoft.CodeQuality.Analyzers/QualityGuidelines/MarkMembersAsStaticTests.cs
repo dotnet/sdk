@@ -59,6 +59,8 @@ public class MembersTests
         set { System.Console.WriteLine(value); }
     }
 
+    public int this[int x] => 42;
+
     public event System.EventHandler<System.EventArgs> CustomEvent { add {} remove {} }
 }",
                 GetCSharpResultAt(7, 16, "Method1"),
