@@ -111,15 +111,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         return;
                     }
 
-                    bool isInstanceReferenced = false;
+                    bool isInstanceReferenced = methodSymbol.AssociatedSymbol.IsIndexer();
 
-                    blockStartContext.RegisterOperationAction(operationContext =>
+                    if (!isInstanceReferenced)
                     {
-                        if (((IInstanceReferenceOperation)operationContext.Operation).ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
+                        blockStartContext.RegisterOperationAction(operationContext =>
                         {
-                            isInstanceReferenced = true;
-                        }
-                    }, OperationKind.InstanceReference);
+                            if (((IInstanceReferenceOperation)operationContext.Operation).ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
+                            {
+                                isInstanceReferenced = true;
+                            }
+                        }, OperationKind.InstanceReference);
+                    }
 
                     blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                     {
