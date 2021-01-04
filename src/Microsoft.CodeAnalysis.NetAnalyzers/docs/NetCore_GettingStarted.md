@@ -78,9 +78,8 @@ The diagnostics reported by the analyzer will be listed in Output.txt.
 2. Start VS and open a project you want to debug
 3. Note the process ID for `ServiceHub.RoslynCodeAnalysisService.exe` corresponding to that VS instance
     - If you are using `Visual Studio` older than version `16.8 Preview2` then analyzers run in `devenv.exe`, you will need to attach that process instead
-    - Code fixes and analyzers run in different processes. If you want to debug the CodeFixProvider corresponding to the analyzer, attach `devenv.exe` instead. 
+    - Code fixes and analyzers run in different processes. If you want to debug the CodeFixProvider corresponding to the analyzer, attach `devenv.exe` instead.
 4. Open another VS instance for `RoslynAnalyzers.sln` and set breakpoints in the analyzer solution where you want to debug
 5. Attach to above process ID with the RoslynAnalyzers debugger: `Debug -> Attach to Process...`
 6. Start typing in the other project, the breakpoints should hit
     - If breakpoints are not hitting then the RoslynAnalyzers.sln build might not the same as the build you copied to the step 1 repeat the step again or check if you copied into the correct path
-    

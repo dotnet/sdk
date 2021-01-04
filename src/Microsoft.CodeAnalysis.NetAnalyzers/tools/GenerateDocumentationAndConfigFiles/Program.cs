@@ -361,6 +361,10 @@ $@"<Project>
                     description = Regex.Replace(description, "(\r?\n)", "$1$1");
                     // Escape generic arguments to ensure they are not considered as HTML elements
                     description = Regex.Replace(description, "(<.+?>)", "\\$1");
+                    // Add angle brackets around links to prevent violating MD034:
+                    // https://github.com/DavidAnson/markdownlint/blob/82cf68023f7dbd2948a65c53fc30482432195de4/doc/Rules.md#md034---bare-url-used
+                    // Regex taken from: https://github.com/DavidAnson/markdownlint/blob/59eaa869fc749e381fe9d53d04812dfc759595c6/helpers/helpers.js#L24
+                    description = Regex.Replace(description, @"(?:http|ftp)s?:\/\/[^\s\]""']*(?:\/|[^\s\]""'\W])", "<$0>");
                     description = description.Trim();
 
                     builder.AppendLine(description);
@@ -562,7 +566,15 @@ Rule ID | Missing Help Link | Title |
                         continue;
                     }
 
-                    var line = $"{ruleId} | {helpLinkUri} | {descriptor.Title.ToString(CultureInfo.InvariantCulture)} |";
+                    // The angle brackets around helpLinkUri are added to follow MD034 rule:
+                    // https://github.com/DavidAnson/markdownlint/blob/82cf68023f7dbd2948a65c53fc30482432195de4/doc/Rules.md#md034---bare-url-used
+                    if (!string.IsNullOrWhiteSpace(helpLinkUri))
+                    {
+                        helpLinkUri = $"<{helpLinkUri}>";
+                    }
+
+                    var escapedTitle = descriptor.Title.ToString(CultureInfo.InvariantCulture).Replace("<", "\\<");
+                    var line = $"{ruleId} | {helpLinkUri} | {escapedTitle} |";
                     if (validateOnly)
                     {
                         // The validation for RulesMissingDocumentation.md is different than others.

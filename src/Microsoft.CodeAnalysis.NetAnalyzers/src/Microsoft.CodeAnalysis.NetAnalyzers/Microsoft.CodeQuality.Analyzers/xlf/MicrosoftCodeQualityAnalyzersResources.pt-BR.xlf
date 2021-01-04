@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedDescription">
         <source>This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.</source>
-        <target state="translated">Esta regra considera que um membro de enumeração com um nome contendo "reservado" não está sendo usado no momento, mas é um espaço reservado a ser renomeado ou removido em uma versão futura. A renomeação ou a remoção de um membro é uma alteração da falha.</target>
+        <target state="translated">Esta regra considera que um membro de enumeração com um nome contendo "reservado" não está sendo usado no momento, mas é um espaço reservado a ser renomeado ou removido em uma versão futura. A renomeação ou a remoção de um membro é uma alteração interruptiva.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotNameEnumValuesReservedMessage">
@@ -534,7 +534,7 @@
       </trans-unit>
       <trans-unit id="InterfaceMethodsShouldBeCallableByChildTypesMessage">
         <source>Make '{0}' sealed (a breaking change if this class has previously shipped), implement the method non-explicitly, or implement a new method that exposes the functionality of '{1}' and is visible to derived classes</source>
-        <target state="translated">Torne o '{0}' selado (uma alteração da falha se esta classe foi enviada anteriormente), implemente o método de modo não explícito ou implemente um novo método que expõe a funcionalidade de '{1}' e é visível para todas as classes derivadas</target>
+        <target state="translated">Torne o '{0}' selado (uma alteração interruptiva se esta classe foi enviada anteriormente), implemente o método de modo não explícito ou implemente um novo método que expõe a funcionalidade de '{1}' e é visível para todas as classes derivadas</target>
         <note />
       </trans-unit>
       <trans-unit id="OverrideMethodsOnComparableTypesTitle">
@@ -709,7 +709,7 @@
       </trans-unit>
       <trans-unit id="OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage">
         <source>Implement the equality operators and make their behavior identical to that of the Equals method</source>
-        <target state="new">Implement the equality operators and make their behavior identical to that of the Equals method</target>
+        <target state="translated">Implementar os operadores de igualdade e fazer com que o comportamento deles seja idêntico ao do método Equals</target>
         <note />
       </trans-unit>
       <trans-unit id="PassSystemUriObjectsInsteadOfStringsTitle">
