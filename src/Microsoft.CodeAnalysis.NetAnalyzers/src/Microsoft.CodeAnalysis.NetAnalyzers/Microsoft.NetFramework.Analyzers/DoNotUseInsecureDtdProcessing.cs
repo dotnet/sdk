@@ -23,8 +23,16 @@ namespace Microsoft.NetFramework.Analyzers
     {
         internal const string RuleId = "CA3075";
 
+        // Use 'DiagnosticDescriptorHelper.Create' for one of the descriptors so the rule "CA3075" can be captured in AnalyzerReleases.*.md
         internal static DiagnosticDescriptor RuleXmlDocumentWithNoSecureResolver =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)));
+            DiagnosticDescriptorHelper.Create(RuleId,
+                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
+                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)),
+                    DiagnosticCategory.Security,
+                    RuleLevel.IdeHidden_BulkConfigurable,
+                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
+                    isPortedFxCopRule: false,
+                    isDataflowRule: false);
 
         internal static DiagnosticDescriptor RuleXmlTextReaderConstructedWithNoSecureResolution =
             CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderConstructedWithNoSecureResolutionMessage)));
@@ -77,7 +85,6 @@ namespace Microsoft.NetFramework.Analyzers
                 analyzer.AnalyzeOperationBlock
             );
         }
-
 
 #pragma warning disable RS1026 // Enable concurrent execution
         public override void Initialize(AnalysisContext analysisContext)
@@ -644,7 +651,6 @@ namespace Microsoft.NetFramework.Analyzers
                                 _xmlReaderSettingsEnvironments[assignedSymbol] = env;
                             }
 
-
                             if (assignment.Value is IConversionOperation conv && SecurityDiagnosticHelpers.IsXmlReaderSettingsXmlResolverProperty(propRef.Property, _xmlTypes))
                             {
                                 if (SecurityDiagnosticHelpers.IsXmlSecureResolverType(conv.Operand.Type, _xmlTypes))
@@ -714,7 +720,7 @@ namespace Microsoft.NetFramework.Analyzers
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
                                             messageFormat,
                                             DiagnosticCategory.Security,
-                                            RuleLevel.BuildWarning,
+                                            RuleLevel.IdeHidden_BulkConfigurable,
                                             SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
                                             isPortedFxCopRule: false,
                                             isDataflowRule: false);

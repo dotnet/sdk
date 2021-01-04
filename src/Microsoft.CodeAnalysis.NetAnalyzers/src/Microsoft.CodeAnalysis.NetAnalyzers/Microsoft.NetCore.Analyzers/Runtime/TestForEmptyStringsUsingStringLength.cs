@@ -19,7 +19,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </para>
     /// <remarks>NOTE: This rule is not supported for VisualBasic. See https://github.com/dotnet/roslyn-analyzers/issues/2684 for details.</remarks>
     /// </summary>
+#pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
+#pragma warning restore RS1004 // Recommend adding language support to diagnostic analyzer
     public sealed class TestForEmptyStringsUsingStringLengthAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1820";
@@ -93,7 +95,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 reportDiagnostic(binaryOperation.Syntax.CreateDiagnostic(s_rule));
             }
         }
-
 
         /// <summary>
         /// Checks if the given method is the string.Equals method.

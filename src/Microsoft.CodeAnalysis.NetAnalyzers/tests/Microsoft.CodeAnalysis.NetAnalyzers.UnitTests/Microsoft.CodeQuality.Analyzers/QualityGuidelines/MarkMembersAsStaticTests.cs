@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Test.Utilities.MinimalImplementations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.MarkMembersAsStaticAnalyzer,
@@ -189,7 +190,7 @@ internal class MembersTests
         System.Action<System.Action> a = (System.Action m) => m();
         a(Method2);
 
-        // Method3 is dead code that is never invoked - should not be flagged.
+        // Method3 is dead code that is never invoked - it should still be flagged.
         // Method3();
 
         // Invoked within a lambda - must be flagged.
@@ -202,6 +203,7 @@ internal class MembersTests
     }
 }",
                 GetCSharpResultAt(7, 16, "Method1"),
+                GetCSharpResultAt(14, 17, "Method3"),
                 GetCSharpResultAt(19, 16, "Method4"),
                 GetCSharpResultAt(24, 16, "Property"),
                 GetCSharpResultAt(29, 16, "Property2"),
@@ -272,7 +274,7 @@ Friend Class MembersTests
         Dim a As System.Action(Of System.Action) = Sub(ByVal m As System.Action) m()
         a(AddressOf Method2)
 
-        ' Method3 is dead code that is never invoked - should not be flagged.
+        ' Method3 is dead code that is never invoked - it should still be flagged.
         'Method3()
 
         ' Invoked within a lambda - must be flagged.
@@ -287,6 +289,7 @@ End Sub
 End Class
 ",
                 GetBasicResultAt(8, 21, "Method1"),
+                GetBasicResultAt(15, 16, "Method3"),
                 GetBasicResultAt(19, 21, "Method4"),
                 GetBasicResultAt(23, 30, "Property1"),
                 GetBasicResultAt(29, 31, "Property2"),
@@ -459,22 +462,14 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnostic_NonTestAttributes()
+        public async Task CSharpNoDiagnostic_ComVisibleAttribute()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Runtime.InteropServices;
 
-namespace System.Web.Services
-{
-    public class WebMethodAttribute : Attribute { }
-}
-
 public class Test
 {
-    [System.Web.Services.WebMethod]
-    public void Method1() { }
-
     [ComVisible(true)]
     public void Method2() { }
 }
@@ -488,23 +483,13 @@ public class ComVisibleClass
         }
 
         [Fact]
-        public async Task BasicNoDiagnostic_NonTestAttributes()
+        public async Task BasicNoDiagnostic_ComVisibleAttribute()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Runtime.InteropServices
 
-Namespace System.Web.Services
-    Public Class WebMethodAttribute
-        Inherits Attribute
-    End Class
-End Namespace
-
 Public Class Test
-    <System.Web.Services.WebMethod>
-    Public Sub Method1()
-    End Sub
-
     <ComVisible(True)>
     Public Sub Method2()
     End Sub
@@ -519,25 +504,34 @@ End Class
         }
 
         [Theory]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestInitialize", MSTestAttributes.CSharp, MSTestAttributes.VisualBasic)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod", MSTestAttributes.CSharp, MSTestAttributes.VisualBasic)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.DataTestMethod", MSTestAttributes.CSharp, MSTestAttributes.VisualBasic)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestCleanup", MSTestAttributes.CSharp, MSTestAttributes.VisualBasic)]
-        [InlineData("Xunit.Fact", XunitApis.CSharp, XunitApis.VisualBasic)]
-        [InlineData("Xunit.Theory", XunitApis.CSharp, XunitApis.VisualBasic)]
-        [InlineData("CustomxUnit.WpfFact", XunitApis.CSharp, XunitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.OneTimeSetUp", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.OneTimeTearDown", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.SetUp", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.TearDown", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.Test", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.TestCase(\"asdf\")", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.TestCaseSource(\"asdf\")", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        [InlineData("NUnit.Framework.Theory", NUnitApis.CSharp, NUnitApis.VisualBasic)]
-        public async Task NoDiagnostic_TestAttributes(string testAttributeData, string csharpTestApiDefinitions, string vbTestApiDefinitions)
+        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestInitialize", true, false, false)]
+        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod", true, false, false)]
+        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.DataTestMethod", true, false, false)]
+        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestCleanup", true, false, false)]
+        [InlineData("Xunit.Fact", false, false, true)]
+        [InlineData("Xunit.Theory", false, false, true)]
+        [InlineData("CustomxUnit.WpfFact", false, false, true)]
+        [InlineData("NUnit.Framework.OneTimeSetUp", false, true, false)]
+        [InlineData("NUnit.Framework.OneTimeTearDown", false, true, false)]
+        [InlineData("NUnit.Framework.SetUp", false, true, false)]
+        [InlineData("NUnit.Framework.TearDown", false, true, false)]
+        [InlineData("NUnit.Framework.Test", false, true, false)]
+        [InlineData("NUnit.Framework.TestCase(\"asdf\")", false, true, false)]
+        [InlineData("NUnit.Framework.TestCaseSource(\"asdf\")", false, true, false)]
+        [InlineData("NUnit.Framework.Theory", false, true, false)]
+        public async Task NoDiagnostic_TestAttributes(string testAttributeData, bool isMSTest, bool isNUnit, bool isxunit)
         {
+            var referenceAssemblies = (isMSTest, isNUnit, isxunit) switch
+            {
+                (true, false, false) => AdditionalMetadataReferences.DefaultWithMSTest,
+                (false, true, false) => AdditionalMetadataReferences.DefaultWithNUnit,
+                (false, false, true) => AdditionalMetadataReferences.DefaultWithXUnit,
+                _ => throw new InvalidOperationException("Invalid combination of test framework")
+            };
+
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = referenceAssemblies,
                 TestState =
                 {
                     Sources =
@@ -551,13 +545,24 @@ public class Test
     public void Method1() {{}}
 }}
 ",
-                        csharpTestApiDefinitions
+                        !isxunit ? "" : @"
+namespace CustomxUnit
+{
+    using System;
+    using Xunit;
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class WpfFactAttribute : FactAttribute
+    {
+    }
+}",
                     },
                 },
             }.RunAsync();
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = referenceAssemblies,
                 TestState =
                 {
                     Sources =
@@ -571,9 +576,83 @@ Public Class Test
     End Sub
 End Class
 ",
-                        vbTestApiDefinitions
+                        !isxunit ? "" : @"
+Imports System
+
+Namespace CustomxUnit
+
+    <AttributeUsage(AttributeTargets.Method, AllowMultiple:=False)>
+    Public Class WpfFactAttribute
+        Inherits Xunit.FactAttribute
+    End Class
+End Namespace
+",
                     },
                 },
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
+        public async Task PrivateMethodOnlyCalledByASkippedMethod_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using Xunit;
+
+public class Program
+{
+    [Fact]
+    private void M()
+    {
+        N();
+    }
+
+    private void N()
+    {
+    }
+}",
+                    },
+                    ExpectedDiagnostics =
+                    {
+                        GetCSharpResultAt(12, 18, "N")
+                    }
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
+        public async Task PrivateMethodOnlyReferencedByASkippedMethod_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit,
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using Xunit;
+
+public class Program
+{
+    [Fact]
+    private void M()
+    {
+        var x = nameof(N);
+    }
+
+    private void [|N|]()
+    {
+    }
+}",
+                    }
+                }
             }.RunAsync();
         }
 
@@ -692,21 +771,533 @@ using System.IO;
 
 class C
 {
-    private void Validate()
+    private void [|Validate|]()
     {
         {|CS0156:throw|};
     }
 }");
         }
 
-        private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
+        [Fact, WorkItem(2785, "https://github.com/dotnet/roslyn-analyzers/issues/2785")]
+        public async Task CSharp_CustomTestMethodAttribute_NoDiagnostic()
         {
-            return VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(symbolName);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+namespace Microsoft.VisualStudio.TestTools.UnitTesting
+{
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
+    public class TestMethodAttribute : Attribute
+    {
+        public TestMethodAttribute() {}
+    }
+}
+
+namespace SomeNamespace
+{
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class CustomTestAttribute : TestMethodAttribute
+    {
+        public CustomTestAttribute() {}
+    }
+
+    public class C
+    {
+        [CustomTest]
+        public void Test()
+        {
+            Console.WriteLine();
+        }
+    }
+}");
         }
 
-        private DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
+        [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        [InlineData("build_property.UsingMicrosoftNETSdkWeb = true")]
+        [InlineData("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
+        [InlineData("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("dotnet_code_quality.api_surface = private, internal")]
+        public async Task WebSpecificControllerMethods_NoDiagnostic(string editorConfigText)
         {
-            return VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(symbolName);
+            var csSource = @"
+using System;
+
+namespace System.Web
+{
+    public class HttpApplication {}
+}
+
+public class C : System.Web.HttpApplication
+{
+    // The following methods are detected as event handler and so won't
+    // trigger a diagnostic
+    protected void Application_Start(object sender, EventArgs e) { }
+    protected void Application_AuthenticateRequest(object sender, EventArgs e) { }
+    protected void Application_BeginRequest(object sender, EventArgs e) { }
+    protected void Application_EndRequest(object sender, EventArgs e) { }
+    protected void Application_Error(object sender, EventArgs e) { }
+    protected void Application_End(object sender, EventArgs e) { }
+    protected void Application_Init(object sender, EventArgs e) { }
+    protected void Session_End(object sender, EventArgs e) { }
+    protected void Session_Start(object sender, EventArgs e) { }
+
+    // The following controller methods can't be made static
+    protected void Application_Start() { }
+    protected void Application_End() { }
+}";
+
+            await new VerifyCS.Test()
+            {
+                TestCode = csSource,
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
+
+            var vbSource = @"
+Imports System
+
+Namespace System.Web
+    Public Class HttpApplication
+    End Class
+End Namespace
+
+Public Class C
+    Inherits System.Web.HttpApplication
+
+    Protected Sub Application_Start(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Application_AuthenticateRequest(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Application_BeginRequest(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Application_EndRequest(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Application_Error(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Application_End(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Application_Init(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Session_End(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Session_Start(ByVal sender As Object, ByVal e As EventArgs)
+    End Sub
+
+    Protected Sub Application_Start()
+    End Sub
+
+    Protected Sub Application_End()
+    End Sub
+End Class
+";
+            await new VerifyVB.Test()
+            {
+                TestCode = vbSource,
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
         }
+
+        [Fact]
+        public async Task MethodsWithOptionalParameter()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+internal class C
+{
+    private int x;
+
+    public int M1(int y = 0)
+    {
+        return x;
+    }
+
+    public int [|M2|](int y = 0)
+    {
+        return 0;
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Friend Class C
+    Private x As Integer
+
+    Public Function M1(Optional y As Integer = 0) As Integer
+        Return x
+    End Function
+
+    Public Function [|M2|](Optional y As Integer = 0) As Integer
+        Return 0
+    End Function
+End Class
+");
+        }
+
+        [Fact, WorkItem(3857, "https://github.com/dotnet/roslyn-analyzers/issues/3857")]
+        public async Task CA1822_ObsoleteAttribute_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp8,
+                TestCode = @"
+using System;
+
+public class C
+{
+    [Obsolete]
+    public void M1() {}
+
+    [Obsolete(""Some reason"")]
+    public void M2() {}
+
+    [Obsolete(""Some reason"", false)]
+    public void M3() {}
+
+    [Obsolete]
+    public int P1
+    {
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public int P2
+    {
+        [Obsolete]
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public int P3
+    {
+        get { return 10; }
+        [Obsolete]
+        set { Console.WriteLine(""""); }
+    }
+
+    [Obsolete]
+    public event EventHandler<EventArgs> E1 { add {} remove {} }
+}
+
+[Obsolete]
+public class C2
+{
+    public void M1() {}
+
+    public int P1
+    {
+        get { return 10; }
+        set { Console.WriteLine(""""); }
+    }
+
+    public event EventHandler<EventArgs> E1 { add {} remove {} }
+}
+
+[Obsolete]
+public class C3
+{
+    public class C4
+    {
+        public void M1() {}
+
+        public int P1
+        {
+            get { return 10; }
+            set { Console.WriteLine(""""); }
+        }
+
+        public event EventHandler<EventArgs> E1 { add {} remove {} }
+    }
+}",
+            }.RunAsync();
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class C
+    <Obsolete>
+    Public Sub M1()
+    End Sub
+
+    <Obsolete(""Some reason"")>
+    Public Sub M2()
+    End Sub
+
+    <Obsolete(""Some reason"", False)>
+    Public Sub M3()
+    End Sub
+
+    <Obsolete>
+    Public Property P1 As Integer
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Property P2 As Integer
+        <Obsolete>
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Property P3 As Integer
+        Get
+            Return 10
+        End Get
+        <Obsolete>
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    <Obsolete>
+    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+        AddHandler(value As EventHandler(Of EventArgs))
+        End AddHandler
+        RemoveHandler(value As EventHandler(Of EventArgs))
+        End RemoveHandler
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
+    End Event
+End Class
+
+<Obsolete>
+Public Class C2
+    Public Sub M1()
+    End Sub
+
+    Public Property P1 As Integer
+        Get
+            Return 10
+        End Get
+        Set(ByVal value As Integer)
+            Console.WriteLine("""")
+        End Set
+    End Property
+
+    Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+        AddHandler(value As EventHandler(Of EventArgs))
+        End AddHandler
+        RemoveHandler(value As EventHandler(Of EventArgs))
+        End RemoveHandler
+        RaiseEvent(sender As Object, e As EventArgs)
+        End RaiseEvent
+    End Event
+End Class
+
+<Obsolete>
+Public Class C3
+    Public Class C4
+        Public Sub M1()
+        End Sub
+
+        Public Property P1 As Integer
+            Get
+                Return 10
+            End Get
+            Set(ByVal value As Integer)
+                Console.WriteLine("""")
+            End Set
+        End Property
+
+        Public Custom Event CustomEvent As EventHandler(Of EventArgs)
+            AddHandler(value As EventHandler(Of EventArgs))
+            End AddHandler
+            RemoveHandler(value As EventHandler(Of EventArgs))
+            End RemoveHandler
+            RaiseEvent(sender As Object, e As EventArgs)
+            End RaiseEvent
+        End Event
+    End Class
+End Class
+");
+        }
+
+        [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        [InlineData("build_property.UsingMicrosoftNETSdkWeb = true")]
+        [InlineData("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
+        [InlineData("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [InlineData("dotnet_code_quality.api_surface = private, internal")]
+        public async Task TestWebProject(string editorConfigText)
+        {
+            var csSource = @"
+public class Test
+{
+    public int PublicMethod() => 0;
+    protected int ProtectedMethod() => 0;
+    internal int [|InternalMethod|]() => 0;
+    private int [|PrivateMethod|]() => 0;
+}";
+            await new VerifyCS.Test()
+            {
+                TestCode = csSource,
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
+
+            var vbSource = @"
+Public Class Test
+    Public Function PublicMethod() As Integer
+        Return 0
+    End Function
+
+    Protected Function ProtectedMethod() As Integer
+        Return 0
+    End Function
+
+    Friend Function [|FriendMethod|]() As Integer
+        Return 0
+    End Function
+
+    Private Function [|PrivateMethod|]() As Integer
+        Return 0
+    End Function
+End Class";
+            await new VerifyVB.Test()
+            {
+                TestCode = vbSource,
+                AnalyzerConfigDocument = editorConfigText,
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        public async Task FullProperties_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C
+{
+    private int field;
+
+    public int P1
+    {
+        get { return field; }
+        set { field = value; }
+    }
+
+    public int P2
+    {
+        get { return field; }
+    }
+
+    public int P3 => field;
+
+    public int P4
+    {
+        get => field;
+        set => field = value;
+    }
+}");
+        }
+
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        public async Task AutoProperties_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+public class C1
+{
+    public string P1 { get; set; }
+
+    public string P2 { get; }
+
+    public string P3
+    {
+        [DebuggerStepThrough]
+        get;
+    }
+
+    public string [|P4|] // Because of the error there is no generated field
+    {
+        [DebuggerStepThrough]
+        {|CS8051:set|};
+    }
+
+    public string P5
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
+        get;
+    }
+}");
+        }
+
+        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        public async Task Properties_StaticField_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public class C1
+{
+    private static int s_field;
+
+    public int [|P1|]
+    {
+        get { return s_field; }
+        set { s_field = value; }
+    }
+
+    public int [|P2|]
+    {
+        get { return s_field; }
+    }
+
+    public int [|P3|]
+    {
+        set { s_field = value; }
+    }
+}");
+        }
+
+        [Fact, WorkItem(4304, "https://github.com/dotnet/roslyn-analyzers/pull/4304")]
+        public async Task SkippableFactAttribute()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit,
+                TestCode = @"
+using Xunit;
+
+public class SkippableFactAttribute : FactAttribute {}
+
+public class C
+{
+    [SkippableFact]
+    public void M() {}
+}",
+            }.RunAsync();
+        }
+
+        private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(symbolName);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(symbolName);
     }
 }

@@ -3,8 +3,10 @@
 using System.Collections.Immutable;
 using System.Threading;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -12,8 +14,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// CA1810: Initialize reference type static fields inline
     /// CA2207: Initialize value type static fields inline
     /// </summary>
-    public abstract class InitializeStaticFieldsInlineAnalyzer<TLanguageKindEnum> : DiagnosticAnalyzer
-        where TLanguageKindEnum : struct
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class InitializeStaticFieldsInlineAnalyzer : DiagnosticAnalyzer
     {
         internal const string CA1810RuleId = "CA1810";
         internal const string CA2207RuleId = "CA2207";
@@ -45,42 +47,85 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1810Rule, CA2207Rule);
 
-        protected abstract bool InitialiesStaticField(SyntaxNode node, SemanticModel semanticModel, CancellationToken cancellationToken);
-        protected abstract TLanguageKindEnum AssignmentNodeKind { get; }
-
         public override void Initialize(AnalysisContext analysisContext)
         {
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCodeBlockStartAction<TLanguageKindEnum>(codeBlockStartContext =>
+            analysisContext.RegisterOperationBlockStartAction(context =>
             {
-                if (codeBlockStartContext.OwningSymbol is not IMethodSymbol methodSym ||
-                    !methodSym.IsStatic ||
-                    methodSym.MethodKind != MethodKind.SharedConstructor)
+                if (context.OwningSymbol is not IMethodSymbol method ||
+                    !method.IsStatic ||
+                    method.MethodKind != MethodKind.StaticConstructor)
                 {
                     return;
                 }
 
+                var isStaticCtorMandatory = new AtomicBoolean();
                 var initializesStaticField = false;
-                codeBlockStartContext.RegisterSyntaxNodeAction(syntaxContext =>
+                context.RegisterOperationAction(context =>
                 {
-                    if (!initializesStaticField)
-                    {
-                        initializesStaticField = InitialiesStaticField(syntaxContext.Node, syntaxContext.SemanticModel, syntaxContext.CancellationToken);
-                    }
-                }, AssignmentNodeKind);
+                    var assignment = (IAssignmentOperation)context.Operation;
 
-                codeBlockStartContext.RegisterCodeBlockEndAction(codeBlockEndContext =>
-                {
-                    if (initializesStaticField)
+                    if (!isStaticCtorMandatory.Value &&
+                        assignment.Target is IFieldReferenceOperation fieldReference &&
+                        fieldReference.Member.IsStatic)
                     {
-                        DiagnosticDescriptor descriptor = methodSym.ContainingType.IsReferenceType ? CA1810Rule : CA2207Rule;
-                        Diagnostic diagnostic = Diagnostic.Create(descriptor, methodSym.Locations[0], methodSym.ContainingType.Name);
-                        codeBlockEndContext.ReportDiagnostic(diagnostic);
+                        if (assignment.GetAncestor<IAnonymousFunctionOperation>(OperationKind.AnonymousFunction) != null)
+                        {
+                            isStaticCtorMandatory.Value = true;
+                        }
+                        else
+                        {
+                            initializesStaticField = true;
+                        }
+                    }
+                }, OperationKind.SimpleAssignment);
+
+                context.RegisterOperationAction(context =>
+                {
+                    isStaticCtorMandatory.Value = true;
+                }, OperationKind.EventAssignment);
+
+                context.RegisterOperationBlockEndAction(context =>
+                {
+                    if (initializesStaticField && !isStaticCtorMandatory.Value)
+                    {
+                        context.ReportDiagnostic(
+                            method.CreateDiagnostic(
+                                method.ContainingType.IsReferenceType ? CA1810Rule : CA2207Rule,
+                                method.ContainingType.Name));
                     }
                 });
             });
+        }
+
+        private class AtomicBoolean
+        {
+            private const int TRUE_VALUE = 1;
+            private const int FALSE_VALUE = 0;
+            private int zeroOrOne = FALSE_VALUE;
+
+            public AtomicBoolean(bool initialValue = false)
+            {
+                zeroOrOne = initialValue ? TRUE_VALUE : FALSE_VALUE;
+            }
+
+            public bool Value
+            {
+                get { return Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, TRUE_VALUE) == TRUE_VALUE; }
+                set
+                {
+                    if (value)
+                    {
+                        Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, FALSE_VALUE);
+                    }
+                    else
+                    {
+                        Interlocked.CompareExchange(ref zeroOrOne, FALSE_VALUE, TRUE_VALUE);
+                    }
+                }
+            }
         }
     }
 }

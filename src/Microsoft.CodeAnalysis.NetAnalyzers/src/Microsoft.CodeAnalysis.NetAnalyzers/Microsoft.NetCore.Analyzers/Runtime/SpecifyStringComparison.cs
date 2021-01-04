@@ -17,22 +17,42 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class SpecifyStringComparisonAnalyzer : DiagnosticAnalyzer
     {
-        internal const string RuleId = "CA1307";
+        private const string RuleId_CA1307 = "CA1307";
+        private const string RuleId_CA1310 = "CA1310";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly ImmutableArray<string> s_CA1310MethodNamesWithFirstStringParameter =
+            ImmutableArray.Create("Compare", "StartsWith", "EndsWith", "IndexOf", "LastIndexOf");
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
+        private static readonly LocalizableString s_localizableCA1307Title = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1307Title), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableCA1307Message = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1307Message), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableCA1307Description = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1307Description), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+
+        internal static DiagnosticDescriptor Rule_CA1307 = DiagnosticDescriptorHelper.Create(RuleId_CA1307,
+                                                                             s_localizableCA1307Title,
+                                                                             s_localizableCA1307Message,
                                                                              DiagnosticCategory.Globalization,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,
-                                                                             description: s_localizableDescription,
+                                                                             RuleLevel.Disabled,
+                                                                             description: s_localizableCA1307Description,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        private static readonly LocalizableString s_localizableCA1310Title = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Title), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableCA1310Message = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Message), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableCA1310Description = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Description), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+
+        internal static DiagnosticDescriptor Rule_CA1310 = DiagnosticDescriptorHelper.Create(RuleId_CA1310,
+                                                                             s_localizableCA1310Title,
+                                                                             s_localizableCA1310Message,
+                                                                             DiagnosticCategory.Globalization,
+                                                                             RuleLevel.IdeHidden_BulkConfigurable,
+                                                                             description: s_localizableCA1310Description,
+                                                                             isPortedFxCopRule: false,
+                                                                             isDataflowRule: false);
+
+        private static readonly ImmutableArray<OperationKind> s_LambdaOrLocalFunctionKinds =
+            ImmutableArray.Create(OperationKind.AnonymousFunction, OperationKind.LocalFunction);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule_CA1307, Rule_CA1310);
 
         public override void Initialize(AnalysisContext analysisContext)
         {
@@ -50,9 +70,83 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                var objectType = csaContext.Compilation.GetSpecialType(SpecialType.System_Object);
-                var booleanType = csaContext.Compilation.GetSpecialType(SpecialType.System_Boolean);
-                var integerType = csaContext.Compilation.GetSpecialType(SpecialType.System_Int32);
+                var overloadMap = GetWellKnownStringOverloads(csaContext.Compilation, stringType, stringComparisonType);
+
+                var linqExpressionType = csaContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+
+                csaContext.RegisterOperationAction(oaContext =>
+                {
+                    var invocationExpression = (IInvocationOperation)oaContext.Operation;
+                    var targetMethod = invocationExpression.TargetMethod;
+
+                    if (targetMethod.IsGenericMethod ||
+                        targetMethod.ContainingType == null ||
+                        targetMethod.ContainingType.IsErrorType())
+                    {
+                        return;
+                    }
+
+                    if (linqExpressionType != null)
+                    {
+                        var enclosingLambdaOrLocalFunc = invocationExpression.GetAncestor(s_LambdaOrLocalFunctionKinds);
+
+                        // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                        // that the underlying call doesn't have the comparison option so we want to bail-out.
+                        if (enclosingLambdaOrLocalFunc?.Parent?.Type?.OriginalDefinition is { } lambdaType
+                            && linqExpressionType.Equals(lambdaType))
+                        {
+                            return;
+                        }
+                    }
+
+                    // Report correctness issue CA1310 for known string comparison methods that default to culture specific string comparison:
+                    // https://docs.microsoft.com/dotnet/standard/base-types/best-practices-strings#string-comparisons-that-use-the-current-culture
+                    if (targetMethod.ContainingType.SpecialType == SpecialType.System_String &&
+                        !overloadMap.IsEmpty &&
+                        overloadMap.ContainsKey(targetMethod))
+                    {
+                        ReportDiagnostic(
+                            Rule_CA1310,
+                            oaContext,
+                            invocationExpression,
+                            targetMethod,
+                            overloadMap[targetMethod]);
+
+                        return;
+                    }
+
+                    // Report maintainability issue CA1307 for any method that has an additional overload with the exact same parameter list,
+                    // plus as additional StringComparison parameter. Default StringComparison may or may not match user's intent,
+                    // but it is recommended to explicitly specify it for clarity and readability:
+                    // https://docs.microsoft.com/dotnet/standard/base-types/best-practices-strings#recommendations-for-string-usage
+                    IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>();
+                    if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
+                    {
+                        var correctOverload = methodsWithSameNameAsTargetMethod
+                                                .GetMethodOverloadsWithDesiredParameterAtTrailing(targetMethod, stringComparisonType)
+                                                .FirstOrDefault();
+
+                        if (correctOverload != null)
+                        {
+                            ReportDiagnostic(
+                                Rule_CA1307,
+                                oaContext,
+                                invocationExpression,
+                                targetMethod,
+                                correctOverload);
+                        }
+                    }
+                }, OperationKind.Invocation);
+            });
+
+            static ImmutableDictionary<IMethodSymbol, IMethodSymbol> GetWellKnownStringOverloads(
+                Compilation compilation,
+                INamedTypeSymbol stringType,
+                INamedTypeSymbol stringComparisonType)
+            {
+                var objectType = compilation.GetSpecialType(SpecialType.System_Object);
+                var booleanType = compilation.GetSpecialType(SpecialType.System_Boolean);
+                var integerType = compilation.GetSpecialType(SpecialType.System_Int32);
                 var stringCompareToNamedMethods = stringType.GetMembers("CompareTo").OfType<IMethodSymbol>();
                 var stringCompareToParameterString = stringCompareToNamedMethods.GetFirstOrDefaultMemberWithParameterInfos(
                                                          GetParameterInfo(stringType));
@@ -88,60 +182,41 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 overloadMapBuilder.AddKeyValueIfNotNull(stringCompareToParameterObject, stringCompareParameterStringStringStringComparison);
                 overloadMapBuilder.AddKeyValueIfNotNull(stringCompareParameterStringStringBool, stringCompareParameterStringStringStringComparison);
                 overloadMapBuilder.AddKeyValueIfNotNull(stringCompareParameterStringIntStringIntIntBool, stringCompareParameterStringIntStringIntIntComparison);
-                var overloadMap = overloadMapBuilder.ToImmutable();
 
-                csaContext.RegisterOperationAction(oaContext =>
+                foreach (var methodName in s_CA1310MethodNamesWithFirstStringParameter)
                 {
-                    var invocationExpression = (IInvocationOperation)oaContext.Operation;
-                    var targetMethod = invocationExpression.TargetMethod;
-
-                    if (targetMethod.IsGenericMethod ||
-                        targetMethod.ContainingType == null ||
-                        targetMethod.ContainingType.IsErrorType())
+                    var methodsWithMethodName = stringType.GetMembers(methodName).OfType<IMethodSymbol>();
+                    foreach (var method in methodsWithMethodName)
                     {
-                        return;
-                    }
-
-                    if (!overloadMap.IsEmpty && overloadMap.ContainsKey(targetMethod))
-                    {
-                        ReportDiagnostic(
-                            oaContext,
-                            invocationExpression,
-                            targetMethod,
-                            overloadMap[targetMethod]);
-
-                        return;
-                    }
-
-                    IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>();
-                    if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
-                    {
-                        var correctOverload = methodsWithSameNameAsTargetMethod
-                                                .GetMethodOverloadsWithDesiredParameterAtTrailing(targetMethod, stringComparisonType)
-                                                .FirstOrDefault();
-
-                        if (correctOverload != null)
+                        if (!method.Parameters.IsEmpty &&
+                            method.Parameters[0].Type.SpecialType == SpecialType.System_String &&
+                            !method.Parameters[^1].Type.Equals(stringComparisonType))
                         {
-                            ReportDiagnostic(
-                                oaContext,
-                                invocationExpression,
-                                targetMethod,
-                                correctOverload);
+                            var recommendedMethod = methodsWithMethodName
+                                                    .GetMethodOverloadsWithDesiredParameterAtTrailing(method, stringComparisonType)
+                                                    .FirstOrDefault();
+                            if (recommendedMethod != null)
+                            {
+                                overloadMapBuilder.AddKeyValueIfNotNull(method, recommendedMethod);
+                            }
                         }
                     }
-                }, OperationKind.Invocation);
-            });
+                }
+
+                return overloadMapBuilder.ToImmutable();
+            }
         }
 
         private static void ReportDiagnostic(
+            DiagnosticDescriptor rule,
             OperationAnalysisContext oaContext,
             IInvocationOperation invocationExpression,
             IMethodSymbol targetMethod,
             IMethodSymbol correctOverload)
         {
             oaContext.ReportDiagnostic(
-                invocationExpression.Syntax.CreateDiagnostic(
-                    Rule,
+                invocationExpression.CreateDiagnostic(
+                    rule,
                     targetMethod.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
                     oaContext.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
                     correctOverload.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));

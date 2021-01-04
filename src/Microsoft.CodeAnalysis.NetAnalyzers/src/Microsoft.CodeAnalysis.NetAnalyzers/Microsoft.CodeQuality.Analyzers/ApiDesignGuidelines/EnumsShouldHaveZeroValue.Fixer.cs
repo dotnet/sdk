@@ -95,7 +95,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static async Task<Document> GetUpdatedDocumentForRuleNameRenameAsync(Document document, IFieldSymbol field, CancellationToken cancellationToken)
         {
             Solution newSolution = await CodeAnalysis.Rename.Renamer.RenameSymbolAsync(document.Project.Solution, field, "None", null, cancellationToken).ConfigureAwait(false);
-            return newSolution.GetDocument(document.Id);
+            return newSolution.GetDocument(document.Id)!;
         }
 
         private static async Task<Document> ApplyRuleNameMultipleZeroAsync(Document document, INamedTypeSymbol enumType, CancellationToken cancellationToken)

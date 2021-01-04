@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
-  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
+  <file datatype="xml" source-language="en" target-language="zh-HANS" original="../MicrosoftNetFrameworkAnalyzersResources.resx">
     <body>
       <trans-unit id="SpecifyMessageBoxOptionsTitle">
         <source>Specify MessageBoxOptions</source>
@@ -173,13 +173,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
-        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</source>
-        <target state="translated">捕获损坏状态异常可能会掩盖错误(例如访问冲突)，从而导致执行状态不一致或使攻击者更轻易地危害系统安全。相反，请捕获并处理一组更具体的异常类型或重新引发异常</target>
+        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
+        <target state="translated">捕获损坏状态异常可能会掩盖错误(例如访问冲突)，从而导致执行状态不一致或使攻击者更轻易地危害系统安全。相反，请捕获并处理一组更具体的异常类型或重新引发异常。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
-        <source>{0} is catching corrupted state exception.</source>
-        <target state="translated">{0} 正在捕获损坏状态异常。</target>
+        <source>{0} is catching corrupted state exception</source>
+        <target state="translated">{0} 正在捕获损坏状态异常</target>
         <note />
       </trans-unit>
       <trans-unit id="TypesShouldNotExtendCertainBaseTypesTitle">
@@ -313,7 +313,7 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
         <target state="translated">XmlDocument 派生类 {0} 没有显式定义构造函数。</target>
         <note>CA3077</note>
       </trans-unit>
@@ -328,7 +328,7 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
         <target state="translated">XmlTextReader 派生类 {0} 没有显式定义构造函数。</target>
         <note>CA3077</note>
       </trans-unit>
@@ -343,7 +343,7 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
         <target state="translated">向 XslCompiledTransform.Load 方法提供不安全的 XsltSettings 实例和 XmlResolver 实例可能存在危害，因为它允许在 XSL 内处理脚本，这可能导致在不受信任的 XSL 输入上执行恶意代码。请将不安全的 XsltSettings 参数替换为 XsltSettings.Default 或已禁用文档函数和脚本执行的实例，或者将 XmlResolver 参数替换为 null 或 XmlSecureResolver 实例。如果已知该输入来自可靠来源，且必须支持来自事先未知位置的外部资源解析，则可能会禁止该消息。</target>
         <note>CA3076</note>
       </trans-unit>
@@ -363,8 +363,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
-        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</source>
-        <target state="translated">在控制器操作 {0} 上, MVC 不支持使用 HttpVerbs.GET 和 ValidateAntiForgeryTokenAttribute。</target>
+        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
+        <target state="translated">在控制器操作 {0} 上, MVC 不支持使用 HttpVerbs.GET 和 ValidateAntiForgeryTokenAttribute</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage">
@@ -373,8 +373,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</source>
-        <target state="translated">MVC 控制器操作 {0} 上缺少默认接受 POST 请求的 ValidateAntiForgeryTokenAttribute。</target>
+        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
+        <target state="translated">MVC 控制器操作 {0} 上缺少默认接受 POST 请求的 ValidateAntiForgeryTokenAttribute</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenTitle">
@@ -383,8 +383,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</source>
-        <target state="translated">控制器操作 {0} 上缺少 ValidateAntiForgeryTokenAttribute。</target>
+        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
+        <target state="translated">控制器操作 {0} 上缺少 ValidateAntiForgeryTokenAttribute</target>
         <note />
       </trans-unit>
     </body>

@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Security.DataSetDataTableInSerializableObjectGraphAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInSerializableObjectGraphAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
@@ -403,7 +403,7 @@ namespace Blah
             var csharpTest = new VerifyCS.Test
             {
                 ReferenceAssemblies = AdditionalMetadataReferences
-                    .DefaultWithNewtonsoftJson
+                    .DefaultWithNewtonsoftJson12
                     .AddAssemblies(ImmutableArray.Create("System.Data")),
                 TestState =
                 {
@@ -417,8 +417,10 @@ namespace Blah
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DataSetDataTableInSerializableObjectGraphAnalyzer.ObjectGraphContainsDangerousTypeDescriptor)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
     }
 }

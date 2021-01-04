@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -33,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 s_Title,
                 s_Message,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_Description,
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
@@ -94,7 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         if (arguments.Length == 1 &&
                             arguments[0].Parameter.Type.SpecialType == SpecialType.System_Int32 &&
                             arguments[0].Value.ConstantValue.HasValue &&
-                            Convert.ToInt32(arguments[0].Value.ConstantValue.Value) < 2048)
+                            Convert.ToInt32(arguments[0].Value.ConstantValue.Value, CultureInfo.InvariantCulture) < 2048)
                         {
                             operationAnalysisContext.ReportDiagnostic(
                                 objectCreationOperation.CreateDiagnostic(
@@ -163,7 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 arrayCreationOperation.Initializer.ElementValues.Any(
                                     s => s is IConversionOperation conversionOperation &&
                                         conversionOperation.Operand.ConstantValue.HasValue &&
-                                        Convert.ToInt32(conversionOperation.Operand.ConstantValue.Value) < 2048) /* Specify the key size is smaller than 2048 explicitly */ )
+                                        Convert.ToInt32(conversionOperation.Operand.ConstantValue.Value, CultureInfo.InvariantCulture) < 2048) /* Specify the key size is smaller than 2048 explicitly */ )
                             {
                                 operationAnalysisContext.ReportDiagnostic(
                                 invocationOperation.CreateDiagnostic(
