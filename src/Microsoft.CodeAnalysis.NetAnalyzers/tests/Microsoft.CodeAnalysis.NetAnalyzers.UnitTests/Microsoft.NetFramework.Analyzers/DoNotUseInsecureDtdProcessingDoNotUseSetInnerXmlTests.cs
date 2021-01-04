@@ -884,9 +884,13 @@ End Namespace",
         }
 
         private static DiagnosticResult GetCA3075InnerXmlCSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseSetInnerXml).WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3075InnerXmlBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseSetInnerXml).WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

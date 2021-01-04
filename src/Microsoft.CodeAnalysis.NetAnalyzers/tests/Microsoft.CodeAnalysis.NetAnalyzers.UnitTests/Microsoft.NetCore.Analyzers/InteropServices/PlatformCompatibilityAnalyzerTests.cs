@@ -2097,18 +2097,26 @@ public class OsDependentClass
             {
                 if (platform.Equals(suppressingVersion, System.StringComparison.OrdinalIgnoreCase))
                 {
+#pragma warning disable RS0030 // Do not used banned APIs
                     await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(9, 32).
+#pragma warning restore RS0030 // Do not used banned APIs
                         WithArguments("OsDependentClass", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, platform, version),
                         GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, suppressingPlatform, suppressingVersion)),
+#pragma warning disable RS0030 // Do not used banned APIs
                         VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(10, 9).
+#pragma warning restore RS0030 // Do not used banned APIs
                         WithArguments("OsDependentClass.M2()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, platform, version),
                         GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, suppressingPlatform, suppressingVersion)));
                 }
                 else
                 {
+#pragma warning disable RS0030 // Do not used banned APIs
                     await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(9, 32).
+#pragma warning restore RS0030 // Do not used banned APIs
                         WithArguments("OsDependentClass", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, platform, version)),
+#pragma warning disable RS0030 // Do not used banned APIs
                         VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsAllPlatforms).WithLocation(10, 9).
+#pragma warning restore RS0030 // Do not used banned APIs
                         WithArguments("OsDependentClass.M2()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, platform, version)));
                 }
             }
@@ -2151,10 +2159,14 @@ public class C
     }
 }";
 
+#pragma warning disable RS0030 // Do not used banned APIs
             await VerifyAnalyzerAsyncCs(source, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).
                 WithLocation(11, 9).WithArguments("C.StaticClass.LinuxMethod()", "'linux'", "'Linux'"),
+#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).
                 WithLocation(12, 9).WithArguments("C.StaticClass.LinuxVersionedMethod()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "linux", "4.8"),
+#pragma warning restore RS0030 // Do not used banned APIs
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "Linux")));
         }
 
@@ -2218,12 +2230,18 @@ public class C
     public void DoesNotWorkOnWindows() { }
 }";
             await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms,
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsReachable).WithLocation(18, 9).
+#pragma warning restore RS0030 // Do not used banned APIs
                 WithArguments("C.DoesNotWorkOnWindows()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0.1903"),
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "windows", "10.0.2000")),
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsAllPlatforms).WithLocation(31, 9).
+#pragma warning restore RS0030 // Do not used banned APIs
                 WithArguments("C.DoesNotWorkOnWindows()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0.1903", "10.0.2004")),
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(38, 9).
+#pragma warning restore RS0030 // Do not used banned APIs
                 WithArguments("C.DoesNotWorkOnWindows()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0.2004"),
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0.2000")));
         }

@@ -127,8 +127,12 @@ public class Test
 }
 ";
             await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms,
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(24, 13).WithArguments("BrowserOnlyType", "'browser'"),
+#pragma warning restore RS0030 // Do not used banned APIs
+#pragma warning disable RS0030 // Do not used banned APIs
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(25, 13).WithArguments("WindowsOnlyType", "'windows'"));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
