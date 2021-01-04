@@ -14,8 +14,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region Helper methods
 
         private DiagnosticResult CSharpResult(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         #endregion
 

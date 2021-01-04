@@ -14,8 +14,10 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseAutoValidateAntiforgeryTokenTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(rule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)

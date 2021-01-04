@@ -695,18 +695,24 @@ End Class
         }
 
         private static DiagnosticResult GetCSharpCA1034ResultAt(int line, int column, string nestedTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(NestedTypesShouldNotBeVisibleAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(nestedTypeName);
 
         private static DiagnosticResult GetBasicCA1034ResultAt(int line, int column, string nestedTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(NestedTypesShouldNotBeVisibleAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(nestedTypeName);
 
         private static DiagnosticResult GetBasicCA1034ModuleResultAt(int line, int column, string nestedTypeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(NestedTypesShouldNotBeVisibleAnalyzer.VisualBasicModuleRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(nestedTypeName);
     }
 }

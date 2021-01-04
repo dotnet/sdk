@@ -1239,48 +1239,66 @@ CA 1501: 10
 
         #region Helpers
         private static DiagnosticResult GetCSharpCA1501ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold, string baseTypes)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(CodeMetricsAnalyzer.CA1501Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, metricValue, threshold, baseTypes);
 
         private static DiagnosticResult GetBasicCA1501ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold, string baseTypes)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(CodeMetricsAnalyzer.CA1501Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, metricValue, threshold, baseTypes);
 
         private static DiagnosticResult GetCSharpCA1502ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(CodeMetricsAnalyzer.CA1502Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, metricValue, threshold);
 
         private static DiagnosticResult GetBasicCA1502ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(CodeMetricsAnalyzer.CA1502Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, metricValue, threshold);
 
         private static DiagnosticResult GetCSharpCA1505ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(CodeMetricsAnalyzer.CA1505Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, metricValue, threshold);
 
         private static DiagnosticResult GetBasicCA1505ExpectedDiagnostic(int line, int column, string symbolName, int metricValue, int threshold)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(CodeMetricsAnalyzer.CA1505Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, metricValue, threshold);
 
         private static DiagnosticResult GetCSharpCA1506ExpectedDiagnostic(int line, int column, string symbolName, int coupledTypesCount, int namespaceCount, int threshold)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(CodeMetricsAnalyzer.CA1506Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, coupledTypesCount, namespaceCount, threshold);
 
         private static DiagnosticResult GetBasicCA1506ExpectedDiagnostic(int line, int column, string symbolName, int coupledTypesCount, int namespaceCount, int threshold)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(CodeMetricsAnalyzer.CA1506Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, coupledTypesCount, namespaceCount, threshold);
 
         private static DiagnosticResult GetCA1509ExpectedDiagnostic(int line, int column, string entry, string additionalFile)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(CodeMetricsAnalyzer.InvalidEntryInCodeMetricsConfigFileRule)
                 .WithLocation(additionalFile, line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(entry, additionalFile);
 
         private const string AdditionalFileName = "CodeMetricsConfig.txt";
