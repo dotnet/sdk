@@ -298,8 +298,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
-        <source>Use Secure Cookies In ASP.Net Core</source>
-        <target state="translated">Používejte v ASP.Net Core zabezpečené soubory cookie</target>
+        <source>Use Secure Cookies In ASP.NET Core</source>
+        <target state="needs-review-translation">Používejte v ASP.Net Core zabezpečené soubory cookie</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
@@ -1388,8 +1388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
-        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
-        <target state="translated">Zajistěte použití zabezpečených souborů cookie v ASP.Net Core</target>
+        <source>Ensure Use Secure Cookies In ASP.NET Core</source>
+        <target state="needs-review-translation">Zajistěte použití zabezpečených souborů cookie v ASP.Net Core</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">

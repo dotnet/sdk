@@ -298,8 +298,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCore">
-        <source>Use Secure Cookies In ASP.Net Core</source>
-        <target state="translated">ASP.NET Core에서 보안 쿠키 사용</target>
+        <source>Use Secure Cookies In ASP.NET Core</source>
+        <target state="needs-review-translation">ASP.NET Core에서 보안 쿠키 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="DefinitelyUseSecureCookiesASPNetCoreMessage">
@@ -1388,8 +1388,8 @@
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCore">
-        <source>Ensure Use Secure Cookies In ASP.Net Core</source>
-        <target state="translated">ASP.NET Core에서 보안 쿠키 사용 확인</target>
+        <source>Ensure Use Secure Cookies In ASP.NET Core</source>
+        <target state="needs-review-translation">ASP.NET Core에서 보안 쿠키 사용 확인</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseSecureCookiesASPNetCoreMessage">
