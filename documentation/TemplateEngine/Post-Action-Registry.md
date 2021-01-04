@@ -25,7 +25,11 @@ The standard properties are listed below.
 Used to restore NuGet packages after project create.
 
  - **Action ID** : `210D431B-A78B-4D2F-B762-4ED3E3EA9025`
- - **Specific Configuration** : None
+ - **Specific Configuration** :
+    - `args`:
+      - `files` (string|array) (optional):
+        - `string`: A semicolon delimited list of files that should be restored, if not specified, all primary outputs are restored.
+        - `array`: An array of files that should be restored, if not specified, all primary outputs are restored
  - **Supported in**:
    - `dotnet new3`
    - `dotnet new` (2.0.0 or higher)
