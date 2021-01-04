@@ -937,7 +937,17 @@
             "type": "string",
             "description": "The text to replace with the value of this symbol"
           },
-          "datatype": { "$ref": "#/definitions/datatype" }
+          "datatype": { "$ref": "#/definitions/datatype" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "bind",
+              "derived",
+              "generated",
+              "parameter",
+              "computed"
+            ]
+          }
         },
         "oneOf": [
           {
