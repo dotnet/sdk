@@ -202,8 +202,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            // Do not analyze constructors and finalizers.
-            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer())
+            // Do not analyze constructors, finalizers, and indexers.
+            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer() || methodSymbol.AssociatedSymbol.IsIndexer())
             {
                 return false;
             }
