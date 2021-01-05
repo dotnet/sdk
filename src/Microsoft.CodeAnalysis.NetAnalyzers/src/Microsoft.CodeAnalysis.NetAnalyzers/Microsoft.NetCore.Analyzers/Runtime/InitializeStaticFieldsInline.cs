@@ -113,7 +113,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             public bool Value
             {
-                get { return Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, TRUE_VALUE) == TRUE_VALUE; }
+                get => Interlocked.CompareExchange(ref zeroOrOne, TRUE_VALUE, TRUE_VALUE) == TRUE_VALUE;
                 set
                 {
                     if (value)

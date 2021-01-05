@@ -20,8 +20,8 @@ namespace Microsoft.NetCore.Analyzers.Security
             isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotHardCodeCertificateDescription));
 
-        protected override SinkKind SinkKind { get { return SinkKind.HardcodedCertificate; } }
+        protected override SinkKind SinkKind => SinkKind.HardcodedCertificate;
 
-        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor { get { return Rule; } }
+        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor => Rule;
     }
 }
