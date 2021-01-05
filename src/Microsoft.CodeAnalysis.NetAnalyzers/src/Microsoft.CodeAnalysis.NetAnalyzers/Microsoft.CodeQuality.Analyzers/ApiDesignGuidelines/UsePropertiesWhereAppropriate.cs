@@ -56,6 +56,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 var taskTypes = taskTypesBuilder.ToImmutable();
 
+                var inotifyCompletionType = context.Compilation.GetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeCompilerServicesINotifyCompletion);
+                var icriticalNotifyCompletionType = context.Compilation.GetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeCompilerServicesICriticalNotifyCompletion);
+
                 context.RegisterOperationBlockStartAction(context =>
                 {
                     if (context.OwningSymbol is not IMethodSymbol methodSymbol ||
@@ -73,6 +78,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Ensure that the method is non-generic, non-virtual/override, has no overloads and doesn't have special names: 'GetHashCode' or 'GetEnumerator'.
                     // Also avoid generating this diagnostic if the method body has any invocation expressions.
                     // Also avoid implicit interface implementation (explicit are handled through the member accessibility)
+                    // Also avoid GetAwaiter and GetResult from awaitable-awaiter patterns.
                     if (methodSymbol.IsGenericMethod ||
                         methodSymbol.IsVirtual ||
                         methodSymbol.IsOverride ||
@@ -80,7 +86,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         methodSymbol.Name == GetEnumeratorName ||
                         methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
                         taskTypes.Contains(methodSymbol.ReturnType.OriginalDefinition) ||
-                        methodSymbol.IsImplementationOfAnyImplicitInterfaceMember())
+                        methodSymbol.IsImplementationOfAnyImplicitInterfaceMember() ||
+                        methodSymbol.IsGetAwaiterFromAwaitablePattern(inotifyCompletionType, icriticalNotifyCompletionType) ||
+                        methodSymbol.IsGetResultFromAwaiterPattern(inotifyCompletionType, icriticalNotifyCompletionType))
                     {
                         return;
                     }
