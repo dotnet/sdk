@@ -396,6 +396,12 @@ Public Class MembersTests
     Public Sub SomeNotSupportedMethod()
         Throw New System.NotSupportedException()
     End Sub
+
+    Default Public ReadOnly Property Item(x As Integer) As Integer
+        Get
+            Return 42
+        End Get
+    End Property
 End Class
 
 Public Class Generic(Of T)
