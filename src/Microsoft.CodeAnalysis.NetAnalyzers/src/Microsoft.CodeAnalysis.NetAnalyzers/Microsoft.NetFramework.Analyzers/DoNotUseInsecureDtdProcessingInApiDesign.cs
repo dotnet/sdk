@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -118,34 +119,42 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     var assignment = (IAssignmentOperation)context.Operation;
 
-                    if (!hasSetSecureXmlResolver.Value)
+                    if (hasSetSecureXmlResolver.Value)
                     {
-                        var result = IsAssigningIntendedValueToPropertyDerivedFromType(
-                            assignment,
-                            property =>
-                                SecurityDiagnosticHelpers.IsXmlDocumentXmlResolverProperty(property, _xmlTypes),
-                            operation =>
-                                operation.HasNullConstantValue()
-                                || SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
-                            out _);
-                        hasSetSecureXmlResolver.Value = result;
+                        return;
+                    }
+
+                    var result = IsAssigningIntendedValueToPropertyDerivedFromType(
+                        assignment,
+                        property =>
+                            SecurityDiagnosticHelpers.IsXmlDocumentXmlResolverProperty(property, _xmlTypes),
+                        operation =>
+                            operation.HasNullConstantValue()
+                            || SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
+                        out _);
+
+                    if (result)
+                    {
+                        hasSetSecureXmlResolver.Value = true;
                     }
                 }, OperationKind.SimpleAssignment);
 
                 context.RegisterOperationBlockEndAction(context =>
                 {
-                    if (!hasSetSecureXmlResolver.Value)
+                    if (hasSetSecureXmlResolver.Value)
                     {
-                        context.ReportDiagnostic(
-                            methodSymbol.CreateDiagnostic(
-                                RuleDoNotUseInsecureDtdProcessingInApiDesign,
-                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage),
-                                    SecurityDiagnosticHelpers.GetNonEmptyParentName(methodSymbol)
-                                )
-                            )
-                        );
+                        return;
                     }
+
+                    context.ReportDiagnostic(
+                        methodSymbol.CreateDiagnostic(
+                            RuleDoNotUseInsecureDtdProcessingInApiDesign,
+                            SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                                nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage),
+                                SecurityDiagnosticHelpers.GetNonEmptyParentName(methodSymbol)
+                            )
+                        )
+                    );
                 });
             }
 
@@ -223,7 +232,11 @@ namespace Microsoft.NetFramework.Analyzers
                                 operation.HasNullConstantValue()
                                 || SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
                             out isTargetProperty);
-                        hasSetSecureXmlResolver.Value = result;
+
+                        if (result)
+                        {
+                            hasSetSecureXmlResolver.Value = true;
+                        }
                     }
 
                     if (!isTargetProperty && !isDtdProcessingDisabled.Value)
@@ -237,7 +250,11 @@ namespace Microsoft.NetFramework.Analyzers
                                 || _xmlTypes.DtdProcessing == null
                                 || !fieldReference.Field.MatchMemberByName(_xmlTypes.DtdProcessing, SecurityMemberNames.Parse),
                             out _);
-                        isDtdProcessingDisabled.Value = result;
+
+                        if (result)
+                        {
+                            isDtdProcessingDisabled.Value = true;
+                        }
                     }
                 }, OperationKind.SimpleAssignment);
 
@@ -293,15 +310,18 @@ namespace Microsoft.NetFramework.Analyzers
                             SecurityDiagnosticHelpers.IsXmlTextReaderXmlResolverProperty(property, _xmlTypes),
                         operation =>
                             !operation.HasNullConstantValue()
-                            || SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
+                            && !SecurityDiagnosticHelpers.IsXmlSecureResolverType(operation.Type, _xmlTypes),
                         out var isTargetProperty);
 
                     if (isTargetProperty)
                     {
                         hasSetXmlResolver.Value = true;
                         // use 'AND' to avoid false positives (but increase false negative rate)
-                        hasSetInsecureXmlResolver.Value &= result;
-                        if (result)
+                        if (!result)
+                        {
+                            hasSetInsecureXmlResolver.Value = false;
+                        }
+                        else
                         {
                             locations.Enqueue(assignment.Syntax.GetLocation());
                         }
@@ -322,8 +342,11 @@ namespace Microsoft.NetFramework.Analyzers
                     {
                         isDtdProcessingSet.Value = true;
                         // use 'AND' to avoid false positives (but increase false negative rate)
-                        isDtdProcessingEnabled.Value &= result;
-                        if (result)
+                        if (!result)
+                        {
+                            isDtdProcessingEnabled.Value = false;
+                        }
+                        else
                         {
                             locations.Enqueue(assignment.Syntax.GetLocation());
                         }
@@ -349,7 +372,7 @@ namespace Microsoft.NetFramework.Analyzers
                         // TODO: Only first location is shown in error, maybe we want to report on method instead?
                         //       Or on each insecure assignment?
                         context.ReportDiagnostic(
-                            locations.CreateDiagnostic(
+                            locations.OrderBy(l => l.SourceSpan.Start).CreateDiagnostic(
                                 RuleDoNotUseInsecureDtdProcessingInApiDesign,
                                 SecurityDiagnosticHelpers.GetLocalizableResourceString(
                                     nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage),

@@ -264,7 +264,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
         }
 
         /// <summary>
-        /// Get non-empty class or method name which encloses the current syntax node
+        /// Get non-empty class or method name which encloses the given symbol.
         /// </summary>
         public static string GetNonEmptyParentName(ISymbol symbol)
         {
