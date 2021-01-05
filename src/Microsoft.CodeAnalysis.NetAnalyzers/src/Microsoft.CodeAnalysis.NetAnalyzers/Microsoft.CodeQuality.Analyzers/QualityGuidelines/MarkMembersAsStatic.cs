@@ -111,18 +111,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         return;
                     }
 
-                    bool isInstanceReferenced = methodSymbol.AssociatedSymbol.IsIndexer();
+                    bool isInstanceReferenced = false;
 
-                    if (!isInstanceReferenced)
+                    blockStartContext.RegisterOperationAction(operationContext =>
                     {
-                        blockStartContext.RegisterOperationAction(operationContext =>
+                        if (((IInstanceReferenceOperation)operationContext.Operation).ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
                         {
-                            if (((IInstanceReferenceOperation)operationContext.Operation).ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
-                            {
-                                isInstanceReferenced = true;
-                            }
-                        }, OperationKind.InstanceReference);
-                    }
+                            isInstanceReferenced = true;
+                        }
+                    }, OperationKind.InstanceReference);
 
                     blockStartContext.RegisterOperationBlockEndAction(blockEndContext =>
                     {
@@ -205,8 +202,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            // Do not analyze constructors and finalizers.
-            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer())
+            // Do not analyze constructors, finalizers, and indexers.
+            if (methodSymbol.IsConstructor() || methodSymbol.IsFinalizer() || methodSymbol.AssociatedSymbol.IsIndexer())
             {
                 return false;
             }
