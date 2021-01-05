@@ -13,10 +13,6 @@
       <HostFxrBrandName>Microsoft .NET Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>
       <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
       <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
-      <BundledTemplates50BrandName>Microsoft .NET Core 5.0 Templates $(Version)</BundledTemplates50BrandName>
-      <BundledTemplates31BrandName>Microsoft .NET Core 3.1 Templates $(Version)</BundledTemplates31BrandName>
-      <BundledTemplates30BrandName>Microsoft .NET Core 3.0 Templates $(Version)</BundledTemplates30BrandName>
-      <BundledTemplates21BrandName>Microsoft .NET Core 2.1 Templates $(Version)</BundledTemplates21BrandName>
     </PropertyGroup>
   </Target>
   

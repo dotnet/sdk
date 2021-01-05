@@ -28,7 +28,8 @@ namespace EndToEnd
             "2.2",
             "3.0",
             "3.1",
-            "5.0"
+            "5.0",
+            "6.0"
         };
 
         public static IEnumerable<string> TargetFrameworkShortFolderVersion

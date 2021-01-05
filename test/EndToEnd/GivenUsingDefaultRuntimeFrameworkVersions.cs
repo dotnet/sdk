@@ -65,19 +65,21 @@ namespace EndToEnd
                 foreach (var version in versions)
                 {
                     var frameworkVersionLine = resolvedVersionsFile.Where(line => line.Contains(framework) && line.Contains(version)).FirstOrDefault();
-                    frameworkVersionLine.Should().NotBeNullOrEmpty();
-                    var defaultVersion = NuGetVersion.Parse(frameworkVersionLine.Split(" ")[1]);
-                    var latestVersion = NuGetVersion.Parse(frameworkVersionLine.Split(" ")[2]);
+                    if (!string.IsNullOrEmpty(frameworkVersionLine))
+                    {
+                        var defaultVersion = NuGetVersion.Parse(frameworkVersionLine.Split(" ")[1]);
+                        var latestVersion = NuGetVersion.Parse(frameworkVersionLine.Split(" ")[2]);
 
-                    if (latestVersion.Patch == 0 && latestVersion.IsPrerelease)
-                    {
-                        defaultVersion.Should().Be(latestVersion,
-                            $"the DefaultRuntimeFrameworkVersion for { framework } { version } in Microsoft.NETCoreSdk.BundledVersions.props does not match latest prerelease version { latestVersion }");
-                    }
-                    else
-                    {
-                        defaultVersion.Should().Be(new NuGetVersion(latestVersion.Major, latestVersion.Minor, 0),
-                            $"the DefaultRuntimeFrameworkVersion for { framework } { version } in Microsoft.NETCoreSdk.BundledVersions.props needs to be updated to { version }.0");
+                        if (latestVersion.Patch == 0 && latestVersion.IsPrerelease)
+                        {
+                            defaultVersion.Should().Be(latestVersion,
+                                $"the DefaultRuntimeFrameworkVersion for { framework } { version } in Microsoft.NETCoreSdk.BundledVersions.props does not match latest prerelease version { latestVersion }");
+                        }
+                        else
+                        {
+                            defaultVersion.Should().Be(new NuGetVersion(latestVersion.Major, latestVersion.Minor, 0),
+                                $"the DefaultRuntimeFrameworkVersion for { framework } { version } in Microsoft.NETCoreSdk.BundledVersions.props needs to be updated to { version }.0");
+                        }
                     }
                 }
             }

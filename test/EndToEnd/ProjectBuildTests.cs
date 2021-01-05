@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.DotNet.TestFramework;
@@ -12,6 +13,21 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
+        //  TODO: Once console template is updated to target net6.0, remove this logic
+        //  https://github.com/dotnet/installer/issues/8974
+        void RetargetProject(string projectDirectory)
+        {
+            var projectFile = Directory.GetFiles(projectDirectory, "*.csproj").Single();
+
+            var projectXml = XDocument.Load(projectFile);
+            var ns = projectXml.Root.Name.Namespace;
+
+            projectXml.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = "net6.0";
+
+            projectXml.Save(projectFile);
+        }
+
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -23,6 +39,8 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
                 .Should().Pass();
+
+            RetargetProject(projectDirectory);
 
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
@@ -62,6 +80,8 @@ namespace EndToEnd.Tests
                 .Execute(newArgs)
                 .Should().Pass();
 
+            RetargetProject(projectDirectory);
+
             string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
 
             var project = XDocument.Load(projectPath);
@@ -80,6 +100,51 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .ExecuteWithCapturedOutput()
                 .Should().Pass().And.HaveStdOutContaining("Hello World!");
+        }
+
+        [WindowsOnlyFact]
+        public void ItCanPublishArm64Winforms()
+        {
+            DirectoryInfo directory = TestAssets.CreateTestDirectory();
+            string projectDirectory = directory.FullName;
+
+            string newArgs = "winforms --no-restore";
+            new NewCommandShim()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(newArgs)
+                .Should().Pass();
+
+            string publishArgs="-r win-arm64";
+            new PublishCommand()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(publishArgs)
+                .Should().Pass();
+            
+            var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
+                .Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault()
+                .Sub("win-arm64").Sub("publish");
+
+            selfContainedPublishDir.Should().HaveFilesMatching("System.Windows.Forms.dll", SearchOption.TopDirectoryOnly);
+            selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
+        }
+        
+        [WindowsOnlyFact]
+        public void ItCantPublishArm64Wpf()
+        {
+            DirectoryInfo directory = TestAssets.CreateTestDirectory();
+            string projectDirectory = directory.FullName;
+
+            string newArgs = "wpf --no-restore";
+            new NewCommandShim()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(newArgs)
+                .Should().Pass();
+
+            string publishArgs="-r win-arm64";
+            new PublishCommand()
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(publishArgs)
+                .Should().Fail();
         }
 
         [Theory]

@@ -63,21 +63,6 @@ Ressourcen
     • SDK-Dokumentation: https://aka.ms/dotnet-sdk-docs
     • Versionshinweise: https://aka.ms/dotnet5-release-notes
     • Tutorials: https://aka.ms/dotnet-tutorials</String>
-<String Id="FirstTimeWelcomeMessageArm64">Die Installation war erfolgreich.
-
-Folgende Komponenten wurden unter [DOTNETHOME] installiert:
-    • .NET SDK [DOTNETSDKVERSION]
-    • .NET-Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core-Runtime [ASPNETCOREVERSION]
-
-Dieses Produkt erfasst Nutzungsdaten.
-    • Weitere Informationen und Deaktivieren der Erfassung: https://aka.ms/dotnet-cli-telemetry
-
-Ressourcen
-    • .NET-Dokumentation: https://aka.ms/dotnet-docs
-    • SDK-Dokumentation: https://aka.ms/dotnet-sdk-docs
-    • Versionshinweise: https://aka.ms/dotnet5-release-notes
-    • Tutorials: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     Das .NET SDK wird zum Erstellen, Ausführen und Testen von .NET-Anwendungen verwendet. Sie können aus mehreren Sprachen, Editoren und Entwicklertools auswählen und ein großes Bibliotheksnetzwerk nutzen, um Apps für das Web, mobile Geräte, Desktops, Gaming und IoT zu entwickeln. Wir wünschen Ihnen viel Spaß damit!</String>
@@ -90,7 +75,7 @@ Ressourcen
   <String Id="InstallationNoteTitle">Installationshinweis</String>
   <String Id="InstallationNote">Während des Installationsvorgangs wird ein Befehl ausgeführt, durch den die Geschwindigkeit der Projektwiederherstellung verbessert und der Offlinezugriff aktiviert wird. Der Vorgang dauert bis zu einer Minute.
   </String>
-  <String Id="VisualStudioWarning">Wenn Sie .NET 5.0 mit Visual Studio verwenden möchten, ist Visual Studio 2019 16.8 oder höher erforderlich. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Erfahren Sie mehr&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Wenn Sie .NET 6.0 mit Visual Studio verwenden möchten, ist Visual Studio 2019 16.8 oder höher erforderlich. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Erfahren Sie mehr&lt;/A&gt;.
 </String>
   <String Id="LicenseAssent">Durch Klicken auf "Installieren" stimmen Sie den nachstehenden Bedingungen zu.</String>
 </WixLocalization>

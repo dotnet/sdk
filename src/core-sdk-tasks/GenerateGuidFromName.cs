@@ -8,21 +8,8 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.DotNet.Cli.Build
 {
-    public class GenerateGuidFromName : Task
+    public class GenerateGuidFromName
     {
-        [Required]
-        public string Name { get; set; }
-
-        [Output]
-        public string OutputGuid { get; set; }
-
-        public override bool Execute()
-        {
-            OutputGuid = GenerateGuid(Name).ToString().ToUpper();
-
-            return true;
-        }
-
         // Generate a Version 5 (SHA1 Name Based) Guid from a name.
         public static Guid GenerateGuid(string name)
         {

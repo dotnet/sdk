@@ -23,8 +23,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         public FileInfo FileInfo => _fileInfo;
 
-        private static DateTime defaultUtcTime = new DateTime(1601, 1, 1, 0, 0, 0);
-
         public AndConstraint<FileInfoAssertions> Exist(string because = "", params object[] reasonArgs)
         {
             Execute.Assertion
@@ -41,18 +39,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                 .BecauseOf(because, reasonArgs) 
                 .FailWith($"Expected File {_fileInfo.FullName} to not exist, but it does.");
             return new AndConstraint<FileInfoAssertions>(this);
-        }
-
-        public AndWhichConstraint<FileInfoAssertions, DateTimeOffset> HaveLastWriteTimeUtc(string because = "", params object[] reasonArgs)
-        {
-            var lastWriteTimeUtc = _fileInfo.LastWriteTimeUtc;
-
-            // If last write time is not valid, it will be defaultUtcTime
-            Execute.Assertion
-                .ForCondition(!lastWriteTimeUtc.Equals(defaultUtcTime))
-                .BecauseOf(because, reasonArgs) 
-                .FailWith($"Expected File {_fileInfo.FullName} to have a LastWriteTimeUTC, but it is null.");
-            return new AndWhichConstraint<FileInfoAssertions, DateTimeOffset>(this, lastWriteTimeUtc);
         }
     }
 }

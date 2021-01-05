@@ -141,5 +141,9 @@
             Skip="true"
             Issue=""
             Reason="Need all .NET core runtime"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_verify_analysis_warnings_hello_world_app"
+            Skip="true"
+            Issue=""
+            Reason="https://github.com/dotnet/installer/pull/8966#issuecomment-721111308"/>
   </SkippedTests>
 </Tests>

@@ -63,21 +63,6 @@ Zdroje informací
     • Dokumentace k sadě SDK: https://aka.ms/dotnet-sdk-docs
     • Zpráva k vydání verze: https://aka.ms/dotnet5-release-notes
     • Kurzy: https://aka.ms/dotnet-tutorials</String>
-  <String Id="FirstTimeWelcomeMessageArm64">Instalace proběhla úspěšně.
-
-Do [DOTNETHOME] byly nainstalovány tyto součásti:
-    • Sada .NET SDK [DOTNETSDKVERSION]
-    • Modul runtime .NET [DOTNETRUNTIMEVERSION]
-    • Modul runtime ASP.NET Core [ASPNETCOREVERSION]
-
-Tento produkt shromažďuje data o využití.
-    • Další informace a vyjádření výslovného nesouhlasu: https://aka.ms/dotnet-cli-telemetry
-
-Zdroje informací
-    • Dokumentace k .NET : https://aka.ms/dotnet-docs
-    • Dokumentace k sadě SDK: https://aka.ms/dotnet-sdk-docs
-    • Zpráva k vydání verze: https://aka.ms/dotnet5-release-notes
-    • Kurzy: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">Sada .NET SDK</String>
   <String Id="WelcomeDescription">
     Sada .NET SDK se používá k vytváření, spouštění a testování aplikací .NET. Můžete si vybrat z několika jazyků, editorů a vývojářských nástrojů. K dispozici jsou výhody rozsáhlého ekosystému knihoven, se kterými můžete vytvářet aplikace pro web, mobilní zařízení, desktop, herní zařízení a IoT. Doufáme, že se vám bude líbit!</String>
@@ -90,7 +75,7 @@ Zdroje informací
   <String Id="InstallationNoteTitle">Poznámka k instalaci</String>
   <String Id="InstallationNote">Během procesu instalace se spustí příkaz, který zlepší rychlost obnovení projektu a povolí offline přístup. Akce se dokončí přibližně za minutu.
   </String>
-  <String Id="VisualStudioWarning">Pokud plánujete používat .NET 5.0 se sadou Visual Studio, potřebujete Visual Studio 2019 16.8 nebo novější. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Další informace&lt;/A&gt;
+  <String Id="VisualStudioWarning">Pokud plánujete používat .NET 6.0 se sadou Visual Studio, potřebujete Visual Studio 2019 16.8 nebo novější. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Další informace&lt;/A&gt;
   </String>
   <String Id="LicenseAssent">Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami.</String>
 </WixLocalization>

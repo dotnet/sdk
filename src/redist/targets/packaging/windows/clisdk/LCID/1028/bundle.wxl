@@ -63,21 +63,6 @@
     • 如需 SDK 文件，請前往 https://aka.ms/dotnet-sdk-docs
     • 如需版本資訊，請前往 https://aka.ms/dotnet5-release-notes
     • 如需教學課程，請前往 https://aka.ms/dotnet-tutorials</String>
-<String Id="FirstTimeWelcomeMessageArm64">安裝成功。
-
-下列項目已安裝在: '[DOTNETHOME]'
-    • .NET SDK [DOTNETSDKVERSION]
-    • .NET Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Runtime [ASPNETCOREVERSION]
-
-此產品會收集使用方式資料
-    • 如需詳細資訊並退出，請前往 https://aka.ms/dotnet-cli-telemetry
-
-資源
-    • 如需 .NET 文件，請前往 https://aka.ms/dotnet-docs
-    • 如需 SDK 文件，請前往 https://aka.ms/dotnet-sdk-docs
-    • 如需版本資訊，請前往 https://aka.ms/dotnet5-release-notes
-    • 如需教學課程，請前往 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     .NET SDK 可用於建置、執行及測試 .NET 應用程式。您可以選擇多種語言、編輯器以及開發人員工具，並可利用程式庫的大型生態系統，來建置 Web、行動裝置、桌面、遊戲及 IoT 的應用程式。希望您會喜歡!</String>
@@ -90,7 +75,7 @@
   <String Id="InstallationNoteTitle">安裝附註</String>
   <String Id="InstallationNote">安裝程序期間將會執行命令，加快專案還原速度並啟用離線存取。最多需要一分鐘的時間完成。
   </String>
-  <String Id="VisualStudioWarning">若預計要併用 Visual Studio 與 .NET 5.0，需要 Visual Studio 2019 16.8 或更新版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;深入了解&lt;/A&gt;。
+  <String Id="VisualStudioWarning">若預計要併用 Visual Studio 與 .NET 6.0，需要 Visual Studio 2019 16.8 或更新版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;深入了解&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">按一下 [\[]安裝[\[] 即表示您同意下列條款。</String>
 </WixLocalization>
