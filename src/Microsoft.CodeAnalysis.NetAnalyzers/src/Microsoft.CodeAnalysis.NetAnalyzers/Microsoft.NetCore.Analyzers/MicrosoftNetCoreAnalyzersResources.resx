@@ -1515,4 +1515,8 @@
     <value>'{0}' all versions</value>
     <comment>This call site is reachable on: 'Windows' all versions.</comment>
   </data>
+  <data name="PlatformCompatibilityAllPlatforms" xml:space="preserve">
+    <value>and all other platforms</value>
+    <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
+  </data>
 </root>
