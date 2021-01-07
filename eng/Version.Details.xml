@@ -65,9 +65,9 @@
       <Uri>https://github.com/dotnet/CliCommandLineParser</Uri>
       <Sha>0e89c2116ad28e404ba56c14d1c3f938caa25a01</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="16.9.0-preview-21057-03">
+    <Dependency Name="Microsoft.Build" Version="16.9.0-preview-21055-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>56b853f9fdfd9c8614522b44603ae43b2698b81e</Sha>
+      <Sha>77daa881ff6adfffe9d62f54282420e5474c34da</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.Localization" Version="16.9.0-preview-21057-03">
       <Uri>https://github.com/dotnet/msbuild</Uri>
