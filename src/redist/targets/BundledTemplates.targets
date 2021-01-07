@@ -22,8 +22,7 @@
 
   <ItemGroup>
     <Bundled60Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates60PackageVersion)" />
-    <!-- TODO: Update this package name to 6.0 when it starts getting produced that way -->
-    <Bundled60Templates Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)" />
+    <Bundled60Templates Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
