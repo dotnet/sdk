@@ -257,7 +257,7 @@ namespace Microsoft.NetFramework.Analyzers
                 }
                 else if (method.MatchMethodDerivedByName(_xmlTypes.XmlReader, SecurityMemberNames.Create))
                 {
-                    int xmlReaderSettingsIndex = SecurityDiagnosticHelpers.GetXmlReaderSettingsParameterIndex(method, _xmlTypes);
+                    int xmlReaderSettingsIndex = method.GetXmlReaderSettingsParameterIndex(_xmlTypes);
 
                     if (xmlReaderSettingsIndex < 0)
                     {
@@ -305,15 +305,15 @@ namespace Microsoft.NetFramework.Analyzers
                     _objectCreationOperationsAnalyzed.Add(objCreation);
                 }
 
-                if (SecurityDiagnosticHelpers.IsXmlDocumentCtorDerived(objCreation.Constructor, _xmlTypes))
+                if (objCreation.Constructor.IsXmlDocumentCtorDerived(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlDocument(context, variable, objCreation);
                 }
-                else if (SecurityDiagnosticHelpers.IsXmlTextReaderCtorDerived(objCreation.Constructor, _xmlTypes))
+                else if (objCreation.Constructor.IsXmlTextReaderCtorDerived(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlTextReader(context, variable, objCreation);
                 }
-                else if (SecurityDiagnosticHelpers.IsXmlReaderSettingsCtor(objCreation.Constructor, _xmlTypes))
+                else if (objCreation.Constructor.IsXmlReaderSettingsCtor(_xmlTypes))
                 {
                     AnalyzeObjectCreationForXmlReaderSettings(variable, objCreation);
                 }

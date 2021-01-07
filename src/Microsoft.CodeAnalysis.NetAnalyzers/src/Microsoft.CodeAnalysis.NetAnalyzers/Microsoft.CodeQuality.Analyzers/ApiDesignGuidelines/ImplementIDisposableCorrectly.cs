@@ -493,12 +493,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// </summary>
         private sealed class DisposeImplementationValidator
         {
-            // this type will be created per compilation
-            // this is actually a bug - https://github.com/dotnet/roslyn-analyzers/issues/845
-#pragma warning disable RS1008
             private readonly IMethodSymbol _suppressFinalizeMethod;
             private readonly INamedTypeSymbol _type;
-#pragma warning restore RS1008
             private bool _callsDisposeBool;
             private bool _callsSuppressFinalize;
 
@@ -625,11 +621,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// </summary>
         private sealed class FinalizeImplementationValidator
         {
-            // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
-            // this is actually a bug - https://github.com/dotnet/roslyn-analyzers/issues/845
-#pragma warning disable RS1008
             private readonly INamedTypeSymbol _type;
-#pragma warning restore RS1008
             private bool _callDispose;
 
             public FinalizeImplementationValidator(INamedTypeSymbol type)
@@ -671,21 +663,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             private bool ValidateOperation(IOperation operation)
             {
-                switch (operation.Kind)
+                return operation.Kind switch
                 {
-                    case OperationKind.Empty:
-                    case OperationKind.Labeled:
-                        return true;
-                    case OperationKind.Block:
-                        return ValidateOperations(((IBlockOperation)operation).Operations);
-                    case OperationKind.ExpressionStatement:
-                        return ValidateExpression((IExpressionStatementOperation)operation);
-                    case OperationKind.Try:
-                        return ValidateTryOperation((ITryOperation)operation);
-                    default:
-                        // Ignore operation roots with no IOperation API support (OperationKind.None)
-                        return operation.IsOperationNoneRoot();
-                }
+                    OperationKind.Empty or OperationKind.Labeled => true,
+                    OperationKind.Block => ValidateOperations(((IBlockOperation)operation).Operations),
+                    OperationKind.ExpressionStatement => ValidateExpression((IExpressionStatementOperation)operation),
+                    OperationKind.Try => ValidateTryOperation((ITryOperation)operation),
+                    _ => operation.IsOperationNoneRoot(),// Ignore operation roots with no IOperation API support (OperationKind.None)
+                };
             }
 
             private bool ValidateExpression(IExpressionStatementOperation expressionStatement)
