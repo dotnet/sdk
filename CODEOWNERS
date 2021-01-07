@@ -9,6 +9,13 @@
 /src/WebSdk/ @vijayrkn
 /src/Tests/Microsoft.NET.Sdk.Publish.Tasks.Tests/ @vijayrkn
 
+/src/BlazorWasmSdk @captainsafia, @pranavkm, mkArtakMSFT
+/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests @captainsafia, @pranavkm, mkArtakMSFT
+/src/Assets/TestProjects/BlazorHosted @captainsafia, @pranavkm, mkArtakMSFT
+/src/Assets/TestProjects/BlazorHostedRID @captainsafia, @pranavkm, mkArtakMSFT
+/src/Assets/TestProjects/BlazorWasmMinimal @captainsafia, @pranavkm, mkArtakMSFT
+/src/Assets/TestProjects/BlazorWasmWithLibrary @captainsafia, @pranavkm, mkArtakMSFT
+
 /src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
 /src/Tests/dotnet-add-package.Tests @dotnet/nuget-team
 /src/Cli/dotnet/commands/dotnet-nuget @dotnet/nuget-team
@@ -25,4 +32,11 @@
 /src/Cli/dotnet/commands/dotnet-new @DonJoseLuis
 /src/Tests/dotnet-new.Tests @DonJoseLuis
 
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
+# ILLink and ReadyToRun targets and tasks owned by runtime team
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets clrappmodel@microsoft.com
+/src/Tasks/Microsoft.NET.Build.Tasks/PrepareForReadyToRunCompilation.cs @AntonLapounov
+/src/Tasks/Microsoft.NET.Build.Tasks/RunReadyToRunCompiler.cs @AntonLapounov
+/src/Tests/Microsoft.NET.Publish.Tests/GivenThatWeWantToRunILLink.cs clrappmodel@microsoft.com
+/src/Tests/Microsoft.NET.Publish.Tests/GivenThatWeWantToPublishReadyToRun.cs @AntonLapounov
+# Publish.targets related to ILLink and ReadyToRun is own by both runtime and SDK team
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets clrappmodel@microsoft.com @AntonLapounov @dotnet/dotnet-cli
