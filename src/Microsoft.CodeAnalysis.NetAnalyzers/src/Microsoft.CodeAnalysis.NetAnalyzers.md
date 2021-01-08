@@ -2324,7 +2324,7 @@ Providing an insecure XsltSettings instance and an insecure XmlResolver instance
 |-|-|
 |Category|Security|
 |Enabled|True|
-|Severity|Hidden|
+|Severity|Info|
 |CodeFix|False|
 ---
 
