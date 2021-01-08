@@ -54,7 +54,7 @@
     <Error Condition="'@(AnalyzerTargets)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
     <Error Condition="'@(CodeStyleCSharpAssemblies)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
     <Error Condition="'@(CodeStyleVisualBasicAssemblies)' == ''" Text="Something moved around in Analyzer package, adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(ILLinkAnalyzersAssemblies)' == ''" Text="Something move around in ILLink Analyzers package, adjust code accordingly." />
+    <Error Condition="'@(ILLinkAnalyzersAssemblies)' == ''" Text="Something moved around in ILLink Analyzers package, adjust code accordingly." />
     <Copy SourceFiles="@(AnalyzerAssemblies)" DestinationFiles="@(AnalyzerAssemblies->'$(AnalyzerAssembliesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(AnalyzerTargets)" DestinationFiles="@(AnalyzerTargets->'$(AnalyzerTargetsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(CodeStyleCSharpAssemblies)" DestinationFiles="@(CodeStyleCSharpAssemblies->'$(CodeStyleAssembliesCSharpDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
