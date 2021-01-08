@@ -115,4 +115,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       Include="$(MSBuildThisFileDirectory)..\codestyle\vb\Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.dll"
       IsImplicitlyDefined="true" />
   </ItemGroup>
+
+  <!-- ILLinker Analyzers -->
+  <ItemGroup Condition="'$(PublishSingleFile)' == 'true' Or
+                        '$(PublishTrimmed)' == 'true'">
+    <Analyzer
+      Include="$(MSBuildThisFileDirectory)..\analyzers\ILLink.RoslynAnalyzer.dll"
+      IsImplicitlyDefined="true" />
+  </ItemGroup>
 </Project>
