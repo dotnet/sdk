@@ -186,6 +186,18 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d89cac038eec4f464c92357d048d3568dc2844fa</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="6.0.0-alpha.1.21065.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d89cac038eec4f464c92357d048d3568dc2844fa</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="6.0.0-alpha.1.21065.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d89cac038eec4f464c92357d048d3568dc2844fa</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="6.0.0-alpha.1.21065.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d89cac038eec4f464c92357d048d3568dc2844fa</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="3.1.0" Pinned="true">
       <Uri>https://github.com/aspnet/xdt</Uri>
       <Sha>c01a538851a8ab1a1fbeb2e6243f391fff7587b4</Sha>
