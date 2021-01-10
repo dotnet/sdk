@@ -76,7 +76,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
             else if (IsFixableInvocationExpression(expressionSyntax))
             {
-                SyntaxNode target = GetInvocationTarget(expressionSyntax);
+                SyntaxNode? target = GetInvocationTarget(expressionSyntax);
+
+                if (target == null)
+                {
+                    return null;
+                }
+
                 return new FixResolution(expressionSyntax, target, true);
             }
 
@@ -155,7 +161,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected abstract bool IsNotEqualsOperator(SyntaxNode node);
         protected abstract SyntaxNode GetLeftOperand(SyntaxNode binaryExpressionSyntax);
         protected abstract SyntaxNode GetRightOperand(SyntaxNode binaryExpressionSyntax);
-        protected abstract SyntaxNode GetInvocationTarget(SyntaxNode node);
+        protected abstract SyntaxNode? GetInvocationTarget(SyntaxNode node);
 
         private sealed class FixResolution
         {

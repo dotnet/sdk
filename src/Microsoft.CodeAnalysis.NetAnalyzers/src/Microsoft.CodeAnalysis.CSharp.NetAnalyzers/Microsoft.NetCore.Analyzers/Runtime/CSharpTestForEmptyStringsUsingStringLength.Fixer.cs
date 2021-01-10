@@ -48,10 +48,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return node.IsKind(SyntaxKind.InvocationExpression);
         }
 
-        protected override SyntaxNode GetInvocationTarget(SyntaxNode node)
+        protected override SyntaxNode? GetInvocationTarget(SyntaxNode node)
         {
-            MemberAccessExpressionSyntax expression = (MemberAccessExpressionSyntax)((InvocationExpressionSyntax)node).Expression;
-            return expression.Expression;
+            if (node is InvocationExpressionSyntax invocationExpression && invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression)
+            {
+                return memberAccessExpression.Expression;
+            }
+
+            return default;
         }
     }
 }
