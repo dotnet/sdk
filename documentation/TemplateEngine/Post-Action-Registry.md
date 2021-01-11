@@ -28,14 +28,14 @@ Used to restore NuGet packages after project create.
  - **Specific Configuration** :
     - `args`:
       - `files` (string|array) (optional):
-        - `string`: A semicolon delimited list of files that should be restored, if not specified, all primary outputs are restored.
-        - `array`: An array of files that should be restored, if not specified, all primary outputs are restored
+        - `string`: A semicolon delimited list of files that should be restored. If not specified, all primary outputs are restored.
+        - `array`: An array of files that should be restored. If not specified, all primary outputs are restored.
  - **Supported in**:
    - `dotnet new3`
    - `dotnet new` (2.0.0 or higher)
    - `Visual Studio 2017.3 Preview 1` (ignored)
 
-### Example
+### Example - restores all primary outputs
 
 ```
 "postActions": [{
@@ -46,6 +46,23 @@ Used to restore NuGet packages after project create.
   }],
   "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
   "continueOnError": true
+}]
+```
+
+### Example - restores only Client.csproj and Server.csproj projects
+
+```
+"postActions": [{
+  "condition": "(!skipRestore)",
+  "description": "Restore NuGet packages required by this project.",
+  "manualInstructions": [{
+    "text": "Run 'dotnet restore'"
+  }],
+  "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+  "continueOnError": true,
+  "args": {
+    "files": ["Client/Client.csproj", "Server/Server.csproj"]
+  }
 }]
 ```
 

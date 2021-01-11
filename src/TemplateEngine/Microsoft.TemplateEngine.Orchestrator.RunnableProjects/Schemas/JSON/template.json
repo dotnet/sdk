@@ -617,11 +617,11 @@
                               "type": "string",
                               "uniqueItems": true
                             },
-                            "description": "An array of files that should be restored, if not specified, all primary outputs are restored"
+                            "description": "An array of files that should be restored. If not specified, all primary outputs are restored."
                           },
                           {
                             "type": "string",
-                            "description": "A semicolon delimited list of files that should be restored, if not specified, all primary outputs are restored"
+                            "description": "A semicolon delimited list of files that should be restored. If not specified, all primary outputs are restored."
                           }
                         ]
                       }
