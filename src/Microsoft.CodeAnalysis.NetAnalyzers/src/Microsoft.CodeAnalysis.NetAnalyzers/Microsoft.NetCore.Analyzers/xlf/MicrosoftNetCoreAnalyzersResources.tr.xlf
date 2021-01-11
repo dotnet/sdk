@@ -1602,6 +1602,41 @@
         <target state="translated">Seri durumdan çıkarılan nesne grafındaki olası başvuru döngüsü</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
+        <source>Use 'ContainsKey(TKey)'</source>
+        <target state="new">Use 'ContainsKey(TKey)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsKeyDescription">
+        <source>It is often faster to call '{0}.ContainsKey(TKey)' than '{0}.Keys.Contains(TKey)'. It can also save allocations, as many dictionary implementations lazily instantiate 'Keys'. </source>
+        <target state="new">It is often faster to call '{0}.ContainsKey(TKey)' than '{0}.Keys.Contains(TKey)'. It can also save allocations, as many dictionary implementations lazily instantiate 'Keys'. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsKeyMessage">
+        <source>Prefer '{0}.ContainsKey(TKey)' over '{0}.Keys.Contains(TKey)'</source>
+        <target state="new">Prefer '{0}.ContainsKey(TKey)' over '{0}.Keys.Contains(TKey)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsMethodsTitle">
+        <source>Prefer Dictionary Contains Methods</source>
+        <target state="new">Prefer Dictionary Contains Methods</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsValueCodeFixTitle">
+        <source>Use 'ContainsValue(TValue)'</source>
+        <target state="new">Use 'ContainsValue(TValue)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsValueDescription">
+        <source>It is often faster to call '{0}.ContainsValue(TValue)' than '{0}.Values.Contains(TValue)'. It can also save allocations, as many dictionary implementations lazily instantiate 'Values'.</source>
+        <target state="new">It is often faster to call '{0}.ContainsValue(TValue)' than '{0}.Values.Contains(TValue)'. It can also save allocations, as many dictionary implementations lazily instantiate 'Values'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryContainsValueMessage">
+        <source>Prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'</source>
+        <target state="new">Prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">'Stream', ilk bağımsız değişken olarak 'Memory&lt;Byte&gt;' alan bir 'ReadAsync' aşırı yüklemesine ve ilk bağımsız değişken olarak 'ReadOnlyMemory&lt;Byte&gt;' alan bir 'WriteAsync' aşırı yüklemesine sahip. Daha verimli olan bellek tabanlı aşırı yüklemeleri çağırmayı tercih edin.</target>

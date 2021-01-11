@@ -1519,4 +1519,25 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="PreferDictionaryContainsKeyCodeFixTitle" xml:space="preserve">
+    <value>Use 'ContainsKey(TKey)'</value>
+  </data>
+  <data name="PreferDictionaryContainsKeyDescription" xml:space="preserve">
+    <value>'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations. </value>
+  </data>
+  <data name="PreferDictionaryContainsKeyMessage" xml:space="preserve">
+    <value>Prefer '{0}.ContainsKey(TKey)' over '{0}.Keys.Contains(TKey)'</value>
+  </data>
+  <data name="PreferDictionaryContainsMethodsTitle" xml:space="preserve">
+    <value>Prefer Dictionary Contains Methods</value>
+  </data>
+  <data name="PreferDictionaryContainsValueCodeFixTitle" xml:space="preserve">
+    <value>Use 'ContainsValue(TValue)'</value>
+  </data>
+  <data name="PreferDictionaryContainsValueDescription" xml:space="preserve">
+    <value>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'.</value>
+  </data>
+  <data name="PreferDictionaryContainsValueMessage" xml:space="preserve">
+    <value>Prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'</value>
+  </data>
 </root>
