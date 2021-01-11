@@ -3,5 +3,6 @@
 ### Removed Rules
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-IL3000 | Public | Warning | Moved analyzer to mono/linker
-IL3001 | Public | Warning | Moved analyzer to mono/linker
+CA1801 | Usage | Disabled | ReviewUnusedParametersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1801)
+IL3000 | Publish | Disabled | Moved analyzer to mono/linker
+IL3001 | Publish | Disabled | Moved analyzer to mono/linker
