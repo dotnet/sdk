@@ -4994,46 +4994,6 @@
               "EnabledRuleInAggressiveMode"
             ]
           }
-        },
-        "IL3000": {
-          "id": "IL3000",
-          "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
-          "fullDescription": "'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3000",
-          "properties": {
-            "category": "Publish",
-            "isEnabledByDefault": true,
-            "typeName": "AvoidAssemblyLocationInSingleFile",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "IL3001": {
-          "id": "IL3001",
-          "shortDescription": "Avoid using accessing Assembly file path when publishing as a single-file",
-          "fullDescription": "'{0}' will throw for assemblies embedded in a single-file app",
-          "defaultLevel": "warning",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3001",
-          "properties": {
-            "category": "Publish",
-            "isEnabledByDefault": true,
-            "typeName": "AvoidAssemblyLocationInSingleFile",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
         }
       }
     },

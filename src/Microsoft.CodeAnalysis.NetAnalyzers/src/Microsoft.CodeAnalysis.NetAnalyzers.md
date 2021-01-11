@@ -2915,27 +2915,3 @@ Hard-coded certificates in source code are vulnerable to being exploited.
 |Severity|Warning|
 |CodeFix|False|
 ---
-
-## [IL3000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3000): Avoid using accessing Assembly file path when publishing as a single-file
-
-'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.
-
-|Item|Value|
-|-|-|
-|Category|Publish|
-|Enabled|True|
-|Severity|Warning|
-|CodeFix|False|
----
-
-## [IL3001](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3001): Avoid using accessing Assembly file path when publishing as a single-file
-
-'{0}' will throw for assemblies embedded in a single-file app
-
-|Item|Value|
-|-|-|
-|Category|Publish|
-|Enabled|True|
-|Severity|Warning|
-|CodeFix|False|
----
