@@ -1608,8 +1608,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyDescription">
-        <source>It is often faster to call '{0}.ContainsKey(TKey)' than '{0}.Keys.Contains(TKey)'. It can also save allocations, as many dictionary implementations lazily instantiate 'Keys'. </source>
-        <target state="new">It is often faster to call '{0}.ContainsKey(TKey)' than '{0}.Keys.Contains(TKey)'. It can also save allocations, as many dictionary implementations lazily instantiate 'Keys'. </target>
+        <source>'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations. </source>
+        <target state="new">'{0}.ContainsKey(TKey)' is usually O(1), while '{0}.Keys.Contains(TKey)' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations. </target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyMessage">
@@ -1628,8 +1628,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueDescription">
-        <source>It is often faster to call '{0}.ContainsValue(TValue)' than '{0}.Values.Contains(TValue)'. It can also save allocations, as many dictionary implementations lazily instantiate 'Values'.</source>
-        <target state="new">It is often faster to call '{0}.ContainsValue(TValue)' than '{0}.Values.Contains(TValue)'. It can also save allocations, as many dictionary implementations lazily instantiate 'Values'.</target>
+        <source>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'.</source>
+        <target state="new">Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer '{0}.ContainsValue(TValue)' over '{0}.Values.Contains(TValue)'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueMessage">

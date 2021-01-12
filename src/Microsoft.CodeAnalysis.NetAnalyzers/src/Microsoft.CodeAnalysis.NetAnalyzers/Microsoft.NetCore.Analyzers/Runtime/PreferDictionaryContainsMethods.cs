@@ -22,12 +22,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableContainsValueMessage = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueMessage));
         private static readonly LocalizableString s_localizableContainsValueDescription = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueDescription));
 
+#pragma warning disable RS2000
         internal static readonly DiagnosticDescriptor ContainsKeyRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableContainsKeyMessage,
             DiagnosticCategory.Performance,
-            RuleLevel.BuildWarningCandidate,
+            RuleLevel.BuildWarning,
             s_localizableContainsKeyDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -37,10 +38,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             s_localizableTitle,
             s_localizableContainsValueMessage,
             DiagnosticCategory.Performance,
-            RuleLevel.BuildWarningCandidate,
+            RuleLevel.BuildWarning,
             s_localizableContainsValueDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
+#pragma warning restore RS2000
 
         private const string ContainsMethodName = "Contains";
         internal const string ContainsKeyMethodName = "ContainsKey";
