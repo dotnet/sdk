@@ -948,18 +948,6 @@ Consistent naming of parameters in an override hierarchy increases the usability
 |CodeFix|True|
 ---
 
-## [CA1801](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801): Review unused parameters
-
-Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.
-
-|Item|Value|
-|-|-|
-|Category|Usage|
-|Enabled|False|
-|Severity|Warning|
-|CodeFix|True|
----
-
 ## [CA1802](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802): Use literals where appropriate
 
 A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.
@@ -2924,30 +2912,6 @@ Hard-coded certificates in source code are vulnerable to being exploited.
 |-|-|
 |Category|Security|
 |Enabled|False|
-|Severity|Warning|
-|CodeFix|False|
----
-
-## [IL3000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3000): Avoid using accessing Assembly file path when publishing as a single-file
-
-'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.
-
-|Item|Value|
-|-|-|
-|Category|Publish|
-|Enabled|True|
-|Severity|Warning|
-|CodeFix|False|
----
-
-## [IL3001](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3001): Avoid using accessing Assembly file path when publishing as a single-file
-
-'{0}' will throw for assemblies embedded in a single-file app
-
-|Item|Value|
-|-|-|
-|Category|Publish|
-|Enabled|True|
 |Severity|Warning|
 |CodeFix|False|
 ---
