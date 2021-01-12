@@ -117,6 +117,11 @@ public class Class1 : Base
         return null;
     }
 
+    public ref string GetPinnableReference() // If the method isn't ref-returning, there will be a diagnostic.
+    {
+        return ref fileName;
+    }
+
     // 10) Method with invocation expressions
     public int GetSomethingWithInvocation()
     {
@@ -140,6 +145,16 @@ public class Class1 : Base
     internal string GetSomethingInternal()
     {
         return fileName;
+    }
+}
+
+public class Class2
+{
+    private string fileName = """";
+
+    public ref readonly string GetPinnableReference() // If the method isn't ref-returning, there will be a diagnostic.
+    {
+        return ref fileName;
     }
 }
 ");
@@ -172,12 +187,18 @@ public class Class
     {
         return fileName;
     }
+
+    public int GetPinnableReference() // Not a ref-return method.
+    {
+        return 0;
+    }
 }
 ",
             GetCA1024CSharpResultAt(6, 19, "GetFileName"),
             GetCA1024CSharpResultAt(11, 19, "Get_FileName2"),
             GetCA1024CSharpResultAt(16, 19, "Get123"),
-            GetCA1024CSharpResultAt(21, 22, "GetFileNameProtected"));
+            GetCA1024CSharpResultAt(21, 22, "GetFileNameProtected"),
+            GetCA1024CSharpResultAt(26, 16, "GetPinnableReference"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
