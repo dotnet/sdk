@@ -47,21 +47,6 @@
         <target state="translated">Literais de cadeias de caracteres de atributos devem ser analisados corretamente</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">'{0}' será gerado para assemblies inseridos em um aplicativo de arquivo único</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">'{0}' sempre retorna uma cadeia de caracteres vazia para assemblies inseridos em um aplicativo de arquivo único. Se o caminho para o diretório do aplicativo for necessário, considere chamar 'System.AppContext.BaseDirectory'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">Evite usar o acesso ao Caminho do arquivo do assembly na publicação como um arquivo único</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">O marshaling de 'StringBuilder' sempre cria uma cópia de buffer nativo, resultando em várias alocações para uma operação de marshalling.</target>

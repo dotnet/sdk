@@ -47,21 +47,6 @@
         <target state="translated">특성 문자열 리터럴이 올바르게 구문 분석되어야 합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">'{0}'이(가) 단일 파일 앱에 포함된 어셈블리에 대해 throw합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">'{0}'은(는) 단일 파일 앱에 포함된 어셈블리에 대해 항상 빈 문자열을 반환합니다. 앱 디렉터리 경로가 필요한 경우 'System.AppContext.BaseDirectory'를 호출하는 것이 좋습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">단일 파일로 게시할 때 어셈블리 파일 경로 액세스를 사용하지 마세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">'StringBuilder'를 마샬링하는 경우 항상 네이티브 버퍼 복사본이 만들어지므로 하나의 마샬링 작업에 대해 할당이 여러 번 이루어집니다.</target>

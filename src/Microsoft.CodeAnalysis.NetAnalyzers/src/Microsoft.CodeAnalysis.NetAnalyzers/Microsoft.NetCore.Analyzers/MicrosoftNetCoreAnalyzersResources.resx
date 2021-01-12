@@ -1463,15 +1463,6 @@
   <data name="AvoidStringBuilderPInvokeParametersTitle" xml:space="preserve">
     <value>Avoid 'StringBuilder' parameters for P/Invokes</value>
   </data>
-  <data name="AvoidAssemblyLocationInSingleFileTitle" xml:space="preserve">
-    <value>Avoid using accessing Assembly file path when publishing as a single-file</value>
-  </data>
-  <data name="AvoidAssemblyLocationInSingleFileMessage" xml:space="preserve">
-    <value>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</value>
-  </data>
-  <data name="AvoidAssemblyGetFilesInSingleFileMessage" xml:space="preserve">
-    <value>'{0}' will throw for assemblies embedded in a single-file app</value>
-  </data>
   <data name="PlatformCompatibilityOnlySupportedCsReachableMessage" xml:space="preserve">
     <value>This call site is reachable on: {2}. '{0}' is only supported on: {1}.</value>
     <comment>This call site is reachable on: 'windows' all versions.'SupportedOnWindowsUnsupportedFromWindows2004()' is only supported on: 'windows' 10.0.2004 and before</comment>

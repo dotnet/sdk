@@ -47,21 +47,6 @@
         <target state="translated">Синтаксический анализ строковых литералов атрибута должен осуществляться правильно</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">Для сборок, внедренных в приложение с одним файлом, будет генерироваться "{0}".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">"{0}" всегда возвращает пустую строку для сборок, внедренных в приложение с одним файлом. Если требуется путь к каталогу приложения, попробуйте вызвать "System.AppContext.BaseDirectory".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">Не используйте путь к файлу сборки при публикации в виде одного файла</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">При маршалировании "StringBuilder" всегда создается собственная копия буфера, что приводит к множественным выделениям для одной операции маршалирования.</target>
