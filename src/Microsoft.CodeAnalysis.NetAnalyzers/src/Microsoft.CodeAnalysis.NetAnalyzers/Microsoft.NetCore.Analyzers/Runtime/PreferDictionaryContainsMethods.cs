@@ -22,7 +22,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableContainsValueMessage = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueMessage));
         private static readonly LocalizableString s_localizableContainsValueDescription = CreateResource(nameof(MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueDescription));
 
-#pragma warning disable RS2000
         internal static readonly DiagnosticDescriptor ContainsKeyRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
@@ -42,7 +41,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             s_localizableContainsValueDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
-#pragma warning restore RS2000
 
         private const string ContainsMethodName = "Contains";
         internal const string ContainsKeyMethodName = "ContainsKey";
@@ -74,6 +72,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             void OnOperationAction(OperationAnalysisContext context)
             {
+                //  We report a diagnostic if we find an invocation of an applicable Contains method,
+                //  and the contains method is being invoked on an applicable property.
+
+                //  A property is applicable if:
+                //      1) It belongs to a type that implements IDictionary`2
+                //      2) It's name is either "Keys" or "Values"
+                //  A Contains method is applicable if:
+                //      1) It has a boolean return type.
+                //      2) It has one argument, not counting the first argument of an extension method.
+                //      3) The argument must match the applicable type argument.
+                //          - If the property's name is "Keys", it must match the type substituted for TKey in the IDictionary`2 instance.
+                //          - If the property's name is "Values", it must match the type substituted for TValue in the IDictionary`2 instance.
+
+                //  Once we have an applicable Contains method and an applicable property reference, we search for an applicable ContainsXXX
+                //  method on the IDictionary`2 receiver. 
+
+                //  A ContainsXXX method is applicable if:
+                //      1) It has a boolean return type
+                //      2) It is publically accessible
+                //      3) Its name is "ContainsKey" if property is "Keys", or "ContainsValue" if property is "Values". 
+                //      4) It has exactly one parameter of the correct type:
+                //          - If the method is a "ContainsKey" method, its type must be TKey. 
+                //          - If the method is a "ContainsValue" method, its type must be TValue.
+
                 var invocation = (IInvocationOperation)context.Operation;
                 IMethodSymbol containsMethod = invocation.TargetMethod;
 
@@ -88,14 +110,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (!TryGetConstructedDictionaryType(property.ContainingType, out INamedTypeSymbol? constructedDictionaryType))
                     return;
 
+                //  At this point, we know that the method being invoked is a method called "Contains" that has a boolean return type.
+                //  We also know that the method is being invoked on a property belonging to a type that implements IDictionary`2. We will
+                //  compare the types used to construct IDictionary`2 to the parameter type of the Contains method. 
+
                 ITypeSymbol keyType = constructedDictionaryType.TypeArguments[0];
                 ITypeSymbol valueType = constructedDictionaryType.TypeArguments[1];
+
+                //  We use Parameters.Last() because the first argument could be the key/value collection, depending
+                //  on whether the method is an extension method and whether the language is C# or Visual Basic. 
+
                 ITypeSymbol containsParameterType = containsMethod.Parameters.Last().Type;
 
                 if (property.Name == KeysPropertyName)
                 {
                     if (!containsParameterType.Equals(keyType, SymbolEqualityComparer.Default))
                         return;
+
+                    //  Now we search for an accessible ContainsKey method that returns boolean and accepts a single
+                    //  parameter of the type that was substituted for TKey.
 
                     IMethodSymbol? containsKeyMethod = property.ContainingType.GetMembers(ContainsKeyMethodName)
                         .OfType<IMethodSymbol>()
@@ -116,6 +149,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (!containsParameterType.Equals(valueType, SymbolEqualityComparer.Default))
                         return;
 
+                    //  Now we search for an accessible ContainsValue method that returns boolean and accepts a single
+                    //  parameter of the type that was substituted for TValue.
+
                     IMethodSymbol? containsValueMethod = property.ContainingType.GetMembers(ContainsValueMethodName)
                         .OfType<IMethodSymbol>()
                         .WhereAsArray(x => x.ReturnType.SpecialType == SpecialType.System_Boolean &&
@@ -133,8 +169,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             static bool TryGetPropertyReferenceOperation(IInvocationOperation containsInvocation, [NotNullWhen(true)] out IPropertySymbol? property)
             {
-                IOperation current = containsInvocation;
+                //  If the method being invoked is an extension method, then the first child may be an IArgumentOperation, 
+                //  and its first child may be an IConversionOperation. The first child is not guaranteed to be an IArgumentOperation
+                //  because VB and C# handle extension methods differently. Likewise, the IConversionOperation may be absent if
+                //  the compile-time types match exactly. Therefore, we need to walk down conditionally. 
 
+                IOperation current = containsInvocation;
                 if (containsInvocation.TargetMethod.IsExtensionMethod)
                 {
                     if (current.Children.FirstOrDefault() is IArgumentOperation argumentOperation)
@@ -165,6 +205,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             static bool DoesContainsCandidateHaveCorrectArgumentCount(IMethodSymbol containsCandidate)
             {
+                //  C# and VB handle extension methods differently. In C#, the extended 'this' parameter will be included in 
+                //  the argument list, whereas in VB, it will not. 
+
                 if (containsCandidate.Language == LanguageNames.CSharp && containsCandidate.IsExtensionMethod)
                     return containsCandidate.Parameters.Length == 2;
                 else
