@@ -400,25 +400,6 @@
             ]
           }
         },
-        "CA3076": {
-          "id": "CA3076",
-          "shortDescription": "Insecure XSLT script processing.",
-          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpDoNotUseInsecureXSLTScriptExecutionAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA3077": {
           "id": "CA3077",
           "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
@@ -3981,6 +3962,26 @@
             ]
           }
         },
+        "CA3076": {
+          "id": "CA3076",
+          "shortDescription": "Insecure XSLT script processing.",
+          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseInsecureXSLTScriptExecutionAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA3147": {
           "id": "CA3147",
           "shortDescription": "Mark Verb Handlers With Validate Antiforgery Token",
@@ -5407,25 +5408,6 @@
             "category": "Security",
             "isEnabledByDefault": false,
             "typeName": "BasicDataSetDataTableInSerializableTypeAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA3076": {
-          "id": "CA3076",
-          "shortDescription": "Insecure XSLT script processing.",
-          "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "BasicDoNotUseInsecureXSLTScriptExecutionAnalyzer",
             "languages": [
               "Visual Basic"
             ],
