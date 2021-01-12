@@ -1,0 +1,26 @@
+<!--
+***********************************************************************************************
+Sdk.NuGet.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved. 
+***********************************************************************************************
+-->
+<Project>
+  <Import Project="..\targets\Microsoft.NET.ConflictResolution.targets" />
+  <Import Project="..\targets\Microsoft.NET.DisableStandardFrameworkResolution.targets" />
+  <Import Project="..\targets\Microsoft.NET.EolTargetFrameworks.targets" />
+  <Import Project="..\targets\Microsoft.NET.GenerateAssemblyInfo.targets" />
+  <Import Project="..\targets\Microsoft.NET.GenerateSupportedRuntime.targets" />
+  <Import Project="..\targets\Microsoft.NET.ObsoleteReferences.targets" />
+  <Import Project="..\targets\Microsoft.NET.RuntimeIdentifierInference.targets" />
+  <Import Project="..\targets\Microsoft.NET.Sdk.BeforeCommon.targets" />
+  <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.targets" />
+  <Import Project="..\targets\Microsoft.NET.Sdk.FrameworkReferenceResolution.targets" />
+  <Import Project="..\targets\Microsoft.NET.Sdk.targets" />
+  <Import Project="..\targets\Microsoft.Microsoft.NET.TargetFrameworkInference.targets" />
+  <Import Project="..\targets\Microsoft.PackageDependencyResolution.targets" />
+</Project>
