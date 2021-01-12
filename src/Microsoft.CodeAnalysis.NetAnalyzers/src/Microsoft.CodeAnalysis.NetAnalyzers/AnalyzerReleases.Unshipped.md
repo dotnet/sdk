@@ -11,3 +11,4 @@ CA2356 | Security | Disabled | DataSetDataTableInWebSerializableObjectGraphAnaly
 CA2361 | Security | Disabled | DoNotUseDataSetReadXml, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2361)
 CA2362 | Security | Disabled | DataSetDataTableInSerializableTypeAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca2362)
 CA3076 | Security | Info | DoNotUseInsecureXSLTScriptExecutionAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca3076)
+CA3077 | Security | Info | DoNotUseInsecureDtdProcessingInApiDesignAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca3077)
