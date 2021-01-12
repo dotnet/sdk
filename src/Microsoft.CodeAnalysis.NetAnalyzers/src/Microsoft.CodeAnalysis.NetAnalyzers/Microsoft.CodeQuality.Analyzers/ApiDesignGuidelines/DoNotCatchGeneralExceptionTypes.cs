@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              isDataflowRule: false);
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public DoNotCatchGeneralExceptionTypesAnalyzer() : base(shouldCheckLambdas: true)
+        public DoNotCatchGeneralExceptionTypesAnalyzer() : base(shouldCheckLambdas: true, allowExcludedSymbolNames: true)
         {
         }
 

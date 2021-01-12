@@ -10,8 +10,12 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
-    // TODO: Now that this flags all but the last duplicate initializer, we can offer a code fix to remove the flagged ones.
+    /// <summary>
+    /// CA2244: Do not duplicate indexed element initializations
+    /// </summary>
+#pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer - Construct impossible in VB.NET
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
+#pragma warning restore RS1004 // Recommend adding language support to diagnostic analyzer
     public sealed class AvoidDuplicateElementInitialization : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2244";
@@ -54,14 +58,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 if (objectInitializer.Initializer.Initializers[i] is ISimpleAssignmentOperation assignment &&
                     assignment.Target is IPropertyReferenceOperation propertyReference &&
-                    propertyReference.Arguments.Length != 0)
+                    !propertyReference.Arguments.IsEmpty)
                 {
                     var values = GetConstantArgumentValues(propertyReference.Arguments);
                     if (!values.IsEmpty && !initializedElementIndexes.Add(values))
                     {
                         var indexesText = string.Join(", ", values.Select(value => value?.ToString() ?? "null"));
                         context.ReportDiagnostic(
-                            Diagnostic.Create(Rule, propertyReference.Syntax.GetLocation(), indexesText));
+                            Diagnostic.Create(Rule, propertyReference.Syntax.GetLocation(),
+                                additionalLocations: ImmutableArray.Create(assignment.Syntax.GetLocation()),
+                                messageArgs: indexesText));
                     }
                 }
             }
@@ -91,7 +97,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         private sealed class ConstantArgumentEqualityComparer : IEqualityComparer<ImmutableArray<object>>
         {
-            public static readonly ConstantArgumentEqualityComparer Instance = new ConstantArgumentEqualityComparer();
+            public static readonly ConstantArgumentEqualityComparer Instance = new();
 
             private readonly EqualityComparer<object> _objectComparer = EqualityComparer<object>.Default;
 

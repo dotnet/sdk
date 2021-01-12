@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             s_localizableTitle,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_General), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            RuleLevel.IdeHidden_BulkConfigurable,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             s_localizableTitle,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_Unconsumed), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            RuleLevel.IdeHidden_BulkConfigurable,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             s_localizableTitle,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_DoubleConsumption), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            RuleLevel.IdeHidden_BulkConfigurable,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             s_localizableTitle,
             new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_AccessingIncompleteResult), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Reliability,
-            RuleLevel.IdeHidden_BulkConfigurable,
+            RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -72,7 +72,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
 
                 // Get the target ValueTask / ValueTask<T> types. If they don't exist, nothing more to do.
                 if (!typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask, out var valueTaskType) ||
-                    !typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericValueTask, out var valueTaskOfTType))
+                    !typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1, out var valueTaskOfTType))
                 {
                     return;
                 }
@@ -162,6 +162,24 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 }
                                 goto default;
 
+                            case OperationKind.ExpressionStatement:
+                            case OperationKind.Discard:
+                            case OperationKind.DiscardPattern:
+                            case OperationKind.SimpleAssignment when operation.Parent is ISimpleAssignmentOperation sao && sao.Target is IDiscardOperation:
+                                // Warn! This is a statement or discard. The result should have been used.
+                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
+                                return;
+
+                            case OperationKind.Conversion:
+                                var conversion = (IConversionOperation)operation.Parent;
+                                if (conversion.Conversion.IsIdentity)
+                                {
+                                    // Ignore identity conversions, which can pop in from time to time.
+                                    operation = operation.Parent;
+                                    continue;
+                                }
+                                goto default;
+
                             // At this point, we're "in the weeds", but there are still some rare-but-used valid patterns to check for.
 
                             case OperationKind.Coalesce:
@@ -176,13 +194,6 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                             default:
                                 // Handle atypical / difficult cases that require more analysis.
                                 HandleAtypicalValueTaskUsage(operationContext, debugType, operation, invocation);
-                                return;
-
-                            case OperationKind.ExpressionStatement:
-                            case OperationKind.Discard:
-                            case OperationKind.DiscardPattern:
-                                // Warn! This is a statement or discard. The result should have been used.
-                                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(UnconsumedRule));
                                 return;
                         }
                     }
@@ -272,7 +283,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                     // If there's a conditional successor, we not only need to follow it, we need to evaluate the
                     // condition. That condition might be something like "if (vt.IsCompleted)", in which case
                     // we need to flow that completion knowledge (just as with asserts) into the relevant branch.
-                    if (block.ConditionalSuccessor != null)
+                    if (block.ConditionalSuccessor?.Destination is BasicBlock conditional)
                     {
                         if (!(setFallthroughKnownCompletion | setConditionalKnownCompletion) ||
                             block.BranchValue != null)
@@ -291,14 +302,14 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                             }
                         }
 
-                        HandleSuccessor(block.ConditionalSuccessor.Destination, setConditionalKnownCompletion);
+                        HandleSuccessor(conditional, setConditionalKnownCompletion);
                     }
 
                     // If there's a fallback successor, follow it as well. We computed any necessary completion
                     // value previously, so just pass that along.
-                    if (block.FallThroughSuccessor != null)
+                    if (block.FallThroughSuccessor?.Destination is BasicBlock fallthrough)
                     {
-                        HandleSuccessor(block.FallThroughSuccessor.Destination, setFallthroughKnownCompletion);
+                        HandleSuccessor(fallthrough, setFallthroughKnownCompletion);
                     }
 
                     // Processes a successor, determining whether to push it onto the evaluation stack or update
@@ -446,7 +457,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                         stmt.Operation is IInvocationOperation assert &&
                         assert.TargetMethod?.Name == nameof(Debug.Assert) &&
                         assert.TargetMethod.ContainingType.Equals(debugType) &&
-                        assert.Arguments.Length >= 1 &&
+                        !assert.Arguments.IsEmpty &&
                         OperationImpliesCompletion(valueTaskSymbol, assert.Arguments[0].Value) == true)
                     {
                         return i;

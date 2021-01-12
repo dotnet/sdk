@@ -11,7 +11,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// <summary>
     /// This rule is not implemented for C# as the compiler warning CS0628 already covers this part.
     /// </summary>
+#pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer
     [DiagnosticAnalyzer(LanguageNames.VisualBasic)]
+#pragma warning restore RS1004 // Recommend adding language support to diagnostic analyzer
     public sealed class DoNotDeclareProtectedMembersInSealedTypes : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1047";
@@ -42,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var symbol = context.Symbol;
 
                 // FxCop compat: only analyze externally visible symbols by default.
-                if (!symbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken))
+                if (!context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
                 {
                     return;
                 }

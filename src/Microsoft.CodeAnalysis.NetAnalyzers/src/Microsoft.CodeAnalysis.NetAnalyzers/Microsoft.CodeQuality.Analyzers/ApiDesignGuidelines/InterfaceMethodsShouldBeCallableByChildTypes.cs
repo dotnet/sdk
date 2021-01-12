@@ -38,8 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                           RuleLevel.Disabled,
                                                                           description: s_localizableDescription,
                                                                           isPortedFxCopRule: true,
-                                                                          isDataflowRule: false,
-                                                                          isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                          isDataflowRule: false);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -63,13 +62,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
 
                 // Analyze IBlockOperation blocks.
-                if (!(operationBlocks[0] is IBlockOperation block))
+                if (operationBlocks[0] is not IBlockOperation block)
                 {
                     return true;
                 }
 
                 var explicitOperations = block.Operations.WithoutFullyImplicitOperations();
-                if (explicitOperations.Length == 0)
+                if (explicitOperations.IsEmpty)
                 {
                     // Empty body.
                     return true;
@@ -100,7 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var method = (IMethodSymbol)context.OwningSymbol;
 
             // We are only interested in private explicit interface implementations within a public non-sealed type.
-            if (method.ExplicitInterfaceImplementations.Length == 0 ||
+            if (method.ExplicitInterfaceImplementations.IsEmpty ||
                 method.GetResultantVisibility() != SymbolVisibility.Private ||
                 method.ContainingType.IsSealed ||
                 !method.ContainingType.IsExternallyVisible())

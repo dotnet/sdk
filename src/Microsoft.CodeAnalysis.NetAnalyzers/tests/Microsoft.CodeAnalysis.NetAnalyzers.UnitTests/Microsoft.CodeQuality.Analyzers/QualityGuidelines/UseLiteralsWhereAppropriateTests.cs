@@ -7,10 +7,10 @@ using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriateFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.UseLiteralsWhereAppropriateAnalyzer,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicUseLiteralsWhereAppropriateFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
@@ -169,24 +169,106 @@ End Class
             await vbTest.RunAsync();
         }
 
+        [Fact]
+        public async Task CA1802_CSharp_IntPtr_UIntPtr_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+using System;
+
+public class Class1
+{
+	internal static readonly IntPtr field1 = (nint)0;
+	internal static readonly UIntPtr field2 = (nuint)0;
+}",
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task CA1802_CSharp_nint_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+using System;
+
+public class Class1
+{
+    internal static readonly nint field = (nint)0;
+}",
+                ExpectedDiagnostics =
+                {
+                    GetCSharpDefaultResultAt(6, 35, "field"),
+                },
+                FixedCode = @"
+using System;
+
+public class Class1
+{
+    internal const nint field = (nint)0;
+}",
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task CA1802_CSharp_nuint_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+using System;
+
+public class Class1
+{
+    internal static readonly nuint field = (nuint)0;
+}",
+                ExpectedDiagnostics =
+                {
+                    GetCSharpDefaultResultAt(6, 36, "field"),
+                },
+                FixedCode = @"
+using System;
+
+public class Class1
+{
+    internal const nuint field = (nuint)0;
+}",
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetCSharpEmptyStringResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetBasicDefaultResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetBasicEmptyStringResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(UseLiteralsWhereAppropriateAnalyzer.EmptyStringRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
     }
 }

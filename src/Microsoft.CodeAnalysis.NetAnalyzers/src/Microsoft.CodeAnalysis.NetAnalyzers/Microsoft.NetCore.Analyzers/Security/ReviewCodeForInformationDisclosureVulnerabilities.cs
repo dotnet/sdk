@@ -16,10 +16,11 @@ namespace Microsoft.NetCore.Analyzers.Security
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForInformationDisclosureVulnerabilitiesMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
-            isDataflowRule: true);
+            isDataflowRule: true,
+            isReportedAtCompilationEnd: false);
 
-        protected override SinkKind SinkKind { get { return SinkKind.InformationDisclosure; } }
+        protected override SinkKind SinkKind => SinkKind.InformationDisclosure;
 
-        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor { get { return Rule; } }
+        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor => Rule;
     }
 }

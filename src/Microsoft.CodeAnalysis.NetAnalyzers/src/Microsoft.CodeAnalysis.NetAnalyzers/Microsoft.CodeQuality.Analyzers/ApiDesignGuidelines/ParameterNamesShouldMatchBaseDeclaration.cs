@@ -30,8 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
 
         /// <inheritdoc/>
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
@@ -49,7 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             var methodSymbol = (IMethodSymbol)analysisContext.Symbol;
 
-            if (!methodSymbol.MatchesConfiguredVisibility(analysisContext.Options, Rule, analysisContext.Compilation, analysisContext.CancellationToken) ||
+            if (!analysisContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, analysisContext.Compilation, analysisContext.CancellationToken) ||
                 !(methodSymbol.CanBeReferencedByName || methodSymbol.IsImplementationOfAnyExplicitInterfaceMember())
                 || !methodSymbol.Locations.Any(x => x.IsInSource)
                 || string.IsNullOrWhiteSpace(methodSymbol.Name))
@@ -63,7 +62,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             ImmutableArray<IMethodSymbol> originalDefinitions = GetOriginalDefinitions(methodSymbol);
-            if (originalDefinitions.Length == 0)
+            if (originalDefinitions.IsEmpty)
             {
                 // We did not find any original definitions so we don't have to do anything.
                 // This can happen when the method has an override modifier,
@@ -120,9 +119,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 if (currentParameter.Name != bestMatchParameter.Name)
                 {
-                    var properties = ImmutableDictionary<string, string>.Empty.SetItem(NewNamePropertyName, bestMatchParameter.Name);
+                    var properties = ImmutableDictionary<string, string?>.Empty.SetItem(NewNamePropertyName, bestMatchParameter.Name);
 
-                    analysisContext.ReportDiagnostic(Diagnostic.Create(Rule, currentParameter.Locations.First(), properties, methodSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), currentParameter.Name, bestMatchParameter.Name, bestMatch.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
+                    analysisContext.ReportDiagnostic(currentParameter.CreateDiagnostic(Rule, properties, methodSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), currentParameter.Name, bestMatchParameter.Name, bestMatch.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
                 }
             }
         }
@@ -136,7 +135,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 originalDefinitionsBuilder.Add(methodSymbol.OverriddenMethod);
             }
 
-            if (methodSymbol.ExplicitInterfaceImplementations.Length > 0)
+            if (!methodSymbol.ExplicitInterfaceImplementations.IsEmpty)
             {
                 originalDefinitionsBuilder.AddRange(methodSymbol.ExplicitInterfaceImplementations);
             }

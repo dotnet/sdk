@@ -149,7 +149,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    if (!(invocationExpression.SemanticModel.GetSymbolInfo(invocationExpression.Arguments.Single().Value.Syntax).Symbol is IParameterSymbol parameterSymbol) || !parameterSymbol.IsThis)
+                    if (invocationExpression.SemanticModel.GetSymbolInfo(invocationExpression.Arguments.Single().Value.Syntax, analysisContext.CancellationToken).Symbol is not IParameterSymbol parameterSymbol || !parameterSymbol.IsThis)
                     {
                         analysisContext.ReportDiagnostic(invocationExpression.Syntax.CreateDiagnostic(
                             NotPassedThisRule,
@@ -183,7 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return SuppressFinalizeUsage.CanCall;
                 }
 
-                if (!method.IsDisposeImplementation(_compilation))
+                if (!method.IsDisposeImplementation(_compilation) && !method.IsAsyncDisposeImplementation(_compilation))
                 {
                     return SuppressFinalizeUsage.MustNotCall;
                 }

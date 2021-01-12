@@ -7,10 +7,10 @@ using Test.Utilities;
 
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUninstantiatedInternalClassesAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidUninstantiatedInternalClasses,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidUninstantiatedInternalClassesFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidUninstantiatedInternalClassesAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidUninstantiatedInternalClasses,
     Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidUninstantiatedInternalClassesFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
@@ -229,19 +229,17 @@ End Class");
         {
             await new VerifyCS.Test
             {
-                TestCode =
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
 @"internal class C
 {
     private static void Main() {}
 }",
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                      var compilationOptions = solution.GetProject(projectId).CompilationOptions;
-                      return solution.WithProjectCompilationOptions(projectId, compilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                    }
-                }
+                    },
+                },
             }.RunAsync();
         }
 
@@ -250,19 +248,17 @@ End Class");
         {
             await new VerifyVB.Test
             {
-                TestCode =
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
 @"Friend Class C
     Public Shared Sub Main()
     End Sub
 End Class",
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                      var compilationOptions = solution.GetProject(projectId).CompilationOptions;
-                      return solution.WithProjectCompilationOptions(projectId, compilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                    }
-                }
+                    },
+                },
             }.RunAsync();
         }
 
@@ -271,19 +267,17 @@ End Class",
         {
             await new VerifyCS.Test
             {
-                TestCode =
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
 @"internal class C
 {
     private static int Main() { return 1; }
 }",
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                      var compilationOptions = solution.GetProject(projectId).CompilationOptions;
-                      return solution.WithProjectCompilationOptions(projectId, compilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                    }
-                }
+                    },
+                },
             }.RunAsync();
         }
 
@@ -292,20 +286,18 @@ End Class",
         {
             await new VerifyVB.Test
             {
-                TestCode =
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
 @"Friend Class C
     Public Shared Function Main() As Integer
         Return 1
     End Function
 End Class",
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                      var compilationOptions = solution.GetProject(projectId).CompilationOptions;
-                      return solution.WithProjectCompilationOptions(projectId, compilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                    }
-                }
+                    },
+                },
             }.RunAsync();
         }
 
@@ -314,21 +306,19 @@ End Class",
         {
             await new VerifyCS.Test
             {
-                TestCode =
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp7_1,
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
 @" using System.Threading.Tasks;
 internal static class C
 {
     private static async Task Main() { await Task.Delay(1); }
 }",
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp7_1,
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                      var compilationOptions = solution.GetProject(projectId).CompilationOptions;
-                      return solution.WithProjectCompilationOptions(projectId, compilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                    }
-                }
+                    },
+                },
             }.RunAsync();
         }
 
@@ -337,21 +327,19 @@ internal static class C
         {
             await new VerifyCS.Test
             {
-                TestCode =
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp7_1,
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
 @" using System.Threading.Tasks;
 internal static class C
 {
     private static async Task<int> Main() { await Task.Delay(1); return 1; }
 }",
-                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp7_1,
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                      var compilationOptions = solution.GetProject(projectId).CompilationOptions;
-                      return solution.WithProjectCompilationOptions(projectId, compilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                    }
-                }
+                    },
+                },
             }.RunAsync();
         }
 
@@ -382,18 +370,16 @@ End Class",
         {
             await new VerifyVB.Test
             {
-                TestCode =
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
 @"Friend Class C
     Private Shared Sub mAiN()
     End Sub
 End Class",
-                SolutionTransforms =
-                {
-                    (solution, projectId) =>
-                    {
-                      var compilationOptions = solution.GetProject(projectId).CompilationOptions;
-                      return solution.WithProjectCompilationOptions(projectId, compilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                    }
+                    },
                 },
                 ExpectedDiagnostics =
                 {
@@ -848,14 +834,9 @@ End Module");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_EmptyInternalStaticClass()
+        public async Task CA1812_CSharp_NoDiagnostic_EmptyInternalStaticClass()
         {
-            // Note that this is not considered a "static holder class"
-            // because it doesn't actually have any static members.
-            await VerifyCS.VerifyAnalyzerAsync(
-@"internal static class S { }",
-
-                GetCSharpResultAt(1, 23, "S"));
+            await VerifyCS.VerifyAnalyzerAsync("internal static class S { }");
         }
 
         [Fact]
@@ -1323,8 +1304,31 @@ internal class CSomeClass {}
                 GetCSharpResultAt(16, 16, "CSomeClass"));
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeTypeName_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeTypeName_NoDiagnostic(string attributeFullName)
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+namespace SomeNamespace
+{
+    internal class MyTextBoxDesigner { }
+
+    [" + attributeFullName + @"(""SomeNamespace.MyTextBoxDesigner, TestProject"")]
+    public class MyTextBox { }
+}");
+        }
+
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeTypeNameWithFullAssemblyName_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1334,29 +1338,17 @@ namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
-    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"")]
+    [" + attributeFullName + @"(""SomeNamespace.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
     public class MyTextBox { }
 }");
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeTypeNameWithFullAssemblyName_NoDiagnostic()
-        {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
-
-namespace SomeNamespace
-{
-    internal class MyTextBoxDesigner { }
-
-    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
-    public class MyTextBox { }
-}");
-        }
-
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeGlobalTypeName_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeGlobalTypeName_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1364,12 +1356,16 @@ using System.ComponentModel;
 
 internal class MyTextBoxDesigner { }
 
-[Designer(""MyTextBoxDesigner, TestProject"")]
+[" + attributeFullName + @"(""MyTextBoxDesigner, TestProject"")]
 public class MyTextBox { }");
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeType_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeType_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1379,7 +1375,7 @@ namespace SomeNamespace
 {
     internal class MyTextBoxDesigner { }
 
-    [Designer(typeof(MyTextBoxDesigner))]
+    [" + attributeFullName + @"(typeof(MyTextBoxDesigner))]
     public class MyTextBox { }
 }");
         }
@@ -1435,8 +1431,12 @@ namespace SomeNamespace
 }");
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeNestedTypeName_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeNestedTypeName_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1444,7 +1444,7 @@ using System.ComponentModel;
 
 namespace SomeNamespace
 {
-    [Designer(""SomeNamespace.MyTextBox.MyTextBoxDesigner, TestProject"")]
+    [" + attributeFullName + @"(""SomeNamespace.MyTextBox.MyTextBoxDesigner, TestProject"")]
     public class MyTextBox
     {
         internal class MyTextBoxDesigner { }
@@ -1454,8 +1454,12 @@ namespace SomeNamespace
                 GetCSharpResultAt(10, 24, "MyTextBox.MyTextBoxDesigner"));
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeNestedType_NoDiagnostic()
+        [Theory]
+        [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
+        [InlineData("System.ComponentModel.DesignerAttribute")]
+        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        public async Task CA1812_DesignerAttributeNestedType_NoDiagnostic(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1463,7 +1467,7 @@ using System.ComponentModel;
 
 namespace SomeNamespace
 {
-    [Designer(typeof(SomeNamespace.MyTextBox.MyTextBoxDesigner))]
+    [" + attributeFullName + @"(typeof(SomeNamespace.MyTextBox.MyTextBoxDesigner))]
     public class MyTextBox
     {
         internal class MyTextBoxDesigner { }
@@ -1471,14 +1475,156 @@ namespace SomeNamespace
 }");
         }
 
+        [Fact, WorkItem(3199, "https://github.com/dotnet/roslyn-analyzers/issues/3199")]
+        public async Task CA1812_AliasingTypeNewConstraint_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+
+namespace SomeNamespace
+{
+    public class MyAliasType<T>
+        where T : class, new()
+    {
+        public static void DoSomething() {}
+    }
+
+    internal class C {}
+}",
+                        @"
+using MyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.C>;
+using MyAliasOfMyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.MyAliasType<SomeNamespace.C>>;
+
+public class CC
+{
+    public void M()
+    {
+        MyAliasOfC.DoSomething();
+        MyAliasOfMyAliasOfC.DoSomething();
+    }
+}
+",
+                    },
+                },
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
+        public async Task CA1812_VisualBasic_StaticLikeClass_NoDiagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Friend NotInheritable Class C1
+
+    Private Sub New()
+    End Sub
+
+    Public Shared Function GetSomething(o As Object) As String
+        Return o.ToString()
+    End Function
+End Class
+
+Public Class Helpers
+    Private NotInheritable Class C2
+
+        Private Sub New()
+        End Sub
+
+        Public Shared Function GetSomething(o As Object) As String
+            Return o.ToString()
+        End Function
+    End Class
+End Class
+
+Friend NotInheritable Class C3
+
+    Private Const SomeConstant As String = ""Value""
+    Private Shared f As Integer
+
+    Private Sub New()
+    End Sub
+
+    Public Shared Sub M()
+    End Sub
+
+    Public Shared Property P As Integer
+
+    Public Shared Event ThresholdReached As EventHandler
+End Class
+
+Friend Class C4
+
+    Private Sub New()
+    End Sub
+
+    Public Shared Function GetSomething(o As Object) As String
+        Return o.ToString()
+    End Function
+End Class
+
+Friend NotInheritable Class C5
+
+    Public Sub New()
+    End Sub
+
+    Public Shared Function GetSomething(o As Object) As String
+        Return o.ToString()
+    End Function
+End Class");
+        }
+
+        [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
+        public async Task CA1812_VisualBasic_NotStaticLikeClass_Diagnostic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Friend NotInheritable Class [|C1|]
+
+    Private Sub New()
+    End Sub
+
+    Public Function GetSomething(o As Object) As String
+        Return o.ToString()
+    End Function
+End Class");
+        }
+
+        [Fact, WorkItem(4052, "https://github.com/dotnet/roslyn-analyzers/issues/4052")]
+        public async Task CA1812_CSharp_TopLevelStatements_NoDiagnostic()
+        {
+            await new VerifyCS.Test()
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
+                    {
+                        @"int x = 0;",
+                    },
+                },
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(className);
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string className)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(className);
     }
 }

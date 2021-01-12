@@ -2,13 +2,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.NetCore.CSharp.Analyzers.Runtime;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpInitializeStaticFieldsInlineAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpInitializeStaticFieldsInlineFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicInitializeStaticFieldsInlineAnalyzer,
+    Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicInitializeStaticFieldsInlineFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -66,7 +66,7 @@ End Structure
 public class Class1
 {
     private readonly static int field = 1;
-    static Class1() // No static field initalization
+    static Class1() // No static field initialization
     {
         Class1_Method();
         var field2 = 1;
@@ -153,6 +153,221 @@ Public Class Class1
 	End Sub
 End Class
 ");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_EventLambdas_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class C
+{
+    private static string s;
+
+    static C()
+    {
+        Console.CancelKeyPress += (o, e) => s = string.Empty;
+        Console.CancelKeyPress -= (o, e) => s = string.Empty;
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Class C
+    Private Shared s As String
+
+    Shared Sub New()
+        AddHandler Console.CancelKeyPress,
+            Sub(o, e)
+                s = string.Empty
+            End Sub
+
+        RemoveHandler Console.CancelKeyPress,
+            Sub(o, e)
+                s = string.Empty
+            End Sub
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_EventDelegate_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+class C
+{
+    private static string s;
+
+    static C()
+    {
+        Console.CancelKeyPress += delegate { s = string.Empty; };
+    }
+}");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_TaskRunActionAndFunc_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Threading.Tasks;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        Task.Run(() => s = 3);
+
+        Task.Run(() =>
+        {
+            s = 3;
+            return 42;
+        });
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Threading.Tasks
+
+Class C
+    Private Shared s As Integer
+
+    Shared Sub New()
+        Task.Run(Sub()
+                    s = 3
+                 End Sub)
+
+        Task.Run(Function()
+                    s = 3
+                    Return 42
+                 End Function)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_EnumerableWhere_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        var result = new List<int>().Where(x =>
+        {
+            if (x > 10)
+            {
+                s = x;
+                return true;
+            }
+
+            return false;
+        });
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Class C
+    Private Shared s As Integer
+
+    Shared Sub New()
+        Dim list = New List(Of Integer)
+        Dim result = list.Where(Function(x)
+                                    If x > 10 Then
+                                        s = x
+                                        Return True
+                                    End if
+
+                                    Return False
+                                End Function)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_MixedFieldInitialization_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+class C
+{
+    private static string s1;
+    private static string s2;
+
+    static C()
+    {
+        Console.CancelKeyPress += (o, e) => s1 = string.Empty;
+        s2 = string.Empty;
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Class C
+    Private Shared s1 As String
+    Private Shared s2 As String
+
+    Shared Sub New()
+        AddHandler Console.CancelKeyPress,
+            Sub(o, e)
+                s1 = string.Empty
+            End Sub
+        s2 = string.Empty
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(3852, "https://github.com/dotnet/roslyn-analyzers/issues/3852")]
+        public async Task CA1810_EventSubscriptionInStaticCtorPreventsDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
+                TestCode = @"
+using System;
+using System.Windows.Forms;
+
+public class C1
+{
+    private static readonly int field;
+
+    static C1()
+    {
+        Application.ThreadExit += new EventHandler(OnThreadExit);
+        field = 42;
+    }
+
+    private static void OnThreadExit(object sender, EventArgs e) {}
+}
+
+public class C2
+{
+    private static readonly int field;
+
+    static C2()
+    {
+        Application.ThreadExit -= new EventHandler(OnThreadExit);
+        field = 42;
+    }
+
+    private static void OnThreadExit(object sender, EventArgs e) {}
+}
+",
+            }.RunAsync();
         }
 
         #endregion
@@ -269,28 +484,88 @@ End Structure",
     GetCA2207BasicDefaultResultAt(4, 13, "Struct1"));
         }
 
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_LocalFunc_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        void LocalFunc()
+        {
+            s = 1;
+        }
+    }
+}",
+                GetCA1810CSharpDefaultResultAt(9, 12, "C"));
+        }
+
+        [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
+        public async Task CA1810_StaticLocalFunc_Diagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+                TestCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+class C
+{
+    private static int s;
+
+    static C()
+    {
+        static void StaticLocalFunc()
+        {
+            s = 2;
+        }
+    }
+}",
+                ExpectedDiagnostics =
+                {
+                    GetCA1810CSharpDefaultResultAt(9, 12, "C")
+                },
+            }
+            .RunAsync();
+        }
+
         #endregion
 
         #region Helpers
 
         private static DiagnosticResult GetCA1810CSharpDefaultResultAt(int line, int column, string typeName) =>
-            VerifyCS.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA1810Rule)
+#pragma warning disable RS0030 // Do not used banned APIs
+            VerifyCS.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA1810BasicDefaultResultAt(int line, int column, string typeName) =>
-            VerifyVB.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA1810Rule)
+#pragma warning disable RS0030 // Do not used banned APIs
+            VerifyVB.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA1810Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA2207CSharpDefaultResultAt(int line, int column, string typeName) =>
-            VerifyCS.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA2207Rule)
+#pragma warning disable RS0030 // Do not used banned APIs
+            VerifyCS.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         private static DiagnosticResult GetCA2207BasicDefaultResultAt(int line, int column, string typeName) =>
-            VerifyVB.Diagnostic(CSharpInitializeStaticFieldsInlineAnalyzer.CA2207Rule)
+#pragma warning disable RS0030 // Do not used banned APIs
+            VerifyVB.Diagnostic(InitializeStaticFieldsInlineAnalyzer.CA2207Rule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName);
 
         #endregion

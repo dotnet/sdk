@@ -28,6 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
+            isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableHttpClientCRLCheckDescription));
         internal static DiagnosticDescriptor MaybeDisableHttpClientCRLCheckRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5400",
@@ -36,6 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
+            isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableHttpClientCRLCheckDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
@@ -53,13 +55,13 @@ namespace Microsoft.NetCore.Analyzers.Security
         /// </summary>
         private const int ServerCertificateValidationCallbackIndex = 1;
 
-        private static readonly ConstructorMapper ConstructorMapper = new ConstructorMapper(
+        private static readonly ConstructorMapper ConstructorMapper = new(
             (IMethodSymbol constructorMethod, IReadOnlyList<PointsToAbstractValue> argumentPointsToAbstractValues) =>
             {
                 return PropertySetAbstractValue.GetInstance(PropertySetAbstractValueKind.Flagged, PropertySetAbstractValueKind.Flagged);
             });
 
-        private static readonly PropertyMapperCollection PropertyMappers = new PropertyMapperCollection(
+        private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "CheckCertificateRevocationList",
                 (ValueContentAbstractValue valueContentAbstractValue) =>
@@ -76,7 +78,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 PropertySetCallbacks.FlagIfNull,
                 ServerCertificateValidationCallbackIndex));
 
-        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new HazardousUsageEvaluatorCollection(
+        private static readonly HazardousUsageEvaluatorCollection HazardousUsageEvaluators = new(
             new HazardousUsageEvaluator(
                 WellKnownTypeNames.SystemNetHttpHttpClient,
                 ".ctor",
@@ -136,14 +138,14 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             ISymbol owningSymbol = operationBlockStartAnalysisContext.OwningSymbol;
 
-                            if (owningSymbol.IsConfiguredToSkipAnalysis(
-                                    operationBlockStartAnalysisContext.Options,
+                            if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     DefinitelyDisableHttpClientCRLCheckRule,
+                                    owningSymbol,
                                     operationBlockStartAnalysisContext.Compilation,
                                     operationBlockStartAnalysisContext.CancellationToken) &&
-                                owningSymbol.IsConfiguredToSkipAnalysis(
-                                    operationBlockStartAnalysisContext.Options,
+                                operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(
                                     MaybeDisableHttpClientCRLCheckRule,
+                                    owningSymbol,
                                     operationBlockStartAnalysisContext.Compilation,
                                     operationBlockStartAnalysisContext.CancellationToken))
                             {
@@ -158,7 +160,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                     if (objectCreationOperation.Type.GetBaseTypesAndThis().Contains(httpClientTypeSymbol))
                                     {
-                                        if (objectCreationOperation.Arguments.Length != 0)
+                                        if (!objectCreationOperation.Arguments.IsEmpty)
                                         {
                                             lock (rootOperationsNeedingAnalysis)
                                             {
@@ -196,7 +198,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         InterproceduralAnalysisConfiguration.Create(
                                             compilationAnalysisContext.Options,
                                             SupportedDiagnostics,
-                                            rootOperationsNeedingAnalysis.First().Item1.Syntax.SyntaxTree,
+                                            rootOperationsNeedingAnalysis.First().Item1,
                                             compilationAnalysisContext.Compilation,
                                             defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
                                             cancellationToken: compilationAnalysisContext.CancellationToken));
@@ -237,8 +239,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                             }
                             finally
                             {
-                                rootOperationsNeedingAnalysis.Free();
-                                allResults?.Free();
+                                rootOperationsNeedingAnalysis.Free(compilationAnalysisContext.CancellationToken);
+                                allResults?.Free(compilationAnalysisContext.CancellationToken);
                             }
                         });
                 });

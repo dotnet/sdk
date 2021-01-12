@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AttributeStringLiteralsShouldParseCorrectlyAnalyzer,
@@ -587,24 +588,84 @@ End Class
 ");
         }
 
+        [Fact, WorkItem(3635, "https://github.com/dotnet/roslyn-analyzers/issues/3635")]
+        public async Task ObsoleteAttributeUrlFormat_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+namespace System
+{
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false)]
+    public class ObsoleteAttribute : Attribute
+    {
+        public string UrlFormat { get; set; }
+    }
+}
+
+namespace Something
+{
+    using System;
+
+    public class C
+    {
+        [Obsolete(UrlFormat = """")]
+        public void M1() {}
+
+        [Obsolete(UrlFormat = ""{0}"")]
+        public void M2() {}
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Namespace System
+    <AttributeUsage(AttributeTargets.All, AllowMultiple:=False)>
+    Public Class ObsoleteAttribute
+        Inherits Attribute
+
+        Public Property UrlFormat As String
+    End Class
+End Namespace
+
+Namespace Something
+    Public Class C
+        <Obsolete(UrlFormat:="""")>
+        Public Sub M1()
+        End Sub
+
+        <Obsolete(UrlFormat:=""{0}"")>
+        Public Sub M2()
+        End Sub
+    End Class
+End Namespace");
+        }
+
         private DiagnosticResult CA2243CSharpDefaultResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.DefaultRule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         private DiagnosticResult CA2243BasicDefaultResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
 
         private DiagnosticResult CA2243CSharpEmptyResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.EmptyRule)
                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                .WithArguments(arguments);
 
         private DiagnosticResult CA2243BasicEmptyResultAt(int line, int column, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(AttributeStringLiteralsShouldParseCorrectlyAnalyzer.EmptyRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(arguments);
     }
 }

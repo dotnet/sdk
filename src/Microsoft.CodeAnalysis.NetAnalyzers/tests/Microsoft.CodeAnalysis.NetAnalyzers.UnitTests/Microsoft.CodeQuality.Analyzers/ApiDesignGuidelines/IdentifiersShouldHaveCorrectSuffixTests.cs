@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -1372,7 +1373,6 @@ End Namespace"
             }.RunAsync();
         }
 
-
         [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         public async Task CA1710_UserMappingWinsOverHardcoded()
         {
@@ -1756,7 +1756,7 @@ public class SomeSubSubClass : SomeSubClass {}"
                 }
             };
 
-            if (editorConfigText.Contains("exclude_indirect_base_types = false"))
+            if (editorConfigText.Contains("exclude_indirect_base_types = false", StringComparison.Ordinal))
             {
                 csharpTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -1827,7 +1827,7 @@ End Class"
                 }
             };
 
-            if (editorConfigText.Contains("exclude_indirect_base_types = false"))
+            if (editorConfigText.Contains("exclude_indirect_base_types = false", StringComparison.Ordinal))
             {
                 vbTest.ExpectedDiagnostics.AddRange(new[]
                 {
@@ -1864,14 +1864,44 @@ public interface I
 }");
         }
 
+        [Fact]
+        public async Task EventArgsNotInheritingFromSystemEventArgs_Diagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+// Reproduce UWP specific EventArgs
+namespace Windows.UI.Xaml
+{
+    public class RoutedEventArgs {}
+}
+public class C
+{
+    public delegate void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e);
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+' Reproduce UWP specific EventArgs
+Namespace Windows.UI.Xaml
+    Public Class RoutedEventArgs
+    End Class
+End Namespace
+
+Public Class C
+    Public Delegate Sub Page_Loaded(ByVal sender As Object, ByVal e As Windows.UI.Xaml.RoutedEventArgs)
+End Class");
+        }
+
         private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, suffix);
 
         private static DiagnosticResult GetCA1710CSharpResultAt(int line, int column, string typeName, string suffix, bool isSpecial = false) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(isSpecial ? IdentifiersShouldHaveCorrectSuffixAnalyzer.SpecialCollectionRule : IdentifiersShouldHaveCorrectSuffixAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(typeName, suffix);
     }
 }

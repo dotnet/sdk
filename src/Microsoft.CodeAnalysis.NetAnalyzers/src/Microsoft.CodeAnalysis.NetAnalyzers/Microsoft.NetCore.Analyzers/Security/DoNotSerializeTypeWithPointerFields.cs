@@ -36,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 description: s_Description,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
-                isEnabledByDefaultInFxCopAnalyzers: false);
+                isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -91,8 +91,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                         if (typeSymbol is IPointerTypeSymbol pointerTypeSymbol)
                         {
                             // If the field is a valid pointer.
-                            if (pointerTypeSymbol.PointedAtType.TypeKind == TypeKind.Struct ||
-                                pointerTypeSymbol.PointedAtType.TypeKind == TypeKind.Pointer)
+                            if (pointerTypeSymbol.PointedAtType.TypeKind is TypeKind.Struct or
+                                TypeKind.Pointer)
                             {
                                 RoslynDebug.Assert(relatedFieldSymbol != null);
                                 pointerFields.TryAdd(relatedFieldSymbol, true);

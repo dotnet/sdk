@@ -472,12 +472,45 @@ End Class
 ");
         }
 
+        [Fact, WorkItem(4142, "https://github.com/dotnet/roslyn-analyzers/issues/4142")]
+        public async Task CA2214_VirtualInvocationsInLambda()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C
+{
+    private readonly Lazy<Task> _initialization;
+
+    protected C()
+    {
+        Task RunInit() => this.InitializeAsync(this.DisposeCts.Token);
+        this._initialization = new Lazy<Task>(() => Task.Run(RunInit, this.DisposeCts.Token), isThreadSafe: true);
+    }
+
+    protected CancellationTokenSource DisposeCts { get; } = new CancellationTokenSource();
+
+    protected Task Initialization => this._initialization.Value;
+
+    protected virtual async Task InitializeAsync(CancellationToken cancellationToken)
+    {
+        // Content doesn't matter
+    }
+}");
+        }
+
         private static DiagnosticResult GetCA2214CSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA2214BasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

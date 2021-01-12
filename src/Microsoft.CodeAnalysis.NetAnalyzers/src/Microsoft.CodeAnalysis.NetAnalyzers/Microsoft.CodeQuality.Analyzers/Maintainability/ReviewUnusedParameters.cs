@@ -15,8 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// <summary>
     /// CA1801: Review unused parameters
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class ReviewUnusedParametersAnalyzer : DiagnosticAnalyzer
+    public abstract class ReviewUnusedParametersAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1801";
 
@@ -34,9 +33,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext context)
+        public sealed override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
 
@@ -130,7 +129,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             // Report diagnostics for unused parameters.
             foreach (var (parameter, used) in parameterUsageMap)
             {
-                if (used)
+                if (used || parameter.Name.Length == 0)
                 {
                     continue;
                 }
@@ -163,7 +162,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         }
 
 #pragma warning disable RS1012 // Start action has no registered actions.
-        private static bool ShouldAnalyzeMethod(
+        private bool ShouldAnalyzeMethod(
             IMethodSymbol method,
             OperationBlockStartAnalysisContext startOperationBlockContext,
             INamedTypeSymbol? eventsArgSymbol,
@@ -196,6 +195,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return false;
             }
 
+            // Ignore primary constructor (body-less) of positional records.
+            if (IsPositionalRecordPrimaryConstructor(method))
+            {
+                return false;
+            }
+
             // Ignore serialization special methods
             if (method.IsSerializationConstructor(serializationInfoType, streamingContextType) ||
                 method.IsGetObjectData(serializationInfoType, streamingContextType))
@@ -204,10 +209,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             // Ignore event handler methods "Handler(object, MyEventArgs)"
-            if (method.Parameters.Length == 2 &&
-                method.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
-                // UWP has specific EventArgs not inheriting from System.EventArgs. It was decided to go for a suffix match rather than a whitelist.
-                (method.Parameters[1].Type.Inherits(eventsArgSymbol) || method.Parameters[1].Type.Name.EndsWith("EventArgs", StringComparison.Ordinal)))
+            if (method.HasEventHandlerSignature(eventsArgSymbol))
             {
                 return false;
             }
@@ -219,9 +221,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
 
             // Bail out if user has configured to skip analysis for the method.
-            if (!method.MatchesConfiguredVisibility(
-                startOperationBlockContext.Options,
+            if (!startOperationBlockContext.Options.MatchesConfiguredVisibility(
                 Rule,
+                method,
                 startOperationBlockContext.Compilation,
                 startOperationBlockContext.CancellationToken,
                 defaultRequiredVisibility: SymbolVisibilityGroup.All))
@@ -236,7 +238,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 return false;
             }
 
+            // Ignore generated method for top level statements
+            if (method.IsTopLevelStatementsEntryPointMethod())
+            {
+                return false;
+            }
+
             return true;
         }
+
+        protected abstract bool IsPositionalRecordPrimaryConstructor(IMethodSymbol methodSymbol);
     }
 }

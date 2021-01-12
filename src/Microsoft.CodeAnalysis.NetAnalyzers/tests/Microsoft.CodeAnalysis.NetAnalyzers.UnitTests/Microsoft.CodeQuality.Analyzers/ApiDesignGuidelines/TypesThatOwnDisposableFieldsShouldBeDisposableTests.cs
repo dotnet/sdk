@@ -52,7 +52,7 @@ using System.IO;
         FileStream newFile1, newFile2 = new FileStream(""data.txt"", FileMode.Append);
     }
 ",
-            GetCA1001CSharpResultAt(4, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001CSharpResultAt(4, 18, "NoDisposeClass", "newFile2"));
         }
 
         [Fact]
@@ -288,7 +288,7 @@ Imports System.IO
         Dim newFile1 As FileStream, newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
 ",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
@@ -299,7 +299,7 @@ Imports System.IO
         Dim newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
 ",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
         }
 
         [Fact]
@@ -450,14 +450,144 @@ End Namespace
             GetCA1001BasicResultAt(6, 11, "Class1", "_disp1"));
         }
 
+        [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        public async Task CA1001_OnlyListDisposableFields()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+
+public class {|#0:NoDisposeClass|}
+{
+    FileStream _fs1;
+    FileStream _fs2;
+
+    public NoDisposeClass(FileStream fs)
+    {
+        _fs1 = new FileStream(""data.txt"", FileMode.Append);
+        _fs2 = fs;
+    }
+}
+",
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+
+Public Class {|#0:NoDisposeClass|}
+    Private _fs1 As FileStream
+    Private _fs2 As FileStream
+
+    Public Sub New(ByVal fs As FileStream)
+        _fs1 = New FileStream(""data.txt"", FileMode.Append)
+        _fs2 = fs
+    End Sub
+End Class
+",
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"));
+        }
+
+        [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        public async Task CA1001_ListDisposableFields()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+
+public class {|#0:NoDisposeClass|}
+{
+    FileStream _fs1 = new FileStream(""data.txt"", FileMode.Append), _fs2 = new FileStream(""data.txt"", FileMode.Append);
+    FileStream _fs3;
+    FileStream _fs4;
+
+    public NoDisposeClass()
+    {
+        _fs3 = new FileStream(""data.txt"", FileMode.Append);
+        _fs4 = new FileStream(""data.txt"", FileMode.Append);
+    }
+}
+",
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+
+Public Class {|#0:NoDisposeClass|}
+    Private _fs1 As FileStream = new FileStream(""data.txt"", FileMode.Append), _fs2 As FileStream = new FileStream(""data.txt"", FileMode.Append)
+    Private _fs3 As FileStream
+    Private _fs4 As FileStream
+
+    Public Sub New(ByVal fs As FileStream)
+        _fs3 = new FileStream(""data.txt"", FileMode.Append)
+        _fs4 = new FileStream(""data.txt"", FileMode.Append)
+    End Sub
+End Class
+",
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"));
+        }
+
+        [Theory, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = FileStream")]
+        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = FileStream")]
+        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = T:System.IO.FileStream")]
+        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = FileStr*")]
+        public async Task CA1001_ExcludedSymbolNames(string editorConfigText)
+        {
+            var args = editorConfigText.Length == 0 ? "_fs', '_ms" : "_ms";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.IO;
+
+public class {|#0:SomeClass|}
+{
+    private FileStream _fs = new FileStream(""data.txt"", FileMode.Append);
+    private MemoryStream _ms = new MemoryStream();
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System.IO
+
+Public Class {|#0:SomeClass|}
+    Private _fs As FileStream = new FileStream(""data.txt"", FileMode.Append)
+    Private _ms As MemoryStream = new MemoryStream()
+End Class
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    ExpectedDiagnostics = { VerifyVB.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
+                },
+            }.RunAsync();
+        }
+
         private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName, disposableFields);
 
         private static DiagnosticResult GetCA1001BasicResultAt(int line, int column, string objectName, string disposableFields)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(objectName, disposableFields);
     }
 }

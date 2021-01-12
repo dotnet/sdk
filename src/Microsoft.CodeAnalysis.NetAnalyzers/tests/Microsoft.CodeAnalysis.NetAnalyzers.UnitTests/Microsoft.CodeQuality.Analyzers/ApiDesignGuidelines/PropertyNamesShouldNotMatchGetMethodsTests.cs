@@ -173,7 +173,6 @@ public class SometOtherClass : SomeClass
             GetCA1721CSharpResultAt(line: 14, column: 21, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-
         [Fact]
         public async Task CSharp_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_Diagnostic()
         {
@@ -290,7 +289,6 @@ Public Class SometOtherClass
 End Class",
             GetCA1721BasicResultAt(line: 12, column: 30, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
-
 
         [Fact]
         public async Task Basic_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_Diagnostic()
@@ -763,13 +761,17 @@ End Class");
         #region Helpers
 
         private static DiagnosticResult GetCA1721CSharpResultAt(int line, int column, string identifierName, string otherIdentifierName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(identifierName, otherIdentifierName);
 
         private static DiagnosticResult GetCA1721BasicResultAt(int line, int column, string identifierName, string otherIdentifierName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(identifierName, otherIdentifierName);
 
         #endregion

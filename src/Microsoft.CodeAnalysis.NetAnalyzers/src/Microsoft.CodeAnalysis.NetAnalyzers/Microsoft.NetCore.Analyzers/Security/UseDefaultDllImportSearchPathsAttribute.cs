@@ -23,6 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,
+            isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.UseDefaultDllImportSearchPathsAttributeDescription));
         internal static DiagnosticDescriptor DoNotUseUnsafeDllImportSearchPathRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5393",
@@ -31,6 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,
+            isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseUnsafeDllImportSearchPathDescription));
 
         // DllImportSearchPath.AssemblyDirectory = 2.
@@ -57,7 +59,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                 if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDllImportAttribute, out INamedTypeSymbol? dllImportAttributeTypeSymbol) ||
                     !wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesDefaultDllImportSearchPathsAttribute, out INamedTypeSymbol? defaultDllImportSearchPathsAttributeTypeSymbol) ||
-                    !(compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree))
+                    compilationStartAnalysisContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {
                     return;
                 }
@@ -88,7 +90,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     {
                         var constructorArguments = dllImportAttribute.ConstructorArguments;
 
-                        if (constructorArguments.Length == 0)
+                        if (constructorArguments.IsEmpty)
                         {
                             return;
                         }

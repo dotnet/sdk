@@ -16,10 +16,11 @@ namespace Microsoft.NetCore.Analyzers.Security
             nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForFilePathInjectionVulnerabilitiesMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
-            isDataflowRule: true);
+            isDataflowRule: true,
+            isReportedAtCompilationEnd: false);
 
         protected override SinkKind SinkKind => SinkKind.FilePathInjection;
 
-        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor { get { return Rule; } }
+        protected override DiagnosticDescriptor TaintedDataEnteringSinkDescriptor => Rule;
     }
 }

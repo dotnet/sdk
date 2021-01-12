@@ -86,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var namedType = (INamedTypeSymbol)symbolStartContext.Symbol;
                 return disposeAnalysisHelper.IsDisposable(namedType) &&
                     !disposeAnalysisHelper.GetDisposableFields(namedType).IsEmpty &&
-                    !namedType.IsConfiguredToSkipAnalysis(symbolStartContext.Options, Rule, symbolStartContext.Compilation, symbolStartContext.CancellationToken);
+                    !symbolStartContext.Options.IsConfiguredToSkipAnalysis(Rule, namedType, symbolStartContext.Compilation, symbolStartContext.CancellationToken);
             }
 
             bool IsDisposeMethod(IMethodSymbol method)
@@ -124,7 +124,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 RoslynDebug.Assert(disposeAnalysisHelper != null);
 
-                if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol containingMethod))
+                if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod)
                 {
                     return;
                 }
@@ -167,10 +167,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                                 var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationContext.Compilation);
                                 var interproceduralAnalysisConfig = InterproceduralAnalysisConfiguration.Create(
-                                    operationBlockStartContext.Options, Rule, containingMethod, operationBlockStartContext.Compilation, InterproceduralAnalysisKind.None, operationBlockStartContext.CancellationToken);
+                                    operationBlockStartContext.Options, Rule, cfg, operationBlockStartContext.Compilation, InterproceduralAnalysisKind.None, operationBlockStartContext.CancellationToken);
                                 var pointsToAnalysisResult = PointsToAnalysis.TryGetOrComputeResult(cfg,
-                                    containingMethod, operationBlockStartContext.Options, wellKnownTypeProvider, interproceduralAnalysisConfig,
-                                    interproceduralAnalysisPredicateOpt: null,
+                                    containingMethod, operationBlockStartContext.Options, wellKnownTypeProvider,
+                                    PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties,
+                                    interproceduralAnalysisConfig,
+                                    interproceduralAnalysisPredicate: null,
                                     pessimisticAnalysis: false, performCopyAnalysis: false);
                                 if (pointsToAnalysisResult == null)
                                 {
@@ -202,7 +204,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     if (!disposableFields.IsEmpty)
                     {
                         if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockStartContext.OperationBlocks, containingMethod,
-                            operationBlockStartContext.Options, Rule, trackInstanceFields: true, trackExceptionPaths: false, cancellationToken: operationBlockStartContext.CancellationToken,
+                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.Complete, trackInstanceFields: true, trackExceptionPaths: false, cancellationToken: operationBlockStartContext.CancellationToken,
                             disposeAnalysisResult: out var disposeAnalysisResult, pointsToAnalysisResult: out var pointsToAnalysisResult))
                         {
                             RoslynDebug.Assert(disposeAnalysisResult.TrackedInstanceFieldPointsToMap != null);
@@ -273,7 +275,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
                 finally
                 {
-                    fieldDisposeValueMap.Free();
+                    fieldDisposeValueMap.Free(symbolEndContext.CancellationToken);
                 }
             }
         }

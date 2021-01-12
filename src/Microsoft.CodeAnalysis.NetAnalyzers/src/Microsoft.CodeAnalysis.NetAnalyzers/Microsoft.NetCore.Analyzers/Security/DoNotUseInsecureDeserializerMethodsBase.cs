@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -37,7 +38,22 @@ namespace Microsoft.NetCore.Analyzers.Security
         /// <remarks>The string format message argument is the method signature.</remarks>
         protected abstract DiagnosticDescriptor MethodUsedDescriptor { get; }
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        /// <summary>
+        /// Allows the inheritor to choose different diagnostics based on the operation that will get reported.
+        /// </summary>
+        /// <param name="operationAnalysisContext">Context for the operation to be reported.</param>
+        /// <param name="wellKnownTypeProvider"><see cref="WellKnownTypeProvider"/> for the operation's compilation.</param>
+        /// <returns>Diagnostic descriptor to report, or null if no diagnostic should be reported.</returns>
+        /// <remarks>If you override this to choose among multiple diagnostic descriptors, you'll also need to override
+        /// <see cref="SupportedDiagnostics"/> to contain all possible diagnostic descriptors.</remarks>
+        protected virtual DiagnosticDescriptor? ChooseDiagnosticDescriptor(
+            OperationAnalysisContext operationAnalysisContext,
+            WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            return MethodUsedDescriptor;
+        }
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create<DiagnosticDescriptor>(
                 this.MethodUsedDescriptor);
 
@@ -55,8 +71,10 @@ namespace Microsoft.NetCore.Analyzers.Security
             context.RegisterCompilationStartAction(
                 (CompilationStartAnalysisContext compilationStartAnalysisContext) =>
                 {
+                    WellKnownTypeProvider wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(
+                        compilationStartAnalysisContext.Compilation);
                     INamedTypeSymbol? deserializerTypeSymbol =
-                        compilationStartAnalysisContext.Compilation.GetOrCreateTypeByMetadataName(this.DeserializerTypeMetadataName);
+                        wellKnownTypeProvider.GetOrCreateTypeByMetadataName(this.DeserializerTypeMetadataName);
                     if (deserializerTypeSymbol == null)
                     {
                         return;
@@ -67,15 +85,19 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             IInvocationOperation invocationOperation =
                                 (IInvocationOperation)operationAnalysisContext.Operation;
-                            if (Equals(invocationOperation.Instance?.Type, deserializerTypeSymbol)
+                            if (invocationOperation.Instance?.Type?.DerivesFrom(deserializerTypeSymbol) == true
                                 && cachedDeserializationMethodNames.Contains(invocationOperation.TargetMethod.MetadataName))
                             {
-                                operationAnalysisContext.ReportDiagnostic(
-                                    Diagnostic.Create(
-                                        this.MethodUsedDescriptor,
-                                        invocationOperation.Syntax.GetLocation(),
-                                        invocationOperation.TargetMethod.ToDisplayString(
-                                            SymbolDisplayFormat.MinimallyQualifiedFormat)));
+                                DiagnosticDescriptor? chosenDiagnostic =
+                                    this.ChooseDiagnosticDescriptor(operationAnalysisContext, wellKnownTypeProvider);
+                                if (chosenDiagnostic != null)
+                                {
+                                    operationAnalysisContext.ReportDiagnostic(
+                                        invocationOperation.CreateDiagnostic(
+                                            chosenDiagnostic,
+                                            invocationOperation.TargetMethod.ToDisplayString(
+                                                SymbolDisplayFormat.MinimallyQualifiedFormat)));
+                                }
                             }
                         },
                         OperationKind.Invocation);
@@ -85,15 +107,19 @@ namespace Microsoft.NetCore.Analyzers.Security
                         {
                             IMethodReferenceOperation methodReferenceOperation =
                                 (IMethodReferenceOperation)operationAnalysisContext.Operation;
-                            if (Equals(methodReferenceOperation.Instance?.Type, deserializerTypeSymbol)
+                            if (methodReferenceOperation.Instance?.Type?.DerivesFrom(deserializerTypeSymbol) == true
                                 && cachedDeserializationMethodNames.Contains(methodReferenceOperation.Method.MetadataName))
                             {
-                                operationAnalysisContext.ReportDiagnostic(
-                                    Diagnostic.Create(
-                                        this.MethodUsedDescriptor,
-                                        methodReferenceOperation.Syntax.GetLocation(),
-                                        methodReferenceOperation.Method.ToDisplayString(
-                                            SymbolDisplayFormat.MinimallyQualifiedFormat)));
+                                DiagnosticDescriptor? chosenDiagnostic =
+                                    this.ChooseDiagnosticDescriptor(operationAnalysisContext, wellKnownTypeProvider);
+                                if (chosenDiagnostic != null)
+                                {
+                                    operationAnalysisContext.ReportDiagnostic(
+                                        methodReferenceOperation.CreateDiagnostic(
+                                            chosenDiagnostic,
+                                            methodReferenceOperation.Method.ToDisplayString(
+                                                SymbolDisplayFormat.MinimallyQualifiedFormat)));
+                                }
                             }
                         },
                         OperationKind.MethodReference);

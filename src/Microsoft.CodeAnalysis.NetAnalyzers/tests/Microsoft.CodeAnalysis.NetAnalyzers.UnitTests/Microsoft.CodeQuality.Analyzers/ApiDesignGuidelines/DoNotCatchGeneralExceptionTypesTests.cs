@@ -701,5 +701,79 @@ End Class"
                 }
             }.RunAsync();
         }
+
+        [Theory, WorkItem(3211, "https://github.com/dotnet/roslyn-analyzers/issues/3211")]
+        // No configuration - validate no diagnostics in default configuration
+        [InlineData("")]
+        // Check with exact method signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M:SomeNamespace.Test.M1(System.String)")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = M:SomeNamespace.Test.M1(System.String)")]
+        // Check with wildcard method signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M:SomeNamespace.Test.M*")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = M:SomeNamespace.Test.M*")]
+        // Check with exact type signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = T:SomeNamespace.Test")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = T:SomeNamespace.Test")]
+        // Check with wildcard type signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = T:SomeNamespace.Tes*")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = T:SomeNamespace.Tes*")]
+        // Check with exact namespace signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = N:SomeNamespace")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = N:SomeNamespace")]
+        // Check with wildcard namespace signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = N:Some*")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = N:Some*")]
+        // Check with match all signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M1")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = Test")]
+        // Check with wildcard signature
+        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M1*")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = Tes*")]
+        public async Task CA1031_EditorConfig_ExcludedSymbolNames(string editorConfigText)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+namespace SomeNamespace
+{
+    class Test
+    {
+        void M1(string param)
+        {
+            try { }"
+            + (editorConfigText.Length == 0 ? "[|catch|]" : "catch") + @" (System.Exception ex) { }
+        }
+    }
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+Namespace SomeNamespace
+    Class Test
+        Private Sub M1(param As String)
+            Try
+            {(editorConfigText.Length == 0 ? "[|Catch|]" : "Catch")} ex As System.Exception
+            End Try
+        End Sub
+    End Class
+End Namespace"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            }.RunAsync();
+        }
     }
 }

@@ -66,10 +66,10 @@ End Structure");
         }
 
         [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7305")]
-        public async Task Ignored_Interace()
+        public async Task Ignored_Interface()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
-Interace I
+Interface I
     Public Shared Operator =(a As I, b As I)
         Return True
     End Operator
@@ -168,7 +168,9 @@ End Class",
         }
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

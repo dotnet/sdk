@@ -43,8 +43,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 context.RegisterOperationBlockAction(context =>
                 {
                     if (context.OperationBlocks.Length != 1 ||
-                        !(context.OperationBlocks[0] is IBlockOperation blockOperation) ||
-                        !(context.OwningSymbol is IMethodSymbol methodSymbol) ||
+                        context.OperationBlocks[0] is not IBlockOperation blockOperation ||
+                        context.OwningSymbol is not IMethodSymbol methodSymbol ||
                         !methodSymbol.IsDestructor())
                     {
                         return;

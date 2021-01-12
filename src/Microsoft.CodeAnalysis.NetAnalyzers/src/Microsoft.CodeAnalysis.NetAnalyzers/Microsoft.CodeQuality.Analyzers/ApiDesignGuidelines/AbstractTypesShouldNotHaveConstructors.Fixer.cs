@@ -35,16 +35,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                     context.Diagnostics);
         }
 
-        private static SyntaxNode? GetDeclaration(ISymbol symbol)
+        private static SyntaxNode? GetDeclaration(ISymbol symbol, CancellationToken cancellationToken)
         {
-            return (symbol.DeclaringSyntaxReferences.Length > 0) ? symbol.DeclaringSyntaxReferences[0].GetSyntax() : null;
+            return (!symbol.DeclaringSyntaxReferences.IsEmpty) ? symbol.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) : null;
         }
 
         private static async Task<Document> ChangeAccessibilityCodeFix(Document document, SyntaxNode root, SyntaxNode nodeToFix, CancellationToken cancellationToken)
         {
             SemanticModel model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             var classSymbol = (INamedTypeSymbol)model.GetDeclaredSymbol(nodeToFix, cancellationToken);
-            List<SyntaxNode> instanceConstructors = classSymbol.InstanceConstructors.Where(t => t.DeclaredAccessibility == Accessibility.Public).Select(t => GetDeclaration(t)).WhereNotNull().ToList();
+            List<SyntaxNode> instanceConstructors = classSymbol.InstanceConstructors.Where(t => t.DeclaredAccessibility == Accessibility.Public).Select(t => GetDeclaration(t, cancellationToken)).WhereNotNull().ToList();
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(document);
             SyntaxNode newRoot = root.ReplaceNodes(instanceConstructors, (original, rewritten) => generator.WithAccessibility(original, Accessibility.Protected));
             return document.WithSyntaxRoot(newRoot);

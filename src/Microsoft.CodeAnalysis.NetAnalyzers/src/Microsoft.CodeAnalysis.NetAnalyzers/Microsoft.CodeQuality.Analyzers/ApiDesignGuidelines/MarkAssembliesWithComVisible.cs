@@ -27,7 +27,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                        description: s_localizableDescription,
                                                                                        isPortedFxCopRule: true,
                                                                                        isDataflowRule: false,
-                                                                                       isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                                       isEnabledByDefaultInAggressiveMode: false,
+                                                                                       isReportedAtCompilationEnd: true);
 
         internal static readonly DiagnosticDescriptor RuleAddComVisible = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                        s_localizableTitle,
@@ -37,7 +38,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                        description: s_localizableDescription,
                                                                                        isPortedFxCopRule: true,
                                                                                        isDataflowRule: false,
-                                                                                       isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                                       isEnabledByDefaultInAggressiveMode: false,
+                                                                                       isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleChangeComVisible, RuleAddComVisible);
 
@@ -63,7 +65,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 if (attributeInstance != null)
                 {
-                    if (attributeInstance.ConstructorArguments.Length > 0 &&
+                    if (!attributeInstance.ConstructorArguments.IsEmpty &&
                         attributeInstance.ConstructorArguments[0].Kind == TypedConstantKind.Primitive &&
                         attributeInstance.ConstructorArguments[0].Value != null &
                         attributeInstance.ConstructorArguments[0].Value.Equals(true))

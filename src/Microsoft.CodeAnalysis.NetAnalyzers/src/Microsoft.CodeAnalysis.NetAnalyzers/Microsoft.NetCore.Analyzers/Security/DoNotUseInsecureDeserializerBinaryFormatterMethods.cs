@@ -24,6 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
+                isReportedAtCompilationEnd: false,
                 descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterMethodUsedDescription));
 
         protected override string DeserializerTypeMetadataName =>

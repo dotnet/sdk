@@ -18,28 +18,38 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region Boilerplate
 
         private static DiagnosticResult GetCA2225CSharpDefaultResultAt(int line, int column, string alternateName, string operatorName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(alternateName, operatorName);
 
         private static DiagnosticResult GetCA2225CSharpPropertyResultAt(int line, int column, string alternateName, string operatorName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.PropertyRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(alternateName, operatorName);
 
         private static DiagnosticResult GetCA2225CSharpMultipleResultAt(int line, int column, string alternateName1, string alternateName2, string operatorName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(alternateName1, alternateName2, operatorName);
 
         private static DiagnosticResult GetCA2225CSharpVisibilityResultAt(int line, int column, string alternateName, string operatorName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.VisibilityRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(alternateName, operatorName);
 
         private static DiagnosticResult GetCA2225BasicDefaultResultAt(int line, int column, string alternateName, string operatorName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(alternateName, operatorName);
 
         #endregion
@@ -211,6 +221,96 @@ struct C
     public static C Add(C left, C right) { return new C(); }
 }
 ");
+        }
+
+        [Fact]
+        public async Task ImplicitCastToArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static implicit operator byte[](MyStruct myStruct)
+    {
+        return new byte[1];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 43).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
+        }
+
+        [Fact]
+        public async Task ExplicitCastToArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static explicit operator byte[](MyStruct myStruct)
+    {
+        return new byte[1];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 43).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
+        }
+
+        [Fact]
+        public async Task ImplicitCastToMultidimensionalArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static implicit operator byte[,](MyStruct myStruct)
+    {
+        return new byte[1,1];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 44).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
+        }
+
+        [Fact]
+        public async Task ExplicitCastToMultidimensionalArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static explicit operator byte[,](MyStruct myStruct)
+    {
+        return new byte[1,1];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 44).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
+        }
+
+        [Fact]
+        public async Task ImplicitCastToJaggedArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static implicit operator byte[][](MyStruct myStruct)
+    {
+        return new byte[1][];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 45).WithArguments("ToByteArray", "FromMyStruct", "op_Implicit"));
+        }
+
+        [Fact]
+        public async Task ExplicitCastToJaggedArray()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+@"
+public struct MyStruct
+{
+    public static explicit operator byte[][](MyStruct myStruct)
+    {
+        return new byte[1][];
+    }
+}",
+                VerifyCS.Diagnostic(OperatorOverloadsHaveNamedAlternatesAnalyzer.MultipleRule).WithSpan(4, 37, 4, 45).WithArguments("ToByteArray", "FromMyStruct", "op_Explicit"));
         }
 
         #endregion

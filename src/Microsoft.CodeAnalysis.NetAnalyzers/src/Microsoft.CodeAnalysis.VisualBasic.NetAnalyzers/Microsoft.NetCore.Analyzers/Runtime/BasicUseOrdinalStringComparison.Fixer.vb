@@ -44,7 +44,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Dim invokeParent = identifier.Parent?.FirstAncestorOrSelf(Of InvocationExpressionSyntax)()
             If invokeParent IsNot Nothing Then
                 Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
-                Dim methodSymbol = TryCast(model.GetSymbolInfo(identifier).Symbol, IMethodSymbol)
+                Dim methodSymbol = TryCast(model.GetSymbolInfo(identifier, cancellationToken).Symbol, IMethodSymbol)
                 If methodSymbol IsNot Nothing AndAlso CanAddStringComparison(methodSymbol, model) Then
                     ' append a New StringComparison.Ordinal argument
                     Dim newArg = generator.Argument(CreateOrdinalMemberAccess(generator, model)).

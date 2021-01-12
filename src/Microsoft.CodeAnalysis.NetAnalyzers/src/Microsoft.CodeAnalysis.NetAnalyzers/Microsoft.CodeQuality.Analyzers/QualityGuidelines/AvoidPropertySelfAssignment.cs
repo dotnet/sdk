@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -40,12 +41,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 var assignmentOperation = (IAssignmentOperation)operationContext.Operation;
 
-                if (!(assignmentOperation.Target is IPropertyReferenceOperation operationTarget))
+                if (assignmentOperation.Target is not IPropertyReferenceOperation operationTarget)
                 {
                     return;
                 }
 
-                if (!(assignmentOperation.Value is IPropertyReferenceOperation operationValue))
+                if (assignmentOperation.Value is not IPropertyReferenceOperation operationValue)
                 {
                     return;
                 }
@@ -56,7 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     return;
                 }
 
-                if (operationTarget.Arguments.Length > 0)
+                if (!operationTarget.Arguments.IsEmpty)
                 {
                     // Indexers - compare if all the arguments are identical.
                     for (int i = 0; i < operationTarget.Arguments.Length; i++)
@@ -73,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     operationValue.Instance is IInstanceReferenceOperation valueInstanceReference &&
                     valueInstanceReference.ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
                 {
-                    var diagnostic = Diagnostic.Create(Rule, valueInstanceReference.Syntax.GetLocation(), operationTarget.Property.Name);
+                    var diagnostic = valueInstanceReference.CreateDiagnostic(Rule, operationTarget.Property.Name);
                     operationContext.ReportDiagnostic(diagnostic);
                 }
             }, OperationKind.SimpleAssignment);

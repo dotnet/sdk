@@ -162,7 +162,10 @@ public class C
         public async Task CA2241CSharpVarArgsNotSupported()
         {
             // currently not supported due to "https://github.com/dotnet/roslyn/issues/7346"
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net472.Default,
+                TestCode = @"
 using System;
 
 public class C
@@ -173,7 +176,8 @@ public class C
         Console.WriteLine(""{0} {1} {2} {3} {4}"", 1, 2, 3, 4, __arglist(5));
     }
 }
-");
+",
+            }.RunAsync();
         }
 
         [Fact]
@@ -215,7 +219,7 @@ End Class
             // Dim s = Console.WriteLine(""{0} {1} {2}"", 1, 2, 3, 4)
             // since VB bind it to __arglist version where we skip analysis
             // due to a bug - https://github.com/dotnet/roslyn/issues/7346
-            // we might skip it only in C# since VB doesnt support __arglist
+            // we might skip it only in C# since VB doesn't support __arglist
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
@@ -232,6 +236,9 @@ End Class
             GetBasicResultAt(6, 9),
             GetBasicResultAt(7, 9),
             GetBasicResultAt(8, 9),
+#if NETCOREAPP
+            GetBasicResultAt(9, 9),
+#endif
             GetBasicResultAt(10, 9));
         }
 
@@ -242,7 +249,7 @@ End Class
             // Dim s = Console.WriteLine(""{0} {1} {2}"", 1, 2, 3, 4)
             // since VB bind it to __arglist version where we skip analysis
             // due to a bug - https://github.com/dotnet/roslyn/issues/7346
-            // we might skip it only in C# since VB doesnt support __arglist
+            // we might skip it only in C# since VB doesn't support __arglist
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
@@ -259,6 +266,9 @@ End Class
             GetBasicResultAt(6, 9),
             GetBasicResultAt(7, 9),
             GetBasicResultAt(8, 9),
+#if NETCOREAPP
+            GetBasicResultAt(9, 9),
+#endif
             GetBasicResultAt(10, 9));
         }
 
@@ -338,6 +348,80 @@ public class C
         [Theory]
         [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]
         // No configuration - validate no diagnostics in default configuration
+        [InlineData(null)]
+        // Configured but disabled
+        [InlineData(false)]
+        // Configured and enabled
+        [InlineData(true)]
+        public async Task EditorConfigConfiguration_HeuristicAdditionalStringFormattingMethods(bool? editorConfig)
+        {
+            string editorConfigText = editorConfig == null ? string.Empty :
+                "dotnet_code_quality.try_determine_additional_string_formatting_methods_automatically = " + editorConfig.Value;
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+class Test
+{
+    public static string MyFormat(string format, params object[] args) => format;
+
+    void M1(string param)
+    {
+        var a = MyFormat("""", 1);
+    }
+}"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
+            if (editorConfig == true)
+            {
+                csharpTest.ExpectedDiagnostics.Add(
+                    // Test0.cs(8,17): warning CA2241: Provide correct arguments to formatting methods
+                    GetCSharpResultAt(8, 17));
+            }
+
+            await csharpTest.RunAsync();
+
+            var basicTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Class Test
+    Public Shared Function MyFormat(format As String, ParamArray args As Object()) As String
+        Return format
+    End Function
+
+    Private Sub M1(ByVal param As String)
+        Dim a = MyFormat("""", 1)
+    End Sub
+End Class"
+},
+                    AdditionalFiles = { (".editorconfig", editorConfigText) }
+                }
+            };
+
+            if (editorConfig == true)
+            {
+                basicTest.ExpectedDiagnostics.Add(
+                    // Test0.vb(8,17): warning CA2241: Provide correct arguments to formatting methods
+                    GetBasicResultAt(8, 17));
+            }
+
+            await basicTest.RunAsync();
+        }
+
+        [Theory]
+        [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]
+        // No configuration - validate no diagnostics in default configuration
         [InlineData("")]
         // Match by method name
         [InlineData("dotnet_code_quality.additional_string_formatting_methods = MyFormat")]
@@ -370,7 +454,6 @@ class Test
                 }
             };
 
-
             if (editorConfigText.Length > 0)
             {
                 csharpTest.ExpectedDiagnostics.Add(
@@ -401,7 +484,6 @@ End Class"
                 }
             };
 
-
             if (editorConfigText.Length > 0)
             {
                 basicTest.ExpectedDiagnostics.Add(
@@ -415,11 +497,15 @@ End Class"
         #endregion
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

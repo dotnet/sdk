@@ -27,7 +27,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Reliability,
-            RuleLevel.Disabled, // Superseded by VS threading analyzers
+            RuleLevel.Disabled,
             description: s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -41,7 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             analysisContext.RegisterCompilationStartAction(context =>
             {
-                if (!(context.Compilation.SyntaxTrees.FirstOrDefault() is SyntaxTree tree) ||
+                if (context.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree ||
                     !context.Options.GetOutputKindsOption(Rule, tree, context.Compilation, context.CancellationToken).Contains(context.Compilation.Options.OutputKind))
                 {
                     // Configured to skip analysis for the compilation's output kind
@@ -92,7 +92,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static bool TryGetTaskTypes(Compilation compilation, out ImmutableArray<INamedTypeSymbol> taskTypes)
         {
             INamedTypeSymbol? taskType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask);
-            INamedTypeSymbol? taskOfTType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericTask);
+            INamedTypeSymbol? taskOfTType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1);
 
             if (taskType == null || taskOfTType == null)
             {
@@ -101,7 +101,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             INamedTypeSymbol? valueTaskType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask);
-            INamedTypeSymbol? valueTaskOfTType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksGenericValueTask);
+            INamedTypeSymbol? valueTaskOfTType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1);
 
             taskTypes = valueTaskType != null && valueTaskOfTType != null ?
                 ImmutableArray.Create(taskType, taskOfTType, valueTaskType, valueTaskOfTType) :

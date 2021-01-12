@@ -107,13 +107,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterSymbolAction((saContext) =>
             {
                 var namedTypeSymbol = (INamedTypeSymbol)saContext.Symbol;
-                if (!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, DefaultRule, saContext.Compilation, saContext.CancellationToken))
+                if (!saContext.Options.MatchesConfiguredVisibility(DefaultRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken))
                 {
-                    Debug.Assert(!namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.Compilation, saContext.CancellationToken));
+                    Debug.Assert(!saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
                     return;
                 }
 
-                Debug.Assert(namedTypeSymbol.MatchesConfiguredVisibility(saContext.Options, SpecialCollectionRule, saContext.Compilation, saContext.CancellationToken));
+                Debug.Assert(saContext.Options.MatchesConfiguredVisibility(SpecialCollectionRule, namedTypeSymbol, saContext.Compilation, saContext.CancellationToken));
 
                 var excludeIndirectBaseTypes = context.Options.GetBoolOptionValue(EditorConfigOptionNames.ExcludeIndirectBaseTypes, DefaultRule,
                    namedTypeSymbol, context.Compilation, defaultValue: true, cancellationToken: context.CancellationToken);
@@ -171,13 +171,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
 
         private static bool TryGetTypeSuffix(IEnumerable<INamedTypeSymbol> typeSymbols, ImmutableDictionary<INamedTypeSymbol, SuffixInfo> hardcodedMap,
-            SymbolNamesWithValueOption<string> userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
+            SymbolNamesWithValueOption<string?> userMap, [NotNullWhen(true)] out SuffixInfo? suffixInfo)
         {
             foreach (var type in typeSymbols)
             {
                 // User specific mapping has higher priority than hardcoded one
                 if (userMap.TryGetValue(type.OriginalDefinition, out var suffix) &&
-                    !string.IsNullOrWhiteSpace(suffix))
+                    !RoslynString.IsNullOrWhiteSpace(suffix))
                 {
                     suffixInfo = SuffixInfo.Create(suffix, canSuffixBeCollection: false);
                     return true;

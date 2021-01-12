@@ -9,6 +9,7 @@ using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.ValueContentAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Security.Helpers;
@@ -29,6 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
+            isReportedAtCompilationEnd: false,
             descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableSchUseStrongCryptoDescription));
         internal static DiagnosticDescriptor DoNotDisableSpmSecurityProtocolsRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5378",
@@ -36,6 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableUsingServicePointManagerSecurityProtocolsMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
+            isReportedAtCompilationEnd: false,
             isDataflowRule: true);
 
         internal static ImmutableDictionary<string, (bool BadValue, DiagnosticDescriptor Rule)> BadSwitches =
@@ -122,10 +125,11 @@ namespace Microsoft.NetCore.Analyzers.Security
                             operationAnalysisContext.ContainingSymbol,
                             operationAnalysisContext.Options,
                             wellKnownTypeProvider,
+                            PointsToAnalysisKind.Complete,
                             InterproceduralAnalysisConfiguration.Create(
                                 operationAnalysisContext.Options,
                                 SupportedDiagnostics,
-                                invocationOperation.Syntax.SyntaxTree,
+                                invocationOperation,
                                 operationAnalysisContext.Compilation,
                                 InterproceduralAnalysisKind.None,   // Just looking for simple cases.
                                 operationAnalysisContext.CancellationToken),
@@ -162,6 +166,6 @@ namespace Microsoft.NetCore.Analyzers.Security
         }
 
         private static bool IsConfiguredToSkipAnalysis(DiagnosticDescriptor rule, OperationAnalysisContext context)
-            => context.ContainingSymbol.IsConfiguredToSkipAnalysis(context.Options, rule, context.Compilation, context.CancellationToken);
+            => context.Options.IsConfiguredToSkipAnalysis(rule, context.ContainingSymbol, context.Compilation, context.CancellationToken);
     }
 }

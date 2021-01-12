@@ -41,7 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             analysisContext.RegisterOperationBlockStartAction(operationBlockStartContext =>
             {
-                if (!(operationBlockStartContext.OwningSymbol is IMethodSymbol methodSymbol) ||
+                if (operationBlockStartContext.OwningSymbol is not IMethodSymbol methodSymbol ||
                     methodSymbol.MethodKind != MethodKind.PropertySet)
                 {
                     return;
@@ -51,8 +51,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 {
                     var assignmentOperation = (IAssignmentOperation)operationContext.Operation;
 
-                    if (!(assignmentOperation.Target is IPropertyReferenceOperation operationTarget) ||
-                        !(operationTarget.Instance is IInstanceReferenceOperation targetInstanceReference) ||
+                    if (assignmentOperation.Target is not IPropertyReferenceOperation operationTarget ||
+                        operationTarget.Instance is not IInstanceReferenceOperation targetInstanceReference ||
                         targetInstanceReference.ReferenceKind != InstanceReferenceKind.ContainingTypeInstance ||
                         !operationTarget.Member.Equals(methodSymbol.AssociatedSymbol))
                     {

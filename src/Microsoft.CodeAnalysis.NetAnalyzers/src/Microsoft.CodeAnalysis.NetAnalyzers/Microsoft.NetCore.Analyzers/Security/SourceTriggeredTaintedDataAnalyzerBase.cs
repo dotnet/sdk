@@ -71,19 +71,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                             ISymbol owningSymbol = operationBlockStartContext.OwningSymbol;
                             AnalyzerOptions options = operationBlockStartContext.Options;
                             CancellationToken cancellationToken = operationBlockStartContext.CancellationToken;
-                            if (owningSymbol.IsConfiguredToSkipAnalysis(options, TaintedDataEnteringSinkDescriptor, compilation, cancellationToken))
+                            if (options.IsConfiguredToSkipAnalysis(TaintedDataEnteringSinkDescriptor, owningSymbol, compilation, cancellationToken))
                             {
                                 return;
                             }
 
                             WellKnownTypeProvider wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
-                            InterproceduralAnalysisConfiguration interproceduralAnalysisConfiguration = InterproceduralAnalysisConfiguration.Create(
-                                                                    options,
-                                                                    SupportedDiagnostics,
-                                                                    owningSymbol,
-                                                                    operationBlockStartContext.Compilation,
-                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                                                    cancellationToken: cancellationToken);
                             Lazy<ControlFlowGraph?> controlFlowGraphFactory = new Lazy<ControlFlowGraph?>(
                                 () => operationBlockStartContext.OperationBlocks.GetControlFlowGraph());
                             Lazy<PointsToAnalysisResult?> pointsToFactory = new Lazy<PointsToAnalysisResult?>(
@@ -94,13 +87,21 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         return null;
                                     }
 
+                                    InterproceduralAnalysisConfiguration interproceduralAnalysisConfiguration = InterproceduralAnalysisConfiguration.Create(
+                                                                    options,
+                                                                    SupportedDiagnostics,
+                                                                    controlFlowGraphFactory.Value,
+                                                                    operationBlockStartContext.Compilation,
+                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
+                                                                    cancellationToken: cancellationToken);
                                     return PointsToAnalysis.TryGetOrComputeResult(
                                                                 controlFlowGraphFactory.Value,
                                                                 owningSymbol,
                                                                 options,
                                                                 wellKnownTypeProvider,
+                                                                PointsToAnalysisKind.Complete,
                                                                 interproceduralAnalysisConfiguration,
-                                                                interproceduralAnalysisPredicateOpt: null);
+                                                                interproceduralAnalysisPredicate: null);
                                 });
                             Lazy<(PointsToAnalysisResult?, ValueContentAnalysisResult?)> valueContentFactory = new Lazy<(PointsToAnalysisResult?, ValueContentAnalysisResult?)>(
                                 () =>
@@ -110,11 +111,19 @@ namespace Microsoft.NetCore.Analyzers.Security
                                         return (null, null);
                                     }
 
+                                    InterproceduralAnalysisConfiguration interproceduralAnalysisConfiguration = InterproceduralAnalysisConfiguration.Create(
+                                                                    options,
+                                                                    SupportedDiagnostics,
+                                                                    controlFlowGraphFactory.Value,
+                                                                    operationBlockStartContext.Compilation,
+                                                                    defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
+                                                                    cancellationToken: cancellationToken);
                                     ValueContentAnalysisResult? valuecontentAnalysisResult = ValueContentAnalysis.TryGetOrComputeResult(
                                                                     controlFlowGraphFactory.Value,
                                                                     owningSymbol,
                                                                     options,
                                                                     wellKnownTypeProvider,
+                                                                    PointsToAnalysisKind.Complete,
                                                                     interproceduralAnalysisConfiguration,
                                                                     out _,
                                                                     out PointsToAnalysisResult? p);
@@ -137,6 +146,23 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     }
                                 },
                                 OperationKind.PropertyReference);
+
+                            if (sourceInfoSymbolMap.RequiresParameterReferenceAnalysis)
+                            {
+                                operationBlockStartContext.RegisterOperationAction(
+                                    operationAnalysisContext =>
+                                    {
+                                        IParameterReferenceOperation parameterReferenceOperation = (IParameterReferenceOperation)operationAnalysisContext.Operation;
+                                        if (sourceInfoSymbolMap.IsSourceParameter(parameterReferenceOperation.Parameter, wellKnownTypeProvider))
+                                        {
+                                            lock (rootOperationsNeedingAnalysis)
+                                            {
+                                                rootOperationsNeedingAnalysis.Add(parameterReferenceOperation.GetRoot());
+                                            }
+                                        }
+                                    },
+                                    OperationKind.ParameterReference);
+                            }
 
                             operationBlockStartContext.RegisterOperationAction(
                                 operationAnalysisContext =>
@@ -237,7 +263,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                     }
                                     finally
                                     {
-                                        rootOperationsNeedingAnalysis.Free();
+                                        rootOperationsNeedingAnalysis.Free(compilationContext.CancellationToken);
                                     }
                                 });
                         });

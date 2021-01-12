@@ -416,6 +416,8 @@ class TestClass
         [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
         [InlineData(@"dotnet_code_quality.CA5380.excluded_symbol_names = TestMethod
                       dotnet_code_quality.CA5381.excluded_symbol_names = TestMethod")]
+        [InlineData(@"dotnet_code_quality.CA5380.excluded_symbol_names = TestMet*
+                      dotnet_code_quality.CA5381.excluded_symbol_names = TestMet*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
@@ -451,7 +453,9 @@ class TestClass
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(rule)
                 .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

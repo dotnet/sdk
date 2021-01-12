@@ -439,14 +439,116 @@ public class Something : ISomething
 ");
         }
 
+        [Fact, WorkItem(3877, "https://github.com/dotnet/roslyn-analyzers/issues/3877")]
+        public async Task CA1024_ReturnsTask_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Threading.Tasks;
+
+public class Something
+{
+    public Task GetTask() => default(Task);
+    public Task<int> GetGenericTask() => default(Task<int>);
+
+    public ValueTask GetValueTask() => default(ValueTask);
+    public ValueTask<int> GetGenericValueTask() => default(ValueTask<int>);
+}
+");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Threading.Tasks
+
+Public Class Something
+    Public Function GetTask() As Task
+        Return Nothing
+    End Function
+
+    Public Function GetGenericTask() As Task(Of Integer)
+        Return Nothing
+    End Function
+
+    Public Function GetValueTask() As ValueTask
+        Return Nothing
+    End Function
+
+    Public Function GetGenericValueTask() As ValueTask(Of Integer)
+        Return Nothing
+    End Function
+End Class
+");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_INotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public object GetResult() => null;
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaiter : ICriticalNotifyCompletion
+{
+    public object GetResult() => null;
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+    public void UnsafeOnCompleted(Action continuation) => throw null;
+}");
+        }
+
+        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        public async Task AwaitablePattern_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.CompilerServices;
+
+public class DummyAwaitable
+{
+    public DummyAwaiter GetAwaiter() => new DummyAwaiter();
+}
+
+public class DummyAwaiter : INotifyCompletion
+{
+    public void GetResult()
+    {
+    }
+
+    public bool IsCompleted => false;
+
+    public void OnCompleted(Action continuation) => throw null;
+}");
+        }
+
         private static DiagnosticResult GetCA1024CSharpResultAt(int line, int column, string methodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(methodName);
 
         private static DiagnosticResult GetCA1024BasicResultAt(int line, int column, string methodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(methodName);
     }
 }

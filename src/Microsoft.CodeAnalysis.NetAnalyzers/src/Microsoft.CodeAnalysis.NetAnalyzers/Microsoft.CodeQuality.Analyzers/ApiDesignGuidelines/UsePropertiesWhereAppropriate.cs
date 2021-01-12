@@ -30,8 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                          RuleLevel.Disabled,    // Heuristic based rule.
                                                                          description: s_localizableDescription,
                                                                          isPortedFxCopRule: true,
-                                                                         isDataflowRule: false,
-                                                                         isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                         isDataflowRule: false);
         private const string GetHashCodeName = "GetHashCode";
         private const string GetEnumeratorName = "GetEnumerator";
 
@@ -42,47 +41,71 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.EnableConcurrentExecution();
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterOperationBlockStartAction(context =>
+            analysisContext.RegisterCompilationStartAction(context =>
             {
+                var taskTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
 
-                if (!(context.OwningSymbol is IMethodSymbol methodSymbol) ||
-                    methodSymbol.ReturnsVoid ||
-                    methodSymbol.ReturnType.Kind == SymbolKind.ArrayType ||
-                    methodSymbol.Parameters.Length > 0 ||
-                    !methodSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.Compilation, context.CancellationToken) ||
-                    methodSymbol.IsAccessorMethod() ||
-                    !IsPropertyLikeName(methodSymbol.Name))
-                {
-                    return;
-                }
+                taskTypesBuilder.AddIfNotNull(
+                    context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask));
+                taskTypesBuilder.AddIfNotNull(
+                    context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1));
+                taskTypesBuilder.AddIfNotNull(
+                    context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask));
+                taskTypesBuilder.AddIfNotNull(
+                    context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1));
 
-                // A few additional checks to reduce the noise for this diagnostic:
-                // Ensure that the method is non-generic, non-virtual/override, has no overloads and doesn't have special names: 'GetHashCode' or 'GetEnumerator'.
-                // Also avoid generating this diagnostic if the method body has any invocation expressions.
-                // Also avoid implicit interface implementation (explicit are handled through the member accessibility)
-                if (methodSymbol.IsGenericMethod ||
-                    methodSymbol.IsVirtual ||
-                    methodSymbol.IsOverride ||
-                    methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
-                    methodSymbol.Name == GetHashCodeName ||
-                    methodSymbol.Name == GetEnumeratorName ||
-                    methodSymbol.IsImplementationOfAnyImplicitInterfaceMember())
-                {
-                    return;
-                }
+                var taskTypes = taskTypesBuilder.ToImmutable();
 
-                bool hasInvocations = false;
-                context.RegisterOperationAction(operationContext =>
-                {
-                    hasInvocations = true;
-                }, OperationKind.Invocation);
+                var inotifyCompletionType = context.Compilation.GetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeCompilerServicesINotifyCompletion);
+                var icriticalNotifyCompletionType = context.Compilation.GetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemRuntimeCompilerServicesICriticalNotifyCompletion);
 
-                context.RegisterOperationBlockEndAction(endContext =>
+                context.RegisterOperationBlockStartAction(context =>
                 {
-                    if (!hasInvocations)
+                    if (context.OwningSymbol is not IMethodSymbol methodSymbol ||
+                        methodSymbol.ReturnsVoid ||
+                        methodSymbol.ReturnType.Kind == SymbolKind.ArrayType ||
+                        !methodSymbol.Parameters.IsEmpty ||
+                        !context.Options.MatchesConfiguredVisibility(Rule, methodSymbol, context.Compilation, context.CancellationToken) ||
+                        methodSymbol.IsAccessorMethod() ||
+                        !IsPropertyLikeName(methodSymbol.Name))
                     {
-                        endContext.ReportDiagnostic(endContext.OwningSymbol.CreateDiagnostic(Rule));
+                        return;
                     }
+
+                    // A few additional checks to reduce the noise for this diagnostic:
+                    // Ensure that the method is non-generic, non-virtual/override, has no overloads and doesn't have special names: 'GetHashCode' or 'GetEnumerator'.
+                    // Also avoid generating this diagnostic if the method body has any invocation expressions.
+                    // Also avoid implicit interface implementation (explicit are handled through the member accessibility)
+                    // Also avoid GetAwaiter and GetResult from awaitable-awaiter patterns.
+                    if (methodSymbol.IsGenericMethod ||
+                        methodSymbol.IsVirtual ||
+                        methodSymbol.IsOverride ||
+                        methodSymbol.Name == GetHashCodeName ||
+                        methodSymbol.Name == GetEnumeratorName ||
+                        methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||
+                        taskTypes.Contains(methodSymbol.ReturnType.OriginalDefinition) ||
+                        methodSymbol.IsImplementationOfAnyImplicitInterfaceMember() ||
+                        methodSymbol.IsGetAwaiterFromAwaitablePattern(inotifyCompletionType, icriticalNotifyCompletionType) ||
+                        methodSymbol.IsGetResultFromAwaiterPattern(inotifyCompletionType, icriticalNotifyCompletionType))
+                    {
+                        return;
+                    }
+
+                    bool hasInvocations = false;
+                    context.RegisterOperationAction(operationContext =>
+                    {
+                        hasInvocations = true;
+                    }, OperationKind.Invocation);
+
+                    context.RegisterOperationBlockEndAction(endContext =>
+                    {
+                        if (!hasInvocations)
+                        {
+                            endContext.ReportDiagnostic(endContext.OwningSymbol.CreateDiagnostic(Rule));
+                        }
+                    });
                 });
             });
         }

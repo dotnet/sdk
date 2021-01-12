@@ -139,8 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    var systemObjectSymbol = context.Compilation.GetSpecialType(SpecialType.System_Object);
-                    var isNetStandardAssembly = systemObjectSymbol.ContainingAssembly.Name != "mscorlib";
+                    var isNetStandardAssembly = !context.Compilation.TargetsDotNetFramework();
 
                     var symbolAnalyzer = new SymbolAnalyzer(iserializableTypeSymbol, serializationInfoTypeSymbol, streamingContextTypeSymbol, serializableAttributeTypeSymbol, nonSerializedAttributeTypeSymbol, isNetStandardAssembly);
                     context.RegisterSymbolAction(symbolAnalyzer.AnalyzeSymbol, SymbolKind.NamedType);
@@ -175,7 +174,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public void AnalyzeSymbol(SymbolAnalysisContext context)
             {
                 var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
-                if (namedTypeSymbol.TypeKind == TypeKind.Delegate || namedTypeSymbol.TypeKind == TypeKind.Interface)
+                if (namedTypeSymbol.TypeKind is TypeKind.Delegate or TypeKind.Interface)
                 {
                     return;
                 }
@@ -232,7 +231,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     foreach (ISymbol member in namedTypeSymbol.GetMembers())
                     {
                         // Only process field members
-                        if (!(member is IFieldSymbol field))
+                        if (member is not IFieldSymbol field)
                         {
                             continue;
                         }
@@ -285,33 +284,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
 
-                switch (type.TypeKind)
+                return type.TypeKind switch
                 {
-                    case TypeKind.Array:
-                        return IsSerializable(((IArrayTypeSymbol)type).ElementType);
-
-                    case TypeKind.Enum:
-                        return IsSerializable(((INamedTypeSymbol)type).EnumUnderlyingType);
-
-                    case TypeKind.TypeParameter:
-                    case TypeKind.Interface:
-                        // The concrete type can't be determined statically,
-                        // so we assume true to cut down on noise.
-                        return true;
-
-                    case TypeKind.Class:
-                    case TypeKind.Struct:
-                        // Check SerializableAttribute or Serializable flag from metadata.
-                        return ((INamedTypeSymbol)type).IsSerializable;
-
-                    case TypeKind.Delegate:
-                        // delegates are always serializable, even if
-                        // they aren't actually marked [Serializable]
-                        return true;
-
-                    default:
-                        return type.GetAttributes().Any(a => a.AttributeClass.Equals(_serializableAttributeTypeSymbol));
-                }
+                    TypeKind.Array => IsSerializable(((IArrayTypeSymbol)type).ElementType),
+                    TypeKind.Enum => IsSerializable(((INamedTypeSymbol)type).EnumUnderlyingType),
+                    TypeKind.TypeParameter or TypeKind.Interface => true,// The concrete type can't be determined statically,
+                                                                         // so we assume true to cut down on noise.
+                    TypeKind.Class or TypeKind.Struct => ((INamedTypeSymbol)type).IsSerializable,// Check SerializableAttribute or Serializable flag from metadata.
+                    TypeKind.Delegate => true,// delegates are always serializable, even if
+                                              // they aren't actually marked [Serializable]
+                    _ => type.GetAttributes().Any(a => a.AttributeClass.Equals(_serializableAttributeTypeSymbol)),
+                };
             }
         }
     }

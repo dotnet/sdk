@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.PreferJaggedArraysOverMultidimensionalAnalyzer,
@@ -213,34 +214,109 @@ End Class
             GetBasicReturnResultAt(9, 33, "MethodReturningMultidimensionalArray", "Integer(*,*)"));
         }
 
+        [Fact, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
+        public async Task Method_WhenInterfaceImplementation_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface IC
+{
+    int[,] {|#0:MethodReturningMultidimensionalArray|}(int[,] {|#1:array|});
+}
+
+public class C : IC
+{
+    public int[,] MethodReturningMultidimensionalArray(int[,] array)
+        => null;
+}",
+                VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.ReturnRule).WithLocation(0).WithArguments("MethodReturningMultidimensionalArray", "int[*,*]"),
+                VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(1).WithArguments("array"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Interface IC
+    Function {|#0:MethodReturningMultidimensionalArray|}(ByVal {|#1:array|} As Integer(,)) As Integer(,)
+End Interface
+
+Public Class C
+    Implements IC
+
+    Public Function MethodReturningMultidimensionalArray(ByVal array As Integer(,)) As Integer(,) Implements IC.MethodReturningMultidimensionalArray
+        Return Nothing
+    End Function
+End Class
+",
+                VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.ReturnRule).WithLocation(0).WithArguments("MethodReturningMultidimensionalArray", "Integer(*,*)"),
+                VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(1).WithArguments("array"));
+        }
+
+        [Fact, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
+        public async Task Property_WhenInterfaceImplementation_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface IC
+{
+    int[,] {|#0:MultidimensionalArrayProperty|} { get; }
+}
+
+public class C : IC
+{
+    public int[,] MultidimensionalArrayProperty { get; set; }
+}",
+                VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(0).WithArguments("MultidimensionalArrayProperty"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Public Interface IC
+    ReadOnly Property {|#0:MultidimensionalArrayProperty|} As Integer(,)
+End Interface
+
+Public Class C
+    Implements IC
+
+    Public Property MultidimensionalArrayProperty As Integer(,) Implements IC.MultidimensionalArrayProperty
+End Class
+",
+                VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(0).WithArguments("MultidimensionalArrayProperty"));
+        }
+
         private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetCSharpReturnResultAt(int line, int column, string symbolName, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.ReturnRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, typeName);
 
         private static DiagnosticResult GetCSharpBodyResultAt(int line, int column, string symbolName, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.BodyRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, typeName);
 
         private static DiagnosticResult GetBasicDefaultResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName);
 
         private static DiagnosticResult GetBasicReturnResultAt(int line, int column, string symbolName, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.ReturnRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, typeName);
 
         private static DiagnosticResult GetBasicBodyResultAt(int line, int column, string symbolName, string typeName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.BodyRule)
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(symbolName, typeName);
     }
 }

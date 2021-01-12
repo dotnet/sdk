@@ -13,6 +13,30 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForCommandExecutionVulnerabilities.Rule;
 
         [Fact]
+        public async Task DoNotWarnAboutTaintedArgumentIfDoesNotEnterSink()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using System.Diagnostics;
+
+public partial class WebForm : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string in1 = Request.Form[""in1""];
+        string in2 = Request.Form[""in2""];
+        Foo(in1, in2);
+    }
+
+    protected void Foo(string a, string b)
+    {
+        Process p = Process.Start(a, """", b, null, """");
+    }
+}",
+                GetCSharpResultAt(16, 21, 9, 22, "Process Process.Start(string fileName, string arguments, string userName, SecureString password, string domain)", "void WebForm.Foo(string a, string b)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
+        }
+
+        [Fact]
         public async Task DocSample1_CSharp_fileName_Diagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"

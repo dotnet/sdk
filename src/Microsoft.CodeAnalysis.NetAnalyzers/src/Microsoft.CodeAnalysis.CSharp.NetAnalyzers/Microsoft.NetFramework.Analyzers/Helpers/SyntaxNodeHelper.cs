@@ -218,7 +218,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
                 return false;
             }
             SyntaxKind kind = node.Kind();
-            return kind == SyntaxKind.InvocationExpression || kind == SyntaxKind.ObjectCreationExpression;
+            return kind is SyntaxKind.InvocationExpression or SyntaxKind.ObjectCreationExpression;
         }
 
         public override IMethodSymbol? GetCalleeMethodSymbol(SyntaxNode? node, SemanticModel semanticModel)
@@ -301,11 +301,11 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
                    node.AncestorsAndSelf().OfType<FieldDeclarationSyntax>().FirstOrDefault() != null;
         }
 
-        public override SyntaxNode? GetVariableDeclaratorOfAFieldDeclarationNode(SyntaxNode? node)
+        public override SyntaxNode? GetVariableDeclaratorOfAFieldDeclarationNode(SyntaxNode? objectCreationExpression)
         {
-            if (IsObjectCreationExpressionUnderFieldDeclaration(node))
+            if (IsObjectCreationExpressionUnderFieldDeclaration(objectCreationExpression))
             {
-                return node.AncestorsAndSelf().OfType<VariableDeclaratorSyntax>().FirstOrDefault();
+                return objectCreationExpression.AncestorsAndSelf().OfType<VariableDeclaratorSyntax>().FirstOrDefault();
             }
             else
             {

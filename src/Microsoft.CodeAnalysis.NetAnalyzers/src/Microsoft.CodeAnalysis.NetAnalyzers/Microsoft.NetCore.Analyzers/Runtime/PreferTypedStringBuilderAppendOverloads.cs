@@ -94,11 +94,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     // We're only interested if the string argument is a "string ToString()" call.
                     if (invocation.Arguments.Length != stringParamIndex + 1 ||
-                        !(invocation.Arguments[stringParamIndex] is IArgumentOperation argument) ||
-                        !(argument.Value is IInvocationOperation toStringInvoke) ||
+                        invocation.Arguments[stringParamIndex] is not IArgumentOperation argument ||
+                        argument.Value is not IInvocationOperation toStringInvoke ||
                         toStringInvoke.TargetMethod.Name != "ToString" ||
                         toStringInvoke.Type.SpecialType != SpecialType.System_String ||
-                        toStringInvoke.TargetMethod.Parameters.Length != 0)
+                        !toStringInvoke.TargetMethod.Parameters.IsEmpty)
                     {
                         return;
                     }

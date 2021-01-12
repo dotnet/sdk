@@ -35,7 +35,8 @@ namespace Microsoft.NetCore.Analyzers.Resources
                                                                              RuleLevel.IdeSuggestion,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+                                                                             isDataflowRule: false,
+                                                                             isReportedAtCompilationEnd: true);
 
         protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound);
 
@@ -101,13 +102,13 @@ namespace Microsoft.NetCore.Analyzers.Resources
                 return false;
             }
 
-            Optional<object> constValue = model.GetConstantValue(argument);
+            Optional<object> constValue = model.GetConstantValue(argument, cancellationToken);
             if (!constValue.HasValue)
             {
                 return false;
             }
 
-            if (!(constValue.Value is string stringValue))
+            if (constValue.Value is not string stringValue)
             {
                 return false;
             }

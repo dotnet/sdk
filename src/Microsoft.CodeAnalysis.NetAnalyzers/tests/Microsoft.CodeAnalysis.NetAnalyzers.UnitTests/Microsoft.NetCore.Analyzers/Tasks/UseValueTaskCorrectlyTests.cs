@@ -23,6 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
             {
                 public static System.Threading.Tasks.ValueTask ReturnsValueTask() => throw null;
                 public static System.Threading.Tasks.ValueTask<T> ReturnsValueTaskOfT<T>() => throw null;
+                public static System.Threading.Tasks.ValueTask<T> ReturnsValueTaskOfT<T>(T value) => throw null;
                 public static System.Threading.Tasks.ValueTask<int> ReturnsValueTaskOfInt() => throw null;
 
                 public static void AcceptsValueTask(System.Threading.Tasks.ValueTask vt) => throw null;
@@ -338,6 +339,13 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                     public ValueTask<T> ReturnValueTaskOfTExpression<T>() => Helpers.ReturnsValueTaskOfT<T>();
 
                     public ValueTask<int> ReturnValueTaskOfIntExpression() => Helpers.ReturnsValueTaskOfInt();
+
+                    public ValueTask<(string, string)> ReturnTupleWithConsts() => Helpers.ReturnsValueTaskOfT<(string, string)>(("""", """"));
+
+                    public ValueTask<(string, string)> ReturnTupleWithCalls() => Helpers.ReturnsValueTaskOfT((SomeMethod(), SomeProp));
+
+                    private string SomeProp => """";
+                    private string SomeMethod() => """";
 
                     public ValueTask ReturnValueTask()
                     {
@@ -887,6 +895,51 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
+        public async Task NoDiagnostics_StoreLocalUnused()
+        {
+            // NOTE: This is a false negative.  Ideally the analyzer would catch
+            // this case, but the validation to ensure the local is properly consumed
+            // is challenging and we prefer false negatives over false positives.
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public void StoreLocalUnused()
+                    {
+                        ValueTask vt0 = Helpers.ReturnsValueTask();
+                        ValueTask<string> vt1 = Helpers.ReturnsValueTaskOfT<string>();
+                        ValueTask<int> vt2 = Helpers.ReturnsValueTaskOfInt();
+                    }
+                }")
+            );
+        }
+
+        [Fact]
+        public async Task NoDiagnostics_StoreLocalUnused_Guarded()
+        {
+            // NOTE: This is a false negative.  Ideally the analyzer would catch
+            // this case, but the validation to ensure the local is properly consumed
+            // is challenging and we prefer false negatives over false positives.
+            await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
+                using System;
+                using System.Threading.Tasks;
+
+                class C
+                {
+                    public void StoreLocalUnused(bool guard)
+                    {
+                        if (guard) throw new Exception();
+                        ValueTask vt0 = Helpers.ReturnsValueTask();
+                        ValueTask<string> vt1 = Helpers.ReturnsValueTaskOfT<string>();
+                        ValueTask<int> vt2 = Helpers.ReturnsValueTaskOfInt();
+                    }
+                }")
+            );
+        }
+
+        [Fact]
         public async Task Diagnostics_PassAsGeneric()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
@@ -1078,9 +1131,9 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         _ = Helpers.ReturnsValueTaskOfInt().AsTask();
                     }
                 }"),
-                GetCSharpResultAt(9, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule),
-                GetCSharpResultAt(10, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule),
-                GetCSharpResultAt(11, 29, UseValueTasksCorrectlyAnalyzer.GeneralRule)
+                GetCSharpResultAt(9, 29, UseValueTasksCorrectlyAnalyzer.UnconsumedRule),
+                GetCSharpResultAt(10, 29, UseValueTasksCorrectlyAnalyzer.UnconsumedRule),
+                GetCSharpResultAt(11, 29, UseValueTasksCorrectlyAnalyzer.UnconsumedRule)
             );
         }
 
@@ -1321,9 +1374,13 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         #endregion
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(rule).WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule) =>
+#pragma warning disable RS0030 // Do not used banned APIs
             VerifyVB.Diagnostic(rule).WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

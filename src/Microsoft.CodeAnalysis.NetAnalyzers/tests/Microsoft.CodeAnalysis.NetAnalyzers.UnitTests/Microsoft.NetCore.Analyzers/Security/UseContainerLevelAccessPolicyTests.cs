@@ -67,6 +67,64 @@ class TestClass
         }
 
         [Fact]
+        public async Task TestPropertyInitializerGroupPolicyIdentifierOfBlobNamespaceIsNullDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS { get; } = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, null, null, null);
+}",
+            GetCSharpResultAt(8, 34));
+        }
+
+        [Fact]
+        public async Task TestFieldInitializerGroupPolicyIdentifierOfBlobNamespaceIsNullDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, null, null, null);
+}",
+            GetCSharpResultAt(8, 25));
+        }
+
+        [Fact]
+        public async Task TestPropertyInitializerGroupPolicyIdentifierOfBlobNamespaceNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS { get; } = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, ""foo"", null, null);
+}");
+        }
+
+        [Fact]
+        public async Task TestFieldInitializerGroupPolicyIdentifierOfBlobNamespaceNoDiagnostic()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+
+class TestClass
+{
+    public string SAS = new CloudAppendBlob(null).GetSharedAccessSignature(null, null, ""foo"", null, null);
+}");
+        }
+
+        [Fact]
         public async Task TestAccessPolicyIdentifierOfTableNamespaceIsNullDiagnostic()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -295,7 +353,8 @@ class TestClass
         [Theory]
         [InlineData("")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality." + UseContainerLevelAccessPolicy.DiagnosticId + ".excluded_symbol_names = TestMethod")]
+        [InlineData("dotnet_code_quality.CA5377.excluded_symbol_names = TestMethod")]
+        [InlineData("dotnet_code_quality.CA5377.excluded_symbol_names = TestMet*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
         {
@@ -324,7 +383,9 @@ class TestClass
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic()
                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

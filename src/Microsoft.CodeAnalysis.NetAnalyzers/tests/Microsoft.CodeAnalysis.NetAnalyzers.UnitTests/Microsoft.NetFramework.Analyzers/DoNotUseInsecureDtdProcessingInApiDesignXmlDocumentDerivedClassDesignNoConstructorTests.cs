@@ -16,15 +16,19 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingInApiDesignAnalyzerTests
     {
         private static DiagnosticResult GetCA3077NoConstructorCSharpResultAt(int line, int column, string name)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage, name));
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3077NoConstructorBasicResultAt(int line, int column, string name)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage, name));
+#pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
         public async Task NonXmlDocumentDerivedTypeWithNoConstructorShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -40,7 +44,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System
 Imports System.Xml
 
@@ -57,7 +61,7 @@ End Namespace");
         [Fact]
         public async Task NonXmlDocumentDerivedTypeWithConstructorShouldNotGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -75,7 +79,7 @@ namespace TestNamespace
 }"
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System
 Imports System.Xml
 
@@ -95,7 +99,7 @@ End Namespace");
         [Fact]
         public async Task XmlDocumentDerivedTypeWithNoConstructorShouldGenerateDiagnostic()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 using System.Xml;
 
@@ -106,7 +110,7 @@ namespace TestNamespace
                 GetCA3077NoConstructorCSharpResultAt(7, 11, "TestClass")
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
 
 Namespace TestNamespace

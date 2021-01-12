@@ -86,7 +86,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             else if (symbol.Kind == SymbolKind.Method && symbol.Name.StartsWith(Get, StringComparison.Ordinal))
             {
                 // Want to look for properties named the same as the method sans 'Get'
-                identifier = symbol.Name.Substring(3);
+                identifier = symbol.Name[3..];
             }
             else
             {
@@ -125,7 +125,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // If the declared type is a property, was a matching method found?
                     if (symbol.Kind == SymbolKind.Property && member.Kind == SymbolKind.Method)
                     {
-                        diagnostic = Diagnostic.Create(Rule, symbol.Locations[0], symbol.Name, identifier);
+                        diagnostic = symbol.CreateDiagnostic(Rule, symbol.Name, identifier);
                         break;
                     }
 
@@ -134,7 +134,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         && member.Kind == SymbolKind.Property
                         && !symbol.ContainingType.Equals(type)) // prevent reporting duplicate diagnostics
                     {
-                        diagnostic = Diagnostic.Create(Rule, symbol.Locations[0], identifier, symbol.Name);
+                        diagnostic = symbol.CreateDiagnostic(Rule, identifier, symbol.Name);
                         break;
                     }
                 }

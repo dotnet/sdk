@@ -38,7 +38,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
             Dim memberAccessExpression = TryCast(invocationExpression.Expression, MemberAccessExpressionSyntax)
 
-            If Not memberAccessExpression Is Nothing Then
+            If memberAccessExpression IsNot Nothing Then
 
                 memberAccessNode = memberAccessExpression
                 nameNode = memberAccessExpression.Name

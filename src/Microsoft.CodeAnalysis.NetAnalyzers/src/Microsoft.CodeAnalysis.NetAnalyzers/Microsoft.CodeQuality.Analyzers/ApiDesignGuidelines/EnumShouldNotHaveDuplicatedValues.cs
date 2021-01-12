@@ -73,7 +73,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     var fieldInitializerOperation = (IFieldInitializerOperation)oc.Operation;
 
                     if (fieldInitializerOperation.InitializedFields.Length != 1 ||
-                        !fieldInitializerOperation.Value.ConstantValue.HasValue)
+                        !fieldInitializerOperation.Value.ConstantValue.HasValue ||
+                        fieldInitializerOperation.Value.ConstantValue.Value == null)
                     {
                         return;
                     }
@@ -107,9 +108,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Handle all enum fields without an explicit initializer
                     foreach ((var field, var value) in enumFieldsWithImplicitValue)
                     {
-                        var fieldSyntax = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax();
+                        var fieldSyntax = field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(sac.CancellationToken);
 
-                        if (fieldSyntax != null)
+                        if (fieldSyntax != null && value != null)
                         {
                             membersByValue.AddOrUpdate(value,
                                 new ConcurrentBag<(SyntaxNode, string)> { (fieldSyntax, field.Name) },
@@ -161,7 +162,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static IEnumerable<IOperation> GetFilteredDescendants(IOperation operation, Func<IOperation, bool> descendIntoOperation)
         {
-            var stack = ArrayBuilder<IEnumerator<IOperation>>.GetInstance();
+            using var stack = ArrayBuilder<IEnumerator<IOperation>>.GetInstance();
             stack.Add(operation.Children.GetEnumerator());
 
             while (stack.Any())
@@ -179,8 +180,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
                 }
             }
-
-            stack.Free();
         }
     }
 }

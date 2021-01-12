@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
 {
     public class DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTests
     {
-        public static readonly TheoryData<string> CollectionNames_Arity1 = new TheoryData<string>
+        public static readonly TheoryData<string> CollectionNames_Arity1 = new()
         {
             nameof(ImmutableArray),
             nameof(ImmutableHashSet),
@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
             nameof(ImmutableSortedSet)
         };
 
-        public static readonly TheoryData<string> CollectionNames_Arity2 = new TheoryData<string>
+        public static readonly TheoryData<string> CollectionNames_Arity2 = new()
         {
             nameof(ImmutableDictionary),
             nameof(ImmutableSortedDictionary)
@@ -338,12 +338,16 @@ End Class
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string collectionName)
         {
+#pragma warning disable RS0030 // Do not used banned APIs
             return VerifyCS.Diagnostic(DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.Rule).WithLocation(line, column).WithArguments($"To{collectionName}", collectionName);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, string collectionName)
         {
+#pragma warning disable RS0030 // Do not used banned APIs
             return VerifyVB.Diagnostic(DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.Rule).WithLocation(line, column).WithArguments($"To{collectionName}", collectionName);
+#pragma warning restore RS0030 // Do not used banned APIs
         }
     }
 }

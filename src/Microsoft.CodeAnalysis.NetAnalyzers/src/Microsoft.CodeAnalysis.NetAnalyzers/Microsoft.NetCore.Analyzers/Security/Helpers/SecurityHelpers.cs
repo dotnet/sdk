@@ -7,7 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Resources;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 #pragma warning disable CA1054 // Uri parameters should not be strings
 
@@ -22,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <param name="titleResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's title.</param>
         /// <param name="messageResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's message.</param>
         /// <param name="ruleLevel">Indicates the <see cref="RuleLevel"/> for this rule.</param>
-        /// <param name="descriptionResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's descrption.</param>
+        /// <param name="descriptionResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's description.</param>
         /// <param name="isPortedFxCopRule">Flag indicating if this is a rule ported from legacy FxCop.</param>
         /// <param name="isDataflowRule">Flag indicating if this is a dataflow analysis based rule.</param>
         /// <returns>new DiagnosticDescriptor</returns>
@@ -33,6 +35,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             RuleLevel ruleLevel,
             bool isPortedFxCopRule,
             bool isDataflowRule,
+            bool isReportedAtCompilationEnd,
             string? descriptionResourceStringName = null)
         {
             return CreateDiagnosticDescriptor(
@@ -43,6 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 ruleLevel,
                 isPortedFxCopRule,
                 isDataflowRule,
+                isReportedAtCompilationEnd,
                 descriptionResourceStringName);
         }
 
@@ -54,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         /// <param name="titleResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's title.</param>
         /// <param name="messageResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's message.</param>
         /// <param name="ruleLevel">Indicates the <see cref="RuleLevel"/> for this rule.</param>
-        /// <param name="descriptionResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's descrption.</param>
+        /// <param name="descriptionResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's description.</param>
         /// <param name="isPortedFxCopRule">Flag indicating if this is a rule ported from legacy FxCop.</param>
         /// <param name="isDataflowRule">Flag indicating if this is a dataflow analysis based rule.</param>
         /// <returns>new DiagnosticDescriptor</returns>
@@ -66,6 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             RuleLevel ruleLevel,
             bool isPortedFxCopRule,
             bool isDataflowRule,
+            bool isReportedAtCompilationEnd,
             string? descriptionResourceStringName = null)
         {
             return DiagnosticDescriptorHelper.Create(
@@ -77,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 descriptionResourceStringName != null ? GetResourceString(resourceSource, descriptionResourceStringName) : null,
                 isPortedFxCopRule,
                 isDataflowRule,
-                isEnabledByDefaultInFxCopAnalyzers: ruleLevel != RuleLevel.Disabled);
+                isReportedAtCompilationEnd: isReportedAtCompilationEnd);
         }
 
         /// <summary>
@@ -111,6 +116,24 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 StringComparer.Ordinal,
                 "Deserialize",
                 "DeserializeObject");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Web.UI.ObjectStateFormatter"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> ObjectStateFormatterDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Deserialize");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Runtime.Serialization.Formatters.Soap.SoapFormatter"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> SoapFormatterDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "Deserialize");
 
         private static readonly ImmutableDictionary<Type, ResourceManager> ResourceManagerMapping =
             ImmutableDictionary.CreateRange<Type, ResourceManager>(
@@ -150,6 +173,59 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 StringComparer.Ordinal,
                 "Deserialize",
                 "Populate");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Data.DataTable"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> DataTableDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "ReadXml");
+
+        /// <summary>
+        /// Deserialization methods for <see cref="T:System.Data.DataSet"/>.
+        /// </summary>
+        [SuppressMessage("Documentation", "CA1200:Avoid using cref tags with a prefix", Justification = "The comment references a type that is not referenced by this compilation.")]
+        public static readonly ImmutableHashSet<string> DataSetDeserializationMethods =
+            ImmutableHashSet.Create(
+                StringComparer.Ordinal,
+                "ReadXml");
+
+        /// <summary>
+        /// Determines if an operation is inside autogenerated code that's probably for a GUI app.
+        /// </summary>
+        /// <param name="operationAnalysisContext">Context for the operation in question.</param>
+        /// <param name="wellKnownTypeProvider"><see cref="WellKnownTypeProvider"/> for the operation's compilation.</param>
+        /// <returns>True if so, false otherwise.</returns>
+        /// <remarks>
+        /// This is useful for analyzers categorizing cases into different rules to represent different risks.
+        /// </remarks>
+        public static bool IsOperationInsideAutogeneratedCodeForGuiApp(
+            OperationAnalysisContext operationAnalysisContext,
+            WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            INamedTypeSymbol? xmlReaderTypeSymbol =
+                wellKnownTypeProvider.GetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemXmlXmlReader);
+            INamedTypeSymbol? designerCategoryAttributeTypeSymbol =
+                wellKnownTypeProvider.GetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemComponentModelDesignerCategoryAttribute);
+            INamedTypeSymbol? debuggerNonUserCodeAttributeTypeSymbol =
+                wellKnownTypeProvider.GetOrCreateTypeByMetadataName(
+                    WellKnownTypeNames.SystemDiagnosticsDebuggerNonUserCode);
+
+            return
+                operationAnalysisContext.ContainingSymbol is IMethodSymbol methodSymbol
+                && methodSymbol.MetadataName == "ReadXmlSerializable"
+                && methodSymbol.DeclaredAccessibility == Accessibility.Protected
+                && methodSymbol.IsOverride
+                && methodSymbol.ReturnsVoid
+                && methodSymbol.Parameters.Length == 1
+                && methodSymbol.Parameters[0].Type.Equals(xmlReaderTypeSymbol)
+                && methodSymbol.ContainingType?.HasAttribute(designerCategoryAttributeTypeSymbol) == true
+                && methodSymbol.HasAttribute(debuggerNonUserCodeAttributeTypeSymbol);
+        }
 
         /// <summary>
         /// Gets a <see cref="LocalizableResourceString"/> from <see cref="MicrosoftNetCoreAnalyzersResources"/>.

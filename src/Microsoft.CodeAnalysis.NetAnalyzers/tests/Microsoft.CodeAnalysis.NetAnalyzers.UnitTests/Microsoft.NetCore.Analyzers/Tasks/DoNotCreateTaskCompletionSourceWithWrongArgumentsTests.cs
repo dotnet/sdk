@@ -23,11 +23,23 @@ class C
 {
     void M()
     {
+        // Use TCS correctly without options
+        new TaskCompletionSource<int>(null);
+        new TaskCompletionSource<int>(""hello"");
+        new TaskCompletionSource<int>(new object());
+        new TaskCompletionSource<int>(42);
+
         // Uses TaskCreationOptions correctly
-        new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         var validEnum = TaskCreationOptions.RunContinuationsAsynchronously;
         new TaskCompletionSource<int>(validEnum);
+        new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         new TaskCompletionSource<int>(this.MyProperty);
+        new TaskCompletionSource<int>(new object(), validEnum);
+        new TaskCompletionSource<int>(new object(), TaskCreationOptions.RunContinuationsAsynchronously);
+        new TaskCompletionSource<int>(new object(), this.MyProperty);
+        new TaskCompletionSource<int>(null, validEnum);
+        new TaskCompletionSource<int>(null, TaskCreationOptions.RunContinuationsAsynchronously);
+        new TaskCompletionSource<int>(null, this.MyProperty);
 
         // We only pay attention to things of type TaskContinuationOptions
         new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously.ToString());
@@ -108,6 +120,58 @@ class C
         new TaskCompletionSource<int>(TaskCreationOptions.None);
         new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
         var tcs = new TaskCompletionSource<int>(TaskCreationOptions.AttachedToParent);
+    }
+    TaskContinuationOptions MyProperty { get; set; }
+}
+");
+        }
+
+        [Fact]
+        public async Task Diagnostics_FixApplies_CSharp_NonGeneric()
+        {
+            await VerifyCS.VerifyCodeFixAsync(
+@"
+using System.Threading.Tasks;
+
+namespace System.Threading.Tasks
+{
+    public class TaskCompletionSource // added in .NET 5
+    {
+        public TaskCompletionSource(TaskCreationOptions options) { }
+        public TaskCompletionSource(object state) { }
+    }
+}
+
+class C
+{
+    void M()
+    {
+        new TaskCompletionSource([|TaskContinuationOptions.None|]);
+        new TaskCompletionSource([|TaskContinuationOptions.RunContinuationsAsynchronously|]);
+        var tcs = new TaskCompletionSource([|TaskContinuationOptions.AttachedToParent|]);
+    }
+    TaskContinuationOptions MyProperty { get; set; }
+}
+",
+@"
+using System.Threading.Tasks;
+
+namespace System.Threading.Tasks
+{
+    public class TaskCompletionSource // added in .NET 5
+    {
+        public TaskCompletionSource(TaskCreationOptions options) { }
+        public TaskCompletionSource(object state) { }
+    }
+}
+
+class C
+{
+    void M()
+    {
+        new TaskCompletionSource(TaskCreationOptions.None);
+        new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource(TaskCreationOptions.AttachedToParent);
     }
     TaskContinuationOptions MyProperty { get; set; }
 }

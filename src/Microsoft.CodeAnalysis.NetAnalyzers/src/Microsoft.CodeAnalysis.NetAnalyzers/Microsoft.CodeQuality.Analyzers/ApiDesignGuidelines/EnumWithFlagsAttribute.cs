@@ -46,8 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.Disabled,
                                                                              description: s_localizableDescriptionCA1027,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
 
         private static readonly LocalizableString s_localizableTitleCA2217 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
         private static readonly LocalizableString s_localizableMessageCA2217 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
@@ -59,8 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              RuleLevel.Disabled,
                                                                              description: s_localizableDescriptionCA2217,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule1027, Rule2217);
 
@@ -91,8 +89,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             if (symbol != null &&
                 symbol.TypeKind == TypeKind.Enum)
             {
-                var reportCA1027 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule1027, symbolContext.Compilation, symbolContext.CancellationToken);
-                var reportCA2217 = symbol.MatchesConfiguredVisibility(symbolContext.Options, Rule2217, symbolContext.Compilation, symbolContext.CancellationToken);
+                var reportCA1027 = symbolContext.Options.MatchesConfiguredVisibility(Rule1027, symbol, symbolContext.Compilation, symbolContext.CancellationToken);
+                var reportCA2217 = symbolContext.Options.MatchesConfiguredVisibility(Rule2217, symbol, symbolContext.Compilation, symbolContext.CancellationToken);
                 if (!reportCA1027 && !reportCA2217)
                 {
                     return;
