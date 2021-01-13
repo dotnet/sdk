@@ -18,34 +18,54 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         #region Boilerplate
 
         private static DiagnosticResult GetCA3147CSharpNoVerbs(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147CSharpNoVerbsNoToken(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147CSharpGetAndToken(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147CSharpGetAndOtherToken(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndOtherAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147CSharpVerbsAndNoToken(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.VerbsAndNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147BasicNoVerbs(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147BasicNoVerbsNoToken(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.NoVerbsNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147BasicGetAndToken(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147BasicGetAndOtherToken(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.GetAndOtherAndTokenRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetCA3147BasicVerbsAndNoToken(int line, int column, string controllerAction)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic(MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer.VerbsAndNoTokenRule).WithLocation(line, column).WithArguments(controllerAction);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         #endregion
 

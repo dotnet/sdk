@@ -24,7 +24,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [WorkItem(4039, "https://github.com/dotnet/roslyn-analyzers/issues/4039")]
         public async Task NoDiagnosticForUnnamedParameterTest()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(
+#pragma warning disable RS0030 // Do not used banned APIs
+@"
 public class NeatCode
 {
     public void DoSomething(string)
@@ -32,6 +34,7 @@ public class NeatCode
     }
 }
 ", DiagnosticResult.CompilerError("CS1001").WithLocation(4, 35));
+#pragma warning restore RS0030 // Do not used banned APIs
         }
 
         [Fact]
@@ -1183,17 +1186,15 @@ public class Class1
         {
             await new VerifyCS.Test()
             {
-                TestCode = @"int x = 0;",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-                SolutionTransforms =
+                TestState =
                 {
-                    (solution, projectId) =>
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources =
                     {
-                        var project = solution.GetProject(projectId);
-                        project = project.WithCompilationOptions(project.CompilationOptions.WithOutputKind(OutputKind.ConsoleApplication));
-                        return project.Solution;
+                        @"int x = 0;",
                     },
-                }
+                },
             }.RunAsync();
         }
 
@@ -1408,13 +1409,17 @@ public record OtherPerson
         #region Helpers
 
         private static DiagnosticResult GetCSharpUnusedParameterResultAt(int line, int column, string parameterName, string methodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(parameterName, methodName);
 
         private static DiagnosticResult GetBasicUnusedParameterResultAt(int line, int column, string parameterName, string methodName)
+#pragma warning disable RS0030 // Do not used banned APIs
             => VerifyVB.Diagnostic()
                 .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
                 .WithArguments(parameterName, methodName);
 
         #endregion
