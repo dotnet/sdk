@@ -484,13 +484,7 @@ namespace Microsoft.NET.Build.Tests
             //  Set RestoreContinueOnError=ErrorAndContinue to force failure on error
             //  See https://github.com/NuGet/Home/issues/5309
             var restore = restoreCommand.Execute("/p:RestoreContinueOnError=ErrorAndContinue");
-            if (targetFramework.Contains(';'))
-            {
-                // Restore does not error on TargetFramework with semicolons, it treats it equivalently to TargetFrameworks.
-                // The error is therefore deferred to the build check below.
-                restore.Should().Pass();
-            }
-            else
+            if (!targetFramework.Contains(';'))
             {
                 // Intentionally not checking the error message on restore here as we can't put ourselves in front of
                 // restore and customize the message for invalid target frameworks as that would break restoring packages
