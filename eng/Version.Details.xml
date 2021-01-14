@@ -65,13 +65,13 @@
       <Uri>https://github.com/dotnet/CliCommandLineParser</Uri>
       <Sha>0e89c2116ad28e404ba56c14d1c3f938caa25a01</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="16.9.0-preview-21062-02">
+    <Dependency Name="Microsoft.Build" Version="16.9.0-preview-21063-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>7b18884ab87c7b51e798d8739a2d63de4321b8dd</Sha>
+      <Sha>27981f15c4a62661691281ee52d3c5b7b7793068</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="16.9.0-preview-21062-02">
+    <Dependency Name="Microsoft.Build.Localization" Version="16.9.0-preview-21063-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>7b18884ab87c7b51e798d8739a2d63de4321b8dd</Sha>
+      <Sha>27981f15c4a62661691281ee52d3c5b7b7793068</Sha>
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="11.2.0-beta.21057.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
@@ -82,6 +82,10 @@
       <Sha>e5eb71d6714749bccf91d9268ece78cd5d4d43ea</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="5.0.1-servicing.20601.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>fc93e595ceffbb1e3e85532bf454e92a6a80dd6b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="5.0.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>fc93e595ceffbb1e3e85532bf454e92a6a80dd6b</Sha>
     </Dependency>
