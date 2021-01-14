@@ -82,6 +82,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Analyzer
       Include="$(MSBuildThisFileDirectory)..\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll"
       IsImplicitlyDefined="true" />
+    <!-- ILLinker Analyzers -->
+    <Analyzer
+      Condition="'$(PublishSingleFile)' == 'true' Or '$(PublishTrimmed)' == 'true'"
+      Include="$(MSBuildThisFileDirectory)..\analyzers\ILLink.RoslynAnalyzer.dll"
+      IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <!-- C# Code Style Analyzers -->
@@ -116,11 +121,4 @@ Copyright (c) .NET Foundation. All rights reserved.
       IsImplicitlyDefined="true" />
   </ItemGroup>
 
-  <!-- ILLinker Analyzers -->
-  <ItemGroup Condition="'$(PublishSingleFile)' == 'true' Or
-                        '$(PublishTrimmed)' == 'true'">
-    <Analyzer
-      Include="$(MSBuildThisFileDirectory)..\analyzers\ILLink.RoslynAnalyzer.dll"
-      IsImplicitlyDefined="true" />
-  </ItemGroup>
 </Project>

@@ -110,6 +110,10 @@
       <Uri>https://github.com/mono/linker</Uri>
       <Sha>b4d767022624bac044dfdc96c4dc883d66ea38ae</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="6.0.0-alpha.1.21070.7">
+      <Url>https://github.com/mono/linker</Url>
+      <Sha>b4d767022624bac044dfdc96c4dc883d66ea38ae</Sha>
+    </Dependency>
     <Dependency Name="System.CodeDom" Version="6.0.0-alpha.1.21069.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>5e9f9bcb965f0d750318e92fd165c3b71256a070</Sha>
