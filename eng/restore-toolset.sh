@@ -20,10 +20,6 @@ function InitializeCustomSDKToolset {
   fi
 
   InitializeDotNetCli true
-  if [[ "$DISTRO" != "ubuntu" || "$MAJOR_VERSION" -le 16 ]]; then
-    InstallDotNetSharedFramework "1.0.5"
-    InstallDotNetSharedFramework "1.1.2"
-  fi
   InstallDotNetSharedFramework "2.1.0"
   InstallDotNetSharedFramework "2.2.8"
   InstallDotNetSharedFramework "3.1.0"
@@ -35,7 +31,7 @@ function InitializeCustomSDKToolset {
 # Installs additional shared frameworks for testing purposes
 function InstallDotNetSharedFramework {
   local version=$1
-  local dotnet_root=$DOTNET_INSTALL_DIR 
+  local dotnet_root=$DOTNET_INSTALL_DIR
   local fx_dir="$dotnet_root/shared/Microsoft.NETCore.App/$version"
 
   if [[ ! -d "$fx_dir" ]]; then
