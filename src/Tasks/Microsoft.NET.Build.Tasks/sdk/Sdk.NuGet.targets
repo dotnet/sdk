@@ -10,17 +10,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
-  <Import Project="..\targets\Microsoft.NET.ConflictResolution.targets" />
-  <Import Project="..\targets\Microsoft.NET.DisableStandardFrameworkResolution.targets" />
-  <Import Project="..\targets\Microsoft.NET.EolTargetFrameworks.targets" />
-  <Import Project="..\targets\Microsoft.NET.GenerateAssemblyInfo.targets" />
-  <Import Project="..\targets\Microsoft.NET.GenerateSupportedRuntime.targets" />
-  <Import Project="..\targets\Microsoft.NET.ObsoleteReferences.targets" />
-  <Import Project="..\targets\Microsoft.NET.RuntimeIdentifierInference.targets" />
-  <Import Project="..\targets\Microsoft.NET.Sdk.BeforeCommon.targets" />
-  <Import Project="..\targets\Microsoft.NET.Sdk.DefaultItems.targets" />
+  <Import Project="..\targets\Microsoft.PackageDependencyResolution.targets" />
+  <Import Project="..\targets\Microsoft.NET.Sdk.Common.targets" />
   <Import Project="..\targets\Microsoft.NET.Sdk.FrameworkReferenceResolution.targets" />
   <Import Project="..\targets\Microsoft.NET.Sdk.targets" />
-  <Import Project="..\targets\Microsoft.Microsoft.NET.TargetFrameworkInference.targets" />
-  <Import Project="..\targets\Microsoft.PackageDependencyResolution.targets" />
 </Project>
