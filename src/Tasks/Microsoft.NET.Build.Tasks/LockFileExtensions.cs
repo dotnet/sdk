@@ -141,7 +141,9 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var group in lockFile.ProjectFileDependencyGroups)
             {
-                if (GetFrameworksMatching(group.FrameworkName, frameworkAlias))
+                var groupFrameworkAlias = GetFrameworkAliasForDependencyGroup(group);
+                if (string.IsNullOrEmpty(groupFrameworkAlias) || string.IsNullOrEmpty(frameworkAlias) || groupFrameworkAlias.Equals(frameworkAlias) ||
+                    NuGetUtils.ParseFrameworkName(groupFrameworkAlias.Split('/').First()).DotNetFrameworkName.Equals(NuGetUtils.ParseFrameworkName(frameworkAlias).DotNetFrameworkName))
                 {
                     foreach (string dependency in group.Dependencies)
                     {
@@ -154,10 +156,9 @@ namespace Microsoft.NET.Build.Tasks
             return set;
         }
 
-        private static bool GetFrameworksMatching(string framework1, string framework2)
+        private static string GetFrameworkAliasForDependencyGroup(ProjectFileDependencyGroup group)
         {
-            return string.IsNullOrEmpty(framework1) || string.IsNullOrEmpty(framework2) || framework1.Equals(framework2) ||
-                    NuGetUtils.ParseFrameworkName(framework1.Split('/').First()).DotNetFrameworkName.Equals(NuGetUtils.ParseFrameworkName(framework2).DotNetFrameworkName);
+            return group.FrameworkName;
         }
 
         public static HashSet<string> GetPlatformExclusionList(
