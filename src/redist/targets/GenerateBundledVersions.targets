@@ -31,21 +31,21 @@
       <_NET50RuntimePackVersion>5.0.2</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
       <_WindowsDesktop50RuntimePackVersion>5.0.1</_WindowsDesktop50RuntimePackVersion>
-      <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
+      <_WindowsDesktop50TargetingPackVersion>5.0.2</_WindowsDesktop50TargetingPackVersion>
       <_AspNet50RuntimePackVersion>5.0.2</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0</_AspNet50TargetingPackVersion>
 
       <_NETCoreApp31RuntimePackVersion>3.1.11</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
       <_WindowsDesktop31RuntimePackVersion>3.1.9</_WindowsDesktop31RuntimePackVersion>
-      <_WindowsDesktop31TargetingPackVersion>3.1.0</_WindowsDesktop31TargetingPackVersion>
+      <_WindowsDesktop31TargetingPackVersion>3.1.11</_WindowsDesktop31TargetingPackVersion>
       <_AspNet31RuntimePackVersion>3.1.11</_AspNet31RuntimePackVersion>
       <_AspNet31TargetingPackVersion>3.1.10</_AspNet31TargetingPackVersion>
 
       <_NETCoreApp30RuntimePackVersion>3.0.3</_NETCoreApp30RuntimePackVersion>
       <_NETCoreApp30TargetingPackVersion>3.0.0</_NETCoreApp30TargetingPackVersion>
       <_WindowsDesktop30RuntimePackVersion>3.0.3</_WindowsDesktop30RuntimePackVersion>
-      <_WindowsDesktop30TargetingPackVersion>3.0.0</_WindowsDesktop30TargetingPackVersion>
+      <_WindowsDesktop30TargetingPackVersion>3.0.3</_WindowsDesktop30TargetingPackVersion>
       <_AspNet30RuntimePackVersion>3.0.3</_AspNet30RuntimePackVersion>
       <_AspNet30TargetingPackVersion>3.0.1</_AspNet30TargetingPackVersion>
 
