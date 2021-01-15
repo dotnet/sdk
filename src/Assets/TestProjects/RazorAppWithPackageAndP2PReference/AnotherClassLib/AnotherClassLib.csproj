@@ -1,15 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
+    <TargetFramework>$(DefaultTfm)</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <Copyright>© Microsoft</Copyright>
-    <Product>Razor Test</Product>
-    <Company>Microsoft</Company>
-    <Description>ClassLibrary Description</Description>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -18,7 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/> 
+  </ItemGroup>
+
 
 </Project>

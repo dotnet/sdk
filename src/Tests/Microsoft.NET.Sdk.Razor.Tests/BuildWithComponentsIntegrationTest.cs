@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class BuildWithComponentsIntegrationTest : SdkTest
+    public class BuildWithComponentsIntegrationTest : RazorSdkTest
     {
         public BuildWithComponentsIntegrationTest(ITestOutputHelper log) : base(log) {}
 
@@ -26,10 +26,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Building_NetstandardComponentLibrary()
         {
-            var testAsset = "ComponentLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentLibrary";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Build
             var build = new BuildCommand(projectDirectory);
@@ -46,15 +44,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private void Build_ComponentsWorks()
         {
-            var testAsset = "MvcWithComponents";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorMvcWithComponents";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            string outputPath = build.GetOutputDirectory("net5.0").ToString();
+            string outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
 
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "MvcWithComponents.pdb")).Should().Exist();

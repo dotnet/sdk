@@ -16,23 +16,21 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class PublishIntegrationTest : SdkTest
+    public class PublishIntegrationTest : RazorSdkTest
     {
         public PublishIntegrationTest(ITestOutputHelper log) : base(log) {}
 
         [Fact]
         public void Publish_RazorCompileOnPublish_IsDefault()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute().Should().Pass();
 
-            var outputPath = Path.Combine(projectDirectory.Path, "bin", "Debug", "net5.0");
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = Path.Combine(projectDirectory.Path, "bin", "Debug", DefaultTfm);
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
@@ -60,16 +58,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_WithRazorCompileOnBuildFalse_PublishesAssembly()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute("/p:RazorCompileOnBuild=false").Should().Pass();
 
-            var outputPath = Path.Combine(projectDirectory.Path, "bin", "Debug", "net5.0");
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = Path.Combine(projectDirectory.Path, "bin", "Debug", DefaultTfm);
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // RazorCompileOnBuild is turned off, but RazorCompileOnPublish should still be enable
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.dll")).Should().NotExist();
@@ -88,17 +84,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_NoopsWith_RazorCompileOnPublishFalse()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             Directory.Delete(Path.Combine(projectDirectory.Path, "Views"), recursive: true);
 
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute("/p:RazorCompileOnPublish=false").Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // Everything we do should noop - including building the app.
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
@@ -110,16 +104,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_IncludeCshtmlAndRefAssemblies_CopiesFiles()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute("/p:CopyRazorGenerateFilesToPublishDirectory=true", "/p:CopyRefAssembliesToPublishDirectory=true").Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
-            var intermediateOutputPath = Path.Combine(publish.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var intermediateOutputPath = Path.Combine(publish.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
@@ -134,10 +126,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_WithPreserveCompilationReferencesSetInProjectFile_CopiesRefs()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -150,7 +140,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute().Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
@@ -164,15 +154,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_WithP2P_AndRazorCompileOnBuild_CopiesRazorAssembly()
         {
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithP2PReference"));
             publish.Execute().Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.pdb")).Should().Exist();
@@ -196,10 +184,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // With this flag, P2P references aren't resolved during GetCopyToPublishDirectoryItems which would cause
             // any target that uses References as inputs to not be incremental. This test verifies no Razor Sdk work
             // is performed at this time.
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorAppWithP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges((path, project) =>
                 {
                     if (path.Contains("AppWithP2PReference"))
@@ -215,7 +201,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();
 
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
@@ -228,7 +214,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, $"{projectDirectory.TestRoot}/AppWithP2PReference");
             publish.Execute("/p:BuildProjectReferences=false").Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "AppWithP2PReference.pdb")).Should().Exist();
@@ -249,16 +235,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_WithNoBuild_CopiesAlreadyCompiledViews()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Build
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:AssemblyVersion=1.1.1.1").Should().Pass();
 
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             var assemblyPath = Path.Combine(outputPath, "SimpleMvc.dll");
             new FileInfo(assemblyPath).Should().Exist();
@@ -271,7 +255,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute("/p:NoBuild=true").Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             var publishAssemblyPath = Path.Combine(publishOutputPath, "SimpleMvc.dll");
             new FileInfo(publishAssemblyPath).Should().Exist();

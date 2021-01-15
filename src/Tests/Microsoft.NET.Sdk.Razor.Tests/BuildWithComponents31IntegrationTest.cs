@@ -11,19 +11,17 @@ using Microsoft.NET.TestFramework.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.NET.Razor.Sdk.Tests
+namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class BuildWithComponents31IntegrationTest : SdkTest
+    public class BuildWithComponents31IntegrationTest : RazorSdkTest
     {
         public BuildWithComponents31IntegrationTest(ITestOutputHelper log) : base(log) {}
 
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works()
         {
-            var testAsset = "blazor31";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "Razorblazor31";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();

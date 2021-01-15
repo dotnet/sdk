@@ -19,7 +19,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class BuildIntegrationTest : SdkTest
+    public class BuildIntegrationTest : RazorSdkTest
     {
         public BuildIntegrationTest(ITestOutputHelper log) : base(log) {}
 
@@ -33,13 +33,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private void Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             build.Execute("/p:UseRazorBuildServer=false")
                 .Should()
@@ -55,15 +53,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_SimpleMvc_NoopsWithRazorCompileOnBuild_False()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:RazorCompileOnBuild=false").Should().Pass();
 
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.pdb")).Should().Exist();
@@ -74,10 +70,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_ErrorInGeneratedCode_ReportsMSBuildError()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var filePath = Path.Combine(projectDirectory.Path, "Views", "Home", "Index.cshtml");
             File.WriteAllText(filePath, "@{ var foo = \"\".Substring(\"bleh\"); }");
@@ -92,7 +86,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 build.Execute().Should().Fail().And.HaveStdOutContaining("CS1503").And.HaveStdOutContaining(location);
             }
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             // Compilation failed without creating the views assembly
             new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.dll")).Should().Exist();
@@ -102,15 +96,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_WithP2P_CopiesRazorAssembly()
         {
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();
 
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.pdb")).Should().Exist();
@@ -125,16 +117,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_WithViews_ProducesDepsFileWithCompilationContext_ButNoReferences()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var customDefine = "RazorSdkTest";
             var build = new BuildCommand(projectDirectory);
             build.Execute($"/p:DefineConstants={customDefine}").Should().Pass();
 
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.deps.json")).Should().Exist();
             var depsFilePath = Path.Combine(outputPath, "SimpleMvc.deps.json");
@@ -156,10 +146,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_WithPreserveCompilationReferencesEnabled_ProducesRefsDirectory()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges(project => {
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = new XElement(ns + "PropertyGroup");
@@ -170,7 +158,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "refs", "mscorlib.dll")).Should().Exist();
         }
@@ -178,15 +166,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_AddsApplicationPartAttributes()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             var razorAssemblyInfoPath = Path.Combine(intermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
             var razorTargetAssemblyInfo = Path.Combine(intermediateOutputPath, "SimpleMvc.RazorTargetAssemblyInfo.cs");
@@ -202,15 +188,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_DoesNotAddRelatedAssemblyPart_IfViewCompilationIsDisabled()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
             
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:RazorCompileOnBuild=false", "/p:RazorCompileOnPublish=false").Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var razorAssemblyInfo = Path.Combine(intermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
 
             new FileInfo(razorAssemblyInfo).Should().NotExist();
@@ -220,15 +204,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_AddsRelatedAssemblyPart_IfGenerateAssemblyInfoIsFalse()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
             
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:GenerateAssemblyInfo=false").Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var razorAssemblyInfo = Path.Combine(intermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
 
             new FileInfo(razorAssemblyInfo).Should().Exist();
@@ -238,10 +220,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
         {
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorAppWithP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges((path, project) =>
                 {
                     if (path.Contains("AppWithP2PReference")) {
@@ -255,7 +235,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();
 
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
@@ -278,10 +258,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             // Verifies building with different versions of Razor.Tasks works. Loosely modeled after the repro
             // scenario listed in https://github.com/Microsoft/msbuild/issues/3572
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorAppWithP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges((path, project) =>
                 {
                     if (path.Contains("AppWithP2PReference"))
@@ -296,7 +274,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();
 
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
@@ -309,15 +287,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_WithStartupObjectSpecified_Works()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:StartupObject=SimpleMvc.Program").Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
             new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.pdb")).Should().Exist();
@@ -326,15 +302,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_WithDeterministicFlagSet_OutputsDeterministicViewsAssembly()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
             
             var build = new BuildCommand(projectDirectory);
             build.Execute($"/p:Deterministic=true").Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll")).Should().Exist();
             var filePath = Path.Combine(intermediateOutputPath, "SimpleMvc.Views.dll");

@@ -8,22 +8,21 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.NET.Sdk.Razor.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class DesignTimeBuildIntegrationTest : SdkTest
+    public class DesignTimeBuildIntegrationTest : RazorSdkTest
     {
         public DesignTimeBuildIntegrationTest(ITestOutputHelper log) : base(log) {}
 
         [Fact]
         public void DesignTimeBuild_DoesNotRunRazorTargets()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Using Compile here instead of CompileDesignTime because the latter is only defined when using
             // the VS targets. This is a close enough simulation for an SDK project
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 .And.NotHaveStdOutContaining("RazorCoreGenerate")
                 .And.NotHaveStdOutContaining("RazorCoreCompile");
 
-            var outputPath = command.GetOutputDirectory("net5.0", "Debug").ToString();
+            var outputPath = command.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.pdb")).Should().NotExist();
@@ -46,10 +45,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [Fact]
         public void RazorGenerateDesignTime_ReturnsRazorGenerateWithTargetPath()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var command = new MSBuildCommand(Log, "RazorGenerateDesignTime;_IntrospectRazorGenerateWithTargetPath", projectDirectory.Path);
             var result = command.Execute();
@@ -73,17 +70,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             foreach (var filePath in filePaths)
             {
                 result.Should().HaveStdOutContaining(
-                    $@"RazorGenerateWithTargetPath: {filePath} {filePath} {Path.Combine("obj", "Debug", "net5.0", "Razor", filePath + ".g.cs")}");
+                    $@"RazorGenerateWithTargetPath: {filePath} {filePath} {Path.Combine("obj", "Debug", DefaultTfm, "Razor", filePath + ".g.cs")}");
             }
         }
 
         [Fact]
         public void RazorGenerateComponentDesignTime_ReturnsRazorComponentWithTargetPath()
         {
-            var testAsset = "ComponentLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentLibrary";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var command = new MSBuildCommand(Log, "RazorGenerateComponentDesignTime;_IntrospectRazorComponentWithTargetPath", projectDirectory.Path);
             var result = command.Execute();

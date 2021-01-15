@@ -17,9 +17,9 @@ using Moq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.NET.Razor.Sdk.Tests
+namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class BuildIncrementalismTest : SdkTest
+    public class BuildIncrementalismTest : RazorSdkTest
     {
         public BuildIncrementalismTest(ITestOutputHelper log) : base(log) {}
 
@@ -30,15 +30,13 @@ namespace Microsoft.NET.Razor.Sdk.Tests
             var thumbprintLookup = new Dictionary<string, FileThumbPrint>();
 
             // Act 1
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             var result = build.Execute();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var filesToIgnore = new[]
             {
                 // These files are generated on every build.
@@ -77,16 +75,14 @@ namespace Microsoft.NET.Razor.Sdk.Tests
         [Fact]
         public void RazorGenerate_RegeneratesTagHelperInputs_IfFileChanges()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Act - 1
             var build = new BuildCommand(projectDirectory);
             var result = build.Execute();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
             var expectedTagHelperCacheContent = @"""Name"":""SimpleMvc.SimpleTagHelper""";
             var file = Path.Combine(projectDirectory.Path, "SimpleTagHelper.cs");
@@ -114,10 +110,8 @@ namespace Microsoft.NET.Razor.Sdk.Tests
         [Fact]
         public void Build_ErrorInGeneratedCode_ReportsMSBuildError_OnIncrementalBuild()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Introducing a Razor semantic error
             var indexPage = Path.Combine(projectDirectory.Path, "Views", "Home", "Index.cshtml");
@@ -136,7 +130,7 @@ namespace Microsoft.NET.Razor.Sdk.Tests
 
                 result.Should().Fail().And.HaveStdOutContaining("RZ1006");
 
-                var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+                var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
                 // Compilation failed without creating the views assembly
                 new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.dll")).Should().Exist();
@@ -150,10 +144,8 @@ namespace Microsoft.NET.Razor.Sdk.Tests
         [Fact]
         public void BuildComponents_ErrorInGeneratedCode_ReportsMSBuildError_OnIncrementalBuild()
         {
-            var testAsset = "MvcWithComponents";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorMvcWithComponents";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
                 
             // Introducing a Razor semantic error
             var indexPage = Path.Combine(projectDirectory.Path, "Views", "Shared", "NavMenu.razor");
@@ -172,7 +164,7 @@ namespace Microsoft.NET.Razor.Sdk.Tests
 
                 result.Should().Fail().And.HaveStdOutContaining("RZ1006");
 
-                var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
+                var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
 
                 // Compilation failed without creating the views assembly
                 new FileInfo(Path.Combine(intermediateOutputPath, "MvcWithComponents.dll")).Should().NotExist();
@@ -186,16 +178,14 @@ namespace Microsoft.NET.Razor.Sdk.Tests
         [Fact]
         public void BuildComponents_DoesNotRegenerateComponentDefinition_WhenDefinitionIsUnchanged()
         {
-            var testAsset = "MvcWithComponents";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorMvcWithComponents";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Act - 1
             var build = new BuildCommand(projectDirectory);
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             var updatedContent = "Some content";
             var tagHelperOutputCache = Path.Combine(intermediateOutputPath, "MvcWithComponents.TagHelpers.output.cache");
@@ -245,15 +235,13 @@ namespace Microsoft.NET.Razor.Sdk.Tests
         [Fact]
         public void BuildComponents_RegeneratesComponentDefinition_WhenFilesChange()
         {
-            var testAsset = "MvcWithComponents";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorMvcWithComponents";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // Act - 1
             var updatedContent = "@code { [Parameter] public string AParameter { get; set; } }";
@@ -307,15 +295,13 @@ namespace Microsoft.NET.Razor.Sdk.Tests
         [Fact]
         public void BuildComponents_DoesNotModifyFiles_IfFilesDoNotChange()
         {
-            var testAsset = "MvcWithComponents";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorMvcWithComponents";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // Act - 1
             var tagHelperOutputCache = Path.Combine(intermediateOutputPath, "MvcWithComponents.TagHelpers.output.cache");
@@ -366,15 +352,13 @@ namespace Microsoft.NET.Razor.Sdk.Tests
             // Simulates building the same way VS does by setting BuildProjectReferences=false.
             // With this flag, the only target called is GetCopyToOutputDirectoryItems on the referenced project.
             // We need to ensure that we continue providing Razor binaries and symbols as files to be copied over.
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
             
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();
 
-            string outputPath = build.GetOutputDirectory("net5.0").FullName;
+            string outputPath = build.GetOutputDirectory(DefaultTfm).FullName;
 
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.Views.dll")).Should().Exist();
@@ -405,10 +389,8 @@ namespace Microsoft.NET.Razor.Sdk.Tests
         [Fact]
         public void Build_TouchesUpToDateMarkerFile()
         {
-            var testAsset = "ClassLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorClassLibrary";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Remove the components so that they don't interfere with these tests
             Directory.Delete(Path.Combine(projectDirectory.Path, "Components"), recursive: true);
@@ -418,7 +400,7 @@ namespace Microsoft.NET.Razor.Sdk.Tests
                 .Should()
                 .Pass();
 
-            string intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().FullName, "Debug", "net5.0");
+            string intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().FullName, "Debug", DefaultTfm);
 
             var classLibraryDll = Path.Combine(intermediateOutputPath, "ClassLibrary.dll");
             var classLibraryViewsDll = Path.Combine(intermediateOutputPath, "ClassLibrary.Views.dll");

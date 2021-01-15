@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>testSdkRazor</PackageId>
+    <PackageId>testSdkRazorTool</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

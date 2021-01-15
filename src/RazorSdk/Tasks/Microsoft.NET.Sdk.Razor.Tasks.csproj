@@ -32,16 +32,16 @@
     <Description>SDK for building and publishing Razor applications.</Description>
     <OutputType>Library</OutputType>
     <RootNamespace>Microsoft.NET.Sdk.Razor</RootNamespace>
-    <TargetFrameworks>$(SdkTargetFramework);net46</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" ExcludeAssets="Runtime" />
-    <PackageReference Include="System.Reflection.Metadata"  Version="$(SystemReflectionMetadataVersion)" Condition="'$(TargetFramework)'=='net46'" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" ExcludeAssets="Runtime" />
+    <PackageReference Include="System.Reflection.Metadata"  Version="$(SystemReflectionMetadataVersion)" Condition="'$(TargetFramework)'=='net472'" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"
-      Version="5.0.1"
-      Condition="'$(TargetFramework)'!='net46'" 
+      Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)"
+      Condition="'$(TargetFramework)'!='net472'" 
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks" />

@@ -19,23 +19,21 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class StaticWebAssetsIntegrationTest : SdkTest
+    public class StaticWebAssetsIntegrationTest : RazorSdkTest
     {
         public StaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log) {}
 
         [Fact]
         public void Build_GeneratesStaticWebAssetsManifest_Success_CreatesManifest()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "AppWithPackageAndP2PReference.StaticWebAssets.xml")).Should().Exist();
@@ -53,15 +51,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_CopiesStaticWebAssetsToDestinationFolder()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
             publish.Execute().Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js")).Should().Exist();
@@ -84,10 +80,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [WindowsOnlyFact]
         public void Publish_CopiesStaticWebAssetsToDestinationFolder_PublishSingleFile()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges((path, project) =>
                 {
                     if (path.Contains("AppWithPackageAndP2PReference"))
@@ -102,7 +96,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
             publish.Execute("/p:PublishSingleFile=true", "/p:ReferenceLocallyBuiltPackages=true").Should().Pass();
 
-            var publishOutputPathWithRID = publish.GetOutputDirectory("net5.0", "Debug", "win-x64").ToString();
+            var publishOutputPathWithRID = publish.GetOutputDirectory(DefaultTfm, "Debug", "win-x64").ToString();
 
             new FileInfo(Path.Combine(publishOutputPathWithRID, "wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPathWithRID, "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js")).Should().Exist();
@@ -125,10 +119,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_WithBuildReferencesDisabled_CopiesStaticWebAssetsToDestinationFolder()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
             build.Execute().Should().Pass();
@@ -136,7 +128,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
             publish.Execute("/p:BuildProjectReferences=false").Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js")).Should().Exist();
@@ -152,10 +144,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/29224")]
         public void Publish_NoBuild_CopiesStaticWebAssetsToDestinationFolder()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
             build.Execute().Should().Pass();
@@ -163,7 +153,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
             publish.Execute("/p:NoBuild=true", "/p:CopyRazorGenerateFilesToPublishDirectory=false").Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js")).Should().Exist();
@@ -179,16 +169,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_DoesNotEmbedManifestWhen_NoStaticResourcesAvailable()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "SimpleMvc.StaticWebAssets.xml")).Should().Exist();
@@ -202,10 +190,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             Directory.CreateDirectory(Path.Combine(projectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js"));
             File.WriteAllText(Path.Combine(projectDirectory.Path, "AppWithPackageAndP2PReference", "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), "console.log('transitive-dep');");
@@ -217,15 +203,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Clean_Success_RemovesManifestAndCache()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString().ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString().ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "AppWithPackageAndP2PReference.StaticWebAssets.xml")).Should().Exist();
@@ -242,17 +226,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Rebuild_Success_RecreatesManifestAndCache()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Arrange
             var build = new BuildCommand(projectDirectory, "AppWithPackageAndP2PReference");
             build.Execute().Should().Pass();
             
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "AppWithPackageAndP2PReference.StaticWebAssets.xml")).Should().Exist();
@@ -293,16 +275,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void GenerateStaticWebAssetsManifest_IncrementalBuild_ReusesManifest()
         {
-            var testAsset = "AppWithPackageAndP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithPackageAndP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var command = new MSBuildCommand(Log, "GenerateStaticWebAssetsManifest", projectDirectory.Path, "AppWithPackageAndP2PReference");
             command.Execute().Should().Pass();
 
-            var intermediateOutputPath = command.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            var outputPath = command.GetOutputDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = command.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest and the cache.
             new FileInfo(Path.Combine(intermediateOutputPath, "staticwebassets", "AppWithPackageAndP2PReference.StaticWebAssets.xml")).Should().Exist();
@@ -347,8 +327,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Path.Combine(restorePath, "packagelibrarydirectdependency", "1.0.0", "build", "..", "staticwebassets") + Path.DirectorySeparatorChar,
                 Path.GetFullPath(Path.Combine(source, "AnotherClassLib", "wwwroot")) + Path.DirectorySeparatorChar,
                 Path.GetFullPath(Path.Combine(source, "ClassLibrary", "wwwroot")) + Path.DirectorySeparatorChar,
-                Path.GetFullPath(Path.Combine(source, "ClassLibrary", "obj", "Debug", "net5.0", "scopedcss", "projectbundle")) + Path.DirectorySeparatorChar,
-                Path.GetFullPath(Path.Combine(source, "AppWithPackageAndP2PReference", "obj", "Debug", "net5.0", "scopedcss", "bundle")) + Path.DirectorySeparatorChar,
+                Path.GetFullPath(Path.Combine(source, "ClassLibrary", "obj", "Debug", DefaultTfm, "scopedcss", "projectbundle")) + Path.DirectorySeparatorChar,
+                Path.GetFullPath(Path.Combine(source, "AppWithPackageAndP2PReference", "obj", "Debug", DefaultTfm, "scopedcss", "bundle")) + Path.DirectorySeparatorChar,
             };
 
             var contentRoots = new[]

@@ -14,17 +14,15 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class BuildIntrospectionTest : SdkTest
+    public class BuildIntrospectionTest : RazorSdkTest
     {
         public BuildIntrospectionTest(ITestOutputHelper log) : base(log) {}
 
         [Fact]
         public void RazorSdk_AddsCshtmlFilesToUpToDateCheckInput()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
             
             var build = new BuildCommand(projectDirectory);
             build.Execute("/t:_IntrospectUpToDateCheck")
@@ -32,16 +30,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .Pass()
                 .And.HaveStdOutContaining($"UpToDateCheckInput: {Path.Combine("Views", "Home", "Index.cshtml")}")
                 .And.HaveStdOutContaining($"UpToDateCheckInput: {Path.Combine("Views", "_ViewStart.cshtml")}")
-                .And.HaveStdOutContaining($"UpToDateCheckBuilt: {Path.Combine("obj", "Debug", "net5.0", "SimpleMvc.Views.dll")}");
+                .And.HaveStdOutContaining($"UpToDateCheckBuilt: {Path.Combine("obj", "Debug", DefaultTfm, "SimpleMvc.Views.dll")}");
         }
 
         [Fact]
         public void UpToDateReloadFileTypes_Default()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
             
             var build = new BuildCommand(projectDirectory);
             build.Execute("/t:_IntrospectUpToDateReloadFileTypes")
@@ -53,10 +49,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void UpToDateReloadFileTypes_WithRuntimeCompilation()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -77,10 +71,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void UpToDateReloadFileTypes_WithwWorkAroundRemoved()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
             
             var build = new BuildCommand(projectDirectory);
             build.Execute("/t:_IntrospectUpToDateReloadFileTypes")
@@ -92,10 +84,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void UpToDateReloadFileTypes_WithRuntimeCompilationAndWorkaroundRemoved()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges(p =>
                 {
                     var ns = p.Root.Name.Namespace;
@@ -116,10 +106,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void IntrospectRazorSdkWatchItems()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new MSBuildCommand(Log, "_IntrospectWatchItems", projectDirectory.Path);
             build.Execute()

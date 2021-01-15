@@ -18,22 +18,20 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class ScopedCssIntegrationTest : SdkTest
+    public class ScopedCssIntegrationTest : RazorSdkTest
     {
         public ScopedCssIntegrationTest(ITestOutputHelper log) : base(log) {}
 
         [Fact]
         public void Build_NoOps_WhenScopedCssIsDisabled()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:ScopedCssEnabled=false").Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
@@ -44,15 +42,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void CanDisableDefaultDiscoveryConvention()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:EnableDefaultScopedCssItems=false").Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
@@ -63,10 +59,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void CanOverrideScopeIdentifiers()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource()
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -86,7 +80,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var build = new BuildCommand(projectDirectory);
             build.Execute("/p:EnableDefaultScopedCssItems=false").Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             var scoped = Path.Combine(intermediateOutputPath, "scopedcss", "Styles", "Pages", "Counter.rz.scp.css");
             new FileInfo(scoped).Should().Exist();
@@ -100,15 +94,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_GeneratesTransformedFilesAndBundle_ForComponentsWithScopedCss()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().Exist();
@@ -120,15 +112,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_ScopedCssFiles_ContainsUniqueScopesPerFile()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             var generatedCounter = Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
             new FileInfo(generatedCounter).Should().Exist();
@@ -151,15 +141,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_PublishesBundleToTheRightLocation()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute().Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
@@ -169,10 +157,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_NoBuild_PublishesBundleToTheRightLocation()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
@@ -180,7 +166,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute("/p:NoBuild=true").Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
@@ -190,10 +176,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_DoesNotPublishAnyFile_WhenThereAreNoScopedCssFiles()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"));
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Index.razor.css"));
@@ -201,7 +185,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute().Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "_framework", "scoped.styles.css")).Should().NotExist();
         }
@@ -209,15 +193,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Publish_Publishes_IndividualScopedCssFiles_WhenNoBundlingIsEnabled()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, projectDirectory.TestRoot);
             publish.Execute("/p:DisableScopedCssBundling=true").Should().Pass();
 
-            var publishOutputPath = publish.GetOutputDirectory("net5.0", "Debug").ToString();
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "ComponentApp.styles.css")).Should().NotExist();
 
@@ -229,15 +211,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_GeneratedComponentContainsScope()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             var generatedCounter = Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
             new FileInfo(generatedCounter).Should().Exist();
@@ -255,15 +235,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_RemovingScopedCssAndBuilding_UpdatesGeneratedCodeAndBundle()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().Exist();
             var generatedBundle = Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
@@ -294,10 +272,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Does_Nothing_WhenThereAreNoScopedCssFiles()
         {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Counter.razor.css"));
             File.Delete(Path.Combine(projectDirectory.Path, "Components", "Pages", "Index.razor.css"));
@@ -305,7 +281,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
@@ -318,16 +294,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // Arrange
             var thumbprintLookup = new Dictionary<string, FileThumbPrint>();
 
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             // Act & Assert 1
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", "net5.0");
+            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
             var directoryPath = Path.Combine(intermediateOutputPath, "scopedcss");
 
             var files = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);

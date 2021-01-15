@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class ApplicationPartDiscoveryIntegrationTest : SdkTest
+    public class ApplicationPartDiscoveryIntegrationTest : RazorSdkTest
     {
         public ApplicationPartDiscoveryIntegrationTest(ITestOutputHelper log) : base(log) {}
 
@@ -23,16 +23,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         private void Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute()
         {
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             new FileInfo(Path.Combine(intermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs")).Should().Exist();
             new FileInfo(Path.Combine(intermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs")).Should().Contain("[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute(\"ClassLibrary\")]");
@@ -42,15 +40,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void Build_ProjectWithoutMvcReferencingDependencies_DoesNotGenerateAttribute()
         {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorSimpleMvc";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory);
             build.Execute().Should().Pass();
 
-            string intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().FullName, "Debug", "net5.0");
+            string intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().FullName, "Debug", DefaultTfm);
 
             File.Exists(Path.Combine(intermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cs")).Should().BeFalse();;
 
@@ -62,16 +58,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [Fact]
         public void BuildIncrementalism_CausingRecompilation_WhenApplicationPartAttributeIsGenerated()
         {
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = "RazorAppWithP2PReference";
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset);
             
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();
 
-            string intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-            string outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
+            string intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            string outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             var generatedAttributeFile = Path.Combine(intermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs");
             File.Exists(generatedAttributeFile).Should().BeTrue();

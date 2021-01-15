@@ -15,10 +15,12 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public abstract class MvcBuildIntegrationTestLegacy : SdkTest
+    public abstract class MvcBuildIntegrationTestLegacy : RazorSdkTest
     {
         public abstract string TestProjectName { get; }
         public abstract string TargetFramework { get; }
+
+        // Remove Razor prefix from assembly name
         public virtual string OutputFileName => $"{TestProjectName}.dll";
 
         public MvcBuildIntegrationTestLegacy(ITestOutputHelper log) : base(log) { }
@@ -26,10 +28,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public virtual void Building_Project()
         {
-            var testAsset = TestProjectName;
-            var project = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = $"Razor{TestProjectName}";
+            var project = CreateRazorSdkTestAsset(testAsset);
 
             // Build
             var build = new BuildCommand(project);
@@ -55,10 +55,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public virtual void BuildingProject_CopyToOutputDirectoryFiles()
         {
-            var testAsset = TestProjectName;
-            var project = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = $"Razor{TestProjectName}";
+            var project = CreateRazorSdkTestAsset(testAsset);
+
             // Build
             var build = new BuildCommand(project);
             build.Execute().Should().Pass();
@@ -76,10 +75,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public virtual void Publish_Project()
         {
-            var testAsset = TestProjectName;
-            var project = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = $"Razor{TestProjectName}";
+            var project = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, project.TestRoot);
             publish.Execute().Should().Pass();
@@ -100,10 +97,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [CoreMSBuildOnlyFact]
         public virtual void Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
         {
-            var testAsset = TestProjectName;
-            var project = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
+            var testAsset = $"Razor{TestProjectName}";
+            var project = CreateRazorSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(Log, project.TestRoot);
             publish.Execute("/p:CopyRefAssembliesToPublishDirectory=true").Should().Pass();
