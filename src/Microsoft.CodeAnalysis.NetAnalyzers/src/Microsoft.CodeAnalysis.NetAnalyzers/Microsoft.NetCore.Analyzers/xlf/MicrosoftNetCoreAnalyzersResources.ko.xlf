@@ -1722,6 +1722,21 @@
         <target state="translated">선택적 필드에 deserialization 메서드를 제공하십시오.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">
+        <source>The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving your implementation to '{2}' and have '{1}' delegate to '{2}'.</source>
+        <target state="new">The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving your implementation to '{2}' and have '{1}' delegate to '{2}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesMessage">
+        <source>'{0}' overrides '{1}' but does not override '{2}'. Consider overriding '{2}'.</source>
+        <target state="new">'{0}' overrides '{1}' but does not override '{2}'. Consider overriding '{2}'.</target>
+        <note>0 = type that subclasses Stream directly, 1 = array-based method, 2 = memory-based method</note>
+      </trans-unit>
+      <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesTitle">
+        <source>Provide memory-based overrides when subclassing 'Stream'</source>
+        <target state="new">Provide memory-based overrides when subclassing 'Stream'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RemoveRedundantCall">
         <source>Remove redundant call</source>
         <target state="translated">중복 호출 제거</target>
