@@ -80,8 +80,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         [WindowsOnlyFact]
         public void Publish_CopiesStaticWebAssetsToDestinationFolder_PublishSingleFile()
         {
+            var tfm = "net5.0";
             var testAsset = "RazorAppWithPackageAndP2PReference";
-            var projectDirectory = CreateRazorSdkTestAsset(testAsset)
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset, overrideTfm: tfm)
                 .WithProjectChanges((path, project) =>
                 {
                     if (path.Contains("AppWithPackageAndP2PReference"))
@@ -96,7 +97,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithPackageAndP2PReference"));
             publish.Execute("/p:PublishSingleFile=true", "/p:ReferenceLocallyBuiltPackages=true").Should().Pass();
 
-            var publishOutputPathWithRID = publish.GetOutputDirectory(DefaultTfm, "Debug", "win-x64").ToString();
+            var publishOutputPathWithRID = publish.GetOutputDirectory(tfm, "Debug", "win-x64").ToString();
 
             new FileInfo(Path.Combine(publishOutputPathWithRID, "wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPathWithRID, "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js")).Should().Exist();

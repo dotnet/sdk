@@ -57,7 +57,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Path.Combine("Views", "Home", "About.cshtml"),
                 Path.Combine("Views", "Home", "Contact.cshtml"),
                 Path.Combine("Views", "Home", "Index.cshtml"),
-                Path.Combine("Views", "Shared", "Error.cshtml"),
                 Path.Combine("Views", "Shared", "_Layout.cshtml"),
                 Path.Combine("Views", "Shared", "_ValidationScriptsPartial.cshtml"),
                 Path.Combine("Views", "_ViewImports.cshtml"),
