@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -14,14 +15,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public abstract class RazorSdkTest : SdkTest
     {
-        public readonly string DefaultTfm = "net5.0";
+        public readonly string DefaultTfm = "net6.0";
 
         protected RazorSdkTest(ITestOutputHelper log) : base(log) {}
 
-        public TestAsset CreateRazorSdkTestAsset(string testAsset) 
+        public TestAsset CreateRazorSdkTestAsset(string testAsset, [CallerMemberName] string callerName = "", string subdirectory = "") 
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
+                .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory)
                 .WithSource()
                 .WithProjectChanges(project => 
                 {

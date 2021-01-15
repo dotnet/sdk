@@ -104,9 +104,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Pack_FailsWhenStaticWebAssetsHaveConflictingPaths()
         {
             var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset, testAssetSubdirectory: "TestPackages")
-                .WithSource()
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset, subdirectory: "TestPackages")
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -133,9 +131,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Pack_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset, testAssetSubdirectory: "TestPackages")
-                .WithSource();
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset, subdirectory: "TestPackages");
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path, "PackageLibraryDirectDependency");
             var result = pack.Execute();
@@ -164,9 +160,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Pack_DoesNotInclude_TransitiveBundleOrScopedCssAsStaticWebAsset()
         {
             var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset, testAssetSubdirectory: "TestPackages")
-                .WithSource();
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset, subdirectory: "TestPackages");
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path, "PackageLibraryDirectDependency");
             var result = pack.Execute();
@@ -191,9 +185,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Pack_DoesNotIncludeStaticWebAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset, testAssetSubdirectory: "TestPackages")
-                .WithSource();
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset, subdirectory: "TestPackages");
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path, "PackageLibraryDirectDependency");
             var result = pack.Execute();
@@ -225,9 +217,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Pack_NoBuild_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset, testAssetSubdirectory: "TestPackages")
-                .WithSource();
+            var projectDirectory = CreateRazorSdkTestAsset(testAsset, subdirectory: "TestPackages");
 
             var build = new BuildCommand(projectDirectory, "PackageLibraryDirectDependency");
             build.Execute().Should().Pass();
