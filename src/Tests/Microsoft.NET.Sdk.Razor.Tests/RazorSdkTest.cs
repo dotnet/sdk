@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class RazorSdkTest : SdkTest
+    public abstract class RazorSdkTest : SdkTest
     {
         public readonly string DefaultTfm = "net5.0";
 
