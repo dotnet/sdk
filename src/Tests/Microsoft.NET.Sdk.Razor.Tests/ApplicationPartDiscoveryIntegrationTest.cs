@@ -11,18 +11,14 @@ using Microsoft.NET.TestFramework.Utilities;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.NET.Razor.Sdk.Tests
+namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class ApplicationPartDiscoveryIntegrationTest : SdkTest
     {
         public ApplicationPartDiscoveryIntegrationTest(ITestOutputHelper log) : base(log) {}
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute_WhenBuildingUsingDotnetMsbuild()
-            => Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute();
-
-        [FullMSBuildOnlyFactAttribute]
-        public void Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute_WhenBuildingUsingDesktopMsbuild()
             => Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute();
 
         private void Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute()
@@ -44,22 +40,6 @@ namespace Microsoft.NET.Razor.Sdk.Tests
         }
 
         [Fact]
-        public void Build_ProjectWithDependencyThatReferencesMvc_DoesNotGenerateAttributeIfFlagIsReset()
-        {
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
-            build.Execute("/p:GenerateMvcApplicationPartsAssemblyAttributes=false").Should().Pass();
-
-            string intermediateOutputPath = build.GetIntermediateDirectory("net5.0", "Debug").ToString();
-
-            File.Exists(Path.Combine(intermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs")).Should().BeFalse();
-        }
-
-        [Fact]
         public void Build_ProjectWithoutMvcReferencingDependencies_DoesNotGenerateAttribute()
         {
             var testAsset = "SimpleMvc";
@@ -76,47 +56,6 @@ namespace Microsoft.NET.Razor.Sdk.Tests
 
             // We should produced a cache file for build incrementalism
             File.Exists(Path.Combine(intermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cache")).Should().BeTrue();
-        }
-
-        [Fact]
-        public void BuildIncrementalism_WhenApplicationPartAttributeIsGenerated()
-        {
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-            
-            var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
-            build.Execute().Should().Pass();
-
-            string intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().FullName, "Debug", "net5.0");
-
-            var generatedAttributeFile = Path.Combine(intermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cs");
-            var cacheFile = Path.Combine(intermediateOutputPath, "AppWithP2PReference.MvcApplicationPartsAssemblyInfo.cache");
-            var outputFile = Path.Combine(intermediateOutputPath, "AppWithP2PReference.dll");
-            File.Exists(generatedAttributeFile).Should().BeTrue();
-            new FileInfo(generatedAttributeFile).Should().Contain("[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute(\"ClassLibrary\")]");
-
-            var generatedFilethumbPrint = FileThumbPrint.Create(generatedAttributeFile);
-            var cacheFileThumbPrint = FileThumbPrint.Create(cacheFile);
-            var outputFileThumbPrint = FileThumbPrint.Create(outputFile);
-
-            AssertIncrementalBuild();
-            AssertIncrementalBuild();
-
-            void AssertIncrementalBuild()
-            {
-                var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
-                build.Execute().Should().Pass();
-
-                var outputPath = build.GetOutputDirectory("net5.0", "Debug").ToString();
-
-                File.Exists(generatedAttributeFile).Should().BeTrue();
-                Assert.Equal(generatedFilethumbPrint, FileThumbPrint.Create(generatedAttributeFile));
-                Assert.Equal(cacheFileThumbPrint, FileThumbPrint.Create(cacheFile));
-                Assert.Equal(outputFileThumbPrint, FileThumbPrint.Create(outputFile));
-                new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).AssemblyShould().HaveAttribute("Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
-            }
         }
 
         // Regression test for https://github.com/dotnet/aspnetcore/issues/11315
@@ -149,66 +88,6 @@ namespace Microsoft.NET.Razor.Sdk.Tests
             File.Exists(generatedAttributeFile).Should().BeTrue();
             Assert.Equal(thumbPrint, FileThumbPrint.Create(generatedAttributeFile));
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).AssemblyShould().HaveAttribute("Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
-        }
-
-        [Fact]
-        public void BuildIncrementalism_WhenApplicationPartAttributeIsNotGenerated()
-        {
-            var testAsset = "SimpleMvc";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var build = new BuildCommand(projectDirectory);
-            build.Execute()
-                .Should()
-                .Pass();
-
-            string intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().FullName, "Debug", "net5.0");
-
-            var generatedAttributeFile = Path.Combine(intermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cs");
-            var cacheFile = Path.Combine(intermediateOutputPath, "SimpleMvc.MvcApplicationPartsAssemblyInfo.cache");
-            var outputFile = Path.Combine(intermediateOutputPath, "SimpleMvc.dll");
-            File.Exists(generatedAttributeFile).Should().BeFalse();
-            File.Exists(cacheFile).Should().BeTrue();
-
-            var cacheFilethumbPrint = FileThumbPrint.Create(cacheFile);
-            var outputFilethumbPrint = FileThumbPrint.Create(outputFile);
-
-            // Couple rounds of incremental builds.
-            AssertIncrementalBuild();
-            AssertIncrementalBuild();
-            AssertIncrementalBuild();
-
-            void AssertIncrementalBuild()
-            {
-                build = new BuildCommand(projectDirectory);
-                build.Execute()
-                    .Should()
-                    .Pass();
-
-                File.Exists(generatedAttributeFile).Should().BeFalse();
-                File.Exists(cacheFile).Should().BeTrue();
-
-                Assert.Equal(cacheFilethumbPrint, FileThumbPrint.Create(cacheFile));
-                Assert.Equal(outputFilethumbPrint, FileThumbPrint.Create(outputFile));
-            }
-        }
-
-        [Fact]
-        public void Build_ProjectWithMissingAssemblyReference_PrintsWarning()
-        {
-            var testAsset = "AppWithP2PReference";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-            
-            var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
-            build.Execute("/p:BuildProjectReferences=false")
-                .Should()
-                .Fail()
-                .And.HaveStdOutContaining("CS0006")
-                .And.HaveStdOutContaining("RAZORSDK1007");
         }
     }
 }

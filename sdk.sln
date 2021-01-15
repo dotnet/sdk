@@ -318,12 +318,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rules", "Rules", "{A117DF29
 		src\RazorSdk\Targets\Rules\RazorGenerateWithTargetPath.xaml = src\RazorSdk\Targets\Rules\RazorGenerateWithTargetPath.xaml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "buildMultiTargeting", "buildMultiTargeting", "{ABA49ECC-1722-4991-9C69-62464FBCEBE5}"
-	ProjectSection(SolutionItems) = preProject
-		src\RazorSdk\Targets\buildMultiTargeting\Microsoft.NET.Sdk.Razor.props = src\RazorSdk\Targets\buildMultiTargeting\Microsoft.NET.Sdk.Razor.props
-		src\RazorSdk\Targets\buildMultiTargeting\Sdk.Razor.CurrentVersion.MultiTargeting.targets = src\RazorSdk\Targets\buildMultiTargeting\Sdk.Razor.CurrentVersion.MultiTargeting.targets
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -664,7 +658,6 @@ Global
 		{4ACCAC39-8ECD-45F8-B5AF-EB7E37CD36CC} = {E9BDA8A6-1AD2-4D0E-A37C-9EC10D7FE773}
 		{D64884FD-A3F3-4082-A814-A9377B661509} = {E9BDA8A6-1AD2-4D0E-A37C-9EC10D7FE773}
 		{A117DF29-1D72-453B-A24C-3B53F47609F2} = {D64884FD-A3F3-4082-A814-A9377B661509}
-		{ABA49ECC-1722-4991-9C69-62464FBCEBE5} = {E9BDA8A6-1AD2-4D0E-A37C-9EC10D7FE773}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}

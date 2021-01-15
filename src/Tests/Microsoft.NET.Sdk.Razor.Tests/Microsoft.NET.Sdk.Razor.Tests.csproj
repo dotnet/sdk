@@ -11,9 +11,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <!-- Strip the '-parallel none' flag here -->
-    <XUnitRunnerAdditionalArguments></XUnitRunnerAdditionalArguments>
-    <PackageId>testSdkBlazorWasm</PackageId>
+    <PackageId>testSdkRazor</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

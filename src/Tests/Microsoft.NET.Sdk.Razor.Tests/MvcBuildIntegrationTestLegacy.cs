@@ -98,40 +98,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [CoreMSBuildOnlyFact]
-        public virtual void Build_DoesNotPrintsWarnings_IfProjectFileContainsRazorFiles()
-        {
-            var testAsset = TestProjectName;
-            var project = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-            File.WriteAllText(Path.Combine(project.Path, "Index.razor"), "Hello world");
-
-            var build = new BuildCommand(project);
-            build.Execute().Should().Pass().And.NotHaveStdOutContaining("RAZORSDK1005");
-
-        }
-
-        [CoreMSBuildOnlyFact]
-        public virtual void PublishingProject_CopyToPublishDirectoryItems()
-        {
-            var testAsset = TestProjectName;
-            var project = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-            var publish = new PublishCommand(Log, project.TestRoot);
-            publish.Execute().Should().Pass();
-
-            var outputPath = publish.GetOutputDirectory(TargetFramework, "Debug").ToString();
-
-            // refs shouldn't be produced by default
-            new DirectoryInfo(Path.Combine(outputPath, "refs")).Should().NotExist();
-
-            // Views shouldn't be produced by default
-            new DirectoryInfo(Path.Combine(outputPath, "Views")).Should().NotExist();
-
-        }
-
-        [CoreMSBuildOnlyFact]
         public virtual void Publish_IncludesRefAssemblies_WhenCopyRefAssembliesToPublishDirectoryIsSet()
         {
             var testAsset = TestProjectName;
@@ -145,7 +111,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var outputPath = publish.GetOutputDirectory(TargetFramework, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "refs", "System.Threading.Tasks.Extensions.dll")).Should().Exist();
-
         }
     }
 }

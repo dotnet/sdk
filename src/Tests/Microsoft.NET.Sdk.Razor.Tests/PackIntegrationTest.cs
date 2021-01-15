@@ -26,29 +26,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public PackIntegrationTest(ITestOutputHelper log) : base(log) {}
 
         [Fact]
-        public void Pack_NoBuild_IncludeRazorContent_IncludesRazorViewContent()
-        {
-            var testAsset = "ClassLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
-
-            var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path);
-            var result = pack.Execute("/p:NoBuild=true", "/p:IncludeRazorContentInPack=true");
-            result.Should().Pass();
-            System.Console.WriteLine(Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"));
-            result.Should().NuSpecContain(
-                    Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
-                    $@"<files include=""any/{TFM}/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
-            result.Should().NuPkgContain(
-                    Path.Combine(projectDirectory.Path, "bin", "Debug", "ClassLibrary.1.0.0.nupkg"),
-                    Path.Combine("contentFiles", "any", TFM, "Views", "Shared", "_Layout.cshtml"));
-        }
-
-        [Fact]
         public void Pack_NoBuild_Works_IncludesRazorAssembly()
         {
             var testAsset = "ClassLibrary";
@@ -122,76 +99,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             result.Should().NuSpecDoesNotContain(
                 Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
                 $@"<files include=""any/{TFM}/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
-
-            result.Should().NuPkgContain(
-                Path.Combine(projectDirectory.Path, "bin", "Debug", "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("lib", TFM, "ClassLibrary.Views.dll"));
-        }
-
-        [Fact]
-        public void Pack_WithIncludeSymbols_IncludesRazorPdb()
-        {
-            var testAsset = "ClassLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path);
-
-            var result = pack.Execute("/p:RazorCompileOnBuild=true", "/p:IncludeSymbols=true");
-
-            result.Should().Pass();
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Travis on OSX produces different full paths in C# and MSBuild
-                result.Should().NuSpecContain(
-                    Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.symbols.nuspec"),
-                    $"<file src=\"{Path.Combine(projectDirectory.Path, "bin", "Debug", TFM, "ClassLibrary.Views.dll")}\" " +
-                    $"target=\"{Path.Combine("lib", TFM, "ClassLibrary.Views.dll")}\" />");
-
-                result.Should().NuSpecContain(
-                    Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.symbols.nuspec"),
-                    $"<file src=\"{Path.Combine(projectDirectory.Path, "bin", "Debug", TFM, "ClassLibrary.Views.pdb")}\" " +
-                    $"target=\"{Path.Combine("lib", TFM, "ClassLibrary.Views.pdb")}\" />");
-            }
-
-            result.Should().NuPkgContain(
-                Path.Combine(projectDirectory.Path, "bin", "Debug", "ClassLibrary.1.0.0.symbols.nupkg"),
-                Path.Combine("lib", TFM, "ClassLibrary.Views.dll"),
-                Path.Combine("lib", TFM, "ClassLibrary.Views.pdb"));
-        }
-
-        [Fact]
-        public void Pack_IncludesRazorFilesAsContent_WhenIncludeRazorContentInPack_IsSet()
-        {
-            var testAsset = "ClassLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path);
-            var result = pack.Execute("/p:IncludeRazorContentInPack=true");
-
-            result.Should().Pass();
-
-            var outputPath = pack.GetOutputDirectory("net5.0", "Debug").ToString();
-
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.dll")).Should().Exist();
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Travis on OSX produces different full paths in C# and MSBuild
-                result.Should().NuSpecContain(
-                    Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
-                    $"<file src=\"{Path.Combine(projectDirectory.Path, "bin", "Debug", TFM, "ClassLibrary.Views.dll")}\" " +
-                    $"target=\"{Path.Combine("lib", TFM, "ClassLibrary.Views.dll")}\" />");
-
-                result.Should().NuSpecContain(
-                    Path.Combine(projectDirectory.Path, "obj", "Debug", "ClassLibrary.1.0.0.nuspec"),
-                    $@"<files include=""any/{TFM}/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
-            }
 
             result.Should().NuPkgContain(
                 Path.Combine(projectDirectory.Path, "bin", "Debug", "ClassLibrary.1.0.0.nupkg"),
@@ -316,36 +223,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     Path.Combine("contentFiles", "css", "site.css"),
                     Path.Combine("contentFiles", "Components", "App.razor.css"),
                     Path.Combine("contentFiles", "Components", "App.razor.rz.scp.css"),
-                });
-        }
-
-        [Fact]
-        public void Pack_StaticWebAssetsEnabledFalse_DoesNotPackAnyStaticWebAssets()
-        {
-            var testAsset = "PackageLibraryDirectDependency";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset, testAssetSubdirectory: "TestPackages")
-                .WithSource();
-
-            var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path, "PackageLibraryDirectDependency");
-            var result = pack.Execute("/p:StaticWebAssetsEnabled=false");
-
-            result.Should().Pass();
-
-            var outputPath = pack.GetOutputDirectory("net5.0", "Debug").ToString();
-
-            new FileInfo(Path.Combine(outputPath, "PackageLibraryDirectDependency.dll")).Should().Exist();
-
-            result.Should().NuPkgDoesNotContain(
-                Path.Combine(projectDirectory.Path, "PackageLibraryDirectDependency", "bin", "Debug", "PackageLibraryDirectDependency.1.0.0.nupkg"),
-                filePaths: new[]
-                {
-                    Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
-                    Path.Combine("staticwebassets", "css", "site.css"),
-                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
-                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
-                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
                 });
         }
 

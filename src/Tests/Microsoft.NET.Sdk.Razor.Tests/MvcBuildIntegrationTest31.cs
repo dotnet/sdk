@@ -19,29 +19,5 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         public override string TestProjectName => "SimpleMvc31";
         public override string TargetFramework => "netcoreapp3.1";
-
-        [Fact]
-        public void Build_WithGenerateRazorHostingAssemblyInfo_AddsConfigurationMetadata()
-        {
-            var testAsset = TestProjectName;
-            var project = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var build = new BuildCommand(project);
-            build.Execute("/p:GenerateRazorHostingAssemblyInfo=true").Should().Pass();
-
-            var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", TargetFramework);
-
-            var razorAssemblyInfo = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", TargetFramework, "SimpleMvc31.RazorAssemblyInfo.cs");
-
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc31.Views.dll")).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc31.Views.pdb")).Should().Exist();
-
-            new FileInfo(razorAssemblyInfo).Should().Exist();
-            new FileInfo(razorAssemblyInfo).Should().Contain("[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"3.0\")]");
-            new FileInfo(razorAssemblyInfo).Should().Contain("[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-3.0\")]");
-            new FileInfo(razorAssemblyInfo).Should().Contain("[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-3.0\", \"Microsoft.AspNetCore.Mvc.Razor.Extensions\")]");
-        }
     }
 }

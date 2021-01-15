@@ -17,7 +17,7 @@ namespace Microsoft.NET.Razor.Sdk.Tests
     {
         public BuildWithComponents31IntegrationTest(ITestOutputHelper log) : base(log) {}
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works()
         {
             var testAsset = "blazor31";

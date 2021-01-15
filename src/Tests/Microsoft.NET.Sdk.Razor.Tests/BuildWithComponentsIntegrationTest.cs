@@ -17,73 +17,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     {
         public BuildWithComponentsIntegrationTest(ITestOutputHelper log) : base(log) {}
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
         [FullMSBuildOnlyFact]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
-
-        [Fact]
-        public void Build_DoesNotProduceMvcArtifacts_IfProjectDoesNotContainRazorGenerateItems()
-        {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
-
-            string outputPath = build.GetOutputDirectory("net5.0").ToString();
-            string intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().FullName, "Debug", "net5.0");
-
-            new FileInfo(Path.Combine(outputPath, "ComponentApp.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ComponentApp.pdb")).Should().Exist();
-
-            // Verify component compilation succeeded
-            new FileInfo(Path.Combine(outputPath, "ComponentApp.dll")).AssemblyShould().ContainType("ComponentApp.Components.Pages.Counter");
-
-            // Verify MVC artifacts do not appear in the output.
-            new FileInfo(Path.Combine(outputPath, "ComponentApp.Views.dll")).Should().NotExist();
-            new FileInfo(Path.Combine(outputPath, "ComponentApp.Views.pdb")).Should().NotExist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs")).Should().NotExist();
-            new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.RazorTargetAssemblyInfo.cs")).Should().NotExist();
-        }
-
-        [Fact]
-        public void Build_Successful_WhenThereAreWarnings()
-        {
-            var testAsset = "ComponentApp";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var indexPage = Path.Combine(projectDirectory.Path, "Components", "Pages", "Index.razor");
-            File.WriteAllText(indexPage, "<UnrecognizedComponent />");
-
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass().And.HaveStdOutContaining("RZ10012");
-
-            string outputPath = build.GetOutputDirectory("net5.0").ToString();
-
-            new FileInfo(Path.Combine(outputPath, "ComponentApp.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "ComponentApp.pdb")).Should().Exist();
-
-            // Verify component compilation succeeded
-            new FileInfo(Path.Combine(outputPath, "ComponentApp.dll")).AssemblyShould().ContainType("ComponentApp.Components.Pages.Counter");
-        }
-
-        [Fact]
-        public void Build_WithoutRazorLangVersion_ProducesWarning()
-        {
-            var testAsset = "ComponentLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var build = new BuildCommand(projectDirectory);
-            build.Execute("/p:RazorLangVersion=").Should().Pass().And.HaveStdOutContaining("RAZORSDK1005");
-        }
 
         [Fact]
         public void Building_NetstandardComponentLibrary()
@@ -104,41 +42,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             new FileInfo(Path.Combine(outputPath, "ComponentLibrary.Views.dll")).Should().NotExist();
             new FileInfo(Path.Combine(outputPath, "ComponentLibrary.Views.pdb")).Should().NotExist();
-        }
-
-        [Fact]
-        public void Build_DoesNotProduceRefsDirectory()
-        {
-            var testAsset = "ComponentLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            // Build
-            var build = new BuildCommand(projectDirectory);
-            build.Execute().Should().Pass();
-
-            string outputPath = build.GetOutputDirectory("netstandard2.0").ToString();
-
-            new FileInfo(Path.Combine(outputPath, "ComponentLibrary.dll")).Should().Exist();
-            new DirectoryInfo(Path.Combine(outputPath, "refs")).Should().NotExist();
-        }
-
-        [Fact]
-        public void Publish_DoesNotProduceRefsDirectory()
-        {
-            var testAsset = "ComponentLibrary";
-            var projectDirectory = _testAssetsManager
-                .CopyTestAsset(testAsset)
-                .WithSource();
-
-            var build = new PublishCommand(Log, projectDirectory.Path);
-            build.Execute().Should().Pass();
-
-            string outputPath = build.GetOutputDirectory("netstandard2.0").ToString();
-
-            new FileInfo(Path.Combine(outputPath, "ComponentLibrary.dll")).Should().Exist();
-            new DirectoryInfo(Path.Combine(outputPath, "refs")).Should().NotExist();
         }
 
         private void Build_ComponentsWorks()

@@ -56,10 +56,6 @@
       <Pack>true</Pack>
       <PackagePath>build\netstandard2.0</PackagePath>
     </AdditionalContent>
-    <AdditionalContent Include="$(RazorSdkRoot)buildMultiTargeting\**\*.*">
-      <Pack>true</Pack>
-      <PackagePath>buildMultiTargeting</PackagePath>
-    </AdditionalContent>
     <AdditionalContent Include="$(RazorSdkRoot)Sdk\**\*.*">
       <Pack>true</Pack>
       <PackagePath>Sdk</PackagePath>
