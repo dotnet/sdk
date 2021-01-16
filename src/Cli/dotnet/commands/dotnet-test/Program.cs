@@ -34,7 +34,8 @@ namespace Microsoft.DotNet.Tools.Test
             {
                 "-target:VSTest",
                 "-nodereuse:false", // workaround for https://github.com/Microsoft/vstest/issues/1503
-                "-nologo"
+                "-nologo",
+                "-property:VSTestUseConsole=True" // will colorize console output, but lose the MSBuild logs
             };
 
             msbuildArgs.AddRange(result.OptionValuesToBeForwarded(TestCommandParser.GetCommand()));
