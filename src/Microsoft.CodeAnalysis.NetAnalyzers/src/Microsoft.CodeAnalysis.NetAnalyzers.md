@@ -1296,6 +1296,18 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 |CodeFix|False|
 ---
 
+## [CA1840](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840): Provide memory-based overrides of async methods when subclassing 'Stream'
+
+The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving your implementation to '{2}' and have '{1}' delegate to '{2}'.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

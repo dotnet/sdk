@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -21,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     {
         #region Reports Diagnostic
         [Fact]
-        public async Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_CS()
+        public Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_CS()
         {
             string code = $@"
 {CSUsings}
@@ -37,16 +38,17 @@ namespace Testopolis
             var diagnostic = VerifyCS.Diagnostic(Rule)
                 .WithLocation(0)
                 .WithArguments("FooStream", CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory);
-            await new VerifyCS.Test
+            var test = new VerifyCS.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            };
+            return test.RunAsync();
         }
 
         [Fact]
-        public async Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_VB()
+        public Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_VB()
         {
             string code = $@"
 {VBUsings}
@@ -60,16 +62,17 @@ End Namespace";
             var diagnostic = VerifyVB.Diagnostic(Rule)
                 .WithLocation(0)
                 .WithArguments("FooStream", VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory);
-            await new VerifyVB.Test
+            var test = new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            };
+            return test.RunAsync();
         }
 
         [Fact]
-        public async Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_CS()
+        public Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_CS()
         {
             string code = $@"
 {CSUsings}
@@ -85,16 +88,17 @@ namespace Testopolis
             var diagnostic = VerifyCS.Diagnostic(Rule)
                 .WithLocation(0)
                 .WithArguments("BarStream", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory);
-            await new VerifyCS.Test
+            var test = new VerifyCS.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            };
+            return test.RunAsync();
         }
 
         [Fact]
-        public async Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_VB()
+        public Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_VB()
         {
             string code = $@"
 {VBUsings}
@@ -108,18 +112,530 @@ End Namespace";
             var diagnostic = VerifyVB.Diagnostic(Rule)
                 .WithLocation(0)
                 .WithArguments("BarStream", VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory);
-            await new VerifyVB.Test
+            var test = new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task BothArrayOverrides_MissingAllMemoryOverrides_ReportsMultipleBiagnostics_CS()
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class {{|#0:River|}} : Stream
+    {{
+        {CSAbstractMembers}
+        {CSReadAsyncArray}
+        {CSWriteAsyncArray}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("River", CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory),
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task BothArrayOverrides_MissingAllMemoryOverrides_ReportsMultipleDiagnostics_VB()
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class {{|#0:River|}} : Inherits Stream
+        {VBAbstractMembers}
+        {VBReadAsyncArray}
+        {VBWriteAsyncArray}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("River", VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory),
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("River", VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)
+
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(CSReadAsyncArray, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
+        [InlineData(CSWriteAsyncArray, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
+        public Task SingleArrayOverride_MultiplePartialsInSameFile_ReportsAllLocations_CS(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public partial class {{|#0:River|}} : Stream
+    {{
+        {CSAbstractMembers}
+    }}
+}}
+
+namespace Testopolis
+{{
+    partial class {{|#1:River|}}
+    {{
+        {arrayMethod}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithArguments("River", displayArrayMethod, displayMemoryMethod),
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(VBReadAsyncArray, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
+        [InlineData(VBWriteAsyncArray, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
+        public Task SingleArrayOverride_MultiplePartialsInSameFile_ReportsAllLocations_VB(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Partial Public Class {{|#0:River|}} : Inherits Stream
+        {VBAbstractMembers}
+        {arrayMethod}
+    End Class
+End Namespace
+
+Namespace Testopolis
+    Partial Class {{|#1:River|}}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithArguments("River", displayArrayMethod, displayMemoryMethod)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(CSReadAsyncArray, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
+        [InlineData(CSWriteAsyncArray, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
+        public Task SingleArrayOverride_MultiplePartialsInSeparateFiles_ReportsAllLocations_CS(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
+        {
+            string fooSource = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public partial class {{|#0:River|}} : Stream
+    {{
+        {CSAbstractMembers}
+    }}
+}}";
+            string barSource = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    partial class {{|#1:River|}}
+    {{
+        {arrayMethod}
+    }}
+}}";
+            string bazSource = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    partial class {{|#2:River|}}
+    {{
+    }}
+}}";
+            var test = new VerifyCS.Test
+            {
+                TestState = { Sources = { fooSource, barSource, bazSource } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", displayArrayMethod, displayMemoryMethod)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(VBReadAsyncArray, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
+        [InlineData(VBWriteAsyncArray, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
+        public Task SingleArrayOverride_MultiplePartialsInSeparateFiles_ReportsAllLocations_VB(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
+        {
+            string fooSource = $@"
+{VBUsings}
+Namespace Testopolis
+    Partial Public Class {{|#0:River|}} : Inherits Stream
+        {VBAbstractMembers}
+    End Class
+End Namespace";
+            string barSource = $@"
+{VBUsings}
+Namespace Testopolis
+    Partial Class {{|#1:River|}}
+        {arrayMethod}
+    End Class
+End Namespace";
+            string bazSource = $@"
+{VBUsings}
+Namespace Testopolis
+    Partial Class {{|#2:River|}}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestState = { Sources = { fooSource, barSource, bazSource } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", displayArrayMethod, displayMemoryMethod)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task BothArrayOverrides_MultiplePartialsInSameFile_ReportsAllLocations_CS()
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public partial class {{|#0:River|}} : Stream
+    {{
+        {CSAbstractMembers}
+        {CSReadAsyncArray}
+    }}
+}}
+
+namespace Testopolis
+{{
+    partial class {{|#1:River|}}
+    {{
+    }}
+}}
+
+namespace Testopolis
+{{
+    partial class {{|#2:River|}}
+    {{
+        {CSWriteAsyncArray}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory),
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task BothArrayOverrides_MultiplePartialsInSameFile_REportsAllLocations_VB()
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Partial Public Class {{|#0:River|}} : Inherits Stream
+        {VBAbstractMembers}
+        {VBReadAsyncArray}
+    End Class
+End Namespace
+
+Namespace Testopolis
+    Partial Class {{|#1:River|}}
+    End Class
+End Namespace
+
+Namespace Testopolis
+    Partial Class {{|#2:River|}}
+        {VBWriteAsyncArray}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory),
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task BothArrayOverrides_MultiplePartialsInSeparateFiles_ReportsAllLocations_CS()
+        {
+            string fooSource = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public partial class {{|#0:River|}} : Stream
+    {{
+        {CSAbstractMembers}
+        {CSReadAsyncArray}
+    }}
+}}";
+            string barSource = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    partial class {{|#1:River|}}
+    {{
+    }}
+}}";
+            string bazSource = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    partial class {{|#2:River|}}
+    {{
+        {CSWriteAsyncArray}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState = { Sources = { fooSource, barSource, bazSource } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory),
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task BothArrayOverrides_MultiplePartialsInSeparateFiles_ReportsAllLocations_VB()
+        {
+            string fooSource = $@"
+{VBUsings}
+Namespace Testopolis
+    Partial Public Class {{|#0:River|}} : Inherits Stream
+        {VBAbstractMembers}
+        {VBReadAsyncArray}
+    End Class
+End Namespace";
+            string barSource = $@"
+{VBUsings}
+Namespace Testopolis
+    Partial Class {{|#1:River|}}
+    End Class
+End Namespace";
+            string bazSource = $@"
+{VBUsings}
+Namespace Testopolis
+    Partial Class {{|#2:River|}}
+        {VBWriteAsyncArray}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestState = { Sources = { fooSource, barSource, bazSource } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory),
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithLocation(1)
+                        .WithLocation(2)
+                        .WithArguments("River", VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        //  This test has no VB counterpart because in Visual Basic it is illegal to override one overload
+        //  of a base-class method while implicitly hiding another overload.
+        [Theory]
+        [InlineData(CSReadAsyncArray, CSHideReadAsyncMemory, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
+        [InlineData(CSWriteAsyncArray, CSHideWriteAsyncMemory, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
+        public Task WhenMemoryMethodNotDeclaredOverride_ReportsDiagnostic(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class {{|#0:River|}} : Stream
+    {{
+        {CSAbstractMembers}
+        {arrayMethod}
+#pragma warning disable {CSMemberHidesBaseRuleId}
+        {memoryMethod}
+#pragma warning restore {CSMemberHidesBaseRuleId}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("River", displayArrayMethod, displayMemoryMethod)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(CSReadAsyncArray, CSHideExplicitReadAsyncMemory, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
+        [InlineData(CSWriteAsyncArray, CSHideExplicitWriteAsyncMemory, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
+        public Task WhenMemoryMethodDeclaredNew_ReportsDiagnostic_CS(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class {{|#0:River|}} : Stream
+    {{
+        {CSAbstractMembers}
+        {arrayMethod}
+        {memoryMethod}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("River", displayArrayMethod, displayMemoryMethod)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(VBReadAsyncArray, VBHideExplicitReadAsyncMemory, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
+        [InlineData(VBWriteAsyncArray, VBHideExplicitWriteAsyncMemory, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
+        public Task WhenMemoryMethodDeclaredNew_ReportsDiagnostic_VB(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class {{|#0:River|}} : Inherits Stream
+        {VBAbstractMembers}
+        {arrayMethod}
+        {memoryMethod}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(Rule)
+                        .WithLocation(0)
+                        .WithArguments("River", displayArrayMethod, displayMemoryMethod)
+                }
+            };
+            return test.RunAsync();
         }
         #endregion
 
         #region No Diagnostic
         [Fact]
-        public async Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_CS()
+        public Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_CS()
         {
             string code = $@"
 {CSUsings}
@@ -133,15 +649,16 @@ namespace Testopolis
     }}
 }}";
 
-            await new VerifyCS.Test
+            var test = new VerifyCS.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            };
+            return test.RunAsync();
         }
 
         [Fact]
-        public async Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_VB()
+        public Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_VB()
         {
             string code = $@"
 {VBUsings}
@@ -153,15 +670,16 @@ Namespace Testopolis
     End Class
 End Namespace";
 
-            await new VerifyVB.Test
+            var test = new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            };
+            return test.RunAsync();
         }
 
         [Fact]
-        public async Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_CS()
+        public Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_CS()
         {
             string code = $@"
 {CSUsings}
@@ -175,15 +693,16 @@ namespace Testopolis
     }}
 }}";
 
-            await new VerifyCS.Test
+            var test = new VerifyCS.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            };
+            return test.RunAsync();
         }
 
         [Fact]
-        public async Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_VB()
+        public Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_VB()
         {
             string code = $@"
 {VBUsings}
@@ -195,11 +714,382 @@ Namespace Testopolis
     End Class
 End Namespace";
 
-            await new VerifyVB.Test
+            var test = new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync();
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task ReadAsyncMemory_WithoutReadAsyncArray_NoDiagnostic_CS()
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class River : Stream
+    {{
+        {CSAbstractMembers}
+        {CSReadAsyncMemory}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task ReadAsyncMemory_WithoutReadAsyncArray_NoDiagnostic_VB()
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class River : Inherits Stream
+        {VBAbstractMembers}
+        {VBReadAsyncMemory}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task WriteAsyncMemory_WithoutWriteAsyncArray_NoDiagnostic_CS()
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class River : Stream
+    {{
+        {CSAbstractMembers}
+        {CSWriteAsyncMemory}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task WriteAsyncMemory_WithoutWriteAsyncArray_NoDiagnostic_VB()
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class River : Inherits Stream
+        {VBAbstractMembers}
+        {VBWriteAsyncMemory}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(CSReadAsyncArray)]
+        [InlineData(CSWriteAsyncArray)]
+        public Task WhenStreamIsGrandBase_andBaseDoesNotOverrideArrayMethod_NoDiagnostic_CS(string arrayMethodDefinition)
+        {
+            string @base = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class BaseStream : Stream
+    {{
+        {CSAbstractMembers}
+    }}
+}}";
+            string derived = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class DerivedStream : BaseStream
+    {{
+        {arrayMethodDefinition}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState = { Sources = { @base, derived } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(VBReadAsyncArray)]
+        [InlineData(VBWriteAsyncArray)]
+        public Task WhenStreamIsGrandBase_andBaseDoesNotOverrideArrayMethod_NoDiagnostic_VB(string arrayMethodDefinition)
+        {
+            string @base = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class BaseStream : Inherits Stream
+        {VBAbstractMembers}
+    End Class
+End Namespace";
+            string derived = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class DerivedStream : Inherits BaseStream
+        {arrayMethodDefinition}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestState = { Sources = { @base, derived } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(CSReadAsyncArray)]
+        [InlineData(CSWriteAsyncArray)]
+        public Task WhenStreamIsGrandBase_andBaseOverridesArrayMethod_NoDiagnostic_CS(string arrayMethodDefinition)
+        {
+            string @base = $@"
+{CSUsings}
+namespace Testopolis
+{{
+#pragma warning disable {RuleId}
+    public class BaseStream : Stream
+#pragma warning restore {RuleId}
+    {{
+        {CSAbstractMembers}
+        {arrayMethodDefinition}
+    }}
+}}";
+            string derived = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class DerivedStream : BaseStream
+    {{
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState = { Sources = { @base, derived } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(VBReadAsyncArray)]
+        [InlineData(VBWriteAsyncArray)]
+        public Task WhenStreamIsGrandBase_andBaseOverridesArray_NoDiagnostic_VB(string arrayMethodDefinition)
+        {
+            string @base = $@"
+{VBUsings}
+Namespace Testopolis
+#Disable Warning {RuleId}
+    Public Class BaseStream : Inherits Stream
+#Enable Warning {RuleId}
+        {VBAbstractMembers}
+        {arrayMethodDefinition}
+    End Class
+End Namespace";
+            string derived = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class DerivedStream : Inherits BaseStream
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestState = { Sources = { @base, derived } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(CSReadAsyncArray)]
+        [InlineData(CSWriteAsyncArray)]
+        public Task WhenStreamIsGrandBase_andBothBaseAndDerivedOverrideArrayMethod_NoDiagnostic_CS(string arrayMethodDefinition)
+        {
+            string @base = $@"
+{CSUsings}
+namespace Testopolis
+{{
+#pragma warning disable {RuleId}
+    public class BaseStream : Stream
+#pragma warning restore {RuleId}
+    {{
+        {CSAbstractMembers}
+        {arrayMethodDefinition}
+    }}
+}}";
+            string derived = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class DerivedStream : BaseStream
+    {{
+        {arrayMethodDefinition}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState = { Sources = { @base, derived } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(VBReadAsyncArray)]
+        [InlineData(VBWriteAsyncArray)]
+        public Task WhenStreamIsGrandBase_andBothBaseAndDerivedOverrideArrayMethod_NoDiagnostic_VB(string arrayMethodDefinition)
+        {
+            string @base = $@"
+{VBUsings}
+Namespace Testopolis
+#Disable Warning {RuleId}
+    Public Class BaseStream : Inherits Stream
+#Enable Warning {RuleId}
+        {VBAbstractMembers}
+        {arrayMethodDefinition}
+    End Class
+End Namespace";
+            string derived = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class DerivedStream : Inherits BaseStream
+        {arrayMethodDefinition}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestState = { Sources = { @base, derived } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(CSHideReadAsyncArray)]
+        [InlineData(CSHideWriteAsyncArray)]
+        public Task WhenArrayMethodNotDeclaredOverride_NoDiagnostic_CS(string arrayMethod)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class River : Stream
+    {{
+        {CSAbstractMembers}
+#pragma warning disable {CSMemberHidesBaseRuleId}
+        {arrayMethod}
+#pragma warning restore {CSMemberHidesBaseRuleId}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(VBHideReadAsyncArray)]
+        [InlineData(VBHideWriteAsyncArray)]
+        public Task WhenArrayMethodNotDeclaredOverride_NoDiagnostic_VB(string arrayMethod)
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class River : Inherits Stream
+        {VBAbstractMembers}
+#Disable Warning {VBMemberHidesBaseRuleId}
+        {arrayMethod}
+#Enable Warning {VBMemberHidesBaseRuleId}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(CSHideExplicitReadAsyncArray)]
+        [InlineData(CSHideExplicitWriteAsyncArray)]
+        public Task WhenArrayMethodDeclaredNew_NoDiagnostic_CS(string arrayMethod)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class River : Stream
+    {{
+        {CSAbstractMembers}
+        {arrayMethod}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(VBHideExplicitReadAsyncArray)]
+        [InlineData(VBHideExplicitWriteAsyncArray)]
+        public Task WhenArrayMethodDeclaredNew_NoDiagnostic_VB(string arrayMethod)
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class River : Inherits Stream
+        {VBAbstractMembers}
+        {arrayMethod}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
         }
         #endregion
 
@@ -218,10 +1108,10 @@ using System.Threading.Tasks;";
         public override bool CanWrite { get; }
         public override long Length { get; }
         public override long Position { get; set; }";
-        private const string CSReadAsyncArray = @"public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken ct) => throw null;";
-        private const string CSReadAsyncMemory = @"public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct = default) => throw null;";
-        private const string CSWriteAsyncArray = @"public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken ct) => throw null;";
-        private const string CSWriteAsyncMemory = @"public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken ct = default) => throw null;";
+        private const string CSReadAsyncArray = @"public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw null;";
+        private const string CSReadAsyncMemory = @"public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => throw null;";
+        private const string CSWriteAsyncArray = @"public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw null;";
+        private const string CSWriteAsyncMemory = @"public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) => throw null;";
 
         private const string VBUsings = @"Imports System
 Imports System.IO
@@ -293,7 +1183,40 @@ Imports System.Threading.Tasks";
         private const string VBDisplayWriteAsyncArray = @"Function Stream.WriteAsync(buffer As Byte(), offset As Integer, count As Integer, cancellationToken As CancellationToken) As Task";
         private const string VBDisplayWriteAsyncMemory = @"Function Stream.WriteAsync(buffer As ReadOnlyMemory(Of Byte), cancellationToken As CancellationToken = Nothing) As ValueTask";
 
+        private const string CSHideReadAsyncArray = @"public Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw null;";
+        private const string CSHideReadAsyncMemory = @"public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => throw null;";
+        private const string CSHideWriteAsyncArray = @"public Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw null;";
+        private const string CSHideWriteAsyncMemory = @"public ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) => throw null;";
+
+        private const string VBHideReadAsyncArray = @"Public Function ReadAsync(buffer() As Byte, offset As Integer, count As Integer, cancellationToken As CancellationToken) As Task(Of Integer)
+            Throw New NotImplementedException()
+        End Function";
+        private const string VBHideWriteAsyncArray = @"Public Function WriteAsync(buffer As Byte, offset As Integer, count As Integer, cancellationToken As CancellationToken) As Task
+            Throw New NotImplementedException()
+        End Function";
+
+        private const string CSHideExplicitReadAsyncArray = @"public new Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw null;";
+        private const string CSHideExplicitReadAsyncMemory = @"public new ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => throw null;";
+        private const string CSHideExplicitWriteAsyncArray = @"public new Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw null;";
+        private const string CSHideExplicitWriteAsyncMemory = @"public new ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) => throw null;";
+
+        private const string VBHideExplicitReadAsyncArray = @"Public Overloads Function ReadAsync(buffer() As Byte, offset As Integer, count As Integer, cancellationToken As CancellationToken) As Task(Of Integer)
+            Throw New NotImplementedException()
+        End Function";
+        private const string VBHideExplicitReadAsyncMemory = @"Public Overloads Function ReadAsync(buffer As Memory(Of Byte), Optional cancellationToken As CancellationToken = Nothing) As ValueTask(Of Integer)
+            Throw New NotImplementedException()
+        End Function";
+        private const string VBHideExplicitWriteAsyncArray = @"Public Overloads Function WriteAsync(buffer As Byte, offset As Integer, count As Integer, cancellationToken As CancellationToken) As Task
+            Throw New NotImplementedException()
+        End Function";
+        private const string VBHideExplicitWriteAsyncMemory = @"Public Overloads Function WriteAsync(buffer As ReadOnlyMemory(Of Byte), Optional cancellationToken As CancellationToken = Nothing) As ValueTask
+            Throw New NotImplementedException()
+        End Function";
+
         private static DiagnosticDescriptor Rule => ProvideStreamMemoryBasedAsyncOverrides.Rule;
+        private static string RuleId => ProvideStreamMemoryBasedAsyncOverrides.RuleId;
+        private const string CSMemberHidesBaseRuleId = "CS0114";
+        private const string VBMemberHidesBaseRuleId = "BC40005";
         #endregion
     }
 }

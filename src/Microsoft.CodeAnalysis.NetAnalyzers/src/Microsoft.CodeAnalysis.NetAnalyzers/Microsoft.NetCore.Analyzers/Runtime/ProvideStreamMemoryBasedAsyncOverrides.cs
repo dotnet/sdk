@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
-using System.Text;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -15,6 +12,11 @@ using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    /// <summary>
+    /// CA1840: Reports a diagnostic if a class that directly subclasses <see cref="System.IO.Stream"/> overrides 
+    /// <see cref="System.IO.Stream.ReadAsync(byte[], int, int)"/> and/or <see cref="System.IO.Stream.WriteAsync(byte[], int, int)"/>, 
+    /// and does not override the corrasponding memory-based version.
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class ProvideStreamMemoryBasedAsyncOverrides : DiagnosticAnalyzer
     {
@@ -29,7 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             s_localizableTitle,
             s_localizableMessage,
             DiagnosticCategory.Performance,
-            RuleLevel.IdeSuggestion,
+            RuleLevel.BuildWarning,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
@@ -59,13 +61,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 var type = (INamedTypeSymbol)context.Symbol;
 
+                //  We only report a diagnostic if the type directly subclasses stream. We don't report diagnostics
+                //  if there are any bases in the middle.
+
                 if (!symbols.StreamType.Equals(type.BaseType, SymbolEqualityComparer.Default))
                     return;
 
-                IMethodSymbol? readAsyncArrayOverride = GetOverride(type, symbols.ReadAsyncArrayMethod);
-                IMethodSymbol? readAsyncMemoryOverride = GetOverride(type, symbols.ReadAsyncMemoryMethod);
-                IMethodSymbol? writeAsyncArrayOverride = GetOverride(type, symbols.WriteAsyncArrayMethod);
-                IMethodSymbol? writeAsyncMemoryOverride = GetOverride(type, symbols.WriteAsyncMemoryMethod);
+                IMethodSymbol? readAsyncArrayOverride = GetSymbolForOverridingMethod(type, symbols.ReadAsyncArrayMethod);
+                IMethodSymbol? readAsyncMemoryOverride = GetSymbolForOverridingMethod(type, symbols.ReadAsyncMemoryMethod);
+                IMethodSymbol? writeAsyncArrayOverride = GetSymbolForOverridingMethod(type, symbols.WriteAsyncArrayMethod);
+                IMethodSymbol? writeAsyncMemoryOverride = GetSymbolForOverridingMethod(type, symbols.WriteAsyncMemoryMethod);
+
+                //  For both ReadAsync and WriteAsync, if the array-based form is overridden and the memory-based
+                //  form is not, we report a diagnostic. We report separate diagnostics for ReadAsync and WriteAsync. 
 
                 if (readAsyncArrayOverride is not null && readAsyncMemoryOverride is null)
                 {
@@ -84,9 +92,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 RoslynDebug.Assert(arrayBasedOverride.OverriddenMethod is not null);
 
-                var location = violatingType.Locations.Single(x => x.SourceTree == arrayBasedOverride.Locations[0].SourceTree);
+                //  We want to underline the name of the violating type in the class declaration. If the violating type
+                //  is a partial class, we underline all partial declarations.
+
                 return Diagnostic.Create(
-                    Rule, location,
+                    Rule,
+                    violatingType.Locations[0],
+                    violatingType.Locations.Skip(1),
                     violatingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                     arrayBasedOverride.OverriddenMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                     memoryBasedMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
@@ -147,8 +159,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private static IMethodSymbol? GetOverride(ITypeSymbol derivedType, IMethodSymbol overriddenMethod)
+        //  If the specified type overrides the specified method on its immediate base class, returns the method symbol representing the 
+        //  overriding method. Returns null if the specified type does not override the specified method.
+        private static IMethodSymbol? GetSymbolForOverridingMethod(ITypeSymbol derivedType, IMethodSymbol overriddenMethod)
         {
+            RoslynDebug.Assert(derivedType.BaseType.Equals(overriddenMethod.ContainingType, SymbolEqualityComparer.Default));
+
             return derivedType.GetMembers(overriddenMethod.Name)
                 .SingleOrDefault(x =>
                 {
