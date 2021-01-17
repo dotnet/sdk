@@ -44,10 +44,10 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         End Function
 
         Protected Overrides Function GetInvocationTarget(node As SyntaxNode) As SyntaxNode
-            If (TypeOf node Is InvocationExpressionSyntax) Then
-                Dim invocationExpression = DirectCast(node, InvocationExpressionSyntax)
-                If (TypeOf invocationExpression.Expression Is MemberAccessExpressionSyntax) Then
-                    Dim memberAccessExpression = DirectCast(invocationExpression.Expression, MemberAccessExpressionSyntax)
+            Dim invocationExpression = TryCast(node, InvocationExpressionSyntax)
+            If invocationExpression IsNot Nothing Then
+                Dim memberAccessExpression = TryCast(invocationExpression.Expression, MemberAccessExpressionSyntax)
+                If memberAccessExpression IsNot Nothing Then
                     Return memberAccessExpression.Expression
                 End If
             End If
