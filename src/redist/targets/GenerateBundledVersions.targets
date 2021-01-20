@@ -73,11 +73,13 @@
 
       <NetCore31RuntimePackRids Include="@(NetCore30RuntimePackRids)"/>
 
-      <NetCore5AppHostRids Include="@(NetCore31RuntimePackRids)"/>
+      <NetCore5AppHostRids Include="
+          @(NetCore31RuntimePackRids);
+          linux-musl-arm;
+          "/>
       
       <NetCore5RuntimePackRids Include="
           @(NetCore5AppHostRids);
-          linux-musl-arm;
           ios-arm64;
           ios-arm;
           ios-x64;
