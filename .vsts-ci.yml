@@ -40,10 +40,10 @@ stages:
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: NetCorePublic-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019.Open
+          queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           name: NetCoreInternal-Pool
-          queue: BuildPool.Windows.10.Amd64.VS2019
+          queue: BuildPool.Windows.10.Amd64.VS2019.Pre
       helixTargetQueue: Windows.10.Amd64.ClientRS5.VS2019.BT.Open
       strategy:
         matrix:
@@ -70,10 +70,10 @@ stages:
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2019.Open
+            queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCoreInternal-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2019
+            queue: BuildPool.Windows.10.Amd64.VS2019.Pre
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: Windows.10.Amd64.ClientRS5.VS2019.BT.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
@@ -97,10 +97,10 @@ stages:
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCorePublic-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2019.Open
+            queue: BuildPool.Windows.10.Amd64.VS2019.Pre.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCoreInternal-Pool
-            queue: BuildPool.Windows.10.Amd64.VS2019
+            queue: BuildPool.Windows.10.Amd64.VS2019.Pre
         strategy:
           matrix:
             Build_Debug:
