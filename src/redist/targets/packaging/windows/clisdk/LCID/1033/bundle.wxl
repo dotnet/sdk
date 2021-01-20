@@ -61,7 +61,7 @@ This product collects usage data
 Resources
     • .NET Documentation https://aka.ms/dotnet-docs
     • SDK Documentation https://aka.ms/dotnet-sdk-docs
-    • Release Notes https://aka.ms/dotnet5-release-notes
+    • Release Notes https://aka.ms/dotnet6-release-notes
     • Tutorials https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -75,7 +75,7 @@ Resources
   <String Id="InstallationNoteTitle">Installation note</String>
   <String Id="InstallationNote">A command will be run during the install process that will improve project restore speed and enable offline access. It will take up to a minute to complete.
   </String>
-  <String Id="VisualStudioWarning">If you plan to use .NET 6.0 with Visual Studio, Visual Studio 2019 16.8 or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet5-release-notes&quot;&gt;Learn More&lt;/A&gt;.
+  <String Id="VisualStudioWarning">If you plan to use .NET 6.0 with Visual Studio, Visual Studio 2019 16.8 or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet6-release-notes&quot;&gt;Learn More&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">By clicking Install, you agree to the following terms.</String>
 </WixLocalization>
