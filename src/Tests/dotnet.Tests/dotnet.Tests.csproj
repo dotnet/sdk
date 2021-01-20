@@ -17,33 +17,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\crossgen.Tests\**\*.cs" LinkBase="crossgen" />
-    <Compile Include="..\dotnet-add-package.Tests\**\*.cs" LinkBase="dotnet-add-package" />
-    <Compile Include="..\dotnet-add-reference.Tests\**\*.cs" LinkBase="dotnet-add-reference" />
-    <Compile Include="..\dotnet-back-compat.Tests\**\*.cs" LinkBase="dotnet-back-compat" />
-    <Compile Include="..\dotnet-build.Tests\**\*.cs" LinkBase="dotnet-build" />
-    <Compile Include="..\dotnet-clean.Tests\**\*.cs" LinkBase="dotnet-clean" />
-    <Compile Include="..\dotnet-fsi.Tests\**\*.cs" LinkBase="dotnet-fsi" />
-    <Compile Include="..\dotnet-help.Tests\**\*.cs" LinkBase="dotnet-help" />
-    <Compile Include="..\dotnet-install-tool.Tests\**\*.cs" LinkBase="dotnet-install-tool" />
-    <Compile Include="..\dotnet-list-package.Tests\**\*.cs" LinkBase="dotnet-list-package" />
-    <Compile Include="..\dotnet-list-reference.Tests\**\*.cs" LinkBase="dotnet-list-reference" />
-    <Compile Include="..\dotnet-new.Tests\**\*.cs" LinkBase="dotnet-new" />
-    <Compile Include="..\dotnet-nuget.UnitTests\**\*.cs" LinkBase="dotnet-nuget" />
-    <Compile Include="..\dotnet-pack.Tests\**\*.cs" LinkBase="dotnet-pack" />
-    <Compile Include="..\dotnet-publish.Tests\**\*.cs" LinkBase="dotnet-publish" />
-    <Compile Include="..\dotnet-remove-package.Tests\**\*.cs" LinkBase="dotnet-remove-package" />
-    <Compile Include="..\dotnet-remove-reference.Tests\**\*.cs" LinkBase="dotnet-remove-reference" />
-    <Compile Include="..\dotnet-restore.Tests\**\*.cs" LinkBase="dotnet-restore" />
-    <Compile Include="..\dotnet-run.Tests\**\*.cs" LinkBase="dotnet-run" />
-    <Compile Include="..\dotnet-store.Tests\**\*.cs" LinkBase="dotnet-store" />
-    <Compile Include="..\dotnet-test.Tests\**\*.cs" LinkBase="dotnet-test" />
-    <Compile Include="..\dotnet-vstest.Tests\**\*.cs" LinkBase="dotnet-vstest" />
-    <Compile Include="..\Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests\**\*.cs" LinkBase="Telemetry.PersistenceChannel" />
-    <Compile Include="..\Microsoft.DotNet.CommandFactory.Tests\**\*.cs" LinkBase="CommandFactory" />
-    <Compile Include="..\Microsoft.DotNet.Configurer.UnitTests\**\*.cs" LinkBase="Configurer" />
-    <Compile Include="..\Microsoft.DotNet.ShellShim.Tests\**\*.cs" LinkBase="ShellShim" />
     
+    <Compile Include="..\dotnet-list-package.Tests\**\*.cs" LinkBase="dotnet-list-package" />
+
 
     <None Include="..\Microsoft.DotNet.ShellShim.Tests\WpfBinaryTestAsssets\testwpf.dll" LinkBase="WpfBinaryTestAsssets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -137,11 +113,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-    <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <ProjectReference Include="..\..\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Sln.Internal\Microsoft.DotNet.Cli.Sln.Internal.csproj" />
     <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
-    <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
