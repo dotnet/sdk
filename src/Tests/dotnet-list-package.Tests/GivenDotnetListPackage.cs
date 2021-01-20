@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using FluentAssertions;
@@ -256,8 +257,10 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .WithSource();
             var projectDirectory = testAsset.Path;
 
+            var logpath = Path.Combine(TestContext.GetRepoRoot(), "artifacts", "log", $"DebugItListsFSharpProject.binlog");
+
             new RestoreCommand(testAsset)
-                .Execute()
+                .Execute($"-bl:{logpath}")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr();
