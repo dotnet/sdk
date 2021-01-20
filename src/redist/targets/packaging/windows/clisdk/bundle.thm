@@ -28,7 +28,8 @@
         <Hypertext Name="VisualStudioWarning" X="160" Y="209" Width="460" Height="30" TabStop="yes" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.VisualStudioWarning)</Hypertext>
         <Text Name="LicenseAssent" X="160" Y="264" Width="460" Height="30" FontId="3">#(loc.LicenseAssent)</Text>
         <Hypertext Name="PrivacyStatementLink" X="185" Y="301" Width="400" Height="22" FontId="3" TabStop="yes" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.PrivacyStatementLink)</Hypertext>
-        <Hypertext Name="DotNetEulaLink" X="185" Y="323" Width="400" Height="22" FontId="3" TabStop="yes" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.DotNetEulaLink)</Hypertext>
+        <Hypertext Name="DotNetCLITelemetryLink" X="185" Y="323" Width="400" Height="22" FontId="3" TabStop="yes" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.DotNetCLITelemetryLink)</Hypertext>
+        <Hypertext Name="DotNetEulaLink" X="185" Y="345" Width="400" Height="22" FontId="3" TabStop="yes" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.DotNetEulaLink)</Hypertext>
         <Button Name="InstallButton" X="-133" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>
         <Button Name="WelcomeCancelButton" X="-32" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0">#(loc.InstallCloseButton)</Button>
     </Page>

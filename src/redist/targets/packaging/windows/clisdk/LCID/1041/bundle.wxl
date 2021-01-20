@@ -72,6 +72,7 @@
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK ドキュメント&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;プライバシーに関する声明&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;.NET のライセンス情報&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">インストール メモ</String>
   <String Id="InstallationNote">コマンドはインストール処理中に実行されるので、プロジェクトの復元速度が向上し、オフラインでアクセスできます。完了するまでに最大 1 分かかります。
   </String>
