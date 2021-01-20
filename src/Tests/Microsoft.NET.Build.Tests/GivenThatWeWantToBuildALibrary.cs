@@ -954,5 +954,58 @@ namespace ProjectNameWithSpaces
 
             GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
         }
+
+        [Fact]
+        public void It_errors_on_windows_sdk_assembly_version_conflicts()
+        {
+            var testProjectA = new TestProject()
+            {
+                Name = "ProjA",
+                TargetFrameworks = "net5.0-windows10.0.19041"
+            };
+            testProjectA.SourceFiles.Add("ProjA.cs", @"namespace ProjA
+{
+    public class ProjAClass
+    {
+        public static string str { get { return Windows.Media.Devices.ColorTemperaturePreset.Auto.ToString(); } }
+        public string ProjBstr { get { return ProjB.ProjBClass.str; } }
+    }
+}");
+            var testProjectB = new TestProject()
+            {
+                Name = "ProjB",
+                TargetFrameworks = "net5.0-windows10.0.19041",
+            };
+            testProjectB.SourceFiles.Add("ProjB.cs", @"namespace ProjB
+{
+    public class ProjBClass
+    {
+        public static string str { get { return Windows.Media.Devices.ColorTemperaturePreset.Auto.ToString(); } }
+    }
+}");
+            testProjectA.ReferencedProjects.Add(testProjectB);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProjectA)
+                .WithProjectChanges((path, project) =>
+                {
+                    if (Path.GetFileName(path).Equals("ProjA.csproj"))
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = project.Root.Elements(ns + "ItemGroup").First();
+                        var updateKnownFrameworkRef = new XElement(ns + "KnownFrameworkReference",
+                            new XAttribute("Update", "Microsoft.Windows.SDK.NET.Ref"),
+                            new XAttribute("TargetingPackVersion", "10.0.18362.12"));
+                        itemGroup.Add(updateKnownFrameworkRef);
+                    }
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1148");
+        }
     }
 }
