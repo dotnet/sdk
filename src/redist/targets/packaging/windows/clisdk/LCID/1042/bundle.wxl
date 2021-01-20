@@ -61,7 +61,7 @@
 리소스
     • .NET 설명서 https://aka.ms/dotnet-docs
     • SDK 설명서 https://aka.ms/dotnet-sdk-docs
-    • 릴리스 정보 https://aka.ms/dotnet5-release-notes
+    • 릴리스 정보 https://aka.ms/dotnet6-release-notes
     • 자습서 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -75,7 +75,7 @@
   <String Id="InstallationNoteTitle">설치 정보</String>
   <String Id="InstallationNote">프로젝트 복원 속도를 향상하고 오프라인 액세스를 사용할 수 있도록 하는 설치 프로세스 중 명령이 실행됩니다. 완료하는 데 최대 1분이 걸립니다.
   </String>
-  <String Id="VisualStudioWarning">Visual Studio와 함께 .NET 6.0을 사용하려면 Visual Studio 2019 16.8 이상이 필요합니다. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;자세한 정보&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Visual Studio와 함께 .NET 6.0을 사용하려면 Visual Studio 2019 16.8 이상이 필요합니다. &lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;자세한 정보&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">[설치]를 클릭하면 다음 사용 약관에 동의하는 것입니다.</String>
 </WixLocalization>

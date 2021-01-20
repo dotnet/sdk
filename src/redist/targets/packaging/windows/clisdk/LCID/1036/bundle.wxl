@@ -61,7 +61,7 @@ Ce produit collecte des données d'utilisation
 Ressources
     • Documentation .NET sur https://aka.ms/dotnet-docs
     • Documentation de kit SDK sur https://aka.ms/dotnet-sdk-docs
-    • Notes de publication sur https://aka.ms/dotnet5-release-notes
+    • Notes de publication sur https://aka.ms/dotnet6-release-notes
     • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">SDK .NET</String>
   <String Id="WelcomeDescription">
@@ -75,7 +75,7 @@ Ressources
   <String Id="InstallationNoteTitle">Note d'installation</String>
   <String Id="InstallationNote">Une commande va être exécutée pendant le processus d'installation, ce qui va améliorer la vitesse de restauration du projet et permettre l'accès hors connexion. L'opération va prendre environ une minute.
   </String>
-  <String Id="VisualStudioWarning">Si vous comptez utiliser .NET 6.0 avec Visual Studio, Visual Studio 2019 16.8 ou version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;En savoir plus&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si vous comptez utiliser .NET 6.0 avec Visual Studio, Visual Studio 2019 16.8 ou version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;En savoir plus&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">En cliquant sur Installer, vous acceptez les conditions suivantes.</String>
 </WixLocalization>

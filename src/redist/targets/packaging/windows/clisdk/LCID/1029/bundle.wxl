@@ -61,7 +61,7 @@ Tento produkt shromažďuje data o využití.
 Zdroje informací
     • Dokumentace k .NET : https://aka.ms/dotnet-docs
     • Dokumentace k sadě SDK: https://aka.ms/dotnet-sdk-docs
-    • Zpráva k vydání verze: https://aka.ms/dotnet5-release-notes
+    • Zpráva k vydání verze: https://aka.ms/dotnet6-release-notes
     • Kurzy: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">Sada .NET SDK</String>
   <String Id="WelcomeDescription">
@@ -75,7 +75,7 @@ Zdroje informací
   <String Id="InstallationNoteTitle">Poznámka k instalaci</String>
   <String Id="InstallationNote">Během procesu instalace se spustí příkaz, který zlepší rychlost obnovení projektu a povolí offline přístup. Akce se dokončí přibližně za minutu.
   </String>
-  <String Id="VisualStudioWarning">Pokud plánujete používat .NET 6.0 se sadou Visual Studio, potřebujete Visual Studio 2019 16.8 nebo novější. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Další informace&lt;/A&gt;
+  <String Id="VisualStudioWarning">Pokud plánujete používat .NET 6.0 se sadou Visual Studio, potřebujete Visual Studio 2019 16.8 nebo novější. &lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;Další informace&lt;/A&gt;
   </String>
   <String Id="LicenseAssent">Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami.</String>
 </WixLocalization>
