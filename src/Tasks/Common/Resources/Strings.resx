@@ -695,7 +695,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1147: "}</comment>
   </data>
   <data name="WindowsSDKVersionConflicts" xml:space="preserve">
-    <value>NETSDK1148: Version conflicts were found for Microsoft.Windows.SDK.NET.dll. Please update the .NET SDK to resolve this conflict.</value>
+    <value>NETSDK1148: A referenced assembly was compiled using a newer version of Microsoft.Windows.SDK.NET.dll. Please update to a newer .NET SDK in order to reference this assembly.</value>
     <comment>{StrBegin="NETSDK1148: "}</comment>
   </data>
 </root>

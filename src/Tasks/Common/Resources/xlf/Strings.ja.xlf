@@ -736,8 +736,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1136: "}</note>
       </trans-unit>
       <trans-unit id="WindowsSDKVersionConflicts">
-        <source>NETSDK1148: Version conflicts were found for Microsoft.Windows.SDK.NET.dll. Please update the .NET SDK to resolve this conflict.</source>
-        <target state="new">NETSDK1148: Version conflicts were found for Microsoft.Windows.SDK.NET.dll. Please update the .NET SDK to resolve this conflict.</target>
+        <source>NETSDK1148: A referenced assembly was compiled using a newer version of Microsoft.Windows.SDK.NET.dll. Please update to a newer .NET SDK in order to reference this assembly.</source>
+        <target state="new">NETSDK1148: A referenced assembly was compiled using a newer version of Microsoft.Windows.SDK.NET.dll. Please update to a newer .NET SDK in order to reference this assembly.</target>
         <note>{StrBegin="NETSDK1148: "}</note>
       </trans-unit>
       <trans-unit id="WorkloadNotInstalled">

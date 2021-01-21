@@ -990,11 +990,14 @@ namespace ProjectNameWithSpaces
                 {
                     if (Path.GetFileName(path).Equals("ProjA.csproj"))
                     {
+                        //  Use a previous version of the Microsoft.Windows.SDK.NET.Ref package, to
+                        //  simulate the scenario where a project is compiling against a library from NuGet
+                        //  which was built with a more recent SDK version.
                         var ns = project.Root.Name.Namespace;
                         var itemGroup = project.Root.Elements(ns + "ItemGroup").First();
                         var updateKnownFrameworkRef = new XElement(ns + "KnownFrameworkReference",
                             new XAttribute("Update", "Microsoft.Windows.SDK.NET.Ref"),
-                            new XAttribute("TargetingPackVersion", "10.0.18362.12"));
+                            new XAttribute("TargetingPackVersion", "10.0.19041.6-preview"));
                         itemGroup.Add(updateKnownFrameworkRef);
                     }
                 });
