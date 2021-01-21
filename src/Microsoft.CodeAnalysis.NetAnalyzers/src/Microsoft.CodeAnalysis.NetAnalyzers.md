@@ -1304,7 +1304,7 @@ The default implementation of '{2}' delegates to '{1}', which is innefficient as
 |-|-|
 |Category|Performance|
 |Enabled|True|
-|Severity|Warning|
+|Severity|Info|
 |CodeFix|False|
 ---
 
