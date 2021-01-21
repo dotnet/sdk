@@ -9,11 +9,26 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         public MatchKind Kind;
 
+        /// <summary>
+        /// stores canonical parameter name
+        /// </summary>
         public string InputParameterName;
 
+        /// <summary>
+        /// stores parameter value
+        /// </summary>
         public string ParameterValue;
 
-        // Stores the exception message if there is an args parse error.
+        /// <summary>
+        /// stores the exception message if there is an args parse error.
+        /// </summary>
         public string AdditionalInformation;
+
+        /// <summary>
+        /// stores the option for parameter as used in the host
+        /// for example dotnet CLI offers two options for Framework parameter: -f and --framework
+        /// if the user uses -f when executing command, <see cref="InputParameterFormat"/> contains -f.
+        /// </summary>
+        public string InputParameterFormat;
     }
 }
