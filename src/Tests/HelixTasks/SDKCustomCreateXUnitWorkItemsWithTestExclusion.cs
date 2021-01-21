@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             string msbuildAdditionalSdkResolverFolder = IsPosixShell ? "" : "-msbuildAdditionalSdkResolverFolder %HELIX_CORRELATION_PAYLOAD%\\r";
 
-            var scheduler = new AssemblyScheduler(methodLimit: 35);
+            var scheduler = new AssemblyScheduler(methodLimit: 30);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
