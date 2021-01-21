@@ -1049,18 +1049,22 @@ Rule ID | Missing Help Link | Title |
 
                         RulesetKind.AllDefault => getRuleActionCore(enable: rule.IsEnabledByDefault),
 
-                        RulesetKind.AllEnabled => getRuleActionCore(enable: true),
+                        RulesetKind.AllEnabled => getRuleActionCore(enable: true, enableAsWarning: true),
 
                         RulesetKind.AllDisabled => getRuleActionCore(enable: false),
 
                         _ => throw new InvalidProgramException(),
                     };
 
-                    string getRuleActionCore(bool enable)
+                    string getRuleActionCore(bool enable, bool enableAsWarning = false)
                     {
-                        if (enable)
+                        if (!enable && enableAsWarning)
                         {
-                            return getSeverityString(rule.DefaultSeverity);
+                            throw new ArgumentException();
+                        }
+                        else if (enable)
+                        {
+                            return getSeverityString(enableAsWarning ? DiagnosticSeverity.Warning : rule.DefaultSeverity);
                         }
                         else
                         {
