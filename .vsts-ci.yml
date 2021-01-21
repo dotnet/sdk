@@ -132,7 +132,7 @@ stages:
     parameters:
       enableSymbolValidation: false
       SDLValidationParameters:
-        enable: true
+        enable: false
         params: ' -SourceToolsList @("policheck","credscan")
         -TsaInstanceURL $(_TsaInstanceURL)
         -TsaProjectName $(_TsaProjectName)
