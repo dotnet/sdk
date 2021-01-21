@@ -257,7 +257,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .WithSource();
             var projectDirectory = testAsset.Path;
 
-            var logpath = Path.Combine(TestContext.GetRepoRoot(), "artifacts", "log", $"DebugItListsFSharpProject.binlog");
+            var logpath = Path.Combine(TestContext.GetRepoRoot(), "artifacts", "log", "debug", $"DebugItListsFSharpProject.binlog");
 
             new RestoreCommand(testAsset)
                 .Execute($"-bl:{logpath}")
