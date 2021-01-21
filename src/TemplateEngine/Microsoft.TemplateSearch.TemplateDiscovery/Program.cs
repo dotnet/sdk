@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
@@ -22,7 +23,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         private static readonly string _noTemplateJsonFilterFlag = "--noTemplateJsonFilter";
         private static readonly string _verbose = "-v";
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             // setup the config with defaults
             ScraperConfig config = new ScraperConfig()
@@ -56,7 +57,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 throw new NotImplementedException("no checker for the input options");
             }
 
-            PackSourceCheckResult checkResults = packSourceChecker.CheckPackages();
+            PackSourceCheckResult checkResults = await packSourceChecker.CheckPackagesAsync().ConfigureAwait(false);
             PackCheckResultReportWriter.TryWriteResults(config.BasePath, checkResults);
         }
 

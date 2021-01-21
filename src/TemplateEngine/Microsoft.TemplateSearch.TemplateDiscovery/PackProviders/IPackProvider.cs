@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 {
     public interface IPackProvider
     {
-        IEnumerable<IInstalledPackInfo> CandidatePacks { get; }
+        IAsyncEnumerable<IInstalledPackInfo> GetCandidatePacksAsync();
 
-        int CandidatePacksCount { get; }
+        Task<int> GetPackageCountAsync();
 
         void DeleteDownloadedPacks();
     }

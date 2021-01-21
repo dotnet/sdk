@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
@@ -26,15 +27,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             _packChecker = new PackChecker();
         }
 
-        public PackSourceCheckResult CheckPackages()
+        public async Task<PackSourceCheckResult> CheckPackagesAsync()
         {
             List<PackCheckResult> checkResultList = new List<PackCheckResult>();
             HashSet<string> alreadySeenTemplateIdentities = new HashSet<string>();
 
             int count = 0;
-            Console.WriteLine($"{_packProvider.CandidatePacksCount} packs discovered, starting processing");
+            Console.WriteLine($"{await _packProvider.GetPackageCountAsync().ConfigureAwait(false)} packs discovered, starting processing");
 
-            foreach (IInstalledPackInfo packInfo in _packProvider.CandidatePacks)
+            await foreach (IInstalledPackInfo packInfo in _packProvider.GetCandidatePacksAsync().ConfigureAwait(false))
             {
                 PackCheckResult preFilterResult = PrefilterPackInfo(packInfo);
                 if (preFilterResult.PreFilterResults.ShouldBeFiltered)
