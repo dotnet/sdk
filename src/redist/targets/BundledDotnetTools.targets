@@ -2,7 +2,6 @@
   <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
     <BundledDotnetTool Include="dotnet-dev-certs" Version="$(DotnetDevCertsPackageVersion)" />
     <BundledDotnetTool Include="dotnet-user-secrets" Version="$(DotnetUserSecretsPackageVersion)" ObsoletesCliTool="Microsoft.Extensions.SecretManager.Tools" />
-    <BundledDotnetTool Include="dotnet-watch" Version="$(DotnetWatchPackageVersion)" ObsoletesCliTool="Microsoft.DotNet.Watcher.Tools" />
   </ItemGroup>
 
   <ItemGroup>
