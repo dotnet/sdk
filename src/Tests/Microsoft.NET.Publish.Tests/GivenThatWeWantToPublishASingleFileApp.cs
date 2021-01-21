@@ -504,30 +504,31 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_analyzer_warnings_are_produced(string targetFramework)
         {
             var projectName = "ILLinkAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName);
+            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Execute(RuntimeIdentifier)
                 .Should()
                 .HaveStdOutContaining("(8,13): warning IL3000")
                 .And.HaveStdOutContaining("(9,13): warning IL3001");
         }
 
-        private TestProject CreateTestProjectWithAnalyzerWarnings(string targetFramework, string projectName)
+        private TestProject CreateTestProjectWithAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
         {
             var testProject = new TestProject()
             {
                 Name = projectName,
-                TargetFrameworks = targetFramework
+                TargetFrameworks = targetFramework,
+                IsExe = isExecutable
             };
 
             testProject.SourceFiles[$"{projectName}.cs"] = @"
 using System.Reflection;
 class C
 {
-    public void M()
+    static void Main()
     {
         var a = Assembly.LoadFrom(""/some/path/not/in/bundle"");
         _ = a.Location;
@@ -535,6 +536,7 @@ class C
     }
 }";
 
+            testProject.AdditionalProperties["PublishSingleFile"] = "true";
             return testProject;
         }
 
