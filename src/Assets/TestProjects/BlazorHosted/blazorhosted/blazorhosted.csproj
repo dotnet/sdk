@@ -8,4 +8,8 @@
     <ProjectReference Include="..\blazorwasm\blazorwasm.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
+
 </Project>

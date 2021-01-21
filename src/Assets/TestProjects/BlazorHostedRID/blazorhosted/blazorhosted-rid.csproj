@@ -14,4 +14,8 @@
     <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
+
 </Project>

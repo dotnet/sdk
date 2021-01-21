@@ -31,4 +31,8 @@
     <ServiceWorker Include="wwwroot\serviceworkers\my-service-worker.js" PublishedContent="wwwroot\serviceworkers\my-prod-service-worker.js" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
+
 </Project>
