@@ -130,8 +130,8 @@ namespace GenerateDocumentationAndConfigFiles
 
             createRulesetAndEditorconfig(
                 "AllRulesEnabled",
-                "All Rules Enabled with default severity",
-                "All Rules are enabled with default severity. Rules with IsEnabledByDefault = false are force enabled with default severity.",
+                "All Rules Enabled as build warnings",
+                "All Rules are enabled as build warnings. Rules with IsEnabledByDefault = false are force enabled as build warnings.",
                 RulesetKind.AllEnabled);
 
             createRulesetAndEditorconfig(
@@ -1060,7 +1060,7 @@ Rule ID | Missing Help Link | Title |
                     {
                         if (!enable && enableAsWarning)
                         {
-                            throw new ArgumentException();
+                            throw new ArgumentException($"Unexpected arguments. '{nameof(enable)}' can't be false while '{nameof(enableAsWarning)}' is true.");
                         }
                         else if (enable)
                         {
