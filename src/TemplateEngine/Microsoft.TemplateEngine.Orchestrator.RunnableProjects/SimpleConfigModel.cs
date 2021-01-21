@@ -889,18 +889,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 if (pathModel.ConditionResult)
                 {
-                    foreach (FileSourceMatchInfo sourceInfo in _sources)
-                    {
-                        if (sourceInfo.Renames.TryGetValue(pathModel.PathOriginal, out string targetPath))
-                        {
-                            pathModel.PathResolved = targetPath;
-                        }
-                        //Don't overwrite an already resolved output value
-                        else if (string.IsNullOrEmpty(pathModel.PathResolved))
-                        {
-                            pathModel.PathResolved = pathModel.PathOriginal;
-                        }
-                    }
+                    pathModel.PathResolved = FileRenameGenerator.ApplyRenameToPrimaryOutput
+(pathModel.PathOriginal, EnvironmentSettings, SourceName, resolvedNameParamValue, parameters, SymbolFilenameReplacements);
                 }
             }
         }

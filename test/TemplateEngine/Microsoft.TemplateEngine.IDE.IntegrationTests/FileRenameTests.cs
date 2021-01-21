@@ -53,8 +53,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             };
 
             //tests are not working due to bugs:
-            // - https://github.com/dotnet/templating/pull/2690
-            // - file changes are not taking into account source modifiers
+            // -file changes are not taking into account source modifiers https://github.com/dotnet/templating/issues/2746
             //yield return new object[]
             //{
             //    "TemplateWithSourceNameAndCustomSourcePath",
@@ -174,16 +173,16 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                     .Without("Api/bar.cs")
             };
 
-            //yield return new object[]
-            //{
-            //    "TemplateWithSourceBasedRenames",
-            //    "--barRename NewName",
-            //     new MockCreationEffects()
-            //        .WithPrimaryOutputs("baz.cs", "NewName.cs")
-            //        .WithFileChange(new MockFileChange("foo.cs", "baz.cs", ChangeKind.Create))
-            //        .WithFileChange(new MockFileChange("foo.cs", "NewName.cs", ChangeKind.Create))
-            //        .Without("foo.cs")
-            //};
+            yield return new object[]
+            {
+                "TemplateWithSourceBasedRenames",
+                "--barRename NewName",
+                 new MockCreationEffects()
+                    .WithPrimaryOutputs("baz.cs", "NewName.cs")
+                    .WithFileChange(new MockFileChange("foo.cs", "baz.cs", ChangeKind.Create))
+                    .WithFileChange(new MockFileChange("foo.cs", "NewName.cs", ChangeKind.Create))
+                    .Without("foo.cs")
+            };
         }
     
 
