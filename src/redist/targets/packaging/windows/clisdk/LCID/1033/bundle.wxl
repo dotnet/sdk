@@ -9,10 +9,10 @@
    or creates a complete local copy of the bundle in directory. '/install' is the default.
 
 /passive | /quiet - displays minimal UI with no prompts or displays no UI and
-   no prompts. By default UI and all prompts are displayed.
+   no prompts. By default, UI and all prompts are displayed.
 
-/norestart - suppress any attempts to restart. By default UI will prompt before restart.
-/log [\[]"log.txt"[\]] - logs to a specific file. By default a log file is created in %TEMP%.</String>
+/norestart - suppress any attempts to restart. By default, UI will prompt before restart.
+/log [\[]"log.txt"[\]] - logs to a specific file. By default, a log file is created in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Close</String>
   <String Id="InstallAcceptCheckbox">I &amp;agree to the license terms and conditions</String>
   <String Id="InstallOptionsButton">&amp;Options</String>
@@ -37,7 +37,7 @@
   <String Id="FailureInstallHeader">Setup Failed</String>
   <String Id="FailureUninstallHeader">Uninstall Failed</String>
   <String Id="FailureRepairHeader">Repair Failed</String>
-  <String Id="FailureHyperlinkLogText">One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href="#"&gt;log file&lt;/a&gt;.</String>
+  <String Id="FailureHyperlinkLogText">One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information, see the &lt;a href="#"&gt;log file&lt;/a&gt;.</String>
   <String Id="FailureRestartText">You must restart your computer to complete the rollback of the software.</String>
   <String Id="FailureRestartButton">&amp;Restart</String>
   <String Id="FailureCloseButton">&amp;Close</String>
@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">&amp;Cancel</String>
   <String Id="FirstTimeWelcomeMessage">The installation was successful.
 
-The following were installed at: '[DOTNETHOME]'
+The following products were installed at: '[DOTNETHOME]'
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
@@ -65,7 +65,7 @@ Resources
     • Tutorials https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    The .NET SDK is used to build, run and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming and IoT. We hope you enjoy it!</String>
+    The .NET SDK is used to build, run, and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming, and IoT. We hope you enjoy it!</String>
   <String Id="LearnMoreTitle">Learn more about .NET</String>
   <String Id="ResourcesHeader">Resources</String>
   <String Id="CoreDocumentationLink">&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET Documentation&lt;/A&gt;</String>
@@ -75,7 +75,7 @@ Resources
   <String Id="InstallationNoteTitle">Installation note</String>
   <String Id="InstallationNote">A command will be run during the install process that will improve project restore speed and enable offline access. It will take up to a minute to complete.
   </String>
-  <String Id="VisualStudioWarning">If you plan to use .NET 6.0 with Visual Studio, Visual Studio 2019 16.8 or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet6-release-notes&quot;&gt;Learn More&lt;/A&gt;.
+  <String Id="VisualStudioWarning">If you plan to use .NET 6.0 with Visual Studio, Visual Studio 2019 16.8 or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet6-release-notes&quot;&gt;Learn more&lt;/A&gt;.
   </String>
-  <String Id="LicenseAssent">By clicking Install, you agree to the following terms.</String>
+  <String Id="LicenseAssent">By clicking Install, you agree to the following terms:</String>
 </WixLocalization>
