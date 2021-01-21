@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
