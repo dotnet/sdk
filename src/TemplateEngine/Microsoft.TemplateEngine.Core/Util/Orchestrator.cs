@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core.Util
 {
-    public class Orchestrator : IOrchestrator, IOrchestrator2
+    public class Orchestrator : IOrchestrator 
     {
         public void Run(string runSpecPath, IDirectory sourceDir, string targetDir)
         {
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             RunInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetDir, spec);
         }
 
-        public IReadOnlyList<IFileChange2> GetFileChanges(string runSpecPath, IDirectory sourceDir, string targetDir)
+        public IReadOnlyList<IFileChange2> GetFileChanges(string runSpecPath, IDirectory sourceDir, string targetRoot, string targetDir)
         {
             IGlobalRunSpec spec;
             using (Stream stream = sourceDir.MountPoint.EnvironmentSettings.Host.FileSystem.OpenRead(runSpecPath))
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 }
             }
 
-            return GetFileChangesInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetDir, spec);
+            return GetFileChangesInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetRoot, targetDir, spec);
         }
 
         public void Run(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir)
@@ -56,19 +56,9 @@ namespace Microsoft.TemplateEngine.Core.Util
             RunInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetDir, spec);
         }
 
-        public IReadOnlyList<IFileChange2> GetFileChanges(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir)
+        public IReadOnlyList<IFileChange2> GetFileChanges(IGlobalRunSpec spec, IDirectory sourceDir, string targetRoot, string targetDir)
         {
-            return GetFileChangesInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetDir, spec);
-        }
-
-        IReadOnlyList<IFileChange> IOrchestrator.GetFileChanges(string runSpecPath, IDirectory sourceDir, string targetDir)
-        {
-            return GetFileChanges(runSpecPath, sourceDir, targetDir);
-        }
-
-        IReadOnlyList<IFileChange> IOrchestrator.GetFileChanges(IGlobalRunSpec spec, IDirectory sourceDir, string targetDir)
-        {
-            return GetFileChanges(spec, sourceDir, targetDir);
+            return GetFileChangesInternal(sourceDir.MountPoint.EnvironmentSettings, sourceDir, targetRoot, targetDir, spec);
         }
 
         protected virtual IGlobalRunSpec RunSpecLoader(Stream runSpec)
@@ -107,13 +97,10 @@ namespace Microsoft.TemplateEngine.Core.Util
             return processorList;
         }
 
-        private IReadOnlyList<IFileChange2> GetFileChangesInternal(IEngineEnvironmentSettings environmentSettings, IDirectory sourceDir, string targetDir, IGlobalRunSpec spec)
+        private IReadOnlyList<IFileChange2> GetFileChangesInternal(IEngineEnvironmentSettings environmentSettings, IDirectory sourceDir, string targetRoot, string targetDir, IGlobalRunSpec spec)
         {
-            EngineConfig cfg = new EngineConfig(environmentSettings, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
-            IProcessor fallback = Processor.Create(cfg, spec.Operations);
-
             List<IFileChange2> changes = new List<IFileChange2>();
-            List<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors = CreateFileGlobProcessors(sourceDir.MountPoint.EnvironmentSettings, spec);
+            string fullTargetPath = Path.Combine(targetRoot, targetDir);
 
             foreach (IFile file in sourceDir.EnumerateFiles("*", SearchOption.AllDirectories))
             {
@@ -148,37 +135,36 @@ namespace Microsoft.TemplateEngine.Core.Util
                                 targetRel = sourceRel;
                             }
 
-                            string targetPath = Path.Combine(targetDir, targetRel);
+                            string targetPath = Path.Combine(fullTargetPath, targetRel);
+                            string targetRelativePath = targetDir.CombinePaths(targetRel).TrimStart('/');
+                            string sourceRelativePath = file.FullPath.CombinePaths().TrimStart('/');
 
                             if (checkingDirWithPlaceholderFile)
                             {
                                 targetPath = Path.GetDirectoryName(targetPath);
-                                targetRel = Path.GetDirectoryName(targetRel);
 
                                 if (environmentSettings.Host.FileSystem.DirectoryExists(targetPath))
                                 {
-                                    changes.Add(new FileChange(sourceRel, targetRel, ChangeKind.Overwrite));
+                                    changes.Add(new FileChange(sourceRelativePath, targetRelativePath, ChangeKind.Overwrite));
                                 }
                                 else
                                 {
-                                    changes.Add(new FileChange(sourceRel, targetRel, ChangeKind.Create));
+                                    changes.Add(new FileChange(sourceRelativePath, targetRelativePath, ChangeKind.Create));
                                 }
                             }
                             else if (environmentSettings.Host.FileSystem.FileExists(targetPath))
                             {
-                                changes.Add(new FileChange(sourceRel, targetRel, ChangeKind.Overwrite));
+                                changes.Add(new FileChange(sourceRelativePath, targetRelativePath, ChangeKind.Overwrite));
                             }
                             else
                             {
-                                changes.Add(new FileChange(sourceRel, targetRel, ChangeKind.Create));
+                                changes.Add(new FileChange(sourceRelativePath, targetRelativePath, ChangeKind.Create));
                             }
                         }
-
                         break;
                     }
                 }
             }
-
             return changes;
         }
 
