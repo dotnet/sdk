@@ -214,7 +214,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             testInstance.WithProjectChanges((path, project) =>
             {
-                if (path.Contains("blazorhosted"))
+                if (path.Contains("blazorwasm"))
                 {
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = new XElement(ns + "PropertyGroup");
@@ -242,11 +242,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 "wwwroot/different-path/_framework/System.Text.Json.dll.br",
                 "wwwroot/different-path/_framework/RazorClassLibrary.dll.gz",
                 "wwwroot/different-path/_framework/RazorClassLibrary.dll.br",
-                "wwwroot/different-path/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
-                "wwwroot/different-path/_content/RazorClassLibrary/styles.css",
+                "wwwroot/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
+                "wwwroot/_content/RazorClassLibrary/styles.css",
                 "wwwroot/different-path/index.html",
-                "wwwroot/different-path/js/LinkedScript.js",
-                "wwwroot/different-path/css/app.css",
                 "web.config"
             };
 
@@ -420,11 +418,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Should().ContainKey("blazorwasm.dll");
             assemblies.Should().ContainKey("RazorClassLibrary.dll");
             assemblies.Should().ContainKey("System.Text.Json.dll");
-
-            bootJsonData.resources.satelliteResources.Should().BeNull();
-
-            bootJsonData.config.Should().Contain("appsettings.json");
-            bootJsonData.config.Should().Contain("appsettings.development.json");
 
             VerifyServiceWorkerFiles(testInstance, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
