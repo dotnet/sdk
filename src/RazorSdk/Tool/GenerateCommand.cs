@@ -268,8 +268,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                         }
                     }
 
-                    Error.WriteLine(result.CSharpDocument.GeneratedCode);
-
                     File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
                 }
             }
