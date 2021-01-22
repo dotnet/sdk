@@ -183,7 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 .WhereAsArray(m => m.IsOverride && overriddenMethod.Equals(m.GetOverriddenMember(), SymbolEqualityComparer.Default));
         }
 
-        //  We will not be doing any comparisons on this type.
+        //  We will not be doing any comparisons on this type
 #pragma warning disable CA1815 // Override equals and operator equals on value types
         private readonly struct RequiredSymbols
 #pragma warning restore CA1815 // Override equals and operator equals on value types
