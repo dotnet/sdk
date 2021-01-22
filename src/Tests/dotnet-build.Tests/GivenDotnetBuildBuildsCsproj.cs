@@ -11,6 +11,7 @@ using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
+using System.CommandLine.Parsing;
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
@@ -171,6 +172,20 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             {
                 cmd.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }
+        }
+
+        [Fact]
+        public void ItCanParseClpCommandLineOption()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
+                .WithSource()
+                .Restore(Log);
+
+            new DotnetBuildCommand(Log)
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute("-clp:NoSummary")
+               .Should()
+               .Pass();
         }
     }
 }

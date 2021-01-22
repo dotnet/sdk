@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli
             {
                 Argument = new Argument<string>(CommonLocalizableStrings.ConfigurationArgumentName)
                     .AddSuggestions(Suggest.ConfigurationsFromProjectFileOrDefaults().ToArray())
-            }.ForwardAsSingle(o => $"-property:Configuration={o}");
+            }.ForwardAsSingle(o => o.StartsWith("lp:") ? $"-c{o}" : $"-property:Configuration={o}");
 
         public static Option VersionSuffixOption() =>
             new Option<string>(
