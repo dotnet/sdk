@@ -38,8 +38,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        private const string ReadAsyncName = "ReadAsync";
-        private const string WriteAsyncName = "WriteAsync";
+        private const string ReadAsyncName = nameof(System.IO.Stream.ReadAsync);
+        private const string WriteAsyncName = nameof(System.IO.Stream.WriteAsync);
 
         public override void Initialize(AnalysisContext context)
         {
