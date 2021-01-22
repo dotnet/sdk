@@ -129,7 +129,7 @@ namespace EndToEnd.Tests
         }
         
         [WindowsOnlyFact]
-        public void ItCantPublishArm64Wpf()
+        public void ItCanPublishArm64Wpf()
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
@@ -144,7 +144,15 @@ namespace EndToEnd.Tests
             new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(publishArgs)
-                .Should().Fail();
+                .Should().Pass();
+
+            var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
+                .Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault()
+                .Sub("win-arm64").Sub("publish");
+
+            selfContainedPublishDir.Should().HaveFilesMatching("PresentationCore.dll", SearchOption.TopDirectoryOnly);
+            selfContainedPublishDir.Should().HaveFilesMatching("PresentationNative_*.dll", SearchOption.TopDirectoryOnly);
+            selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
         [Theory]

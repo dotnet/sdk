@@ -121,10 +121,7 @@
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
       <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids)" />
-      <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
-      <!-- TODO: remove this once WPF is available on ARM64 and replace usage
-            of this group for WindowsDesktopRuntimePackRids. -->
-      <WindowsDesktopRuntimePackWinformsRids Include="@(WindowsDesktopRuntimePackRids);win-arm64" />
+      <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids);win-arm64" />
     </ItemGroup>
 
     <!--
@@ -280,7 +277,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackWinformsRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackRids, '%3B')"
                               IsWindowsOnly="true"
                               Profile="WindowsForms"
                               />
@@ -395,7 +392,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop50TargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.WindowsDesktop.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(WindowsDesktopRuntimePackWinformsRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(WindowsDesktop50RuntimePackRids, '%3B')"
                               IsWindowsOnly="true"
                               Profile="WindowsForms"
                               />
