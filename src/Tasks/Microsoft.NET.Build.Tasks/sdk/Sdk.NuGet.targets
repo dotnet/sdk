@@ -10,8 +10,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
-  <Import Project="..\targets\Microsoft.PackageDependencyResolution.targets" />
-  <Import Project="..\targets\Microsoft.NET.Sdk.Common.targets" />
-  <Import Project="..\targets\Microsoft.NET.Sdk.FrameworkReferenceResolution.targets" />
   <Import Project="..\targets\Microsoft.NET.Sdk.targets" />
 </Project>
