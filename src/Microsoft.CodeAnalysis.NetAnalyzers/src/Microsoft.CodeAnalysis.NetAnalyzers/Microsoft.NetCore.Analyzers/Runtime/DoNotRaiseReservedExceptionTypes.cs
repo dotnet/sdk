@@ -12,12 +12,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
     /// CA2201: Do not raise reserved exception types
-    /// 
+    ///
     /// Too generic:
     ///     System.Exception
     ///     System.ApplicationException
-    ///     System.SystemException 
-    ///     
+    ///     System.SystemException
+    ///
     /// Reserved:
     ///     System.OutOfMemoryException
     ///     System.IndexOutOfRangeException
@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     ///     System.Runtime.InteropServices.COMException
     ///     System.Runtime.InteropServices.SEHException
     ///     System.AccessViolationException
-    ///     
+    ///
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotRaiseReservedExceptionTypesAnalyzer : DiagnosticAnalyzer
@@ -61,8 +61,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
         internal static DiagnosticDescriptor ReservedRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
                                                                              s_localizableMessageReserved,
@@ -70,8 +69,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                             isDataflowRule: false);
 
         private static readonly SymbolDisplayFormat s_symbolDisplayFormat = new(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
@@ -86,7 +84,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 compilationStartContext =>
                 {
                     ImmutableHashSet<INamedTypeSymbol> tooGenericExceptionSymbols = CreateSymbolSet(compilationStartContext.Compilation, s_tooGenericExceptions);
-                    ImmutableHashSet<INamedTypeSymbol> reservedExceptionSymbols = CreateSymbolSet(compilationStartContext.Compilation, s_reservedExceptions); ;
+                    ImmutableHashSet<INamedTypeSymbol> reservedExceptionSymbols = CreateSymbolSet(compilationStartContext.Compilation, s_reservedExceptions);
 
                     if (tooGenericExceptionSymbols.IsEmpty && reservedExceptionSymbols.IsEmpty)
                     {

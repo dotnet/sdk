@@ -27,7 +27,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                        description: s_localizableDescription,
                                                                                        isPortedFxCopRule: true,
                                                                                        isDataflowRule: false,
-                                                                                       isEnabledByDefaultInFxCopAnalyzers: false);
+                                                                                       isEnabledByDefaultInAggressiveMode: false,
+                                                                                       isReportedAtCompilationEnd: true);
 
         internal static readonly DiagnosticDescriptor RuleAddComVisible = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                        s_localizableTitle,
@@ -37,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                        description: s_localizableDescription,
                                                                                        isPortedFxCopRule: true,
                                                                                        isDataflowRule: false,
-                                                                                       isEnabledByDefaultInFxCopAnalyzers: false,
+                                                                                       isEnabledByDefaultInAggressiveMode: false,
                                                                                        isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleChangeComVisible, RuleAddComVisible);

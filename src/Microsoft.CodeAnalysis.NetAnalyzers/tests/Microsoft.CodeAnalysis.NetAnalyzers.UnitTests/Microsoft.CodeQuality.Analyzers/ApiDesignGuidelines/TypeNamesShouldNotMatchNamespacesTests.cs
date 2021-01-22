@@ -1,59 +1,62 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.TypeNamesShouldNotMatchNamespacesAnalyzer,
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpTypeNamesShouldNotMatchNamespacesFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.TypeNamesShouldNotMatchNamespacesAnalyzer,
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicTypeNamesShouldNotMatchNamespacesFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class TypeNamesShouldNotMatchNamespacesTests : DiagnosticAnalyzerTestBase
+    public class TypeNamesShouldNotMatchNamespacesTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new TypeNamesShouldNotMatchNamespacesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new TypeNamesShouldNotMatchNamespacesAnalyzer();
-        }
-
         private static DiagnosticResult CSharpDefaultResultAt(int line, int column, string typeName, string namespaceName)
-        {
-            return GetCSharpResultAt(line, column, TypeNamesShouldNotMatchNamespacesAnalyzer.DefaultRule, typeName, namespaceName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic(TypeNamesShouldNotMatchNamespacesAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(typeName, namespaceName);
 
         private static DiagnosticResult CSharpSystemResultAt(int line, int column, string typeName, string namespaceName)
-        {
-            return GetCSharpResultAt(line, column, TypeNamesShouldNotMatchNamespacesAnalyzer.SystemRule, typeName, namespaceName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic(TypeNamesShouldNotMatchNamespacesAnalyzer.SystemRule)
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(typeName, namespaceName);
 
         private static DiagnosticResult BasicDefaultResultAt(int line, int column, string typeName, string namespaceName)
-        {
-            return GetBasicResultAt(line, column, TypeNamesShouldNotMatchNamespacesAnalyzer.DefaultRule, typeName, namespaceName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic(TypeNamesShouldNotMatchNamespacesAnalyzer.DefaultRule)
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(typeName, namespaceName);
 
         private static DiagnosticResult BasicSystemResultAt(int line, int column, string typeName, string namespaceName)
-        {
-            return GetBasicResultAt(line, column, TypeNamesShouldNotMatchNamespacesAnalyzer.SystemRule, typeName, namespaceName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic(TypeNamesShouldNotMatchNamespacesAnalyzer.SystemRule)
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(typeName, namespaceName);
 
         [Fact]
-        public void CA1724CSharpValidName()
+        public async Task CA1724CSharpValidName()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
 {
 }");
         }
 
         [Fact]
-        public void CA1724CSharpInvalidNameMatchingFormsNamespaceInSystemRule()
+        public async Task CA1724CSharpInvalidNameMatchingFormsNamespaceInSystemRule()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 public class Forms
 {
 }",
@@ -61,9 +64,9 @@ public class Forms
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1724CSharpInvalidNameMatchingFormsNamespaceInSystemRule_Internal_NoDiagnostic()
+        public async Task CA1724CSharpInvalidNameMatchingFormsNamespaceInSystemRule_Internal_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal class Forms
 {
 }
@@ -85,24 +88,32 @@ internal class Outer2
         }
 
         [Fact]
-        public void CA1724CSharpInvalidNameMatchingSdkNamespaceInDefaultRule()
+        public async Task CA1724CSharpInvalidNameMatchingSdkNamespaceInDefaultRule()
         {
-            var source = @"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    { @"
 public class Sdk
 {
 }
-";
-            Document document = CreateDocument(source, LanguageNames.CSharp);
-            Project project = document.Project.AddMetadataReference(MetadataReference.CreateFromFile(typeof(Xunit.Sdk.AllException).Assembly.Location));
-            DiagnosticAnalyzer analyzer = GetCSharpDiagnosticAnalyzer();
-            GetSortedDiagnostics(analyzer, project.Documents.Single())
-                .Verify(analyzer, GetDefaultPath(LanguageNames.CSharp), CSharpDefaultResultAt(2, 14, "Sdk", "Xunit.Sdk"));
+",
+                    },
+                    AdditionalReferences =  { MetadataReference.CreateFromFile(typeof(Xunit.Sdk.AllException).Assembly.Location) }
+                },
+                ExpectedDiagnostics =
+                {
+                    CSharpDefaultResultAt(2, 14, "Sdk", "Xunit.Sdk"),
+                }
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
-        public void CA1724CSharp_NoDiagnostic_NamespaceWithNoTypes()
+        public async Task CA1724CSharp_NoDiagnostic_NamespaceWithNoTypes()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace A.B
 {
 }
@@ -114,9 +125,9 @@ namespace D
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
-        public void CA1724CSharp_NoDiagnostic_NamespaceWithNoExternallyVisibleTypes()
+        public async Task CA1724CSharp_NoDiagnostic_NamespaceWithNoExternallyVisibleTypes()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace A
 {
     internal class C { }
@@ -129,9 +140,9 @@ namespace D
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
-        public void CA1724CSharp_NoDiagnostic_NamespaceWithNoExternallyVisibleTypes_02()
+        public async Task CA1724CSharp_NoDiagnostic_NamespaceWithNoExternallyVisibleTypes_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace A
 {
     namespace B
@@ -147,9 +158,9 @@ namespace D
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
-        public void CA1724CSharp_NoDiagnostic_ClashingTypeIsNotExternallyVisible()
+        public async Task CA1724CSharp_NoDiagnostic_ClashingTypeIsNotExternallyVisible()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace A
 {
     namespace B
@@ -165,9 +176,9 @@ namespace D
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
-        public void CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember()
+        public async Task CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace A
 {
     public class C { }
@@ -182,9 +193,9 @@ namespace D
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
-        public void CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_02()
+        public async Task CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace B
 {
     namespace A
@@ -202,9 +213,9 @@ namespace D
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
-        public void CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_InChildNamespace()
+        public async Task CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_InChildNamespace()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace A
 {
     namespace B
@@ -222,9 +233,9 @@ namespace D
         }
 
         [Fact, WorkItem(1673, "https://github.com/dotnet/roslyn-analyzers/issues/1673")]
-        public void CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_InChildNamespace_02()
+        public async Task CA1724CSharp_Diagnostic_NamespaceWithExternallyVisibleTypeMember_InChildNamespace_02()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 namespace A.B
 {
     public class C { }
@@ -239,26 +250,26 @@ namespace D
         }
 
         [Fact]
-        public void CA1724VisualBasicValidName()
+        public async Task CA1724VisualBasicValidName()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
 End Class");
         }
 
         [Fact]
-        public void CA1724VisualBasicInvalidNameMatchingFormsNamespaceInSystemRule()
+        public async Task CA1724VisualBasicInvalidNameMatchingFormsNamespaceInSystemRule()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Forms
 End Class",
         BasicSystemResultAt(2, 14, "Forms", "System.Windows.Forms"));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public void CA1724VisualBasicInvalidNameMatchingFormsNamespaceInSystemRule_Internal_NoDiagnostic()
+        public async Task CA1724VisualBasicInvalidNameMatchingFormsNamespaceInSystemRule_Internal_NoDiagnostic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Class Forms
 End Class
 
@@ -275,16 +286,25 @@ End Class
         }
 
         [Fact]
-        public void CA1724VisualBasicInvalidNameMatchingSdkNamespaceInDefaultRule()
+        public async Task CA1724VisualBasicInvalidNameMatchingSdkNamespaceInDefaultRule()
         {
-            var source = @"
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 Public Class Sdk
-End Class";
-            Document document = CreateDocument(source, LanguageNames.VisualBasic);
-            Project project = document.Project.AddMetadataReference(MetadataReference.CreateFromFile(typeof(Xunit.Sdk.AllException).Assembly.Location));
-            DiagnosticAnalyzer analyzer = GetCSharpDiagnosticAnalyzer();
-            GetSortedDiagnostics(analyzer, project.Documents.Single())
-                .Verify(analyzer, GetDefaultPath(LanguageNames.VisualBasic), BasicDefaultResultAt(2, 14, "Sdk", "Xunit.Sdk"));
+End Class"
+                    },
+                    AdditionalReferences = { MetadataReference.CreateFromFile(typeof(Xunit.Sdk.AllException).Assembly.Location) }
+                },
+                ExpectedDiagnostics =
+                {
+                    BasicDefaultResultAt(2, 14, "Sdk", "Xunit.Sdk"),
+                }
+            }.RunAsync();
         }
     }
 }

@@ -70,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // Check accessibility of enum matches configuration or is public if not configured
-            if (!symbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, symbol, context.Compilation, context.CancellationToken))
             {
                 return;
             }

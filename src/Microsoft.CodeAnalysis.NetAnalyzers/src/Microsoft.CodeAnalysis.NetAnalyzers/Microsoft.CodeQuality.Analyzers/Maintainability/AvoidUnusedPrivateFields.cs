@@ -31,8 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                                                                       RuleLevel.Disabled,       // Need to figure out how to handle runtime only references. We also have an implementation in the IDE.
                                                                                       description: s_localizableDescription,
                                                                                       isPortedFxCopRule: true,
-                                                                                      isDataflowRule: false,
-                                                                                      isReportedAtCompilationEnd: true);
+                                                                                      isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -113,19 +112,32 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                         },
                         OperationKind.FieldReference);
 
-                    compilationContext.RegisterCompilationEndAction(
-                        (compilationEndContext) =>
+                    // Private field reference information reaches a state of consistency as each type symbol completes
+                    // analysis. Reporting information at the end of each named type provides incremental analysis
+                    // support inside the IDE.
+                    compilationContext.RegisterSymbolStartAction(
+                        context =>
                         {
-                            foreach (IFieldSymbol maybeUnreferencedPrivateField in maybeUnreferencedPrivateFields.Keys)
+                            context.RegisterSymbolEndAction(context =>
                             {
-                                if (referencedPrivateFields.ContainsKey(maybeUnreferencedPrivateField))
+                                var namedType = (INamedTypeSymbol)context.Symbol;
+                                foreach (var member in namedType.GetMembers())
                                 {
-                                    continue;
-                                }
+                                    if (member is not IFieldSymbol field)
+                                    {
+                                        continue;
+                                    }
 
-                                compilationEndContext.ReportDiagnostic(Diagnostic.Create(Rule, maybeUnreferencedPrivateField.Locations[0], maybeUnreferencedPrivateField.Name));
-                            }
-                        });
+                                    if (!maybeUnreferencedPrivateFields.ContainsKey(field) || referencedPrivateFields.ContainsKey(field))
+                                    {
+                                        continue;
+                                    }
+
+                                    context.ReportDiagnostic(field.CreateDiagnostic(Rule, field.Name));
+                                }
+                            });
+                        },
+                        SymbolKind.NamedType);
                 });
         }
 

@@ -1,25 +1,21 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
-using Test.Utilities;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.DoNotRaiseExceptionsInExceptionClausesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.DoNotRaiseExceptionsInExceptionClausesAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
-    public class DoNotRaiseExceptionsInExceptionClausesTests : DiagnosticAnalyzerTestBase
+    public class DoNotRaiseExceptionsInExceptionClausesTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new DoNotRaiseExceptionsInExceptionClausesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DoNotRaiseExceptionsInExceptionClausesAnalyzer();
-        }
-
         [Fact]
-        public void CSharpSimpleCase()
+        public async Task CSharpSimpleCase()
         {
             var code = @"
 using System;
@@ -44,16 +40,15 @@ public class Test
         {
             throw new Exception();
         }
-    
     }
 }
 ";
-            VerifyCSharp(code,
-                GetCSharpResultAt(22, 13, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule));
+            await VerifyCS.VerifyAnalyzerAsync(code,
+                GetCSharpResultAt(22, 13));
         }
 
         [Fact]
-        public void BasicSimpleCase()
+        public async Task BasicSimpleCase()
         {
             var code = @"
 Imports System
@@ -68,16 +63,16 @@ Public Class Test
             Throw New Exception()
         Finally
             Throw New Exception()
-        End Try    
+        End Try
     End Sub
 End Class
 ";
-            VerifyBasic(code,
-                GetBasicResultAt(13, 13, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule));
+            await VerifyVB.VerifyAnalyzerAsync(code,
+                GetBasicResultAt(13, 13));
         }
 
         [Fact]
-        public void CSharpNestedFinally()
+        public async Task CSharpNestedFinally()
         {
             var code = @"
 using System;
@@ -108,15 +103,15 @@ public class Test
     }
 }
 ";
-            VerifyCSharp(code,
-                GetCSharpResultAt(15, 17, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule),
-                GetCSharpResultAt(19, 17, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule),
-                GetCSharpResultAt(23, 17, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule),
-                GetCSharpResultAt(25, 13, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule));
+            await VerifyCS.VerifyAnalyzerAsync(code,
+                GetCSharpResultAt(15, 17),
+                GetCSharpResultAt(19, 17),
+                GetCSharpResultAt(23, 17),
+                GetCSharpResultAt(25, 13));
         }
 
         [Fact]
-        public void BasicNestedFinally()
+        public async Task BasicNestedFinally()
         {
             var code = @"
 Imports System
@@ -137,11 +132,23 @@ Public Class Test
     End Sub
 End Class
 ";
-            VerifyBasic(code,
-                GetBasicResultAt(9, 17, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule),
-                GetBasicResultAt(11, 17, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule),
-                GetBasicResultAt(13, 17, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule),
-                GetBasicResultAt(15, 13, DoNotRaiseExceptionsInExceptionClausesAnalyzer.Rule));
+            await VerifyVB.VerifyAnalyzerAsync(code,
+                GetBasicResultAt(9, 17),
+                GetBasicResultAt(11, 17),
+                GetBasicResultAt(13, 17),
+                GetBasicResultAt(15, 13));
         }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

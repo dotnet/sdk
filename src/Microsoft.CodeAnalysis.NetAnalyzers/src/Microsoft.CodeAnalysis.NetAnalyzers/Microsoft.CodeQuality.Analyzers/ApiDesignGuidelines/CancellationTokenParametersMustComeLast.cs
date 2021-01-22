@@ -39,77 +39,119 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             context.RegisterCompilationStartAction(compilationContext =>
             {
-                INamedTypeSymbol? cancellationTokenType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingCancellationToken);
-                if (cancellationTokenType != null)
+                var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationContext.Compilation);
+                INamedTypeSymbol? cancellationTokenType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingCancellationToken);
+                INamedTypeSymbol? iprogressType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIProgress1);
+
+                var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>();
+                builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerFilePathAttribute));
+                builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerLineNumberAttribute));
+                builder.AddIfNotNull(compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesCallerMemberNameAttribute));
+                var callerInformationAttributes = builder.ToImmutable();
+
+                if (cancellationTokenType == null)
                 {
-                    compilationContext.RegisterSymbolAction(symbolContext =>
-                    {
-                        var methodSymbol = (IMethodSymbol)symbolContext.Symbol;
-                        if (methodSymbol.IsOverride ||
-                            methodSymbol.IsImplementationOfAnyInterfaceMember())
-                        {
-                            return;
-                        }
-
-                        int last = methodSymbol.Parameters.Length - 1;
-                        if (last >= 0 && methodSymbol.Parameters[last].IsParams)
-                        {
-                            last--;
-                        }
-
-                        // Skip optional parameters, UNLESS one of them is a CancellationToken
-                        // AND it's not the last one.
-                        if (last >= 0 && methodSymbol.Parameters[last].IsOptional
-                            && !methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
-                        {
-                            last--;
-
-                            while (last >= 0 && methodSymbol.Parameters[last].IsOptional)
-                            {
-                                if (methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
-                                {
-                                    symbolContext.ReportDiagnostic(Diagnostic.Create(
-                                        Rule, methodSymbol.Locations.First(), methodSymbol.ToDisplayString()));
-                                }
-
-                                last--;
-                            }
-                        }
-
-                        // Ignore multiple cancellation token parameters at the end of the parameter list.
-                        while (last >= 0 && methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
-                        {
-                            last--;
-                        }
-
-                        // Ignore parameters passed by reference when they appear at the end of the parameter list.
-                        while (last >= 0 && methodSymbol.Parameters[last].RefKind != RefKind.None)
-                        {
-                            last--;
-                        }
-
-                        for (int i = last - 1; i >= 0; i--)
-                        {
-                            ITypeSymbol parameterType = methodSymbol.Parameters[i].Type;
-                            if (!parameterType.Equals(cancellationTokenType))
-                            {
-                                continue;
-                            }
-
-                            // Bail if the CancellationToken is the first parameter of an extension method.
-                            if (i == 0 && methodSymbol.IsExtensionMethod)
-                            {
-                                continue;
-                            }
-
-                            symbolContext.ReportDiagnostic(Diagnostic.Create(
-                                Rule, methodSymbol.Locations.First(), methodSymbol.ToDisplayString()));
-                            break;
-                        }
-                    },
-                    SymbolKind.Method);
+                    return;
                 }
+
+                compilationContext.RegisterSymbolAction(symbolContext =>
+                {
+                    var methodSymbol = (IMethodSymbol)symbolContext.Symbol;
+                    if (methodSymbol.IsOverride ||
+                        methodSymbol.IsImplementationOfAnyInterfaceMember())
+                    {
+                        return;
+                    }
+
+                    if (!symbolContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, symbolContext.Compilation, symbolContext.CancellationToken,
+                            defaultRequiredVisibility: SymbolVisibilityGroup.All))
+                    {
+                        return;
+                    }
+
+                    if (symbolContext.Options.IsConfiguredToSkipAnalysis(Rule, methodSymbol,
+                            symbolContext.Compilation, symbolContext.CancellationToken))
+                    {
+                        return;
+                    }
+
+                    int last = methodSymbol.Parameters.Length - 1;
+                    if (last >= 0 && methodSymbol.Parameters[last].IsParams)
+                    {
+                        last--;
+                    }
+
+                    // Ignore parameters that have any of these attributes.
+                    // C# reserved attributes: https://docs.microsoft.com/dotnet/csharp/language-reference/attributes/caller-information
+                    while (last >= 0
+                        && HasCallerInformationAttribute(methodSymbol.Parameters[last], callerInformationAttributes))
+                    {
+                        last--;
+                    }
+
+                    // Skip optional parameters, UNLESS one of them is a CancellationToken
+                    // AND it's not the last one.
+                    if (last >= 0 && methodSymbol.Parameters[last].IsOptional
+                        && !methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                    {
+                        last--;
+
+                        while (last >= 0 && methodSymbol.Parameters[last].IsOptional)
+                        {
+                            if (methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                            {
+                                symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.ToDisplayString()));
+                            }
+
+                            last--;
+                        }
+                    }
+
+                    // Ignore multiple cancellation token parameters at the end of the parameter list.
+                    while (last >= 0 && methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                    {
+                        last--;
+                    }
+
+                    // Ignore parameters passed by reference when they appear at the end of the parameter list.
+                    while (last >= 0 && methodSymbol.Parameters[last].RefKind != RefKind.None)
+                    {
+                        last--;
+                    }
+
+                    // Ignore IProgress<T> when last
+                    if (last >= 0
+                        && iprogressType != null
+                        && methodSymbol.Parameters[last].Type.OriginalDefinition.Equals(iprogressType))
+                    {
+                        last--;
+                    }
+
+                    for (int i = last - 1; i >= 0; i--)
+                    {
+                        ITypeSymbol parameterType = methodSymbol.Parameters[i].Type;
+                        if (!parameterType.Equals(cancellationTokenType))
+                        {
+                            continue;
+                        }
+
+                        // Bail if the CancellationToken is the first parameter of an extension method.
+                        if (i == 0 && methodSymbol.IsExtensionMethod)
+                        {
+                            continue;
+                        }
+
+                        symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.ToDisplayString()));
+                        break;
+                    }
+                },
+                SymbolKind.Method);
             });
         }
+
+        private static bool HasCallerInformationAttribute(IParameterSymbol parameter, ImmutableHashSet<INamedTypeSymbol> callerAttributes)
+            => parameter.GetAttributes().Any(
+                attribute => callerAttributes.Any(
+                    callerAttribute => SymbolEqualityComparer.Default.Equals(callerAttribute, attribute.AttributeClass)));
     }
 }

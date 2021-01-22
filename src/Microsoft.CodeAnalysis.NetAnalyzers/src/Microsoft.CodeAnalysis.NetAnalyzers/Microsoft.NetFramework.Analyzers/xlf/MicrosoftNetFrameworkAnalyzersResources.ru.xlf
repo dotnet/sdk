@@ -173,12 +173,12 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsDescription">
-        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception</source>
-        <target state="translated">Перехват исключений поврежденного состояния может скрывать ошибки (такие как нарушение прав доступа), что приведет к несогласованному состоянию выполнения или упростит злоумышленникам задачу по компрометации системы. Вместо этого перехватывайте и обрабатывайте более конкретные типы исключений, после чего порождайте исключение повторно</target>
+        <source>Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.</source>
+        <target state="translated">Перехват исключений поврежденного состояния может скрывать ошибки (такие как нарушение прав доступа), что приведет к несогласованному состоянию выполнения или упростит злоумышленникам задачу по компрометации системы. Вместо этого перехватывайте и обрабатывайте более конкретные типы исключений, после чего порождайте исключение повторно.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchCorruptedStateExceptionsMessage">
-        <source>{0} is catching corrupted state exception.</source>
+        <source>{0} is catching corrupted state exception</source>
         <target state="translated">{0} перехватывает исключение поврежденного состояния.</target>
         <note />
       </trans-unit>
@@ -313,7 +313,7 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassNoConstructorMessage">
-        <source>XmlDocument derived class {0} doesn't explictily define a constructor.</source>
+        <source>XmlDocument derived class {0} doesn't explicitly define a constructor.</source>
         <target state="translated">Производный класс XmlDocument {0} не определяет конструктор явным образом.</target>
         <note>CA3077</note>
       </trans-unit>
@@ -328,7 +328,7 @@
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlTextReaderDerivedClassNoConstructorMessage">
-        <source>XmlTextReader derived class {0} doesn't explictily define a constructor.</source>
+        <source>XmlTextReader derived class {0} doesn't explicitly define a constructor.</source>
         <target state="translated">Производный класс XmlTextReader {0} не определяет конструктор явным образом.</target>
         <note>CA3077</note>
       </trans-unit>
@@ -343,8 +343,8 @@
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
-        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argurment with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
-        <target state="translated">Предоставлять небезопасные экземпляры XsltSettings и XmlResolver методу XslCompiledTransform.Load рискованно, так как позволяет обработать скрипт в XSL, что при ненадежных входных данных может запустить вредоносный код. Замените небезопасный аргумент XsltSettings на XsltSettings.Default или экземпляр, в котором отключены функции документирования и выполнения скриптов, либо замените аргумент XmlResolver на Null или экземпляр XmlSecureResolver. Это сообщение можно скрыть, если известно, что входные данные получены из надежного источника, при этом должно поддерживаться разрешение внешних ресурсов из неизвестных заранее расположений.</target>
+        <source>Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.</source>
+        <target state="translated">Передача небезопасных экземпляров XsltSettings и XmlResolver в метод XslCompiledTransform.Load может представлять риск, так как это позволяет обработать скрипт в XSL, что при ненадежных входных данных может привести к запуску вредоносного кода. Замените небезопасный аргумент XsltSettings на XsltSettings.Default или на экземпляр, в котором отключены функции документирования и выполнения скриптов, либо замените аргумент XmlResolver на null или на экземпляр XmlSecureResolver. Это сообщение можно скрыть, если известно, что входные данные получены из надежного источника, при этом должно поддерживаться разрешение внешних ресурсов из неизвестных заранее расположений.</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="XslCompiledTransformLoadInsecureConstructedMessage">
@@ -363,7 +363,7 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage">
-        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}.</source>
+        <source>Using HttpVerbs.GET and ValidateAntiForgeryTokenAttribute is not supported by MVC on controller action {0}</source>
         <target state="translated">Использование HttpVerbs.GET и ValidateAntiForgeryTokenAttribute не поддерживается MVC в действии контроллера {0}.</target>
         <note />
       </trans-unit>
@@ -373,7 +373,7 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests.</source>
+        <source>Missing ValidateAntiForgeryTokenAttribute on MVC controller action {0} which by default accepts POST requests</source>
         <target state="translated">Отсутствует атрибут ValidateAntiForgeryTokenAttribute в действии контроллера MVC {0}, который по умолчанию обрабатывает запросы POST.</target>
         <note />
       </trans-unit>
@@ -383,7 +383,7 @@
         <note />
       </trans-unit>
       <trans-unit id="MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage">
-        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}.</source>
+        <source>Missing ValidateAntiForgeryTokenAttribute on controller action {0}</source>
         <target state="translated">Отсутствует атрибут ValidateAntiForgeryTokenAttribute в действии контроллера {0}.</target>
         <note />
       </trans-unit>

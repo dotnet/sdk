@@ -1,32 +1,23 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.VisualBasic;
+using System.Threading.Tasks;
 using Test.Utilities;
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.Maintainability.AvoidDeadConditionalCode,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
     [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
-    public partial class AvoidDeadConditionalCodeTests : DiagnosticAnalyzerTestBase
+    public partial class AvoidDeadConditionalCodeTests
     {
-        protected void VerifyCSharp(string source, CSharpParseOptions parseOptions, params DiagnosticResult[] expected)
-        {
-            VerifyCSharp(source, GetEditorConfigToEnableCopyAnalysis(), compilationOptions: null, parseOptions: parseOptions, expected: expected);
-        }
-
-        protected void VerifyBasic(string source, VisualBasicParseOptions parseOptions, params DiagnosticResult[] expected)
-        {
-            VerifyBasic(source, GetEditorConfigToEnableCopyAnalysis(), compilationOptions: null, parseOptions: parseOptions, expected: expected);
-        }
-
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void SimpleStringCompare_NoDiagnostic()
+        public async Task SimpleStringCompare_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -42,7 +33,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String)
         If param = """" Then
@@ -56,9 +47,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void SimpleValueCompare_NoDiagnostic()
+        public async Task SimpleValueCompare_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int param)
@@ -74,7 +65,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As Integer)
         If param = 0 Then
@@ -88,9 +79,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ValueCompareWithAdd_Diagnostic()
+        public async Task ValueCompareWithAdd_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int param, int param2, int param3)
@@ -108,7 +99,7 @@ class Test
             // Test0.cs(9,17): warning CA1508: 'param3 == 3' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(9, 17, "param3 == 3", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As Integer, param2 As Integer, param3 As Integer)
         param2 = 2
@@ -124,9 +115,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ValueCompareWithSubtract_Diagnostic()
+        public async Task ValueCompareWithSubtract_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int param, int param2, int param3)
@@ -144,7 +135,7 @@ class Test
             // Test0.cs(9,17): warning CA1508: 'param == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(9, 17, "param == 1", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As Integer, param2 As Integer, param3 As Integer)
         param2 = 2
@@ -160,9 +151,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void SimpleStringCompare_AfterAssignment_Diagnostic()
+        public async Task SimpleStringCompare_AfterAssignment_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -183,7 +174,7 @@ class Test
             // Test0.cs(11,13): warning CA1508: '"" != param' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(11, 13, @""""" != param", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String)
         param = """"
@@ -202,9 +193,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void SimpleValueCompare_AfterAssignment_Diagnostic()
+        public async Task SimpleValueCompare_AfterAssignment_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int param)
@@ -225,7 +216,7 @@ class Test
             // Test0.cs(11,13): warning CA1508: '0 != param' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(11, 13, @"0 != param", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As Integer)
         param = 0
@@ -244,9 +235,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_StringCompare_Diagnostic()
+        public async Task ElseIf_NestedIf_StringCompare_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -273,7 +264,7 @@ class Test
             // Test0.cs(16,17): warning CA1508: 'param != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(16, 17, "param != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String)
         Dim str = """"
@@ -295,9 +286,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ConditionaAndOrStringCompare_Diagnostic()
+        public async Task ConditionaAndOrStringCompare_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -318,7 +309,7 @@ class Test
             // Test0.cs(11,28): warning CA1508: 'param != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(11, 28, "param != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String)
         Dim str = """"
@@ -337,9 +328,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_StringCompare_DifferentLiteral_Diagnostic()
+        public async Task ElseIf_NestedIf_StringCompare_DifferentLiteral_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -366,7 +357,7 @@ class Test
             // Test0.cs(16,17): warning CA1508: 'param != str' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(16, 17, "param != str", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String)
         Dim str = ""a""
@@ -388,9 +379,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_ValueCompare_DifferentLiteral_Diagnostic()
+        public async Task ElseIf_NestedIf_ValueCompare_DifferentLiteral_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int param)
@@ -417,7 +408,7 @@ class Test
             // Test0.cs(16,17): warning CA1508: 'param != str' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(16, 17, "param != str", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As Integer)
         Dim str As Long = 0
@@ -439,9 +430,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_StringCompare_DifferentLiterals_NoDiagnostic()
+        public async Task ElseIf_NestedIf_StringCompare_DifferentLiterals_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, bool flag)
@@ -464,7 +455,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, flag As Boolean)
         Dim str = If(flag, ""a"", """")
@@ -482,9 +473,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ElseIf_NestedIf_ValueCompare_DifferentLiterals_NoDiagnostic()
+        public async Task ElseIf_NestedIf_ValueCompare_DifferentLiterals_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(ulong param, bool flag)
@@ -507,7 +498,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As ULong, flag As Boolean)
         Dim str As Short = If(flag, 0, 1)
@@ -525,9 +516,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_WhileLoop()
+        public async Task StringCompare_WhileLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param)
@@ -559,7 +550,7 @@ class Test
             // Test0.cs(13,17): warning CA1508: 'param != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(13, 17, "param != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' While loop
     Private Sub M1(ByVal param As String)
@@ -587,9 +578,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ValueCompare_WhileLoop()
+        public async Task ValueCompare_WhileLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(double param)
@@ -621,7 +612,7 @@ class Test
             // Test0.cs(13,17): warning CA1508: 'param != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(13, 17, "param != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' While loop
     Private Sub M1(ByVal param As Double)
@@ -649,9 +640,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_DoWhileLoop()
+        public async Task StringCompare_DoWhileLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param)
@@ -684,7 +675,7 @@ class Test
             // Test0.cs(23,13): warning CA1508: 'param != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(23, 13, "param != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' Do-While top loop
     Private Sub M(ByVal param As String)
@@ -734,9 +725,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_DoUntilLoop()
+        public async Task StringCompare_DoUntilLoop()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     ' Do-Until top loop
     Private Sub M(ByVal param As String)
@@ -786,9 +777,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_ForLoop()
+        public async Task StringCompare_ForLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param, string param2)
@@ -812,7 +803,7 @@ class Test
             {
             }
         }
-        
+
         // param2 == str here
         if (str == param2)
         {
@@ -820,7 +811,7 @@ class Test
         if (str != param2)
         {
         }
-        
+
         // param == str here
         if (str == param)
         {
@@ -847,9 +838,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void IntegralValueCompare_ForLoop()
+        public async Task IntegralValueCompare_ForLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(int param, uint param2)
@@ -908,9 +899,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void IntegralValueCompare_ForLoop_02()
+        public async Task IntegralValueCompare_ForLoop_02()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(int param, string param2, string param3)
@@ -926,9 +917,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void EnumValueCompare_ForEachLoop()
+        public async Task EnumValueCompare_ForEachLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 enum Kind
 {
     Kind1 = 1,
@@ -962,9 +953,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void EnumValueCompare_ForEachLoop_02()
+        public async Task EnumValueCompare_ForEachLoop_02()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 enum Kind
 {
     Kind1 = 1,
@@ -1001,9 +992,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void EnumValueCompare_ForEachLoop_03()
+        public async Task EnumValueCompare_ForEachLoop_03()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 enum Kind
 {
     Kind1 = 1,
@@ -1043,9 +1034,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void StringCompare_CopyAnalysis()
+        public async Task StringCompare_CopyAnalysis()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, string param2)
@@ -1067,7 +1058,7 @@ class Test
             // Test0.cs(12,29): warning CA1508: 'param2 != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(12, 29, "param2 != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String)
         Dim str = ""a""
@@ -1088,9 +1079,9 @@ End Module",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_CopyAnalysis()
+        public async Task ValueCompare_CopyAnalysis()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int param, int param2)
@@ -1112,7 +1103,7 @@ class Test
             // Test0.cs(12,29): warning CA1508: 'param2 != str' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(12, 29, "param2 != str", "false"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As Integer, param2 As Integer)
         Dim str As Integer = 1
@@ -1132,9 +1123,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_WithNonLiteral_ConditionalOr_NoDiagnostic()
+        public async Task StringCompare_WithNonLiteral_ConditionalOr_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, string param2, bool flag)
@@ -1158,7 +1149,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String, flag As Boolean)
         Dim str = """"
@@ -1179,9 +1170,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ValueCompare_WithNonLiteral_ConditionalOr_NoDiagnostic()
+        public async Task ValueCompare_WithNonLiteral_ConditionalOr_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(uint param, uint param2, bool flag)
@@ -1205,7 +1196,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As UInteger, param2 As UInteger, flag As Boolean)
         Dim str As Long = 1
@@ -1226,9 +1217,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_WithNonLiteral_ConditionalAnd_NoDiagnostic()
+        public async Task StringCompare_WithNonLiteral_ConditionalAnd_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, string param2, bool flag)
@@ -1260,7 +1251,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String, flag As Boolean)
         Dim str = """"
@@ -1275,10 +1266,10 @@ Module Test
 
         If str2 <> param AndAlso param <> str Then
         End If
-        
+
         If str2 <> param AndAlso param2 <> str Then
         End If
-        
+
         If str2 <> param AndAlso param = strMayBeConst Then
         End If
     End Sub
@@ -1287,9 +1278,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ValueCompare_WithNonLiteral_ConditionalAnd_NoDiagnostic()
+        public async Task ValueCompare_WithNonLiteral_ConditionalAnd_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(int param, int param2, bool flag)
@@ -1321,7 +1312,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As Integer, param2 As Integer, flag As Boolean)
         Dim str As Integer = 1
@@ -1348,9 +1339,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_ConditionalAndOrNegation_NoDiagnostic()
+        public async Task StringCompare_ConditionalAndOrNegation_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, bool flag, string param2)
@@ -1374,7 +1365,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String, flag As Boolean)
         Dim strConst As String = """"
@@ -1395,9 +1386,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_ConditionalAndOrNegation_Diagnostic()
+        public async Task StringCompare_ConditionalAndOrNegation_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param, bool flag, string param2, string param3)
@@ -1432,7 +1423,7 @@ class Test
             // Test0.cs(16,58): warning CA1508: 'param == strConst' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(16, 58, "param == strConst", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1(param As String, param2 As String, flag As Boolean, param3 As String)
         Dim strConst As String = """"
@@ -1464,9 +1455,9 @@ End Module",
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_ContractCheck_NoDiagnostic()
+        public async Task StringCompare_ContractCheck_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M1(string param)
@@ -1487,7 +1478,7 @@ class Test
 }
 ");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Private Sub M1(ByVal param As String)
         System.Diagnostics.Contracts.Contract.Requires(param <> """")
@@ -1506,9 +1497,9 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void StringCompare_ContractCheck_Diagnostic()
+        public async Task StringCompare_ContractCheck_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     void M(string param)
@@ -1522,7 +1513,7 @@ class Test
             // Test0.cs(8,56): warning CA1508: 'param == str' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(8, 56, "param == str", "true"));
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Private Sub M(ByVal param As String)
         Dim str = """"
@@ -1537,9 +1528,9 @@ End Module",
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public void StringCompare_InsideConstructorInitializer_Diagnostic()
+        public async Task StringCompare_InsideConstructorInitializer_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public bool Flag;
@@ -1566,9 +1557,9 @@ class Test : Base
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public void StringCompare_InsideFieldInitializer_Diagnostic()
+        public async Task StringCompare_InsideFieldInitializer_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public bool Flag;
@@ -1587,9 +1578,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact, WorkItem(1650, "https://github.com/dotnet/roslyn-analyzers/issues/1650")]
-        public void StringCompare_InsidePropertyInitializer_ExpressionBody_Diagnostic()
+        public async Task StringCompare_InsidePropertyInitializer_ExpressionBody_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public bool Flag;
@@ -1611,9 +1602,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_IsConstantPattern_Diagnostic()
+        public async Task ValueCompare_IsConstantPattern_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -1665,9 +1656,9 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_IsConstantPattern_NoDiagnostic()
+        public async Task ValueCompare_IsConstantPattern_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
 }
@@ -1707,11 +1698,11 @@ class Test
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_GotoLoop()
+        public async Task ValueCompare_GotoLoop()
         {
             // Ensure we bound the number of value content literals
             // and avoid infinite analysis iterations.
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     internal static uint ComputeStringHash(string text)
@@ -1740,9 +1731,9 @@ start:
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_MayBeLiteralAssignedInLoop()
+        public async Task ValueCompare_MayBeLiteralAssignedInLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System.Diagnostics;
 
 class C
@@ -1776,9 +1767,9 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_YieldBreakInTryFinally()
+        public async Task ValueCompare_YieldBreakInTryFinally()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System.Collections.Generic;
 
 class C
@@ -1813,9 +1804,9 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_NullableBool()
+        public async Task ValueCompare_NullableBool()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     private object Field;
@@ -1829,9 +1820,9 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_DefaultExpression()
+        public async Task ValueCompare_DefaultExpression()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 struct S
 {
 }
@@ -1850,9 +1841,9 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_Boxing_Diagnostic()
+        public async Task ValueCompare_Boxing_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public void M(int i)
@@ -1888,9 +1879,9 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_Boxing_NoDiagnostic()
+        public async Task ValueCompare_Boxing_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public void M(int i, int i2, int i3, int i4)
@@ -1937,9 +1928,9 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_Unboxing_Diagnostic()
+        public async Task ValueCompare_Unboxing_Diagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public void M(object o, object o2, object o3)
@@ -1970,9 +1961,9 @@ class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [Fact]
-        public void ValueCompare_Unboxing_NoDiagnostic()
+        public async Task ValueCompare_Unboxing_NoDiagnostic()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class C
 {
     public void M(object o, object o2, object o3, object o4)
@@ -2005,10 +1996,16 @@ class C
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void ValueCompare_AssignedToTuple_NotDisposed_SpecialCases_Diagnostic()
+        public async Task ValueCompare_AssignedToTuple_NotDisposed_SpecialCases_Diagnostic()
         {
             // NOTE: We do not support predicate analysis for tuple binary operator comparison yet.
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A
@@ -2104,25 +2101,39 @@ public class Test
         return c;
     }
 }
-", parseOptions: CSharpParseOptions.Default.WithLanguageVersion(CSharpLanguageVersion.CSharp7_3), expected: new[] {
-            // Test0.cs(30,13): warning CA1508: 'a2 == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(30, 13, "a2 == a", "true"),
-            // Test0.cs(42,13): warning CA1508: 'a2 == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(42, 13, "a2 == null", "false"),
-            // Test0.cs(54,13): warning CA1508: 'a == a2' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(54, 13, "a == a2", "true"),
-            // Test0.cs(54,24): warning CA1508: 'x == 0' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(54, 24, "x == 0", "true"),
-            // Test0.cs(54,34): warning CA1508: 'y == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(54, 34, "y == 1", "true"),
-            // Test0.cs(66,13): warning CA1508: 'null == a2' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(66, 13, "null == a2", "false") });
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.cs(30,13): warning CA1508: 'a2 == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(30, 13, "a2 == a", "true"),
+                        // Test0.cs(42,13): warning CA1508: 'a2 == null' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(42, 13, "a2 == null", "false"),
+                        // Test0.cs(54,13): warning CA1508: 'a == a2' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(54, 13, "a == a2", "true"),
+                        // Test0.cs(54,24): warning CA1508: 'x == 0' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(54, 24, "x == 0", "true"),
+                        // Test0.cs(54,34): warning CA1508: 'y == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(54, 34, "y == 1", "true"),
+                        // Test0.cs(66,13): warning CA1508: 'null == a2' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(66, 13, "null == a2", "false"),
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp7_3
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1571, "https://github.com/dotnet/roslyn-analyzers/issues/1571")]
-        public void ValueCompare_AddedToTupleLiteral_SpecialCases_Diagnostic()
+        public async Task ValueCompare_AddedToTupleLiteral_SpecialCases_Diagnostic()
         {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 class A
@@ -2175,28 +2186,36 @@ public class Test
         }
     }
 }
-", parseOptions: CSharpParseOptions.Default.WithLanguageVersion(CSharpLanguageVersion.CSharp7_3), expected: new[]{
-            // Test0.cs(16,13): warning CA1508: 'x.Item1.Item1 == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(16, 13, "x.Item1.Item1 == a", "true"),
-            // Test0.cs(16,35): warning CA1508: 'x.Item1.a == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(16, 35, "x.Item1.a == a", "true"),
-            // Test0.cs(16,53): warning CA1508: 'x.Item2 == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(16, 53, "x.Item2 == 1", "true"),
-            // Test0.cs(26,13): warning CA1508: 'x.a == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(26, 13, "x.a == a", "true"),
-            // Test0.cs(26,25): warning CA1508: 'x.Item2 == a2' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(26, 25, "x.Item2 == a2", "true"),
-            // Test0.cs(49,13): warning CA1508: 'arg.a == a' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(49, 13, "arg.a == a", "false"),
-            // Test0.cs(49,27): warning CA1508: 'arg.Item2 == a2' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
-            GetCSharpResultAt(49, 27, "arg.Item2 == a2", "false")});
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", "dotnet_code_quality.copy_analysis = true") },
+                    ExpectedDiagnostics =
+                    {
+                        // Test0.cs(16,13): warning CA1508: 'x.Item1.Item1 == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(16, 13, "x.Item1.Item1 == a", "true"),
+                        // Test0.cs(16,35): warning CA1508: 'x.Item1.a == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(16, 35, "x.Item1.a == a", "true"),
+                        // Test0.cs(16,53): warning CA1508: 'x.Item2 == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(16, 53, "x.Item2 == 1", "true"),
+                        // Test0.cs(26,13): warning CA1508: 'x.a == a' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(26, 13, "x.a == a", "true"),
+                        // Test0.cs(26,25): warning CA1508: 'x.Item2 == a2' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(26, 25, "x.Item2 == a2", "true"),
+                        // Test0.cs(49,13): warning CA1508: 'arg.a == a' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(49, 13, "arg.a == a", "false"),
+                        // Test0.cs(49,27): warning CA1508: 'arg.Item2 == a2' is always 'false'. Remove or refactor the condition(s) to avoid dead code.
+                        GetCSharpResultAt(49, 27, "arg.Item2 == a2", "false"),
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp7_3
+            }.RunAsync();
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void MethodWithNonConstantReturn_DefaultSwitchCaseInsideLoop()
+        public async Task MethodWithNonConstantReturn_DefaultSwitchCaseInsideLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Operation
 {
     public OperationKind Kind { get; }
@@ -2238,9 +2257,9 @@ class Test
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void LogicalOrWrappedInsideParenthesisAndUnary()
+        public async Task LogicalOrWrappedInsideParenthesisAndUnary()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Public Sub M(x1 As Boolean, x2 As Boolean, t As Test)
         Dim y = Not (x1 Or x2)
@@ -2255,9 +2274,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void DoWhileLoopWithSwitch()
+        public async Task DoWhileLoopWithSwitch()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Imports System
 Imports System.Runtime.CompilerServices
 
@@ -2302,9 +2321,9 @@ End Enum
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ConditionalAccessInConditionalAndOperand()
+        public async Task ConditionalAccessInConditionalAndOperand()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Class Test
     Public ReadOnly Property Flag As Boolean
     Public Sub M(t As Test, flag As Boolean)
@@ -2317,9 +2336,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void LoopWithMethodInvocationInConditional()
+        public async Task LoopWithMethodInvocationInConditional()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Imports System
 
 Class Test
@@ -2349,9 +2368,9 @@ End Enum
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void LoopWithGotoTargetBeforeLoop()
+        public async Task LoopWithGotoTargetBeforeLoop()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class A
 {
     public static A M(int? x, A[] listOfA, A a)
@@ -2385,9 +2404,9 @@ enum Kind
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ConditionalAccess_OperationNone()
+        public async Task ConditionalAccess_OperationNone()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Imports System
 Imports System.Xml.Linq
 
@@ -2401,9 +2420,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void Assignment_OperationNone()
+        public async Task Assignment_OperationNone()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Imports System
 Imports System.Xml.Linq
 
@@ -2419,9 +2438,9 @@ End Class
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ConditionalExpression_OperationNone()
+        public async Task ConditionalExpression_OperationNone()
         {
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Imports System
 Imports System.Linq
 
@@ -2460,9 +2479,9 @@ End Enum
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void PointsToAnalysisForLoopOnStructFields()
+        public async Task PointsToAnalysisForLoopOnStructFields()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
 
 namespace ClassLibrary14
@@ -2500,7 +2519,7 @@ namespace ClassLibrary14
                 var x4 = fileDetails.f1;
 
                 foreach (var residual in Directory.GetFiles(destinationDir, fileDetails.f1 + "".delete.*""))
-                {                    
+                {
                 }
             }
         }
@@ -2511,11 +2530,17 @@ namespace ClassLibrary14
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ValueContentAnalysisWithLocalFunctionInvocationsInStaticMethods()
+        public async Task ValueContentAnalysisWithLocalFunctionInvocationsInStaticMethods()
         {
             var editorconfig = "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive";
 
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 public static class C
@@ -2532,14 +2557,18 @@ public static class C
         return minValue;
     }
 }
-", GetEditorConfigAdditionalFile(editorconfig));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorconfig) }
+                }
+            }.RunAsync();
         }
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void PredicateAnalysisWithCast()
+        public async Task PredicateAnalysisWithCast()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 
 public static class C
@@ -2561,9 +2590,9 @@ public static class C
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact, WorkItem(2246, "https://github.com/dotnet/roslyn-analyzers/issues/2246")]
-        public void NestedPredicateAnalysisWithDifferentStrings()
+        public async Task NestedPredicateAnalysisWithDifferentStrings()
         {
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 using System;
 
 public static class C
@@ -2589,12 +2618,12 @@ public static class C
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
         [WorkItem(2681, "https://github.com/dotnet/roslyn-analyzers/issues/2681")]
-        public void InterlockedOperations_NoDiagnostic()
+        public async Task InterlockedOperations_NoDiagnostic()
         {
             // Ensure that Interlocked increment/decrement/add operations
             // are not treated as absolute writes as it likely involves multiple threads
             // invoking the method and that can lead to false positives.
-            VerifyCSharp(@"
+            await VerifyCSharpAnalyzerAsync(@"
 class Test
 {
     private int a;
@@ -2620,7 +2649,7 @@ class Test
     }
 }");
 
-            VerifyBasic(@"
+            await VerifyBasicAnalyzerAsync(@"
 Module Test
     Sub M1()
         Dim a As Integer = 0
@@ -2643,11 +2672,17 @@ End Module");
 
         [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
         [Fact]
-        public void ValueContentAnalysis_MergeForUnreachableCode()
+        public async Task ValueContentAnalysis_MergeForUnreachableCode()
         {
             var editorconfig = "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive";
 
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
 using System;
 
 public class C
@@ -2670,7 +2705,11 @@ public class C
         _ = feedLocationUri.LocalPath;
     }
 }
-", GetEditorConfigAdditionalFile(editorconfig));
+"
+                    },
+                    AdditionalFiles = { (".editorconfig", editorconfig) }
+                }
+            }.RunAsync();
         }
 
         [Theory]
@@ -2678,9 +2717,9 @@ public class C
         [InlineData("struct", "class")]
         [InlineData("class", "struct")]
         [InlineData("class", "class")]
-        public void DataflowAcrossBranches(string typeTest, string typeA)
+        public async Task DataflowAcrossBranches(string typeTest, string typeA)
         {
-            VerifyCSharp($@"
+            await VerifyCS.VerifyAnalyzerAsync($@"
 using System;
 
 namespace TestNamespace
@@ -2721,5 +2760,366 @@ namespace TestNamespace
             // Test0.cs(33,17): warning CA1508: 't.A.IntProperty == 1' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
             GetCSharpResultAt(33, 17, "t.A.IntProperty == 1", "true"));
         }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestNegationPattern()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+        if (input is not 10)
+        {
+            return input == 10;
+        }
+
+        if (t is not null)
+        {
+            return t != null;
+        }
+
+        return true;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(14,20): warning CA1508: 't != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(14, 20, "t != null", "true")
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestNegationPattern_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch (input)
+        {
+            case not 10:
+                result = false;
+                break;
+            default:
+                result = true;
+                break;
+        }
+
+        switch (t)
+        {
+            case not null:
+                result = t != null;
+                break;
+            default:
+                result = t == null;
+                break;
+        }
+
+        return result;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(22,26): warning CA1508: 't != null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(22, 26, "t != null", "true"),
+                    // Test0.cs(25,26): warning CA1508: 't == null' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(25, 26, "t == null", "true")
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task TestNegationPattern_ExplicitConversionInFlowCapture_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    void M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch ((bool)t)
+        {
+            case not true:
+                result = (bool)t == false;  // Consider: this should report a diagnostic
+                break;
+        }
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task Test_ExplicitConversionInFlowCapture_ConditionalExpression()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+public class Test
+{
+    private object M(string str)
+    {
+        int? intVal = int.TryParse(str, out var outInt) ? outInt : (int?)null;
+        return (intVal.HasValue ? (object)intVal.Value : (object)str);
+    }
+}
+");
+        }
+
+        [Fact, WorkItem(4062, "https://github.com/dotnet/roslyn-analyzers/issues/4062")]
+        public async Task Test_ExplicitConversionInFlowCapture_ConditionalExpression_02()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+public class Test
+{
+    private object M(Test t, int? intVal)
+    {
+        return (intVal.HasValue ? (object)intVal.Value : (object)t);
+    }
+}
+");
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestRelationalPattern()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        if (t is 10)
+        {
+            return (int)t == 10;
+        }
+
+        if (t is > 10)
+        {
+            return (int)t > 10;
+        }
+
+        return true;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+                ExpectedDiagnostics =
+                {
+                    // Test0.cs(10,20): warning CA1508: '(int)t == 10' is always 'true'. Remove or refactor the condition(s) to avoid dead code.
+                    GetCSharpResultAt(10, 20, "(int)t == 10", "true")
+                }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestRelationalPattern_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch (input)
+        {
+            case > 10:
+                result = false;
+                break;
+            default:
+                result = true;
+                break;
+        }
+
+        return result;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestNegationAndRelationalPattern()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        if (input is not > 10)
+        {
+            return input > 10;  // No range analysis to flag this as dead code.
+        }
+
+        return true;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestNegationAndRelationalPattern_SwitchCase()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        bool result;
+        switch (input)
+        {
+            case not > 10:
+                result = false;
+                break;
+            default:
+                result = true;
+                break;
+        }
+
+        return result;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
+        public async Task TestBinaryPattern()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class Test
+{
+    bool M(int input, object t)
+    {
+        var x = t?.ToString();
+
+        if (t is Test or not null)
+        {
+            return t != null;   // In future, we might flag this as always 'true'.
+        }
+
+        return true;
+    }
+}
+"
+                    }
+                },
+                LanguageVersion = CSharpLanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+#if NETCOREAPP
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(4387, "https://github.com/dotnet/roslyn-analyzers/issues/4387")]
+        public async Task RangeAndIndexOperation_NoDiagnostic()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+internal class Class1
+{
+    private static bool TryParseUnit(string unit)
+    {
+        char last = unit[^1];
+        if (last != 'b')
+            return false;
+
+        string subUnit = unit[1..];
+        if (subUnit != ""b"")
+            return false;
+
+        return true;
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+#endif
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverrideMethodsOnComparableTypesAnalyzer,
@@ -609,6 +610,267 @@ Public Structure A : Implements IComparable
     End Operator
 End Structure
 ");
+        }
+
+        [Fact, WorkItem(1395, "https://github.com/dotnet/roslyn-analyzers/issues/1395")]
+        public async Task CA1036_CSharp_MultipleViolations()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+
+public class SomeClass : IComparable
+{
+    public int CompareTo(object obj)
+    {
+        return 1;
+    }
+}
+
+public struct SomeOtherClass : IComparable
+{
+    public int CompareTo(object obj)
+    {
+        return 1;
+    }
+}",
+                new[]
+                {
+                    VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(4, 14, 4, 23).WithArguments("SomeClass", "==, !=, <, <=, >, >="),
+                    VerifyCS.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(12, 15, 12, 29).WithArguments("SomeOtherClass", "==, !=, <, <=, >, >="),
+                },
+@"
+using System;
+
+public class SomeClass : IComparable
+{
+    public int CompareTo(object obj)
+    {
+        return 1;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+        if (ReferenceEquals(obj, null))
+        {
+            return false;
+        }
+
+        throw new NotImplementedException();
+    }
+
+    public override int GetHashCode()
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool operator ==(SomeClass left, SomeClass right)
+    {
+        if (ReferenceEquals(left, null))
+        {
+            return ReferenceEquals(right, null);
+        }
+
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(SomeClass left, SomeClass right)
+    {
+        return !(left == right);
+    }
+
+    public static bool operator <(SomeClass left, SomeClass right)
+    {
+        return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
+    }
+
+    public static bool operator <=(SomeClass left, SomeClass right)
+    {
+        return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
+    }
+
+    public static bool operator >(SomeClass left, SomeClass right)
+    {
+        return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
+    }
+
+    public static bool operator >=(SomeClass left, SomeClass right)
+    {
+        return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
+    }
+}
+
+public struct SomeOtherClass : IComparable
+{
+    public int CompareTo(object obj)
+    {
+        return 1;
+    }
+
+    public override bool Equals(object obj)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override int GetHashCode()
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool operator ==(SomeOtherClass left, SomeOtherClass right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(SomeOtherClass left, SomeOtherClass right)
+    {
+        return !(left == right);
+    }
+
+    public static bool operator <(SomeOtherClass left, SomeOtherClass right)
+    {
+        return left.CompareTo(right) < 0;
+    }
+
+    public static bool operator <=(SomeOtherClass left, SomeOtherClass right)
+    {
+        return left.CompareTo(right) <= 0;
+    }
+
+    public static bool operator >(SomeOtherClass left, SomeOtherClass right)
+    {
+        return left.CompareTo(right) > 0;
+    }
+
+    public static bool operator >=(SomeOtherClass left, SomeOtherClass right)
+    {
+        return left.CompareTo(right) >= 0;
+    }
+}");
+        }
+
+        [Fact, WorkItem(1395, "https://github.com/dotnet/roslyn-analyzers/issues/1395")]
+        public async Task CA1036_Basic_MultipleViolations()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+
+Public Class SomeClass : Implements IComparable
+
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
+
+End Class
+
+Public Structure SomeOtherClass : Implements IComparable
+
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
+
+End Structure",
+                new[]
+                {
+                    VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(4, 14, 4, 23).WithArguments("SomeClass", "=, <>, <, <=, >, >="),
+                    VerifyVB.Diagnostic(OverrideMethodsOnComparableTypesAnalyzer.RuleBoth).WithSpan(12, 18, 12, 32).WithArguments("SomeOtherClass", "=, <>, <, <=, >, >="),
+                },
+@"
+Imports System
+
+Public Class SomeClass : Implements IComparable
+
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
+
+    Public Overrides Function Equals(obj As Object) As Boolean
+        If ReferenceEquals(Me, obj) Then
+            Return True
+        End If
+
+        If ReferenceEquals(obj, Nothing) Then
+            Return False
+        End If
+
+        Throw New NotImplementedException()
+    End Function
+
+    Public Overrides Function GetHashCode() As Integer
+        Throw New NotImplementedException()
+    End Function
+
+    Public Shared Operator =(left As SomeClass, right As SomeClass) As Boolean
+        If ReferenceEquals(left, Nothing) Then
+            Return ReferenceEquals(right, Nothing)
+        End If
+
+        Return left.Equals(right)
+    End Operator
+
+    Public Shared Operator <>(left As SomeClass, right As SomeClass) As Boolean
+        Return Not left = right
+    End Operator
+
+    Public Shared Operator <(left As SomeClass, right As SomeClass) As Boolean
+        Return If(ReferenceEquals(left, Nothing), Not ReferenceEquals(right, Nothing), left.CompareTo(right) < 0)
+    End Operator
+
+    Public Shared Operator <=(left As SomeClass, right As SomeClass) As Boolean
+        Return ReferenceEquals(left, Nothing) OrElse left.CompareTo(right) <= 0
+    End Operator
+
+    Public Shared Operator >(left As SomeClass, right As SomeClass) As Boolean
+        Return Not ReferenceEquals(left, Nothing) AndAlso left.CompareTo(right) > 0
+    End Operator
+
+    Public Shared Operator >=(left As SomeClass, right As SomeClass) As Boolean
+        Return If(ReferenceEquals(left, Nothing), ReferenceEquals(right, Nothing), left.CompareTo(right) >= 0)
+    End Operator
+End Class
+
+Public Structure SomeOtherClass : Implements IComparable
+
+    Public Function CompareTo(obj As Object) As Integer Implements IComparable.CompareTo
+        Return 1
+    End Function
+
+    Public Overrides Function Equals(obj As Object) As Boolean
+        Throw New NotImplementedException()
+    End Function
+
+    Public Overrides Function GetHashCode() As Integer
+        Throw New NotImplementedException()
+    End Function
+
+    Public Shared Operator =(left As SomeOtherClass, right As SomeOtherClass) As Boolean
+        Return left.Equals(right)
+    End Operator
+
+    Public Shared Operator <>(left As SomeOtherClass, right As SomeOtherClass) As Boolean
+        Return Not left = right
+    End Operator
+
+    Public Shared Operator <(left As SomeOtherClass, right As SomeOtherClass) As Boolean
+        Return left.CompareTo(right) < 0
+    End Operator
+
+    Public Shared Operator <=(left As SomeOtherClass, right As SomeOtherClass) As Boolean
+        Return left.CompareTo(right) <= 0
+    End Operator
+
+    Public Shared Operator >(left As SomeOtherClass, right As SomeOtherClass) As Boolean
+        Return left.CompareTo(right) > 0
+    End Operator
+
+    Public Shared Operator >=(left As SomeOtherClass, right As SomeOtherClass) As Boolean
+        Return left.CompareTo(right) >= 0
+    End Operator
+End Structure");
         }
     }
 }
