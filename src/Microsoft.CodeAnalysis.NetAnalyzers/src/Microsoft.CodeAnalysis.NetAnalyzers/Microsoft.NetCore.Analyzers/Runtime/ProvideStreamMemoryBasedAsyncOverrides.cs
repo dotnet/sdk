@@ -67,10 +67,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (!symbols.StreamType.Equals(type.BaseType, SymbolEqualityComparer.Default))
                     return;
 
-                IMethodSymbol? readAsyncArrayOverride = GetSymbolForOverridingMethod(type, symbols.ReadAsyncArrayMethod);
-                IMethodSymbol? readAsyncMemoryOverride = GetSymbolForOverridingMethod(type, symbols.ReadAsyncMemoryMethod);
-                IMethodSymbol? writeAsyncArrayOverride = GetSymbolForOverridingMethod(type, symbols.WriteAsyncArrayMethod);
-                IMethodSymbol? writeAsyncMemoryOverride = GetSymbolForOverridingMethod(type, symbols.WriteAsyncMemoryMethod);
+                //  We use 'FirstOrDefault' because there could be multiple overrides for the same method if
+                //  there are compiler errors.
+
+                IMethodSymbol? readAsyncArrayOverride = GetOverridingMethodSymbols(type, symbols.ReadAsyncArrayMethod).FirstOrDefault();
+                IMethodSymbol? readAsyncMemoryOverride = GetOverridingMethodSymbols(type, symbols.ReadAsyncMemoryMethod).FirstOrDefault();
+                IMethodSymbol? writeAsyncArrayOverride = GetOverridingMethodSymbols(type, symbols.WriteAsyncArrayMethod).FirstOrDefault();
+                IMethodSymbol? writeAsyncMemoryOverride = GetOverridingMethodSymbols(type, symbols.WriteAsyncMemoryMethod).FirstOrDefault();
 
                 //  For both ReadAsync and WriteAsync, if the array-based form is overridden and the memory-based
                 //  form is not, we report a diagnostic. We report separate diagnostics for ReadAsync and WriteAsync. 
@@ -121,10 +124,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            var readAsyncArrayMethod = GetOverload(streamType, ReadAsyncName, byteArrayType, int32Type, int32Type, cancellationTokenType);
-            var readAsyncMemoryMethod = GetOverload(streamType, ReadAsyncName, memoryOfByteType, cancellationTokenType);
-            var writeAsyncArrayMethod = GetOverload(streamType, WriteAsyncName, byteArrayType, int32Type, int32Type, cancellationTokenType);
-            var writeAsyncMemoryMethod = GetOverload(streamType, WriteAsyncName, readOnlyMemoryOfByteType, cancellationTokenType);
+            // We know that there are no compiler errors on streamType, so we use 'SingleOrDefault'.
+
+            var readAsyncArrayMethod = GetOverloads(streamType, ReadAsyncName, byteArrayType, int32Type, int32Type, cancellationTokenType).SingleOrDefault();
+            var readAsyncMemoryMethod = GetOverloads(streamType, ReadAsyncName, memoryOfByteType, cancellationTokenType).SingleOrDefault();
+            var writeAsyncArrayMethod = GetOverloads(streamType, WriteAsyncName, byteArrayType, int32Type, int32Type, cancellationTokenType).SingleOrDefault();
+            var writeAsyncMemoryMethod = GetOverloads(streamType, WriteAsyncName, readOnlyMemoryOfByteType, cancellationTokenType).SingleOrDefault();
 
             if (readAsyncArrayMethod is null || readAsyncMemoryMethod is null || writeAsyncArrayMethod is null || writeAsyncMemoryMethod is null)
             {
@@ -139,10 +144,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return true;
         }
 
-        private static IMethodSymbol? GetOverload(ITypeSymbol containingType, string methodName, params ITypeSymbol[] argumentTypes)
+        //  There could be more than one overload with an exact match if there are compiler errors.
+        private static ImmutableArray<IMethodSymbol> GetOverloads(ITypeSymbol containingType, string methodName, params ITypeSymbol[] argumentTypes)
         {
             return containingType.GetMembers(methodName)
-                .SingleOrDefault(symbol => symbol is IMethodSymbol m && IsMatch(m, argumentTypes)) as IMethodSymbol;
+                .OfType<IMethodSymbol>()
+                .WhereAsArray(m => IsMatch(m, argumentTypes));
 
             static bool IsMatch(IMethodSymbol method, ITypeSymbol[] argumentTypes)
             {
@@ -159,17 +166,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        //  If the specified type overrides the specified method on its immediate base class, returns the method symbol representing the 
-        //  overriding method. Returns null if the specified type does not override the specified method.
-        private static IMethodSymbol? GetSymbolForOverridingMethod(ITypeSymbol derivedType, IMethodSymbol overriddenMethod)
+        /// <summary>
+        /// If <paramref name="derivedType"/> overrides <paramref name="overriddenMethod"/> on its immediate base class, returns the <see cref="IMethodSymbol"/>
+        /// for the overriding method. Returns null if <paramref name="derivedType"/> does not override <paramref name="overriddenMethod"/>.
+        /// </summary>
+        /// <param name="derivedType">The type that may have overridden a method on its immediate base-class.</param>
+        /// <param name="overriddenMethod"></param>
+        /// <returns>The <see cref="IMethodSymbol"/> for the method that overrides <paramref name="overriddenMethod"/>, or null if 
+        /// <paramref name="overriddenMethod"/> is not overridden.</returns>
+        private static ImmutableArray<IMethodSymbol> GetOverridingMethodSymbols(ITypeSymbol derivedType, IMethodSymbol overriddenMethod)
         {
             RoslynDebug.Assert(derivedType.BaseType.Equals(overriddenMethod.ContainingType, SymbolEqualityComparer.Default));
 
             return derivedType.GetMembers(overriddenMethod.Name)
-                .SingleOrDefault(x =>
-                {
-                    return x.IsOverride && overriddenMethod.Equals(x.GetOverriddenMember(), SymbolEqualityComparer.Default);
-                }) as IMethodSymbol;
+                .OfType<IMethodSymbol>()
+                .WhereAsArray(m => m.IsOverride && overriddenMethod.Equals(m.GetOverriddenMember(), SymbolEqualityComparer.Default));
         }
 
         //  We will not be doing any comparisons on this type.

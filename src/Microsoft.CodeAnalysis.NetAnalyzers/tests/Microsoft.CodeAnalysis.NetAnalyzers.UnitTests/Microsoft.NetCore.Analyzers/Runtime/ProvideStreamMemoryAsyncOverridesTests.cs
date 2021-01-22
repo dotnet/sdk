@@ -1093,7 +1093,253 @@ End Namespace";
         }
         #endregion
 
+        #region Does Not Crash On Illegal Code
+        [Theory]
+        [InlineData(ReadAsyncName, CSReadAsyncArray)]
+        [InlineData(WriteAsyncName, CSWriteAsyncArray)]
+        public Task DuplicateArrayOverrides_WithoutMemoryOverride_ReportsDiagnosticWithoutCrashing_CS(string methodName, string methodDefinition)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class {{|#0:River|}} : Stream
+    {{
+        {CSAbstractMembers}
+        {methodDefinition}
+        {methodDefinition.Replace(methodName, $"{{|#1:{methodName}|}}")}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(RuleId, DiagnosticSeverity.Info)
+                        .WithLocation(0),
+                    new DiagnosticResult(CSMemberHasMultipleDefinitionsRuleId, DiagnosticSeverity.Error)
+                        .WithLocation(1)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(ReadAsyncName, VBReadAsyncArray)]
+        [InlineData(WriteAsyncName, VBWriteAsyncArray)]
+        public Task DuplicateArrayOverrides_WithoutMemoryOverride_ReportsDiagnosticWithoutCrashing_VB(string methodName, string methodDefinition)
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class {{|#0:River|}} : Inherits Stream
+        {VBAbstractMembers}
+        {SurroundWithMarkup(methodDefinition, methodName, 1)}
+        {methodDefinition}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(RuleId, DiagnosticSeverity.Info)
+                        .WithLocation(0),
+                    new DiagnosticResult(VBMemberHasMultipleDefinitionsRuleId, DiagnosticSeverity.Error)
+                        .WithLocation(1)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(ReadAsyncName, CSReadAsyncArray, CSReadAsyncMemory)]
+        [InlineData(WriteAsyncName, CSWriteAsyncArray, CSWriteAsyncMemory)]
+        public Task DuplicateArrayOverrides_WithMemoryOverride_NoDiagnostic_NoCrash_CS(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class River : Stream
+    {{
+        {CSAbstractMembers}
+        {arrayMethodDefinition}
+        {SurroundWithMarkup(arrayMethodDefinition, methodName, 0)}
+        {memoryMethodDefinition}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(CSMemberHasMultipleDefinitionsRuleId, DiagnosticSeverity.Error)
+                        .WithLocation(0)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(ReadAsyncName, VBReadAsyncArray, VBReadAsyncMemory)]
+        [InlineData(WriteAsyncName, VBWriteAsyncArray, VBWriteAsyncMemory)]
+        public Task DuplicateArrayOverrides_WithMemoryOverride_NoDiagnostic_NoCrash_VB(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class River : Inherits Stream
+        {VBAbstractMembers}
+        {SurroundWithMarkup(arrayMethodDefinition, methodName, 0)}
+        {arrayMethodDefinition}
+        {memoryMethodDefinition}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(VBMemberHasMultipleDefinitionsRuleId, DiagnosticSeverity.Error)
+                        .WithLocation(0)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(ReadAsyncName, CSReadAsyncArray, CSReadAsyncMemory)]
+        [InlineData(WriteAsyncName, CSWriteAsyncArray, CSWriteAsyncMemory)]
+        public Task DuplicateMemoryOverrides_WithArrayOverride_NoDiagnostic_NoCrash_CS(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class River : Stream
+    {{
+        {CSAbstractMembers}
+        {arrayMethodDefinition}
+        {memoryMethodDefinition}
+        {SurroundWithMarkup(memoryMethodDefinition, methodName, 0)}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(CSMemberHasMultipleDefinitionsRuleId, DiagnosticSeverity.Error)
+                        .WithLocation(0)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(ReadAsyncName, VBReadAsyncArray, VBReadAsyncMemory)]
+        [InlineData(WriteAsyncName, VBWriteAsyncArray, VBWriteAsyncMemory)]
+        public Task DuplicateMemoryOverrides_WithArrayOverride_NoDiagnostic_NoCrash_VB(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class River : Inherits Stream
+        {VBAbstractMembers}
+        {arrayMethodDefinition}
+        {SurroundWithMarkup(memoryMethodDefinition, methodName, 0)}
+        {memoryMethodDefinition}
+
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(VBMemberHasMultipleDefinitionsRuleId, DiagnosticSeverity.Error)
+                        .WithLocation(0)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(ReadAsyncName, CSReadAsyncMemory)]
+        [InlineData(WriteAsyncName, CSWriteAsyncMemory)]
+        public Task DuplicateMemoryOverrides_NoArrayOverride_NoDiagnostic_NoCrash_CS(string methodName, string memoryMethodDefinition)
+        {
+            string code = $@"
+{CSUsings}
+namespace Testopolis
+{{
+    public class River : Stream
+    {{
+        {CSAbstractMembers}
+        {memoryMethodDefinition}
+        {SurroundWithMarkup(memoryMethodDefinition, methodName, 0)}
+    }}
+}}";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(CSMemberHasMultipleDefinitionsRuleId, DiagnosticSeverity.Error)
+                        .WithLocation(0)
+                }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(ReadAsyncName, VBReadAsyncMemory)]
+        [InlineData(WriteAsyncName, VBWriteAsyncMemory)]
+        public Task DuplicateMemoryOverrides_NoArrayOverride_NoDiagnostic_NoCrash_VB(string methodName, string memoryMethodDefinition)
+        {
+            string code = $@"
+{VBUsings}
+Namespace Testopolis
+    Public Class River : Inherits Stream
+        {VBAbstractMembers}
+        {SurroundWithMarkup(memoryMethodDefinition, methodName, 0)}
+        {memoryMethodDefinition}
+    End Class
+End Namespace";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult(VBMemberHasMultipleDefinitionsRuleId, DiagnosticSeverity.Error)
+                        .WithLocation(0)
+                }
+            };
+            return test.RunAsync();
+        }
+        #endregion
+
         #region Helpers
+        private const string ReadAsyncName = nameof(System.IO.Stream.ReadAsync);
+        private const string WriteAsyncName = nameof(System.IO.Stream.WriteAsync);
+
         private const string CSUsings = @"using System;
 using System.IO;
 using System.Threading;
@@ -1216,7 +1462,15 @@ Imports System.Threading.Tasks";
         private static DiagnosticDescriptor Rule => ProvideStreamMemoryBasedAsyncOverrides.Rule;
         private static string RuleId => ProvideStreamMemoryBasedAsyncOverrides.RuleId;
         private const string CSMemberHidesBaseRuleId = "CS0114";
+        private const string CSMemberHasMultipleDefinitionsRuleId = "CS0111";
+
         private const string VBMemberHidesBaseRuleId = "BC40005";
+        private const string VBMemberHasMultipleDefinitionsRuleId = "BC30269";
+
+        private static string SurroundWithMarkup(string source, string substring, int markupKey)
+        {
+            return source.Replace(substring, $"{{|#{markupKey}:{substring}|}}");
+        }
         #endregion
     }
 }
