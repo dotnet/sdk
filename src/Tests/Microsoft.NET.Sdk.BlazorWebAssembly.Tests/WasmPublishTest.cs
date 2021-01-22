@@ -1217,7 +1217,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Verify compression works
             new FileInfo(Path.Combine(firstAppPublishDirectory, "_framework", "dotnet.wasm.br")).Should().Exist();
             new FileInfo(Path.Combine(firstAppPublishDirectory, "_framework", "BlazorMultipleApps.FirstClient.dll.br")).Should().Exist();
-            new FileInfo(Path.Combine(firstAppPublishDirectory, "_framework", "System.Text.Json.dll.br")).Should().Exist();
+            new FileInfo(Path.Combine(firstAppPublishDirectory, "_framework", "Newtonsoft.Json.dll.br")).Should().Exist();
 
             var secondAppPublishDirectory = Path.Combine(publishOutputDirectory, "wwwroot", "SecondApp");
 
@@ -1237,6 +1237,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "dotnet.wasm.br")).Should().Exist();
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "BlazorMultipleApps.SecondClient.dll.br")).Should().Exist();
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "System.Private.CoreLib.dll.br")).Should().Exist();
+            new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "Newtonsoft.Json.dll.br")).Should().NotExist();
         }
 
         private static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)

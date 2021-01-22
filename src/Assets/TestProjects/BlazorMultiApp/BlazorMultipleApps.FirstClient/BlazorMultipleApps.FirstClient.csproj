@@ -6,13 +6,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0" PrivateAssets="all" />
-    <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+    <ProjectReference Include="..\BlazorMultipleApps.Shared\BlazorMultipleApps.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlazorMultipleApps.Shared\BlazorMultipleApps.Shared.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0"/>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
+
+  <!-- Enabling compression increases build time. We want to avoid this for tests so we
+  disable it here. This doesn't affect any test assertions. -->
+  <PropertyGroup>
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
 
 </Project>
