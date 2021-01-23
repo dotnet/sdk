@@ -1511,7 +1511,7 @@
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
   <data name="ProvideStreamMemoryBasedAsyncOverridesDescription" xml:space="preserve">
-    <value>The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving your implementation to '{2}' and have '{1}' delegate to '{2}'.</value>
+    <value>The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving {0}'s implementation to '{2}' and have '{1}' delegate to '{2}'.</value>
   </data>
   <data name="ProvideStreamMemoryBasedAsyncOverridesMessage" xml:space="preserve">
     <value>'{0}' overrides '{1}' but does not override '{2}'. Consider overriding '{2}' to improve performance.</value>

@@ -1723,8 +1723,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">
-        <source>The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving your implementation to '{2}' and have '{1}' delegate to '{2}'.</source>
-        <target state="new">The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving your implementation to '{2}' and have '{1}' delegate to '{2}'.</target>
+        <source>The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving {0}'s implementation to '{2}' and have '{1}' delegate to '{2}'.</source>
+        <target state="new">The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving {0}'s implementation to '{2}' and have '{1}' delegate to '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesMessage">

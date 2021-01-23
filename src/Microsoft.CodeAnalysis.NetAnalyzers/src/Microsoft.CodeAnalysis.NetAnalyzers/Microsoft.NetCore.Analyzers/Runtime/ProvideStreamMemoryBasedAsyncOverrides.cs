@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -98,10 +98,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //  We want to underline the name of the violating type in the class declaration. If the violating type
                 //  is a partial class, we underline all partial declarations.
 
-                return Diagnostic.Create(
+                return violatingType.CreateDiagnostic(
                     Rule,
-                    violatingType.Locations[0],
-                    violatingType.Locations.Skip(1),
                     violatingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                     arrayBasedOverride.OverriddenMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                     memoryBasedMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
@@ -124,12 +122,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            // We know that there are no compiler errors on streamType, so we use 'SingleOrDefault'.
+            //  Even though framework types should never contain compiler errors, we still use 'FirstOrDefault' to avoid having the 
+            //  analyzer crash if it runs against the source code for 'System.Private.CoreLib', which could be malformed.
 
-            var readAsyncArrayMethod = GetOverloads(streamType, ReadAsyncName, byteArrayType, int32Type, int32Type, cancellationTokenType).SingleOrDefault();
-            var readAsyncMemoryMethod = GetOverloads(streamType, ReadAsyncName, memoryOfByteType, cancellationTokenType).SingleOrDefault();
-            var writeAsyncArrayMethod = GetOverloads(streamType, WriteAsyncName, byteArrayType, int32Type, int32Type, cancellationTokenType).SingleOrDefault();
-            var writeAsyncMemoryMethod = GetOverloads(streamType, WriteAsyncName, readOnlyMemoryOfByteType, cancellationTokenType).SingleOrDefault();
+            var readAsyncArrayMethod = GetOverloads(streamType, ReadAsyncName, byteArrayType, int32Type, int32Type, cancellationTokenType).FirstOrDefault();
+            var readAsyncMemoryMethod = GetOverloads(streamType, ReadAsyncName, memoryOfByteType, cancellationTokenType).FirstOrDefault();
+            var writeAsyncArrayMethod = GetOverloads(streamType, WriteAsyncName, byteArrayType, int32Type, int32Type, cancellationTokenType).FirstOrDefault();
+            var writeAsyncMemoryMethod = GetOverloads(streamType, WriteAsyncName, readOnlyMemoryOfByteType, cancellationTokenType).FirstOrDefault();
 
             if (readAsyncArrayMethod is null || readAsyncMemoryMethod is null || writeAsyncArrayMethod is null || writeAsyncMemoryMethod is null)
             {
@@ -183,7 +182,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 .WhereAsArray(m => m.IsOverride && overriddenMethod.Equals(m.GetOverriddenMember(), SymbolEqualityComparer.Default));
         }
 
-        //  We will not be doing any comparisons on this type
+        //  We use a struct instead of a record-type to save on allocations.
+        //  There is no trade-off for doing so because this type is never passed by-value.
+        //  We never do equality operations on instances. 
 #pragma warning disable CA1815 // Override equals and operator equals on value types
         private readonly struct RequiredSymbols
 #pragma warning restore CA1815 // Override equals and operator equals on value types
