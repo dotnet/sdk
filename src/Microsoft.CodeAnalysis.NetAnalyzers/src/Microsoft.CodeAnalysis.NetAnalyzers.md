@@ -1298,7 +1298,7 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 
 ## [CA1840](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840): Provide memory-based overrides of async methods when subclassing 'Stream'
 
-The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving your implementation to '{2}' and have '{1}' delegate to '{2}'.
+The default implementation of '{2}' delegates to '{1}', which is innefficient as it requires an extra copy. It also results in extra allocations as it returns Task instead of ValueTask. Consider moving {0}'s implementation to '{2}' and have '{1}' delegate to '{2}'.
 
 |Item|Value|
 |-|-|
