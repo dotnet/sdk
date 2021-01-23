@@ -171,7 +171,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// </summary>
         /// <param name="derivedType">The type that may have overridden a method on its immediate base-class.</param>
         /// <param name="overriddenMethod"></param>
-        /// <returns>The <see cref="IMethodSymbol"/> for the method that overrides <paramref name="overriddenMethod"/>, or null if 
+        /// <returns>The <see cref="IMethodSymbol"/> for the method that overrides <paramref name="overriddenMethod"/>, or null if
         /// <paramref name="overriddenMethod"/> is not overridden.</returns>
         private static ImmutableArray<IMethodSymbol> GetOverridingMethodSymbols(ITypeSymbol derivedType, IMethodSymbol overriddenMethod)
         {
