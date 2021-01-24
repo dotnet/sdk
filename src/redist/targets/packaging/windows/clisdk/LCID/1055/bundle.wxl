@@ -72,6 +72,7 @@ Kaynaklar
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK Belgeleri&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Gizlilik Bildirimi&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;.NET için Lisans Bilgileri&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Yükleme notu</String>
   <String Id="InstallationNote">Yükleme işlemi sırasında, proje geri yükleme hızını artıran ve çevrimdışı erişimi etkinleştiren bir komut çalıştırılır. Tamamlanması bir dakikanızı alır.
   </String>

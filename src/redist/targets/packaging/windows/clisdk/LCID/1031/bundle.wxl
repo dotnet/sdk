@@ -72,6 +72,7 @@ Ressourcen
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK-Dokumentation&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Datenschutzerklärung&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Lizenzierungsinformationen für .NET&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Installationshinweis</String>
   <String Id="InstallationNote">Während des Installationsvorgangs wird ein Befehl ausgeführt, durch den die Geschwindigkeit der Projektwiederherstellung verbessert und der Offlinezugriff aktiviert wird. Der Vorgang dauert bis zu einer Minute.
   </String>
