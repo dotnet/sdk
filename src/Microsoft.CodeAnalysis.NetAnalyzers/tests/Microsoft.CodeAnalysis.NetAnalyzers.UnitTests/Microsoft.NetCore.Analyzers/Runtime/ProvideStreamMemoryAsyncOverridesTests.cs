@@ -396,7 +396,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task BothArrayOverrides_MultiplePartialsInSameFile_REportsAllLocations_VB()
+        public Task BothArrayOverrides_MultiplePartialsInSameFile_ReportsAllLocations_VB()
         {
             string code = $@"
 {VBUsings}
