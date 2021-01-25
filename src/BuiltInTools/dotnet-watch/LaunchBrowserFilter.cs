@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                         const string hostingStartupAssembliesName = "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES";
                         var existingHostingStartupAssemblies = Environment.GetEnvironmentVariable(hostingStartupAssembliesName);
-                        if (string.IsNullOrEmpty(existingHostingStartupAssemblies))
+                        if (!string.IsNullOrEmpty(existingHostingStartupAssemblies))
                         {
                             context.ProcessSpec.EnvironmentVariables[hostingStartupAssembliesName] = $"{existingHostingStartupAssemblies};Microsoft.AspNetCore.Watch.BrowserRefresh";
                         }
