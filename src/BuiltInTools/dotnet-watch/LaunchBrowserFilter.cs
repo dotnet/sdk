@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                         var pathToMiddleware = Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
                         
                         const string dotnetStartHooksName = "DOTNET_STARTUP_HOOKS";
-                        context.ProcessSpec.EnvironmentVariables[dotnetStartHooksName] = AddOrAppend(dotnetStartHooksName, pathToMiddleware, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ';' : ':');
+                        context.ProcessSpec.EnvironmentVariables[dotnetStartHooksName] = AddOrAppend(dotnetStartHooksName, pathToMiddleware, Path.PathSeparator);
 
                         const string hostingStartupAssembliesName = "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES";
                         context.ProcessSpec.EnvironmentVariables[hostingStartupAssembliesName] = AddOrAppend(hostingStartupAssembliesName, "Microsoft.AspNetCore.Watch.BrowserRefresh", ';');
