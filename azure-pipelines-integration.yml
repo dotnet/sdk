@@ -38,7 +38,7 @@ jobs:
         _repo: "https://github.com/dotnet/project-system"
         _repoName: "dotnet/project-system"
         _targetSolution: "ProjectSystem.sln"
-        _branchName: "master"
+        _branchName: "main"
         _sha: "385943552a5dc219635551c1c0e6318ff35ffa38"
       msbuild:
         _repo: "https://github.com/Microsoft/msbuild"
