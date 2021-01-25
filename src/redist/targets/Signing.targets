@@ -5,7 +5,7 @@
 
   <!-- Import Arcade's Sign.props, when then imports the eng/Signing.props for this repo -->
   <Import Project="../tools/Sign.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-    
+
   <Target Name="SetSignProps"
           Condition="'$(SignCoreSdk)' == 'true'">
 
@@ -38,7 +38,7 @@
       <_DesktopMSBuildPath Condition="$(_DesktopMSBuildRequired)">$(_VSInstallDir)\MSBuild\15.0\Bin\msbuild.exe</_DesktopMSBuildPath>
     </PropertyGroup>
   </Target>
-  
+
   <Target Name="SignLayout"
           Condition="'$(SignCoreSdk)' == 'true' and '$(PostBuildSign)' != 'true'"
           DependsOnTargets="SetSignProps">
@@ -49,8 +49,8 @@
                                   $(SdkOutputDirectory)**/VBCSCompiler.dll;
                                   $(SdkOutputDirectory)**/vbc.exe;
                                   $(SdkOutputDirectory)**/vbc.dll;
-                                  $(SdkOutputDirectory)**/fsc.exe;
-                                  $(SdkOutputDirectory)**/fsi.exe;
+                                  $(SdkOutputDirectory)**/fsc.dll;
+                                  $(SdkOutputDirectory)**/fsi.dll;
                                   $(SdkOutputDirectory)**/FSharp.*.dll;
                                   $(SdkOutputDirectory)**/Interactive.DependencyManager.dll;
                                   $(SdkOutputDirectory)**/dotnet.dll;
@@ -74,12 +74,14 @@
                                   $(SdkOutputDirectory)**/MessagePack.Annotations.dll;
                                   $(SdkOutputDirectory)**/MessagePack.dll;
                                   $(SdkOutputDirectory)**/Nerdbank.Streams.dll;
-                                  $(SdkOutputDirectory)**/StreamJsonRpc.dll" />
+                                  $(SdkOutputDirectory)**/StreamJsonRpc.dll;
+                                  $(SdkOutputDirectory)**/dotnet-watch*.dll;
+                                  $(SdkOutputDirectory)**/DotNetWatchTasks.dll;" />
     </ItemGroup>
 
     <Error Condition="'$(AllowEmptySignList)' != 'true' AND '@(LayoutFilesToSign)' == ''"
            Text="List of files to sign is empty. Make sure that LayoutFilesToSign is configured correctly." />
-    
+
     <Microsoft.DotNet.SignTool.SignToolTask
       DryRun="$(_DryRun)"
       TestSign="$(_TestSign)"
@@ -93,7 +95,7 @@
       MSBuildPath="$(_DesktopMSBuildPath)"
       SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
       MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
-    
+
   </Target>
 
   <Target Name="SignSdkMsi"
@@ -156,7 +158,7 @@
 
     <!-- Extract engine from bundle -->
     <Exec Command="$(WixRoot)/insignia.exe -ib $(CombinedFrameworkSdkHostMSIInstallerFile) -o $(CombinedFrameworkSdkHostBundleEngineName)" />
-    
+
     <!-- Sign engine-->
     <ItemGroup>
       <EngineFileToSign Include="$(CombinedFrameworkSdkHostBundleEngineName)" />
@@ -174,10 +176,10 @@
         MSBuildPath="$(_DesktopMSBuildPath)"
         SNBinaryPath="$(NuGetPackageRoot)sn\$(SNVersion)\sn.exe"
         MicroBuildCorePath="$(NuGetPackageRoot)microbuild.core\$(MicroBuildCoreVersion)"/>
-    
+
     <!-- Reattach engine to bundle -->
     <Exec Command="$(WixRoot)/insignia.exe -ab $(CombinedFrameworkSdkHostBundleEngineName) $(CombinedFrameworkSdkHostMSIInstallerFile) -o $(CombinedFrameworkSdkHostMSIInstallerFile)" />
-    
+
     <!-- Sign bundle -->
     <ItemGroup>
       <BundleFileToSign Include="$(CombinedFrameworkSdkHostMSIInstallerFile)" />
