@@ -68,6 +68,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(Language)' == 'C#' Or '$(Language)' == 'VB'" />
   <Import Project="$(MSBuildThisFileDirectory)..\analyzers\build\Microsoft.CodeAnalysis.NetAnalyzers.targets"
           Condition="$(EnableNETAnalyzers)" />
+  <Import Project="$(MSBuildThisFileDirectory)..\analyzers\build\Microsoft.NET.ILLink.Analyzers.props"
+          Condition="'$(PublishSingleFile)' == 'true' Or '$(PublishTrimmed)' == 'true'" />
 
   <!-- .NET Analyzers -->
   <ItemGroup Condition="$(EnableNETAnalyzers)">
