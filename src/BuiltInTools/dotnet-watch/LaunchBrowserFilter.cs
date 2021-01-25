@@ -67,19 +67,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                         context.Reporter.Verbose($"Refresh server running at {serverUrl}.");
                         context.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT"] = serverUrl;
 
+                        const string dotnetStartHooksName = "DOTNET_STARTUP_HOOKS";
                         var pathToMiddleware = Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
-                        context.ProcessSpec.EnvironmentVariables["DOTNET_STARTUP_HOOKS"] = pathToMiddleware;
+                        context.ProcessSpec.EnvironmentVariables["DOTNET_STARTUP_HOOKS"] = AddOrAppend(dotnetStartHooksName, pathToMiddleware);
 
                         const string hostingStartupAssembliesName = "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES";
-                        var existingHostingStartupAssemblies = Environment.GetEnvironmentVariable(hostingStartupAssembliesName);
-                        if (!string.IsNullOrEmpty(existingHostingStartupAssemblies))
-                        {
-                            context.ProcessSpec.EnvironmentVariables[hostingStartupAssembliesName] = $"{existingHostingStartupAssemblies};Microsoft.AspNetCore.Watch.BrowserRefresh";
-                        }
-                        else
-                        {
-                            context.ProcessSpec.EnvironmentVariables[hostingStartupAssembliesName] = "Microsoft.AspNetCore.Watch.BrowserRefresh";
-                        }
+                        context.ProcessSpec.EnvironmentVariables[hostingStartupAssembliesName] = AddOrAppend(hostingStartupAssembliesName, "Microsoft.AspNetCore.Watch.BrowserRefresh");
                     }
                 }
             }
@@ -87,6 +80,20 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 // We've detected a change. Notify the browser.
                 await (_refreshServer?.SendWaitMessageAsync(cancellationToken) ?? default);
+            }
+        }
+
+        private string AddOrAppend(string envVarName, string envVarValue)
+        {
+            var existing = Environment.GetEnvironmentVariable(envVarName);
+
+            if (!string.IsNullOrEmpty(existing))
+            {
+                return $"{existing};{envVarValue}";
+            }
+            else
+            {
+                return envVarValue;
             }
         }
 
