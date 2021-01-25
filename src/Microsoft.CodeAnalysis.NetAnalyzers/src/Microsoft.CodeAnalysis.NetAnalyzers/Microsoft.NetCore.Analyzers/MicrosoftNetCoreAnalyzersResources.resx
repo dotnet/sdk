@@ -1510,4 +1510,13 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="UseSpanBasedStringConcatDescription" xml:space="preserve">
+    <value>description</value>
+  </data>
+  <data name="UseSpanBasedStringConcatMessage" xml:space="preserve">
+    <value>message</value>
+  </data>
+  <data name="UseSpanBasedStringConcatTitle" xml:space="preserve">
+    <value>title</value>
+  </data>
 </root>
