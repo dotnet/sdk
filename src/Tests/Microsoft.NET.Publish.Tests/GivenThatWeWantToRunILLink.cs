@@ -294,24 +294,15 @@ namespace Microsoft.NET.Publish.Tests
 
             // Please keep list below sorted and de-duplicated
             List<string> expectedOutput = new List<string> () {
-                    "ILLink : Trim analysis warning IL2026: System.Runtime.Serialization.Formatters.Binary.ObjectReader.TopLevelAssemblyTypeResolver.ResolveType(Assembly,String,Boolean",
-                    "ILLink : Trim analysis warning IL2026: System.Runtime.Serialization.FormatterServices.GetTypeFromAssembly(Assembly,String",
                     "ILLink : Trim analysis warning IL2057: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
                     "ILLink : Trim analysis warning IL2057: System.Resources.ResourceReader.FindType(Int32",
-                    "ILLink : Trim analysis warning IL2057: System.Runtime.Serialization.Formatters.Binary.ObjectReader.GetSimplyNamedTypeFromAssembly(Assembly,String,Type&",
                     "ILLink : Trim analysis warning IL2060: System.Resources.ResourceReader.InitializeBinaryFormatter(",
                     "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.NullableTypeInfo.NullableTypeInfo(Type,List<Type>",
                     "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.TypeAnalysis.TypeAnalysis(Type,EventDataAttribute,List<Type>",
-                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.FormatterServices.GetSerializableFields(Type",
-                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.ObjectManager.GetDeserializationConstructor(Type",
-                    "ILLink : Trim analysis warning IL2070: System.Runtime.Serialization.SerializationEvents.GetMethodsWithAttribute(Type,Type",
                     "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
                     "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.NullableTypeInfo.WriteData(PropertyValue",
                     "ILLink : Trim analysis warning IL2072: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
-                    "ILLink : Trim analysis warning IL2075: System.Runtime.Serialization.FormatterServices.InternalGetSerializableMembers(Type",
-                    "ILLink : Trim analysis warning IL2075: System.Runtime.Serialization.ObjectManager.DoValueTypeFixup(FieldInfo,ObjectHolder,Object",
                     "ILLink : Trim analysis warning IL2077: System.Resources.ResourceReader.InitializeBinaryFormatter(",
-                    "ILLink : Trim analysis warning IL2077: System.Runtime.Serialization.Formatters.Binary.ObjectReader.ParseObject(ParseRecord",
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -328,11 +319,10 @@ namespace Microsoft.NET.Publish.Tests
             //since the error experience is not good for a developer
             var warnings = result.StdOut.Split('\n', '\r', ')').Where(line => line.StartsWith("ILLink :"));
             var extraWarnings = warnings.Except(expectedOutput);
-            var missingWarnings = expectedOutput.Except(warnings);
 
             StringBuilder errorMessage = new StringBuilder();
 
-            if (missingWarnings.Any() || extraWarnings.Any())
+            if (extraWarnings.Any())
             {
                 // Print additional information to recognize which framework assemblies are being used.
                 errorMessage.Append($"Target framework from test: {targetFramework}{Environment.NewLine}");
@@ -351,20 +341,14 @@ namespace Microsoft.NET.Publish.Tests
                 }
                 errorMessage.Append($"The execution of a hello world app generated a diff in the number of warnings the app produces{Environment.NewLine}{Environment.NewLine}");
             }
-            if (missingWarnings.Any())
-            {
-                errorMessage.Append($"This is a list of missing linker warnings generated with your change using a console app, if you are working on make things linker" +
-                    $" friendly please also submit a PR deleting these warnings:{Environment.NewLine}");
-                foreach (var missingWarning in missingWarnings)
-                    errorMessage.Append("-  " + missingWarning + Environment.NewLine);
-            }
+            // Intentionally do not fail for missing warnings. That's an improvement.
             if (extraWarnings.Any())
             {
                 errorMessage.Append($"This is a list of extra linker warnings generated with your change using a console app:{Environment.NewLine}");
                 foreach (var extraWarning in extraWarnings)
                     errorMessage.Append("+  " + extraWarning + Environment.NewLine);
             }
-            Assert.True(!missingWarnings.Any() && !extraWarnings.Any(), errorMessage.ToString());
+            Assert.True(!extraWarnings.Any(), errorMessage.ToString());
         }
 
         [Theory]
