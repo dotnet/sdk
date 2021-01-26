@@ -76,8 +76,10 @@ public class C
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fixedCode } },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = 1,
                 CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue,
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
@@ -137,8 +139,10 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fixedCode } },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = 1,
                 CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue,
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
