@@ -84,8 +84,10 @@ public class A
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -116,8 +118,10 @@ End Class
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
@@ -192,8 +196,10 @@ public class A
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -224,8 +230,10 @@ End Class
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
@@ -299,8 +307,10 @@ public class A
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -331,8 +341,10 @@ End Class
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
@@ -406,8 +418,10 @@ public class A
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -438,8 +452,10 @@ End Class
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
@@ -836,8 +852,10 @@ public class A
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -872,8 +890,10 @@ End Class
 ",
                     },
                 },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = c_StringLengthCodeActionIndex,
                 CodeFixEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
     }

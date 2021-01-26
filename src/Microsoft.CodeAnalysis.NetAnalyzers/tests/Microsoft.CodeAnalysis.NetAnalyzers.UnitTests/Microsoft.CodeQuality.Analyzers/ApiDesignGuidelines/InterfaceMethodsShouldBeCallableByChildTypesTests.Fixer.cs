@@ -367,8 +367,10 @@ public sealed class ImplementsGeneral  : IGeneral
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = 1,
                 CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
@@ -517,8 +519,10 @@ public sealed class ImplementsGeneralThree : IGeneral
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = 1,
                 CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
@@ -949,8 +953,10 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = 1,
                 CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
@@ -1065,8 +1071,10 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
+#pragma warning disable CS0618 // Type or member is obsolete
                 CodeFixIndex = 1,
                 CodeFixEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
+#pragma warning restore CS0618 // Type or member is obsolete
             }.RunAsync();
         }
 
