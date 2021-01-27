@@ -528,7 +528,9 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testAsset);
 
-            publishCommand.Execute(PublishSingleFile, RuntimeIdentifier, bundleOption)
+            publishCommand
+                .WithRetry("https://github.com/dotnet/runtime/issues/47431")
+                .Execute(PublishSingleFile, RuntimeIdentifier, bundleOption)
                 .Should()
                 .Pass();
 
@@ -536,7 +538,9 @@ namespace Microsoft.NET.Publish.Tests
             var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
 
             var command = new RunExeCommand(Log, singleFilePath);
-            command.Execute()
+            command
+                .WithRetry("https://github.com/dotnet/runtime/issues/47431")
+                .Execute()
                 .Should()
                 .Pass()
                 .And

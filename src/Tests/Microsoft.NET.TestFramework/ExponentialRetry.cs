@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.DotNet.Cli.Build
+namespace Microsoft.NET.TestFramework
 {
     public static class ExponentialRetry
     {
@@ -24,8 +24,8 @@ namespace Microsoft.DotNet.Cli.Build
             }
         }
 
-        public static async Task ExecuteWithRetry(Func<Task<string>> action,
-            Func<string, bool> isSuccess,
+        public static async Task<T> ExecuteWithRetry<T>(Func<T> action,
+            Func<T, bool> isSuccess,
             int maxRetryCount,
             Func<IEnumerable<Task>> timer,
             string taskDescription = "")
@@ -34,10 +34,10 @@ namespace Microsoft.DotNet.Cli.Build
             foreach (var t in timer())
             {
                 await t;
-                var result = await action();
+                var result = action();
                 if (isSuccess(result))
                 {
-                    return;
+                    return result;
                 }
 
                 count++;

@@ -7,6 +7,7 @@ using Xunit.Abstractions;
 using System.Diagnostics;
 using System.Linq;
 using System;
+using static Microsoft.NET.TestFramework.ExponentialRetry;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
@@ -26,6 +27,10 @@ namespace Microsoft.NET.TestFramework.Commands
         public Action<string> CommandOutputHandler { get; set; }
         public Action<Process> ProcessStartedHandler { get; set; }
 
+        private bool RetryCommand { get; set; }
+
+        private string RetryReason{ get; set; }
+
         protected TestCommand(ITestOutputHelper log)
         {
             Log = log;
@@ -42,6 +47,13 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithWorkingDirectory(string workingDirectory)
         {
             WorkingDirectory = workingDirectory;
+            return this;
+        }
+
+        public TestCommand WithRetry(string reason = "")
+        {
+            RetryCommand = true;
+            RetryReason = reason;
             return this;
         }
 
@@ -83,7 +95,21 @@ namespace Microsoft.NET.TestFramework.Commands
         public CommandResult Execute(params string[] args)
         {
             IEnumerable<string> enumerableArgs = args;
-            return Execute(enumerableArgs);
+
+            if (RetryCommand)
+            {
+                return ExecuteWithRetry(
+                    action: () => Execute(enumerableArgs),
+                    isSuccess: (result) => result.ExitCode == 0,
+                    maxRetryCount: 2,
+                    timer: () => Timer(Intervals),
+                    taskDescription: RetryReason)
+                    .ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            else
+            {
+                return Execute(enumerableArgs);
+            }
         }
 
         public virtual CommandResult Execute(IEnumerable<string> args)
