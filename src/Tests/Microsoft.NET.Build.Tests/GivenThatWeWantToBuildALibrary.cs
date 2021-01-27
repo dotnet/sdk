@@ -955,7 +955,7 @@ namespace ProjectNameWithSpaces
             GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
         }
 
-        [Fact]
+        [WindowsOnlyRequiresMSBuildVersionFact("16.9.0-preview-21076-28")]
         public void It_errors_on_windows_sdk_assembly_version_conflicts()
         {
             var testProjectA = new TestProject()
