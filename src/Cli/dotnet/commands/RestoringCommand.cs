@@ -19,14 +19,14 @@ namespace Microsoft.DotNet.Tools
             IEnumerable<string> trailingArguments,
             bool noRestore,
             string msbuildPath = null)
-            : base(GetCommandArguments(msbuildArgs, parsedArguments, noRestore), msbuildPath)
+            : base(GetCommandArguments(msbuildArgs, trailingArguments, noRestore), msbuildPath)
         {
             SeparateRestoreCommand = GetSeparateRestoreCommand(parsedArguments, trailingArguments, noRestore, msbuildPath);
         }
 
         private static IEnumerable<string> GetCommandArguments(
             IEnumerable<string> msbuildArgs,
-            IEnumerable<string> parsedArguments,
+            IEnumerable<string> trailingArguments,
             bool noRestore)
         {
             if (noRestore) 
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Tools
                 return msbuildArgs;
             }
 
-            if (HasArgumentToExcludeFromRestore(parsedArguments))
+            if (HasArgumentToExcludeFromRestore(trailingArguments))
             {
                 return Prepend("-nologo", msbuildArgs);
             }
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tools
             bool noRestore,
             string msbuildPath)
         {
-            if (noRestore || !HasArgumentToExcludeFromRestore(parsedArguments))
+            if (noRestore || !HasArgumentToExcludeFromRestore(trailingArguments))
             {
                 return null;
             }
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Tools
             }
             if (trailingArguments != null)
             {
-                restoreArguments = restoreArguments.Concat(trailingArguments);
+                restoreArguments = restoreArguments.Concat(trailingArguments.Where(a => !IsExcludedFromRestore(a)));
             }
 
             return new RestoreCommand(restoreArguments, msbuildPath);

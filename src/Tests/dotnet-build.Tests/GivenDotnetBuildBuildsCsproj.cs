@@ -172,5 +172,12 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 cmd.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }
         }
+
+        [Fact]
+        public void ItPassesPropertiesToMSBuildCorrectly()
+        {
+            var res = Tools.Build.BuildCommand.FromArgs("HelloForms/HelloForms.csproj -t:Run -p:TargetFramework=net6.0-android".Split(' '));
+            res.GetProcessStartInfo().Arguments.Split(' ').Should().Contain(new string[] { "-restore", "-consoleloggerparameters:Summary", "-property:TargetFramework=net6.0-android", "HelloForms/HelloForms.csproj", "-t:Run" });
+        }
     }
 }
