@@ -78,6 +78,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
                     var initializerValue = fieldInitializerValue.ConstantValue.Value;
 
+                    if (fieldInitializerValue.Kind == OperationKind.InterpolatedString &&
+                        !IsConstantInterpolatedStringSupported())
+                    {
+                        return;
+                    }
+
                     // Though null is const we don't fire the diagnostic to be FxCop Compact
                     if (initializerValue != null &&
                         !constantIncompatibleTypes.Contains(fieldInitializerValue.Type))
@@ -94,6 +100,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 },
                 OperationKind.FieldInitializer);
             });
+        }
+
+        private static bool IsConstantInterpolatedStringSupported()
+        {
+            // TODO: When constant interpolated string is supported in a stable language version (most likely C# 10), this method should be updated.
+            // The feature is currently available for preview only.
+            return false;
         }
     }
 }
