@@ -21,7 +21,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
             //"nunit3.dotnetnew.template",
             "microsoft.aspnetcore.components.webassembly.template"
         };
-        private static readonly string _FilterId = "Permanent pack blacklist";
+        private static readonly string _FilterId = "Permanently skipped packages";
 
         public static Func<IInstalledPackInfo, PreFilterResult> SetupPackFilter()
         {
