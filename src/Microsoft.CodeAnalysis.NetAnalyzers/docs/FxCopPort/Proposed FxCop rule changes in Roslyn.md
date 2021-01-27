@@ -74,5 +74,5 @@ Why shouldn't all publicly visible methods follow this rule?
 We decided not to port this because of a high false positive rate, and our opinion that it was not of high value. We have had the following pushback on this decision:
 
 > @stilgarSCA: :-1: on this decision. Despite the fact that this causes a lot of false positives, I think it's worth keeping the rule for the correctly identified issues. End users always have the option of disabling rules for which they find no value.
-
+>
 > Several others have also argued for reversing this decision, as can be seen in the comments of [issue #695](https://github.com/dotnet/roslyn-analyzers/issues/695) and [issue #291](https://github.com/dotnet/roslyn-analyzers/issues/291).

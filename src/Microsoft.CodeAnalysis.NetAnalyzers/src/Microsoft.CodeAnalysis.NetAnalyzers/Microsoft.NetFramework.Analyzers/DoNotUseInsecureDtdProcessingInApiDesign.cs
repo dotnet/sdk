@@ -25,7 +25,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureDtdProcessingInApiDesign)),
                 nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage),
                 DiagnosticCategory.Security,
-                RuleLevel.IdeSuggestion,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingInApiDesignDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);

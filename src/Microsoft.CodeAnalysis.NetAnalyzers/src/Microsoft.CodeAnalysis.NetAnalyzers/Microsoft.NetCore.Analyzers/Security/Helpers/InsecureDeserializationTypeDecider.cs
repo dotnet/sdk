@@ -183,6 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
 
             if (this.InsecureTypeSymbols.Count == 0)
             {
+                results = ImmutableArray<InsecureObjectGraphResult>.Empty;
                 return false;
             }
 

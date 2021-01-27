@@ -83,27 +83,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     if (operationBlockContext.OwningSymbol is not IMethodSymbol containingMethod ||
                         !disposeAnalysisHelper.HasAnyDisposableCreationDescendant(operationBlockContext.OperationBlocks, containingMethod) ||
-                        containingMethod.IsConfiguredToSkipAnalysis(operationBlockContext.Options,
-                            NotDisposedRule, operationBlockContext.Compilation, operationBlockContext.CancellationToken))
+                        operationBlockContext.Options.IsConfiguredToSkipAnalysis(NotDisposedRule, containingMethod, operationBlockContext.Compilation, operationBlockContext.CancellationToken))
                     {
                         return;
                     }
 
-                    var disposeAnalysisKind = operationBlockContext.Options.GetDisposeAnalysisKindOption(NotDisposedOnExceptionPathsRule, DisposeAnalysisKind.NonExceptionPaths, operationBlockContext.CancellationToken);
+                    var disposeAnalysisKind = operationBlockContext.Options.GetDisposeAnalysisKindOption(NotDisposedOnExceptionPathsRule, containingMethod,
+                        operationBlockContext.Compilation, DisposeAnalysisKind.NonExceptionPaths, operationBlockContext.CancellationToken);
                     var trackExceptionPaths = disposeAnalysisKind.AreExceptionPathsEnabled();
 
                     // For non-exception paths analysis, we can skip interprocedural analysis for certain invocations.
-                    var interproceduralAnalysisPredicateOpt = !trackExceptionPaths ?
+                    var interproceduralAnalysisPredicate = !trackExceptionPaths ?
                         new InterproceduralAnalysisPredicate(
-                            skipAnalysisForInvokedMethodPredicateOpt: SkipInterproceduralAnalysis,
-                            skipAnalysisForInvokedLambdaOrLocalFunctionPredicateOpt: null,
-                            skipAnalysisForInvokedContextPredicateOpt: null) :
+                            skipAnalysisForInvokedMethodPredicate: SkipInterproceduralAnalysis,
+                            skipAnalysisForInvokedLambdaOrLocalFunctionPredicate: null,
+                            skipAnalysisForInvokedContextPredicate: null) :
                         null;
 
                     if (disposeAnalysisHelper.TryGetOrComputeResult(operationBlockContext.OperationBlocks, containingMethod,
-                        operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.Complete, trackInstanceFields: false, trackExceptionPaths,
+                        operationBlockContext.Options, NotDisposedRule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, trackInstanceFields: false, trackExceptionPaths,
                         operationBlockContext.CancellationToken, out var disposeAnalysisResult, out var pointsToAnalysisResult,
-                        interproceduralAnalysisPredicateOpt))
+                        interproceduralAnalysisPredicate))
                     {
                         using var notDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
                         using var mayBeNotDisposedDiagnostics = ArrayBuilder<Diagnostic>.GetInstance();
@@ -118,13 +118,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (trackExceptionPaths)
                         {
                             // Compute diagnostics for undisposed objects at handled exception exit paths.
-                            var disposeDataAtHandledExceptionPaths = disposeAnalysisResult.ExceptionPathsExitBlockOutputOpt!.Data;
+                            var disposeDataAtHandledExceptionPaths = disposeAnalysisResult.ExceptionPathsExitBlockOutput!.Data;
                             ComputeDiagnostics(disposeDataAtHandledExceptionPaths,
                                 notDisposedDiagnostics, mayBeNotDisposedDiagnostics, disposeAnalysisResult, pointsToAnalysisResult,
                                 disposeAnalysisKind, isDisposeDataForExceptionPaths: true);
 
                             // Compute diagnostics for undisposed objects at unhandled exception exit paths, if any.
-                            var disposeDataAtUnhandledExceptionPaths = disposeAnalysisResult.MergedStateForUnhandledThrowOperationsOpt?.Data;
+                            var disposeDataAtUnhandledExceptionPaths = disposeAnalysisResult.MergedStateForUnhandledThrowOperations?.Data;
                             if (disposeDataAtUnhandledExceptionPaths != null)
                             {
                                 ComputeDiagnostics(disposeDataAtUnhandledExceptionPaths,
@@ -135,13 +135,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         if (!notDisposedDiagnostics.Any() && !mayBeNotDisposedDiagnostics.Any())
                         {
-                            return;
-                        }
-
-                        if (disposeAnalysisResult.ControlFlowGraph.OriginalOperation.HasAnyOperationDescendant(o => o.Kind == OperationKind.None))
-                        {
-                            // Workaround for https://github.com/dotnet/roslyn/issues/32100
-                            // Bail out in presence of OperationKind.None - not implemented IOperation.
                             return;
                         }
 
@@ -206,7 +199,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 AbstractLocation location = kvp.Key;
                 DisposeAbstractValue disposeValue = kvp.Value;
                 if (disposeValue.Kind == DisposeAbstractValueKind.NotDisposable ||
-                    location.CreationOpt == null)
+                    location.Creation == null)
                 {
                     continue;
                 }

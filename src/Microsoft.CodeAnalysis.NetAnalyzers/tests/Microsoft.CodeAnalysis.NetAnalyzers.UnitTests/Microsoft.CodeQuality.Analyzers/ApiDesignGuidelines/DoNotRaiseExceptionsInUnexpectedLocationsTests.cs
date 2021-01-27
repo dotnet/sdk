@@ -1,30 +1,25 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class DoNotRaiseExceptionsInUnexpectedLocationsTests : DiagnosticAnalyzerTestBase
+    public class DoNotRaiseExceptionsInUnexpectedLocationsTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpDoNotRaiseExceptionsInUnexpectedLocationsAnalyzer();
-        }
-
         #region Property and Event Tests
 
         [Fact]
-        public void CSharpPropertyNoDiagnostics()
+        public async Task CSharpPropertyNoDiagnostics()
         {
             var code = @"
 using System;
@@ -42,11 +37,11 @@ class NonPublic
     public int PropWithException { get { throw new Exception(); } set { throw new NotSupportedException(); } }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void CSharpPropertyWithDerivedExceptionNoDiagnostics()
+        public async Task CSharpPropertyWithDerivedExceptionNoDiagnostics()
         {
             var code = @"
 using System;
@@ -56,11 +51,11 @@ public class C
     public int this[int x] { get { throw new ArgumentOutOfRangeException(); } set { throw new ArgumentOutOfRangeException(); } }
 }
 ";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicPropertyNoDiagnostics()
+        public async Task BasicPropertyNoDiagnostics()
         {
             var code = @"
 Imports System
@@ -109,11 +104,11 @@ Class NonPublic
     End Property
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicPropertyWithDerivedExceptionNoDiagnostics()
+        public async Task BasicPropertyWithDerivedExceptionNoDiagnostics()
         {
             var code = @"
 Imports System
@@ -129,11 +124,11 @@ Public Class C
     End Property
 End Class
 ";
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void CSharpPropertyWithInvalidExceptions()
+        public async Task CSharpPropertyWithInvalidExceptions()
         {
             var code = @"
 using System;
@@ -145,7 +140,7 @@ public class C
     public event EventHandler Event1 { add { throw new Exception(); } remove { throw new Exception(); } }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpPropertyResultAt(6, 30, "get_Prop1", "Exception"),
                          GetCSharpPropertyResultAt(7, 36, "get_Item", "Exception"),
                          GetCSharpAllowedExceptionsResultAt(8, 46, "add_Event1", "Exception"),
@@ -153,7 +148,7 @@ public class C
         }
 
         [Fact]
-        public void BasicPropertyWithInvalidExceptions()
+        public async Task BasicPropertyWithInvalidExceptions()
         {
             var code = @"
 Imports System
@@ -192,7 +187,7 @@ Public Class C
     End Event
 End Class
 ";
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicPropertyResultAt(7, 12, "get_Prop1", "Exception"),
                         GetBasicPropertyResultAt(15, 12, "get_Item", "Exception"),
                         GetBasicAllowedExceptionsResultAt(24, 13, "add_Event1", "Exception"),
@@ -200,7 +195,7 @@ End Class
         }
 
         [Fact, WorkItem(1842, "https://github.com/dotnet/roslyn-analyzers/issues/1842")]
-        public void CSharpIndexer_KeyNotFoundException_NoDiagnostics()
+        public async Task CSharpIndexer_KeyNotFoundException_NoDiagnostics()
         {
             var code = @"
 using System.Collections.Generic;
@@ -209,7 +204,7 @@ public class C
 {
     public int this[int x] { get { throw new KeyNotFoundException(); } }
 }";
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         #endregion
@@ -217,7 +212,7 @@ public class C
         #region Equals, GetHashCode, Dispose and ToString Tests
 
         [Fact]
-        public void CSharpEqualsAndGetHashCodeWithExceptions()
+        public async Task CSharpEqualsAndGetHashCodeWithExceptions()
         {
             var code = @"
 using System;
@@ -235,13 +230,13 @@ public class C
 }
 ";
 
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, "Equals", "Exception"),
                          GetCSharpNoExceptionsResultAt(12, 9, "GetHashCode", "ArgumentException"));
         }
 
         [Fact]
-        public void BasicEqualsAndGetHashCodeWithExceptions()
+        public async Task BasicEqualsAndGetHashCodeWithExceptions()
         {
             var code = @"
 Imports System
@@ -256,13 +251,13 @@ Public Class C
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(6, 9, "Equals", "Exception"),
                         GetBasicNoExceptionsResultAt(9, 9, "GetHashCode", "ArgumentException"));
         }
 
         [Fact]
-        public void CSharpEqualsAndGetHashCodeNoDiagnostics()
+        public async Task CSharpEqualsAndGetHashCodeNoDiagnostics()
         {
             var code = @"
 using System;
@@ -280,11 +275,11 @@ public class C
 }
 ";
 
-            VerifyCSharp(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void BasicEqualsAndGetHashCodeNoDiagnostics()
+        public async Task BasicEqualsAndGetHashCodeNoDiagnostics()
         {
             var code = @"
 Imports System
@@ -299,11 +294,11 @@ Public Class C
 End Class
 ";
 
-            VerifyBasic(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public void CSharpIEquatableEqualsWithExceptions()
+        public async Task CSharpIEquatableEqualsWithExceptions()
         {
             var code = @"
 using System;
@@ -316,12 +311,12 @@ public class C : IEquatable<C>
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, "Equals", "Exception"));
         }
 
         [Fact]
-        public void BasicIEquatableEqualsExceptions()
+        public async Task BasicIEquatableEqualsExceptions()
         {
             var code = @"
 Imports System
@@ -334,12 +329,12 @@ Public Class C
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"));
         }
 
         [Fact]
-        public void CSharpIHashCodeProviderGetHashCode()
+        public async Task CSharpIHashCodeProviderGetHashCode()
         {
             var code = @"
 using System;
@@ -360,12 +355,12 @@ public class D : IHashCodeProvider
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpAllowedExceptionsResultAt(8, 9, "GetHashCode", "Exception"));
         }
 
         [Fact]
-        public void BasicIHashCodeProviderGetHashCode()
+        public async Task BasicIHashCodeProviderGetHashCode()
         {
             var code = @"
 Imports System
@@ -385,12 +380,12 @@ Public Class D
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicAllowedExceptionsResultAt(7, 9, "GetHashCode", "Exception"));
         }
 
         [Fact]
-        public void CSharpIEqualityComparer()
+        public async Task CSharpIEqualityComparer()
         {
             var code = @"
 using System;
@@ -407,13 +402,13 @@ public class C : IEqualityComparer<C>
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, "Equals", "Exception"),
                          GetCSharpAllowedExceptionsResultAt(12, 9, "GetHashCode", "Exception"));
         }
 
         [Fact]
-        public void BasicIEqualityComparer()
+        public async Task BasicIEqualityComparer()
         {
             var code = @"
 Imports System
@@ -429,13 +424,13 @@ Public Class C
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"),
                         GetBasicAllowedExceptionsResultAt(10, 9, "GetHashCode", "Exception"));
         }
 
         [Fact]
-        public void CSharpIDisposable()
+        public async Task CSharpIDisposable()
         {
             var code = @"
 using System;
@@ -448,12 +443,12 @@ public class C : IDisposable
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, "Dispose", "Exception"));
         }
 
         [Fact]
-        public void BasicIDisposable()
+        public async Task BasicIDisposable()
         {
             var code = @"
 Imports System
@@ -466,12 +461,12 @@ Public Class C
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(7, 9, "Dispose", "Exception"));
         }
 
         [Fact]
-        public void CSharpToStringWithExceptions()
+        public async Task CSharpToStringWithExceptions()
         {
             var code = @"
 using System;
@@ -485,12 +480,12 @@ public class C
 }
 ";
 
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, "ToString", "Exception"));
         }
 
         [Fact]
-        public void BasicToStringWithExceptions()
+        public async Task BasicToStringWithExceptions()
         {
             var code = @"
 Imports System
@@ -502,7 +497,7 @@ Public Class C
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(6, 9, "ToString", "Exception"));
         }
 
@@ -510,7 +505,7 @@ End Class
 
         #region Constructor and Destructor tests
         [Fact]
-        public void CSharpStaticConstructorWithExceptions()
+        public async Task CSharpStaticConstructorWithExceptions()
         {
             var code = @"
 using System;
@@ -523,12 +518,12 @@ class NonPublic
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, ".cctor", "Exception"));
         }
 
         [Fact]
-        public void BasicStaticConstructorWithExceptions()
+        public async Task BasicStaticConstructorWithExceptions()
         {
             var code = @"
 Imports System
@@ -540,12 +535,12 @@ Class NonPublic
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(6, 9, ".cctor", "Exception"));
         }
 
         [Fact]
-        public void CSharpFinalizerWithExceptions()
+        public async Task CSharpFinalizerWithExceptions()
         {
             var code = @"
 using System;
@@ -558,12 +553,12 @@ class NonPublic
     }
 }
 ";
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, "Finalize", "Exception"));
         }
 
         [Fact]
-        public void BasicFinalizerWithExceptions()
+        public async Task BasicFinalizerWithExceptions()
         {
             var code = @"
 Imports System
@@ -575,14 +570,14 @@ Class NonPublic
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(6, 9, "Finalize", "Exception"));
         }
         #endregion
 
         #region Operator tests
         [Fact]
-        public void CSharpEqualityOperatorWithExceptions()
+        public async Task CSharpEqualityOperatorWithExceptions()
         {
             var code = @"
 using System;
@@ -600,13 +595,13 @@ public class C
 }
 ";
 
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, "op_Equality", "Exception"),
                          GetCSharpNoExceptionsResultAt(12, 9, "op_Inequality", "Exception"));
         }
 
         [Fact]
-        public void BasicEqualityOperatorWithExceptions()
+        public async Task BasicEqualityOperatorWithExceptions()
         {
             var code = @"
 Imports System
@@ -621,13 +616,13 @@ Public Class C
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(6, 9, "op_Equality", "Exception"),
                         GetBasicNoExceptionsResultAt(9, 9, "op_Inequality", "Exception"));
         }
 
         [Fact]
-        public void CSharpImplicitOperatorWithExceptions()
+        public async Task CSharpImplicitOperatorWithExceptions()
         {
             var code = @"
 using System;
@@ -645,12 +640,12 @@ public class C
 }
 ";
 
-            VerifyCSharp(code,
+            await VerifyCS.VerifyAnalyzerAsync(code,
                          GetCSharpNoExceptionsResultAt(8, 9, "op_Implicit", "Exception"));
         }
 
         [Fact]
-        public void BasicImplicitOperatorWithExceptions()
+        public async Task BasicImplicitOperatorWithExceptions()
         {
             var code = @"
 Imports System
@@ -665,35 +660,49 @@ Public Class C
 End Class
 ";
 
-            VerifyBasic(code,
+            await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(6, 9, "op_Implicit", "Exception"));
         }
         #endregion
 
-        private DiagnosticResult GetCSharpPropertyResultAt(int line, int column, string methodName, string exceptionName)
+        private static DiagnosticResult GetCSharpPropertyResultAt(int line, int column, string methodName, string exceptionName)
         {
             return GetCSharpResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.PropertyGetterRule, methodName, exceptionName);
         }
-        private DiagnosticResult GetCSharpAllowedExceptionsResultAt(int line, int column, string methodName, string exceptionName)
+        private static DiagnosticResult GetCSharpAllowedExceptionsResultAt(int line, int column, string methodName, string exceptionName)
         {
             return GetCSharpResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.HasAllowedExceptionsRule, methodName, exceptionName);
         }
-        private DiagnosticResult GetCSharpNoExceptionsResultAt(int line, int column, string methodName, string exceptionName)
+        private static DiagnosticResult GetCSharpNoExceptionsResultAt(int line, int column, string methodName, string exceptionName)
         {
             return GetCSharpResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule, methodName, exceptionName);
         }
 
-        private DiagnosticResult GetBasicPropertyResultAt(int line, int column, string methodName, string exceptionName)
+        private static DiagnosticResult GetBasicPropertyResultAt(int line, int column, string methodName, string exceptionName)
         {
             return GetBasicResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.PropertyGetterRule, methodName, exceptionName);
         }
-        private DiagnosticResult GetBasicAllowedExceptionsResultAt(int line, int column, string methodName, string exceptionName)
+        private static DiagnosticResult GetBasicAllowedExceptionsResultAt(int line, int column, string methodName, string exceptionName)
         {
             return GetBasicResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.HasAllowedExceptionsRule, methodName, exceptionName);
         }
-        private DiagnosticResult GetBasicNoExceptionsResultAt(int line, int column, string methodName, string exceptionName)
+        private static DiagnosticResult GetBasicNoExceptionsResultAt(int line, int column, string methodName, string exceptionName)
         {
             return GetBasicResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule, methodName, exceptionName);
         }
+
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic(rule)
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(arguments);
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic(rule)
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(arguments);
     }
 }

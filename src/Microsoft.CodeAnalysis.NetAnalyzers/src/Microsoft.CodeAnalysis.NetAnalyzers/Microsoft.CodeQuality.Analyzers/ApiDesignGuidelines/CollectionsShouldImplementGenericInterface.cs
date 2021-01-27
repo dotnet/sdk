@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -54,136 +57,95 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
             analysisContext.RegisterCompilationStartAction(
-               (context) =>
+               context =>
                {
-                   INamedTypeSymbol? iCollectionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsICollection);
-                   INamedTypeSymbol? genericICollectionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1);
-                   INamedTypeSymbol? iEnumerableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable);
-                   INamedTypeSymbol? genericIEnumerableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1);
-                   INamedTypeSymbol? iListType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIList);
-                   INamedTypeSymbol? genericIListType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIList1);
+                   var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
 
-                   if (iCollectionType == null && genericICollectionType == null &&
-                       iEnumerableType == null && genericIEnumerableType == null &&
-                       iListType == null && genericIListType == null)
+                   // Orders inside the array matters as we report only on the first missing implemented tuple.
+                   var interfaceToGenericInterfaceMapBuilder = ImmutableArray.CreateBuilder<KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>>();
+
+                   INamedTypeSymbol? iListType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIList);
+                   INamedTypeSymbol? genericIListType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIList1);
+
+                   if (iListType != null && genericIListType != null)
                    {
-                       return;
+                       interfaceToGenericInterfaceMapBuilder.Add(new KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>(iListType, genericIListType));
                    }
 
-                   context.RegisterSymbolAction(c => AnalyzeSymbol(c,
-                                                iCollectionType, genericICollectionType,
-                                                iEnumerableType, genericIEnumerableType,
-                                                iListType, genericIListType),
-                                                SymbolKind.NamedType);
+                   INamedTypeSymbol? iCollectionType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsICollection);
+                   INamedTypeSymbol? genericICollectionType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1);
+
+                   if (iCollectionType != null && genericICollectionType != null)
+                   {
+                       interfaceToGenericInterfaceMapBuilder.Add(new KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>(iCollectionType, genericICollectionType));
+                   }
+
+                   INamedTypeSymbol? iEnumerableType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable);
+                   INamedTypeSymbol? genericIEnumerableType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1);
+
+                   if (iEnumerableType != null && genericIEnumerableType != null)
+                   {
+                       interfaceToGenericInterfaceMapBuilder.Add(new KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>(iEnumerableType, genericIEnumerableType));
+                   }
+
+                   context.RegisterSymbolAction(c => AnalyzeSymbol(c, interfaceToGenericInterfaceMapBuilder.ToImmutable()), SymbolKind.NamedType);
                });
         }
 
-        private static void AnalyzeSymbol(
-            SymbolAnalysisContext context,
-            INamedTypeSymbol? iCollectionType,
-            INamedTypeSymbol? gCollectionType,
-            INamedTypeSymbol? iEnumerableType,
-            INamedTypeSymbol? gEnumerableType,
-            INamedTypeSymbol? iListType,
-            INamedTypeSymbol? gListType)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableArray<KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>> interfacePairs)
         {
+            Debug.Assert(interfacePairs.All(kvp => kvp.Key.TypeKind == TypeKind.Interface && kvp.Value.TypeKind == TypeKind.Interface));
+
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
             // FxCop compat: only fire on externally visible types by default.
-            if (!namedTypeSymbol.MatchesConfiguredVisibility(context.Options, Rule, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation, context.CancellationToken))
             {
                 return;
             }
 
-            var allInterfacesStatus = default(CollectionsInterfaceStatus);
-            foreach (var @interface in namedTypeSymbol.AllInterfaces)
+            using var allInterfaces = PooledHashSet<INamedTypeSymbol>.GetInstance();
+            foreach (var @interface in namedTypeSymbol.AllInterfaces.Select(i => i.OriginalDefinition))
             {
-                var originalDefinition = @interface.OriginalDefinition;
-                if (originalDefinition.Equals(iCollectionType))
+                allInterfaces.Add(@interface);
+            }
+
+            // First we need to try to match all types from the user definition...
+            var userMap = context.Options.GetAdditionalRequiredGenericInterfaces(Rule, context.Symbol, context.Compilation, context.CancellationToken);
+            if (!userMap.IsEmpty)
+            {
+                foreach (var @interface in allInterfaces)
                 {
-                    allInterfacesStatus.ICollectionPresent = true;
-                }
-                else if (originalDefinition.Equals(iEnumerableType))
-                {
-                    allInterfacesStatus.IEnumerablePresent = true;
-                }
-                else if (originalDefinition.Equals(iListType))
-                {
-                    allInterfacesStatus.IListPresent = true;
-                }
-                else if (originalDefinition.Equals(gCollectionType))
-                {
-                    allInterfacesStatus.GenericICollectionPresent = true;
-                }
-                else if (originalDefinition.Equals(gEnumerableType))
-                {
-                    allInterfacesStatus.GenericIEnumerablePresent = true;
-                }
-                else if (originalDefinition.Equals(gListType))
-                {
-                    allInterfacesStatus.GenericIListPresent = true;
+                    if (!@interface.IsGenericType &&
+                        userMap.TryGetValue(@interface, out var genericInterface) &&
+                        genericInterface?.IsGenericType == true)
+                    {
+                        ReportDiagnostic(@interface, genericInterface);
+                        return;
+                    }
                 }
             }
 
-            INamedTypeSymbol? missingInterface;
-            INamedTypeSymbol? implementedInterface;
-            if (allInterfacesStatus.GenericIListPresent)
+            // ...Then we can proceed with the hardcoded ones keeping the declaration order
+            for (int i = 0; i < interfacePairs.Length; i++)
             {
-                // Implemented IList<T>, meaning has all 3 generic interfaces. Nothing can be wrong.
-                return;
-            }
-            else if (allInterfacesStatus.IListPresent)
-            {
-                // Implemented IList but not IList<T>.
-                missingInterface = gListType;
-                implementedInterface = iListType;
-            }
-            else if (allInterfacesStatus.GenericICollectionPresent)
-            {
-                // Implemented ICollection<T>, and doesn't have an inherit of IList. Nothing can be wrong
-                return;
-            }
-            else if (allInterfacesStatus.ICollectionPresent)
-            {
-                // Implemented ICollection but not ICollection<T>
-                missingInterface = gCollectionType;
-                implementedInterface = iCollectionType;
-            }
-            else if (allInterfacesStatus.GenericIEnumerablePresent)
-            {
-                // Implemented IEnumerable<T>, and doesn't have an inherit of ICollection. Nothing can be wrong
-                return;
-            }
-            else if (allInterfacesStatus.IEnumerablePresent)
-            {
-                // Implemented IEnumerable, but not IEnumerable<T>
-                missingInterface = gEnumerableType;
-                implementedInterface = iEnumerableType;
-            }
-            else
-            {
-                // No collections implementation, nothing can be wrong.
-                return;
+                var kvp = interfacePairs[i];
+
+                if (allInterfaces.Contains(kvp.Key) && !allInterfaces.Contains(kvp.Value))
+                {
+                    ReportDiagnostic(kvp.Key, kvp.Value);
+                    return;
+                }
             }
 
-            RoslynDebug.Assert(missingInterface != null && implementedInterface != null);
-            context.ReportDiagnostic(Diagnostic.Create(Rule,
-                                                       namedTypeSymbol.Locations.First(),
-                                                       namedTypeSymbol.Name,
-                                                       implementedInterface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                                                       missingInterface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
-        }
+            return;
 
-#pragma warning disable CA1815 // Override equals and operator equals on value types
-        private struct CollectionsInterfaceStatus
-#pragma warning restore CA1815 // Override equals and operator equals on value types
-        {
-            public bool IListPresent { get; set; }
-            public bool GenericIListPresent { get; set; }
-            public bool ICollectionPresent { get; set; }
-            public bool GenericICollectionPresent { get; set; }
-            public bool IEnumerablePresent { get; set; }
-            public bool GenericIEnumerablePresent { get; set; }
+            void ReportDiagnostic(INamedTypeSymbol @interface, INamedTypeSymbol genericInterface)
+            {
+                context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(Rule, namedTypeSymbol.Name,
+                    @interface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                    genericInterface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
+            }
         }
     }
 }

@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-#if !BUILDING_VSIX // Analyzer not supported in the Microsoft CodeAnalysis (FxCop analyzers) VSIX
-
 using System.Threading.Tasks;
 using Xunit;
-// Use the security verifiers since this diagnostic is reported in generated code
-using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForNaNCorrectlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpTestForNaNCorrectlyFixer>;
-using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForNaNCorrectlyAnalyzer,
     Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicTestForNaNCorrectlyFixer>;
 
@@ -548,5 +545,3 @@ public class A
         }
     }
 }
-
-#endif

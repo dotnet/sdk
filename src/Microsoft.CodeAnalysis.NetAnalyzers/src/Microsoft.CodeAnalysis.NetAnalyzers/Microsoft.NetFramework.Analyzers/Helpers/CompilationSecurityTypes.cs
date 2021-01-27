@@ -29,7 +29,6 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
         public INamedTypeSymbol? XmlSecureResolver { get; private set; }
         public INamedTypeSymbol? XsltSettings { get; private set; }
 
-
         public CompilationSecurityTypes(Compilation compilation)
         {
             HandleProcessCorruptedStateExceptionsAttribute =

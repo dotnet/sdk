@@ -1,40 +1,89 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAttributesWithAttributeUsageFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public partial class MarkAttributesWithAttributeUsageTests : DiagnosticAnalyzerTestBase
+    public partial class MarkAttributesWithAttributeUsageTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
+        [Theory]
+        [InlineData(AttributeTargets.All, 0)]
+        [InlineData(AttributeTargets.Assembly, 1)]
+        [InlineData(AttributeTargets.Class, 2)]
+        [InlineData(AttributeTargets.Constructor, 3)]
+        [InlineData(AttributeTargets.Delegate, 4)]
+        [InlineData(AttributeTargets.Enum, 5)]
+        [InlineData(AttributeTargets.Event, 6)]
+        [InlineData(AttributeTargets.Field, 7)]
+        [InlineData(AttributeTargets.GenericParameter, 8)]
+        [InlineData(AttributeTargets.Interface, 9)]
+        [InlineData(AttributeTargets.Method, 10)]
+        [InlineData(AttributeTargets.Module, 11)]
+        [InlineData(AttributeTargets.Parameter, 12)]
+        [InlineData(AttributeTargets.Property, 13)]
+        [InlineData(AttributeTargets.ReturnValue, 14)]
+        [InlineData(AttributeTargets.Struct, 15)]
+        public async Task TestSimpleAttributeClass(AttributeTargets attributeTarget, int codeActionIndex)
         {
-            return new MarkAttributesWithAttributeUsageAnalyzer();
-        }
+            var attributeTargetsValue = "AttributeTargets." + attributeTarget.ToString();
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new MarkAttributesWithAttributeUsageAnalyzer();
-        }
-
-        [Fact]
-        public void TestCSSimpleAttributeClass()
-        {
-            VerifyCSharp(@"
+            await new VerifyCS.Test
+            {
+                TestCode = @"
 using System;
 
 class C : Attribute
 {
 }
-", GetCA1018CSharpResultAt(4, 7, "C"));
+",
+                ExpectedDiagnostics = { GetCA1018CSharpResultAt(4, 7, "C"), },
+                CodeActionIndex = codeActionIndex,
+                CodeActionEquivalenceKey = attributeTargetsValue,
+                FixedCode = @"
+using System;
+
+[AttributeUsage(" + attributeTargetsValue + @")]
+class C : Attribute
+{
+}
+",
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestCode = @"
+Imports System
+
+Class C
+    Inherits Attribute
+End Class
+",
+                ExpectedDiagnostics = { GetCA1018BasicResultAt(4, 7, "C"), },
+                FixedCode = @"
+Imports System
+
+<AttributeUsage(AttributeTargets.All)>
+Class C
+    Inherits Attribute
+End Class
+",
+            }.RunAsync();
         }
 
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
-        public void TestCSInheritedAttributeClass()
+        public async Task TestCSInheritedAttributeClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 [AttributeUsage(AttributeTargets.Method)]
@@ -48,9 +97,9 @@ class D : C
         }
 
         [Fact]
-        public void TestCSAbstractAttributeClass()
+        public async Task TestCSAbstractAttributeClass()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 abstract class C : Attribute
@@ -59,22 +108,10 @@ abstract class C : Attribute
 ");
         }
 
-        [Fact]
-        public void TestVBSimpleAttributeClass()
-        {
-            VerifyBasic(@"
-Imports System
-
-Class C
-    Inherits Attribute
-End Class
-", GetCA1018BasicResultAt(4, 7, "C"));
-        }
-
         [Fact, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
-        public void TestVBInheritedAttributeClass()
+        public async Task TestVBInheritedAttributeClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 <AttributeUsage(AttributeTargets.Method)>
@@ -88,9 +125,9 @@ End Class
         }
 
         [Fact]
-        public void TestVBAbstractAttributeClass()
+        public async Task TestVBAbstractAttributeClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 MustInherit Class C
@@ -100,13 +137,17 @@ End Class
         }
 
         private static DiagnosticResult GetCA1018CSharpResultAt(int line, int column, string objectName)
-        {
-            return GetCSharpResultAt(line, column, MarkAttributesWithAttributeUsageAnalyzer.Rule, objectName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(objectName);
 
         private static DiagnosticResult GetCA1018BasicResultAt(int line, int column, string objectName)
-        {
-            return GetBasicResultAt(line, column, MarkAttributesWithAttributeUsageAnalyzer.Rule, objectName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(objectName);
     }
 }

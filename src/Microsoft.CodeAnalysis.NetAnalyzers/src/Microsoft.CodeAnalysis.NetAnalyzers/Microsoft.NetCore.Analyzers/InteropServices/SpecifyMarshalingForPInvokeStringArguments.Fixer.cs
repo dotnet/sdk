@@ -108,7 +108,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return editor.GetChangedDocument();
         }
 
-
         // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
         private class MyCodeAction : DocumentChangeAction
         {

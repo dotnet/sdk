@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -18,10 +19,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     {
         private static readonly DiagnosticDescriptor Rule = JsonNetTypeNameHandling.Rule;
 
-        [Fact]
-        public async Task DocSample1_CSharp_Violation_Diagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task DocSample1_CSharp_Violation_Diagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using Newtonsoft.Json;
 
 public class ExampleClass
@@ -37,10 +39,11 @@ public class ExampleClass
                 GetCSharpResultAt(11, 37, Rule));
         }
 
-        [Fact]
-        public async Task DocSample1_VB_Violation_Diagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task DocSample1_VB_Violation_Diagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyBasicWithJsonNetAsync(@"
+            await VerifyBasicWithJsonNetAsync(version, @"
 Imports Newtonsoft.Json
 
 Public Class ExampleClass
@@ -54,10 +57,11 @@ End Class",
                 GetBasicResultAt(9, 37, Rule));
         }
 
-        [Fact]
-        public async Task DocSample1_CSharp_Solution_NoDiagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task DocSample1_CSharp_Solution_NoDiagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using Newtonsoft.Json;
 
 public class ExampleClass
@@ -73,10 +77,11 @@ public class ExampleClass
 }");
         }
 
-        [Fact]
-        public async Task DocSample1_VB_Solution_NoDiagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task DocSample1_VB_Solution_NoDiagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyBasicWithJsonNetAsync(@"
+            await VerifyBasicWithJsonNetAsync(version, @"
 Imports Newtonsoft.Json
 
 Public Class ExampleClass
@@ -90,10 +95,11 @@ Public Class ExampleClass
 End Class");
         }
 
-        [Fact]
-        public async Task Reference_TypeNameHandling_None_NoDiagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task Reference_TypeNameHandling_None_NoDiagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
 using Newtonsoft.Json;
 
@@ -106,10 +112,11 @@ class Blah
 }");
         }
 
-        [Fact]
-        public async Task Reference_TypeNameHandling_All_Diagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task Reference_TypeNameHandling_All_Diagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
 using Newtonsoft.Json;
 
@@ -123,10 +130,11 @@ class Blah
                 GetCSharpResultAt(9, 27, Rule));
         }
 
-        [Fact]
-        public async Task Reference_AttributeTargets_All_NoDiagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task Reference_AttributeTargets_All_NoDiagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
 using Newtonsoft.Json;
 
@@ -139,10 +147,11 @@ class Blah
 }");
         }
 
-        [Fact]
-        public async Task Assign_TypeNameHandling_Objects_Diagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task Assign_TypeNameHandling_Objects_Diagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
 using Newtonsoft.Json;
 
@@ -156,10 +165,11 @@ class Blah
                 GetCSharpResultAt(9, 32, Rule));
         }
 
-        [Fact]
-        public async Task Assign_TypeNameHandling_1_Or_Arrays_Diagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task Assign_TypeNameHandling_1_Or_Arrays_Diagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
 using Newtonsoft.Json;
 
@@ -173,10 +183,11 @@ class Blah
                 GetCSharpResultAt(9, 55, Rule));
         }
 
-        [Fact]
-        public async Task Assign_TypeNameHandling_0_NoDiagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task Assign_TypeNameHandling_0_NoDiagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
 using Newtonsoft.Json;
 
@@ -189,10 +200,11 @@ class Blah
 }");
         }
 
-        [Fact]
-        public async Task Assign_TypeNameHandling_None_NoDiagnostic()
+        [Theory]
+        [CombinatorialData]
+        public async Task Assign_TypeNameHandling_None_NoDiagnostic(NewtonsoftJsonVersion version)
         {
-            await VerifyCSharpWithJsonNetAsync(@"
+            await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
 using Newtonsoft.Json;
 
@@ -205,11 +217,16 @@ class Blah
 }");
         }
 
-        private async Task VerifyCSharpWithJsonNetAsync(string source, params DiagnosticResult[] expected)
+        private async Task VerifyCSharpWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
         {
             var csharpTest = new VerifyCS.Test
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithNewtonsoftJson,
+                ReferenceAssemblies = version switch
+                {
+                    NewtonsoftJsonVersion.Version10 => AdditionalMetadataReferences.DefaultWithNewtonsoftJson10,
+                    NewtonsoftJsonVersion.Version12 => AdditionalMetadataReferences.DefaultWithNewtonsoftJson12,
+                    _ => throw new NotSupportedException(),
+                },
                 TestState =
                 {
                     Sources = { source },
@@ -221,11 +238,16 @@ class Blah
             await csharpTest.RunAsync();
         }
 
-        private async Task VerifyBasicWithJsonNetAsync(string source, params DiagnosticResult[] expected)
+        private async Task VerifyBasicWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
         {
             var vbTest = new VerifyVB.Test
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithNewtonsoftJson,
+                ReferenceAssemblies = version switch
+                {
+                    NewtonsoftJsonVersion.Version10 => AdditionalMetadataReferences.DefaultWithNewtonsoftJson10,
+                    NewtonsoftJsonVersion.Version12 => AdditionalMetadataReferences.DefaultWithNewtonsoftJson12,
+                    _ => throw new NotSupportedException(),
+                },
                 TestState =
                 {
                     Sources = { source },
@@ -238,11 +260,15 @@ class Blah
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyCS.Diagnostic(rule)
                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
 
         private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule)
+#pragma warning disable RS0030 // Do not used banned APIs
            => VerifyVB.Diagnostic(rule)
                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }

@@ -13,7 +13,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
-    /// RS0014: Do not use Enumerable methods on indexable collections. Instead use the collection directly
+    /// CA1826: Do not use Enumerable methods on indexable collections. Instead use the collection directly
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer : DiagnosticAnalyzer
@@ -63,7 +63,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.RegisterOperationAction(operationContext =>
             {
                 var invocation = (IInvocationOperation)operationContext.Operation;
-                if (!IsPossibleLinqInvocation(invocation))
+
+                var excludeOrDefaultMethods = operationContext.Options.GetBoolOptionValue(
+                    EditorConfigOptionNames.ExcludeOrDefaultMethods, Rule, invocation.Syntax.SyntaxTree,
+                    operationContext.Compilation, defaultValue: false, operationContext.CancellationToken);
+
+                if (!IsPossibleLinqInvocation(invocation, excludeOrDefaultMethods))
                 {
                     return;
                 }
@@ -140,11 +145,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 methodSymbol.Parameters.Length == 1;
         }
 
-        private static bool IsPossibleLinqInvocation(IInvocationOperation invocation)
+        private static bool IsPossibleLinqInvocation(IInvocationOperation invocation, bool excludeOrDefaultMethods)
         {
             return invocation.TargetMethod.Name switch
             {
-                "Last" or "LastOrDefault" or "First" or "FirstOrDefault" or "Count" => true,
+                "Last" or "First" or "Count" => true,
+                "LastOrDefault" or "FirstOrDefault" => !excludeOrDefaultMethods,
                 _ => false,
             };
         }

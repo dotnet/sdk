@@ -1,30 +1,24 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines;
-using Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines;
 using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.TypesThatOwnDisposableFieldsShouldBeDisposableFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.TypesThatOwnDisposableFieldsShouldBeDisposableFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public partial class TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzerTests : DiagnosticAnalyzerTestBase
+    public class TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzerTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new BasicTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer();
-        }
-
         [Fact]
-        public void CA1001CSharpTestWithNoDisposableType()
+        public async Task CA1001CSharpTestWithNoDisposableType()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
     class Program
     {
         static void Main(string[] args)
@@ -35,9 +29,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public void CA1001CSharpTestWithNoCreationOfDisposableObject()
+        public async Task CA1001CSharpTestWithNoCreationOfDisposableObject()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
     public class NoDisposeClass
@@ -48,9 +42,9 @@ using System.IO;
         }
 
         [Fact]
-        public void CA1001CSharpTestWithFieldInitAndNoDisposeMethod()
+        public async Task CA1001CSharpTestWithFieldInitAndNoDisposeMethod()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
     public class NoDisposeClass
@@ -58,13 +52,13 @@ using System.IO;
         FileStream newFile1, newFile2 = new FileStream(""data.txt"", FileMode.Append);
     }
 ",
-            GetCA1001CSharpResultAt(4, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001CSharpResultAt(4, 18, "NoDisposeClass", "newFile2"));
         }
 
         [Fact]
-        public void CA1001CSharpTestWithCtorInitAndNoDisposeMethod()
+        public async Task CA1001CSharpTestWithCtorInitAndNoDisposeMethod()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
     // This class violates the rule.
@@ -82,10 +76,10 @@ using System.IO;
         }
 
         [Fact]
-        public void CA1001CSharpTestWithCreationOfDisposableObjectInOtherClass()
+        public async Task CA1001CSharpTestWithCreationOfDisposableObjectInOtherClass()
         {
-            VerifyCSharp(@"
-using System.IO;                 
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
 
     public class NoDisposeClass
     {
@@ -96,13 +90,13 @@ using System.IO;
     {
         public void Create()
         {
-            var obj = new NoDisposeClass() { newFile = new FileStream(""data.txt"", FileMode.Append) }; 
+            var obj = new NoDisposeClass() { newFile = new FileStream(""data.txt"", FileMode.Append) };
         }
     }
 ");
 
-            VerifyCSharp(@"
-using System.IO;                 
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
 
     public class NoDisposeClass
     {
@@ -117,13 +111,13 @@ using System.IO;
         }
 
         [Fact]
-        public void CA1001CSharpTestWithNoDisposeMethodInScope()
+        public async Task CA1001CSharpTestWithNoDisposeMethodInScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
     // This class violates the rule.
-    [|public class NoDisposeClass
+    public class [|NoDisposeClass|]
     {
         FileStream newFile;
 
@@ -131,20 +125,19 @@ using System.IO;
         {
             newFile = new FileStream(""data.txt"", FileMode.Append);
         }
-    }|]
-",
-            GetCA1001CSharpResultAt(5, 18, "NoDisposeClass", "newFile"));
+    }
+");
         }
 
         [Fact]
-        public void CA1001CSharpScopedTestWithNoDisposeMethodOutOfScope()
+        public async Task CA1001CSharpScopedTestWithNoDisposeMethodOutOfScope()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
 // This class violates the rule.
-public class NoDisposeClass
+public class [|NoDisposeClass|]
 {
     FileStream newFile;
 
@@ -153,18 +146,17 @@ public class NoDisposeClass
         newFile = new FileStream(""data.txt"", FileMode.Append);
     }
 }
-   
-[|public class Foo
+
+public class SomeClass
 {
 }
-|]
 ");
         }
 
         [Fact]
-        public void CA1001CSharpTestWithADisposeMethod()
+        public async Task CA1001CSharpTestWithADisposeMethod()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
@@ -198,9 +190,9 @@ public class HasDisposeMethod : IDisposable
         }
 
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
-        public void CA1001CSharpTestWithIDisposableField()
+        public async Task CA1001CSharpTestWithIDisposableField()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.IO;
 
@@ -215,10 +207,44 @@ namespace ClassLibrary1
             GetCA1001CSharpResultAt(7, 18, "Class1", "_disp1"));
         }
 
-        [Fact]
-        public void CA1001BasicTestWithNoDisposableType()
+        [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
+        public async Task CA1001CSharpTestWithIAsyncDisposable()
         {
-            VerifyBasic(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
+namespace System
+{
+    public class ValueTask {}
+
+    public interface IAsyncDisposable
+    {
+        ValueTask DisposeAsync();
+    }
+
+    public sealed class Stream : System.IDisposable, IAsyncDisposable
+    {
+        public ValueTask DisposeAsync() => new ValueTask();
+        public void Dispose() {}
+    }
+}
+
+namespace ClassLibrary1
+{
+    using System;
+
+    public class Class1 : IAsyncDisposable
+    {
+        private readonly Stream _disposableMember = new Stream();
+
+        public ValueTask DisposeAsync() => _disposableMember.DisposeAsync();
+    }
+}
+");
+        }
+
+        [Fact]
+        public async Task CA1001BasicTestWithNoDisposableType()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Module Module1
 
     Sub Main()
@@ -230,9 +256,9 @@ End Module
         }
 
         [Fact]
-        public void CA1001BasicTestWithNoCreationOfDisposableObject()
+        public async Task CA1001BasicTestWithNoCreationOfDisposableObject()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
 
     Public Class NoDisposeClass
@@ -242,9 +268,9 @@ Imports System.IO
         }
 
         [Fact]
-        public void CA1001BasicTestWithFieldInitAndNoDisposeMethod()
+        public async Task CA1001BasicTestWithFieldInitAndNoDisposeMethod()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
            
    ' This class violates the rule. 
@@ -254,7 +280,7 @@ Imports System.IO
 ",
             GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
       
    ' This class violates the rule. 
@@ -262,9 +288,9 @@ Imports System.IO
         Dim newFile1 As FileStream, newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
 ",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
     
    ' This class violates the rule. 
@@ -273,13 +299,13 @@ Imports System.IO
         Dim newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
 ",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile1, newFile2"));
+            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
         }
 
         [Fact]
-        public void CA1001BasicTestWithCtorInitAndNoDisposeMethod()
+        public async Task CA1001BasicTestWithCtorInitAndNoDisposeMethod()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System
    Imports System.IO
 
@@ -298,9 +324,9 @@ Imports System.IO
         }
 
         [Fact]
-        public void CA1001BasicTestWithCreationOfDisposableObjectInOtherClass()
+        public async Task CA1001BasicTestWithCreationOfDisposableObjectInOtherClass()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
 
     Public Class NoDisposeClass
@@ -315,7 +341,7 @@ Imports System.IO
     End Class
 ");
 
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
 
     Public Class NoDisposeClass
@@ -328,13 +354,13 @@ Imports System.IO
         }
 
         [Fact]
-        public void CA1001BasicTestWithNoDisposeMethodInScope()
+        public async Task CA1001BasicTestWithNoDisposeMethodInScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System.IO
 
-   ' This class violates the rule. 
-   [|Public Class NoDisposeMethod
+   ' This class violates the rule.
+   Public Class [|NoDisposeMethod|]
 
       Dim newFile As FileStream
 
@@ -342,19 +368,18 @@ Imports System.IO
          newFile = New FileStream("""", FileMode.Append)
       End Sub
 
-   End Class|]
-",
-            GetCA1001BasicResultAt(5, 17, "NoDisposeMethod", "newFile"));
+   End Class
+");
         }
 
         [Fact]
-        public void CA1001BasicTestWithNoDisposeMethodOutOfScope()
+        public async Task CA1001BasicTestWithNoDisposeMethodOutOfScope()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System.IO
 
-   ' This class violates the rule. 
-   Public Class NoDisposeMethod
+   ' This class violates the rule.
+   Public Class [|NoDisposeMethod|]
 
       Dim newFile As FileStream
 
@@ -364,22 +389,20 @@ Imports System.IO
 
    End Class
 
-   [|
-   Public Class Foo
+   Public Class SomeClass
    End Class
-   |]
 ");
         }
 
         [Fact]
-        public void CA1001BasicTestWithADisposeMethod()
+        public async Task CA1001BasicTestWithADisposeMethod()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
    Imports System
    Imports System.IO
 
-   ' This class satisfies the rule. 
-   Public Class HasDisposeMethod 
+   ' This class satisfies the rule.
+   Public Class HasDisposeMethod
       Implements IDisposable
 
       Dim newFile As FileStream
@@ -412,9 +435,9 @@ Imports System.IO
         }
 
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
-        public void CA1001BasicTestWithIDisposableField()
+        public async Task CA1001BasicTestWithIDisposableField()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.IO
 
@@ -427,14 +450,144 @@ End Namespace
             GetCA1001BasicResultAt(6, 11, "Class1", "_disp1"));
         }
 
-        private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)
+        [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        public async Task CA1001_OnlyListDisposableFields()
         {
-            return GetCSharpResultAt(line, column, CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Rule, objectName, disposableFields);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+
+public class {|#0:NoDisposeClass|}
+{
+    FileStream _fs1;
+    FileStream _fs2;
+
+    public NoDisposeClass(FileStream fs)
+    {
+        _fs1 = new FileStream(""data.txt"", FileMode.Append);
+        _fs2 = fs;
+    }
+}
+",
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+
+Public Class {|#0:NoDisposeClass|}
+    Private _fs1 As FileStream
+    Private _fs2 As FileStream
+
+    Public Sub New(ByVal fs As FileStream)
+        _fs1 = New FileStream(""data.txt"", FileMode.Append)
+        _fs2 = fs
+    End Sub
+End Class
+",
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"));
         }
 
-        private static DiagnosticResult GetCA1001BasicResultAt(int line, int column, string objectName, string disposableFields)
+        [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        public async Task CA1001_ListDisposableFields()
         {
-            return GetBasicResultAt(line, column, BasicTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Rule, objectName, disposableFields);
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.IO;
+
+public class {|#0:NoDisposeClass|}
+{
+    FileStream _fs1 = new FileStream(""data.txt"", FileMode.Append), _fs2 = new FileStream(""data.txt"", FileMode.Append);
+    FileStream _fs3;
+    FileStream _fs4;
+
+    public NoDisposeClass()
+    {
+        _fs3 = new FileStream(""data.txt"", FileMode.Append);
+        _fs4 = new FileStream(""data.txt"", FileMode.Append);
+    }
+}
+",
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.IO
+
+Public Class {|#0:NoDisposeClass|}
+    Private _fs1 As FileStream = new FileStream(""data.txt"", FileMode.Append), _fs2 As FileStream = new FileStream(""data.txt"", FileMode.Append)
+    Private _fs3 As FileStream
+    Private _fs4 As FileStream
+
+    Public Sub New(ByVal fs As FileStream)
+        _fs3 = new FileStream(""data.txt"", FileMode.Append)
+        _fs4 = new FileStream(""data.txt"", FileMode.Append)
+    End Sub
+End Class
+",
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"));
         }
+
+        [Theory, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = FileStream")]
+        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = FileStream")]
+        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = T:System.IO.FileStream")]
+        [InlineData("dotnet_code_quality.CA1001.excluded_symbol_names = FileStr*")]
+        public async Task CA1001_ExcludedSymbolNames(string editorConfigText)
+        {
+            var args = editorConfigText.Length == 0 ? "_fs', '_ms" : "_ms";
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System.IO;
+
+public class {|#0:SomeClass|}
+{
+    private FileStream _fs = new FileStream(""data.txt"", FileMode.Append);
+    private MemoryStream _ms = new MemoryStream();
+}
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System.IO
+
+Public Class {|#0:SomeClass|}
+    Private _fs As FileStream = new FileStream(""data.txt"", FileMode.Append)
+    Private _ms As MemoryStream = new MemoryStream()
+End Class
+",
+                    },
+                    AdditionalFiles = { (".editorconfig", editorConfigText), },
+                    ExpectedDiagnostics = { VerifyVB.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
+                },
+            }.RunAsync();
+        }
+
+        private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(objectName, disposableFields);
+
+        private static DiagnosticResult GetCA1001BasicResultAt(int line, int column, string objectName, string disposableFields)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(objectName, disposableFields);
     }
 }

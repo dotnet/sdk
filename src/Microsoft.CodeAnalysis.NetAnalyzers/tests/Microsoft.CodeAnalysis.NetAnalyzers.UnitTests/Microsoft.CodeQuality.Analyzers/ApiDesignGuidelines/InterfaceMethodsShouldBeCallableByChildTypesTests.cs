@@ -1,44 +1,43 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesAnalyzer,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
-    public class InterfaceMethodsShouldBeCallableByChildTypesTests : DiagnosticAnalyzerTestBase
+    public class InterfaceMethodsShouldBeCallableByChildTypesTests
     {
         #region Verifiers
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new InterfaceMethodsShouldBeCallableByChildTypesAnalyzer();
-        }
-
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new InterfaceMethodsShouldBeCallableByChildTypesAnalyzer();
-        }
-
         private static DiagnosticResult CSharpResult(int line, int column, string className, string methodName)
-        {
-            return GetCSharpResultAt(line, column, InterfaceMethodsShouldBeCallableByChildTypesAnalyzer.Rule, className, methodName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(className, methodName);
 
         private static DiagnosticResult BasicResult(int line, int column, string className, string methodName)
-        {
-            return GetBasicResultAt(line, column, InterfaceMethodsShouldBeCallableByChildTypesAnalyzer.Rule, className, methodName);
-        }
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(className, methodName);
 
         #endregion
 
         #region CSharp
 
         [Fact]
-        public void CA1033SimpleDiagnosticCasesCSharp()
+        public async Task CA1033SimpleDiagnosticCasesCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public interface IGeneral
@@ -146,9 +145,9 @@ public class ImplementsGeneralThree : IGeneral
         }
 
         [Fact]
-        public void CA1033NestedDiagnosticCasesCSharp()
+        public async Task CA1033NestedDiagnosticCasesCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public class NestedExplicitInterfaceImplementation
@@ -211,9 +210,9 @@ public class NestedExplicitInterfaceImplementation
         }
 
         [Fact]
-        public void CA1033NoDiagnosticCasesCSharp()
+        public async Task CA1033NoDiagnosticCasesCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public interface IGeneral
@@ -359,9 +358,9 @@ public class NestedExplicitInterfaceImplementation
         }
 
         [Fact]
-        public void CA1033ExpressionBodiedMemberCSharp()
+        public async Task CA1033ExpressionBodiedMemberCSharp()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 
 public interface IGeneral
@@ -394,9 +393,9 @@ public class ImplementsGeneralThree : IGeneral
         #region VisualBasic
 
         [Fact]
-        public void CA1033SimpleDiagnosticCasesBasic()
+        public async Task CA1033SimpleDiagnosticCasesBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Interface IGeneral
@@ -504,9 +503,9 @@ End Class
         }
 
         [Fact]
-        public void CA1033NestedDiagnosticCasesBasic()
+        public async Task CA1033NestedDiagnosticCasesBasic()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Class NestedExplicitInterfaceImplementation
@@ -573,9 +572,9 @@ End Class
         }
 
         [Fact]
-        public void CA1033NoUnderlyingImplementationsDiagnostics()
+        public async Task CA1033NoUnderlyingImplementationsDiagnostics()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 
 Public Interface IGeneral

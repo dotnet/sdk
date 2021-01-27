@@ -23,7 +23,7 @@ namespace Microsoft.NetFramework.Analyzers
                 SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXsltScriptProcessingMessage)),
                 SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
                 DiagnosticCategory.Security,
-                RuleLevel.IdeSuggestion,
+                RuleLevel.IdeHidden_BulkConfigurable,
                 SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureXSLTScriptExecutionDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);

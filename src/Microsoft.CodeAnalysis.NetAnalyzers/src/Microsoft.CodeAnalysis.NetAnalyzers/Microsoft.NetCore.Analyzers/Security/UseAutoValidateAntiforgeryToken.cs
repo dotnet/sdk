@@ -93,11 +93,6 @@ namespace Microsoft.NetCore.Analyzers.Security
                 }
 
                 var cancellationToken = compilationStartAnalysisContext.CancellationToken;
-                var onlyLookAtDerivedClassesOfController = compilationStartAnalysisContext.Options.GetBoolOptionValue(
-                    optionName: EditorConfigOptionNames.ExcludeAspnetCoreMvcControllerBase,
-                    rule: UseAutoValidateAntiforgeryTokenRule,
-                    defaultValue: true,
-                    cancellationToken: cancellationToken);
 
                 // A dictionary from method symbol to set of methods calling it directly.
                 var inverseGraph = new ConcurrentDictionary<ISymbol, ConcurrentDictionary<ISymbol, bool>>();
@@ -221,6 +216,14 @@ namespace Microsoft.NetCore.Analyzers.Security
                     {
                         return;
                     }
+
+                    var onlyLookAtDerivedClassesOfController = compilationStartAnalysisContext.Options.GetBoolOptionValue(
+                        optionName: EditorConfigOptionNames.ExcludeAspnetCoreMvcControllerBase,
+                        rule: UseAutoValidateAntiforgeryTokenRule,
+                        symbolAnalysisContext.Symbol,
+                        compilation,
+                        defaultValue: true,
+                        cancellationToken: cancellationToken);
 
                     var derivedControllerTypeSymbol = (INamedTypeSymbol)symbolAnalysisContext.Symbol;
                     var baseTypes = derivedControllerTypeSymbol.GetBaseTypes();

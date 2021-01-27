@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageNotCalledWithFinalizer,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -38,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageNotCalled,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageNotPassedThis,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                              s_localizableTitle,
                                                                              s_localizableMessageOutsideDispose,
                                                                              DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarning,
+                                                                             RuleLevel.BuildWarningCandidate,
                                                                              description: s_localizableDescription,
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
@@ -149,7 +149,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         return;
                     }
 
-                    if (invocationExpression.SemanticModel.GetSymbolInfo(invocationExpression.Arguments.Single().Value.Syntax).Symbol is not IParameterSymbol parameterSymbol || !parameterSymbol.IsThis)
+                    if (invocationExpression.SemanticModel.GetSymbolInfo(invocationExpression.Arguments.Single().Value.Syntax, analysisContext.CancellationToken).Symbol is not IParameterSymbol parameterSymbol || !parameterSymbol.IsThis)
                     {
                         analysisContext.ReportDiagnostic(invocationExpression.Syntax.CreateDiagnostic(
                             NotPassedThisRule,
@@ -183,7 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return SuppressFinalizeUsage.CanCall;
                 }
 
-                if (!method.IsDisposeImplementation(_compilation))
+                if (!method.IsDisposeImplementation(_compilation) && !method.IsAsyncDisposeImplementation(_compilation))
                 {
                     return SuppressFinalizeUsage.MustNotCall;
                 }

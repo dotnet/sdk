@@ -1,29 +1,23 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.Analyzers.QualityGuidelines;
-using Test.Utilities;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidPropertySelfAssignment,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidPropertySelfAssignment,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
 {
-    public partial class AvoidPropertySelfAssignmentTests : DiagnosticAnalyzerTestBase
+    public class AvoidPropertySelfAssignmentTests
     {
-        protected override DiagnosticAnalyzer GetBasicDiagnosticAnalyzer()
-        {
-            return new AvoidPropertySelfAssignment();
-        }
-
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new AvoidPropertySelfAssignment();
-        }
-
         [Fact]
-        public void CSharpAssignmentInConstructorWithNoArguments()
+        public async Task CSharpAssignmentInConstructorWithNoArguments()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private string P { get; set; }
@@ -37,9 +31,9 @@ class C
         }
 
         [Fact]
-        public void CSharpAssignmentInConstructorUsingThisWithNoArguments()
+        public async Task CSharpAssignmentInConstructorUsingThisWithNoArguments()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private string P { get; set; }
@@ -52,11 +46,10 @@ class C
             GetCSharpResultAt(7, 18, "P"));
         }
 
-
         [Fact]
-        public void CSharpAssignmentInConstructorWithSimilarArgument()
+        public async Task CSharpAssignmentInConstructorWithSimilarArgument()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private string P { get; set; }
@@ -70,9 +63,9 @@ class C
         }
 
         [Fact]
-        public void CSharpAssignmentInMethodWithoutArguments()
+        public async Task CSharpAssignmentInMethodWithoutArguments()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private string P { get; set; }
@@ -86,9 +79,9 @@ class C
         }
 
         [Fact]
-        public void CSharpAssignmentInMethodWithSimilarArgumentName()
+        public async Task CSharpAssignmentInMethodWithSimilarArgumentName()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private string P { get; set; }
@@ -102,9 +95,9 @@ class C
         }
 
         [Fact]
-        public void CSharpAdditionAssignmentOperatorDoesNotCauseDiagnosticToAppear()
+        public async Task CSharpAdditionAssignmentOperatorDoesNotCauseDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private int Property { get; set; }
@@ -117,9 +110,9 @@ class C
         }
 
         [Fact]
-        public void CSharpNormalPropertyAssignmentDoesNotCauseDiagnosticToAppear()
+        public async Task CSharpNormalPropertyAssignmentDoesNotCauseDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private string P { get; set; }
@@ -132,9 +125,9 @@ class C
         }
 
         [Fact]
-        public void CSharpNormalAssignmentOfTwoDifferentPropertiesDoesNotCauseDiagnosticToAppear()
+        public async Task CSharpNormalAssignmentOfTwoDifferentPropertiesDoesNotCauseDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private string FirstP { get; set; }
@@ -148,9 +141,9 @@ class C
         }
 
         [Fact]
-        public void CSharpNormalVariableAssignmentDoesNotCauseDiagnosticToAppear()
+        public async Task CSharpNormalVariableAssignmentDoesNotCauseDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     private string P { get; set; }
@@ -163,9 +156,9 @@ class C
         }
 
         [Fact]
-        public void CSharpNormalAssignmentWithTwoDifferentInstancesDoesNotCauseDiagnosticToAppear()
+        public async Task CSharpNormalAssignmentWithTwoDifferentInstancesDoesNotCauseDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal class A
 {
     public string P { get; set; } = ""value"";
@@ -184,9 +177,9 @@ class C
         }
 
         [Fact]
-        public void CSharpIndexerAssignmentDoesNotCauseDiagnosticToAppear()
+        public async Task CSharpIndexerAssignmentDoesNotCauseDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal class A
 {
     private int[] _a;
@@ -203,9 +196,9 @@ internal class A
         }
 
         [Fact]
-        public void CSharpIndexerAssignmentWithSameConstantIndexCausesDiagnosticToAppear()
+        public async Task CSharpIndexerAssignmentWithSameConstantIndexCausesDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal class A
 {
     private int[] _a;
@@ -221,9 +214,9 @@ internal class A
         }
 
         [Fact]
-        public void CSharpIndexerAssignmentWithSameLocalReferenceIndexCausesDiagnosticToAppear()
+        public async Task CSharpIndexerAssignmentWithSameLocalReferenceIndexCausesDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal class A
 {
     private int[] _a;
@@ -240,9 +233,9 @@ internal class A
         }
 
         [Fact]
-        public void CSharpIndexerAssignmentWithSameParameterReferenceIndexCausesDiagnosticToAppear()
+        public async Task CSharpIndexerAssignmentWithSameParameterReferenceIndexCausesDiagnosticToAppear()
         {
-            VerifyCSharp(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 internal class A
 {
     private int[] _a;
@@ -258,9 +251,9 @@ internal class A
         }
 
         [Fact]
-        public void VbAssignmentInConstructorWithNoArguments()
+        public async Task VbAssignmentInConstructorWithNoArguments()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property [P] As String
 
@@ -273,9 +266,9 @@ End Class
         }
 
         [Fact]
-        public void VbAssignmentInConstructorUsingThisWithNoArguments()
+        public async Task VbAssignmentInConstructorUsingThisWithNoArguments()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property [P] As String
 
@@ -287,11 +280,10 @@ End Class
             GetBasicResultAt(6, 18, "P"));
         }
 
-
         [Fact]
-        public void VbAssignmentInConstructorWithSimilarArgument()
+        public async Task VbAssignmentInConstructorWithSimilarArgument()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property [P] As String
 
@@ -304,9 +296,9 @@ End Class
         }
 
         [Fact]
-        public void VbAssignmentInMethodWithoutArguments()
+        public async Task VbAssignmentInMethodWithoutArguments()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property [P] As String
 
@@ -319,9 +311,9 @@ End Class
         }
 
         [Fact]
-        public void VbAssignmentInMethodWithSimilarArgumentName()
+        public async Task VbAssignmentInMethodWithSimilarArgumentName()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property [P] As String
 
@@ -334,9 +326,9 @@ End Class
         }
 
         [Fact]
-        public void VbAdditionAssignmentOperatorDoesNotCauseDiagnosticToAppear()
+        public async Task VbAdditionAssignmentOperatorDoesNotCauseDiagnosticToAppear()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property [P] As Integer
 
@@ -348,9 +340,9 @@ End Class
         }
 
         [Fact]
-        public void VbNormalPropertyAssignmentDoesNotCauseDiagnosticToAppear()
+        public async Task VbNormalPropertyAssignmentDoesNotCauseDiagnosticToAppear()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property [P] As String
 
@@ -362,9 +354,9 @@ End Class
         }
 
         [Fact]
-        public void VbNormalAssignmentOfTwoDifferentPropertiesDoesNotCauseDiagnosticToAppear()
+        public async Task VbNormalAssignmentOfTwoDifferentPropertiesDoesNotCauseDiagnosticToAppear()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property FirstP As String
     Private Property SecondP As String
@@ -377,9 +369,9 @@ End Class
         }
 
         [Fact]
-        public void VbNormalVariableAssignmentDoesNotCauseDiagnosticToAppear()
+        public async Task VbNormalVariableAssignmentDoesNotCauseDiagnosticToAppear()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Property [P] As String
 
@@ -391,9 +383,9 @@ End Class
         }
 
         [Fact]
-        public void VbNormalAssignmentWithTwoDifferentInstancesDoesNotCauseDiagnosticToAppear()
+        public async Task VbNormalAssignmentWithTwoDifferentInstancesDoesNotCauseDiagnosticToAppear()
         {
-            VerifyBasic(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Friend Class A
     Public Property [P] As String = ""value""
 End Class
@@ -408,14 +400,18 @@ End Class
 ");
         }
 
-        private DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
-        {
-            return GetCSharpResultAt(line, column, AvoidPropertySelfAssignment.Rule, symbolName);
-        }
+        private static DiagnosticResult GetCSharpResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyCS.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(symbolName);
 
-        private DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
-        {
-            return GetBasicResultAt(line, column, AvoidPropertySelfAssignment.Rule, symbolName);
-        }
+        private static DiagnosticResult GetBasicResultAt(int line, int column, string symbolName)
+#pragma warning disable RS0030 // Do not used banned APIs
+            => VerifyVB.Diagnostic()
+                .WithLocation(line, column)
+#pragma warning restore RS0030 // Do not used banned APIs
+                .WithArguments(symbolName);
     }
 }
