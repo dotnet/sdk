@@ -5,10 +5,6 @@
     <OutputType>exe</OutputType>
     <Description>Command line tool to watch for source file changes during development and restart the dotnet command.</Description>
     <RootNamespace>Microsoft.DotNet.Watcher.Tools</RootNamespace>
-    <PackageTags>dotnet;watch</PackageTags>
-    <PackAsTool>true</PackAsTool>
-    <IsPackable>true</IsPackable>
-
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <UseAppHost>false</UseAppHost>
     <RuntimeIdentifier />
@@ -31,14 +27,13 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks" />
-  </ItemGroup>
 
-  <Target Name="AddRefreshMiddlewareToNupkg" BeforeTargets="PrepareForRun">
-    <ItemGroup>
-      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
-        Pack="true"
-        PackagePath="tools\$(SdkTargetFramework)\any\middleware" />
-    </ItemGroup>
-  </Target>
+    <ProjectReference
+      Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj"
+      PrivateAssets="All"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks" />
+  </ItemGroup>
 
 </Project>
