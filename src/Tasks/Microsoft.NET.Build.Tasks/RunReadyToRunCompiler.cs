@@ -35,19 +35,28 @@ namespace Microsoft.NET.Build.Tasks
 
         private bool IsPdbCompilation => !String.IsNullOrEmpty(_createPDBCommand);
 
+        private string DotNetHostPath => Crossgen2Tool?.GetMetadata("DotNetHostPath") ?? null;
+
         protected override string ToolName
         {
             get
             {
-                // NOTE: Crossgen2 does not yet support emitting native symbols. We use crossgen instead for now.
-                if (UseCrossgen2)
+                if (IsPdbCompilation)
                 {
-                    return IsPdbCompilation ? CrossgenTool.ItemSpec : Crossgen2Tool.ItemSpec;
-                }
-                else
-                {
+                    // PDB compilation is a step specific to Crossgen1, Crossgen2 can generate
+                    // symbol info directly during compilation
                     return CrossgenTool.ItemSpec;
                 }
+                if (UseCrossgen2)
+                {
+                    string hostPath = DotNetHostPath;
+                    if (!string.IsNullOrEmpty(hostPath))
+                    {
+                        return hostPath;
+                    }
+                    return Crossgen2Tool.ItemSpec;
+                }
+                return CrossgenTool.ItemSpec;
             }
         }
 
@@ -65,33 +74,71 @@ namespace Microsoft.NET.Build.Tasks
         {
             _createPDBCommand = CompilationEntry.GetMetadata(MetadataKeys.CreatePDBCommand);
 
-            if (CrossgenTool == null && Crossgen2Tool == null)
-            {
-                return false;
-            }
             if (IsPdbCompilation && CrossgenTool == null)
             {
-                // We need the crossgen tool for now to emit native symbols. Crossgen2 does not yet support this feature
+                // PDB compilation is a step specific to Crossgen1,
+                // Crossgen2 produces symbols directly during native compilation
+                Log.LogError("CrossgenTool not specified in PDB compilation mode");
                 return false;
             }
 
-            if (CrossgenTool != null)
-            {
-                if (!File.Exists(CrossgenTool.ItemSpec) || !File.Exists(CrossgenTool.GetMetadata(MetadataKeys.JitPath)))
-                {
-                    return false;
-                }
-            }
-            if (Crossgen2Tool != null)
+            if (UseCrossgen2)
             {
                 // We expect JitPath to be set for .NET 5 and {TargetOS, TargetArch} to be set for .NET 6 and later
                 string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
-                if (!File.Exists(Crossgen2Tool.ItemSpec) ||
-                    (!String.IsNullOrEmpty(jitPath) && !File.Exists(jitPath)) ||
-                    (String.IsNullOrEmpty(jitPath) && (
-                        String.IsNullOrEmpty(Crossgen2Tool.GetMetadata(MetadataKeys.TargetOS)) ||
-                        String.IsNullOrEmpty(Crossgen2Tool.GetMetadata(MetadataKeys.TargetArch)))))
+                if (Crossgen2Tool == null || string.IsNullOrEmpty(Crossgen2Tool.ItemSpec))
                 {
+                    Log.LogError($"Crossgen2Tool must be specified when UseCrossgen2 is set to true");
+                    return false;
+                }
+                if (!File.Exists(Crossgen2Tool.ItemSpec))
+                {
+                    Log.LogError($"Crossgen2Tool executable '{Crossgen2Tool.ItemSpec}' not found");
+                    return false;
+                }
+                string hostPath = DotNetHostPath;
+                if (!string.IsNullOrEmpty(hostPath) && !File.Exists(hostPath))
+                {
+                    Log.LogError($".NET host executable '{hostPath}' not found");
+                    return false;
+                }
+                if (!String.IsNullOrEmpty(jitPath))
+                {
+                    if (!File.Exists(jitPath))
+                    {
+                        Log.LogError($"JIT library '{jitPath}' not found");
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(Crossgen2Tool.GetMetadata(MetadataKeys.TargetOS)))
+                    {
+                        Log.LogError("TargetOS metadata must be specified on Crossgen2Tool item when JitPath is not set");
+                        return false;
+                    }
+                    if (string.IsNullOrEmpty(Crossgen2Tool.GetMetadata(MetadataKeys.TargetArch)))
+                    {
+                        Log.LogError("TargetArch metadata must be specified on Crossgen2Tool item when JitPath is not set");
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                if (CrossgenTool == null || string.IsNullOrEmpty(CrossgenTool.ItemSpec))
+                {
+                    Log.LogError("CrossgenTool must be specified when UseCrossgen2 is set to false");
+                    return false;
+                }
+                if (!File.Exists(CrossgenTool.ItemSpec))
+                {
+                    Log.LogError($"CrossgenTool executable '{CrossgenTool.ItemSpec}' not found");
+                    return false;
+                }
+                if (!File.Exists(CrossgenTool.GetMetadata(MetadataKeys.JitPath)))
+                {
+                    Log.LogError($"JIT path '{MetadataKeys.JitPath}' not found");
                     return false;
                 }
             }
@@ -103,12 +150,14 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!String.IsNullOrEmpty(DiaSymReader) && !File.Exists(DiaSymReader))
                 {
+                    Log.LogError($"DiaSymReader library '{DiaSymReader}' not found");
                     return false;
                 }
 
                 // R2R image has to be created before emitting native symbols (crossgen needs this as an input argument)
                 if (String.IsNullOrEmpty(_outputPDBImage) || !File.Exists(_outputR2RImage))
                 {
+                    Log.LogError($"PDB generation: R2R executable '{_outputR2RImage}' not found");
                     return false;
                 }
             }
@@ -119,6 +168,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!File.Exists(_inputAssembly))
                 {
+                    Log.LogError($"Input assembly '{_inputAssembly}' not found");
                     return false;
                 }
             }
@@ -149,16 +199,36 @@ namespace Microsoft.NET.Build.Tasks
             return result.ToString();
         }
 
+        protected override string GenerateCommandLineCommands()
+        {
+            if (UseCrossgen2 && !string.IsNullOrEmpty(DotNetHostPath))
+            {
+                return Quote(Crossgen2Tool.ItemSpec);
+            }
+            return null;
+        }
+
+        private static string Quote(string path)
+        {
+            if (string.IsNullOrEmpty(path) || (path[0] == '\"' && path[path.Length - 1] == '\"'))
+            {
+                // it's already quoted
+                return path;
+            }
+
+            return $"\"{path}\"";
+        }
+
         protected override string GenerateResponseFileCommands()
         {
             // NOTE: Crossgen2 does not yet support emitting native symbols. We use crossgen instead for now.
-            if (IsPdbCompilation)
+            if (UseCrossgen2 && !IsPdbCompilation)
             {
-                return GenerateCrossgenResponseFile();
+                return GenerateCrossgen2ResponseFile();
             }
             else
             {
-                return UseCrossgen2 ? GenerateCrossgen2ResponseFile() : GenerateCrossgenResponseFile();
+                return GenerateCrossgenResponseFile();
             }
         }
 
@@ -195,7 +265,7 @@ namespace Microsoft.NET.Build.Tasks
         private string GenerateCrossgen2ResponseFile()
         {
             StringBuilder result = new StringBuilder();
-
+            
             string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
             if (!String.IsNullOrEmpty(jitPath))
             {
@@ -208,6 +278,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             result.AppendLine("-O");
+            result.AppendLine("--pdb");
 
             if (!String.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
             {
