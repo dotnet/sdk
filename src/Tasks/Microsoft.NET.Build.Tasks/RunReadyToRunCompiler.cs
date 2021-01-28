@@ -43,8 +43,9 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (IsPdbCompilation)
                 {
-                    // PDB compilation is a step specific to Crossgen1, Crossgen2 can generate
-                    // symbol info directly during compilation
+                    // PDB compilation is a step specific to Crossgen1 and 5.0 Crossgen2
+                    // which didn't support PDB generation. 6.0  Crossgen2 produces symbols
+                    // directly during native compilation.
                     return CrossgenTool.ItemSpec;
                 }
                 if (UseCrossgen2)
@@ -62,7 +63,6 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override string GenerateFullPathToTool() => ToolName;
 
-        // NOTE: Crossgen2 does not yet support emitting native symbols. We use crossgen instead for now.
         private string DiaSymReader => CrossgenTool.GetMetadata(MetadataKeys.DiaSymReader);
 
         public RunReadyToRunCompiler()
@@ -76,8 +76,9 @@ namespace Microsoft.NET.Build.Tasks
 
             if (IsPdbCompilation && CrossgenTool == null)
             {
-                // PDB compilation is a step specific to Crossgen1,
-                // Crossgen2 produces symbols directly during native compilation
+                // PDB compilation is a step specific to Crossgen1 and 5.0 Crossgen2
+                // which didn't support PDB generation. 6.0  Crossgen2 produces symbols
+                // directly during native compilation.
                 Log.LogError("CrossgenTool not specified in PDB compilation mode");
                 return false;
             }
@@ -221,7 +222,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override string GenerateResponseFileCommands()
         {
-            // NOTE: Crossgen2 does not yet support emitting native symbols. We use crossgen instead for now.
+            // Crossgen2 5.0 doesn't support PDB generation so Crossgen1 is used for that purpose.
             if (UseCrossgen2 && !IsPdbCompilation)
             {
                 return GenerateCrossgen2ResponseFile();
@@ -278,7 +279,20 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             result.AppendLine("-O");
-            result.AppendLine("--pdb");
+            
+            if (string.IsNullOrEmpty(jitPath))
+            {
+                // JitPath is used for 5.0 Crossgen2 that doesn't support PDB generation.
+                // For 6.0 Crossgen2 we pass TargetOS and TargetArch instead.
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    result.AppendLine("--pdb");
+                }
+                else
+                {
+                    result.AppendLine("--perfmap");
+                }
+            }
 
             if (!String.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
             {
