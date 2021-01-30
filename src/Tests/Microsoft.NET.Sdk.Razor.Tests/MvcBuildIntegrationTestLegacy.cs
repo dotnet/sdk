@@ -43,13 +43,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, $"{TestProjectName}.Views.dll")).Should().Exist();
             new FileInfo(Path.Combine(outputPath, $"{TestProjectName}.Views.pdb")).Should().Exist();
 
-            // Verify RazorTagHelper works
-            new FileInfo(Path.Combine(intermediateOutputPath, $"{TestProjectName}.TagHelpers.input.cache")).Should().Exist();
-            new FileInfo(Path.Combine(intermediateOutputPath, $"{TestProjectName}.TagHelpers.output.cache")).Should().Exist();
-            new FileInfo(
-                Path.Combine(intermediateOutputPath, $"{TestProjectName}.TagHelpers.output.cache")).Should().Contain(
-                @"""Name"":""SimpleMvc.SimpleTagHelper""");
-
+            // Verify RazorTagHelper works for projects targeting < net5.0
+            if (TestProjectName != "SimpleMvc50") {
+                new FileInfo(Path.Combine(intermediateOutputPath, $"{TestProjectName}.TagHelpers.input.cache")).Should().Exist();
+                new FileInfo(Path.Combine(intermediateOutputPath, $"{TestProjectName}.TagHelpers.output.cache")).Should().Exist();
+                new FileInfo(
+                    Path.Combine(intermediateOutputPath, $"{TestProjectName}.TagHelpers.output.cache")).Should().Contain(
+                    @"""Name"":""SimpleMvc.SimpleTagHelper""");
+            }
         }
 
         [CoreMSBuildOnlyFact]
