@@ -98,7 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 if (EnumHelpers.TryGetEnumMemberValues(symbol, out IList<ulong> memberValues))
                 {
-                    bool hasFlagsAttribute = symbol.GetAttributes().Any(a => Equals(a.AttributeClass, flagsAttributeType));
+                    bool hasFlagsAttribute = symbol.HasAttribute(flagsAttributeType);
                     if (hasFlagsAttribute)
                     {
                         // Check "CA2217: Do not mark enums with FlagsAttribute"

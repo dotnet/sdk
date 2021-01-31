@@ -306,7 +306,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
                 IMethodSymbol methodSymbol = (IMethodSymbol)operationContext.ContainingSymbol;
 
-                return methodSymbol.GetAttributes().Any(attr => Equals(attr.AttributeClass, expectedExceptionType));
+                return methodSymbol.HasAttribute(expectedExceptionType);
             }
             else
             {
@@ -345,7 +345,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         private static bool IsPureMethod(IMethodSymbol method, Compilation compilation)
         {
-            return method.GetAttributes().Any(attr => attr.AttributeClass.Equals(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsContractsPureAttribute)));
+            return method.HasAttribute(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsContractsPureAttribute));
         }
     }
 }

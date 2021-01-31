@@ -256,7 +256,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
 
                         // Check for [NonSerialized]
-                        if (field.GetAttributes().Any(x => x.AttributeClass.Equals(_nonSerializedAttributeTypeSymbol)))
+                        if (field.HasAttribute(_nonSerializedAttributeTypeSymbol))
                         {
                             continue;
                         }
@@ -293,7 +293,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     TypeKind.Class or TypeKind.Struct => ((INamedTypeSymbol)type).IsSerializable,// Check SerializableAttribute or Serializable flag from metadata.
                     TypeKind.Delegate => true,// delegates are always serializable, even if
                                               // they aren't actually marked [Serializable]
-                    _ => type.GetAttributes().Any(a => a.AttributeClass.Equals(_serializableAttributeTypeSymbol)),
+                    _ => type.HasAttribute(_serializableAttributeTypeSymbol),
                 };
             }
         }

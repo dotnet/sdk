@@ -76,7 +76,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // If enum is Int64 and has Flags attributes then exit
-            bool hasFlagsAttribute = symbol.GetAttributes().Any(a => a.AttributeClass.Equals(flagsAttribute));
+            bool hasFlagsAttribute = symbol.HasAttribute(flagsAttribute);
             if (underlyingType == SpecialType.System_Int64 && hasFlagsAttribute)
             {
                 return;

@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            bool hasAttributeUsageAttribute = symbol.GetAttributes().Any(attribute => attribute.AttributeClass.Equals(attributeUsageAttributeType));
+            bool hasAttributeUsageAttribute = symbol.HasAttribute(attributeUsageAttributeType);
             if (!hasAttributeUsageAttribute)
             {
                 addDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name));

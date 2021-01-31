@@ -115,7 +115,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             ImmutableArray<IFieldSymbol> zeroValuedFields = GetZeroValuedFields(symbol).ToImmutableArray();
 
-            bool hasFlagsAttribute = symbol.GetAttributes().Any(a => Equals(a.AttributeClass, flagsAttribute));
+            bool hasFlagsAttribute = symbol.HasAttribute(flagsAttribute);
             if (hasFlagsAttribute)
             {
                 CheckFlags(symbol, zeroValuedFields, context.ReportDiagnostic);

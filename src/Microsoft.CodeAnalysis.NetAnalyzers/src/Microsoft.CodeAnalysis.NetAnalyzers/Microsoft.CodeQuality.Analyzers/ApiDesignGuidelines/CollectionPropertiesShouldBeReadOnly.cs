@@ -126,14 +126,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            if (knownTypes.DataMemberAttribute != null)
+            // Special case: the DataContractSerializer requires that a public setter exists.
+            bool hasDataMemberAttribute = property.HasAttribute(knownTypes.DataMemberAttribute);
+            if (hasDataMemberAttribute)
             {
-                // Special case: the DataContractSerializer requires that a public setter exists.
-                bool hasDataMemberAttribute = property.GetAttributes().Any(a => a.AttributeClass.Equals(knownTypes.DataMemberAttribute));
-                if (hasDataMemberAttribute)
-                {
-                    return;
-                }
+                return;
             }
 
             context.ReportDiagnostic(property.CreateDiagnostic(Rule, property.Name));
