@@ -2,19 +2,728 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.UseSpanBasedStringConcat,
-    Microsoft.NetCore.Analyzers.Runtime.UseSpanBasedStringConcatFixer>;
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseSpanBasedStringConcat,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseSpanBasedStringConcatFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.UseSpanBasedStringConcat,
-    Microsoft.NetCore.Analyzers.Runtime.UseSpanBasedStringConcatFixer>;
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicUseSpanBasedStringConcat,
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicUseSpanBasedStringConcatFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class UseSpanBasedStringConcatTests
     {
+        #region Reports Diagnostic
+        public static IEnumerable<object[]> Data_SingleViolationInOneBlock_CS
+        {
+            get
+            {
+                yield return new[]
+                {
+                    @"var _ = {|#0:foo.Substring(1) + bar|};",
+                    @"var _ = string.Concat(foo.AsSpan(1), bar);"
+                };
+                yield return new[]
+                {
+                    @"var _ = {|#0:foo.Substring(1, 2) + bar|};",
+                    @"var _ = string.Concat(foo.AsSpan(1, 2), bar);"
+                };
+                yield return new[]
+                {
+                    @"var _ = {|#0:foo + bar.Substring(1)|};",
+                    @"var _ = string.Concat(foo, bar.AsSpan(1));"
+                };
+                yield return new[]
+                {
+                    @"var _ = {|#0:foo + bar.Substring(1) + baz|};",
+                    @"var _ = string.Concat(foo, bar.AsSpan(1), baz);"
+                };
+                yield return new[]
+                {
+                    @"var _ = {|#0:foo.Substring(1) + bar.Substring(1) + baz.Substring(1)|};",
+                    @"var _ = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1));"
+                };
+                yield return new[]
+                {
+                    @"var _ = {|#0:foo.Substring(1, 2) + bar + baz + baz.Substring(1, 2)|};",
+                    @"var _ = string.Concat(foo.AsSpan(1, 2), bar, baz, baz.AsSpan(1, 2));"
+                };
+                yield return new[]
+                {
+                    @"Consume({|#0:foo + bar.Substring(1, 2)|});",
+                    @"Consume(string.Concat(foo, bar.AsSpan(1, 2)));"
+                };
+                yield return new[]
+                {
+                    @"var _ = Fwd({|#0:foo.Substring(1) + bar|});",
+                    @"var _ = Fwd(string.Concat(foo.AsSpan(1), bar));"
+                };
+                yield return new[]
+                {
+                    @"var _ = Fwd({|#0:foo.Substring(1) + bar.Substring(1)|});",
+                    @"var _ = Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1)));"
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_SingleViolationInOneBlock_CS))]
+        public Task SingleViolationInOneBlock_ReportedAndFixed_CS(string testStatements, string fixedStatements)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody(testStatements),
+                FixedCode = CSUsings + CSWithBody(fixedStatements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_SingleViolationInOneBlock_VB
+        {
+            get
+            {
+                yield return new[]
+                {
+                    @"Dim s = {|#0:foo.Substring(1) & bar|}",
+                    @"Dim s = String.Concat(foo.AsSpan(1), bar)"
+                };
+                yield return new[]
+                {
+                    @"Dim s = {|#0:foo.Substring(1, 2) & bar|}",
+                    @"Dim s = String.Concat(foo.AsSpan(1, 2), bar)"
+                };
+                yield return new[]
+                {
+                    @"Dim s = {|#0:foo & bar.Substring(1)|}",
+                    @"Dim s = String.Concat(foo, bar.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"Dim s = {|#0:foo & bar.Substring(1) & baz|}",
+                    @"Dim s = String.Concat(foo, bar.AsSpan(1), baz)"
+                };
+                yield return new[]
+                {
+                    @"Dim s = {|#0:foo.Substring(1) & bar.Substring(1) & baz.Substring(1)|}",
+                    @"Dim s = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"Dim s = {|#0:foo.Substring(1, 2) & bar & baz & baz.Substring(1, 2)|}",
+                    @"Dim s = String.Concat(foo.AsSpan(1, 2), bar, baz, baz.AsSpan(1, 2))"
+                };
+                yield return new[]
+                {
+                    @"Consume({|#0:foo & bar.Substring(1, 2)|})",
+                    @"Consume(String.Concat(foo, bar.AsSpan(1, 2)))"
+                };
+                yield return new[]
+                {
+                    @"Dim s = Fwd({|#0:foo.Substring(1) & bar|})",
+                    @"Dim s = Fwd(String.Concat(foo.AsSpan(1), bar))"
+                };
+                yield return new[]
+                {
+                    @"Dim s = Fwd({|#0:foo.Substring(1) & bar.Substring(1)|})",
+                    @"Dim s = Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1)))"
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_SingleViolationInOneBlock_VB))]
+        public Task SingleViolationInOneBlock_ReportedAndFixed_VB(string testStatement, string fixedStatement)
+        {
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody(testStatement),
+                FixedCode = VBUsings + VBWithBody(fixedStatement),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_MultipleViolationsInOneBlock_CS
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    @"
+string alpha = {|#0:foo.Substring(1, 2) + bar.Substring(1) + baz|};
+string bravo = {|#1:foo + bar.Substring(3) + baz.Substring(1, 2)|};
+string charlie = {|#2:foo + bar + baz.Substring(1, 2)|};
+string delta = {|#3:foo.Substring(1) + bar.Substring(1) + baz.Substring(1, 2) + foo.Substring(1, 2)|};",
+                    @"
+string alpha = string.Concat(foo.AsSpan(1, 2), bar.AsSpan(1), baz);
+string bravo = string.Concat(foo, bar.AsSpan(3), baz.AsSpan(1, 2));
+string charlie = string.Concat(foo, bar, baz.AsSpan(1, 2));
+string delta = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.AsSpan(1, 2));",
+                    new[] { 0, 1, 2, 3 }
+                };
+                yield return new object[]
+                {
+                    @"Consume({|#0:foo.Substring(1) + bar|}, {|#1:foo + bar.Substring(1)|});",
+                    @"Consume(string.Concat(foo.AsSpan(1), bar), string.Concat(foo, bar.AsSpan(1)));",
+                    new[] { 0, 1 }
+                };
+                yield return new object[]
+                {
+                    @"Consume(Fwd({|#0:foo.Substring(1) + bar|}), Fwd({|#1:foo + bar.Substring(1)|}));",
+                    @"Consume(Fwd(string.Concat(foo.AsSpan(1), bar)), Fwd(string.Concat(foo, bar.AsSpan(1))));",
+                    new[] { 0, 1 }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_MultipleViolationsInOneBlock_CS))]
+        public Task MultipleViolationsInOneBlock_AreReportedAndFixed_CS(string testStatements, string fixedStatements, int[] locations)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody(testStatements),
+                FixedCode = CSUsings + CSWithBody(fixedStatements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyCS.Diagnostic(Rule).WithLocation(x)));
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_MultipleViolationsInOneBlock_VB
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    @"
+Dim alpha = {|#0:foo.Substring(1, 2) & bar.Substring(1) & baz|}
+Dim bravo = {|#1:foo & bar.Substring(3) & baz.Substring(1, 2)|}
+Dim charlie = {|#2:foo & bar & baz.Substring(1, 2)|}
+Dim delta = {|#3:foo.Substring(1) & bar.Substring(1) & baz.Substring(1, 2) & foo.Substring(1, 2)|}",
+                    @"
+Dim alpha = String.Concat(foo.AsSpan(1, 2), bar.AsSpan(1), baz)
+Dim bravo = String.Concat(foo, bar.AsSpan(3), baz.AsSpan(1, 2))
+Dim charlie = String.Concat(foo, bar, baz.AsSpan(1, 2))
+Dim delta = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.AsSpan(1, 2))",
+                    new[] { 0, 1, 2, 3 }
+                };
+                yield return new object[]
+                {
+                    @"Consume({|#0:foo.Substring(1) & bar|}, {|#1:foo & bar.Substring(1)|})",
+                    @"Consume(String.Concat(foo.AsSpan(1), bar), String.Concat(foo, bar.AsSpan(1)))",
+                    new[] { 0, 1 }
+                };
+                yield return new object[]
+                {
+                    @"Consume(Fwd({|#0:foo.Substring(1) & bar|}), Fwd({|#1:foo & bar.Substring(1)|}))",
+                    @"Consume(Fwd(String.Concat(foo.AsSpan(1), bar)), Fwd(String.Concat(foo, bar.AsSpan(1))))",
+                    new[] { 0, 1 }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_MultipleViolationsInOneBlock_VB))]
+        public Task MultipleViolationsInOneBlock_AreReportedAndFixed_VB(string testStatements, string fixedStatements, int[] locations)
+        {
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody(testStatements),
+                FixedCode = VBUsings + VBWithBody(fixedStatements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+            };
+            test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyVB.Diagnostic(Rule).WithLocation(x)));
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_NestedViolations_CS
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    @"
+Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|});",
+                    @"
+Consume(string.Concat(Fwd(string.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)));",
+                    new[] { 0, 1 },
+                    -4
+                };
+                yield return new object[]
+                {
+                    @"
+var _ = {|#0:Fwd({|#1:foo.Substring(1) + bar.Substring(1)|}) + Fwd({|#2:foo.Substring(1) + bar|}).Substring(1) + Fwd({|#3:foo + bar.Substring(1)|})|};",
+                    @"
+var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(string.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(string.Concat(foo, bar.AsSpan(1))));",
+                    new[] { 0, 1, 2, 3 },
+                    -4
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_NestedViolations_CS))]
+        public Task NestedViolations_AreReportedAndFixed_CS(string testStatements, string fixedStatements, int[] locations, int? iterations = null)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody(testStatements),
+                FixedCode = CSUsings + CSWithBody(fixedStatements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                NumberOfIncrementalIterations = iterations,
+                NumberOfFixAllInDocumentIterations = iterations,
+                NumberOfFixAllIterations = iterations
+            };
+            test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyCS.Diagnostic(Rule).WithLocation(x)));
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_NestedViolations_VB
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    @"
+Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|})",
+                    @"
+Consume(String.Concat(Fwd(String.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)))",
+                    new[] { 0, 1 }
+                };
+                yield return new object[]
+                {
+                    @"
+Dim s = {|#0:Fwd({|#1:foo.Substring(1) & bar.Substring(1)|}) & Fwd({|#2:foo.Substring(1) & bar|}).Substring(1) & Fwd({|#3:foo & bar.Substring(1)|})|}",
+                    @"
+Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(String.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(String.Concat(foo, bar.AsSpan(1))))",
+                    new[] { 0, 1, 2, 3 }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_NestedViolations_VB))]
+        public Task NestedViolations_AreReportedAndFixed_VB(string testStatements, string fixedStatements, int[] locations)
+        {
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody(testStatements),
+                FixedCode = VBUsings + VBWithBody(fixedStatements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                NumberOfIncrementalIterations = -10,
+                NumberOfFixAllIterations = -10,
+                NumberOfFixAllInDocumentIterations = -10
+            };
+            test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyVB.Diagnostic(Rule).WithLocation(x)));
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task MissingImports_AreAdded_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSWithBody(@"var _ = {|#0:foo + bar.Substring(1)|};"),
+                FixedCode = $"\r\n{CSUsings}\r\n" + CSWithBody(@"var _ = string.Concat(foo, bar.AsSpan(1));"),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        [Fact]
+        public Task MissingImports_AreAdded_VB()
+        {
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBWithBody(@"Dim s = {|#0:foo & bar.Substring(1)|}"),
+                FixedCode = $"\r\n{VBUsings}\r\n" + VBWithBody(@"Dim s = String.Concat(foo, bar.AsSpan(1))"),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(@"Substring(startIndex: 1)", @"AsSpan(start: 1)")]
+        [InlineData(@"Substring(startIndex: 1, length: 2)", @"AsSpan(start: 1, length: 2)")]
+        [InlineData(@"Substring(1, length: 2)", @"AsSpan(1, length: 2)")]
+        [InlineData(@"Substring(startIndex: 1, 2)", @"AsSpan(start: 1, 2)")]
+        [InlineData(@"Substring(length: 2, startIndex: 1)", @"AsSpan(length: 2, start: 1)")]
+        public Task NamedSubstringArguments_ArePreserved_CS(string substring, string asSpan)
+        {
+            string testStatements = $@"var s = {{|#0:foo.{substring} + bar|}};";
+            string fixedStatements = $@"var s = string.Concat(foo.{asSpan}, bar);";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody(testStatements),
+                FixedCode = CSUsings + CSWithBody(fixedStatements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(@"Substring(startIndex:=1)", @"AsSpan(start:=1)")]
+        [InlineData(@"Substring(startIndex:=1, length:=2)", @"AsSpan(start:=1, length:=2)")]
+        [InlineData(@"Substring(1, length:=2)", @"AsSpan(1, length:=2)")]
+        [InlineData(@"Substring(startIndex:=1, 2)", @"AsSpan(start:=1, 2)")]
+        [InlineData(@"Substring(length:=2, startIndex:=1)", @"AsSpan(length:=2, start:=1)")]
+        public Task NamedSubstringArguments_ArePreserved_VB(string substring, string asSpan)
+        {
+            string testStatements = $@"Dim s = {{|#0:foo.{substring} & bar|}}";
+            string fixedStatements = $@"Dim s = String.Concat(foo.{asSpan}, bar)";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody(testStatements),
+                FixedCode = VBUsings + VBWithBody(fixedStatements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_NonStringOperands_CS
+        {
+            get
+            {
+                yield return new[]
+                {
+                    @"foo.Substring(1) + count",
+                    @"string.Concat(foo.AsSpan(1), count.ToString())"
+                };
+                yield return new[]
+                {
+                    @"count + foo.Substring(1)",
+                    @"string.Concat(count.ToString(), foo.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"thing + foo.Substring(1)",
+                    @"string.Concat(thing?.ToString(), foo.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"foo.Substring(1) + thing",
+                    @"string.Concat(foo.AsSpan(1), thing?.ToString())"
+                };
+                yield return new[]
+                {
+                    @"maybe + foo.Substring(1)",
+                    @"string.Concat(maybe?.ToString(), foo.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"thing + foo.Substring(1, 2) + maybe",
+                    @"string.Concat(thing?.ToString(), foo.AsSpan(1, 2), maybe?.ToString())"
+                };
+                yield return new[]
+                {
+                    @"foo + 17 + bar.Substring(1)",
+                    @"string.Concat(foo, 17.ToString(), bar.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"foo.Substring(1, 2) + 17",
+                    @"string.Concat(foo.AsSpan(1, 2), 17.ToString())"
+                };
+                yield return new[]
+                {
+                    @"foo + 3.14159 + bar.Substring(1)",
+                    @"string.Concat(foo, 3.14159.ToString(), bar.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"3.14159 + foo.Substring(1) + 6.02e23",
+                    @"string.Concat(3.14159.ToString(), foo.AsSpan(1), 6.02e23.ToString())"
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_NonStringOperands_CS))]
+        public Task NonStringOperands_AreConvertedToString_CS(string testExpression, string fixedExpression)
+        {
+            string format = @"
+int count = 11;
+object thing = new object();
+TimeSpan? maybe = null;
+string s = {0};";
+            var culture = CultureInfo.InvariantCulture;
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody(string.Format(culture, format, $"{{|#0:{testExpression}|}}")),
+                FixedCode = CSUsings + CSWithBody(string.Format(culture, format, fixedExpression)),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_NonStringOperands_VB
+        {
+            get
+            {
+                yield return new[]
+                {
+                    @"foo.Substring(1) & count",
+                    @"String.Concat(foo.AsSpan(1), count.ToString())"
+                };
+                yield return new[]
+                {
+                    @"count & foo.Substring(1)",
+                    @"String.Concat(count.ToString(), foo.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"thing & foo.Substring(1)",
+                    @"String.Concat(thing?.ToString(), foo.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"foo.Substring(1) & thing",
+                    @"String.Concat(foo.AsSpan(1), thing?.ToString())"
+                };
+                yield return new[]
+                {
+                    @"maybe & foo.Substring(1)",
+                    @"String.Concat(maybe?.ToString(), foo.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"thing & foo.Substring(1, 2) & maybe",
+                    @"String.Concat(thing?.ToString(), foo.AsSpan(1, 2), maybe?.ToString())"
+                };
+                yield return new[]
+                {
+                    @"foo & 17 & bar.Substring(1)",
+                    @"String.Concat(foo, 17.ToString(), bar.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"foo.Substring(1, 2) & 17",
+                    @"String.Concat(foo.AsSpan(1, 2), 17.ToString())"
+                };
+                yield return new[]
+                {
+                    @"foo & 3.14159 & bar.Substring(1)",
+                    @"String.Concat(foo, 3.14159.ToString(), bar.AsSpan(1))"
+                };
+                yield return new[]
+                {
+                    @"3.14159 & foo.Substring(1) & 6.02e23",
+                    @"String.Concat(3.14159.ToString(), foo.AsSpan(1), 6.02e23.ToString())"
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_NonStringOperands_VB))]
+        public Task NonStringOperands_AreConvertedToString_VB(string testExpression, string fixedExpression)
+        {
+            string format = @"
+Dim count As Integer = 11
+Dim thing As Object = New Object()
+Dim maybe As TimeSpan? = Nothing
+Dim s = {0}";
+            var culture = CultureInfo.InvariantCulture;
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody(string.Format(culture, format, $"{{|#0:{testExpression}|}}")),
+                FixedCode = VBUsings + VBWithBody(string.Format(culture, format, fixedExpression)),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+        #endregion
+
+        #region No Diagnostic
+        [Theory]
+        [InlineData("foo.Substring(1) + foo + foo + bar + baz")]
+        [InlineData("foo + foo.Substring(1) + bar + baz + baz")]
+        [InlineData("foo.Substring(1) + bar.Substring(1) + baz.Substring(1) + bar.Substring(1) + foo.Substring(1)")]
+        [InlineData("foo.Substring(1) + bar + baz + foo.Substring(1) + bar + baz")]
+        [InlineData("foo + bar.Substring(1) + baz + foo + bar.Substring(1) + baz")]
+        [InlineData("foo.Substring(1) + bar + baz.Substring(1) + foo.Substring(1) + bar + baz.Substring(1)")]
+        public Task TooManyArguments_NoDiagnostic_CS(string expression)
+        {
+            string statements = $@"var s = {expression};";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody(statements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("foo.Substring(1) & foo & foo & bar & baz")]
+        [InlineData("foo & foo.Substring(1) & bar & baz & baz")]
+        [InlineData("foo.Substring(1) & bar.Substring(1) & baz.Substring(1) & bar.Substring(1) & foo.Substring(1)")]
+        [InlineData("foo.Substring(1) & bar & baz & foo.Substring(1) & bar & baz")]
+        [InlineData("foo & bar.Substring(1) & baz & foo & bar.Substring(1) & baz")]
+        [InlineData("foo.Substring(1) & bar & baz.Substring(1) & foo.Substring(1) & bar & baz.Substring(1)")]
+        public Task TooManyArguments_NoDiagnostic_VB(string expression)
+        {
+            string statements = $@"Dim s = {expression}";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody(statements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("foo + bar")]
+        [InlineData("foo + bar + baz")]
+        [InlineData("foo + bar.ToUpper()")]
+        [InlineData("foo.ToLower() + bar")]
+        public Task NoSubstringInvocations_NoDiagnostic_CS(string expression)
+        {
+            string statements = $@"var s = {expression};";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody(statements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("foo & bar")]
+        [InlineData("foo & bar & baz")]
+        [InlineData("foo & bar.ToUpper()")]
+        [InlineData("foo.ToLower() & bar")]
+        public Task NoSubstringInvocations_NoDiagnostic_VB(string expression)
+        {
+            string statements = $@"Dim s = {expression}";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody(statements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        //  No VB case because VB can't overload operators.
+        [Theory]
+        [InlineData(@"foo.Substring(1) + evil")]
+        [InlineData(@"evil + foo.Substring(1)")]
+        [InlineData(@"foo + evil + bar.Substring(1)")]
+        [InlineData(@"foo.Substring(1) + evil + bar")]
+        [InlineData(@"foo.Substring(1) + evil + bar + baz")]
+        [InlineData(@"foo + bar + evil + baz.Substring(1)")]
+        [InlineData(@"foo + evil + bar.Substring(1) + evil")]
+        [InlineData(@"foo + evil + bar.Substring(1) + evil + baz.Substring(1)")]
+        public Task OverloadedAddOperator_NoDiagnostic(string expression)
+        {
+            string statements = $@"
+var evil = new EvilOverloads();
+var e = {expression};";
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        EvilOverloads,
+                        CSUsings + CSWithBody(statements)
+                    }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+        #endregion
+
+        #region Helpers
+        private static DiagnosticDescriptor Rule => UseSpanBasedStringConcat.Rule;
+        private const string CSUsings = @"using System;";
+        private const string VBUsings = @"Imports System";
+        private const string EvilOverloads = @"    
+public class EvilOverloads
+{
+    public static EvilOverloads operator +(EvilOverloads left, string right) => left;
+    public static EvilOverloads operator +(string left, EvilOverloads right) => right;
+    public static EvilOverloads operator +(EvilOverloads left, EvilOverloads right) => left;
+}";
+
+        private static string CSWithBody(string statements)
+        {
+            return @"
+public class Testopolis
+{
+    private void Consume(string consumed) { }
+    private void Consume(string s1, string s2) { }
+    private void Consume(string s1, string s2, string s3) { }
+    private string Fwd(string arg) => arg;
+    private string Transform(string first, string second) => second;
+    private string Transform(string first, string second, string third) => first;
+    private string Produce() => ""Hello World"";
+
+    public void FrobThem(string foo, string bar, string baz)
+    {
+" + IndentLines(statements, "        ") + @"
+    }
+}";
+        }
+
+        private static string VBWithBody(string statements)
+        {
+            return @"
+Public Class Testopolis
+    Private Sub Consume(consumed As String)
+    End Sub
+    Private Sub Consume(s1 As String, s2 As String)
+    End Sub
+    Private Sub Consume(s1 As String, s2 As String, s3 As String)
+    End Sub
+    Private Function Fwd(arg As String) As String
+        Return arg
+    End Function
+    Private Function Transform(first As String, second As String) As String
+        Return second
+    End Function
+    Private Function Transform(first As String, second As String, third As String) As String
+        Return first
+    End Function
+    Private Function Produce() As String
+        Return ""Hello World""
+    End Function
+
+    Public Sub FrobThem(foo As String, bar As String, baz As String)
+" + IndentLines(statements, "        ") + @"
+    End Sub
+End Class";
+        }
+
+        private static string IndentLines(string body, string indent)
+        {
+            return indent + body.TrimStart().Replace("\r\n", "\r\n" + indent, StringComparison.Ordinal);
+        }
+        #endregion
     }
 }

@@ -2237,6 +2237,21 @@
         <target state="translated">Se possível, considere usar o controle de acesso baseado em função do Azure em vez de uma SAS (Assinatura de Acesso Compartilhado). Se você ainda precisar usar uma SAS, especifique SharedAccessProtocol.HttpsOnly.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>description</source>
+        <target state="new">description</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>message</source>
+        <target state="new">message</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>title</source>
+        <target state="new">title</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
         <target state="translated">ValueTasks retornados de invocações de membro devem ser aguardados diretamente. Tentativas de consumir um ValueTask várias vezes ou de acessar diretamente um resultado antes que esteja sabidamente concluído podem resultar em exceção ou dano. Ignorar um ValueTask é provavelmente uma indicação de um bug funcional e pode degradar o desempenho.</target>

@@ -2237,6 +2237,21 @@
         <target state="translated">Se possibile, provare a usare il controllo degli accessi in base al ruolo di Azure, invece della firma di accesso condiviso. Se è necessario usare una firma di accesso condiviso, specificare SharedAccessProtocol.HttpsOnly.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>description</source>
+        <target state="new">description</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>message</source>
+        <target state="new">message</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>title</source>
+        <target state="new">title</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
         <target state="translated">Gli elementi ValueTask restituiti da chiamate ai membri devono essere usati direttamente tramite await. Se si prova a utilizzare più volte un elemento ValueTask oppure ad accedere direttamente al risultato di un oggetto prima che sia realmente completato, potrebbe verificarsi eccezioni o danneggiamenti dei dati. Un elemento ValueTask ignorato è probabilmente indicativo di un bug funzionale e potrebbe influire negativamente sulle prestazioni.</target>

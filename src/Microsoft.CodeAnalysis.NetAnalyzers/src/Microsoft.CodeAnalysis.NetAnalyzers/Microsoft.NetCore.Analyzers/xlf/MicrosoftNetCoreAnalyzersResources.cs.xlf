@@ -2237,6 +2237,21 @@
         <target state="translated">Pokud je to možné, zvažte použití řízení přístupu Azure na základě role namísto sdíleného přístupového podpisu (SAS). Pokud i přesto potřebujete používat sdílený přístupový podpis, zadejte SharedAccessProtocol.HttpsOnly.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>description</source>
+        <target state="new">description</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>message</source>
+        <target state="new">message</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>title</source>
+        <target state="new">title</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
         <target state="translated">Hodnoty ValueTask vrácené z vyvolání členů jsou určené k tomu, aby byly přímo očekávané. Pokusy o vícenásobné využití ValueTask nebo o přímý přístup k výsledku úkolu před tím, než je známo, že je dokončený, můžou způsobit výjimku nebo poškození. Ignorování takové hodnoty ValueTask je pravděpodobně indikací funkční chyby a může snížit výkon.</target>

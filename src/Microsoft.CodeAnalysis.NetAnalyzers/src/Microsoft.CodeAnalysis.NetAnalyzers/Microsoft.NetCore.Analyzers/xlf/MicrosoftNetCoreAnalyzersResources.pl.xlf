@@ -2237,6 +2237,21 @@
         <target state="translated">Jeśli to możliwe, rozważ użycie kontroli dostępu opartej na rolach platformy Azure zamiast sygnatury dostępu współdzielonego (SAS). Jeśli nadal chcesz używać sygnatury SAS, określ właściwość SharedAccessProtocol.HttpsOnly.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>description</source>
+        <target state="new">description</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>message</source>
+        <target state="new">message</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>title</source>
+        <target state="new">title</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
         <target state="translated">Elementy ValueTask zwracane przez wywołania elementów członkowskich są przeznaczone do bezpośredniego oczekiwania. Próby wielokrotnego użycia elementu ValueTask lub uzyskania bezpośredniego dostępu do wyniku elementu zanim jest wiadomo, że został on zakończony, mogą spowodować wystąpienie wyjątku lub uszkodzenia. Zignorowanie takiego elementu ValueTask prawdopodobnie wskazuje na usterkę funkcjonalną i może obniżyć wydajność.</target>

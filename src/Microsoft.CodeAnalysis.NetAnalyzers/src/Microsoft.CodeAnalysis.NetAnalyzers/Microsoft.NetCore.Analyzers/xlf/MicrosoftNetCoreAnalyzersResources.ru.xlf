@@ -2237,6 +2237,21 @@
         <target state="translated">Если возможно, попробуйте использовать управление доступом на основе ролей Azure, а не подписанный URL-адрес (SAS). Если все-таки требуется использовать SAS, укажите SharedAccessProtocol.HttpsOnly.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>description</source>
+        <target state="new">description</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>message</source>
+        <target state="new">message</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>title</source>
+        <target state="new">title</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
         <target state="translated">ValueTask, возвращаемые в результате вызова членов, должны ожидаться напрямую. Попытки использовать ValueTask несколько раз или получить прямой доступ к результату, прежде чем он будет получен, могут привести к выдаче исключения или повреждению данных. Пропуск такого ValueTask, вероятно, свидетельствует о функциональной ошибке и может привести к снижению производительности.</target>

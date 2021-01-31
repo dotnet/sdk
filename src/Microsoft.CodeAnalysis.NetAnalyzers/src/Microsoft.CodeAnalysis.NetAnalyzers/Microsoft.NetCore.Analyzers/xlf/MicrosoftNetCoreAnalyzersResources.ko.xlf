@@ -2237,6 +2237,21 @@
         <target state="translated">가능한 경우 SAS(공유 액세스 서명) 대신 Azure의 역할 기반 액세스 제어를 사용하는 것이 좋습니다. 계속 SAS를 사용해야 하는 경우 SharedAccessProtocol.HttpsOnly를 지정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>description</source>
+        <target state="new">description</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>message</source>
+        <target state="new">message</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>title</source>
+        <target state="new">title</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
         <source>ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.</source>
         <target state="translated">멤버 호출에서 반환되는 ValueTasks는 바로 대기되기 위한 것입니다. ValueTask를 여러 번 사용하거나, 완료가 확인되기 전에 해당 결과에 바로 액세스하면 예외나 손상이 발생할 수 있습니다.  이러한 ValueTask를 무시하면 기능 버그가 발생하거나 성능이 저하될 수 있습니다.</target>
