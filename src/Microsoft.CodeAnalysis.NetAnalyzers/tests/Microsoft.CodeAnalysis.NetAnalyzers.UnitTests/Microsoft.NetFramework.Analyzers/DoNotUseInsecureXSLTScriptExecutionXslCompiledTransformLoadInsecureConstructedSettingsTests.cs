@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureXSLTScriptExecutionAnalyzer,
@@ -1281,6 +1282,30 @@ Namespace TestNamespace
 End Namespace",
                 GetCA3076LoadInsecureConstructedBasicResultAt(10, 13, "TestMethod")
             );
+        }
+
+        [Fact]
+        [WorkItem(4750, "https://github.com/dotnet/roslyn-analyzers/issues/4750")]
+        public async Task VariableDeclaratorWithoutInitializer_NoCrashAndNoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+class TestClass
+{
+    private static void TestMethod()
+    {
+        string x;
+    }
+}
+"
+            );
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Class TestClass
+    Private Shared Sub TestMethod()
+        Dim x As String
+    End Sub
+End Class
+");
         }
     }
 }

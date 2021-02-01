@@ -62,7 +62,10 @@ namespace Microsoft.NetFramework.Analyzers
                         context.RegisterOperationAction(context =>
                         {
                             var variableDeclarator = (IVariableDeclaratorOperation)context.Operation;
-                            analyzer.AnalyzeNodeForXsltSettings(variableDeclarator, variableDeclarator.GetVariableInitializer().Value);
+                            if (variableDeclarator.GetVariableInitializer() is IVariableInitializerOperation initializer)
+                            {
+                                analyzer.AnalyzeNodeForXsltSettings(variableDeclarator, initializer.Value);
+                            }
                         }, OperationKind.VariableDeclarator);
 
                         context.RegisterOperationAction(context =>
