@@ -23,8 +23,8 @@
       <_Parameter2>$(SdkTargetFramework)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>RepoRoot</_Parameter1>
-      <_Parameter2>$(RepoRoot)</_Parameter2>
+      <_Parameter1>ArtifactsTmpDir</_Parameter1>
+      <_Parameter2>$(ArtifactsTmpDir)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
   

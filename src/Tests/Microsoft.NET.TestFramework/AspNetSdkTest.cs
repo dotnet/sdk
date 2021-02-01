@@ -30,7 +30,7 @@ namespace Microsoft.NET.TestFramework
         private void CopyAndModifyNugetConfig(string projectDirectory)
         {
             // Copy the config at the root of the repo to `projectDirectory`
-            var repoRoot = TestAssemblyMetadata.SingleOrDefault(a => a.Key == "RepoRoot").Value;
+            var repoRoot = TestAssemblyMetadata.SingleOrDefault(a => a.Key == "ArtifactsTmpDir").Value;
             var configAtRoot = Path.Combine(repoRoot, "nuget.config");
             File.Copy(configAtRoot, Path.Combine(projectDirectory, "nuget.config"));
 
