@@ -31,8 +31,8 @@ namespace Microsoft.NET.TestFramework
         private void CopyAndModifyNugetConfig(string projectDirectory)
         {
             // Copy the config at the root of the repo to `projectDirectory`
-            var repoRoot = _testAssemblyMetadata.SingleOrDefault(a => a.Key == "ArtifactsTmpDir").Value;
-            var configAtRoot = Path.Combine(repoRoot, "NuGet.config");
+            var nugetDir = _testAssemblyMetadata.SingleOrDefault(a => a.Key == "NuGetDir").Value;
+            var configAtRoot = Path.Combine(nugetDir, "NuGet.config");
             File.Copy(configAtRoot, Path.Combine(projectDirectory, "NuGet.config"));
 
             // Remove sources not in `_nuGetFeedsRetained`
