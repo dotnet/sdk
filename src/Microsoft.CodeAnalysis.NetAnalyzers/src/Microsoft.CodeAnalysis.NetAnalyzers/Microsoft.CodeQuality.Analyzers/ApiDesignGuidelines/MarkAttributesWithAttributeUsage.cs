@@ -59,8 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            bool hasAttributeUsageAttribute = symbol.HasAttribute(attributeUsageAttributeType);
-            if (!hasAttributeUsageAttribute)
+            if (!symbol.HasAttribute(attributeUsageAttributeType))
             {
                 addDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name));
             }
