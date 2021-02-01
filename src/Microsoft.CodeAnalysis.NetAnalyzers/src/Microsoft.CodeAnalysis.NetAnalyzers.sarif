@@ -399,25 +399,6 @@
               "EnabledRuleInAggressiveMode"
             ]
           }
-        },
-        "CA3077": {
-          "id": "CA3077",
-          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
-          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "CSharpDoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
         }
       }
     },
@@ -3982,6 +3963,26 @@
             ]
           }
         },
+        "CA3077": {
+          "id": "CA3077",
+          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
+          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
+          "properties": {
+            "category": "Security",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA3147": {
           "id": "CA3147",
           "shortDescription": "Mark Verb Handlers With Validate Antiforgery Token",
@@ -5408,25 +5409,6 @@
             "category": "Security",
             "isEnabledByDefault": false,
             "typeName": "BasicDataSetDataTableInSerializableTypeAnalyzer",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA3077": {
-          "id": "CA3077",
-          "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
-          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
-          "defaultLevel": "hidden",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
-          "properties": {
-            "category": "Security",
-            "isEnabledByDefault": true,
-            "typeName": "BasicDoNotUseInsecureDtdProcessingInApiDesignAnalyzer",
             "languages": [
               "Visual Basic"
             ],
