@@ -20,7 +20,6 @@
     
     <DebugType>embedded</DebugType>
 
-    <HelixPayloadOnHost>$(RepoRoot)\artifacts\tmp\Helixpayload</HelixPayloadOnHost>
   </PropertyGroup>
 
 </Project>

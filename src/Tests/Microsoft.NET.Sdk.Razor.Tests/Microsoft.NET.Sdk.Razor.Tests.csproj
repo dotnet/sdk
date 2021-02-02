@@ -23,13 +23,9 @@
       <_Parameter1>AspNetTestTfm</_Parameter1>
       <_Parameter2>$(SdkTargetFramework)</_Parameter2>
     </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="$(HelixPayloadOnHost) != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>NuGetDir</_Parameter1>
-      <_Parameter2>$(HelixPayloadOnHost)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="$(HelixPayloadOnHost) == ''">
-      <_Parameter1>NuGetDir</_Parameter1>
-      <_Parameter2>$(ArtifactsTmpDir)</_Parameter2>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
   
