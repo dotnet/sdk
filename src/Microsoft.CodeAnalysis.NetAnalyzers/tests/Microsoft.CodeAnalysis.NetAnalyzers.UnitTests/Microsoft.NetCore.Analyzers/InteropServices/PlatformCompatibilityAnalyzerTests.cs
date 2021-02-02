@@ -171,32 +171,32 @@ public class Test
 {
     void ThrowWithStringArgument()
     {
-        [|SR.Message|] = ""Warns not reachable on Browser"";
+        SR.Message = ""This does not warn because this code is not reachable on any"";
         throw new PlatformNotSupportedException(SR.Message);
     }
 
     void ThrowNotSupportedWithStringArgument()
     {
-        [|SR.Message|] = ""Warns not reachable on Browser"";
+        SR.Message = ""This does not warn because this code is not reachable on any"";
         throw new NotSupportedException(SR.Message);
     }
     
     void ThrowWithNoArgument()
     {
-        [|SR.Message|] = ""Warns not reachable on Browser"";
+        SR.Message = ""This does not warn because this code is not reachable on any"";
         throw new PlatformNotSupportedException();
     }
     
     void ThrowWithStringAndExceptionConstructor()
     {
-        [|SR.Message|] = ""Warns not reachable on Browser"";
+        SR.Message = ""This does not warn because this code is not reachable on any"";
         throw new PlatformNotSupportedException(SR.Message, new Exception());
     }
     
     void ThrowWithAnotherExceptionUsingResourceString()
     {
-        [|SR.Message|] = ""Warns not reachable on Browser"";
-        throw new PlatformNotSupportedException(SR.Message, new Exception([|SR.Message|]));
+        SR.Message = ""This does not warn because this code is not reachable on any"";
+        throw new PlatformNotSupportedException(SR.Message, new Exception(SR.Message));
     }
 }";
             await VerifyAnalyzerAsyncCs(csSource);
@@ -278,14 +278,14 @@ public class Test
     [UnsupportedOSPlatform(""browser"")]
     public static Exception GetNotSupportedWithStringArgument()
     {
-        [|s_message|] = ""Warns not reachable on Browser"";
+        s_message = ""Warns not reachable on Browser"";
         return new NotSupportedException(s_message); 
     }
 
     [UnsupportedOSPlatform(""browser"")]
     public static Exception ThrowPnseWithStringWarnsForInnerException()
     { 
-        return new PlatformNotSupportedException(s_message, new Exception([|s_message|]));
+        return new PlatformNotSupportedException(s_message, new Exception(s_message));
     }
 
     [UnsupportedOSPlatform(""browser"")]
@@ -3196,6 +3196,232 @@ class UnsupportedWindows8_9_12_Ios6_7_14
                     Join(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "12.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "ios", "7.0", "11.0"))),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsAllPlatforms).WithLocation(2).WithArguments("UnsupportedWindows8_9_12_Ios6_7_14.UnsupportedWindows6_10_Ios_1_5_11.UnsupportedWindowsIos2_9_10()",
                     Join(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "windows", "10.0", "12.0"), GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, "ios", "9.0", "10.0"))));
+        }
+
+        [Fact]
+        public async Task EmptyCallsiteReferencesLocalFunctionNotWarns()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+[SupportedOSPlatform(""Browser"")]
+public class Test
+{
+    [UnsupportedOSPlatform(""browser"")]
+    public static string CurrentProgram
+    {
+        get
+        {
+            return EnsureInitialized();
+            string EnsureInitialized() { return string.Empty; }
+        }
+    }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task NarrowedCallsiteReferencesLocalFunctionNotWarns()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+[SupportedOSPlatform(""Browser"")]
+public class Test
+{
+    [UnsupportedOSPlatform(""browser2.0"")]
+    public static string CurrentProgram
+    {
+        get
+        {
+            return EnsureInitialized();
+            string EnsureInitialized() { return string.Empty; }
+        }
+    }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task EmptyCallsiteReferencesApiWithinSameAssemblyAttributeNotWarn()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+
+[assembly:SupportedOSPlatform(""Browser"")] 
+public class Test
+{
+    private string program;
+
+    [UnsupportedOSPlatform(""browser"")] // unsupports the only supported platform of parent producing empty call site, not warning
+    public string CurrentProgram
+    {
+        get
+        {
+            return program; // should not warn
+        }
+    }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task EmptyCallsiteReferencesApiWithImmediateAttributeNotWarn()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+
+[assembly:SupportedOSPlatform(""Browser"")]
+public class Test
+{
+    [SupportedOSPlatform(""Browser"")]
+    private static string s_program;
+
+    [UnsupportedOSPlatform(""browser"")]
+    public static string CurrentProgram
+    {
+        get
+        {
+            return s_program; // should not warn
+        }
+    }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task EmptyCallsiteReferencesPlatformSpecificLibrariesApisNotWarn()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+[assembly:SupportedOSPlatform(""Browser"")] 
+public class Test
+{
+    [UnsupportedOSPlatform(""browser"")] // Overrides only support parent had, no valid call sites, not warm for anything
+    public void M1()
+    {
+        Console.Beep(); // Unsupported on browser API, should not warn
+        Console.Beep(10, 20); // Windows only API, should not warn
+    }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task Empty_NonCallsiteReferencesVersionedApiWithImmediateAttribute()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows7.0"")]
+public class Test
+{
+    [UnsupportedOSPlatform(""windows9.0"")]
+    void StillSupportedOnWindows7and8()
+    {   // This call site is reachable on: 'windows' from version 7.0 to 9.0. 'Test.SupportedOnWindows10()' is only supported on: 'windows' 10.0 and later.
+        [|SupportedOnWindows10()|]; // Warning; calling from Windows 7-8 is still supported but it will fail
+    }
+    [UnsupportedOSPlatform(""windows6.0"")]
+    void NotSupportedAnywhere()
+    {
+        SupportedOnWindows10(); // No warning; no valid call sites
+    }
+    [SupportedOSPlatform(""windows10.0"")]
+    void SupportedOnWindows10() { }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task ChildCanNarrowUpperLevelSupportedPlatforms()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+
+[assembly:SupportedOSPlatform(""windows"")]
+[assembly:SupportedOSPlatform(""ios"")]
+public class Test
+{
+    [SupportedOSPlatform(""windows"")]
+    private void WindowsOnly() { }
+
+    [SupportedOSPlatform(""ios"")]
+    private void IosOnly () { }
+
+    private void NoAttribute () { }
+
+    public void M1 ()
+    {
+        [|WindowsOnly()|];
+        [|IosOnly()|];
+        NoAttribute();
+    }
+    [SupportedOSPlatform(""Windows"")]
+    public void M2 ()
+    {
+       WindowsOnly();
+       [|IosOnly()|];
+        NoAttribute();
+    }
+    [SupportedOSPlatform(""iOS"")]
+    public void M3 ()
+    {
+        [|WindowsOnly()|];
+        IosOnly();
+        NoAttribute();
+    }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task EmptyCallsiteReferencesSupportedUnsupportedApisNotWarns()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""browser"")]
+[SupportedOSPlatform(""windows"")]
+[SupportedOSPlatform(""macos"")]
+class Test
+{
+    [UnsupportedOSPlatform(""browser"")]
+    private static void ApiUnsupportedOnBrowser () { }
+
+    [SupportedOSPlatform(""macos"")]
+    class TestMacOs // Inside only mac accessable
+    {
+        [SupportedOSPlatform(""windows"")]
+        void WindowsOnly() // The method attribute causes not valid call sites; no warnings no matter what
+        {
+            Test.ApiUnsupportedOnBrowser();
+            Console.Beep(10, 20); // Windows only API
+        }
+    }
+
+    void MethodHasNoAttribute()
+    {
+        [|ApiUnsupportedOnBrowser()|]; // This call site is reachable on: 'macos', 'browser', 'windows'. 'Test.ApiUnsupportedOnBrowser()' is unsupported on: 'browser'.
+        [|Console.Beep(10, 20)|];      // This call site is reachable on: 'macos', 'browser', 'windows'. 'Console.Beep(int, int)' is only supported on: 'windows'.
+    }
+
+    [SupportedOSPlatform(""WINDOWS"")]
+    void WindowsOnly() // Nothing should warn
+    {
+        ApiUnsupportedOnBrowser();
+        Console.Beep(10, 20);
+    }
+
+    [SupportedOSPlatform(""Linux"")] // Not valid because Linux is not in parent list of platforms
+    void LinuxOnly() // => not valid call site; no warnings no matter what
+    {
+        ApiUnsupportedOnBrowser();
+        Console.Beep(10, 20);
+    }
+}";
+            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
         }
 
         private string GetFormattedString(string resource, params string[] args) =>
