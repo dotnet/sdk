@@ -16,27 +16,31 @@ using Microsoft.CodeAnalysis.Operations;
 
 using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 using RequiredSymbols = Microsoft.NetCore.Analyzers.Runtime.UseSpanBasedStringConcat.RequiredSymbols;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     public abstract class UseSpanBasedStringConcatFixer : CodeFixProvider
     {
-        private const string AsSpanName = nameof(MemoryExtensions.AsSpan);
-        private const string AsSpanStartParameterName = "start";
+        private protected const string AsSpanName = nameof(MemoryExtensions.AsSpan);
+        private protected const string AsSpanStartParameterName = "start";
         private protected const string ToStringName = nameof(ToString);
 
         private protected abstract SyntaxNode ReplaceInvocationMethodName(SyntaxGenerator generator, SyntaxNode invocationSyntax, string newName);
 
-        private protected abstract SyntaxToken GetOperatorToken(IBinaryOperation binaryOperation);
-
         private protected abstract bool IsSystemNamespaceImported(IReadOnlyList<SyntaxNode> namespaceImports);
 
-        private protected abstract bool IsNamedArgument(IArgumentOperation argument);
+        /// <summary>Invoke ToString with the Elvis operator.</summary>
+        private protected abstract SyntaxNode GenerateConditionalToStringInvocationExpression(SyntaxNode expression);
 
         /// <summary>
-        /// Invokes <see cref="object.ToString"/> on the specified expression using the Elvis operator.
+        /// Remove the built in implicit conversion to object when a non-string operand is concatenated in C#. 
+        /// In Visual Basic, the implicit conversion can be to string or object. 
+        /// User-defined conversions are not removed.
         /// </summary>
-        private protected abstract SyntaxNode CreateConditionalToStringInvocation(SyntaxNode receiverExpression);
+        private protected abstract IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand);
+
+        private protected abstract bool IsNamedArgument(IArgumentOperation argumentOperation);
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseSpanBasedStringConcat.RuleId);
 
@@ -49,15 +53,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var compilation = model.Compilation;
             SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            //  Bail out early if we're missing anything we need.
             if (!RequiredSymbols.TryGetSymbols(compilation, out var symbols))
                 return;
             if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode concatExpressionSyntax)
                 return;
-            if (model.GetOperation(concatExpressionSyntax, cancellationToken) is not IBinaryOperation concatOperation || concatOperation.OperatorKind != symbols.ConcatOperatorKind)
+            //  OperatorKind will be BinaryOperatorKind.Concatenate, even when '+' is used instead of '&' in Visual Basic.
+            if (model.GetOperation(concatExpressionSyntax, cancellationToken) is not IBinaryOperation concatOperation || concatOperation.OperatorKind is not (BinaryOperatorKind.Add or BinaryOperatorKind.Concatenate))
                 return;
 
-            var operands = UseSpanBasedStringConcat.FlattenBinaryOperationChain(concatOperation);
+            var operands = UseSpanBasedStringConcat.FlattenBinaryOperation(concatOperation);
             //  Bail out if we don't have a long enough span-based string.Concat overload.
             if (!symbols.TryGetRoscharConcatMethodWithArity(operands.Length, out IMethodSymbol? roscharConcatMethod))
                 return;
@@ -75,16 +79,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
                 var generator = editor.Generator;
 
-                //  Save leading and trailing trivia so it can be attached to the outside of the 'string.Concat(...)' invocation expression.
+                SyntaxNode stringTypeNameSyntax = generator.TypeExpressionForStaticMemberAccess(symbols.StringType);
+                SyntaxNode concatMemberAccessSyntax = generator.MemberAccessExpression(stringTypeNameSyntax, roscharConcatMethod.Name);
+
+                //  Save leading and trailing trivia so it can be attached to the outside of the string.Concat invocation node.
                 var leadingTrivia = operands.First().Syntax.GetLeadingTrivia();
                 var trailingTrivia = operands.Last().Syntax.GetTrailingTrivia();
 
-                SyntaxNode stringTypeNameSyntax = generator.TypeExpressionForStaticMemberAccess(symbols.StringType);
-                SyntaxNode concatMemberAccessSyntax = generator.MemberAccessExpression(stringTypeNameSyntax, roscharConcatMethod.Name);
-                var arguments = GenerateConcatMethodArguments(symbols, generator, operands);
-                SyntaxNode concatMethodInvocationSyntax = generator.InvocationExpression(concatMemberAccessSyntax, arguments)
+                var arguments = ImmutableArray.CreateBuilder<SyntaxNode>(operands.Length);
+                foreach (var operand in operands)
+                    arguments.Add(ConvertOperandToArgument(symbols, generator, operand));
+
+                //  Strip off leading and trailing trivia from first and last operand nodes, respectively, and
+                //  reattach it to the outside of the newly-created string.Concat invocation node.
+                arguments[0] = arguments[0].WithoutLeadingTrivia();
+                arguments[^1] = arguments[^1].WithoutTrailingTrivia();
+                SyntaxNode concatMethodInvocationSyntax = generator.InvocationExpression(concatMemberAccessSyntax, arguments.MoveToImmutable())
                     .WithLeadingTrivia(leadingTrivia)
                     .WithTrailingTrivia(trailingTrivia);
+
                 var newRoot = generator.ReplaceNode(root, concatExpressionSyntax, concatMethodInvocationSyntax);
 
                 //  Make sure 'System' namespace is imported.
@@ -99,78 +112,64 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private ImmutableArray<SyntaxNode> GenerateConcatMethodArguments(in RequiredSymbols symbols, SyntaxGenerator generator, ImmutableArray<IOperation> operands)
+        public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+
+        private SyntaxNode ConvertOperandToArgument(in RequiredSymbols symbols, SyntaxGenerator generator, IOperation operand)
         {
-            var builder = ImmutableArray.CreateBuilder<SyntaxNode>(operands.Length);
-            foreach (IOperation operand in operands)
+            var value = WalkDownBuiltInImplicitConversionOnConcatOperand(operand);
+
+            //  Convert substring invocations to equivalent AsSpan invocation.
+            if (value is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod))
             {
-                //  Convert 'Substring' invocations into 'AsSpan' invocations.
-                if (WalkDownImplicitConversion(operand) is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod))
+                SyntaxNode invocationSyntax = invocation.Syntax;
+
+                //  Swap out parameter names if named-arguments are used. 
+                if (TryGetNamedStartIndexArgument(symbols, invocation, out var namedStartIndexArgument))
                 {
-                    SyntaxNode newInvocationSyntax = invocation.Syntax;
-
-                    //  Convert 'Substring' named-arguments to equivalent 'AsSpan' named arguments.
-                    IArgumentOperation? namedStartIndexArgument = GetNamedStartIndexArgumentOrDefault(symbols, invocation);
-                    if (namedStartIndexArgument is not null)
-                    {
-                        SyntaxNode renamedSubstringArgumentSyntax = generator.Argument(AsSpanStartParameterName, RefKind.None, namedStartIndexArgument.Value.Syntax);
-                        newInvocationSyntax = generator.ReplaceNode(newInvocationSyntax, namedStartIndexArgument.Syntax, renamedSubstringArgumentSyntax);
-                    }
-
-                    //  Replace 'Substring' identifier with 'AsSpan', leaving the rest of the node (including trivia) intact. 
-                    newInvocationSyntax = ReplaceInvocationMethodName(generator, newInvocationSyntax, AsSpanName);
-                    builder.Add(generator.Argument(newInvocationSyntax));
+                    var renamedArgumentSyntax = generator.Argument(AsSpanStartParameterName, RefKind.None, namedStartIndexArgument.Value.Syntax);
+                    invocationSyntax = generator.ReplaceNode(invocationSyntax, namedStartIndexArgument.Syntax, renamedArgumentSyntax);
+                }
+                var asSpanInvocationSyntax = ReplaceInvocationMethodName(generator, invocationSyntax, AsSpanName);
+                return generator.Argument(asSpanInvocationSyntax);
+            }
+            else if (value.Type.SpecialType == SpecialType.System_String)
+            {
+                return generator.Argument(value.Syntax);
+            }
+            //  If the operand is a non-string type, we need to invoke ToString() on it to
+            //  prevent overload resolution from choosing an object-based string.Concat overload.
+            else
+            {
+                //  Invoke ToString with Elvis operator if receiver could be null.
+                if (value.Type.IsReferenceTypeOrNullableValueType())
+                {
+                    SyntaxNode conditionalAccessSyntax = GenerateConditionalToStringInvocationExpression(value.Syntax);
+                    return generator.Argument(conditionalAccessSyntax);
                 }
                 else
                 {
-                    IOperation value = WalkDownImplicitConversion(operand);
-                    if (value.Type.SpecialType == SpecialType.System_String)
-                    {
-                        builder.Add(generator.Argument(value.Syntax));
-                    }
-                    else
-                    {
-                        SyntaxNode newValueSyntax;
-                        if (value.Type.IsReferenceTypeOrNullableValueType())
-                        {
-                            newValueSyntax = CreateConditionalToStringInvocation(value.Syntax);
-                        }
-                        else
-                        {
-                            SyntaxNode toStringMemberAccessSyntax = generator.MemberAccessExpression(value.Syntax.WithoutTrivia(), ToStringName);
-                            newValueSyntax = generator.InvocationExpression(toStringMemberAccessSyntax, Array.Empty<SyntaxNode>())
-                                .WithTriviaFrom(value.Syntax);
-                        }
-                        builder.Add(generator.Argument(newValueSyntax));
-                    }
+                    SyntaxNode memberAccessSyntax = generator.MemberAccessExpression(value.Syntax.WithoutTrivia(), ToStringName);
+                    SyntaxNode toStringInvocationSyntax = generator.InvocationExpression(memberAccessSyntax, Array.Empty<SyntaxNode>());
+                    return generator.Argument(toStringInvocationSyntax).WithTriviaFrom(value.Syntax);
                 }
             }
 
-            builder[0] = builder[0].WithoutLeadingTrivia();
-            builder[^1] = builder[^1].WithoutTrailingTrivia();
-            return builder.MoveToImmutable();
-
-            //  If the 'startIndex' argument was passed using named-arguments, return it. 
-            //  Otherwise, return null.
-            IArgumentOperation? GetNamedStartIndexArgumentOrDefault(in RequiredSymbols symbols, IInvocationOperation substringInvocation)
+            bool TryGetNamedStartIndexArgument(in RequiredSymbols symbols, IInvocationOperation substringInvocation, [NotNullWhen(true)] out IArgumentOperation? namedStartIndexArgument)
             {
                 RoslynDebug.Assert(symbols.IsAnySubstringMethod(substringInvocation.TargetMethod));
+
                 foreach (var argument in substringInvocation.Arguments)
                 {
                     if (IsNamedArgument(argument) && symbols.IsAnySubstringStartIndexParameter(argument.Parameter))
-                        return argument;
+                    {
+                        namedStartIndexArgument = argument;
+                        return true;
+                    }
                 }
-                return null;
-            }
 
-            static IOperation WalkDownImplicitConversion(IOperation operand)
-            {
-                if (operand is IConversionOperation { Type: { SpecialType: SpecialType.System_Object or SpecialType.System_String }, IsImplicit: true } conversion)
-                    return conversion.Operand;
-                return operand;
+                namedStartIndexArgument = default;
+                return false;
             }
         }
-
-        public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
     }
 }

@@ -37,7 +37,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private const string AsSpanName = nameof(MemoryExtensions.AsSpan);
         private const string ConcatName = nameof(string.Concat);
 
-        private protected abstract bool IsStringConcatOperation(IBinaryOperation binaryOperation);
+        /// <summary>
+        /// If the specified binary operation is a string concatenation operation, we try to walk up to the top-most
+        /// string-concatenation operation that it is part of. If it is not a string-concatenation operation, we simply
+        /// return false.
+        /// </summary>
+        private protected abstract bool TryGetTopMostConcatOperation(IBinaryOperation binaryOperation, [NotNullWhen(true)] out IBinaryOperation? rootBinaryOperation);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -57,58 +62,49 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
             {
-                var rootConcatOperations = PooledConcurrentSet<IBinaryOperation>.GetInstance();
+                //  Maintain set of all top-most concat operations so we don't report sub-expressions of an
+                //  already-reported violation. 
+                //  We also don't report any diagnostic if the concat operation has too many operands for the span-based
+                //  Concat overloads to handle.
+                var topMostConcatOperations = PooledConcurrentSet<IBinaryOperation>.GetInstance();
 
-                context.RegisterOperationAction(PopulateRootConcatOperations, OperationKind.Binary);
+                context.RegisterOperationAction(PopulateTopMostConcatOperations, OperationKind.Binary);
                 context.RegisterOperationBlockEndAction(ReportDiagnosticsOnRootConcatOperationsWithSubstringCalls);
 
-                void PopulateRootConcatOperations(OperationAnalysisContext context)
+                void PopulateTopMostConcatOperations(OperationAnalysisContext context)
                 {
+                    //  If the current operation is a string-concatenation operation, walk up to the top-most concat
+                    //  operation and add it to the set.
                     var binary = (IBinaryOperation)context.Operation;
-                    if (binary.OperatorKind != symbols.ConcatOperatorKind)
+                    if (!TryGetTopMostConcatOperation(binary, out var topMostConcatOperation))
                         return;
 
-                    var topBinaryOperation = WalkUpBinaryOperationChain(binary);
-                    if (!IsStringConcatOperation(topBinaryOperation))
-                        return;
-
-                    rootConcatOperations.Add(topBinaryOperation);
+                    topMostConcatOperations.Add(topMostConcatOperation);
                 }
 
                 void ReportDiagnosticsOnRootConcatOperationsWithSubstringCalls(OperationBlockAnalysisContext context)
                 {
-                    foreach (var root in rootConcatOperations)
+                    //  We report diagnostics for all top-most concat operations that contain substring invocations
+                    //  when there is an applicable span-based overload of string.Concat
+                    foreach (var operation in topMostConcatOperations)
                     {
-                        var chain = FlattenBinaryOperationChain(root);
+                        var chain = FlattenBinaryOperation(operation);
                         if (chain.Any(IsAnySubstringInvocation) && symbols.TryGetRoscharConcatMethodWithArity(chain.Length, out var _))
                         {
-                            context.ReportDiagnostic(root.CreateDiagnostic(Rule));
+                            context.ReportDiagnostic(operation.CreateDiagnostic(Rule));
                         }
                     }
-                    rootConcatOperations.Free(context.CancellationToken);
+                    topMostConcatOperations.Free(context.CancellationToken);
                 }
             }
 
             bool IsAnySubstringInvocation(IOperation operation)
             {
-                return operation.WalkDownConversion() is IInvocationOperation invocation &&
-                    (invocation.TargetMethod.Equals(symbols.Substring1, SymbolEqualityComparer.Default) ||
-                    invocation.TargetMethod.Equals(symbols.Substring2, SymbolEqualityComparer.Default));
+                return operation.WalkDownConversion() is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod);
             }
         }
 
-        private static IBinaryOperation WalkUpBinaryOperationChain(IBinaryOperation operation)
-        {
-            while (operation.Parent is IBinaryOperation parentBinaryOperation &&
-                parentBinaryOperation.OperatorKind == operation.OperatorKind)
-            {
-                operation = parentBinaryOperation;
-            }
-
-            return operation;
-        }
-
-        internal static ImmutableArray<IOperation> FlattenBinaryOperationChain(IBinaryOperation root)
+        internal static ImmutableArray<IOperation> FlattenBinaryOperation(IBinaryOperation root)
         {
             var stack = new Stack<IBinaryOperation>();
             var builder = ImmutableArray.CreateBuilder<IOperation>();
@@ -155,8 +151,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             private RequiredSymbols(
                 INamedTypeSymbol stringType, INamedTypeSymbol roscharType,
                 IMethodSymbol substring1, IMethodSymbol substring2,
-                IMethodSymbol asSpan1, IMethodSymbol asSpan2,
-                BinaryOperatorKind concatOperatorKind)
+                IMethodSymbol asSpan1, IMethodSymbol asSpan2)
             {
                 StringType = stringType;
                 RoscharType = roscharType;
@@ -164,7 +159,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 Substring2 = substring2;
                 AsSpan1 = asSpan1;
                 AsSpan2 = asSpan2;
-                ConcatOperatorKind = concatOperatorKind;
 
                 RoslynDebug.Assert(
                     StringType is not null && RoscharType is not null &&
@@ -202,18 +196,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
-                var concatOperatorKind = compilation.Language switch
-                {
-                    LanguageNames.CSharp => BinaryOperatorKind.Add,
-                    LanguageNames.VisualBasic => BinaryOperatorKind.Concatenate,
-                    _ => BinaryOperatorKind.None
-                };
-
                 symbols = new RequiredSymbols(
                     stringType, roscharType,
                     substring1, substring2,
-                    asSpan1, asSpan2,
-                    concatOperatorKind);
+                    asSpan1, asSpan2);
                 return true;
             }
 
@@ -223,7 +209,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public IMethodSymbol Substring2 { get; }
             public IMethodSymbol AsSpan1 { get; }
             public IMethodSymbol AsSpan2 { get; }
-            public BinaryOperatorKind ConcatOperatorKind { get; }
 
             public IMethodSymbol? GetAsSpanEquivalent(IMethodSymbol? substringMethod)
             {

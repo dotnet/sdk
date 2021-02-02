@@ -501,11 +501,6 @@ string s = {0};";
                 };
                 yield return new[]
                 {
-                    @"maybe & foo.Substring(1)",
-                    @"String.Concat(maybe?.ToString(), foo.AsSpan(1))"
-                };
-                yield return new[]
-                {
                     @"thing & foo.Substring(1, 2) & maybe",
                     @"String.Concat(thing?.ToString(), foo.AsSpan(1, 2), maybe?.ToString())"
                 };
@@ -547,6 +542,111 @@ Dim s = {0}";
             {
                 TestCode = VBUsings + VBWithBody(string.Format(culture, format, $"{{|#0:{testExpression}|}}")),
                 FixedCode = VBUsings + VBWithBody(string.Format(culture, format, fixedExpression)),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(@"foo.Substring(1) + (string)explicitTo", @"string.Concat(foo.AsSpan(1), (string)explicitTo)")]
+        [InlineData(@"(string)explicitTo + foo.Substring(1)", @"string.Concat((string)explicitTo, foo.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) + (string)thing", @"string.Concat(foo.AsSpan(1), (string)thing)")]
+        [InlineData(@"(string)thing + foo.Substring(1)", @"string.Concat((string)thing, foo.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) + (thing as string)", @"string.Concat(foo.AsSpan(1), thing as string)")]
+        [InlineData(@"(thing as string) + foo.Substring(1)", @"string.Concat(thing as string, foo.AsSpan(1))")]
+        public Task ExplicitConversions_ArePreserved_CS(string testExpression, string fixedExpression)
+        {
+            string helperTypes = @"
+public class ExplicitTo
+{
+    public static explicit operator string(ExplicitTo operand) => operand?.ToString();
+}
+
+public class ExplicitFrom
+{
+    public static explicit operator ExplicitFrom(string operand) => new ExplicitFrom();
+}";
+            string format = @"
+var explicitTo = new ExplicitTo();
+object thing = bar;
+var s = {0};";
+            var culture = CultureInfo.InvariantCulture;
+            string testStatements = string.Format(culture, format, $@"{{|#0:{testExpression}|}}");
+            string fixedStatements = string.Format(culture, format, fixedExpression);
+
+            var test = new VerifyCS.Test
+            {
+                TestState = { Sources = { CSUsings + CSWithBody(testStatements), helperTypes } },
+                FixedState = { Sources = { CSUsings + CSWithBody(fixedStatements), helperTypes } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(@"foo.Substring(1) & CType(explicitTo, String)", @"String.Concat(foo.AsSpan(1), CType(explicitTo, String))")]
+        [InlineData(@"CType(explicitTo, String) & foo.Substring(1)", @"String.Concat(CType(explicitTo, String), foo.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) & DirectCast(thing, String)", @"String.Concat(foo.AsSpan(1), DirectCast(thing, String))")]
+        [InlineData(@"DirectCast(thing, String) & foo.Substring(1)", @"String.Concat(DirectCast(thing, String), foo.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) & TryCast(thing, String)", @"String.Concat(foo.AsSpan(1), TryCast(thing, String))")]
+        [InlineData(@"TryCast(thing, String) & foo.Substring(1)", @"String.Concat(TryCast(thing, String), foo.AsSpan(1))")]
+        public Task ExplicitConversions_ArePreserved_VB(string testExpression, string fixedExpression)
+        {
+            string helperTypes = @"
+Public Class ExplicitTo
+
+    Public Shared Narrowing Operator CType(operand As ExplicitTo) As String
+        Return New ExplicitTo()
+    End Operator
+End Class
+
+Public Class ExplicitFrom
+    Public Shared Narrowing Operator CType(operand As String) As ExplicitFrom
+        Return New ExplicitFrom()
+    End Operator
+End Class";
+            string format = @"
+Dim explicitTo = New ExplicitTo()
+Dim thing As Object = bar
+Dim s = {0}";
+            var culture = CultureInfo.InvariantCulture;
+            string testStatements = string.Format(culture, format, $@"{{|#0:{testExpression}|}}");
+            string fixedStatements = string.Format(culture, format, fixedExpression);
+
+            var test = new VerifyVB.Test
+            {
+                TestState = { Sources = { VBUsings + VBWithBody(testStatements), helperTypes } },
+                FixedState = { Sources = { VBUsings + VBWithBody(fixedStatements), helperTypes } },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        //  No C# case because C# has only one concat operator.
+        [Theory]
+        [InlineData(@"foo.Substring(1) & bar + baz", @"String.Concat(foo.AsSpan(1), bar, baz)")]
+        [InlineData(@"foo & bar.Substring(1) + baz", @"String.Concat(foo, bar.AsSpan(1), baz)")]
+        [InlineData(@"foo & bar + baz.Substring(1)", @"String.Concat(foo, bar, baz.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) + bar & baz", @"String.Concat(foo.AsSpan(1), bar, baz)")]
+        [InlineData(@"foo + bar.Substring(1) & baz", @"String.Concat(foo, bar.AsSpan(1), baz)")]
+        [InlineData(@"foo + bar & baz.Substring(1)", @"String.Concat(foo, bar, baz.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) & bar + baz & baz.Substring(1)", @"String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
+        [InlineData(@"foo & bar.Substring(1) + baz & foo", @"String.Concat(foo, bar.AsSpan(1), baz, foo)")]
+        [InlineData(@"foo.Substring(1) & bar + baz & foo", @"String.Concat(foo.AsSpan(1), bar, baz, foo)")]
+        [InlineData(@"foo & bar + baz & foo.Substring(1)", @"String.Concat(foo, bar, baz, foo.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) + bar & baz + baz.Substring(1)", @"String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
+        [InlineData(@"foo + bar.Substring(1) & baz + foo", @"String.Concat(foo, bar.AsSpan(1), baz, foo)")]
+        [InlineData(@"foo.Substring(1) + bar & baz + foo", @"String.Concat(foo.AsSpan(1), bar, baz, foo)")]
+        [InlineData(@"foo + bar & baz + foo.Substring(1)", @"String.Concat(foo, bar, baz, foo.AsSpan(1))")]
+        public Task MixedAddAndConcatenateOperatorChains_AreReportedAndFixed_VB(string testExpression, string fixedExpression)
+        {
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody($@"Dim s = {{|#0:{testExpression}|}}"),
+                FixedCode = VBUsings + VBWithBody($@"Dim s = {fixedExpression}"),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
@@ -637,7 +737,7 @@ Dim s = {0}";
         [InlineData(@"foo + bar + evil + baz.Substring(1)")]
         [InlineData(@"foo + evil + bar.Substring(1) + evil")]
         [InlineData(@"foo + evil + bar.Substring(1) + evil + baz.Substring(1)")]
-        public Task OverloadedAddOperator_NoDiagnostic(string expression)
+        public Task OverloadedAddOperator_NoDiagnostic_CS(string expression)
         {
             string statements = $@"
 var evil = new EvilOverloads();

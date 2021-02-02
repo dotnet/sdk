@@ -228,6 +228,25 @@
             ]
           }
         },
+        "CA1841": {
+          "id": "CA1841",
+          "shortDescription": "Use span-based string.Concat",
+          "fullDescription": "'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator. ",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpUseSpanBasedStringConcat",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
@@ -5215,6 +5234,25 @@
             "category": "Performance",
             "isEnabledByDefault": true,
             "typeName": "BasicAvoidZeroLengthArrayAllocationsAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1841": {
+          "id": "CA1841",
+          "shortDescription": "Use span-based string.Concat",
+          "fullDescription": "'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator. ",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "BasicUseSpanBasedStringConcat",
             "languages": [
               "Visual Basic"
             ],

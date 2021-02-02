@@ -1511,12 +1511,12 @@
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
   <data name="UseSpanBasedStringConcatDescription" xml:space="preserve">
-    <value>description</value>
+    <value>'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator. </value>
   </data>
   <data name="UseSpanBasedStringConcatMessage" xml:space="preserve">
-    <value>message</value>
+    <value>Use span-based string.Concat and 'AsSpan' instead of 'Substring'</value>
   </data>
   <data name="UseSpanBasedStringConcatTitle" xml:space="preserve">
-    <value>title</value>
+    <value>Use span-based string.Concat</value>
   </data>
 </root>

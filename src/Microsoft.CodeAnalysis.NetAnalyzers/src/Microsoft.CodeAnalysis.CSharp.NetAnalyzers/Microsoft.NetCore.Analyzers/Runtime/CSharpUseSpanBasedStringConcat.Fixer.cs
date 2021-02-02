@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,12 +23,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return invocationSyntax.ReplaceNode(oldNameSyntax, newNameSyntax);
         }
 
-        private protected override SyntaxToken GetOperatorToken(IBinaryOperation binaryOperation)
-        {
-            var syntax = (BinaryExpressionSyntax)binaryOperation.Syntax;
-            return syntax.OperatorToken;
-        }
-
         private protected override bool IsSystemNamespaceImported(IReadOnlyList<SyntaxNode> namespaceImports)
         {
             foreach (var import in namespaceImports)
@@ -38,18 +33,28 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return false;
         }
 
-        private protected override bool IsNamedArgument(IArgumentOperation argument)
+        private protected override SyntaxNode GenerateConditionalToStringInvocationExpression(SyntaxNode expression)
         {
-            var node = (ArgumentSyntax)argument.Syntax;
-            return node.NameColon is not null;
+            RoslynDebug.Assert(expression is ExpressionSyntax, $"{nameof(expression)} must be C# {nameof(ExpressionSyntax)}.");
+
+            var identifierName = SyntaxFactory.IdentifierName(ToStringName);
+            var memberBinding = SyntaxFactory.MemberBindingExpression(identifierName);
+            var invocation = SyntaxFactory.InvocationExpression(memberBinding, SyntaxFactory.ArgumentList());
+            return SyntaxFactory.ConditionalAccessExpression((ExpressionSyntax)expression.WithoutTrivia(), invocation).WithTriviaFrom(expression);
         }
 
-        private protected override SyntaxNode CreateConditionalToStringInvocation(SyntaxNode receiverExpression)
+        private protected override IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand)
         {
-            var expression = (ExpressionSyntax)receiverExpression;
-            var memberBindingExpression = SyntaxFactory.MemberBindingExpression(SyntaxFactory.IdentifierName(ToStringName));
-            var toStringInvocationExpression = SyntaxFactory.InvocationExpression(memberBindingExpression);
-            return SyntaxFactory.ConditionalAccessExpression(expression, toStringInvocationExpression);
+            if (operand is IConversionOperation conversion && conversion.IsImplicit && conversion.Type.SpecialType == SpecialType.System_Object)
+            {
+                return conversion.Operand;
+            }
+            return operand;
+        }
+
+        private protected override bool IsNamedArgument(IArgumentOperation argumentOperation)
+        {
+            return argumentOperation.Syntax is ArgumentSyntax argumentSyntax && argumentSyntax.NameColon is not null;
         }
     }
 }

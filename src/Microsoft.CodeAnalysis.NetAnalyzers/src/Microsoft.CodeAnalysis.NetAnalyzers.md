@@ -1296,6 +1296,18 @@ Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in
 |CodeFix|False|
 ---
 
+## [CA1841](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841): Use span-based string.Concat
+
+'Substring' is O(n) in the length of the substring, whereas 'AsSpan' is O(1). When using the result of 'Substring' in a string concatenation, it is more efficient to instead call 'AsSpan' and use 'string.Concat', instead of 'Substring' and a concatenation operator.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

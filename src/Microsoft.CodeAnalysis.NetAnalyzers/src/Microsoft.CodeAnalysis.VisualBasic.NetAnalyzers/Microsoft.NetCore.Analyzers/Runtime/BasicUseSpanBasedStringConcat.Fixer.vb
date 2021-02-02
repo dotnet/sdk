@@ -22,12 +22,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return invocationSyntax.ReplaceNode(oldNameSyntax, newNameSyntax)
         End Function
 
-        Private Protected Overrides Function GetOperatorToken(binaryOperation As IBinaryOperation) As SyntaxToken
-
-            Dim syntax = DirectCast(binaryOperation.Syntax, BinaryExpressionSyntax)
-            Return syntax.OperatorToken
-        End Function
-
         Private Protected Overrides Function IsSystemNamespaceImported(namespaceImports As IReadOnlyList(Of SyntaxNode)) As Boolean
 
             For Each node As SyntaxNode In namespaceImports
@@ -49,16 +43,30 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return False
         End Function
 
-        Private Protected Overrides Function IsNamedArgument(argument As IArgumentOperation) As Boolean
-            Return DirectCast(argument.Syntax, ArgumentSyntax).IsNamed
+        Private Protected Overrides Function GenerateConditionalToStringInvocationExpression(expression As SyntaxNode) As SyntaxNode
+
+            Dim identifierName = SyntaxFactory.IdentifierName(ToStringName)
+            Dim simpleMemberAccess = SyntaxFactory.SimpleMemberAccessExpression(identifierName)
+            Dim invocation = SyntaxFactory.InvocationExpression(simpleMemberAccess, SyntaxFactory.ArgumentList())
+            Return SyntaxFactory.ConditionalAccessExpression(DirectCast(expression, ExpressionSyntax).WithoutTrivia(), invocation).WithTriviaFrom(expression)
         End Function
 
-        Private Protected Overrides Function CreateConditionalToStringInvocation(receiverExpression As SyntaxNode) As SyntaxNode
+        Private Protected Overrides Function WalkDownBuiltInImplicitConversionOnConcatOperand(operand As IOperation) As IOperation
 
-            Dim expression = DirectCast(receiverExpression, ExpressionSyntax)
-            Dim memberAccessExpression = SyntaxFactory.SimpleMemberAccessExpression(SyntaxFactory.IdentifierName(ToStringName))
-            Dim invocationExpression = SyntaxFactory.InvocationExpression(memberAccessExpression)
-            Return SyntaxFactory.ConditionalAccessExpression(expression.WithoutTrivia(), invocationExpression).WithTriviaFrom(expression)
+            Dim conversion = TryCast(operand, IConversionOperation)
+            If conversion IsNot Nothing AndAlso conversion.IsImplicit AndAlso Not conversion.Conversion.IsUserDefined AndAlso
+                (conversion.Type.SpecialType = SpecialType.System_String OrElse conversion.Type.SpecialType = SpecialType.System_Object) Then
+
+                Return conversion.Operand
+            Else
+                Return operand
+            End If
+        End Function
+
+        Private Protected Overrides Function IsNamedArgument(argumentOperation As IArgumentOperation) As Boolean
+
+            Dim argumentSyntax = TryCast(argumentOperation.Syntax, ArgumentSyntax)
+            Return argumentSyntax IsNot Nothing AndAlso argumentSyntax.IsNamed
         End Function
     End Class
 End Namespace
