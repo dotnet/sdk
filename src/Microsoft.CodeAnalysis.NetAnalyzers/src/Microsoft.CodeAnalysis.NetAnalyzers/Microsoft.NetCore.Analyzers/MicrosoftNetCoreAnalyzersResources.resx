@@ -1517,6 +1517,6 @@
     <value>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</value>
   </data>
   <data name="UseSpanBasedStringConcatTitle" xml:space="preserve">
-    <value>Use span-based string.Concat</value>
+    <value>Use span-based 'string.Concat'</value>
   </data>
 </root>
