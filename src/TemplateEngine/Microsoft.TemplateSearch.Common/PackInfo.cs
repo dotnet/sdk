@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using Microsoft.TemplateEngine.Abstractions;
-
 namespace Microsoft.TemplateSearch.Common
 {
-    public class PackInfo : IPackInfo
+    public class PackInfo
     {
         public static PackInfo Empty = new PackInfo(string.Empty, string.Empty);
 

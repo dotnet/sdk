@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
-    public class NugetPackageSourceInfo
+    public class NugetPackageSourceInfo : IPackInfo, IEquatable<IPackInfo>
     {
         [JsonIgnore]
         public string VersionedPackageIdentity
@@ -51,12 +53,32 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
         public List<string> Authors { get; set; }
 
         [JsonProperty]
-        public int TotalDownloads { get; set; }
+        public long TotalDownloads { get; set; }
 
         [JsonProperty]
         public bool Verified { get; set; }
 
         [JsonProperty("versions")]
         public List<NugetPackageVersion> PackageVersions { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is NugetPackageSourceInfo info)
+            {
+                return Id.Equals(info.Id, StringComparison.OrdinalIgnoreCase) && Version.Equals(info.Version, StringComparison.OrdinalIgnoreCase);
+            }
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Id, Version).GetHashCode();
+        }
+
+        public bool Equals(IPackInfo other)
+        {
+            if (other == null) return false;
+            return Id.Equals(other.Id, StringComparison.OrdinalIgnoreCase) && Version.Equals(other.Version, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

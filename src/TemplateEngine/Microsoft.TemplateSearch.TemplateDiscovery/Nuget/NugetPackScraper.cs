@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.Filters;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
@@ -10,11 +11,31 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
     public class NugetPackScraper
     {
+        static readonly Dictionary<string, string> SupportedProviders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            {  "query-package-type-template", "packageType=Template" },
+            {  "query-template", "q=template" }
+        };
+
+        public static IEnumerable<string> SupportedProvidersList => SupportedProviders.Keys;
+
         public static bool TryCreateDefaultNugetPackScraper(ScraperConfig config, out PackSourceChecker packSourceChecker)
         {
-            NugetPackProvider packProvider = new NugetPackProvider(config.BasePath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks);
+            List<IPackProvider> providers = new List<IPackProvider>();
 
-            List<Func<IInstalledPackInfo, PreFilterResult>> preFilterList = new List<Func<IInstalledPackInfo, PreFilterResult>>();
+            if (!config.Providers.Any())
+            {
+                providers.AddRange(SupportedProviders.Select(kvp => new NugetPackProvider(kvp.Key, kvp.Value, config.BasePath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks)));
+            }
+            else
+            {
+                foreach (string provider in config.Providers.Distinct(StringComparer.OrdinalIgnoreCase))
+                {
+                    providers.Add(new NugetPackProvider(provider, SupportedProviders[provider], config.BasePath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks));
+                }
+            }
+
+            List<Func<IDownloadedPackInfo, PreFilterResult>> preFilterList = new List<Func<IDownloadedPackInfo, PreFilterResult>>();
 
             if (!PreviouslyRejectedPackFilter.TryGetPreviouslySkippedPacks(config.PreviousRunBasePath, out HashSet<string> nonTemplatePacks))
             {
@@ -37,7 +58,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
                 new CliHostDataProducer()
             };
 
-            packSourceChecker = new PackSourceChecker(packProvider, preFilterer, additionalDataProducers, config.SaveCandidatePacks);
+            packSourceChecker = new PackSourceChecker(providers, preFilterer, additionalDataProducers, config.SaveCandidatePacks);
             return true;
         }
     }

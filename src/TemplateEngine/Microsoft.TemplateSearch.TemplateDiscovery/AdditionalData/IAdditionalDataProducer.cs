@@ -8,7 +8,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
     {
         string DataUniqueName { get; }
 
-        void CreateDataForTemplatePack(IInstalledPackInfo packInfo, IReadOnlyList<ITemplateInfo> templates, IEngineEnvironmentSettings environment);
+        void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templates, IEngineEnvironmentSettings environment);
 
         string Serialized { get; }
 

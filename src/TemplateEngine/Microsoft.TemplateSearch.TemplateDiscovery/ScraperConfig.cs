@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
     public class ScraperConfig
@@ -15,5 +17,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         public string PreviousRunBasePath { get; set; }
 
         public bool DontFilterOnTemplateJson { get; set; }
+
+        public List<string> Providers { get; } = new List<string>();
     }
 }

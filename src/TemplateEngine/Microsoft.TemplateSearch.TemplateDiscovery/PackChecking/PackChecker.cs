@@ -20,7 +20,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         {
         }
 
-        public PackCheckResult TryGetTemplatesInPack(IInstalledPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, HashSet<string> alreadySeenTemplateIdentities, bool persistHive = false)
+        public PackCheckResult TryGetTemplatesInPack(IDownloadedPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, HashSet<string> alreadySeenTemplateIdentities, bool persistHive = false)
         {
             ITemplateEngineHost host = CreateHost(packInfo);
             EngineEnvironmentSettings environment = new EngineEnvironmentSettings(host, x => new SettingsLoader(x));
@@ -84,7 +84,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             return installedTemplates.Count > 0;
         }
 
-        private static ITemplateEngineHost CreateHost(IInstalledPackInfo packInfo)
+        private static ITemplateEngineHost CreateHost(IDownloadedPackInfo packInfo)
         {
             string hostIdentifier = HostIdentifierBase + packInfo.Id;
 

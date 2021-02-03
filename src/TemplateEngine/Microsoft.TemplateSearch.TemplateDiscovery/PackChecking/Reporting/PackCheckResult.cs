@@ -6,21 +6,21 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting
 {
     public class PackCheckResult
     {
-        public PackCheckResult(IInstalledPackInfo packInfo, PreFilterResultList preFilterResults)
+        public PackCheckResult(IDownloadedPackInfo packInfo, PreFilterResultList preFilterResults)
         {
             PackInfo = packInfo;
             PreFilterResults = preFilterResults;
             FoundTemplates = new List<ITemplateInfo>();
         }
 
-        public PackCheckResult(IInstalledPackInfo packInfo, IReadOnlyList<ITemplateInfo> foundTemplates)
+        public PackCheckResult(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> foundTemplates)
         {
             PackInfo = packInfo;
             PreFilterResults = new PreFilterResultList();
             FoundTemplates = foundTemplates;
         }
 
-        public IInstalledPackInfo PackInfo { get; }
+        public IDownloadedPackInfo PackInfo { get; }
 
         public PreFilterResultList PreFilterResults { get; }
 

@@ -1,8 +1,8 @@
-﻿using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackProviders;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Nuget
 {
-    public class NugetPackInfo : IInstalledPackInfo
+    public class NugetPackInfo : IDownloadedPackInfo
     {
         public string VersionedPackageIdentity { get; set; }
 

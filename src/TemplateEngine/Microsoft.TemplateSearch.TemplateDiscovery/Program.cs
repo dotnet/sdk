@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.TemplateSearch.TemplateDiscovery.Nuget;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
@@ -22,6 +23,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         private static readonly string _previousOutputBasePathFlag = "--previousOutput";
         private static readonly string _noTemplateJsonFilterFlag = "--noTemplateJsonFilter";
         private static readonly string _verbose = "-v";
+        private static readonly string _providers = "--providers";
 
         static async Task Main(string[] args)
         {
@@ -74,6 +76,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Console.WriteLine($"{_saveDownloadedPacksFlag} - Don't delete downloaded candidate packs (by default, they're deleted at the end of a run).");
             Console.WriteLine($"{_noTemplateJsonFilterFlag} - Don't prefilter packs that don't contain any template.json files (this filter is applied by default).");
             Console.WriteLine($"{_verbose} - Verbose output for template processing).");
+            Console.WriteLine($"{_providers} - bar separated list of providers to run. Supported providers: {string.Join(",", NugetPackScraper.SupportedProvidersList)}.");
         }
 
         private static bool TryParseArgs(string[] args, ScraperConfig config)
@@ -143,6 +146,27 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                     Verbose.IsEnabled = true;
                     ++index;
                 }
+                else if (string.Equals(args[index], _providers, StringComparison.Ordinal))
+                {
+                    if (TryGetFlagValue(args, index, out string providersList))
+                    {
+                        config.Providers.AddRange(providersList.Split('|', StringSplitOptions.TrimEntries));
+                        foreach (string provider in config.Providers)
+                        {
+                            if (!NugetPackScraper.SupportedProvidersList.Contains(provider, StringComparer.OrdinalIgnoreCase))
+                            {
+                                Console.WriteLine($"Provider {provider} is not supported. Supported providers: {string.Join(",", NugetPackScraper.SupportedProvidersList)}.");
+                                return false;
+                            }
+                        }
+                        index += 2;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
                 else
                 {
                     return false;

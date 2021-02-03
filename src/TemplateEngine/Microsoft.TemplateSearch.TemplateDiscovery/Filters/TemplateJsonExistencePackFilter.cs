@@ -24,9 +24,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
             _environemntSettings = new EngineEnvironmentSettings(_host, x => new SettingsLoader(x));
         }
 
-        public static Func<IInstalledPackInfo, PreFilterResult> SetupPackFilter()
+        public static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
         {
-            Func<IInstalledPackInfo, PreFilterResult> filter = (packInfo) =>
+            Func<IDownloadedPackInfo, PreFilterResult> filter = (packInfo) =>
             {
                 foreach (IMountPointFactory factory in _environemntSettings.SettingsLoader.Components.OfType<IMountPointFactory>())
                 {

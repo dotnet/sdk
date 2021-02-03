@@ -19,7 +19,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public string DataUniqueName => CliHostDataName;
 
-        public void CreateDataForTemplatePack(IInstalledPackInfo packInfo, IReadOnlyList<ITemplateInfo> templateList, IEngineEnvironmentSettings environment)
+        public void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templateList, IEngineEnvironmentSettings environment)
         {
             IHostSpecificDataLoader hostDataLoader = new HostSpecificDataLoader(environment.SettingsLoader);
 
