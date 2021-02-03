@@ -35,15 +35,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
             // this is stateless analyzer, can run concurrently
-            analysisContext.EnableConcurrentExecution();
+            context.EnableConcurrentExecution();
 
             // this has no meaning on running on generated code which user can't control
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(c =>
+            context.RegisterCompilationStartAction(c =>
             {
                 INamedTypeSymbol? @string = c.Compilation.GetSpecialType(SpecialType.System_String);
                 INamedTypeSymbol? uri = c.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemUri);
