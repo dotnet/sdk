@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -104,7 +103,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     INamedTypeSymbol? comSourceInterfacesAttribute = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesComSourceInterfacesAttribute);
                     bool ContainingTypeHasComSourceInterfacesAttribute(IEventSymbol eventSymbol) =>
                         comSourceInterfacesAttribute != null &&
-                        eventSymbol.ContainingType.GetAttributes().Any(a => Equals(a.AttributeClass, comSourceInterfacesAttribute));
+                        eventSymbol.ContainingType.HasAttribute(comSourceInterfacesAttribute);
 
                     context.RegisterSymbolAction(symbolContext =>
                     {

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -60,8 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            bool hasAttributeUsageAttribute = symbol.GetAttributes().Any(attribute => attribute.AttributeClass.Equals(attributeUsageAttributeType));
-            if (!hasAttributeUsageAttribute)
+            if (!symbol.HasAttribute(attributeUsageAttributeType))
             {
                 addDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name));
             }

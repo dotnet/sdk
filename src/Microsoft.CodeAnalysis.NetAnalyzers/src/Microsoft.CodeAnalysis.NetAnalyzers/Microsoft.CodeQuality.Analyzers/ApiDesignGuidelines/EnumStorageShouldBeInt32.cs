@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Analyzer.Utilities;
-using System.Linq;
 using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
@@ -76,8 +75,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             // If enum is Int64 and has Flags attributes then exit
-            bool hasFlagsAttribute = symbol.GetAttributes().Any(a => a.AttributeClass.Equals(flagsAttribute));
-            if (underlyingType == SpecialType.System_Int64 && hasFlagsAttribute)
+            if (underlyingType == SpecialType.System_Int64 && symbol.HasAttribute(flagsAttribute))
             {
                 return;
             }
