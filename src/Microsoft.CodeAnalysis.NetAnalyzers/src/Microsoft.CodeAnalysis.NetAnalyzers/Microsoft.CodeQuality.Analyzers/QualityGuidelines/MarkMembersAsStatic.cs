@@ -297,8 +297,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return false;
             }
 
-            if (methodSymbol.GetAttributes().Any(attribute => attribute.AttributeClass.Equals(comVisibleAttribute)) ||
-                methodSymbol.ContainingType.GetAttributes().Any(attribute => attribute.AttributeClass.Equals(comVisibleAttribute)))
+            if (methodSymbol.HasAttribute(comVisibleAttribute) ||
+                methodSymbol.ContainingType.HasAttribute(comVisibleAttribute))
             {
                 return true;
             }
