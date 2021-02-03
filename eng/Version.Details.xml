@@ -49,10 +49,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9b2776d48183632662e0be873cef029cdb57f8d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="6.0.0-beta.21071.2">
-      <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9a437ab126433012dd2e479c5edfb552b83e872b</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.NET.HostModel" Version="6.0.0-preview.1.21102.12">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9b2776d48183632662e0be873cef029cdb57f8d6</Sha>
@@ -216,6 +212,10 @@
       <Sha>9a437ab126433012dd2e479c5edfb552b83e872b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.SignTool" Version="6.0.0-beta.21071.2">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>9a437ab126433012dd2e479c5edfb552b83e872b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="6.0.0-beta.21071.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>9a437ab126433012dd2e479c5edfb552b83e872b</Sha>
     </Dependency>
