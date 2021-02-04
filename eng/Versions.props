@@ -13,6 +13,7 @@
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
   </PropertyGroup>
   <PropertyGroup>
+    <BenchmarkDotNetVersion>0.12.1</BenchmarkDotNetVersion>
     <MicrosoftBuildVersion>15.3.409</MicrosoftBuildVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
     <MicrosoftNETCoreCompilersPackageVersion>3.9.0-4.21067.2</MicrosoftNETCoreCompilersPackageVersion>
@@ -24,6 +25,7 @@
     Other Dependency versions
   -->
   <PropertyGroup>
+    <BenchmarkDotNetAnnotationsVersion>$(BenchmarkDotNetVersion)</BenchmarkDotNetAnnotationsVersion>
     <SystemCommandLineVersion>2.0.0-beta1.20371.2</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.3.0-alpha.20371.2</SystemCommandLineRenderingVersion>
     <MicrosoftBuildFrameworkVersion>$(MicrosoftBuildVersion)</MicrosoftBuildFrameworkVersion>
