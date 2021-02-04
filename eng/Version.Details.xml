@@ -102,13 +102,13 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>a523efd1ac8675b6f14f7dd3b96a6d8d47b75915</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="6.0.0-alpha.1.21104.1">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="6.0.0-alpha.1.21104.2">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>ed3d6916e09600a02fe3818b33b33cda917e43fe</Sha>
+      <Sha>92f927ebcbd06da82f1987879c180253e8e81642</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="6.0.0-alpha.1.21104.1">
+    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="6.0.0-alpha.1.21104.2">
       <Uri>https://github.com/mono/linker</Uri>
-      <Sha>ed3d6916e09600a02fe3818b33b33cda917e43fe</Sha>
+      <Sha>92f927ebcbd06da82f1987879c180253e8e81642</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="6.0.0-preview.2.21080.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
