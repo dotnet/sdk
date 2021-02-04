@@ -59,6 +59,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Task.FromResult(GetCreationResult(environmentSettings, template, variables));
         }
 
+        /// <summary>
+        /// Performs the dry-run of the template instantiation to evaluate the primary outputs, post actions to be applied and file changes to be made when executing the template with specified parameters.
+        /// </summary>
+        /// <param name="environmentSettings">environment settings</param>
+        /// <param name="templateData">the template to be executed</param>
+        /// <param name="parameters">the parameters to be used on template execution</param>
+        /// <param name="componentManager">the instance of component manager</param>
+        /// <param name="targetDirectory">the output path for the template</param>
+        /// <returns>the primary outputs, post actions and file changes that will be made when executing the template with specified parameters.</returns>
         public ICreationEffects GetCreationEffects(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
         {
             RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
@@ -77,7 +86,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);
-                changes.AddRange(orchestrator.GetFileChanges(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target));
+                IReadOnlyList<IFileChange2> fileChanges = orchestrator.GetFileChanges(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target);
+
+                //source and target paths in the file changes are returned relative to source passed
+                //GetCreationEffects method should return the source paths relative to template source root (location of .template.config folder) and target paths relative to output path and not relative to certain source
+                //add source and target used to file changes to be returned as the result
+                changes.AddRange(
+                    fileChanges.Select(
+                        fileChange => new FileChange(
+                            Path.Combine(source.Source, fileChange.SourceRelativePath),
+                            Path.Combine(source.Target, fileChange.TargetRelativePath),
+                            fileChange.ChangeKind,
+                            fileChange.Contents)));
             }
 
             return new CreationEffects2

@@ -25,5 +25,14 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
                 bootStrapper.Install(path);
             }
         }
+
+        internal static void InstallTemplate(this Bootstrapper bootStrapper, params string[] templates)
+        {
+            foreach (string template in templates)
+            {
+                string path = Path.Combine(template);
+                bootStrapper.Install(path);
+            }
+        }
     }
 }
