@@ -73,14 +73,14 @@ namespace Microsoft.CodeAnalysis.Tools.Perf
             public RealWorldConfig()
             {
                 var job = Job.Dry
-                    .With(BenchmarkDotNet.Environments.Platform.X64)
-                    .With(CoreRuntime.Core21)
+                    .WithPlatform(BenchmarkDotNet.Environments.Platform.X64)
+                    .WithRuntime(CoreRuntime.Core21)
                     .WithWarmupCount(1)
                     .WithIterationCount(12)
-                    .WithOutlierMode(BenchmarkDotNet.Mathematics.OutlierMode.RemoveAll);
+                    .WithOutlierMode(Perfolizer.Mathematics.OutlierDetection.OutlierMode.RemoveAll);
                 Add(DefaultConfig.Instance
-                    .With(job.AsDefault())
-                    .With(MemoryDiagnoser.Default));
+                    .AddJob(job.AsDefault())
+                    .AddDiagnoser(MemoryDiagnoser.Default));
             }
         }
     }
