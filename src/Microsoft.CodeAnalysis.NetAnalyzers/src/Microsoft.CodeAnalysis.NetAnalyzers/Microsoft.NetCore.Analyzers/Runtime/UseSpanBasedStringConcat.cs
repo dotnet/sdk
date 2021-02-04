@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
-using Analyzer.Utilities.PooledObjects;
-using System.Collections.Generic;
-using System.Linq;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -84,12 +84,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 void ReportDiagnosticsOnRootConcatOperationsWithSubstringCalls(OperationBlockAnalysisContext context)
                 {
-                    //  We report diagnostics for all top-most concat operations that contain substring invocations
+                    //  We report diagnostics for all top-most concat operations that contain 
+                    //  direct or conditional substring invocations
                     //  when there is an applicable span-based overload of string.Concat
                     foreach (var operation in topMostConcatOperations)
                     {
                         var chain = FlattenBinaryOperation(operation);
-                        if (chain.Any(IsAnySubstringInvocation) && symbols.TryGetRoscharConcatMethodWithArity(chain.Length, out var _))
+                        if (chain.Any(IsAnyDirectOrConditionalSubstringInvocation) && symbols.TryGetRoscharConcatMethodWithArity(chain.Length, out _))
                         {
                             context.ReportDiagnostic(operation.CreateDiagnostic(Rule));
                         }
@@ -98,9 +99,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            bool IsAnySubstringInvocation(IOperation operation)
+            bool IsAnyDirectOrConditionalSubstringInvocation(IOperation operation)
             {
-                return operation.WalkDownConversion() is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod);
+                var value = WalkDownBuiltInImplicitConversionOnConcatOperand(operation);
+                if (value is IConditionalAccessOperation conditionallAccessOperation)
+                    value = conditionallAccessOperation.WhenNotNull;
+
+                return value is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod);
             }
         }
 
@@ -142,6 +147,28 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
+        /// <summary>
+        /// Remove the built in implicit conversion on operands to concat.
+        /// In VB, the conversion can be to either string or object.
+        /// In C#, the conversion is always to object.
+        /// </summary>
+        internal static IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand)
+        {
+            if (operand is not IConversionOperation conversion)
+                return operand;
+            if (!conversion.IsImplicit || conversion.Conversion.IsUserDefined)
+                return conversion;
+
+            switch (conversion.Language)
+            {
+                case LanguageNames.CSharp when conversion.Type.SpecialType is SpecialType.System_Object:
+                case LanguageNames.VisualBasic when conversion.Type.SpecialType is SpecialType.System_Object or SpecialType.System_String:
+                    return conversion.Operand;
+                default:
+                    return conversion;
+            }
+        }
+
         // Use readonly struct instead of record type to save on allocations, since it's not passed by-value.
         // We aren't comparing these.
 #pragma warning disable CA1815 // Override equals and operator equals on value types
@@ -169,8 +196,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public static bool TryGetSymbols(Compilation compilation, out RequiredSymbols symbols)
             {
                 var stringType = compilation.GetSpecialType(SpecialType.System_String);
-                var roscharType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1)
-                    ?.Construct(compilation.GetSpecialType(SpecialType.System_Char));
+                var charType = compilation.GetSpecialType(SpecialType.System_Char);
+
+                if (stringType is null || charType is null)
+                {
+                    symbols = default;
+                    return false;
+                }
+
+                var roscharType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1)?.Construct(charType);
                 var memoryExtensionsType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions);
 
                 if (roscharType is null || memoryExtensionsType is null)

@@ -2243,13 +2243,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatMessage">
-        <source>Use span-based string.Concat and 'AsSpan' instead of 'Substring'</source>
-        <target state="new">Use span-based string.Concat and 'AsSpan' instead of 'Substring'</target>
+        <source>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</source>
+        <target state="new">Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatTitle">
-        <source>Use span-based string.Concat</source>
-        <target state="new">Use span-based string.Concat</target>
+        <source>Use span-based 'string.Concat'</source>
+        <target state="new">Use span-based 'string.Concat'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">

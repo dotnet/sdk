@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.VisualBasic;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -258,7 +259,7 @@ Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|});",
                     @"
 Consume(string.Concat(Fwd(string.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)));",
                     new[] { 0, 1 },
-                    -4
+                    2, 2, 2
                 };
                 yield return new object[]
                 {
@@ -267,23 +268,25 @@ var _ = {|#0:Fwd({|#1:foo.Substring(1) + bar.Substring(1)|}) + Fwd({|#2:foo.Subs
                     @"
 var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(string.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(string.Concat(foo, bar.AsSpan(1))));",
                     new[] { 0, 1, 2, 3 },
-                    -4
+                    4, 3, 3
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(Data_NestedViolations_CS))]
-        public Task NestedViolations_AreReportedAndFixed_CS(string testStatements, string fixedStatements, int[] locations, int? iterations = null)
+        public Task NestedViolations_AreReportedAndFixed_CS(
+            string testStatements, string fixedStatements, int[] locations,
+            int? incrementalIterations, int? fixAllInDocumentIterations, int? fixAllIterations)
         {
             var test = new VerifyCS.Test
             {
                 TestCode = CSUsings + CSWithBody(testStatements),
                 FixedCode = CSUsings + CSWithBody(fixedStatements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                NumberOfIncrementalIterations = iterations,
-                NumberOfFixAllInDocumentIterations = iterations,
-                NumberOfFixAllIterations = iterations
+                NumberOfIncrementalIterations = incrementalIterations,
+                NumberOfFixAllInDocumentIterations = fixAllInDocumentIterations,
+                NumberOfFixAllIterations = fixAllIterations
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyCS.Diagnostic(Rule).WithLocation(x)));
             return test.RunAsync();
@@ -299,7 +302,8 @@ var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(stri
 Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|})",
                     @"
 Consume(String.Concat(Fwd(String.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)))",
-                    new[] { 0, 1 }
+                    new[] { 0, 1 },
+                    2, 2, 2
                 };
                 yield return new object[]
                 {
@@ -307,30 +311,51 @@ Consume(String.Concat(Fwd(String.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)))",
 Dim s = {|#0:Fwd({|#1:foo.Substring(1) & bar.Substring(1)|}) & Fwd({|#2:foo.Substring(1) & bar|}).Substring(1) & Fwd({|#3:foo & bar.Substring(1)|})|}",
                     @"
 Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(String.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(String.Concat(foo, bar.AsSpan(1))))",
-                    new[] { 0, 1, 2, 3 }
+                    new[] { 0, 1, 2, 3 },
+                    4, 3, 3
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(Data_NestedViolations_VB))]
-        public Task NestedViolations_AreReportedAndFixed_VB(string testStatements, string fixedStatements, int[] locations)
+        public Task NestedViolations_AreReportedAndFixed_VB(
+            string testStatements, string fixedStatements, int[] locations,
+            int? incrementalIterations, int? fixAllInDocumentIterations, int? fixAllIterations)
         {
             var test = new VerifyVB.Test
             {
                 TestCode = VBUsings + VBWithBody(testStatements),
                 FixedCode = VBUsings + VBWithBody(fixedStatements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                NumberOfIncrementalIterations = -10,
-                NumberOfFixAllIterations = -10,
-                NumberOfFixAllInDocumentIterations = -10
+                NumberOfIncrementalIterations = incrementalIterations,
+                NumberOfFixAllIterations = fixAllInDocumentIterations,
+                NumberOfFixAllInDocumentIterations = fixAllIterations
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyVB.Diagnostic(Rule).WithLocation(x)));
             return test.RunAsync();
         }
 
         [Fact]
-        public Task MissingImports_AreAdded_CS()
+        public Task ConditionalSubstringAccess_IsFlaggedButNotFixed_CS()
+        {
+            string statements = @"var s = {|#0:foo?.Substring(1) + bar|};";
+            string source = CSUsings + CSWithBody(statements);
+
+            return VerifyCS.VerifyCodeFixAsync(source, VerifyCS.Diagnostic(Rule).WithLocation(0), source);
+        }
+
+        [Fact]
+        public Task ConditionalSubstringAccess_IsFlaggedButNotFixed_VB()
+        {
+            string statements = @"Dim s = {|#0:foo?.Substring(1) & bar|}";
+            string source = VBUsings + VBWithBody(statements);
+
+            return VerifyVB.VerifyCodeFixAsync(source, VerifyVB.Diagnostic(Rule).WithLocation(0), source);
+        }
+
+        [Fact]
+        public Task MissingSystemImport_IsAdded_WhenAbsent_CS()
         {
             var test = new VerifyCS.Test
             {
@@ -342,8 +367,32 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
             return test.RunAsync();
         }
 
+        //  Visual Basic supports implicit global imports. By default, 'System' is added as a global
+        //  import when you create a project in Visual Studio.
         [Fact]
-        public Task MissingImports_AreAdded_VB()
+        public Task MissingSystemImport_IsNotAdded_WhenIncludedInGlobalImports_VB()
+        {
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBWithBody(@"Dim s = {|#0:foo & bar.Substring(1)|}"),
+                FixedCode = VBWithBody(@"Dim s = String.Concat(foo, bar.AsSpan(1))"),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            test.SolutionTransforms.Add((s, id) =>
+            {
+                var project = s.Projects.Single();
+                var options = project.CompilationOptions as VisualBasicCompilationOptions;
+                var globalSystemImport = GlobalImport.Parse(nameof(System));
+                options = options.WithGlobalImports(globalSystemImport);
+                return s.WithProjectCompilationOptions(project.Id, options);
+            });
+            return test.RunAsync();
+        }
+
+        //  We must add 'Imports System' if it is not included as a global import.
+        [Fact]
+        public Task MissingSystemImport_IsAdded_WhenAbsentFromGlobalImports_VB()
         {
             var test = new VerifyVB.Test
             {

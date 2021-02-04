@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,10 +14,8 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
-
 using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 using RequiredSymbols = Microsoft.NetCore.Analyzers.Runtime.UseSpanBasedStringConcat.RequiredSymbols;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -28,17 +27,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private protected abstract SyntaxNode ReplaceInvocationMethodName(SyntaxGenerator generator, SyntaxNode invocationSyntax, string newName);
 
-        private protected abstract bool IsSystemNamespaceImported(IReadOnlyList<SyntaxNode> namespaceImports);
+        private protected abstract bool IsSystemNamespaceImported(Project project, IReadOnlyList<SyntaxNode> namespaceImports);
 
         /// <summary>Invoke ToString with the Elvis operator.</summary>
         private protected abstract SyntaxNode GenerateConditionalToStringInvocationExpression(SyntaxNode expression);
-
-        /// <summary>
-        /// Remove the built in implicit conversion to object when a non-string operand is concatenated in C#. 
-        /// In Visual Basic, the implicit conversion can be to string or object. 
-        /// User-defined conversions are not removed.
-        /// </summary>
-        private protected abstract IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand);
 
         private protected abstract bool IsNamedArgument(IArgumentOperation argumentOperation);
 
@@ -65,12 +57,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             //  Bail out if we don't have a long enough span-based string.Concat overload.
             if (!symbols.TryGetRoscharConcatMethodWithArity(operands.Length, out IMethodSymbol? roscharConcatMethod))
                 return;
+            //  Bail if none of the operands are a non-conditional substring invocation. This could be the case if the
+            //  only substring invocations in the expression were conditional invocations.
+            if (!operands.Any(IsAnyNonConditionalSubstringInvocation))
+                return;
 
             var codeAction = CodeAction.Create(
                 Resx.UseSpanBasedStringConcatTitle,
                 FixConcatOperationChain,
                 Resx.UseSpanBasedStringConcatTitle);
             context.RegisterCodeFix(codeAction, diagnostic);
+
+            bool IsAnyNonConditionalSubstringInvocation(IOperation operation)
+            {
+                var value = UseSpanBasedStringConcat.WalkDownBuiltInImplicitConversionOnConcatOperand(operation);
+                return value is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod);
+            }
 
             async Task<Document> FixConcatOperationChain(CancellationToken cancellationToken)
             {
@@ -98,12 +100,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     .WithLeadingTrivia(leadingTrivia)
                     .WithTrailingTrivia(trailingTrivia);
 
-                var newRoot = generator.ReplaceNode(root, concatExpressionSyntax, concatMethodInvocationSyntax);
+                SyntaxNode newRoot = generator.ReplaceNode(root, concatExpressionSyntax, concatMethodInvocationSyntax);
 
-                //  Make sure 'System' namespace is imported.
-                if (!IsSystemNamespaceImported(generator.GetNamespaceImports(newRoot)))
+                //  Import 'System' namespace if it's absent.
+                if (!IsSystemNamespaceImported(context.Document.Project, generator.GetNamespaceImports(newRoot)))
                 {
-                    var systemNamespaceImport = generator.NamespaceImportDeclaration(nameof(System));
+                    SyntaxNode systemNamespaceImport = generator.NamespaceImportDeclaration(nameof(System));
                     newRoot = generator.AddNamespaceImports(newRoot, systemNamespaceImport);
                 }
 
@@ -116,7 +118,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private SyntaxNode ConvertOperandToArgument(in RequiredSymbols symbols, SyntaxGenerator generator, IOperation operand)
         {
-            var value = WalkDownBuiltInImplicitConversionOnConcatOperand(operand);
+            var value = UseSpanBasedStringConcat.WalkDownBuiltInImplicitConversionOnConcatOperand(operand);
 
             //  Convert substring invocations to equivalent AsSpan invocation.
             if (value is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod))

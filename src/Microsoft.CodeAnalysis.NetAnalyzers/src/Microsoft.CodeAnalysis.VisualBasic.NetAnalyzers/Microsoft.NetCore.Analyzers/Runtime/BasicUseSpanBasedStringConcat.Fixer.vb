@@ -22,7 +22,12 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return invocationSyntax.ReplaceNode(oldNameSyntax, newNameSyntax)
         End Function
 
-        Private Protected Overrides Function IsSystemNamespaceImported(namespaceImports As IReadOnlyList(Of SyntaxNode)) As Boolean
+        Private Protected Overrides Function IsSystemNamespaceImported(project As Project, namespaceImports As IReadOnlyList(Of SyntaxNode)) As Boolean
+
+            Dim options = DirectCast(project.CompilationOptions, VisualBasicCompilationOptions)
+            If options.GlobalImports.Any(Function(x) x.Name = NameOf(System)) Then
+                Return True
+            End If
 
             For Each node As SyntaxNode In namespaceImports
                 Dim importsStatement = TryCast(node, ImportsStatementSyntax)
@@ -49,18 +54,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Dim simpleMemberAccess = SyntaxFactory.SimpleMemberAccessExpression(identifierName)
             Dim invocation = SyntaxFactory.InvocationExpression(simpleMemberAccess, SyntaxFactory.ArgumentList())
             Return SyntaxFactory.ConditionalAccessExpression(DirectCast(expression, ExpressionSyntax).WithoutTrivia(), invocation).WithTriviaFrom(expression)
-        End Function
-
-        Private Protected Overrides Function WalkDownBuiltInImplicitConversionOnConcatOperand(operand As IOperation) As IOperation
-
-            Dim conversion = TryCast(operand, IConversionOperation)
-            If conversion IsNot Nothing AndAlso conversion.IsImplicit AndAlso Not conversion.Conversion.IsUserDefined AndAlso
-                (conversion.Type.SpecialType = SpecialType.System_String OrElse conversion.Type.SpecialType = SpecialType.System_Object) Then
-
-                Return conversion.Operand
-            Else
-                Return operand
-            End If
         End Function
 
         Private Protected Overrides Function IsNamedArgument(argumentOperation As IArgumentOperation) As Boolean

@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return invocationSyntax.ReplaceNode(oldNameSyntax, newNameSyntax);
         }
 
-        private protected override bool IsSystemNamespaceImported(IReadOnlyList<SyntaxNode> namespaceImports)
+        private protected override bool IsSystemNamespaceImported(Project project, IReadOnlyList<SyntaxNode> namespaceImports)
         {
             foreach (var import in namespaceImports)
             {
@@ -41,15 +41,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             var memberBinding = SyntaxFactory.MemberBindingExpression(identifierName);
             var invocation = SyntaxFactory.InvocationExpression(memberBinding, SyntaxFactory.ArgumentList());
             return SyntaxFactory.ConditionalAccessExpression((ExpressionSyntax)expression.WithoutTrivia(), invocation).WithTriviaFrom(expression);
-        }
-
-        private protected override IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand)
-        {
-            if (operand is IConversionOperation conversion && conversion.IsImplicit && conversion.Type.SpecialType == SpecialType.System_Object)
-            {
-                return conversion.Operand;
-            }
-            return operand;
         }
 
         private protected override bool IsNamedArgument(IArgumentOperation argumentOperation)
