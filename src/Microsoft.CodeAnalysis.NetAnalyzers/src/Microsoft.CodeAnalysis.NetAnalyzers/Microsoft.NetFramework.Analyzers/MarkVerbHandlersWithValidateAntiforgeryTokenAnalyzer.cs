@@ -97,8 +97,8 @@ namespace Microsoft.NetFramework.Analyzers
 
         public override void Initialize(AnalysisContext analysisContext)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
             analysisContext.RegisterCompilationStartAction(
                 (CompilationStartAnalysisContext compilationStartContext) =>
