@@ -4,6 +4,7 @@
         <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <Description>Contracts for extending Microsoft.TemplateEngine.Core</Description>
         <IsPackable>true</IsPackable>
+        <EnableAnalyzers>true</EnableAnalyzers>
     </PropertyGroup>
 
     <ItemGroup>

@@ -4,5 +4,6 @@
         <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <Description>Contracts for extending Template Engine</Description>
         <IsPackable>true</IsPackable>
+        <EnableAnalyzers>true</EnableAnalyzers>
     </PropertyGroup>
 </Project>

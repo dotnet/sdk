@@ -3,6 +3,7 @@
     <TargetFramework>$(NETStandardTargetFramework)</TargetFramework>
     <Description>Components used by the template discovery tool, and also used for related functionality in the CLI.</Description>
     <IsPackable>true</IsPackable>
+    <EnableAnalyzers>true</EnableAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

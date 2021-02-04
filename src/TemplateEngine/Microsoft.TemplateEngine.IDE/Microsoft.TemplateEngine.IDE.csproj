@@ -4,6 +4,7 @@
         <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <Description>Helper package for adding Template Engine to IDEs</Description>
         <IsPackable>true</IsPackable>
+        <EnableAnalyzers>true</EnableAnalyzers>
     </PropertyGroup>
 
     <ItemGroup>

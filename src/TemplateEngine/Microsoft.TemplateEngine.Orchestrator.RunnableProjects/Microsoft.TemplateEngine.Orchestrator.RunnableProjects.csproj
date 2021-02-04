@@ -4,6 +4,7 @@
         <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETStandardTargetFramework)</TargetFrameworks>
         <Description>An extension for Template Engine that allows projects that still run to be used as templates</Description>
         <IsPackable>true</IsPackable>
+        <EnableAnalyzers>true</EnableAnalyzers>
     </PropertyGroup>
 
     <ItemGroup>

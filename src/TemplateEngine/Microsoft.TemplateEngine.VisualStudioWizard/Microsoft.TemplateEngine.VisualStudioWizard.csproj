@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>$(NETFullTargetFramework)</TargetFramework>
+        <EnableAnalyzers>true</EnableAnalyzers>
     </PropertyGroup>
 
     <ItemGroup>
