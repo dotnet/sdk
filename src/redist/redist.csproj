@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" GeneratePathProperty="True" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="targets\DownloadPackage.csproj" />
     <None Include="targets\LayoutTool.csproj" />
   </ItemGroup>
