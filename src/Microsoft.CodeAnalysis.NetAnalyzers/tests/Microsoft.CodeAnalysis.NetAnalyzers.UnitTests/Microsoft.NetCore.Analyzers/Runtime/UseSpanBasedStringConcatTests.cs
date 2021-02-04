@@ -374,7 +374,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
             var test = new VerifyCS.Test
             {
                 TestCode = CSWithBody(@"var _ = {|#0:foo + bar.Substring(1)|};"),
-                FixedCode = $"\r\n{CSUsings}\r\n" + CSWithBody(@"var _ = string.Concat(foo, bar.AsSpan(1));"),
+                FixedCode = $"{Environment.NewLine}{CSUsings}{Environment.NewLine}" + CSWithBody(@"var _ = string.Concat(foo, bar.AsSpan(1));"),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
@@ -411,7 +411,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
             var test = new VerifyVB.Test
             {
                 TestCode = VBWithBody(@"Dim s = {|#0:foo & bar.Substring(1)|}"),
-                FixedCode = $"\r\n{VBUsings}\r\n" + VBWithBody(@"Dim s = String.Concat(foo, bar.AsSpan(1))"),
+                FixedCode = $"{Environment.NewLine}{VBUsings}{Environment.NewLine}" + VBWithBody(@"Dim s = String.Concat(foo, bar.AsSpan(1))"),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
@@ -885,7 +885,7 @@ End Class";
 
         private static string IndentLines(string body, string indent)
         {
-            return indent + body.TrimStart().Replace("\r\n", "\r\n" + indent, StringComparison.Ordinal);
+            return indent + body.TrimStart().Replace(Environment.NewLine, Environment.NewLine + indent, StringComparison.Ordinal);
         }
         #endregion
     }
