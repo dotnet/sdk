@@ -342,7 +342,14 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
             string statements = @"var s = {|#0:foo?.Substring(1) + bar|};";
             string source = CSUsings + CSWithBody(statements);
 
-            return VerifyCS.VerifyCodeFixAsync(source, VerifyCS.Diagnostic(Rule).WithLocation(0), source);
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
         }
 
         [Fact]
@@ -351,7 +358,14 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
             string statements = @"Dim s = {|#0:foo?.Substring(1) & bar|}";
             string source = VBUsings + VBWithBody(statements);
 
-            return VerifyVB.VerifyCodeFixAsync(source, VerifyVB.Diagnostic(Rule).WithLocation(0), source);
+            var test = new VerifyVB.Test
+            {
+                TestCode = source,
+                FixedCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
         }
 
         [Fact]
