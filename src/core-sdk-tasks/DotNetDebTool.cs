@@ -84,6 +84,11 @@ namespace Microsoft.DotNet.Cli.Build
             base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
         }
 
+        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
+        {
+            Log.LogMessage(messageImportance, singleLine, null);
+        }
+
         protected override ProcessStartInfo GetProcessStartInfo(
             string pathToTool,
             string commandLineCommands,
