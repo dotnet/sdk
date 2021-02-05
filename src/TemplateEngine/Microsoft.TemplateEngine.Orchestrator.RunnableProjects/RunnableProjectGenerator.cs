@@ -19,14 +19,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public class RunnableProjectGenerator : IGenerator
     {
-        private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
-        private static readonly string GeneratorVersion = "1.0.0.0";
-        private static readonly Guid FileSystemMountPointFactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
-
-        public Guid Id => GeneratorId;
-
         public static readonly string TemplateConfigDirectoryName = ".template.config";
         public static readonly string TemplateConfigFileName = "template.json";
+        private static readonly string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
+        private static readonly Guid FileSystemMountPointFactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
+        private static readonly Guid GeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
+        private static readonly string GeneratorVersion = "1.0.0.0";
+        public Guid Id => GeneratorId;
+        //
+        // Converts the raw, string version of a parameter to a strongly typed value.
+        // If the param has a datatype specified, use that. Otherwise attempt to infer the type.
+        // Throws a TemplateParamException if the conversion fails for any reason.
+        //
+        public object ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
+        {
+            return InternalConvertParameterValueToType(environmentSettings, parameter, untypedValue, out valueResolutionError);
+        }
 
         public Task<ICreationResult> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
         {
@@ -51,63 +59,38 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return Task.FromResult(GetCreationResult(environmentSettings, template, variables));
         }
 
-        private static ICreationResult GetCreationResult(IEngineEnvironmentSettings environmentSettings, RunnableProjectTemplate template, IVariableCollection variables)
+        public ICreationEffects GetCreationEffects(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
         {
-            return new CreationResult()
+            RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
+            ProcessMacros(environmentSettings, componentManager, template.Config.OperationConfig, parameters);
+
+            IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, template.Config.OperationConfig.VariableSetup);
+            template.Config.Evaluate(parameters, variables, template.ConfigFile);
+
+            IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
+            RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
+
+            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.LocalizationOperations, template.Config.IgnoreFileNames);
+            List<IFileChange2> changes = new List<IFileChange2>();
+
+            foreach (FileSourceMatchInfo source in template.Config.Sources)
             {
-                PostActions = PostAction.ListFromModel(environmentSettings, template.Config.PostActionModel, variables),
-                PrimaryOutputs = CreationPath.ListFromModel(environmentSettings, template.Config.PrimaryOutputs, variables)
+                runSpec.SetupFileSource(source);
+                string target = Path.Combine(targetDirectory, source.Target);
+                changes.AddRange(orchestrator.GetFileChanges(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target));
+            }
+
+            return new CreationEffects2
+            {
+                FileChanges = changes,
+                CreationResult = GetCreationResult(environmentSettings, template, variables)
             };
-        }
-
-        // Note the deferred-config macros (generated) are part of the runConfig.Macros
-        //      and not in the ComputedMacros.
-        //  Possibly make a separate property for the deferred-config macros
-        private static void ProcessMacros(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager, IGlobalRunConfig runConfig, IParameterSet parameters)
-        {
-            if (runConfig.Macros != null)
-            {
-                IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
-                MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.Macros, varsForMacros, parameters);
-            }
-
-            if (runConfig.ComputedMacros != null)
-            {
-                IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
-                MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
-            }
         }
 
         public IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template)
         {
             RunnableProjectTemplate tmplt = (RunnableProjectTemplate)template;
             return new ParameterSet(tmplt.Config);
-        }
-
-        private bool TryGetLangPackFromFile(IFile file, out ILocalizationModel locModel)
-        {
-            if (file == null)
-            {
-                locModel = null;
-                return false;
-            }
-
-            try
-            {
-                JObject srcObject = ReadJObjectFromIFile(file);
-                locModel = SimpleConfigModel.LocalizationFromJObject(srcObject);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                ITemplateEngineHost host = file.MountPoint.EnvironmentSettings.Host;
-                host.LogMessage($"Error reading Langpack from file: {file.FullPath} | Error = {ex.ToString()}");
-            }
-
-            locModel = null;
-            return false;
         }
 
         public IList<ITemplate> GetTemplatesAndLangpacksFromDir(IMountPoint source, out IList<ILocalizationLocator> localizations)
@@ -168,65 +151,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return templateList;
-        }
-
-        // TODO: localize the diagnostic strings
-        // checks that all the template sources are under the template root, and they exist.
-        internal bool AreAllTemplatePathsValid(IRunnableProjectConfig templateConfig, RunnableProjectTemplate runnableTemplate)
-        {
-            ITemplateEngineHost host = runnableTemplate.Source.EnvironmentSettings.Host;
-
-            if (runnableTemplate.TemplateSourceRoot == null)
-            {
-                host.LogDiagnosticMessage(string.Empty, "Authoring");
-                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, runnableTemplate.Name), "Authoring");
-                return false;
-            }
-
-            // check if any sources get out of the mount point
-            bool allSourcesValid = true;
-            foreach (FileSourceMatchInfo source in templateConfig.Sources)
-            {
-                try
-                {
-                    IFile file = runnableTemplate.TemplateSourceRoot.FileInfo(source.Source);
-
-                    if (file?.Exists ?? false)
-                    {
-                        allSourcesValid = false;
-                        host.LogDiagnosticMessage(string.Empty, "Authoring");
-                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
-                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceMustBeDirectory, source.Source), "Authoring");
-                    }
-                    else
-                    {
-                        IDirectory sourceRoot = runnableTemplate.TemplateSourceRoot.DirectoryInfo(source.Source);
-
-                        if (!(sourceRoot?.Exists ?? false))
-                        {
-                            // non-existant directory
-                            allSourcesValid = false;
-                            host.LogDiagnosticMessage(string.Empty, "Authoring");
-                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
-                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceDoesNotExist, source.Source), "Authoring");
-                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, sourceRoot.FullPath), "Authoring");
-                        }
-                    }
-                }
-                catch
-                {   // outside the mount point root
-                    // TODO: after the null ref exception in DirectoryInfo is fixed, change how this check works.
-                    allSourcesValid = false;
-                    host.LogDiagnosticMessage(string.Empty, "Authoring");
-                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
-                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
-                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, source.Source), "Authoring");
-                }
-            }
-
-            return allSourcesValid;
         }
 
         public bool TryGetTemplateFromConfigInfo(IFileSystemInfo templateFileConfig, out ITemplate template, IFileSystemInfo localeFileConfig = null, IFile hostTemplateConfigFile = null, string baselineName = null)
@@ -297,6 +221,380 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             template = null;
             return false;
+        }
+
+        // For explicitly data-typed variables, attempt to convert the variable value to the specified type.
+        // Data type names:
+        //     - choice
+        //     - bool
+        //     - float
+        //     - int
+        //     - hex
+        //     - text
+        // The data type names are case insensitive.
+        //
+        // Returns the converted value if it can be converted, throw otherwise
+        internal static object DataTypeSpecifiedConvertLiteral(IEngineEnvironmentSettings environmentSettings, ITemplateParameter param, string literal, out bool valueResolutionError)
+        {
+            valueResolutionError = false;
+
+            if (string.Equals(param.DataType, "bool", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+                else if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+                else
+                {
+                    bool boolVal = false;
+                    // Note: if the literal is ever null, it is probably due to a problem in TemplateCreator.Instantiate()
+                    // which takes care of making null bool -> true as appropriate.
+                    // This else can also happen if there is a value but it can't be converted.
+                    string val;
+                    while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
+                    {
+                    }
+
+                    valueResolutionError = !bool.TryParse(val, out boolVal);
+                    return boolVal;
+                }
+            }
+            else if (string.Equals(param.DataType, "choice", StringComparison.OrdinalIgnoreCase))
+            {
+                if (TryResolveChoiceValue(literal, param, out string match))
+                {
+                    return match;
+                }
+
+                if (literal == null && param.Priority != TemplateParameterPriority.Required)
+                {
+                    return param.DefaultValue;
+                }
+
+                string val;
+                while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val)
+                        && !TryResolveChoiceValue(literal, param, out val))
+                {
+                }
+
+                valueResolutionError = val == null;
+                return val;
+            }
+
+            else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
+            {
+                if (ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double convertedFloat))
+                {
+                    return convertedFloat;
+                }
+                else
+                {
+                    string val;
+                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out val) && (val == null || !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat)))
+                    {
+                    }
+
+                    valueResolutionError = !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat);
+                    return convertedFloat;
+                }
+            }
+            else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(param.DataType, "integer", StringComparison.OrdinalIgnoreCase))
+            {
+                if (long.TryParse(literal, out long convertedInt))
+                {
+                    return convertedInt;
+                }
+                else
+                {
+                    string val;
+                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
+                    {
+                    }
+
+                    valueResolutionError = !long.TryParse(val, out convertedInt);
+                    return convertedInt;
+                }
+            }
+            else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
+            {
+                if (long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex))
+                {
+                    return convertedHex;
+                }
+                else
+                {
+                    string val;
+                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
+                    {
+                    }
+
+                    valueResolutionError = !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex);
+                    return convertedHex;
+                }
+            }
+            else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(param.DataType, "string", StringComparison.OrdinalIgnoreCase))
+            {   // "text" is a valid data type, but doesn't need any special handling.
+                return literal;
+            }
+            else
+            {
+                return literal;
+            }
+        }
+
+        internal static object InferTypeAndConvertLiteral(string literal)
+        {
+            if (literal == null)
+            {
+                return null;
+            }
+
+            if (!literal.Contains("\""))
+            {
+                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
+                if ((literal.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
+                    || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
+                    && ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double literalDouble))
+                {
+                    return literalDouble;
+                }
+
+                if (long.TryParse(literal, out long literalLong))
+                {
+                    return literalLong;
+                }
+
+                if (literal.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+                    && long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out literalLong))
+                {
+                    return literalLong;
+                }
+            }
+
+            return literal;
+        }
+
+        internal static object InternalConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
+        {
+            if (untypedValue == null)
+            {
+                valueResolutionError = false;
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(parameter.DataType))
+            {
+                object convertedValue = DataTypeSpecifiedConvertLiteral(environmentSettings, parameter, untypedValue, out valueResolutionError);
+                return convertedValue;
+            }
+            else
+            {
+                valueResolutionError = false;
+                return InferTypeAndConvertLiteral(untypedValue);
+            }
+        }
+
+        // TODO: localize the diagnostic strings
+        // checks that all the template sources are under the template root, and they exist.
+        internal bool AreAllTemplatePathsValid(IRunnableProjectConfig templateConfig, RunnableProjectTemplate runnableTemplate)
+        {
+            ITemplateEngineHost host = runnableTemplate.Source.EnvironmentSettings.Host;
+
+            if (runnableTemplate.TemplateSourceRoot == null)
+            {
+                host.LogDiagnosticMessage(string.Empty, "Authoring");
+                host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, runnableTemplate.Name), "Authoring");
+                return false;
+            }
+
+            // check if any sources get out of the mount point
+            bool allSourcesValid = true;
+            foreach (FileSourceMatchInfo source in templateConfig.Sources)
+            {
+                try
+                {
+                    IFile file = runnableTemplate.TemplateSourceRoot.FileInfo(source.Source);
+
+                    if (file?.Exists ?? false)
+                    {
+                        allSourcesValid = false;
+                        host.LogDiagnosticMessage(string.Empty, "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                        host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceMustBeDirectory, source.Source), "Authoring");
+                    }
+                    else
+                    {
+                        IDirectory sourceRoot = runnableTemplate.TemplateSourceRoot.DirectoryInfo(source.Source);
+
+                        if (!(sourceRoot?.Exists ?? false))
+                        {
+                            // non-existant directory
+                            allSourcesValid = false;
+                            host.LogDiagnosticMessage(string.Empty, "Authoring");
+                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
+                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceDoesNotExist, source.Source), "Authoring");
+                            host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, sourceRoot.FullPath), "Authoring");
+                        }
+                    }
+                }
+                catch
+                {   // outside the mount point root
+                    // TODO: after the null ref exception in DirectoryInfo is fixed, change how this check works.
+                    allSourcesValid = false;
+                    host.LogDiagnosticMessage(string.Empty, "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateNameDisplay, runnableTemplate.Name), "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateSourceRoot, runnableTemplate.TemplateSourceRoot.FullPath), "Authoring");
+                    host.LogDiagnosticMessage(string.Format(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, source.Source), "Authoring");
+                }
+            }
+
+            return allSourcesValid;
+        }
+
+        internal JObject ReadJObjectFromIFile(IFile file)
+        {
+            using (Stream s = file.OpenRead())
+            using (TextReader tr = new StreamReader(s, true))
+            using (JsonReader r = new JsonTextReader(tr))
+            {
+                return JObject.Load(r);
+            }
+        }
+
+        private static ICreationResult GetCreationResult(IEngineEnvironmentSettings environmentSettings, RunnableProjectTemplate template, IVariableCollection variables)
+        {
+            return new CreationResult()
+            {
+                PostActions = PostAction.ListFromModel(environmentSettings, template.Config.PostActionModel, variables),
+                PrimaryOutputs = CreationPath.ListFromModel(environmentSettings, template.Config.PrimaryOutputs, variables)
+            };
+        }
+
+        // Note the deferred-config macros (generated) are part of the runConfig.Macros
+        //      and not in the ComputedMacros.
+        //  Possibly make a separate property for the deferred-config macros
+        private static void ProcessMacros(IEngineEnvironmentSettings environmentSettings, IComponentManager componentManager, IGlobalRunConfig runConfig, IParameterSet parameters)
+        {
+            if (runConfig.Macros != null)
+            {
+                IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
+                MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
+                macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.Macros, varsForMacros, parameters);
+            }
+
+            if (runConfig.ComputedMacros != null)
+            {
+                IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
+                MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
+                macroProcessor.ProcessMacros(environmentSettings, componentManager, runConfig.ComputedMacros, varsForMacros, parameters);
+            }
+        }
+        private static bool TryResolveChoiceValue(string literal, ITemplateParameter param, out string match)
+        {
+            if (literal == null)
+            {
+                match = null;
+                return false;
+            }
+
+            string partialMatch = null;
+
+            foreach (string choiceValue in param.Choices.Keys)
+            {
+                if (string.Equals(choiceValue, literal, StringComparison.OrdinalIgnoreCase))
+                {   // exact match is good, regardless of partial matches
+                    match = choiceValue;
+                    return true;
+                }
+                else if (choiceValue.StartsWith(literal, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (partialMatch == null)
+                    {
+                        partialMatch = choiceValue;
+                    }
+                    else
+                    {   // multiple partial matches, can't take one.
+                        match = null;
+                        return false;
+                    }
+                }
+            }
+
+            match = partialMatch;
+            return match != null;
+        }
+
+        private bool CheckGeneratorVersionRequiredByTemplate(string generatorVersionsAllowed)
+        {
+            if (string.IsNullOrEmpty(generatorVersionsAllowed))
+            {
+                return true;
+            }
+
+            if (!VersionStringHelpers.TryParseVersionSpecification(generatorVersionsAllowed, out IVersionSpecification versionChecker))
+            {
+                return false;
+            }
+
+            return versionChecker.CheckIfVersionIsValid(GeneratorVersion);
+        }
+
+        // Checks the primarySource for additional configuration files.
+        // If found, merges them all together.
+        // Returns the merged JObject (or the original if there was nothing to merge).
+        // Additional files must be in the same dir as the template file.
+        private JObject MergeAdditionalConfiguration(JObject primarySource, IFileSystemInfo primarySourceConfig)
+        {
+            IReadOnlyList<string> otherFiles = primarySource.ArrayAsStrings(AdditionalConfigFilesIndicator);
+
+            if (!otherFiles.Any())
+            {
+                return primarySource;
+            }
+
+            JObject combinedSource = (JObject)primarySource.DeepClone();
+
+            foreach (string partialConfigFileName in otherFiles)
+            {
+                if (!partialConfigFileName.EndsWith("." + TemplateConfigFileName))
+                {
+                    throw new TemplateAuthoringException($"Split configuration error with file [{partialConfigFileName}]. Additional configuration file names must end with '.{TemplateConfigFileName}'.", partialConfigFileName);
+                }
+
+                IFile partialConfigFile = primarySourceConfig.Parent.EnumerateFiles(partialConfigFileName, SearchOption.TopDirectoryOnly).FirstOrDefault(x => string.Equals(x.Name, partialConfigFileName));
+
+                if (partialConfigFile == null)
+                {
+                    throw new TemplateAuthoringException($"Split configuration file [{partialConfigFileName}] could not be found.", partialConfigFileName);
+                }
+
+                JObject partialConfigJson = ReadJObjectFromIFile(partialConfigFile);
+                combinedSource.Merge(partialConfigJson);
+            }
+
+            return combinedSource;
         }
 
         private bool PerformTemplateValidation(SimpleConfigModel templateModel, IFile templateFile, ITemplateEngineHost host)
@@ -379,333 +677,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return true;
         }
 
-        private bool CheckGeneratorVersionRequiredByTemplate(string generatorVersionsAllowed)
+        private bool TryGetLangPackFromFile(IFile file, out ILocalizationModel locModel)
         {
-            if (string.IsNullOrEmpty(generatorVersionsAllowed))
+            if (file == null)
             {
+                locModel = null;
+                return false;
+            }
+
+            try
+            {
+                JObject srcObject = ReadJObjectFromIFile(file);
+                locModel = SimpleConfigModel.LocalizationFromJObject(srcObject);
                 return true;
             }
-
-            if (!VersionStringHelpers.TryParseVersionSpecification(generatorVersionsAllowed, out IVersionSpecification versionChecker))
+            catch (Exception ex)
             {
-                return false;
+                ITemplateEngineHost host = file.MountPoint.EnvironmentSettings.Host;
+                host.LogMessage($"Error reading Langpack from file: {file.FullPath} | Error = {ex.ToString()}");
             }
 
-            return versionChecker.CheckIfVersionIsValid(GeneratorVersion);
+            locModel = null;
+            return false;
         }
-
-        private static readonly string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
-
-        // Checks the primarySource for additional configuration files.
-        // If found, merges them all together.
-        // Returns the merged JObject (or the original if there was nothing to merge).
-        // Additional files must be in the same dir as the template file.
-        private JObject MergeAdditionalConfiguration(JObject primarySource, IFileSystemInfo primarySourceConfig)
-        {
-            IReadOnlyList<string> otherFiles = primarySource.ArrayAsStrings(AdditionalConfigFilesIndicator);
-
-            if (!otherFiles.Any())
-            {
-                return primarySource;
-            }
-
-            JObject combinedSource = (JObject)primarySource.DeepClone();
-
-            foreach (string partialConfigFileName in otherFiles)
-            {
-                if (!partialConfigFileName.EndsWith("." + TemplateConfigFileName))
-                {
-                    throw new TemplateAuthoringException($"Split configuration error with file [{partialConfigFileName}]. Additional configuration file names must end with '.{TemplateConfigFileName}'.", partialConfigFileName);
-                }
-
-                IFile partialConfigFile = primarySourceConfig.Parent.EnumerateFiles(partialConfigFileName, SearchOption.TopDirectoryOnly).FirstOrDefault(x => string.Equals(x.Name, partialConfigFileName));
-
-                if (partialConfigFile == null)
-                {
-                    throw new TemplateAuthoringException($"Split configuration file [{partialConfigFileName}] could not be found.", partialConfigFileName);
-                }
-
-                JObject partialConfigJson = ReadJObjectFromIFile(partialConfigFile);
-                combinedSource.Merge(partialConfigJson);
-            }
-
-            return combinedSource;
-        }
-
-        internal JObject ReadJObjectFromIFile(IFile file)
-        {
-            using (Stream s = file.OpenRead())
-            using (TextReader tr = new StreamReader(s, true))
-            using (JsonReader r = new JsonTextReader(tr))
-            {
-                return JObject.Load(r);
-            }
-        }
-
-        //
-        // Converts the raw, string version of a parameter to a strongly typed value.
-        // If the param has a datatype specified, use that. Otherwise attempt to infer the type.
-        // Throws a TemplateParamException if the conversion fails for any reason.
-        //
-        public object ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
-        {
-            return InternalConvertParameterValueToType(environmentSettings, parameter, untypedValue, out valueResolutionError);
-        }
-
-        internal static object InternalConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
-        { 
-            if (untypedValue == null)
-            {
-                valueResolutionError = false;
-                return null;
-            }
-
-            if (!string.IsNullOrEmpty(parameter.DataType))
-            {
-                object convertedValue = DataTypeSpecifiedConvertLiteral(environmentSettings, parameter, untypedValue, out valueResolutionError);
-                return convertedValue;
-            }
-            else
-            {
-                valueResolutionError = false;
-                return InferTypeAndConvertLiteral(untypedValue);
-            }
-        }
-
-        // For explicitly data-typed variables, attempt to convert the variable value to the specified type.
-        // Data type names:
-        //     - choice
-        //     - bool
-        //     - float
-        //     - int
-        //     - hex
-        //     - text
-        // The data type names are case insensitive.
-        //
-        // Returns the converted value if it can be converted, throw otherwise
-        internal static object DataTypeSpecifiedConvertLiteral(IEngineEnvironmentSettings environmentSettings, ITemplateParameter param, string literal, out bool valueResolutionError)
-        {
-            valueResolutionError = false;
-
-            if (string.Equals(param.DataType, "bool", StringComparison.OrdinalIgnoreCase))
-            {
-                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                else
-                {
-                    bool boolVal = false;
-                    // Note: if the literal is ever null, it is probably due to a problem in TemplateCreator.Instantiate()
-                    // which takes care of making null bool -> true as appropriate.
-                    // This else can also happen if there is a value but it can't be converted.
-                    string val;
-                    while (environmentSettings.Host.OnParameterError(param, null, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
-                    {
-                    }
-
-                    valueResolutionError = !bool.TryParse(val, out boolVal);
-                    return boolVal;
-                }
-            }
-            else if (string.Equals(param.DataType, "choice", StringComparison.OrdinalIgnoreCase))
-            {
-                if (TryResolveChoiceValue(literal, param, out string match))
-                {
-                    return match;
-                }
-
-                if (literal == null && param.Priority != TemplateParameterPriority.Required)
-                {
-                    return param.DefaultValue;
-                }
-
-                string val;
-                while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValid:" + string.Join(",", param.Choices.Keys), out val) 
-                        && !TryResolveChoiceValue(literal, param, out val))
-                {
-                }
-
-                valueResolutionError = val == null;
-                return val;
-            }
-
-            else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
-            {
-                if (ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double convertedFloat))
-                {
-                    return convertedFloat;
-                }
-                else
-                {
-                    string val;
-                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeFloat", out val) && (val == null || !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat)))
-                    {
-                    }
-
-                    valueResolutionError = !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat);
-                    return convertedFloat;
-                }
-            }
-            else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(param.DataType, "integer", StringComparison.OrdinalIgnoreCase))
-            {
-                if (long.TryParse(literal, out long convertedInt))
-                {
-                    return convertedInt;
-                }
-                else
-                {
-                    string val;
-                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
-                    {
-                    }
-
-                    valueResolutionError = !long.TryParse(val, out convertedInt);
-                    return convertedInt;
-                }
-            }
-            else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
-            {
-                if (long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex))
-                {
-                    return convertedHex;
-                }
-                else
-                {
-                    string val;
-                    while (environmentSettings.Host.OnParameterError(param, null, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
-                    {
-                    }
-
-                    valueResolutionError = !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex);
-                    return convertedHex;
-                }
-            }
-            else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(param.DataType, "string", StringComparison.OrdinalIgnoreCase))
-            {   // "text" is a valid data type, but doesn't need any special handling.
-                return literal;
-            }
-            else
-            {
-                return literal;
-            }
-        }
-
-        private static bool TryResolveChoiceValue(string literal, ITemplateParameter param, out string match)
-        {
-            if (literal == null)
-            {
-                match = null;
-                return false;
-            }
-
-            string partialMatch = null;
-
-            foreach (string choiceValue in param.Choices.Keys)
-            {
-                if (string.Equals(choiceValue, literal, StringComparison.OrdinalIgnoreCase))
-                {   // exact match is good, regardless of partial matches
-                    match = choiceValue;
-                    return true;
-                }
-                else if (choiceValue.StartsWith(literal, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (partialMatch == null)
-                    {
-                        partialMatch = choiceValue;
-                    }
-                    else
-                    {   // multiple partial matches, can't take one.
-                        match = null;
-                        return false;
-                    }
-                }
-            }
-
-            match = partialMatch;
-            return match != null;
-        }
-
-        internal static object InferTypeAndConvertLiteral(string literal)
-        {
-            if (literal == null)
-            {
-                return null;
-            }
-
-            if (!literal.Contains("\""))
-            {
-                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase))
-                {
-                    return null;
-                }
-
-                if ((literal.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
-                    || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
-                    && ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double literalDouble))
-                {
-                    return literalDouble;
-                }
-
-                if (long.TryParse(literal, out long literalLong))
-                {
-                    return literalLong;
-                }
-
-                if (literal.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-                    && long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out literalLong))
-                {
-                    return literalLong;
-                }
-            }
-
-            return literal;
-        }
-
-        public ICreationEffects GetCreationEffects(IEngineEnvironmentSettings environmentSettings, ITemplate templateData, IParameterSet parameters, IComponentManager componentManager, string targetDirectory)
-        {
-            RunnableProjectTemplate template = (RunnableProjectTemplate)templateData;
-            ProcessMacros(environmentSettings, componentManager, template.Config.OperationConfig, parameters);
-
-            IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, template.Config.OperationConfig.VariableSetup);
-            template.Config.Evaluate(parameters, variables, template.ConfigFile);
-
-            IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
-            RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
-
-            GlobalRunSpec runSpec = new GlobalRunSpec(template.TemplateSourceRoot, componentManager, parameters, variables, template.Config.OperationConfig, template.Config.SpecialOperationConfig, template.Config.LocalizationOperations, template.Config.IgnoreFileNames);
-            List<IFileChange2> changes = new List<IFileChange2>();
-
-            foreach (FileSourceMatchInfo source in template.Config.Sources)
-            {
-                runSpec.SetupFileSource(source);
-                string target = Path.Combine(targetDirectory, source.Target);
-                changes.AddRange(orchestrator.GetFileChanges(runSpec, template.TemplateSourceRoot.DirectoryInfo(source.Source), target));
-            }
-
-            return new CreationEffects2
-            {
-                FileChanges = changes,
-                CreationResult = GetCreationResult(environmentSettings, template, variables)
-            };
-        }
-
         internal class ParameterSet : IParameterSet
         {
             private readonly IDictionary<string, ITemplateParameter> _parameters = new Dictionary<string, ITemplateParameter>(StringComparer.OrdinalIgnoreCase);
@@ -721,10 +715,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IEnumerable<ITemplateParameter> ParameterDefinitions => _parameters.Values;
 
-            public IDictionary<ITemplateParameter, object> ResolvedValues { get; } = new Dictionary<ITemplateParameter, object>();
-
             public IEnumerable<string> RequiredBrokerCapabilities => Enumerable.Empty<string>();
-
+            public IDictionary<ITemplateParameter, object> ResolvedValues { get; } = new Dictionary<ITemplateParameter, object>();
             public void AddParameter(ITemplateParameter param)
             {
                 _parameters[param.Name] = param;
