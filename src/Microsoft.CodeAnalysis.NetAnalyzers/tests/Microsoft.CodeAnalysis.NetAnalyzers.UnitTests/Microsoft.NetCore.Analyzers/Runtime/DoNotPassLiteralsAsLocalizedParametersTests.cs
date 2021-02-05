@@ -183,7 +183,7 @@ End Class
 ");
         }
 
-        [WindowsOnlyFact]
+        [Fact]
         public async Task ParameterWithLocalizableAttribute_MultipleLineStringLiteralArgument_Method_Diagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
