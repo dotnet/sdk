@@ -942,6 +942,16 @@
         <target state="translated">安全でない DllImportSearchPath 値 {0} の使用</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseWaitAllWithSingleTaskDescription">
+        <source>Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</source>
+        <target state="new">Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWaitAllWithSingleTaskTitle">
+        <source>Do not use 'WaitAll' with a single task</source>
+        <target state="new">Do not use 'WaitAll' with a single task</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
         <source>Do Not Use Weak Cryptographic Algorithms</source>
         <target state="translated">脆弱な暗号アルゴリズムを使用しない</target>
@@ -975,6 +985,16 @@
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
         <source>When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).</source>
         <target state="translated">パスワードなど、ユーザーが指定した入力から暗号化キーを派生させる場合は、十分な反復回数を使用してください (少なくとも 10 万)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWhenAllWithSingleTaskDescription">
+        <source>Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</source>
+        <target state="new">Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWhenAllWithSingleTaskTitle">
+        <source>Do not use 'WhenAll' with a single task</source>
+        <target state="new">Do not use 'WhenAll' with a single task</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseXslTransform">

@@ -1550,4 +1550,16 @@
   <data name="UseValidPlatformStringNoVersion" xml:space="preserve">
     <value>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</value>
   </data>
+  <data name="DoNotUseWaitAllWithSingleTaskDescription" xml:space="preserve">
+    <value>Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</value>
+  </data>
+  <data name="DoNotUseWaitAllWithSingleTaskTitle" xml:space="preserve">
+    <value>Do not use 'WaitAll' with a single task</value>
+  </data>
+  <data name="DoNotUseWhenAllWithSingleTaskDescription" xml:space="preserve">
+    <value>Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</value>
+  </data>
+  <data name="DoNotUseWhenAllWithSingleTaskTitle" xml:space="preserve">
+    <value>Do not use 'WhenAll' with a single task</value>
+  </data>
 </root>

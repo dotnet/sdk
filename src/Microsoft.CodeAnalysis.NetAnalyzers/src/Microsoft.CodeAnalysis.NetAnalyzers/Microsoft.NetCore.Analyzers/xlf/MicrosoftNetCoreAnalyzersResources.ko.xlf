@@ -942,6 +942,16 @@
         <target state="translated">안전하지 않은 DllImportSearchPath 값 {0} 사용</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseWaitAllWithSingleTaskDescription">
+        <source>Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</source>
+        <target state="new">Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWaitAllWithSingleTaskTitle">
+        <source>Do not use 'WaitAll' with a single task</source>
+        <target state="new">Do not use 'WaitAll' with a single task</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
         <source>Do Not Use Weak Cryptographic Algorithms</source>
         <target state="translated">취약한 암호화 알고리즘을 사용하지 마세요.</target>
@@ -975,6 +985,16 @@
       <trans-unit id="DoNotUseWeakKDFInsufficientIterationCountDescription">
         <source>When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).</source>
         <target state="translated">암호와 같은 사용자 제공 입력에서 암호화 키를 파생할 때 충분한 반복 횟수(10만 이상)를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWhenAllWithSingleTaskDescription">
+        <source>Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</source>
+        <target state="new">Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotUseWhenAllWithSingleTaskTitle">
+        <source>Do not use 'WhenAll' with a single task</source>
+        <target state="new">Do not use 'WhenAll' with a single task</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseXslTransform">
