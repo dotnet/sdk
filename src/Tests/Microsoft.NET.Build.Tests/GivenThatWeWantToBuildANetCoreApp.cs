@@ -36,7 +36,7 @@ namespace Microsoft.NET.Build.Tests
         private BuildCommand GetBuildCommand()
         {
             var testAsset = _testAssetsManager
-               .CopyTestAsset("HelloWorld")
+               .CopyTestAsset("HelloWorldWithSubDirs")
                .WithSource();
 
             return new BuildCommand(testAsset);
