@@ -5,6 +5,9 @@ using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotUseWhenAllOrWaitAllWithSingleArgument,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.VisualBasic.Analyzers.Tasks.VisualBasicDoNotUseWhenAllOrWaitAllWithSingleArgument,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
@@ -89,6 +92,81 @@ namespace Test
         }
 
         [Fact]
+        public async Task NoDiagnostic_VB()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Threading.Tasks
+
+Namespace N
+
+    Class C
+        Async Function M() As Task
+            Dim t1 = CreateTask()
+            Dim t2 = CreateTask()
+            Dim objectTask1 = CreateObjectTask()
+            Dim objectTask2 = CreateObjectTask()
+
+            ' Use WhenAll correctly with multiple tasks
+            Await Task.WhenAll(t1, t2)
+            Await Task.WhenAll(New Task() {t1, t2})
+            Await Task.WhenAll(CreateTask(), CreateTask())
+            Await Task.WhenAll(objectTask1, objectTask2)
+            Await Task.WhenAll(New Task() {objectTask1, objectTask2})
+            Await Task.WhenAll(CreateObjectTask(), CreateObjectTask())
+
+            ' This does not use the params array and should not trigger diagnostic
+            Await Task.WhenAll(New Task() {t1})
+
+            ' Use WaitAll correctly with multiple tasks
+            Task.WaitAll(t1, t2)
+            Task.WaitAll(New Task() {t1, t2})
+            Task.WaitAll(CreateTask(), CreateTask())
+            Task.WaitAll(objectTask1, objectTask2)
+            Task.WaitAll(New Task() {objectTask1, objectTask2})
+            Task.WaitAll(CreateObjectTask(), CreateObjectTask())
+
+            ' Make sure a random Task.WaitAll that isn't System.Tasks.Task doens't trigger
+            Test.Task.WaitAll(t1)
+            Await Test.Task.WhenAll(t1)
+        End Function
+
+        Async Function WhenAllCall(ParamArray tasks As Task()) As Task
+            ' Should not trigger when taking an array from args
+            Await Task.WhenAll(tasks)
+        End Function
+
+        Sub WaitAllCall(ParamArray tasks As Task())
+            ' Should not trigger when taking an array from args
+            Task.WaitAll(tasks)
+        End Sub
+
+        Function CreateTask() As Task
+            Return Task.CompletedTask
+        End Function
+
+        Function CreateObjectTask() As Task(Of Object)
+            Return Task.FromResult(New Object())
+        End Function
+    End Class
+End Namespace
+
+Namespace Test
+    Public Module Task
+        Public Async Function WhenAll(ParamArray tasks As System.Threading.Tasks.Task()) As System.Threading.Tasks.Task
+            ' Should not trigger when taking an array from args
+            Await System.Threading.Tasks.Task.WhenAll(tasks)
+        End Function
+
+        Public Sub WaitAll(ParamArray tasks As System.Threading.Tasks.Task())
+            ' Should not trigger when taking an array from args
+            System.Threading.Tasks.Task.WaitAll(tasks)
+        End Sub
+    End Module
+End Namespace
+");
+        }
+
+        [Fact]
         public async Task Diagnostics_FixApplies_WhenAll_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -123,6 +201,42 @@ class C
         }
 
         [Fact]
+        public async Task Diagnostics_FixApplies_WhenAll_VB()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Threading.Tasks
+
+Class C
+    Async Function M() As Task
+        Dim t1 = CreateTask()
+        Dim objectTask1 = CreateObjectTask()
+
+        Await {|CA2250:Task.WhenAll(t1)|}
+        Await {|CA2250:Task.WhenAll(CreateTask())|}
+        Dim whenResult = {|CA2250:Task.WhenAll(t1)|}
+        DoSomethingWithTask(whenResult)
+
+        Await {|CA2250:Task.WhenAll(objectTask1)|}
+        Await {|CA2250:Task.WhenAll(CreateObjectTask())|}
+        Dim whenResult2 = {|CA2250:Task.WhenAll(objectTask1)|}
+        DoSomethingWithTask(whenResult2)
+    End Function
+
+    Async Function DoSomethingWithTask(task As Task) As Task
+        Await task
+    End Function
+
+    Function CreateTask() As Task
+        Return Task.CompletedTask
+    End Function
+
+    Function CreateObjectTask() As Task(Of Object)
+        Return Task.FromResult(New Object())
+    End Function
+End Class");
+        }
+
+        [Fact]
         public async Task Diagnostics_FixApplies_WaitAll_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -145,6 +259,33 @@ class C
     Task<object> CreateObjectTask() => Task.FromResult(new object());
 }
 ");
+        }
+
+        [Fact]
+        public async Task Diagnostics_FixApplies_WaitAll_VB()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Threading.Tasks
+
+Class C
+    Sub M()
+        Dim t1 = CreateTask()
+        Dim objectTask1 = CreateObjectTask()
+
+        {|CA2251:Task.WaitAll(t1)|}
+        {|CA2251:Task.WaitAll(CreateTask())|}
+        {|CA2251:Task.WaitAll(objectTask1)|}
+        {|CA2251:Task.WaitAll(CreateObjectTask())|}
+    End Sub
+
+    Function CreateTask() As Task
+        Return Task.CompletedTask
+    End Function
+
+    Function CreateObjectTask() As Task(Of Object)
+        Return Task.FromResult(New Object())
+    End Function
+End Class");
         }
     }
 }
