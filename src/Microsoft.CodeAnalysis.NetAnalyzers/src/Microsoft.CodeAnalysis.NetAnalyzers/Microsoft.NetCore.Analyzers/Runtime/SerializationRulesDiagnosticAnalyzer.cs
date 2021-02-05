@@ -101,12 +101,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA2229Default, RuleCA2229Sealed, RuleCA2229Unsealed, RuleCA2235, RuleCA2237);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationStartAction(
+            context.RegisterCompilationStartAction(
                 (context) =>
                 {
                     INamedTypeSymbol? iserializableTypeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeSerializationISerializable);
@@ -256,7 +256,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
 
                         // Check for [NonSerialized]
-                        if (field.GetAttributes().Any(x => x.AttributeClass.Equals(_nonSerializedAttributeTypeSymbol)))
+                        if (field.HasAttribute(_nonSerializedAttributeTypeSymbol))
                         {
                             continue;
                         }
@@ -293,7 +293,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     TypeKind.Class or TypeKind.Struct => ((INamedTypeSymbol)type).IsSerializable,// Check SerializableAttribute or Serializable flag from metadata.
                     TypeKind.Delegate => true,// delegates are always serializable, even if
                                               // they aren't actually marked [Serializable]
-                    _ => type.GetAttributes().Any(a => a.AttributeClass.Equals(_serializableAttributeTypeSymbol)),
+                    _ => type.HasAttribute(_serializableAttributeTypeSymbol),
                 };
             }
         }

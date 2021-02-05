@@ -123,12 +123,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterCompilationAction(compilationContext =>
+            context.RegisterCompilationAction(compilationContext =>
             {
                 if (compilationContext.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree)
                 {

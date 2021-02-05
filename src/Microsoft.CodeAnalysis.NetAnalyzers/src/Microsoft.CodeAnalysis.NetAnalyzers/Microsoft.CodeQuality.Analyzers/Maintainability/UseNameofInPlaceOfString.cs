@@ -37,12 +37,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
         protected abstract bool IsApplicableToLanguageVersion(ParseOptions options);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterOperationAction(AnalyzeArgument, OperationKind.Argument);
+            context.RegisterOperationAction(AnalyzeArgument, OperationKind.Argument);
         }
 
         private void AnalyzeArgument(OperationAnalysisContext context)

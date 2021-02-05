@@ -13,9 +13,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     /// CA1820: Test for empty strings using string length
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public class CSharpTestForEmptyStringsUsingStringLengthFixer : TestForEmptyStringsUsingStringLengthFixer
+    public sealed class CSharpTestForEmptyStringsUsingStringLengthFixer : TestForEmptyStringsUsingStringLengthFixer
     {
-        protected override SyntaxNode GetBinaryExpression(SyntaxNode node)
+        protected override SyntaxNode GetExpression(SyntaxNode node)
         {
             return node is ArgumentSyntax argumentSyntax ? argumentSyntax.Expression : node;
         }
@@ -36,6 +36,26 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         protected override SyntaxNode GetRightOperand(SyntaxNode binaryExpressionSyntax)
         {
             return ((BinaryExpressionSyntax)binaryExpressionSyntax).Right;
+        }
+
+        protected override bool IsFixableBinaryExpression(SyntaxNode node)
+        {
+            return (node is BinaryExpressionSyntax) && (IsEqualsOperator(node) || IsNotEqualsOperator(node));
+        }
+
+        protected override bool IsFixableInvocationExpression(SyntaxNode node)
+        {
+            return node.IsKind(SyntaxKind.InvocationExpression);
+        }
+
+        protected override SyntaxNode? GetInvocationTarget(SyntaxNode node)
+        {
+            if (node is InvocationExpressionSyntax invocationExpression && invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression)
+            {
+                return memberAccessExpression.Expression;
+            }
+
+            return default;
         }
     }
 }
