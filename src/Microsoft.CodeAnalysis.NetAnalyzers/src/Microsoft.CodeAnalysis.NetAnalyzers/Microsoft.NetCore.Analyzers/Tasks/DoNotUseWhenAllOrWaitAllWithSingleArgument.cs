@@ -26,11 +26,11 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             isDataflowRule: false);
 
         internal static readonly DiagnosticDescriptor WaitAllRule = DiagnosticDescriptorHelper.Create(WaitAllRuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             DiagnosticCategory.Usage,
             RuleLevel.BuildWarning,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
