@@ -94,12 +94,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
         }
 
-        private static bool IsAssignableTo(
-            [NotNullWhen(returnValue: true)] ITypeSymbol? fromSymbol,
-            [NotNullWhen(returnValue: true)] ITypeSymbol? toSymbol,
-            Compilation compilation)
-            => fromSymbol != null && toSymbol != null && compilation.ClassifyCommonConversion(fromSymbol, toSymbol).IsImplicit;
-
         private static IEnumerable<IParameterSymbol> GetAllPublicConstructorParameters(INamedTypeSymbol attributeType)
         {
             // FxCop compatibility:
@@ -148,7 +142,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 if (parameter.Type.Kind != SymbolKind.ErrorType)
                 {
                     if (!propertiesMap.TryGetValue(parameter.Name, out IPropertySymbol property) ||
-                        !IsAssignableTo(parameter.Type, property.Type, compilation))
+                        !parameter.Type.IsAssignableTo(property.Type, compilation))
                     {
                         // Add a public read-only property accessor for positional argument '{0}' of attribute '{1}'.
                         addDiagnostic(GetDefaultDiagnostic(parameter, attributeType));
