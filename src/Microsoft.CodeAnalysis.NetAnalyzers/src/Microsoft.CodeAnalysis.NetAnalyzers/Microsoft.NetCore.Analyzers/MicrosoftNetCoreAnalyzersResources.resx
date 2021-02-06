@@ -1519,4 +1519,13 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="PreferAsSpanOverSubstringDescription" xml:space="preserve">
+    <value>'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</value>
+  </data>
+  <data name="PreferAsSpanOverSubstringMessage" xml:space="preserve">
+    <value>Prefer 'AsSpan' over 'Substring' when span-based overloads are available.</value>
+  </data>
+  <data name="PreferAsSpanOverSubstringTitle" xml:space="preserve">
+    <value>Prefer 'AsSpan' over 'Substring'</value>
+  </data>
 </root>
