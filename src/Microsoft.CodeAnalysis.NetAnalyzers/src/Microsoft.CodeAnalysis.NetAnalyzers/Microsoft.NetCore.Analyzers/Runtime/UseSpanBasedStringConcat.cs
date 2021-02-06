@@ -85,27 +85,55 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 void ReportDiagnosticsOnRootConcatOperationsWithSubstringCalls(OperationBlockAnalysisContext context)
                 {
                     //  We report diagnostics for all top-most concat operations that contain 
-                    //  direct or conditional substring invocations
-                    //  when there is an applicable span-based overload of string.Concat
+                    //  direct or conditional substring invocations when there is an applicable span-based overload of
+                    //  the string.Concat method.
+                    //  We don't report when the concatenation contains anything other than strings or character literals.
                     foreach (var operation in topMostConcatOperations)
                     {
-                        var chain = FlattenBinaryOperation(operation);
-                        if (chain.Any(IsAnyDirectOrConditionalSubstringInvocation) && symbols.TryGetRoscharConcatMethodWithArity(chain.Length, out _))
+                        if (ShouldBeReported(operation))
                         {
                             context.ReportDiagnostic(operation.CreateDiagnostic(Rule));
                         }
                     }
+
                     topMostConcatOperations.Free(context.CancellationToken);
                 }
             }
 
+            bool ShouldBeReported(IBinaryOperation topMostConcatOperation)
+            {
+                var concatOperands = FlattenBinaryOperation(topMostConcatOperation);
+
+                //  Bail if no suitable overload of 'string.Concat' exists.
+                if (!symbols.TryGetRoscharConcatMethodWithArity(concatOperands.Length, out _))
+                    return false;
+
+                bool anySubstringInvocations = false;
+                foreach (var operand in concatOperands)
+                {
+                    var value = WalkDownBuiltInImplicitConversionOnConcatOperand(operand);
+                    switch (value.Type?.SpecialType)
+                    {
+                        //  Report diagnostics only when operands are exclusively strings and character literals.
+                        case SpecialType.System_String:
+                        case SpecialType.System_Char when value is ILiteralOperation:
+                            if (IsAnyDirectOrConditionalSubstringInvocation(value))
+                                anySubstringInvocations = true;
+                            break;
+                        default:
+                            return false;
+                    }
+                }
+
+                return anySubstringInvocations;
+            }
+
             bool IsAnyDirectOrConditionalSubstringInvocation(IOperation operation)
             {
-                var value = WalkDownBuiltInImplicitConversionOnConcatOperand(operation);
-                if (value is IConditionalAccessOperation conditionallAccessOperation)
-                    value = conditionallAccessOperation.WhenNotNull;
+                if (operation is IConditionalAccessOperation conditionallAccessOperation)
+                    operation = conditionallAccessOperation.WhenNotNull;
 
-                return value is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod);
+                return operation is IInvocationOperation invocation && symbols.IsAnySubstringMethod(invocation.TargetMethod);
             }
         }
 

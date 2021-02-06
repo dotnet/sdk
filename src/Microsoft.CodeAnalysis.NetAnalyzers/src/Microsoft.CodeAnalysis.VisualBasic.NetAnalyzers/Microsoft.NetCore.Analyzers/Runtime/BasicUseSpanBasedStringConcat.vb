@@ -21,7 +21,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Dim current As IBinaryOperation
             Do
                 current = parentBinaryOperation
-                parentBinaryOperation = TryCast(current.Parent, IBinaryOperation)
+                parentBinaryOperation = TryCast(WalkUpImplicitConversionToObject(current.Parent), IBinaryOperation)
             Loop While parentBinaryOperation IsNot Nothing AndAlso IsStringConcatOperation(parentBinaryOperation)
 
             rootBinaryOperation = current
@@ -32,6 +32,17 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
             'OperatorKind will be Concatenate even when the "+" operator is used, provided both operands are strings.
             Return operation.OperatorKind = BinaryOperatorKind.Concatenate
+        End Function
+
+        Private Shared Function WalkUpImplicitConversionToObject(operation As IOperation) As IOperation
+
+            Dim conversion = TryCast(operation, IConversionOperation)
+            If conversion IsNot Nothing AndAlso conversion.Type.SpecialType = SpecialType.System_Object AndAlso
+                conversion.IsImplicit AndAlso Not conversion.Conversion.IsUserDefined Then
+                Return conversion.Parent
+            Else
+                Return operation
+            End If
         End Function
     End Class
 End Namespace

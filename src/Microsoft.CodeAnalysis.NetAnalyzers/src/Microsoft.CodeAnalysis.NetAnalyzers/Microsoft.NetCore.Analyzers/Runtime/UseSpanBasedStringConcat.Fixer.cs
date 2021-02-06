@@ -134,26 +134,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var asSpanInvocationSyntax = ReplaceInvocationMethodName(generator, invocationSyntax, AsSpanName);
                 return generator.Argument(asSpanInvocationSyntax);
             }
-            else if (value.Type.SpecialType == SpecialType.System_String)
+            //  Character literals become string literals.
+            else if (value.Type.SpecialType == SpecialType.System_Char && value is ILiteralOperation literalOperation && literalOperation.ConstantValue.HasValue)
             {
-                return generator.Argument(value.Syntax);
+                var stringLiteral = generator.LiteralExpression(literalOperation.ConstantValue.Value.ToString()).WithTriviaFrom(literalOperation.Syntax);
+                return generator.Argument(stringLiteral);
             }
-            //  If the operand is a non-string type, we need to invoke ToString() on it to
-            //  prevent overload resolution from choosing an object-based string.Concat overload.
             else
             {
-                //  Invoke ToString with Elvis operator if receiver could be null.
-                if (value.Type.IsReferenceTypeOrNullableValueType())
-                {
-                    SyntaxNode conditionalAccessSyntax = GenerateConditionalToStringInvocationExpression(value.Syntax);
-                    return generator.Argument(conditionalAccessSyntax);
-                }
-                else
-                {
-                    SyntaxNode memberAccessSyntax = generator.MemberAccessExpression(value.Syntax.WithoutTrivia(), ToStringName);
-                    SyntaxNode toStringInvocationSyntax = generator.InvocationExpression(memberAccessSyntax, Array.Empty<SyntaxNode>());
-                    return generator.Argument(toStringInvocationSyntax).WithTriviaFrom(value.Syntax);
-                }
+                return generator.Argument(value.Syntax);
             }
 
             bool TryGetNamedStartIndexArgument(in RequiredSymbols symbols, IInvocationOperation substringInvocation, [NotNullWhen(true)] out IArgumentOperation? namedStartIndexArgument)

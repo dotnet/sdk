@@ -460,157 +460,6 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
             return test.RunAsync();
         }
 
-        public static IEnumerable<object[]> Data_NonStringOperands_CS
-        {
-            get
-            {
-                yield return new[]
-                {
-                    @"foo.Substring(1) + count",
-                    @"string.Concat(foo.AsSpan(1), count.ToString())"
-                };
-                yield return new[]
-                {
-                    @"count + foo.Substring(1)",
-                    @"string.Concat(count.ToString(), foo.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"thing + foo.Substring(1)",
-                    @"string.Concat(thing?.ToString(), foo.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"foo.Substring(1) + thing",
-                    @"string.Concat(foo.AsSpan(1), thing?.ToString())"
-                };
-                yield return new[]
-                {
-                    @"maybe + foo.Substring(1)",
-                    @"string.Concat(maybe?.ToString(), foo.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"thing + foo.Substring(1, 2) + maybe",
-                    @"string.Concat(thing?.ToString(), foo.AsSpan(1, 2), maybe?.ToString())"
-                };
-                yield return new[]
-                {
-                    @"foo + 17 + bar.Substring(1)",
-                    @"string.Concat(foo, 17.ToString(), bar.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"foo.Substring(1, 2) + 17",
-                    @"string.Concat(foo.AsSpan(1, 2), 17.ToString())"
-                };
-                yield return new[]
-                {
-                    @"foo + 3.14159 + bar.Substring(1)",
-                    @"string.Concat(foo, 3.14159.ToString(), bar.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"3.14159 + foo.Substring(1) + 6.02e23",
-                    @"string.Concat(3.14159.ToString(), foo.AsSpan(1), 6.02e23.ToString())"
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(Data_NonStringOperands_CS))]
-        public Task NonStringOperands_AreConvertedToString_CS(string testExpression, string fixedExpression)
-        {
-            string format = @"
-int count = 11;
-object thing = new object();
-TimeSpan? maybe = null;
-string s = {0};";
-            var culture = CultureInfo.InvariantCulture;
-
-            var test = new VerifyCS.Test
-            {
-                TestCode = CSUsings + CSWithBody(string.Format(culture, format, $"{{|#0:{testExpression}|}}")),
-                FixedCode = CSUsings + CSWithBody(string.Format(culture, format, fixedExpression)),
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
-            };
-            return test.RunAsync();
-        }
-
-        public static IEnumerable<object[]> Data_NonStringOperands_VB
-        {
-            get
-            {
-                yield return new[]
-                {
-                    @"foo.Substring(1) & count",
-                    @"String.Concat(foo.AsSpan(1), count.ToString())"
-                };
-                yield return new[]
-                {
-                    @"count & foo.Substring(1)",
-                    @"String.Concat(count.ToString(), foo.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"thing & foo.Substring(1)",
-                    @"String.Concat(thing?.ToString(), foo.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"foo.Substring(1) & thing",
-                    @"String.Concat(foo.AsSpan(1), thing?.ToString())"
-                };
-                yield return new[]
-                {
-                    @"thing & foo.Substring(1, 2) & maybe",
-                    @"String.Concat(thing?.ToString(), foo.AsSpan(1, 2), maybe?.ToString())"
-                };
-                yield return new[]
-                {
-                    @"foo & 17 & bar.Substring(1)",
-                    @"String.Concat(foo, 17.ToString(), bar.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"foo.Substring(1, 2) & 17",
-                    @"String.Concat(foo.AsSpan(1, 2), 17.ToString())"
-                };
-                yield return new[]
-                {
-                    @"foo & 3.14159 & bar.Substring(1)",
-                    @"String.Concat(foo, 3.14159.ToString(), bar.AsSpan(1))"
-                };
-                yield return new[]
-                {
-                    @"3.14159 & foo.Substring(1) & 6.02e23",
-                    @"String.Concat(3.14159.ToString(), foo.AsSpan(1), 6.02e23.ToString())"
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(Data_NonStringOperands_VB))]
-        public Task NonStringOperands_AreConvertedToString_VB(string testExpression, string fixedExpression)
-        {
-            string format = @"
-Dim count As Integer = 11
-Dim thing As Object = New Object()
-Dim maybe As TimeSpan? = Nothing
-Dim s = {0}";
-            var culture = CultureInfo.InvariantCulture;
-
-            var test = new VerifyVB.Test
-            {
-                TestCode = VBUsings + VBWithBody(string.Format(culture, format, $"{{|#0:{testExpression}|}}")),
-                FixedCode = VBUsings + VBWithBody(string.Format(culture, format, fixedExpression)),
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
-            };
-            return test.RunAsync();
-        }
-
         [Theory]
         [InlineData(@"foo.Substring(1) + (string)explicitTo", @"string.Concat(foo.AsSpan(1), (string)explicitTo)")]
         [InlineData(@"(string)explicitTo + foo.Substring(1)", @"string.Concat((string)explicitTo, foo.AsSpan(1))")]
@@ -710,6 +559,44 @@ Dim s = {0}";
             {
                 TestCode = VBUsings + VBWithBody($@"Dim s = {{|#0:{testExpression}|}}"),
                 FixedCode = VBUsings + VBWithBody($@"Dim s = {fixedExpression}"),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(@"foo.Substring(1) + 'A'", @"string.Concat(foo.AsSpan(1), ""A"")")]
+        [InlineData(@"'A' + foo.Substring(1)", @"string.Concat(""A"", foo.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) + bar + 'A'", @"string.Concat(foo.AsSpan(1), bar, ""A"")")]
+        [InlineData(@"foo.Substring(1) + 'A' + bar", @"string.Concat(foo.AsSpan(1), ""A"", bar)")]
+        [InlineData(@"foo + 'A' + bar.Substring(1)", @"string.Concat(foo, ""A"", bar.AsSpan(1))")]
+        [InlineData(@"foo + bar.Substring(1) + 'A'", @"string.Concat(foo, bar.AsSpan(1), ""A"")")]
+        public Task CharLiterals_AreConvertedToStringLiterals_CS(string testExpression, string fixedExpression)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody($"string s = {{|#0:{testExpression}|}};"),
+                FixedCode = CSUsings + CSWithBody($"string s = {fixedExpression};"),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(@"foo.Substring(1) & ""A""c", @"String.Concat(foo.AsSpan(1), ""A"")")]
+        [InlineData(@"""A""c & foo.Substring(1)", @"String.Concat(""A"", foo.AsSpan(1))")]
+        [InlineData(@"foo.Substring(1) & bar & ""A""c", @"String.Concat(foo.AsSpan(1), bar, ""A"")")]
+        [InlineData(@"foo.Substring(1) & ""A""c & bar", @"String.Concat(foo.AsSpan(1), ""A"", bar)")]
+        [InlineData(@"foo & ""A""c & bar.Substring(1)", @"String.Concat(foo, ""A"", bar.AsSpan(1))")]
+        [InlineData(@"foo & bar.Substring(1) & ""A""c", @"String.Concat(foo, bar.AsSpan(1), ""A"")")]
+        public Task CharLiterals_AreConvertedToStringLiterals_VB(string testExpression, string fixedExpression)
+        {
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody($"Dim s = {{|#0:{testExpression}|}}"),
+                FixedCode = VBUsings + VBWithBody($"Dim s = {fixedExpression}"),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
@@ -816,6 +703,60 @@ var e = {expression};";
                         CSUsings + CSWithBody(statements)
                     }
                 },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(@"foo.Substring(1) + thing")]
+        [InlineData(@"thing + foo.Substring(1)")]
+        [InlineData(@"foo.Substring(1) + count")]
+        [InlineData(@"count + foo.Substring(1)")]
+        [InlineData(@"foo.Substring(1) + charvar")]
+        [InlineData(@"charvar + foo.Substring(1)")]
+        [InlineData(@"foo.Substring(1) + bar + thing")]
+        [InlineData(@"foo + bar.Substring(1) + thing")]
+        [InlineData(@"foo.Substring(1) + thing + bar.Substring(1)")]
+        [InlineData(@"foo.Substring(1) + bar.Substring(1) + thing")]
+        public Task WithNonStringNonCharLiteralOperands_NoDiagnostic_CS(string expression)
+        {
+            string statements = $@"
+object thing = new object();
+int count = 17;
+char charvar = 'H';
+string s = {expression};";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = CSUsings + CSWithBody(statements),
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData(@"foo.Substring(1) & thing")]
+        [InlineData(@"thing & foo.Substring(1)")]
+        [InlineData(@"foo.Substring(1) & count")]
+        [InlineData(@"count & foo.Substring(1)")]
+        [InlineData(@"foo.Substring(1) & charvar")]
+        [InlineData(@"charvar & foo.Substring(1)")]
+        [InlineData(@"foo.Substring(1) & bar & thing")]
+        [InlineData(@"foo & bar.Substring(1) & thing")]
+        [InlineData(@"foo.Substring(1) & thing & bar.Substring(1)")]
+        [InlineData(@"foo.Substring(1) & bar.Substring(1) & thing")]
+        public Task WithNonStringNonCharLiteralOperands_NoDiagnostic_VB(string expression)
+        {
+            string statements = $@"
+Dim thing As Object = New Object()
+Dim count As Integer = 17
+Dim charvar As Char = ""H""
+Dim s As String = {expression}";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = VBUsings + VBWithBody(statements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync();
