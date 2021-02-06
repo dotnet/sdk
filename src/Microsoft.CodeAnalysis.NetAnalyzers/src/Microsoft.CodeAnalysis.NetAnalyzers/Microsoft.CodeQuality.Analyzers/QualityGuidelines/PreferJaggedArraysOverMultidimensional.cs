@@ -51,15 +51,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, ReturnRule, BodyRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(AnalyzeField, SymbolKind.Field);
-            analysisContext.RegisterSymbolAction(AnalyzeProperty, SymbolKind.Property);
-            analysisContext.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
-            analysisContext.RegisterOperationAction(AnalyzeObjectCreation, OperationKind.ArrayCreation);
+            context.RegisterSymbolAction(AnalyzeField, SymbolKind.Field);
+            context.RegisterSymbolAction(AnalyzeProperty, SymbolKind.Property);
+            context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
+            context.RegisterOperationAction(AnalyzeObjectCreation, OperationKind.ArrayCreation);
         }
 
         private static void AnalyzeField(SymbolAnalysisContext context)

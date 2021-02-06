@@ -108,12 +108,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AssemblyRule, NamespaceRule, TypeRule, MemberRule, TypeTypeParameterRule, MethodTypeParameterRule, MemberParameterRule, DelegateParameterRule);
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterSymbolAction(symbolAnalysisContext =>
+            context.RegisterSymbolAction(symbolAnalysisContext =>
             {
                 var symbol = symbolAnalysisContext.Symbol;
 
@@ -216,7 +216,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event // Members
             );
 
-            analysisContext.RegisterCompilationAction(compilationAnalysisContext =>
+            context.RegisterCompilationAction(compilationAnalysisContext =>
             {
                 var compilation = compilationAnalysisContext.Compilation;
                 if (ContainsUnderScore(compilation.AssemblyName))

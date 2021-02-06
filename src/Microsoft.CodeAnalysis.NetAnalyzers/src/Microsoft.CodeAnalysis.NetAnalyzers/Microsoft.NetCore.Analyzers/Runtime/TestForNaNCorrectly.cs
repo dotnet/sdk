@@ -44,12 +44,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             BinaryOperatorKind.NotEquals
         };
 
-        public override void Initialize(AnalysisContext analysisContext)
+        public override void Initialize(AnalysisContext context)
         {
-            analysisContext.EnableConcurrentExecution();
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            analysisContext.RegisterOperationAction(
+            context.RegisterOperationAction(
                 operationAnalysisContext =>
                 {
                     var binaryOperatorExpression = (IBinaryOperation)operationAnalysisContext.Operation;
