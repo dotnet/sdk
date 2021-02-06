@@ -449,8 +449,13 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(TieredCompilationQuickJitForLoops)" />
 
     <RuntimeHostConfigurationOption Include="System.StartupHookProvider.IsSupported"
-                                    Condition="'$(StartupHookSupport)' != ''"
+                                    Condition="'$(StartupHookSupport)' != '' And '$(PublishTrimmed)' == 'true'"
                                     Value="$(StartupHookSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Resources.ResourceManager.AllowCustomResourceTypes"
+                                    Condition="'$(CustomResourceTypesSupport)' != '' And '$(PublishTrimmed)' == 'true'"
+                                    Value="$(CustomResourceTypesSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Text.Encoding.EnableUnsafeUTF7Encoding"
