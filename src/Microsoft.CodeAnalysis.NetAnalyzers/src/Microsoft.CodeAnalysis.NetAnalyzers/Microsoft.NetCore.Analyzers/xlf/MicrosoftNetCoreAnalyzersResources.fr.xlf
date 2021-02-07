@@ -47,21 +47,6 @@
         <target state="translated">Les littéraux de chaîne d'attribut doivent être analysés correctement</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">'{0}' lèvera une exception pour les assemblys incorporés dans une application monofichier</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">'{0}' retourne toujours une chaîne vide pour les assemblys incorporés dans une application monofichier. Si le chemin du répertoire d'application est nécessaire, appelez 'System.AppContext.BaseDirectory'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">Évitez d'utiliser l'accès du chemin du fichier d'assembly lors de la publication en tant qu'application monofichier</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">Le marshaling de 'StringBuilder' crée toujours une copie de la mémoire tampon native, ce qui entraîne plusieurs allocations pour une seule opération de marshaling.</target>

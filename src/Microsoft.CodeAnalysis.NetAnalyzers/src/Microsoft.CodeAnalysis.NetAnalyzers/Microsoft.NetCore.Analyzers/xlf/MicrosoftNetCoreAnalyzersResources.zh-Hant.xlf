@@ -47,21 +47,6 @@
         <target state="translated">屬性字串常值應正確剖析</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">'{0}' 將會為內嵌在單一檔案應用程式中的組件進行擲回</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">'{0}' 一律會為內嵌在單一檔案應用程式中的組件傳回空字串。若需要應用程式目錄的路徑，請考慮呼叫 'System.AppContext.BaseDirectory'。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">以單一檔案形式發佈時，避免使用正在存取的組件檔案路徑</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">封送處理 'StringBuilder' 一律都會建立原生緩衝區複本，因而導致單一封送處理作業出現多重配置。</target>

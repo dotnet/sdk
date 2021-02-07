@@ -47,21 +47,6 @@
         <target state="translated">Öznitelik dizesinin sabit değerleri doğru ayrıştırılmalıdır</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">'{0}', tek dosyalı bir uygulamaya eklenen bütünleştirilmiş kodlar için özel durum oluşturur</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">'{0}', tek dosyalı bir uygulamaya eklenen bütünleştirilmiş kodlar için her zaman boş bir dize döndürür. Uygulama dizininin yolu gerekiyorsa 'System.AppContext.BaseDirectory' özelliğini çağırmayı düşünün.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">Tek dosyalı olarak yayımlarken bütünleştirilmiş kod dosyası yoluna erişimi kullanmaktan kaçının</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">'StringBuilder' öğesinin hazırlanması her zaman, bir hazırlama işlemi için birden çok ayırmaya neden olan yerel arabellek kopyası oluşturur.</target>
