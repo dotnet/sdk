@@ -1602,6 +1602,21 @@
         <target state="translated">Cycle de référence potentiel dans un graphe d'objet désérialisé</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferAsSpanOverSubstringDescription">
+        <source>'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</source>
+        <target state="new">'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferAsSpanOverSubstringMessage">
+        <source>Prefer 'AsSpan' over 'Substring' when span-based overloads are available.</source>
+        <target state="new">Prefer 'AsSpan' over 'Substring' when span-based overloads are available.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferAsSpanOverSubstringTitle">
+        <source>Prefer 'AsSpan' over 'Substring'</source>
+        <target state="new">Prefer 'AsSpan' over 'Substring'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">'Stream’ a une surcharge ’ReadAsync’ qui prend un ’Memory&lt;Byte&gt;' comme premier argument et une surcharge ’WriteAsync’ qui prend un ’ReadOnlyMemory&lt;Byte&gt;' comme premier argument. Préférez l'appel des surcharges basées sur la mémoire, car elles sont plus efficaces.</target>

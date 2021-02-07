@@ -1602,6 +1602,21 @@
         <target state="translated">역직렬화된 개체 그래프의 잠재적 참조 주기</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferAsSpanOverSubstringDescription">
+        <source>'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</source>
+        <target state="new">'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferAsSpanOverSubstringMessage">
+        <source>Prefer 'AsSpan' over 'Substring' when span-based overloads are available.</source>
+        <target state="new">Prefer 'AsSpan' over 'Substring' when span-based overloads are available.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferAsSpanOverSubstringTitle">
+        <source>Prefer 'AsSpan' over 'Substring'</source>
+        <target state="new">Prefer 'AsSpan' over 'Substring'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">'Stream'에 첫 번째 인수로 'Memory&lt;Byte&gt;'를 사용하는 'ReadAsync' 오버로드와 첫 번째 인수로 'ReadOnlyMemory&lt;Byte&gt;'를 사용하는 'WriteAsync' 오버로드가 있습니다. 더 효율적인 메모리 기반 오버로드를 호출하는 것이 좋습니다.</target>
