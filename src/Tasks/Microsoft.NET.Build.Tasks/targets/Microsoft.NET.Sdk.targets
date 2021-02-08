@@ -449,12 +449,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(TieredCompilationQuickJitForLoops)" />
 
     <RuntimeHostConfigurationOption Include="System.StartupHookProvider.IsSupported"
-                                    Condition="'$(StartupHookSupport)' != '' And '$(PublishTrimmed)' == 'true'"
+                                    Condition="'$(StartupHookSupport)' != ''"
                                     Value="$(StartupHookSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Resources.ResourceManager.AllowCustomResourceTypes"
-                                    Condition="'$(CustomResourceTypesSupport)' != '' And '$(PublishTrimmed)' == 'true'"
+                                    Condition="'$(CustomResourceTypesSupport)'"
                                     Value="$(CustomResourceTypesSupport)"
                                     Trim="true" />
 

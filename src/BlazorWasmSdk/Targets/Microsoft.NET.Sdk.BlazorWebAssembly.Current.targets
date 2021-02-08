@@ -51,7 +51,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Trimmer defaults -->
-    <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
     <TrimMode Condition="'$(TrimMode)' == ''">link</TrimMode>
     <TrimmerRemoveSymbols Condition="'$(TrimmerRemoveSymbols)' == ''">false</TrimmerRemoveSymbols>
 
