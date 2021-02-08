@@ -109,9 +109,10 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return GetProjectDiagnosticsAsync(project, cancellationToken);
             }
 
-            public override Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(Document document, CancellationToken cancellationToken)
+            public override async Task<IEnumerable<Diagnostic>> GetDocumentDiagnosticsAsync(Document document, CancellationToken cancellationToken)
             {
-                throw new NotImplementedException();
+                var projectDiagnostics = await GetProjectDiagnosticsAsync(document.Project, cancellationToken);
+                return projectDiagnostics.Where(diagnostic => diagnostic.Location.SourceTree?.FilePath == document.FilePath).ToImmutableArray();
             }
 
             public override Task<IEnumerable<Diagnostic>> GetProjectDiagnosticsAsync(Project project, CancellationToken cancellationToken)

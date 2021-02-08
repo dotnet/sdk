@@ -9,6 +9,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="IDisposableAnalyzers" Version="3.4.8" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
