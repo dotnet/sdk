@@ -28,7 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        could be removed by the linker, causing a trimmed app to crash. -->
   <PropertyGroup Condition="'$(StartupHookSupport)' == '' And
                             '$(PublishTrimmed)' == 'true' And
-                            '$(_TargetFrameworkVersionWithoutV)' >= '6.0'">
+                            $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '6.0'))">
     <StartupHookSupport>false</StartupHookSupport>
   </PropertyGroup>
 
@@ -38,7 +38,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        could be removed by the linker, causing a trimmed app to crash. -->
   <PropertyGroup Condition="'$(CustomResourceTypesSupport)' == '' And
                             '$(PublishTrimmed)' == 'true' And
-                            '$(_TargetFrameworkVersionWithoutV)' >= '6.0'">
+                            $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '6.0'))">
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
   </PropertyGroup>
 
