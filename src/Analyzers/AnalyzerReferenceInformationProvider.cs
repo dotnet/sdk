@@ -23,10 +23,8 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
         private AnalyzersAndFixers GetAnalyzersAndFixers(Project project)
         {
-            var context = new AnalyzerLoadContext();
-
             var analyzerAssemblies = project.AnalyzerReferences
-                .Select(reference => TryLoadAssemblyFrom(reference.FullPath, context))
+                .Select(reference => TryLoadAssemblyFrom(reference.FullPath, new AnalyzerLoadContext()))
                 .OfType<Assembly>()
                 .ToImmutableArray();
 
