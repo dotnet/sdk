@@ -294,16 +294,10 @@ namespace Microsoft.NET.Publish.Tests
 
             // Please keep list below sorted and de-duplicated
             List<string> expectedOutput = new List<string> () {
-                    "ILLink : Trim analysis warning IL2026: System.Resources.ResourceReader.InitializeBinaryFormatter(",
-                    "ILLink : Trim analysis warning IL2057: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
-                    "ILLink : Trim analysis warning IL2057: System.Resources.ResourceReader.FindType(Int32",
-                    "ILLink : Trim analysis warning IL2060: System.Resources.ResourceReader.InitializeBinaryFormatter(",
                     "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.NullableTypeInfo.NullableTypeInfo(Type,List<Type>",
                     "ILLink : Trim analysis warning IL2070: System.Diagnostics.Tracing.TypeAnalysis.TypeAnalysis(Type,EventDataAttribute,List<Type>",
                     "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.EventSource.EnsureDescriptorsInitialized(",
                     "ILLink : Trim analysis warning IL2072: System.Diagnostics.Tracing.NullableTypeInfo.WriteData(PropertyValue",
-                    "ILLink : Trim analysis warning IL2072: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
-                    "ILLink : Trim analysis warning IL2077: System.Resources.ResourceReader.InitializeBinaryFormatter(",
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -379,43 +373,13 @@ namespace Microsoft.NET.Publish.Tests
                 runtimeConfig["runtimeOptions"]["configProperties"]
                     ["System.StartupHookProvider.IsSupported"].Value<bool>()
                     .Should().Be(false);
-            }
-            else
-            {
-                runtimeConfigContents.Should().NotContain("System.StartupHookProvider.IsSupported");
-            }
-        }
-
-        [Theory]
-        [InlineData("net5.0")]
-        [InlineData("net6.0")]
-        public void CustomResourceTypesSupport_is_false_by_default_on_trimmed_apps(string targetFramework)
-        {
-            var projectName = "HelloWorld";
-            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
-
-            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName);
-
-            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true")
-                .Should().Pass();
-
-            string outputDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
-            string runtimeConfigFile = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
-            string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
-
-
-            if (Version.TryParse(targetFramework.TrimStart("net".ToCharArray()), out Version parsedVersion) &&
-                parsedVersion.Major >= 6)
-            {
-                JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
                 runtimeConfig["runtimeOptions"]["configProperties"]
                     ["System.Resources.ResourceManager.AllowCustomResourceTypes"].Value<bool>()
                     .Should().Be(false);
             }
             else
             {
+                runtimeConfigContents.Should().NotContain("System.StartupHookProvider.IsSupported");
                 runtimeConfigContents.Should().NotContain("System.Resources.ResourceManager.AllowCustomResourceTypes");
             }
         }
