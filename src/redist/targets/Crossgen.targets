@@ -59,7 +59,6 @@
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\netcoreapp*\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.ILLink.Tasks\tools\net5.0\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\net6.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\analyzers\cs\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\net6.0\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\net6.0\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Worker\tools\net6.0\**\*" />
