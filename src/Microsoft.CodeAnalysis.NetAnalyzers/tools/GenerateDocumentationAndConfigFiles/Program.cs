@@ -445,7 +445,7 @@ $@"<Project>
                         writer.Write("shortDescription", descriptor.Title.ToString(CultureInfo.InvariantCulture));
 
                         string fullDescription = descriptor.Description.ToString(CultureInfo.InvariantCulture);
-                        writer.Write("fullDescription", !string.IsNullOrEmpty(fullDescription) ? fullDescription : descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture));
+                        writer.Write("fullDescription", !string.IsNullOrEmpty(fullDescription) ? fullDescription.Replace("\r\n", "\n") : descriptor.MessageFormat.ToString(CultureInfo.InvariantCulture));
 
                         writer.Write("defaultLevel", getLevel(descriptor.DefaultSeverity));
 
