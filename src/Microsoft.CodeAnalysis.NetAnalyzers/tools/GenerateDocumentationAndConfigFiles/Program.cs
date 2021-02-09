@@ -104,23 +104,7 @@ namespace GenerateDocumentationAndConfigFiles
 
                 foreach (var analyzer in analyzers)
                 {
-                    if (analyzer.SupportedDiagnostics.Length == 0)
-                    {
-                        continue;
-                    }
-
                     var analyzerType = analyzer.GetType();
-                    var isAbstractGlobalizationDiagnosticAnalyzer = IsSubClassOfGlobalizationAnalyzer(analyzerType);
-                    if (analyzer.SupportedDiagnostics.All(d => d.Category == "Globalization"))
-                    {
-                        Debug.Assert(isAbstractGlobalizationDiagnosticAnalyzer, $"Analyzer {analyzerType.Name} was expected to inherit AbstractGlobalizationDiagnosticAnalyzer.");
-                    }
-                    else
-                    {
-                        // Note: If an analyzer have one Globalization rule and other non-Globalization rules, it shouldn't inherit AbstractGlobalizationDiagnosticAnalyzer.
-                        // Instead, it should check for InvariantCulture MSBuild property for the Globalization rules only.
-                        Debug.Assert(!isAbstractGlobalizationDiagnosticAnalyzer, $"Analyzer {analyzerType.Name} wasn't expected to inherit AbstractGlobalizationDiagnosticAnalyzer.");
-                    }
 
                     foreach (var rule in analyzer.SupportedDiagnostics)
                     {
@@ -803,19 +787,6 @@ Rule ID | Missing Help Link | Title |
                     return Path.Combine(assemblyDir, assembly);
                 }
             }
-        }
-
-        private static bool IsSubClassOfGlobalizationAnalyzer(Type analyzerType)
-        {
-            var baseType = analyzerType.BaseType;
-            while (baseType != null)
-            {
-                if (baseType.Name == "AbstractGlobalizationDiagnosticAnalyzer")
-                    return true;
-                baseType = baseType.BaseType;
-            }
-
-            return false;
         }
 
         private static void CreateRuleset(
