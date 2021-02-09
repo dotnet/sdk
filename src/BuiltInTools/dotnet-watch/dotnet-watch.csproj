@@ -18,22 +18,67 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
-
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
     <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" />
+    <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" />
+  </ItemGroup>
 
-    <ProjectReference
-      Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj"
-      PrivateAssets="All"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks" />
-
-    <ProjectReference
-      Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj"
-      PrivateAssets="All"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework;TargetFrameworks" />
+  <ItemGroup>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces">
+      <HintPath>BINARIES\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.AnalyzerUtilities">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.AnalyzerUtilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Features">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.CSharp.Features.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.CSharp.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Features">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.Features.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Scripting">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.Scripting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Workspaces">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.Workspaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild">
+      <HintPath>BINARIES\Microsoft.CodeAnalysis.Workspaces.MSBuild.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DiaSymReader">
+      <HintPath>BINARIES\Microsoft.DiaSymReader.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.AttributedModel">
+      <HintPath>BINARIES\System.Composition.AttributedModel.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.Convention">
+      <HintPath>BINARIES\System.Composition.Convention.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.Hosting">
+      <HintPath>BINARIES\System.Composition.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.Runtime">
+      <HintPath>BINARIES\System.Composition.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Composition.TypedParts">
+      <HintPath>BINARIES\System.Composition.TypedParts.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Pkcs">
+      <HintPath>BINARIES\System.Security.Cryptography.Pkcs.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.ProtectedData">
+      <HintPath>BINARIES\System.Security.Cryptography.ProtectedData.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

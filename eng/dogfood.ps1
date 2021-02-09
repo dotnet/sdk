@@ -45,6 +45,7 @@ try {
 
   $env:PATH = "$TestDotnetRoot;$env:Path"
   $env:DOTNET_ROOT = $TestDotnetRoot
+  $env:DOTNET_MULTILEVEL_LOOKUP = 0
 
   if ($command -eq $null -and $env:DOTNET_SDK_DOGFOOD_SHELL -ne $null) {
     $command = , $env:DOTNET_SDK_DOGFOOD_SHELL
