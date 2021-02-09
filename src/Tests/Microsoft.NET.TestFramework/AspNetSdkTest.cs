@@ -16,7 +16,8 @@ namespace Microsoft.NET.TestFramework
 {
     public abstract class AspNetSdkTest : SdkTest
     {   
-        public readonly string DefaultTfm  = "net6.0";
+        private static readonly IEnumerable<System.Reflection.AssemblyMetadataAttribute> TestAssemblyMetadata = Assembly.GetCallingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>();	        public readonly string DefaultTfm  = "net6.0";
+        public readonly string DefaultTfm = TestAssemblyMetadata.SingleOrDefault(a => a.Key == "AspNetTestTfm").Value;
 
         protected AspNetSdkTest(ITestOutputHelper log) : base(log) { }
 
