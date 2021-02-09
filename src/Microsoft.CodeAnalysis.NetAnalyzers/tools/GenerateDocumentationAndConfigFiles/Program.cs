@@ -108,6 +108,11 @@ namespace GenerateDocumentationAndConfigFiles
 
                     foreach (var rule in analyzer.SupportedDiagnostics)
                     {
+                        if (rule.Category == "Globalization")
+                        {
+                            Debug.Assert(analyzerType.BaseType?.Name == "AbstractGlobalizationDiagnosticAnalyzer", $"Analyzer {analyzerType.Name} was expected to inherit AbstractGlobalizationDiagnosticAnalyzer.");
+                        }
+
                         allRulesById[rule.Id] = rule;
                         categories.Add(rule.Category);
                         assemblyRulesMetadata.rules[rule.Id] = (rule, analyzerType.Name, analyzerType.GetCustomAttribute<DiagnosticAnalyzerAttribute>(true)?.Languages);
