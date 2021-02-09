@@ -47,21 +47,6 @@
         <target state="translated">I valori letterali stringa dell'attributo devono essere analizzati correttamente</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">'{0}' verrà generato per gli assembly incorporati in un'app a file singolo</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">'{0}' restituisce sempre una stringa vuota per gli assembly incorporati in un'app a file singolo. Se il percorso della directory app è necessario, provare a chiamare 'System.AppContext.BaseDirectory'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">Evitare l'accesso al percorso del file di assembly quando si esegue la pubblicazione come file singolo</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">Il marshalling di 'StringBuilder' crea sempre una copia del buffer nativo, di conseguenza vengono generate più allocazioni per una singola operazione di marshalling.</target>

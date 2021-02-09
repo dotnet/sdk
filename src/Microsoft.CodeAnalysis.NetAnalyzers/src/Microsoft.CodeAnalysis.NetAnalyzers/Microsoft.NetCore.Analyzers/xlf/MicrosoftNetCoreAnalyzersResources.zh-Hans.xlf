@@ -47,21 +47,6 @@
         <target state="translated">特性字符串文本应正确分析</target>
         <note />
       </trans-unit>
-      <trans-unit id="AvoidAssemblyGetFilesInSingleFileMessage">
-        <source>'{0}' will throw for assemblies embedded in a single-file app</source>
-        <target state="translated">对于嵌入在单文件应用中的程序集，将引发“{0}”</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileMessage">
-        <source>'{0}' always returns an empty string for assemblies embedded in a single-file app. If the path to the app directory is needed, consider calling 'System.AppContext.BaseDirectory'.</source>
-        <target state="translated">对于嵌入在单文件应用中的程序集，“{0}”始终返回空字符串。如果需要应用目录的路径，请考虑调用 "System.AppContext.BaseDirectory"。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AvoidAssemblyLocationInSingleFileTitle">
-        <source>Avoid using accessing Assembly file path when publishing as a single-file</source>
-        <target state="translated">在以单文件形式发布时，避免使用访问程序集文件路径</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">"StringBuilder" 的封送处理总是会创建一个本机缓冲区副本，这导致一个封送处理操作出现多次分配。</target>
