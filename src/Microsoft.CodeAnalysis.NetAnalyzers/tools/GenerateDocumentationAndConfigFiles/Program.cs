@@ -104,6 +104,11 @@ namespace GenerateDocumentationAndConfigFiles
 
                 foreach (var analyzer in analyzers)
                 {
+                    if (analyzer.SupportedDiagnostics.Length == 0)
+                    {
+                        continue;
+                    }
+
                     var analyzerType = analyzer.GetType();
                     var isAbstractGlobalizationDiagnosticAnalyzer = IsSubClassOfGlobalizationAnalyzer(analyzerType);
                     if (analyzer.SupportedDiagnostics.All(d => d.Category == "Globalization"))
