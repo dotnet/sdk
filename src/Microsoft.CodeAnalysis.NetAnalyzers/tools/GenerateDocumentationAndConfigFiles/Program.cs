@@ -105,14 +105,20 @@ namespace GenerateDocumentationAndConfigFiles
                 foreach (var analyzer in analyzers)
                 {
                     var analyzerType = analyzer.GetType();
+                    var isAbstractGlobalizationDiagnosticAnalyzer = IsSubClassOfGlobalizationAnalyzer(analyzerType);
+                    if (analyzer.SupportedDiagnostics.All(d => d.Category == "Globalization"))
+                    {
+                        Debug.Assert(isAbstractGlobalizationDiagnosticAnalyzer, $"Analyzer {analyzerType.Name} was expected to inherit AbstractGlobalizationDiagnosticAnalyzer.");
+                    }
+                    else
+                    {
+                        // Note: If an analyzer have one Globalization rule and other non-Globalization rules, it shouldn't inherit AbstractGlobalizationDiagnosticAnalyzer.
+                        // Instead, it should check for InvariantCulture MSBuild property for the Globalization rules only.
+                        Debug.Assert(!isAbstractGlobalizationDiagnosticAnalyzer, $"Analyzer {analyzerType.Name} wasn't expected to inherit AbstractGlobalizationDiagnosticAnalyzer.");
+                    }
 
                     foreach (var rule in analyzer.SupportedDiagnostics)
                     {
-                        if (rule.Category == "Globalization")
-                        {
-                            Debug.Assert(analyzerType.BaseType?.Name == "AbstractGlobalizationDiagnosticAnalyzer", $"Analyzer {analyzerType.Name} was expected to inherit AbstractGlobalizationDiagnosticAnalyzer.");
-                        }
-
                         allRulesById[rule.Id] = rule;
                         categories.Add(rule.Category);
                         assemblyRulesMetadata.rules[rule.Id] = (rule, analyzerType.Name, analyzerType.GetCustomAttribute<DiagnosticAnalyzerAttribute>(true)?.Languages);
@@ -792,6 +798,19 @@ Rule ID | Missing Help Link | Title |
                     return Path.Combine(assemblyDir, assembly);
                 }
             }
+        }
+
+        private static bool IsSubClassOfGlobalizationAnalyzer(Type analyzerType)
+        {
+            var baseType = analyzerType.BaseType;
+            while (baseType != null)
+            {
+                if (baseType.Name == "AbstractGlobalizationDiagnosticAnalyzer")
+                    return true;
+                baseType = baseType.BaseType;
+            }
+
+            return false;
         }
 
         private static void CreateRuleset(
