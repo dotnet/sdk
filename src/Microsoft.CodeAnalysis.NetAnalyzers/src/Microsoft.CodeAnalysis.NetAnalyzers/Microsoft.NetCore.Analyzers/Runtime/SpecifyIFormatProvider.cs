@@ -120,10 +120,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                           GetParameterInfo(stringType),
                                                                                           GetParameterInfo(objectType, isArray: true, arrayRank: 1, isParams: true));
 
-            var currentCultureProperty = cultureInfoType?.GetMembers("CurrentCulture").OfType<IPropertySymbol>().FirstOrDefault();
-            var invariantCultureProperty = cultureInfoType?.GetMembers("InvariantCulture").OfType<IPropertySymbol>().FirstOrDefault();
-            var currentUICultureProperty = cultureInfoType?.GetMembers("CurrentUICulture").OfType<IPropertySymbol>().FirstOrDefault();
-            var installedUICultureProperty = cultureInfoType?.GetMembers("InstalledUICulture").OfType<IPropertySymbol>().FirstOrDefault();
+            var currentCultureProperty = cultureInfoType.GetMembers("CurrentCulture").OfType<IPropertySymbol>().FirstOrDefault();
+            var invariantCultureProperty = cultureInfoType.GetMembers("InvariantCulture").OfType<IPropertySymbol>().FirstOrDefault();
+            var currentUICultureProperty = cultureInfoType.GetMembers("CurrentUICulture").OfType<IPropertySymbol>().FirstOrDefault();
+            var installedUICultureProperty = cultureInfoType.GetMembers("InstalledUICulture").OfType<IPropertySymbol>().FirstOrDefault();
 
             var threadType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingThread);
             var currentThreadCurrentUICultureProperty = threadType?.GetMembers("CurrentUICulture").OfType<IPropertySymbol>().FirstOrDefault();
@@ -154,12 +154,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 #endregion
 
                 #region "IFormatProviderAlternateStringRule Only"
-                if (stringType != null && cultureInfoType != null &&
-                stringFormatMemberWithIFormatProviderStringAndParamsObjectParameter != null &&
-                (targetMethod.Equals(stringFormatMemberWithStringAndObjectParameter) ||
-                 targetMethod.Equals(stringFormatMemberWithStringObjectAndObjectParameter) ||
-                 targetMethod.Equals(stringFormatMemberWithStringObjectObjectAndObjectParameter) ||
-                 targetMethod.Equals(stringFormatMemberWithStringAndParamsObjectParameter)))
+                if (stringType != null && stringFormatMemberWithIFormatProviderStringAndParamsObjectParameter != null &&
+                    (targetMethod.Equals(stringFormatMemberWithStringAndObjectParameter) ||
+                     targetMethod.Equals(stringFormatMemberWithStringObjectAndObjectParameter) ||
+                     targetMethod.Equals(stringFormatMemberWithStringObjectObjectAndObjectParameter) ||
+                     targetMethod.Equals(stringFormatMemberWithStringAndParamsObjectParameter)))
                 {
                     // Sample message for IFormatProviderAlternateStringRule: Because the behavior of string.Format(string, object) could vary based on the current user's locale settings,
                     // replace this call in IFormatProviderStringTest.M() with a call to string.Format(IFormatProvider, string, params object[]).
