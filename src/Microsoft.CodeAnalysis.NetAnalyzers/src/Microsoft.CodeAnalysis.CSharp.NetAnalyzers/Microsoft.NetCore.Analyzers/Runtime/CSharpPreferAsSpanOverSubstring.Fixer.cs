@@ -13,25 +13,29 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     [ExportCodeFixProvider(LanguageNames.CSharp)]
     public sealed class CSharpPreferAsSpanOverSubstringFixer : PreferAsSpanOverSubstringFixer
     {
-        private protected override SyntaxNode ReplaceInvocationMethodName(SyntaxNode memberInvocation, string newName)
+        private protected override void ReplaceInvocationMethodName(SyntaxEditor editor, SyntaxNode memberInvocation, string newName)
         {
             var cast = (InvocationExpressionSyntax)memberInvocation;
             var memberAccessSyntax = (MemberAccessExpressionSyntax)cast.Expression;
             var newNameSyntax = SyntaxFactory.IdentifierName(newName);
-            return cast.ReplaceNode(memberAccessSyntax.Name, newNameSyntax);
+            editor.ReplaceNode(memberAccessSyntax.Name, newNameSyntax);
         }
 
-        private protected override SyntaxNode ReplaceNamedArgumentName(SyntaxNode invocation, string oldArgumentName, string newArgumentName)
+        private protected override void ReplaceNamedArgumentName(SyntaxEditor editor, SyntaxNode invocation, string oldArgumentName, string newArgumentName)
         {
             var cast = (InvocationExpressionSyntax)invocation;
             var oldNameSyntax = cast.ArgumentList.Arguments
                 .FirstOrDefault(x => x.NameColon is not null && x.NameColon.Name.Identifier.ValueText == oldArgumentName)?.NameColon.Name;
-
             if (oldNameSyntax is null)
-                return cast;
-
+                return;
             var newNameSyntax = SyntaxFactory.IdentifierName(newArgumentName);
-            return cast.ReplaceNode(oldNameSyntax, newNameSyntax);
+            editor.ReplaceNode(oldNameSyntax, newNameSyntax);
+        }
+
+        private protected override bool IsNamespaceImported(DocumentEditor editor, string namespaceName)
+        {
+            var imports = editor.Generator.GetNamespaceImports(editor.OriginalRoot);
+            return imports.Any(x => x is UsingDirectiveSyntax @using && @using.Name.ToString() == namespaceName);
         }
     }
 }

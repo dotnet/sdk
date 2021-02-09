@@ -4,7 +4,6 @@ using System;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -18,9 +17,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         private const string SubstringStartIndexArgumentName = "startIndex";
         private const string AsSpanStartArgumentName = "start";
-        private protected abstract SyntaxNode ReplaceInvocationMethodName(SyntaxNode memberInvocation, string newName);
 
-        private protected abstract SyntaxNode ReplaceNamedArgumentName(SyntaxNode invocation, string oldName, string newName);
+        private protected abstract void ReplaceInvocationMethodName(SyntaxEditor editor, SyntaxNode memberInvocation, string newName);
+
+        private protected abstract void ReplaceNamedArgumentName(SyntaxEditor editor, SyntaxNode invocation, string oldArgumentName, string newArgumentName);
+
+        private protected abstract bool IsNamespaceImported(DocumentEditor editor, string namespaceName);
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PreferAsSpanOverSubstring.RuleId);
 
@@ -34,8 +36,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode reportedNode || model.GetOperation(reportedNode, token) is not IInvocationOperation reportedInvocation)
                 return;
-
             if (!RequiredSymbols.TryGetSymbols(compilation, out RequiredSymbols symbols))
+                return;
+            if (!symbols.TryGetEquivalentSpanBasedOverload(reportedInvocation, out IMethodSymbol? spanBasedOverload))
                 return;
 
             string title = MicrosoftNetCoreAnalyzersResources.PreferAsSpanOverSubstringTitle;
@@ -48,12 +51,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 foreach (var argument in reportedInvocation.Arguments)
                 {
-                    if (symbols.IsAnySubstringInvocation(argument.Value))
+                    IOperation value = PreferAsSpanOverSubstring.WalkDownImplicitConversions(argument.Value);
+
+                    //  Convert Substring invocations to equivalent AsSpan invocations.
+                    if (symbols.IsAnySubstringInvocation(value))
                     {
-                        SyntaxNode asSpanInvocation = ReplaceInvocationMethodName(argument.Value.Syntax, nameof(MemoryExtensions.AsSpan));
-                        asSpanInvocation = ReplaceNamedArgumentName(asSpanInvocation, SubstringStartIndexArgumentName, AsSpanStartArgumentName);
-                        editor.ReplaceNode(argument.Value.Syntax, asSpanInvocation);
+                        ReplaceInvocationMethodName(editor, value.Syntax, nameof(MemoryExtensions.AsSpan));
+                        //  Ensure named Substring arguments get renamed to their equivalent AsSpan counterparts.
+                        ReplaceNamedArgumentName(editor, value.Syntax, SubstringStartIndexArgumentName, AsSpanStartArgumentName);
                     }
+
+                    //  Ensure named arguments on the original overload are renamed to their 
+                    //  ordinal counterparts on the new overload.
+                    string oldArgumentName = argument.Parameter.Name;
+                    string newArgumentName = spanBasedOverload.Parameters[argument.Parameter.Ordinal].Name;
+                    ReplaceNamedArgumentName(editor, reportedInvocation.Syntax, oldArgumentName, newArgumentName);
+                }
+
+                //  Import System namespace if necessary.
+                if (!IsNamespaceImported(editor, nameof(System)))
+                {
+                    SyntaxNode withoutSystemImport = editor.GetChangedRoot();
+                    SyntaxNode systemNamespaceImportStatement = editor.Generator.NamespaceImportDeclaration(nameof(System));
+                    SyntaxNode withSystemImport = editor.Generator.AddNamespaceImports(withoutSystemImport, systemNamespaceImportStatement);
+                    editor.ReplaceNode(editor.OriginalRoot, withSystemImport);
                 }
 
                 return editor.GetChangedDocument();

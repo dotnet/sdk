@@ -2443,6 +2443,26 @@
             ]
           }
         },
+        "CA1842": {
+          "id": "CA1842",
+          "shortDescription": "Prefer 'AsSpan' over 'Substring'",
+          "fullDescription": "'AsSpan' accomplishes the same thing as 'Substring' without incurring the allocation and O(n) string copy.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferAsSpanOverSubstring",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",

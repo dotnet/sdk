@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -42,8 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static void OnCompilationStart(CompilationStartAnalysisContext context)
         {
-            var compilation = context.Compilation;
-            if (!RequiredSymbols.TryGetSymbols(compilation, out RequiredSymbols symbols))
+            if (!RequiredSymbols.TryGetSymbols(context.Compilation, out RequiredSymbols symbols))
                 return;
 
             context.RegisterOperationAction(AnalyzeInvocationOperation, OperationKind.Invocation);
@@ -51,23 +51,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             void AnalyzeInvocationOperation(OperationAnalysisContext context)
             {
                 var invocation = (IInvocationOperation)context.Operation;
-                var substringInvocationArguments = invocation.Arguments
-                    .WhereAsArray(x => symbols.IsAnySubstringInvocation(x.Value));
 
-                if (substringInvocationArguments.IsEmpty)
+                //  Bail if none of the arguments are Substring invocations.
+                if (!invocation.Arguments.Any(x => symbols.IsAnySubstringInvocation(WalkDownImplicitConversions(x.Value))))
                     return;
 
-                ITypeSymbol[] equivalentSpanBasedSignature = invocation.TargetMethod.Parameters.Select(x => x.Type).ToArray();
-                foreach (var argument in substringInvocationArguments)
-                {
-                    equivalentSpanBasedSignature[argument.Parameter.Ordinal] = symbols.RoscharType;
-                }
-
-                IMethodSymbol? spanBasedOverload = invocation.TargetMethod.ContainingType.GetMembers(invocation.TargetMethod.Name)
-                    .OfType<IMethodSymbol>()
-                    .GetFirstOrDefaultMemberWithParameterTypes(equivalentSpanBasedSignature);
-
-                if (spanBasedOverload is not null)
+                //  We search for an overload of the invoked member whose signature matches the signature of
+                //  the invoked member, except with ReadOnlySpan<char> substituted in for all arguments that 
+                //  are Substring invocations.
+                if (symbols.TryGetEquivalentSpanBasedOverload(invocation, out _))
                 {
                     Diagnostic diagnostic = invocation.CreateDiagnostic(Rule);
                     context.ReportDiagnostic(diagnostic);
@@ -75,7 +67,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        //  Use struct to avoid allocations, as this won't be passed by value.
+        internal static IOperation WalkDownImplicitConversions(IOperation operation)
+        {
+            while (operation is IConversionOperation conversion && conversion.IsImplicit)
+                operation = conversion.Operand;
+            return operation;
+        }
+
+        //  Use struct to avoid allocations.
 #pragma warning disable CA1815 // Override equals and operator equals on value types
         internal readonly struct RequiredSymbols
 #pragma warning restore CA1815 // Override equals and operator equals on value types
@@ -151,6 +150,38 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 return SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, Substring1) ||
                     SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, Substring2);
+            }
+
+            /// <summary>
+            /// Attempts to find an overload of the invoked method that has the same signature, but with
+            /// ReadOnlySpan{char} in all positions that were Substring invocations in the invoked member.
+            /// </summary>
+            public bool TryGetEquivalentSpanBasedOverload(IInvocationOperation invocation, [NotNullWhen(true)] out IMethodSymbol? spanBasedOverload)
+            {
+                spanBasedOverload = null;
+                var method = invocation.TargetMethod;
+                if (method.Parameters.IsEmpty)
+                    return false;
+                ITypeSymbol[] expectedSignature = new ITypeSymbol[method.Parameters.Length];
+                for (int index = 0; index < method.Parameters.Length; index++)
+                    expectedSignature[index] = method.Parameters[index].Type;
+
+                foreach (var argument in invocation.Arguments)
+                {
+                    if (IsAnySubstringInvocation(argument.Value))
+                        expectedSignature[argument.Parameter.Ordinal] = RoscharType;
+                }
+
+                var comparer = SymbolEqualityComparer.Default;
+                spanBasedOverload = method.ContainingType.GetMembers(method.Name)
+                    .OfType<IMethodSymbol>()
+                    .Where(x =>
+                    {
+                        return comparer.Equals(x.ReturnType, method.ReturnType) &&
+                        x.IsStatic == method.IsStatic;
+                    })
+                    .GetFirstOrDefaultMemberWithParameterTypes(expectedSignature);
+                return spanBasedOverload is not null;
             }
         }
 
