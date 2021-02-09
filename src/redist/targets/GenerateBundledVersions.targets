@@ -89,6 +89,8 @@
           ios-x86;
           tvos-arm64;
           tvos-x64;
+          maccatalyst-x64;
+          maccatalyst-arm64;
           android-arm64;
           android-arm;
           android-x64;
