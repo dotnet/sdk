@@ -19,7 +19,6 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     
     <DebugType>embedded</DebugType>
-
   </PropertyGroup>
 
 </Project>

@@ -28,7 +28,6 @@
     <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
-    <PackageReference Include="NuGet.Configuration" Version="$(NuGetProjectModelVersion)" />
     <PackageReference Include="Moq" Version="4.8.2" />
   </ItemGroup>
 
