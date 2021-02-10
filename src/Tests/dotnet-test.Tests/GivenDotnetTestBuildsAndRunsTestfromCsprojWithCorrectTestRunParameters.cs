@@ -24,10 +24,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         private readonly string[] ConsoleLoggerOutputNormal = new[] { "--logger", "console;verbosity=normal" };
 
-        [Fact]
+        [Fact(Skip = "flaky")]
         public void GivenAProjectAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("1");
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("2");
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log)
@@ -54,10 +54,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
+        [Fact(Skip = "flaky")]
         public void GivenADllAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("2");
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("3");
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
