@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- dotnet deb-tool -->
-  <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-deb-tool" Version="$(DotnetDebToolVersion)" />
-  </ItemGroup>
+  <PropertyGroup>
+    <DebPackageToolPath>$(PkgMicrosoft_DotNet_Build_Tasks_Installers)/build/deb-package-tool</DebPackageToolPath>
+  </PropertyGroup>
   
   <Target Name="SetupDebProps"
         DependsOnTargets="GetCurrentRuntimeInformation;
@@ -230,7 +229,6 @@
   <Target Name="BuildSdkDeb"
       Condition=" '$(IsDebianBaseDistro)' == 'True' AND '$(DebuildPresent)'  == 'true' "
       DependsOnTargets="PrepareDotnetDebDirectories;
-                        PrepareDotnetDebTool;
                         GetAspNetSharedFxInstallArgs;"
       Inputs="@(CLISdkFiles);@(TemplatesFiles)"
       Outputs="$(SdkDebInstallerFile)" >
@@ -286,7 +284,7 @@
         ReplacementItems="@(DebianConfigTokenValues)" />
 
       <!-- Build SDK Deb package -->
-      <DotNetDebTool ToolPath="$([System.IO.Path]::GetDirectoryName($(DotNetTool)))"
+      <DotNetDebTool ToolPath="$(DebPackageToolPath)"
                      InputDirectory="$(LayoutDirectory)"
                      OutputDirectory="$(DotNetDebToolOutputDirectory)"
                      PackageName="$(SdkDebianPackageName)"
@@ -416,12 +414,6 @@
     <MakeDir Directories="@(WorkspaceDirectories)" />
     <MakeDir Directories="@(LayoutSubDirectories)" />
     <MakeDir Directories="$(DotNetDebToolOutputDirectory)" />
-  </Target>
-
-  <Target Name="PrepareDotnetDebTool">
-
-    <!--<DotNetRestore ToolPath="$(PreviousStageDirectory)"
-                   WorkingDirectory="$(DotnetDebToolDir)" />-->
   </Target>
 
   <Target Name="TestDebuild">
