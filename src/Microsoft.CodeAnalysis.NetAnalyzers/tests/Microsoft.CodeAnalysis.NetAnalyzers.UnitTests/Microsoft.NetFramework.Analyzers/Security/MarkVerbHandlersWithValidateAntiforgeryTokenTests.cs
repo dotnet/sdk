@@ -502,7 +502,7 @@ namespace Blah
     }
 }
 ",
-                GetCA3147CSharpNoVerbsNoToken(SystemWebMvcNamespaceCSharpLineCount + 8, 29, "DoSomething"));
+                GetCA3147CSharpNoVerbsNoToken(SystemWebMvcNamespaceCSharpLineCount + 10, 29, "DoSomething"));
         }
 
         [Fact]
