@@ -147,4 +147,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(MSBuildThisFileDirectory)../../Microsoft.NET.Sdk.WindowsDesktop/targets/Microsoft.NET.Sdk.WindowsDesktop.props"/>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Windows.props" />
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ILLink.props" />
 </Project>
