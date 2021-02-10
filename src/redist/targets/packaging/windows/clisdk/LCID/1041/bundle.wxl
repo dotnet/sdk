@@ -33,7 +33,7 @@
   <String Id="SuccessRestartText">ソフトウェアのインストールを完了するには、コンピューターを再起動する必要があります。</String>
   <String Id="SuccessRestartButton">再起動(&amp;R)</String>
   <String Id="SuccessCloseButton">閉じる(&amp;C)</String>
-  <String Id="FailureHeader">セットアップ失敗</String>
+  <String Id="FailureHeader">セットアップに失敗しました</String>
   <String Id="FailureInstallHeader">セットアップに失敗しました</String>
   <String Id="FailureUninstallHeader">アンインストールに失敗しました</String>
   <String Id="FailureRepairHeader">修復に失敗しました</String>
@@ -61,7 +61,22 @@
 リソース
     • .NET ドキュメント https://aka.ms/dotnet-docs
     • SDK ドキュメント https://aka.ms/dotnet-sdk-docs
-    • リリース ノート https://aka.ms/dotnet6-release-notes
+    • リリース ノート https://aka.ms/dotnet5-release-notes
+    • チュートリアル https://aka.ms/dotnet-tutorials</String>
+<String Id="FirstTimeWelcomeMessageArm64">インストールが成功しました。
+
+'[DOTNETHOME]' に以下がインストールされました
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+
+この製品は使用状況データを収集します
+    • 詳細およびオプトアウト https://aka.ms/dotnet-cli-telemetry
+
+リソース
+    • .NET ドキュメント https://aka.ms/dotnet-docs
+    • SDK ドキュメント https://aka.ms/dotnet-sdk-docs
+    • リリース ノート https://aka.ms/dotnet5-release-notes
     • チュートリアル https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -72,11 +87,11 @@
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK ドキュメント&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;プライバシーに関する声明&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;.NET のライセンス情報&lt;/A&gt;</String>
-  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;テレメトリ コレクションおよびオプトアウト&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">インストール メモ</String>
   <String Id="InstallationNote">コマンドはインストール処理中に実行されるので、プロジェクトの復元速度が向上し、オフラインでアクセスできます。完了するまでに最大 1 分かかります。
   </String>
-  <String Id="VisualStudioWarning">.NET 6.0 を Visual Studio と共に使用する場合は、Visual Studio 2019 16.8 以降が必要です。&lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;詳細情報&lt;/A&gt;。
+  <String Id="VisualStudioWarning">.NET 5.0 を Visual Studio で使用する場合は、Visual Studio 2019 16.8 以降が必要です。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;詳細情報&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">[インストール] をクリックすると、次の条項に同意したものと見なされます。</String>
 </WixLocalization>

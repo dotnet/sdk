@@ -22,7 +22,7 @@
   <String Id="ProgressLabel">Procesando:</String>
   <String Id="OverallProgressPackageText">Inicializando...</String>
   <String Id="ProgressCancelButton">&amp;Cancelar</String>
-  <String Id="ModifyHeader">Modificar instalación</String>
+  <String Id="ModifyHeader">Modificar la instalación</String>
   <String Id="ModifyRepairButton">&amp;Reparar</String>
   <String Id="ModifyUninstallButton">&amp;Desinstalar</String>
   <String Id="ModifyCloseButton">&amp;Cerrar</String>
@@ -33,7 +33,7 @@
   <String Id="SuccessRestartText">Debe reiniciar el equipo para finalizar la instalación del software.</String>
   <String Id="SuccessRestartButton">&amp;Reiniciar</String>
   <String Id="SuccessCloseButton">&amp;Cerrar</String>
-  <String Id="FailureHeader">Error de instalación</String>
+  <String Id="FailureHeader">No se pudo instalar</String>
   <String Id="FailureInstallHeader">No se pudo instalar</String>
   <String Id="FailureUninstallHeader">No se pudo desinstalar</String>
   <String Id="FailureRepairHeader">No se pudo reparar</String>
@@ -61,7 +61,22 @@ Este producto recopila datos de uso
 Recursos
     • Documentación de .NET https://aka.ms/dotnet-docs
     • Documentación del SDK https://aka.ms/dotnet-sdk-docs
-    • Notas de la versión https://aka.ms/dotnet6-release-notes
+    • Notas de la versión https://aka.ms/dotnet5-release-notes
+    • Tutoriales https://aka.ms/dotnet-tutorials</String>
+<String Id="FirstTimeWelcomeMessageArm64">La instalación se realizó correctamente.
+
+Se instaló lo siguiente en: "[DOTNETHOME]"
+    • SDK de .NET [DOTNETSDKVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+
+Este producto recopila datos de uso
+    • Para obtener más información y declinar la participación, visite https://aka.ms/dotnet-cli-telemetry
+
+Recursos
+    • Documentación de .NET https://aka.ms/dotnet-docs
+    • Documentación del SDK https://aka.ms/dotnet-sdk-docs
+    • Notas de la versión https://aka.ms/dotnet5-release-notes
     • Tutoriales https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">SDK de .NET</String>
   <String Id="WelcomeDescription">
@@ -72,11 +87,11 @@ Recursos
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentación del SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Declaración de privacidad&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Información de licencias de .NET&lt;/A&gt;</String>
-  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;Recopilación de telemetría y cómo desactivarla&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Nota de instalación</String>
   <String Id="InstallationNote">Se ejecutará un comando durante el proceso de instalación que mejorará la velocidad de restauración del proyecto y permitirá el acceso sin conexión. La operación tardará hasta un minuto en completarse.
   </String>
-  <String Id="VisualStudioWarning">Si tiene previsto usar .NET 6.0 con Visual Studio, se requiere Visual Studio 2019 16.8 o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;Más información&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si tiene previsto usar .NET 5.0 con Visual Studio, se requiere Visual Studio 2019 16.8 o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;Obtenga más información&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Al hacer clic en Instalar, acepta los términos siguientes.</String>
 </WixLocalization>

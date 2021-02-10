@@ -11,7 +11,7 @@
 /passive | /quiet - visualizza un'interfaccia utente minima senza prompt oppure non visualizza alcuna interfaccia utente
    né prompt. Per impostazione predefinita, viene visualizzata l'intera interfaccia utente e tutti i prompt.
 
-/norestart   - annulla qualsiasi tentativo di riavvio. Per impostazione predefinita, l'interfaccia utente visualizza una richiesta prima del riavvio.
+/norestart - annulla qualsiasi tentativo di riavvio. Per impostazione predefinita, l'interfaccia utente visualizza una richiesta prima del riavvio.
 /log [\[]"log.txt"[\]] - registra il log in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Chiudi</String>
   <String Id="InstallAcceptCheckbox">&amp;Accetto i termini e le condizioni di licenza</String>
@@ -21,19 +21,19 @@
   <String Id="ProgressHeader">Stato installazione</String>
   <String Id="ProgressLabel">Elaborazione di:</String>
   <String Id="OverallProgressPackageText">Inizializzazione in corso...</String>
-  <String Id="ProgressCancelButton">&amp;Annulla</String>
+  <String Id="ProgressCancelButton">Ann&amp;ulla</String>
   <String Id="ModifyHeader">Modifica installazione</String>
   <String Id="ModifyRepairButton">&amp;Ripristina</String>
   <String Id="ModifyUninstallButton">&amp;Disinstalla</String>
   <String Id="ModifyCloseButton">&amp;Chiudi</String>
   <String Id="SuccessRepairHeader">La riparazione è stata completata</String>
   <String Id="SuccessUninstallHeader">La disinstallazione è stata completata</String>
-  <String Id="SuccessHeader">L'installazione è stata completata</String>
+  <String Id="SuccessHeader">Installazione completata</String>
   <String Id="SuccessLaunchButton">&amp;Avvia</String>
   <String Id="SuccessRestartText">Per completare l'installazione del software, è necessario riavviare il computer.</String>
   <String Id="SuccessRestartButton">&amp;Riavvia</String>
   <String Id="SuccessCloseButton">&amp;Chiudi</String>
-  <String Id="FailureHeader">L'installazione non è riuscita</String>
+  <String Id="FailureHeader">Installazione non riuscita</String>
   <String Id="FailureInstallHeader">L'installazione non è riuscita</String>
   <String Id="FailureUninstallHeader">La disinstallazione non è riuscita</String>
   <String Id="FailureRepairHeader">La riparazione non è riuscita</String>
@@ -46,7 +46,7 @@
   <String Id="FilesInUseCloseRadioButton">Chiudere le &amp;applicazioni e provare a riavviarle.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Non chiudere le applicazioni; sarà necessario riavviare il sistema</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
-  <String Id="FilesInUseCancelButton">&amp;Annulla</String>
+  <String Id="FilesInUseCancelButton">Ann&amp;ulla</String>
   <String Id="FirstTimeWelcomeMessage">L'installazione è riuscita.
 
 I componenti seguenti sono stati installati in '[DOTNETHOME]'
@@ -61,7 +61,22 @@ Questo prodotto consente di raccogliere i dati sull'utilizzo
 Risorse
     • Documentazione di .NET https://aka.ms/dotnet-docs
     • Documentazione dell'SDK https://aka.ms/dotnet-sdk-docs
-    • Note sulla versione https://aka.ms/dotnet6-release-notes
+    • Note sulla versione https://aka.ms/dotnet5-release-notes
+    • Esercitazioni https://aka.ms/dotnet-tutorials</String>
+<String Id="FirstTimeWelcomeMessageArm64">L'installazione è riuscita.
+
+I componenti seguenti sono stati installati in '[DOTNETHOME]'
+    • .NET SDK [DOTNETSDKVERSION]
+    • Runtime di .NET [DOTNETRUNTIMEVERSION]
+    • Runtime di ASP.NET Core [ASPNETCOREVERSION]
+
+Questo prodotto consente di raccogliere i dati sull'utilizzo
+    • Altre informazioni e annullamento sottoscrizione https://aka.ms/dotnet-cli-telemetry
+
+Risorse
+    • Documentazione di .NET https://aka.ms/dotnet-docs
+    • Documentazione dell'SDK https://aka.ms/dotnet-sdk-docs
+    • Note sulla versione https://aka.ms/dotnet5-release-notes
     • Esercitazioni https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -72,7 +87,7 @@ Risorse
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentazione dell'SDK&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Informativa sulla privacy&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Informazioni sulla licenza per .NET&lt;/A&gt;</String>
-  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;Raccolta e rifiuto esplicito dei dati di telemetria&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">Nota sull'installazione</String>
   <String Id="InstallationNote">Durante il processo di installazione verrà eseguito un comando che migliorerà la velocità di ripristino del progetto e abiliterà l'accesso offline. Il completamento del comando richiederà un minuto.
   </String>

@@ -8,10 +8,10 @@
   <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 安装、修复、卸载
    目录中的安装包或创建其完整本地副本。Install 为默认选择。
 
-/passive | /quiet -  显示最少的 UI 且无提示，或不显示 UI 且
+/passive | /quiet - 显示最少的 UI 且无提示，或不显示 UI 且
    无提示。默认显示 UI 及全部提示。
 
-/norestart   - 禁止任何重新启动。默认在重启前显示提示 UI。
+/norestart - 禁止任何重新启动。默认在重启前显示提示 UI。
 /log [\[]"log.txt"[\]] - 向特定文件写入日志。默认在 %TEMP% 中创建日志文件。</String>
   <String Id="HelpCloseButton">关闭(&amp;C)</String>
   <String Id="InstallAcceptCheckbox">我同意许可条款和条件(&amp;A)</String>
@@ -33,7 +33,7 @@
   <String Id="SuccessRestartText">必须重启计算机才能完成软件安装。</String>
   <String Id="SuccessRestartButton">重新启动(&amp;R)</String>
   <String Id="SuccessCloseButton">关闭(&amp;C)</String>
-  <String Id="FailureHeader">设置失败</String>
+  <String Id="FailureHeader">安装失败</String>
   <String Id="FailureInstallHeader">安装失败</String>
   <String Id="FailureUninstallHeader">卸载失败</String>
   <String Id="FailureRepairHeader">修复失败</String>
@@ -51,9 +51,9 @@
 
 下列项安装于: "[DOTNETHOME]"
     • .NET SDK [DOTNETSDKVERSION]
-    • .NET 运行时 [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core 运行时 [ASPNETCOREVERSION]
-    • .NET Windows Desktop 运行时 [WINFORMSANDWPFVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 此产品会收集用法数据
     • 详细信息和选择退出选项: https://aka.ms/dotnet-cli-telemetry
@@ -61,7 +61,22 @@
 资源
     • .NET 文档: https://aka.ms/dotnet-docs
     • SDK 文档: https://aka.ms/dotnet-sdk-docs
-    • 发行说明: https://aka.ms/dotnet6-release-notes
+    • 发行说明: https://aka.ms/dotnet5-release-notes
+    • 教程: https://aka.ms/dotnet-tutorials</String>
+<String Id="FirstTimeWelcomeMessageArm64">已成功安装。
+
+下列项安装于: "[DOTNETHOME]"
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+
+此产品会收集使用情况数据
+    • 详细信息和选择退出选项: https://aka.ms/dotnet-cli-telemetry
+
+资源
+    • .NET 文档: https://aka.ms/dotnet-docs
+    • SDK 文档: https://aka.ms/dotnet-sdk-docs
+    • 发行说明: https://aka.ms/dotnet5-release-notes
     • 教程: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -72,11 +87,11 @@
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK 文档&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;隐私声明&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;.NET 的许可信息&lt;/A&gt;</String>
-  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;遥测集合和选择退出选项&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">安装说明</String>
   <String Id="InstallationNote">将在要提升项目还原速度并实现脱机访问的安装进程期间运行命令。此操作最多 1 分钟即可完成。
   </String>
-  <String Id="VisualStudioWarning">如果计划结合使用 .NET 6.0 和 Visual Studio，需要 Visual Studio 2019 16.8 或更高版本。&lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;了解详细信息&lt;/A&gt;。
+  <String Id="VisualStudioWarning">如果打算结合使用 .NET 5.0 和 Visual Studio，需要 Visual Studio 2019 16.8 或更高版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;了解详细信息&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">单击“安装”即表示你同意以下条款。</String>
 </WixLocalization>

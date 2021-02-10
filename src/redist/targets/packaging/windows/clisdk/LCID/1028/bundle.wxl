@@ -19,7 +19,7 @@
   <String Id="InstallInstallButton">安裝(&amp;I)</String>
   <String Id="InstallCloseButton">關閉(&amp;C)</String>
   <String Id="ProgressHeader">安裝進度</String>
-  <String Id="ProgressLabel">處理中: </String>
+  <String Id="ProgressLabel">正在處理:</String>
   <String Id="OverallProgressPackageText">正在初始化...</String>
   <String Id="ProgressCancelButton">取消(&amp;C)</String>
   <String Id="ModifyHeader">修改安裝</String>
@@ -38,7 +38,7 @@
   <String Id="FailureUninstallHeader">解除安裝失敗</String>
   <String Id="FailureRepairHeader">修復失敗</String>
   <String Id="FailureHyperlinkLogText">有一個或多個問題導致安裝程式失敗。請解決問題，然後重試一次安裝。如需詳細資訊，請參閱&lt;a href="#"&gt;記錄檔&lt;/a&gt;。</String>
-  <String Id="FailureRestartText">必須重新啟動電腦，才能完成軟體的復原。</String>
+  <String Id="FailureRestartText">必須重新啟動電腦才可完成軟體復原。</String>
   <String Id="FailureRestartButton">重新啟動(&amp;R)</String>
   <String Id="FailureCloseButton">關閉(&amp;C)</String>
   <String Id="FilesInUseHeader">使用中的檔案</String>
@@ -61,8 +61,23 @@
 資源
     • 如需 .NET 文件，請前往 https://aka.ms/dotnet-docs
     • 如需 SDK 文件，請前往 https://aka.ms/dotnet-sdk-docs
-    • 如需版本資訊，請前往 https://aka.ms/dotnet6-release-notes
+    • 如需版本資訊，請前往 https://aka.ms/dotnet5-release-notes
     • 如需教學課程，請前往 https://aka.ms/dotnet-tutorials</String>
+<String Id="FirstTimeWelcomeMessageArm64">安裝成功。
+
+下列項目已安裝在: '[DOTNETHOME]'
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET 執行階段 [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core 執行階段 [ASPNETCOREVERSION]
+
+此產品會收集使用量資料
+    • 詳細資訊與退出功能 https://aka.ms/dotnet-cli-telemetry
+
+資源
+    • .NET 文件 https://aka.ms/dotnet-docs
+    • SDK 文件 https://aka.ms/dotnet-sdk-docs
+    • 版本資訊 https://aka.ms/dotnet5-release-notes
+    • 教學課程 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     .NET SDK 可用於建置、執行及測試 .NET 應用程式。您可以選擇多種語言、編輯器以及開發人員工具，並可利用程式庫的大型生態系統，來建置 Web、行動裝置、桌面、遊戲及 IoT 的應用程式。希望您會喜歡!</String>
@@ -72,11 +87,11 @@
   <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;SDK 文件&lt;/A&gt;</String>
   <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;隱私權聲明&lt;/A&gt;</String>
   <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;.NET 的授權資訊&lt;/A&gt;</String>
-  <String Id="DotNetCLITelemetryLink">&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;遙測集合與退出功能&lt;/A&gt;</String>
   <String Id="InstallationNoteTitle">安裝附註</String>
   <String Id="InstallationNote">安裝程序期間將會執行命令，加快專案還原速度並啟用離線存取。最多需要一分鐘的時間完成。
   </String>
-  <String Id="VisualStudioWarning">若預計要併用 Visual Studio 與 .NET 6.0，需要 Visual Studio 2019 16.8 或更新版本。&lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;深入了解&lt;/A&gt;。
+  <String Id="VisualStudioWarning">若預計要搭配 Visual Studio 使用 .NET 5.0，需要 Visual Studio 2019 16.8 或更新版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;深入了解&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">按一下 [\[]安裝[\[] 即表示您同意下列條款。</String>
 </WixLocalization>
