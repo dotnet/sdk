@@ -51,13 +51,17 @@
       <RemainingFiles Remove="$(SdkOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\netcoreapp*\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\net6.0\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\net6.0\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\netcoreapp*\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\netcoreapp*\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\net6.0\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
       <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\netcoreapp*\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\ILLink.Tasks\tools\netcoreapp*\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\netcoreapp*\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.ILLink.Tasks\tools\net5.0\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\net6.0\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\net6.0\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\net6.0\**\*" />
+      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Worker\tools\net6.0\**\*" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(SdkOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
