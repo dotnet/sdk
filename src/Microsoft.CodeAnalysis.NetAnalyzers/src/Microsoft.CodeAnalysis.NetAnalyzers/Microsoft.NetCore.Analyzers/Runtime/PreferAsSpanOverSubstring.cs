@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -59,7 +60,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //  We search for an overload of the invoked member whose signature matches the signature of
                 //  the invoked member, except with ReadOnlySpan<char> substituted in for all arguments that 
                 //  are Substring invocations.
-                if (symbols.TryGetEquivalentSpanBasedOverload(invocation, out _))
+                var overloadsLookup = symbols.GetCandidateOverloads(invocation);
+                if (!overloadsLookup.IsEmpty && overloadsLookup.First().Key > 0)
                 {
                     Diagnostic diagnostic = invocation.CreateDiagnostic(Rule);
                     context.ReportDiagnostic(diagnostic);
@@ -183,6 +185,71 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     .GetFirstOrDefaultMemberWithParameterTypes(expectedSignature);
                 return spanBasedOverload is not null;
             }
+
+            public ImmutableSortedDictionary<int, ImmutableArray<IMethodSymbol>> GetCandidateOverloads(IInvocationOperation invocation)
+            {
+                var method = invocation.TargetMethod;
+                int substringCalls = 0;
+                //  Whether the argument corrasponding to the parameter at the specified ordinal is a Substring invocation.
+                Span<bool> isSubstringLookup = stackalloc bool[method.Parameters.Length];
+                foreach (var argument in invocation.Arguments)
+                {
+                    var value = WalkDownImplicitConversions(argument.Value);
+                    if (IsAnySubstringInvocation(value))
+                    {
+                        isSubstringLookup[argument.Parameter.Ordinal] = true;
+                        ++substringCalls;
+                    }
+                }
+
+                if (substringCalls == 0)
+                    return ImmutableSortedDictionary<int, ImmutableArray<IMethodSymbol>>.Empty;
+
+                var results = new SortedDictionary<int, ImmutableArray<IMethodSymbol>.Builder>();
+                var overloads = method.ContainingType.GetMembers(method.Name)
+                    .OfType<IMethodSymbol>()
+                    .Where(x => x.IsStatic == method.IsStatic && SymbolEqualityComparer.Default.Equals(x.ReturnType, method.ReturnType));
+                foreach (var candidate in overloads)
+                {
+                    int replacedSubstringCalls = CountReplacedSubstringCalls(isSubstringLookup, RoscharType, candidate);
+                    if (replacedSubstringCalls == -1)
+                        continue;
+                    if (!results.TryGetValue(replacedSubstringCalls, out var builder))
+                    {
+                        builder = ImmutableArray.CreateBuilder<IMethodSymbol>();
+                        results.Add(replacedSubstringCalls, builder);
+                    }
+                    builder.Add(candidate);
+                }
+
+                return results.ToImmutableSortedDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.ToImmutable(),
+                    ReverseComparer);
+
+                int CountReplacedSubstringCalls(ReadOnlySpan<bool> isSubstringLookup, INamedTypeSymbol roscharType, IMethodSymbol candidate)
+                {
+                    RoslynDebug.Assert(method is not null);
+
+                    if (candidate.Parameters.Length != method.Parameters.Length)
+                        return -1;
+                    int replacedSubstringCalls = 0;
+                    foreach (var parameter in candidate.Parameters)
+                    {
+                        if (isSubstringLookup[parameter.Ordinal] && SymbolEqualityComparer.Default.Equals(parameter.Type, roscharType))
+                        {
+                            ++replacedSubstringCalls;
+                        }
+                        else if (!SymbolEqualityComparer.Default.Equals(parameter.Type, method.Parameters[parameter.Ordinal].Type))
+                        {
+                            return -1;
+                        }
+                    }
+                    return replacedSubstringCalls;
+                }
+            }
+
+            private static readonly Comparer<int> ReverseComparer = Comparer<int>.Create((x, y) => Comparer<int>.Default.Compare(y, x));
         }
 
         private static LocalizableString CreateResource(string resourceName)

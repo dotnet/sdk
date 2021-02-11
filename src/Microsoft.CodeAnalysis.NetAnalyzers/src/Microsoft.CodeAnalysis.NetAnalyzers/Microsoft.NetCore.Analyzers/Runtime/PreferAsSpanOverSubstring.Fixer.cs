@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -38,8 +39,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             if (!RequiredSymbols.TryGetSymbols(compilation, out RequiredSymbols symbols))
                 return;
-            if (!symbols.TryGetEquivalentSpanBasedOverload(reportedInvocation, out IMethodSymbol? spanBasedOverload))
+
+            //  We only apply a fix if there is an unambiguous best overload candidate.
+            var overloadCandidates = symbols.GetCandidateOverloads(reportedInvocation);
+            if (overloadCandidates.IsEmpty)
                 return;
+            var bestCandidates = overloadCandidates.First().Value;
+            if (bestCandidates.Length > 1)
+                return;
+            IMethodSymbol spanBasedOverload = bestCandidates[0];
 
             string title = MicrosoftNetCoreAnalyzersResources.PreferAsSpanOverSubstringTitle;
             var codeAction = CodeAction.Create(title, CreateChangedDocument, title);
@@ -52,9 +60,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 foreach (var argument in reportedInvocation.Arguments)
                 {
                     IOperation value = PreferAsSpanOverSubstring.WalkDownImplicitConversions(argument.Value);
+                    IParameterSymbol newParameter = spanBasedOverload.Parameters[argument.Parameter.Ordinal];
 
                     //  Convert Substring invocations to equivalent AsSpan invocations.
-                    if (symbols.IsAnySubstringInvocation(value))
+                    if (symbols.IsAnySubstringInvocation(value) && SymbolEqualityComparer.Default.Equals(newParameter.Type, symbols.RoscharType))
                     {
                         ReplaceInvocationMethodName(editor, value.Syntax, nameof(MemoryExtensions.AsSpan));
                         //  Ensure named Substring arguments get renamed to their equivalent AsSpan counterparts.
@@ -64,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     //  Ensure named arguments on the original overload are renamed to their 
                     //  ordinal counterparts on the new overload.
                     string oldArgumentName = argument.Parameter.Name;
-                    string newArgumentName = spanBasedOverload.Parameters[argument.Parameter.Ordinal].Name;
+                    string newArgumentName = newParameter.Name;
                     ReplaceNamedArgumentName(editor, reportedInvocation.Syntax, oldArgumentName, newArgumentName);
                 }
 

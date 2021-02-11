@@ -865,6 +865,207 @@ public class C
             });
             return test.RunAsync();
         }
+
+        public static IEnumerable<object[]> Data_MultipleCandidateOverloads_SingleBestCandidate_CS
+        {
+            get
+            {
+                string members = @"
+public void Consume(string a, string b, string c) { }
+public void Consume(Roschar a, string b, string c) { }
+public void Consume(string a, string b, Roschar c) { }
+public void Consume(Roschar a, Roschar b, string c) { }";
+                yield return new[]
+                {
+                    CS.WithBody(WithKey(@"Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0) + ';', members),
+                    CS.WithBody(@"Consume(foo.AsSpan(1), foo.AsSpan(2), foo.Substring(3));", members)
+                };
+
+                members = @"
+public void Consume(int n, string b, string c) { }
+public void Consume(double n, Roschar b, Roschar c) { }
+public void Consume(int n, string b, Roschar c) { }";
+                yield return new[]
+                {
+                    CS.WithBody(WithKey(@"Consume(7, foo.Substring(2), foo.Substring(3))", 0) + ';', members),
+                    CS.WithBody(@"Consume(7, foo.Substring(2), foo.AsSpan(3));", members)
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_MultipleCandidateOverloads_SingleBestCandidate_CS))]
+        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_CS(string testCode, string fixedCode)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { CS.DiagnosticAt(0) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_MultipleCandidateOVerloads_SingleBestCandidate_VB
+        {
+            get
+            {
+                string receiver = CS.Usings + @"
+public class R
+{
+    public static void Consume(string a, string b, string c) { }
+    public static void Consume(Roschar a, string b, string c) { }
+    public static void Consume(string a, string b, Roschar c) { }
+    public static void Consume(Roschar a, Roschar b, string c) { }
+}";
+                yield return new[]
+                {
+                    receiver,
+                    VB.WithBody(WithKey(@"R.Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0)),
+                    VB.WithBody(@"R.Consume(foo.AsSpan(1), foo.AsSpan(2), foo.Substring(3))")
+                };
+
+                receiver = CS.Usings + @"
+public class R
+{
+    public static void Consume(int n, string b, string c) { }
+    public static void Consume(double n, Roschar b, Roschar c) { }
+    public static void Consume(int n, string b, Roschar c) { }
+}";
+                yield return new[]
+                {
+                    receiver,
+                    VB.WithBody(WithKey(@"R.Consume(7, foo.Substring(2), foo.Substring(3))", 0)),
+                    VB.WithBody(@"R.Consume(7, foo.Substring(2), foo.AsSpan(3))")
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_MultipleCandidateOVerloads_SingleBestCandidate_VB))]
+        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_VB(string receiverClass, string testCode, string fixedCode)
+        {
+            var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
+            {
+                Sources = { receiverClass }
+            };
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name },
+                    ExpectedDiagnostics = { VB.DiagnosticAt(0) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_MultipleCandidateOverloads_Ambiguous_CS
+        {
+            get
+            {
+                string members = @"
+public void Consume(string a, string b) { }
+public void Consume(Roschar a, string b) { }
+public void Consume(string a, Roschar b) { }";
+                yield return new[]
+                {
+                    CS.WithBody(WithKey(@"Consume(foo.Substring(1), foo.Substring(2))", 0) + ';', members)
+                };
+
+                members = @"
+public void Consume(string a, string b, string c) { }
+public void Consume(string a, Roschar b, string c) { }
+public void Consume(Roschar a, string b, Roschar c) { }
+public void Consume(Roschar a, Roschar b, string c) { }
+public void Consume(string a, Roschar b, Roschar c) { }";
+                yield return new[]
+                {
+                    CS.WithBody(WithKey(@"Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0) + ';', members)
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_MultipleCandidateOverloads_Ambiguous_CS))]
+        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_CS(string testCode)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = testCode,
+                ExpectedDiagnostics = { CS.DiagnosticAt(0) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        public static IEnumerable<object[]> Data_MultipleCandidateOverloads_Ambiguous_VB
+        {
+            get
+            {
+                string receiver = CS.Usings + @"
+public class R
+{
+    public static void Consume(string a, string b) { }
+    public static void Consume(Roschar a, string b) { }
+    public static void Consume(string a, Roschar b) { }
+}";
+                yield return new[]
+                {
+                    receiver,
+                    VB.WithBody(WithKey(@"R.Consume(foo.Substring(1), foo.Substring(2))", 0))
+                };
+
+                receiver = CS.Usings + @"
+public class R
+{
+    public static void Consume(string a, string b, string c) { }
+    public static void Consume(string a, Roschar b, string c) { }
+    public static void Consume(Roschar a, string b, Roschar c) { }
+    public static void Consume(Roschar a, Roschar b, string c) { }
+    public static void Consume(string a, Roschar b, Roschar c) { }
+}";
+                yield return new[]
+                {
+                    receiver,
+                    VB.WithBody(WithKey(@"R.Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0))
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Data_MultipleCandidateOverloads_Ambiguous_VB))]
+        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_VB(string receiverClass, string testCode)
+        {
+            var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
+            {
+                Sources = { receiverClass }
+            };
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name },
+                    ExpectedDiagnostics = { VB.DiagnosticAt(0) }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
         #endregion
 
         #region No Diagnostic
@@ -1096,6 +1297,29 @@ public class WrongReturnType
             };
             return test.RunAsync();
         }
+
+        //  No VB counterpart because VB doesn't support ref-like types in APIs, which means we have to put the callable methods
+        //  in a C# assembly, and apparently Roslyn doesn't produce symbols for inaccessible types in metadata. We could 
+        //  use InternalsVisibleTo, but then the overload would be accessible, defeating the purpose of the test.
+        [Fact]
+        public Task InaccessibleOverload_NoDiagnostic()
+        {
+            string receiver = CS.Usings + @"
+public class Receiver
+{
+    public static void Consume(string text) { }
+    private static void Consume(Roschar span) { }
+}";
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { CS.WithBody(@"Receiver.Consume(foo.Substring(1));"), receiver }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
         #endregion
 
         #region Helpers
@@ -1107,8 +1331,7 @@ using Roschar = System.ReadOnlySpan<char>;";
 
             public static string WithBody(string statements, bool includeUsings = true)
             {
-                const string indent = "        ";
-                string indentedStatements = indent + statements.TrimStart().Replace(Environment.NewLine, Environment.NewLine + indent, StringComparison.Ordinal);
+                string indentedStatements = IndentLines(statements, "        ");
                 string usings = includeUsings ? $"{Environment.NewLine}using System;{Environment.NewLine}" : string.Empty;
 
                 return $@"
@@ -1118,6 +1341,18 @@ public partial class Body
     private void Run(string foo)
     {{
 {indentedStatements}
+    }}
+}}";
+            }
+            public static string WithBody(string statements, string members)
+            {
+                return Usings + $@"
+public partial class Body
+{{
+{IndentLines(members, "    ")}
+    private void Run(string foo)
+    {{
+{IndentLines(statements, "        ")}
     }}
 }}";
             }
@@ -1148,8 +1383,9 @@ End Class";
         }
 
         private static string WithKey(string text, int markupKey) => $"{{|#{markupKey}:{text}|}}";
-        private static DiagnosticDescriptor Rule => PreferAsSpanOverSubstring.Rule;
 
+        private static string IndentLines(string lines, string indent) => indent + lines.TrimStart().Replace(Environment.NewLine, Environment.NewLine + indent, StringComparison.Ordinal);
+        private static DiagnosticDescriptor Rule => PreferAsSpanOverSubstring.Rule;
         #endregion
     }
 }
