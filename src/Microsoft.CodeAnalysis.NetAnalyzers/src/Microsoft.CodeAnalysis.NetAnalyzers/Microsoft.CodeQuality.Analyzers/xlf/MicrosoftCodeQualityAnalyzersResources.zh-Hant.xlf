@@ -302,6 +302,11 @@
         <target state="translated">套用 'AttributeUsageAttribute'</target>
         <note />
       </trans-unit>
+      <trans-unit id="OperatorOverloadsHaveNamedAlternatesCodeFixTitle">
+        <source>Add operator overload named alternate</source>
+        <target state="new">Add operator overload named alternate</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PropagateCancellationTokensWhenPossibleTitle">
         <source>Propagate CancellationTokens When Possible</source>
         <target state="translated">於可能時散佈 CancellationToken</target>
