@@ -352,6 +352,11 @@
         <target state="translated">삭제 가능한 필드 '{1}'이(가) 있는 '{0}' 형식을 삭제할 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="new">Add 'System.Uri' overloads</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
         <target state="translated">제네릭 이벤트 처리기 인스턴스를 사용하세요.</target>

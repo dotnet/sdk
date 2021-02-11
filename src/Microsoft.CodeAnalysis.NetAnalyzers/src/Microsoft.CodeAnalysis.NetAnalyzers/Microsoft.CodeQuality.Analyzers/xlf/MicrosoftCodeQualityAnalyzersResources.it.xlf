@@ -352,6 +352,11 @@
         <target state="translated">Il tipo '{0}' è proprietario di campi Disposable '{1}' ma non è Disposable</target>
         <note />
       </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="new">Add 'System.Uri' overloads</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
         <target state="translated">Usare istanze del gestore dell'evento generico</target>

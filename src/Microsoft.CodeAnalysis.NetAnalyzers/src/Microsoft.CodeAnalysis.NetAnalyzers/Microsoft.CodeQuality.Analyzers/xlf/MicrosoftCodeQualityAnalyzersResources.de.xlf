@@ -352,6 +352,11 @@
         <target state="translated">Der Typ "{0}" besitzt verwerfbare Felder "{1}", ist jedoch nicht verwerfbar.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="new">Add 'System.Uri' overloads</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
         <target state="translated">Generische Ereignishandlerinstanzen verwenden</target>

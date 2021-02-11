@@ -352,6 +352,11 @@
         <target state="translated">类型“{0}”具有可释放的字段“{1}”，但该类型是不可释放的</target>
         <note />
       </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="new">Add 'System.Uri' overloads</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
         <target state="translated">使用泛型事件处理程序实例</target>

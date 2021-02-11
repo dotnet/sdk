@@ -1436,4 +1436,7 @@
   <data name="MarkAttributesWithAttributeUsageCodeFix" xml:space="preserve">
     <value>Apply 'AttributeUsageAttribute'</value>
   </data>
+  <data name="UriParametersShouldNotBeStringsCodeFixTitle" xml:space="preserve">
+    <value>Add 'System.Uri' overloads</value>
+  </data>
 </root>

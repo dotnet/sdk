@@ -352,6 +352,11 @@
         <target state="translated">Typ {0} vlastní jednoúčelová pole {1}, ale není jednoúčelový.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="new">Add 'System.Uri' overloads</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
         <target state="translated">Použijte obecné instance obslužné rutiny události.</target>

@@ -352,6 +352,11 @@
         <target state="translated">'{0}' türü '{1}' atılabilir alanlarını içeriyor ancak atılabilir değil</target>
         <note />
       </trans-unit>
+      <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
+        <source>Add 'System.Uri' overloads</source>
+        <target state="new">Add 'System.Uri' overloads</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">
         <source>Use generic event handler instances</source>
         <target state="translated">Genel olay işleyicisi örnekleri kullanın</target>
