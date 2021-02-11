@@ -64,7 +64,6 @@ namespace Microsoft.TemplateEngine.Utils
 
         public virtual void LogMessage(string message)
         {
-            //Console.WriteLine("LogMessage: {0}", message);
             Console.WriteLine(message);
         }
 
