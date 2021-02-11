@@ -44,11 +44,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Resolve the TFM-specific attributes conditionally. -->
   <Choose>
-    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0')) ">
       <PropertyGroup>
-        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
-        <_UseRazorSourceGenerator>false</_UseRazorSourceGenerator>
-        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">3.0</RazorLangVersion>
+        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_UseRazorSourceGenerator>true</_UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">5.0</RazorLangVersion>
       </PropertyGroup>
     </When>
     <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">
@@ -58,11 +58,11 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">5.0</RazorLangVersion>
       </PropertyGroup>
     </When>
-    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0')) ">
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">
       <PropertyGroup>
-        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
-        <_UseRazorSourceGenerator>true</_UseRazorSourceGenerator>
-        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">5.0</RazorLangVersion>
+        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
+        <_UseRazorSourceGenerator>false</_UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">3.0</RazorLangVersion>
       </PropertyGroup>
     </When>
   </Choose>
