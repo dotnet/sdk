@@ -43,6 +43,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         public override Stream Read()
             => throw new NotSupportedException("This API should not be invoked. We should instead be relying on " +
-                "the RazorSourceDocument instead associated with this item instead.");
+                "the RazorSourceDocument associated with this item instead.");
     }
 }

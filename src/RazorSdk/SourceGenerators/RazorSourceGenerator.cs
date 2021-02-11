@@ -30,11 +30,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.ParseOptions is not CSharpParseOptions)
-            {
-                return;
-            }
-
             var razorContext = RazorSourceGenerationContext.Create(context);
             if (razorContext is null ||
                 (razorContext.RazorFiles.Count == 0 && razorContext.CshtmlFiles.Count == 0))
@@ -90,7 +85,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         {
             var files = razorContext.RazorFiles;
 
-            var arraypool = ArrayPool<(string, SourceText, SourceText)>.Shared;
+            var arraypool = ArrayPool<(string, SourceText)>.Shared;
             var outputs = arraypool.Rent(files.Count);
 
             Parallel.For(0, files.Count, GetParallelOptions(), i =>
@@ -109,13 +104,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
                 var hint = GetIdentifierFromPath(file.NormalizedPath);
 
-                SourceText designTimeDocument = null;
-                if (razorContext.DesignTimeBuild)
-                {
-                    var designTimeCode = projectEngine.ProcessDesignTime(projectItem).GetCSharpDocument().GeneratedCode;
-                    designTimeDocument = SourceText.From(designTimeCode, Encoding.UTF8);
-                }
-
                 var generatedCode = csharpDocument.GeneratedCode;
                 if (razorContext.WriteGeneratedContent)
                 {
@@ -124,19 +112,16 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     File.WriteAllText(path, generatedCode);
                 }
 
-                outputs[i] = (hint, SourceText.From(generatedCode, Encoding.UTF8), designTimeDocument);
+                outputs[i] = (hint, SourceText.From(generatedCode, Encoding.UTF8));
             });
 
             for (var i = 0; i < files.Count; i++)
             {
-                var (hint, sourceText, designTimeText) = outputs[i];
+                var (hint, sourceText) = outputs[i];
                 context.AddSource(hint, sourceText);
-
-                if (designTimeText is not null)
-                {
-                    context.AddSource("Design." + hint, designTimeText);
-                }
             }
+
+            arraypool.Return(outputs);
         }
 
         private static IReadOnlyList<TagHelperDescriptor> ResolveTagHelperDescriptors(GeneratorExecutionContext GeneratorExecutionContext, RazorSourceGenerationContext razorContext)
@@ -205,7 +190,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var lastUpdatedReferenceUtc = GetLastUpdatedReference(GeneratorExecutionContext.Compilation.References);
             IReadOnlyList<TagHelperDescriptor> refTagHelpers;
 
-            if (lastUpdatedReferenceUtc < File.GetLastWriteTimeUtc(razorContext.RefsTagHelperOutputCachePath))
+            if (lastUpdatedReferenceUtc is not null && lastUpdatedReferenceUtc < File.GetLastWriteTimeUtc(razorContext.RefsTagHelperOutputCachePath))
             {
                 // Producing tag helpers from a Compilation every time is surprisingly expensive. So we'll use some caching strategies to mitigate this until
                 // we can improve the perf in that area.
@@ -235,15 +220,17 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return result;
         }
 
-        private static DateTime GetLastUpdatedReference(IEnumerable<MetadataReference> references)
+        private static DateTime? GetLastUpdatedReference(IEnumerable<MetadataReference> references)
         {
-            var lastWriteTimeUtc = DateTime.MinValue;
+            DateTime lastWriteTimeUtc = DateTime.MinValue;
 
             foreach (var reference in references)
             {
+                // We expect all references in the compilation context to be backed by a file on disk. If not,
+                // we'll bail out and regenerate the tag helper cache where this is invoked.
                 if (reference is not PortableExecutableReference portableExecutableReference || string.IsNullOrEmpty(portableExecutableReference.FilePath))
                 {
-                    continue;
+                    return null;
                 }
 
                 var fileWriteTime = File.GetLastWriteTimeUtc(portableExecutableReference.FilePath);

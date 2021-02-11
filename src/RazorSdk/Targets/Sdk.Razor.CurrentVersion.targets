@@ -42,27 +42,33 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorSdkDotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</_RazorSdkDotNetHostFileName>
   </PropertyGroup>
 
-  <!-- Resolve the RazorLangVersion based on values imported or TFM. -->
+  <!-- Resolve the TFM-specific attributes conditionally. -->
+  <Choose>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">
+      <PropertyGroup>
+        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
+        <_UseRazorSourceGenerator>false</_UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">3.0</RazorLangVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">
+      <PropertyGroup>
+        <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
+        <_UseRazorSourceGenerator>false</_UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">5.0</RazorLangVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0')) ">
+      <PropertyGroup>
+        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_UseRazorSourceGenerator>true</_UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">5.0</RazorLangVersion>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  
   <PropertyGroup>
-    <_TargetingNETCoreApp30OrLater Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
-      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">true</_TargetingNETCoreApp30OrLater>
-    <_TargetingNET50OrLater Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
-      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">true</_TargetingNET50OrLater>
-
-    <!--
-      We want to limit support for source generators based compilation to 6.0 or newer in user's apps.
-    -->
-    <_TargetingNET60OrLater Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
-      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0')) ">true</_TargetingNET60OrLater>
-
-    <_UseRazorSourceGenerator Condition="'$(_TargetingNET60OrLater)' == 'true'">true</_UseRazorSourceGenerator>
-
-    <!--
-      Infer the RazorLangVersion if no value was specified. When adding support for newer target frameworks, list newer language versions first.
-    -->
-    <RazorLangVersion Condition="'$(RazorLangVersion)' == '' AND '$(_TargetingNET50OrLater)' == 'true'">5.0</RazorLangVersion>
-    <RazorLangVersion Condition="'$(RazorLangVersion)' == '' AND '$(_TargetingNETCoreApp30OrLater)' == 'true'">3.0</RazorLangVersion>
-
     <!--
       In 3.0, we expect RazorLangVersion to either be specified in the template or inferred via TFM. In 2.x, RazorLangVersion is
       specified via the Razor.Design package. We'll default to a version of 2.1, the earliest version that the SDK supports.

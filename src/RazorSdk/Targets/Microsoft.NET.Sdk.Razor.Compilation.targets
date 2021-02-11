@@ -109,6 +109,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AdditionalFiles Include="@(%(AdditionalFileItems.Identity))" />
     </ItemGroup>
 
+    <!-- Remove after https://github.com/dotnet/aspnetcore/issues/29862 is resolved -->
     <ItemGroup>
       <AdditionalFiles Remove="@(_RazorAdditionalFile)" />
       <Analyzer Remove="@(_RazorAnalyzer)" />
