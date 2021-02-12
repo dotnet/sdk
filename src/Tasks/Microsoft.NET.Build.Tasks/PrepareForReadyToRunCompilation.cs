@@ -97,6 +97,38 @@ namespace Microsoft.NET.Build.Tasks
 
                 var outputR2RImageRelativePath = file.GetMetadata(MetadataKeys.RelativePath);
                 var outputR2RImage = Path.Combine(OutputPath, outputR2RImageRelativePath);
+                bool crossgen2IsVersion5 = false;
+                if (ReadyToRunUseCrossgen2)
+                {
+                    bool.TryParse(Crossgen2Tool.GetMetadata(MetadataKeys.IsVersion5), out crossgen2IsVersion5);
+                }
+
+                string outputPDBImage = null;
+                string outputPDBImageRelativePath = null;
+                string crossgen1CreatePDBCommand = null;
+
+                if (EmitSymbols)
+                {
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && hasValidDiaSymReaderLib)
+                    {
+                        outputPDBImage = Path.ChangeExtension(outputR2RImage, "ni.pdb");
+                        outputPDBImageRelativePath = Path.ChangeExtension(outputR2RImageRelativePath, "ni.pdb");
+                        crossgen1CreatePDBCommand = $"/CreatePDB \"{Path.GetDirectoryName(outputPDBImage)}\"";
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        using (FileStream fs = new FileStream(file.ItemSpec, FileMode.Open, FileAccess.Read))
+                        {
+                            PEReader pereader = new PEReader(fs);
+                            MetadataReader mdReader = pereader.GetMetadataReader();
+                            Guid mvid = mdReader.GetGuid(mdReader.GetModuleDefinition().Mvid);
+
+                            outputPDBImage = Path.ChangeExtension(outputR2RImage, "ni.{" + mvid + "}.map");
+                            outputPDBImageRelativePath = Path.ChangeExtension(outputR2RImageRelativePath, "ni.{" + mvid + "}.map");
+                            crossgen1CreatePDBCommand = $"/CreatePerfMap \"{Path.GetDirectoryName(outputPDBImage)}\"";
+                        }
+                    }
+                }
 
                 if (!Crossgen2Composite)
                 {
@@ -104,6 +136,11 @@ namespace Microsoft.NET.Build.Tasks
                     // an input to the ReadyToRunCompiler task
                     TaskItem r2rCompilationEntry = new TaskItem(file);
                     r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, outputR2RImage);
+                    if (outputPDBImage != null && !crossgen2IsVersion5)
+                    {
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
+                    }
                     r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                     imageCompilationList.Add(r2rCompilationEntry);
                 }
@@ -116,6 +153,11 @@ namespace Microsoft.NET.Build.Tasks
 
                     TaskItem r2rCompilationEntry = new TaskItem(file);
                     r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImage);
+                    if (outputPDBImage != null && !crossgen2IsVersion5)
+                    {
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
+                    }
                     r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                     imageCompilationList.Add(r2rCompilationEntry);
 
@@ -138,53 +180,28 @@ namespace Microsoft.NET.Build.Tasks
                 // unless an explicit PublishReadyToRunEmitSymbols flag is enabled by the app developer. There is also another way to profile that the runtime supports, which does
                 // not rely on the native PDBs/Map files, so creating them is really an opt-in option, typically used by advanced users.
                 // For debugging, only the IL PDBs are required.
-                if (EmitSymbols)
+                if (outputPDBImage != null && (!ReadyToRunUseCrossgen2 || crossgen2IsVersion5))
                 {
-                    string outputPDBImageRelativePath = null, outputPDBImage = null, createPDBCommand = null;
+                    // This TaskItem is the R2R->R2RPDB entry, for a R2R image that was just created, and for which we need to create native PDBs. This will be used as
+                    // an input to the ReadyToRunCompiler task
+                    TaskItem pdbCompilationEntry = new TaskItem(file);
+                    pdbCompilationEntry.ItemSpec = outputR2RImage;
+                    pdbCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
+                    pdbCompilationEntry.SetMetadata(MetadataKeys.CreatePDBCommand, crossgen1CreatePDBCommand);
+                    symbolsCompilationList.Add(pdbCompilationEntry);
 
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && hasValidDiaSymReaderLib)
+                    // This TaskItem corresponds to the output PDB image. It is equivalent to the input TaskItem, only the ItemSpec for it points to the new path
+                    // for the newly created PDB image.
+                    TaskItem r2rSymbolsFileToPublish = new TaskItem(file);
+                    r2rSymbolsFileToPublish.ItemSpec = outputPDBImage;
+                    r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.RelativePath, outputPDBImageRelativePath);
+                    r2rSymbolsFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
+                    if (!IncludeSymbolsInSingleFile)
                     {
-                        outputPDBImage = Path.ChangeExtension(outputR2RImage, "ni.pdb");
-                        outputPDBImageRelativePath = Path.ChangeExtension(outputR2RImageRelativePath, "ni.pdb");
-                        createPDBCommand = $"/CreatePDB \"{Path.GetDirectoryName(outputPDBImage)}\"";
-                    }
-                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        using (FileStream fs = new FileStream(file.ItemSpec, FileMode.Open, FileAccess.Read))
-                        {
-                            PEReader pereader = new PEReader(fs);
-                            MetadataReader mdReader = pereader.GetMetadataReader();
-                            Guid mvid = mdReader.GetGuid(mdReader.GetModuleDefinition().Mvid);
-
-                            outputPDBImage = Path.ChangeExtension(outputR2RImage, "ni.{" + mvid + "}.map");
-                            outputPDBImageRelativePath = Path.ChangeExtension(outputR2RImageRelativePath, "ni.{" + mvid + "}.map");
-                            createPDBCommand = $"/CreatePerfMap \"{Path.GetDirectoryName(outputPDBImage)}\"";
-                        }
+                        r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.ExcludeFromSingleFile, "true");
                     }
 
-                    if (outputPDBImage != null)
-                    {
-                        // This TaskItem is the R2R->R2RPDB entry, for a R2R image that was just created, and for which we need to create native PDBs. This will be used as
-                        // an input to the ReadyToRunCompiler task
-                        TaskItem pdbCompilationEntry = new TaskItem(file);
-                        pdbCompilationEntry.ItemSpec = outputR2RImage;
-                        pdbCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
-                        pdbCompilationEntry.SetMetadata(MetadataKeys.CreatePDBCommand, createPDBCommand);
-                        symbolsCompilationList.Add(pdbCompilationEntry);
-
-                        // This TaskItem corresponds to the output PDB image. It is equivalent to the input TaskItem, only the ItemSpec for it points to the new path
-                        // for the newly created PDB image.
-                        TaskItem r2rSymbolsFileToPublish = new TaskItem(file);
-                        r2rSymbolsFileToPublish.ItemSpec = outputPDBImage;
-                        r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.RelativePath, outputPDBImageRelativePath);
-                        r2rSymbolsFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
-                        if (!IncludeSymbolsInSingleFile)
-                        {
-                            r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.ExcludeFromSingleFile, "true");
-                        }
-
-                        r2rFilesPublishList.Add(r2rSymbolsFileToPublish);
-                    }
+                    r2rFilesPublishList.Add(r2rSymbolsFileToPublish);
                 }
             }
         }

@@ -722,32 +722,36 @@ The following are names of parameters or literal values and should not be transl
     <value>NETSDK1154: JIT library '{0}' not found.</value>
     <comment>{StrBegin="NETSDK1154: "}</comment>
   </data>
-  <data name="TargetOSMissingWhenJitPathNotSet" xml:space="preserve">
-    <value>NETSDK1155: TargetOS metadata must be specified on Crossgen2Tool item when JitPath is not set.</value>
+  <data name="Crossgen2MissingRequiredMetadata" xml:space="preserve">
+    <value>NETSDK1155: Required '{0}' metadata missing on Crossgen2Tool item.</value>
     <comment>{StrBegin="NETSDK1155: "}</comment>
   </data>
-  <data name="TargetArchMissingWhenJitPathNotSet" xml:space="preserve">
-    <value>NETSDK1156: TargetArch metadata must be specified on Crossgen2Tool item when JitPath is not set.</value>
+  <data name="CrossgenToolMissingWhenUseCrossgen2IsNotSet" xml:space="preserve">
+    <value>NETSDK1156: CrossgenTool must be specified when UseCrossgen2 is set to false.</value>
     <comment>{StrBegin="NETSDK1156: "}</comment>
   </data>
-  <data name="CrossgenToolMissingWhenUseCrossgen2IsNotSet" xml:space="preserve">
-    <value>NETSDK1157: CrossgenTool must be specified when UseCrossgen2 is set to false.</value>
+  <data name="CrossgenToolExecutableNotFound" xml:space="preserve">
+    <value>NETSDK1157: CrossgenTool executable '{0}' not found.</value>
     <comment>{StrBegin="NETSDK1157: "}</comment>
   </data>
-  <data name="CrossgenToolExecutableNotFound" xml:space="preserve">
-    <value>NETSDK1158: CrossgenTool executable '{0}' not found.</value>
+  <data name="DiaSymReaderLibraryNotFound" xml:space="preserve">
+    <value>NETSDK1158: DiaSymReader library '{0}' not found.</value>
     <comment>{StrBegin="NETSDK1158: "}</comment>
   </data>
-  <data name="DiaSymReaderLibraryNotFound" xml:space="preserve">
-    <value>NETSDK1159: DiaSymReader library '{0}' not found.</value>
+  <data name="PDBGeneratorInputExecutableNotFound" xml:space="preserve">
+    <value>NETSDK1159: PDB generation: R2R executable '{0}' not found.</value>
     <comment>{StrBegin="NETSDK1159: "}</comment>
   </data>
-  <data name="PDBGeneratorInputExecutableNotFound" xml:space="preserve">
-    <value>NETSDK1160: PDB generation: R2R executable '{0}' not found.</value>
+  <data name="InputAssemblyNotFound" xml:space="preserve">
+    <value>NETSDK1160: Input assembly '{0}' not found.</value>
     <comment>{StrBegin="NETSDK1160: "}</comment>
   </data>
-  <data name="InputAssemblyNotFound" xml:space="preserve">
-    <value>NETSDK1161: Input assembly '{0}' not found.</value>
+  <data name="MissingOutputPDBImagePath" xml:space="preserve">
+    <value>NETSDK1161: Missing output PDB path in PDB generation mode (OutputPDBImage metadata).</value>
     <comment>{StrBegin="NETSDK1161: "}</comment>
+  </data>
+  <data name="MissingOutputR2RImageFileName" xml:space="preserve">
+    <value>NETSDK1162: Missing output R2R image path (OutputR2RImage metadata).</value>
+    <comment>{StrBegin="NETSDK1162: "}</comment>
   </data>
 </root>
