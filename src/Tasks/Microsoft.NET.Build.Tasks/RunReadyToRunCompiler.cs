@@ -44,7 +44,7 @@ namespace Microsoft.NET.Build.Tasks
             get
             {
                 string version5 = Crossgen2Tool?.GetMetadata(MetadataKeys.IsVersion5);
-                return version5 != null && bool.Parse(version5);
+                return !string.IsNullOrEmpty(version5) && bool.Parse(version5);
             }
         }
 
