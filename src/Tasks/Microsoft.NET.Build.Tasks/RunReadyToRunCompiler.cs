@@ -224,7 +224,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             if (ActuallyUseCrossgen2 && !string.IsNullOrEmpty(DotNetHostPath))
             {
-                return Crossgen2Tool.ItemSpec;
+                return $"\"{Crossgen2Tool.ItemSpec}\"";
             }
             return null;
         }
