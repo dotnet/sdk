@@ -36,16 +36,16 @@
 
       <_NET50RuntimePackVersion>5.0.3</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
-      <_WindowsDesktop50RuntimePackVersion>5.0.2</_WindowsDesktop50RuntimePackVersion>
+      <_WindowsDesktop50RuntimePackVersion>5.0.3</_WindowsDesktop50RuntimePackVersion>
       <_WindowsDesktop50TargetingPackVersion>5.0.0</_WindowsDesktop50TargetingPackVersion>
-      <_AspNet50RuntimePackVersion>5.0.2</_AspNet50RuntimePackVersion>
+      <_AspNet50RuntimePackVersion>5.0.3</_AspNet50RuntimePackVersion>
       <_AspNet50TargetingPackVersion>5.0.0</_AspNet50TargetingPackVersion>
 
       <_NETCoreApp31RuntimePackVersion>3.1.12</_NETCoreApp31RuntimePackVersion>
       <_NETCoreApp31TargetingPackVersion>3.1.0</_NETCoreApp31TargetingPackVersion>
-      <_WindowsDesktop31RuntimePackVersion>3.1.11</_WindowsDesktop31RuntimePackVersion>
+      <_WindowsDesktop31RuntimePackVersion>3.1.12</_WindowsDesktop31RuntimePackVersion>
       <_WindowsDesktop31TargetingPackVersion>3.1.0</_WindowsDesktop31TargetingPackVersion>
-      <_AspNet31RuntimePackVersion>3.1.11</_AspNet31RuntimePackVersion>
+      <_AspNet31RuntimePackVersion>3.1.12</_AspNet31RuntimePackVersion>
       <_AspNet31TargetingPackVersion>3.1.10</_AspNet31TargetingPackVersion>
 
       <_NETCoreApp30RuntimePackVersion>3.0.3</_NETCoreApp30RuntimePackVersion>
@@ -169,11 +169,11 @@
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.24"/>
+                               LatestVersion="2.1.25"/>
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.24"/>
+                               LatestVersion="2.1.25"/>
 
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.2"
