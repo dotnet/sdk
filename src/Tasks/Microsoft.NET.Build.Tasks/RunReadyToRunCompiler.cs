@@ -79,7 +79,7 @@ namespace Microsoft.NET.Build.Tasks
                 // PDB compilation is a step specific to Crossgen1 and 5.0 Crossgen2
                 // which didn't support PDB generation. 6.0  Crossgen2 produces symbols
                 // directly during native compilation.
-                Log.LogError("CrossgenTool not specified in PDB compilation mode");
+                Log.LogError(Strings.CrossgenToolMissingInPDBCompilationMode);
                 return false;
             }
 
@@ -89,25 +89,25 @@ namespace Microsoft.NET.Build.Tasks
                 string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
                 if (Crossgen2Tool == null || string.IsNullOrEmpty(Crossgen2Tool.ItemSpec))
                 {
-                    Log.LogError($"Crossgen2Tool must be specified when UseCrossgen2 is set to true");
+                    Log.LogError(Strings.Crossgen2ToolMissingWhenUseCrossgen2IsSet);
                     return false;
                 }
                 if (!File.Exists(Crossgen2Tool.ItemSpec))
                 {
-                    Log.LogError($"Crossgen2Tool executable '{Crossgen2Tool.ItemSpec}' not found");
+                    Log.LogError(Strings.Crossgen2ToolExecutableNotFound, Crossgen2Tool.ItemSpec);
                     return false;
                 }
                 string hostPath = DotNetHostPath;
                 if (!string.IsNullOrEmpty(hostPath) && !File.Exists(hostPath))
                 {
-                    Log.LogError($".NET host executable '{hostPath}' not found");
+                    Log.LogError(Strings.DotNetHostExecutableNotFound, hostPath);
                     return false;
                 }
                 if (!String.IsNullOrEmpty(jitPath))
                 {
                     if (!File.Exists(jitPath))
                     {
-                        Log.LogError($"JIT library '{jitPath}' not found");
+                        Log.LogError(Strings.JitLibraryNotFound, jitPath);
                         return false;
                     }
                 }
@@ -115,12 +115,12 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     if (string.IsNullOrEmpty(Crossgen2Tool.GetMetadata(MetadataKeys.TargetOS)))
                     {
-                        Log.LogError("TargetOS metadata must be specified on Crossgen2Tool item when JitPath is not set");
+                        Log.LogError(Strings.TargetOSMissingWhenJitPathNotSet);
                         return false;
                     }
                     if (string.IsNullOrEmpty(Crossgen2Tool.GetMetadata(MetadataKeys.TargetArch)))
                     {
-                        Log.LogError("TargetArch metadata must be specified on Crossgen2Tool item when JitPath is not set");
+                        Log.LogError(Strings.TargetArchMissingWhenJitPathNotSet);
                         return false;
                     }
                 }
@@ -129,17 +129,17 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (CrossgenTool == null || string.IsNullOrEmpty(CrossgenTool.ItemSpec))
                 {
-                    Log.LogError("CrossgenTool must be specified when UseCrossgen2 is set to false");
+                    Log.LogError(Strings.CrossgenToolMissingWhenUseCrossgen2IsNotSet);
                     return false;
                 }
                 if (!File.Exists(CrossgenTool.ItemSpec))
                 {
-                    Log.LogError($"CrossgenTool executable '{CrossgenTool.ItemSpec}' not found");
+                    Log.LogError(Strings.CrossgenToolExecutableNotFound, CrossgenTool.ItemSpec);
                     return false;
                 }
                 if (!File.Exists(CrossgenTool.GetMetadata(MetadataKeys.JitPath)))
                 {
-                    Log.LogError($"JIT path '{MetadataKeys.JitPath}' not found");
+                    Log.LogError(Strings.JitLibraryNotFound, MetadataKeys.JitPath);
                     return false;
                 }
             }
@@ -151,14 +151,14 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!String.IsNullOrEmpty(DiaSymReader) && !File.Exists(DiaSymReader))
                 {
-                    Log.LogError($"DiaSymReader library '{DiaSymReader}' not found");
+                    Log.LogError(Strings.DiaSymReaderLibraryNotFound, DiaSymReader);
                     return false;
                 }
 
                 // R2R image has to be created before emitting native symbols (crossgen needs this as an input argument)
                 if (String.IsNullOrEmpty(_outputPDBImage) || !File.Exists(_outputR2RImage))
                 {
-                    Log.LogError($"PDB generation: R2R executable '{_outputR2RImage}' not found");
+                    Log.LogError(Strings.PDBGeneratorInputExecutableNotFound, _outputR2RImage);
                     return false;
                 }
             }
@@ -169,7 +169,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!File.Exists(_inputAssembly))
                 {
-                    Log.LogError($"Input assembly '{_inputAssembly}' not found");
+                    Log.LogError(Strings.InputAssemblyNotFound, _inputAssembly);
                     return false;
                 }
             }

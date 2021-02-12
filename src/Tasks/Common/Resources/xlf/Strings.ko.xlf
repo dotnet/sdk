@@ -264,6 +264,41 @@
         <target state="translated">NETSDK1126: Crossgen2를 사용한 ReadyToRun 게시는 자체 포함 애플리케이션에서만 지원됩니다.</target>
         <note>{StrBegin="NETSDK1126: "}</note>
       </trans-unit>
+      <trans-unit id="Crossgen2ToolExecutableNotFound">
+        <source>NETSDK1151: Crossgen2Tool executable '{0}' not found</source>
+        <target state="new">NETSDK1151: Crossgen2Tool executable '{0}' not found</target>
+        <note>{StrBegin="NETSDK1151: "}</note>
+      </trans-unit>
+      <trans-unit id="Crossgen2ToolMissingWhenUseCrossgen2IsSet">
+        <source>NETSDK1150: Crossgen2Tool must be specified when UseCrossgen2 is set to true</source>
+        <target state="new">NETSDK1150: Crossgen2Tool must be specified when UseCrossgen2 is set to true</target>
+        <note>{StrBegin="NETSDK1150: "}</note>
+      </trans-unit>
+      <trans-unit id="CrossgenToolExecutableNotFound">
+        <source>NETSDK1157: CrossgenTool executable '{0}' not found</source>
+        <target state="new">NETSDK1157: CrossgenTool executable '{0}' not found</target>
+        <note>{StrBegin="NETSDK1157: "}</note>
+      </trans-unit>
+      <trans-unit id="CrossgenToolMissingInPDBCompilationMode">
+        <source>NETSDK1149: CrossgenTool not specified in PDB compilation mode</source>
+        <target state="new">NETSDK1149: CrossgenTool not specified in PDB compilation mode</target>
+        <note>{StrBegin="NETSDK1149: "}</note>
+      </trans-unit>
+      <trans-unit id="CrossgenToolMissingWhenUseCrossgen2IsNotSet">
+        <source>NETSDK1156: CrossgenTool must be specified when UseCrossgen2 is set to false</source>
+        <target state="new">NETSDK1156: CrossgenTool must be specified when UseCrossgen2 is set to false</target>
+        <note>{StrBegin="NETSDK1156: "}</note>
+      </trans-unit>
+      <trans-unit id="DiaSymReaderLibraryNotFound">
+        <source>NETSDK1158: DiaSymReader library '{0}' not found</source>
+        <target state="new">NETSDK1158: DiaSymReader library '{0}' not found</target>
+        <note>{StrBegin="NETSDK1158: "}</note>
+      </trans-unit>
+      <trans-unit id="DotNetHostExecutableNotFound">
+        <source>NETSDK1152: .NET host executable '{0}' not found</source>
+        <target state="new">NETSDK1152: .NET host executable '{0}' not found</target>
+        <note>{StrBegin="NETSDK1152: "}</note>
+      </trans-unit>
       <trans-unit id="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21">
         <source>NETSDK1055: DotnetTool does not support target framework lower than netcoreapp2.1.</source>
         <target state="translated">NETSDK1055: DotnetTool가 netcoreapp2.1보다 낮은 대상 프레임워크를 지원하지 않습니다.</target>
@@ -394,6 +429,11 @@
         <target state="translated">NETSDK1025: 제공한 대상 매니페스트 {0}이(가) 올바른 형식이 아닙니다.</target>
         <note>{StrBegin="NETSDK1025: "}</note>
       </trans-unit>
+      <trans-unit id="InputAssemblyNotFound">
+        <source>NETSDK1160: Input assembly '{0}' not found</source>
+        <target state="new">NETSDK1160: Input assembly '{0}' not found</target>
+        <note>{StrBegin="NETSDK1160: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidFrameworkName">
         <source>NETSDK1003: Invalid framework name: '{0}'.</source>
         <target state="translated">NETSDK1003: 프레임워크 이름 '{0}'이(가) 잘못되었습니다.</target>
@@ -426,6 +466,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1140: {0}은(는) {1}에 대한 유효한 TargetPlatformVersion이 아닙니다. 유효한 버전은 다음과 같습니다.
 {2}</target>
         <note>{StrBegin="NETSDK1140: "}</note>
+      </trans-unit>
+      <trans-unit id="JitLibraryNotFound">
+        <source>NETSDK1153: JIT library '{0}' not found</source>
+        <target state="new">NETSDK1153: JIT library '{0}' not found</target>
+        <note>{StrBegin="NETSDK1153: "}</note>
       </trans-unit>
       <trans-unit id="MismatchedPlatformPackageVersion">
         <source>NETSDK1061: The project was restored using {0} version {1}, but with current settings, version {2} would be used instead. To resolve this issue, make sure the same settings are used for restore and for subsequent operations such as build or publish. Typically this issue can occur if the RuntimeIdentifier property is set during build or publish but not during restore. For more information, see https://aka.ms/dotnet-runtime-patch-selection.</source>
@@ -509,6 +554,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1121: C++/CLI projects targeting .NET Core cannot use SelfContained=true.</source>
         <target state="translated">NETSDK1121: .NET Core를 대상으로 하는 C++/CLI 프로젝트는 SelfContained=true를 사용할 수 없습니다.</target>
         <note>{StrBegin="NETSDK1121: "}</note>
+      </trans-unit>
+      <trans-unit id="PDBGeneratorInputExecutableNotFound">
+        <source>NETSDK1159: PDB generation: R2R executable '{0}' not found</source>
+        <target state="new">NETSDK1159: PDB generation: R2R executable '{0}' not found</target>
+        <note>{StrBegin="NETSDK1159: "}</note>
       </trans-unit>
       <trans-unit id="PackAsToolCannotSupportSelfContained">
         <source>NETSDK1053: Pack as tool does not support self contained.</source>
@@ -620,6 +670,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1048: GenerateRuntimeConfigurationFiles에 대해 'AdditionalProbingPaths'가 지정되었지만 'RuntimeConfigDevPath'가 비어 있어서 건너뜁니다.</target>
         <note>{StrBegin="NETSDK1048: "}</note>
       </trans-unit>
+      <trans-unit id="TargetArchMissingWhenJitPathNotSet">
+        <source>NETSDK1155: TargetArch metadata must be specified on Crossgen2Tool item when JitPath is not set</source>
+        <target state="new">NETSDK1155: TargetArch metadata must be specified on Crossgen2Tool item when JitPath is not set</target>
+        <note>{StrBegin="NETSDK1155: "}</note>
+      </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
         <source>NETSDK1138: The target framework '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
         <target state="translated">NETSDK1138: 대상 프레임워크 '{0}'은(는) 지원되지 않으며 향후 보안 업데이트를 받을 수 없습니다. 지원 정책에 대한 자세한 내용은 {1}을(를) 참조하세요.</target>
@@ -629,6 +684,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1046: The TargetFramework value '{0}' is not valid. To multi-target, use the 'TargetFrameworks' property instead.</source>
         <target state="translated">NETSDK1046: TargetFramework 값 '{0}'이(가) 잘못되었습니다. 여러 대상을 지정하려면 'TargetFrameworks' 속성을 대신 사용하세요.</target>
         <note>{StrBegin="NETSDK1046: "}</note>
+      </trans-unit>
+      <trans-unit id="TargetOSMissingWhenJitPathNotSet">
+        <source>NETSDK1154: TargetOS metadata must be specified on Crossgen2Tool item when JitPath is not set</source>
+        <target state="new">NETSDK1154: TargetOS metadata must be specified on Crossgen2Tool item when JitPath is not set</target>
+        <note>{StrBegin="NETSDK1154: "}</note>
       </trans-unit>
       <trans-unit id="TargetingApphostPackMissingCannotRestore">
         <source>NETSDK1145: The {0} pack is not installed and NuGet package restore is not supported. Upgrade Visual Studio, remove global.json if it specifies a certain SDK version, and uninstall the newer SDK. For more options visit   https://aka.ms/targeting-apphost-pack-missing  Pack Type:{0}, Pack directory: {1}, targetframework: {2}, Pack PackageId: {3}, Pack Package Version: {4}</source>
