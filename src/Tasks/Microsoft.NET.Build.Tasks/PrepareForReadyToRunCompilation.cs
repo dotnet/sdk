@@ -137,7 +137,7 @@ namespace Microsoft.NET.Build.Tasks
                     // an input to the ReadyToRunCompiler task
                     TaskItem r2rCompilationEntry = new TaskItem(file);
                     r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, outputR2RImage);
-                    if (outputPDBImage != null && !crossgen2IsVersion5)
+                    if (outputPDBImage != null && ReadyToRunUseCrossgen2 && !crossgen2IsVersion5)
                     {
                         r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
                         r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
@@ -154,7 +154,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     TaskItem r2rCompilationEntry = new TaskItem(file);
                     r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImage);
-                    if (outputPDBImage != null && !crossgen2IsVersion5)
+                    if (outputPDBImage != null && ReadyToRunUseCrossgen2 && !crossgen2IsVersion5)
                     {
                         r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
                         r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
