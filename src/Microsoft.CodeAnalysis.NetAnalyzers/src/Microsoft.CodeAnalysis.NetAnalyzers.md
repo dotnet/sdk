@@ -1884,6 +1884,30 @@ Calls to 'string.IndexOf' where the result is used to check for the presence/abs
 |CodeFix|True|
 ---
 
+## [CA2250](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250): Do not use 'WhenAll' with a single task
+
+Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA2251](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251): Do not use 'WaitAll' with a single task
+
+Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
 ## [CA2300](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300): Do not use insecure deserializer BinaryFormatter
 
 The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.

@@ -266,6 +266,44 @@
             ]
           }
         },
+        "CA2250": {
+          "id": "CA2250",
+          "shortDescription": "Do not use 'WhenAll' with a single task",
+          "fullDescription": "Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpDoNotUseWhenAllOrWaitAllWithSingleArgument",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2251": {
+          "id": "CA2251",
+          "shortDescription": "Do not use 'WaitAll' with a single task",
+          "fullDescription": "Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpDoNotUseWhenAllOrWaitAllWithSingleArgument",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2352": {
           "id": "CA2352",
           "shortDescription": "Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks",
@@ -5340,6 +5378,44 @@
             ],
             "tags": [
               "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2250": {
+          "id": "CA2250",
+          "shortDescription": "Do not use 'WhenAll' with a single task",
+          "fullDescription": "Using 'WhenAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "VisualBasicDoNotUseWhenAllOrWaitAllWithSingleArgument",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2251": {
+          "id": "CA2251",
+          "shortDescription": "Do not use 'WaitAll' with a single task",
+          "fullDescription": "Using 'WaitAll' with a single task should be avoided in favor of directly awaiting that task or returning it as is.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "VisualBasicDoNotUseWhenAllOrWaitAllWithSingleArgument",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
