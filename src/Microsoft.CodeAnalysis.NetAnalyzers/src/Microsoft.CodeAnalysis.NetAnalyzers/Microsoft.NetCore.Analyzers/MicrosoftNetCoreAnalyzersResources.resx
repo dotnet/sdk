@@ -1562,4 +1562,10 @@
   <data name="DoNotUseWhenAllWithSingleTaskTitle" xml:space="preserve">
     <value>Do not use 'WhenAll' with a single task</value>
   </data>
+  <data name="DoNotUseWaitAllWithSingleTaskFix" xml:space="preserve">
+    <value>Replace `WaitAll` with single `Wait`</value>
+  </data>
+  <data name="DoNotUseWhenAllWithSingleTaskFix" xml:space="preserve">
+    <value>Replace 'WhenAll` call with argument</value>
+  </data>
 </root>

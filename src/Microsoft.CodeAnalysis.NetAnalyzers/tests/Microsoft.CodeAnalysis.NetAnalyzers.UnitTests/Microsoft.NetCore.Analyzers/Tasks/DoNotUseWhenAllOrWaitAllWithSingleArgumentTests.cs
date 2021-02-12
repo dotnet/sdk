@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotUseWhenAllOrWaitAllWithSingleArgument,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotUseWhenAllOrWaitAllWithSingleArgumentFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.VisualBasic.Analyzers.Tasks.VisualBasicDoNotUseWhenAllOrWaitAllWithSingleArgument,
-    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+    Microsoft.NetCore.VisualBasic.Analyzers.Tasks.VisualBasicDoNotUseWhenAllOrWaitAllWithSingleArgumentFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
@@ -169,7 +169,7 @@ End Namespace
         [Fact]
         public async Task Diagnostics_FixApplies_WhenAll_CSharp()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.Threading.Tasks;
 
 class C
@@ -181,13 +181,34 @@ class C
 
         await {|CA2250:Task.WhenAll(t1)|};
         await {|CA2250:Task.WhenAll(CreateTask())|};
-        Task whenResult = {|CA2250:Task.WhenAll(t1)|};
-        DoSomethingWithTask(whenResult);
 
         await {|CA2250:Task.WhenAll(objectTask1)|};
         await {|CA2250:Task.WhenAll(CreateObjectTask())|};
-        Task whenResult2 = {|CA2250:Task.WhenAll(objectTask1)|};
-        DoSomethingWithTask(whenResult2);
+    }
+
+    void DoSomethingWithTask(Task task) 
+    {
+    }
+
+    Task CreateTask() => Task.CompletedTask;
+    Task<object> CreateObjectTask() => Task.FromResult(new object());
+}
+",
+@"
+using System.Threading.Tasks;
+
+class C
+{
+    async Task M()
+    {
+        var t1 = CreateTask();
+        var objectTask1 = CreateObjectTask();
+
+        await t1;
+        await CreateTask();
+
+        await objectTask1;
+        await CreateObjectTask();
     }
 
     void DoSomethingWithTask(Task task) 
@@ -203,7 +224,7 @@ class C
         [Fact]
         public async Task Diagnostics_FixApplies_WhenAll_VB()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.Threading.Tasks
 
 Class C
@@ -213,13 +234,36 @@ Class C
 
         Await {|CA2250:Task.WhenAll(t1)|}
         Await {|CA2250:Task.WhenAll(CreateTask())|}
-        Dim whenResult = {|CA2250:Task.WhenAll(t1)|}
-        DoSomethingWithTask(whenResult)
 
         Await {|CA2250:Task.WhenAll(objectTask1)|}
         Await {|CA2250:Task.WhenAll(CreateObjectTask())|}
-        Dim whenResult2 = {|CA2250:Task.WhenAll(objectTask1)|}
-        DoSomethingWithTask(whenResult2)
+    End Function
+
+    Async Function DoSomethingWithTask(task As Task) As Task
+        Await task
+    End Function
+
+    Function CreateTask() As Task
+        Return Task.CompletedTask
+    End Function
+
+    Function CreateObjectTask() As Task(Of Object)
+        Return Task.FromResult(New Object())
+    End Function
+End Class",
+@"
+Imports System.Threading.Tasks
+
+Class C
+    Async Function M() As Task
+        Dim t1 = CreateTask()
+        Dim objectTask1 = CreateObjectTask()
+
+        Await t1
+        Await CreateTask()
+
+        Await objectTask1
+        Await CreateObjectTask()
     End Function
 
     Async Function DoSomethingWithTask(task As Task) As Task
@@ -239,7 +283,7 @@ End Class");
         [Fact]
         public async Task Diagnostics_FixApplies_WaitAll_CSharp()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.Threading.Tasks;
 
 class C
@@ -258,13 +302,33 @@ class C
     Task CreateTask() => Task.CompletedTask;
     Task<object> CreateObjectTask() => Task.FromResult(new object());
 }
+",
+@"
+using System.Threading.Tasks;
+
+class C
+{
+    async Task M()
+    {
+        var t1 = CreateTask();
+        var objectTask1 = CreateObjectTask();
+
+        t1.Wait();
+        CreateTask().Wait();
+        objectTask1.Wait();
+        CreateObjectTask().Wait();
+    }
+
+    Task CreateTask() => Task.CompletedTask;
+    Task<object> CreateObjectTask() => Task.FromResult(new object());
+}
 ");
         }
 
         [Fact]
         public async Task Diagnostics_FixApplies_WaitAll_VB()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.Threading.Tasks
 
 Class C
@@ -276,6 +340,28 @@ Class C
         {|CA2251:Task.WaitAll(CreateTask())|}
         {|CA2251:Task.WaitAll(objectTask1)|}
         {|CA2251:Task.WaitAll(CreateObjectTask())|}
+    End Sub
+
+    Function CreateTask() As Task
+        Return Task.CompletedTask
+    End Function
+
+    Function CreateObjectTask() As Task(Of Object)
+        Return Task.FromResult(New Object())
+    End Function
+End Class",
+@"
+Imports System.Threading.Tasks
+
+Class C
+    Sub M()
+        Dim t1 = CreateTask()
+        Dim objectTask1 = CreateObjectTask()
+
+        t1.Wait()
+        CreateTask().Wait()
+        objectTask1.Wait()
+        CreateObjectTask().Wait()
     End Sub
 
     Function CreateTask() As Task
