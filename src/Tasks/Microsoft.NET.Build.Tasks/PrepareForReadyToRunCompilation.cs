@@ -100,7 +100,8 @@ namespace Microsoft.NET.Build.Tasks
                 bool crossgen2IsVersion5 = false;
                 if (ReadyToRunUseCrossgen2)
                 {
-                    bool.TryParse(Crossgen2Tool.GetMetadata(MetadataKeys.IsVersion5), out crossgen2IsVersion5);
+                    string isVersion5 = Crossgen2Tool.GetMetadata(MetadataKeys.IsVersion5);
+                    crossgen2IsVersion5 = !string.IsNullOrEmpty(isVersion5) && bool.Parse(isVersion5);
                 }
 
                 string outputPDBImage = null;

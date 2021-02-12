@@ -491,8 +491,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1008: "}</note>
       </trans-unit>
       <trans-unit id="MissingOutputPDBImagePath">
-        <source>NETSDK1161: Missing OutputPDBImage in PDB generation mode.</source>
-        <target state="new">NETSDK1161: Missing OutputPDBImage in PDB generation mode.</target>
+        <source>NETSDK1161: Missing output PDB path in PDB generation mode (OutputPDBImage metadata).</source>
+        <target state="new">NETSDK1161: Missing output PDB path in PDB generation mode (OutputPDBImage metadata).</target>
         <note>{StrBegin="NETSDK1161: "}</note>
       </trans-unit>
       <trans-unit id="MissingOutputR2RImageFileName">
