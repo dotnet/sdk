@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotUseWhenAllOrWaitAllWithSingleArgument,
@@ -169,7 +170,7 @@ End Namespace
         [Fact]
         public async Task Diagnostics_FixApplies_WhenAll_CSharp()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
+            var source = @"
 using System.Threading.Tasks;
 
 class C
@@ -181,9 +182,13 @@ class C
 
         await {|CA2250:Task.WhenAll(t1)|};
         await {|CA2250:Task.WhenAll(CreateTask())|};
+        var t1WhenAll = {|CA2250:Task.WhenAll(t1)|};
+        DoSomethingWithTask(t1WhenAll);
 
         await {|CA2250:Task.WhenAll(objectTask1)|};
         await {|CA2250:Task.WhenAll(CreateObjectTask())|};
+        var ot1WhenAll = {|CA2250:Task.WhenAll(objectTask1)|};
+        DoSomethingWithTask(ot1WhenAll);
     }
 
     void DoSomethingWithTask(Task task) 
@@ -193,8 +198,9 @@ class C
     Task CreateTask() => Task.CompletedTask;
     Task<object> CreateObjectTask() => Task.FromResult(new object());
 }
-",
-@"
+";
+
+            var fixedSource = @"
 using System.Threading.Tasks;
 
 class C
@@ -206,9 +212,13 @@ class C
 
         await t1;
         await CreateTask();
+        var t1WhenAll = {|CA2250:Task.WhenAll(t1)|};
+        DoSomethingWithTask(t1WhenAll);
 
         await objectTask1;
         await CreateObjectTask();
+        var ot1WhenAll = {|CA2250:Task.WhenAll(objectTask1)|};
+        DoSomethingWithTask(ot1WhenAll);
     }
 
     void DoSomethingWithTask(Task task) 
@@ -218,13 +228,24 @@ class C
     Task CreateTask() => Task.CompletedTask;
     Task<object> CreateObjectTask() => Task.FromResult(new object());
 }
-");
+";
+            var test = new VerifyCS.Test()
+            {
+                TestCode = source,
+                FixedState =
+                {
+                    MarkupHandling = MarkupMode.Allow,
+                    Sources = { fixedSource }
+                }
+            };
+
+            await test.RunAsync();
         }
 
         [Fact]
         public async Task Diagnostics_FixApplies_WhenAll_VB()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
+            var code = @"
 Imports System.Threading.Tasks
 
 Class C
@@ -234,9 +255,13 @@ Class C
 
         Await {|CA2250:Task.WhenAll(t1)|}
         Await {|CA2250:Task.WhenAll(CreateTask())|}
+        Dim t1WhenAll = {|CA2250:Task.WhenAll(t1)|}
+        DoSomethingWithTask(t1WhenAll)
 
         Await {|CA2250:Task.WhenAll(objectTask1)|}
         Await {|CA2250:Task.WhenAll(CreateObjectTask())|}
+        Dim o1WhenAll = {|CA2250:Task.WhenAll(objectTask1)|}
+        DoSomethingWithTask(o1WhenAll)
     End Function
 
     Async Function DoSomethingWithTask(task As Task) As Task
@@ -250,8 +275,9 @@ Class C
     Function CreateObjectTask() As Task(Of Object)
         Return Task.FromResult(New Object())
     End Function
-End Class",
-@"
+End Class";
+
+            var fixedCode = @"
 Imports System.Threading.Tasks
 
 Class C
@@ -261,9 +287,13 @@ Class C
 
         Await t1
         Await CreateTask()
+        Dim t1WhenAll = {|CA2250:Task.WhenAll(t1)|}
+        DoSomethingWithTask(t1WhenAll)
 
         Await objectTask1
         Await CreateObjectTask()
+        Dim o1WhenAll = {|CA2250:Task.WhenAll(objectTask1)|}
+        DoSomethingWithTask(o1WhenAll)
     End Function
 
     Async Function DoSomethingWithTask(task As Task) As Task
@@ -277,7 +307,19 @@ Class C
     Function CreateObjectTask() As Task(Of Object)
         Return Task.FromResult(New Object())
     End Function
-End Class");
+End Class";
+
+            var test = new VerifyVB.Test()
+            {
+                TestCode = code,
+                FixedState =
+                {
+                    MarkupHandling = MarkupMode.Allow,
+                    Sources = { fixedCode }
+                }
+            };
+
+            await test.RunAsync();
         }
 
         [Fact]

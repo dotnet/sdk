@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         {
             var cancellationToken = context.CancellationToken;
             var root = await context.Document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var nodeToFix = root.FindNode(context.Span);
+            var nodeToFix = root.FindNode(context.Span, getInnermostNodeForTie: true);
 
             var semanticModel = await context.Document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
@@ -47,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                     equivalenceKey: title),
                 context.Diagnostics);
             }
-            else if (NotPartOfAssignment(operation))
+            else if (!IsValueStored(operation))
             {
                 var title = MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskFix;
                 context.RegisterCodeFix(new MyCodeAction(title,
@@ -67,9 +67,24 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             }
         }
 
-        private static bool NotPartOfAssignment(IInvocationOperation operation)
+        /// <summary>
+        /// Returns true if the invocation is part of an assignment or variable declaration
+        /// </summary>
+        private static bool IsValueStored(IInvocationOperation operation)
         {
-            return operation.Parent is not IAssignmentOperation;
+            var currentOperation = operation.Parent;
+            while (currentOperation is not null)
+            {
+                if (currentOperation is IAssignmentOperation or
+                    IVariableDeclarationOperation)
+                {
+                    return true;
+                }
+
+                currentOperation = currentOperation.Parent;
+            }
+
+            return false;
         }
 
         protected abstract SyntaxNode GetSingleArgumentSyntax(IInvocationOperation operation);
