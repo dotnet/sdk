@@ -179,7 +179,7 @@ namespace Microsoft.NET.Build.Tasks
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
                         compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.map");
-                        compositePDBRelativePath = Path.ChangeExtension(compositePDBImageRelativePath, ".ni.map");
+                        compositePDBRelativePath = Path.ChangeExtension(compositePDBRelativePath, ".ni.map");
                     }
                     
                     if (compositePDBImage != null)
@@ -187,7 +187,7 @@ namespace Microsoft.NET.Build.Tasks
                         // Publish composite PDB file
                         TaskItem r2rSymbolsFileToPublish = new TaskItem(file);
                         r2rSymbolsFileToPublish.ItemSpec = compositePDBImage;
-                        r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositePDBImageRelativePath);
+                        r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositePDBRelativePath);
                         r2rSymbolsFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                         if (!IncludeSymbolsInSingleFile)
                         {
@@ -209,7 +209,7 @@ namespace Microsoft.NET.Build.Tasks
                 // unless an explicit PublishReadyToRunEmitSymbols flag is enabled by the app developer. There is also another way to profile that the runtime supports, which does
                 // not rely on the native PDBs/Map files, so creating them is really an opt-in option, typically used by advanced users.
                 // For debugging, only the IL PDBs are required.
-                if (outputPDBImage != null)
+                if (!Crossgen2Composite && outputPDBImage != null)
                 {
                     if (!ReadyToRunUseCrossgen2 || crossgen2IsVersion5)
                     {
