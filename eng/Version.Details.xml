@@ -123,11 +123,11 @@
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="5.0.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>563ebab8b48b4e71eed1d497189ba7c5b67d2146</Sha>
+      <Sha>c0486303c07bd6f5e3a0eb8c214f11a3593f958c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.4-servicing.21110.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App" Version="5.0.4-servicing.21112.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>563ebab8b48b4e71eed1d497189ba7c5b67d2146</Sha>
+      <Sha>c0486303c07bd6f5e3a0eb8c214f11a3593f958c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="5.0.0">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
