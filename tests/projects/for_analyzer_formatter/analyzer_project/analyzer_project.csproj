@@ -9,6 +9,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="AspNetCoreAnalyzers" Version="0.2.0.1-dev" PrivateAssets="all" />
+    <PackageReference Include="IDisposableAnalyzers" Version="3.4.8" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

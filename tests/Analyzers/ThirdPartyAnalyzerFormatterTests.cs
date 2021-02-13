@@ -118,5 +118,98 @@ class C
 
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Analyzers, analyzerReferences: analyzerReferences);
         }
+
+        [Fact]
+        public async Task TestIDisposableAnalyzer_AddsUsing()
+        {
+            var analyzerReferences = GetAnalyzerReferences("IDisposable");
+
+            var testCode = @"
+using System.IO;
+
+class C
+{
+    void M()
+    {
+        var stream = File.OpenRead(string.Empty);
+        var b = stream.ReadByte();
+        stream.Dispose();
+    }
+}
+";
+
+            var expectedCode = @"
+using System.IO;
+
+class C
+{
+    void M()
+    {
+        using (var stream = File.OpenRead(string.Empty))
+        {
+            var b = stream.ReadByte();
+        }
+    }
+}
+";
+
+            var editorConfig = new Dictionary<string, string>()
+            {
+                // Turn off all diagnostics analyzers
+                ["dotnet_analyzer_diagnostic.severity"] = "none",
+
+                // Prefer using. IDISP017
+                ["dotnet_diagnostic.IDISP017.severity"] = "error",
+            };
+
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Analyzers, analyzerReferences: analyzerReferences);
+        }
+
+        [Fact]
+        public async Task TestLoadingAllAnalyzers_LoadsDependenciesFromAllSearchPaths()
+        {
+            // Loads all analyzer references.
+            var analyzerReferences = _analyzerReferencesProject.AnalyzerReferences;
+
+            var testCode = @"
+using System.IO;
+
+class C
+{
+    void M()
+    {
+        var stream = File.OpenRead(string.Empty);
+        var b = stream.ReadByte();
+        stream.Dispose();
+    }
+}
+";
+
+            var expectedCode = @"
+using System.IO;
+
+class C
+{
+    void M()
+    {
+        using (var stream = File.OpenRead(string.Empty))
+        {
+            var b = stream.ReadByte();
+        }
+    }
+}
+";
+
+            var editorConfig = new Dictionary<string, string>()
+            {
+                // Turn off all diagnostics analyzers
+                ["dotnet_analyzer_diagnostic.severity"] = "none",
+
+                // Prefer using. IDISP017
+                ["dotnet_diagnostic.IDISP017.severity"] = "error",
+            };
+
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Analyzers, analyzerReferences: analyzerReferences);
+        }
     }
 }
