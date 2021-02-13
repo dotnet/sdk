@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -40,12 +39,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (!RequiredSymbols.TryGetSymbols(compilation, out RequiredSymbols symbols))
                 return;
 
-            //  We only apply a fix if there is an unambiguous best overload candidate.
-            var overloadCandidates = symbols.GetCandidateOverloads(reportedInvocation);
-            if (overloadCandidates.IsEmpty)
-                return;
-            var bestCandidates = overloadCandidates.First().Value;
-            if (bestCandidates.Length > 1)
+            var bestCandidates = PreferAsSpanOverSubstring.GetBestSpanBasedOverloads(symbols, reportedInvocation, context.CancellationToken);
+            //  We only apply the fix if there is an unambiguous best overload.
+            if (bestCandidates.Length != 1)
                 return;
             IMethodSymbol spanBasedOverload = bestCandidates[0];
 

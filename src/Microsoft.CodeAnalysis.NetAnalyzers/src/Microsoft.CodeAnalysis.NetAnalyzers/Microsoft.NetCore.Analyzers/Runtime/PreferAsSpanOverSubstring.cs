@@ -3,10 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -14,6 +15,9 @@ using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    /// <summary>
+    /// CA1842: Prefer 'AsSpan' over 'Substring'.
+    /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PreferAsSpanOverSubstring : DiagnosticAnalyzer
     {
@@ -47,25 +51,37 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (!RequiredSymbols.TryGetSymbols(context.Compilation, out RequiredSymbols symbols))
                 return;
 
-            context.RegisterOperationAction(AnalyzeInvocationOperation, OperationKind.Invocation);
+            context.RegisterOperationBlockStartAction(OnOperationBlockStart);
 
-            void AnalyzeInvocationOperation(OperationAnalysisContext context)
+            void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
             {
-                var invocation = (IInvocationOperation)context.Operation;
+                var invocations = PooledConcurrentSet<IInvocationOperation>.GetInstance();
 
-                //  Bail if none of the arguments are Substring invocations.
-                if (!invocation.Arguments.Any(x => symbols.IsAnySubstringInvocation(WalkDownImplicitConversions(x.Value))))
-                    return;
-
-                //  We search for an overload of the invoked member whose signature matches the signature of
-                //  the invoked member, except with ReadOnlySpan<char> substituted in for all arguments that 
-                //  are Substring invocations.
-                var overloadsLookup = symbols.GetCandidateOverloads(invocation);
-                if (!overloadsLookup.IsEmpty && overloadsLookup.First().Key > 0)
+                context.RegisterOperationAction(context =>
                 {
-                    Diagnostic diagnostic = invocation.CreateDiagnostic(Rule);
-                    context.ReportDiagnostic(diagnostic);
-                }
+                    var argument = (IArgumentOperation)context.Operation;
+                    if (!symbols.IsAnySubstringInvocation(WalkDownImplicitConversions(argument.Value)))
+                        return;
+                    if (argument.Parent is not IInvocationOperation invocation)
+                        return;
+                    invocations.Add(invocation);
+                }, OperationKind.Argument);
+
+                context.RegisterOperationBlockEndAction(context =>
+                {
+                    foreach (var invocation in invocations)
+                    {
+                        //  We search for an overload of the invoked member whose signature matches the signature of
+                        //  the invoked member, except with ReadOnlySpan<char> substituted in for some of the 
+                        //  arguments that are Substring invocations.
+                        if (!GetBestSpanBasedOverloads(symbols, invocation, context.CancellationToken).IsEmpty)
+                        {
+                            Diagnostic diagnostic = invocation.CreateDiagnostic(Rule);
+                            context.ReportDiagnostic(diagnostic);
+                        }
+                    }
+                    invocations.Free(context.CancellationToken);
+                });
             }
         }
 
@@ -74,6 +90,130 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             while (operation is IConversionOperation conversion && conversion.IsImplicit)
                 operation = conversion.Operand;
             return operation;
+        }
+
+        /// <summary>
+        /// Gets all the overloads that are tied for being the "best" span-based overload for the specified <see cref="IInvocationOperation"/>.
+        /// An overload is considered "better" if it allows more Substring invocations to be replaced with AsSpan invocations.
+        /// 
+        /// If there are no overloads that replace any Substring calls, or none of the arguments in the invocation are
+        /// Substring calls, an empty array is returned.
+        /// </summary>
+        internal static ImmutableArray<IMethodSymbol> GetBestSpanBasedOverloads(in RequiredSymbols symbols, IInvocationOperation invocation, CancellationToken cancellationToken)
+        {
+            var method = invocation.TargetMethod;
+
+            //  Whether an argument at a particular parameter ordinal is a Substring call.
+            Span<bool> isSubstringLookup = stackalloc bool[method.Parameters.Length];
+            int substringCalls = 0;
+            foreach (var argument in invocation.Arguments)
+            {
+                IOperation value = WalkDownImplicitConversions(argument.Value);
+                if (symbols.IsAnySubstringInvocation(value))
+                {
+                    isSubstringLookup[argument.Parameter.Ordinal] = true;
+                    ++substringCalls;
+                }
+            }
+
+            if (substringCalls == 0)
+                return ImmutableArray<IMethodSymbol>.Empty;
+
+            //  Find all overloads that are tied for being the "best" overload. An overload is considered
+            //  "better" if it allows more Substring calls to be replaced with AsSpan calls.
+            var bestCandidates = ImmutableArray.CreateBuilder<IMethodSymbol>();
+            int resultQuality = 0;
+            var candidates = GetAllAccessibleOverloadsIncludingSelf(invocation, cancellationToken);
+            foreach (var candidate in candidates)
+            {
+                int quality = EvaluateCandidateQuality(symbols, isSubstringLookup, invocation, candidate);
+
+                //  Reject candidates that do not replace at least one Substring call.
+                if (quality < 1)
+                {
+                    continue;
+                }
+                else if (quality == resultQuality)
+                {
+                    bestCandidates.Add(candidate);
+                }
+                else if (quality > resultQuality)
+                {
+                    resultQuality = quality;
+                    bestCandidates.Clear();
+                    bestCandidates.Add(candidate);
+                }
+            }
+
+            return bestCandidates.ToImmutable();
+
+            //  Returns a number indicating how good the candidate method is. 
+            //  If the candidate is valid, the number of Substring calls that can be replaced with AsSpan calls is returned.
+            //  If the candidate is invalid, -1 is returned.
+            static int EvaluateCandidateQuality(in RequiredSymbols symbols, ReadOnlySpan<bool> isSubstringLookup, IInvocationOperation invocation, IMethodSymbol candidate)
+            {
+                var method = invocation.TargetMethod;
+
+                if (candidate.Parameters.Length != method.Parameters.Length)
+                    return -1;
+
+                int replacementCount = 0;
+                foreach (var parameter in candidate.Parameters)
+                {
+                    if (isSubstringLookup[parameter.Ordinal] && SymbolEqualityComparer.Default.Equals(parameter.Type, symbols.RoscharType))
+                    {
+                        ++replacementCount;
+                        continue;
+                    }
+
+                    var oldParameter = method.Parameters[parameter.Ordinal];
+                    if (!SymbolEqualityComparer.Default.Equals(parameter.Type, oldParameter.Type))
+                    {
+                        return -1;
+                    }
+                }
+
+                return replacementCount;
+            }
+        }
+
+        private static IEnumerable<IMethodSymbol> GetAllAccessibleOverloadsIncludingSelf(IInvocationOperation invocation, CancellationToken cancellationToken)
+        {
+            var method = invocation.TargetMethod;
+            var model = invocation.SemanticModel;
+            int location = invocation.Syntax.SpanStart;
+            var instance = invocation.Instance;
+
+            IEnumerable<IMethodSymbol> allOverloads;
+            if (method.IsStatic)
+            {
+                allOverloads = model.LookupStaticMembers(location, method.ContainingType, method.Name).OfType<IMethodSymbol>();
+            }
+            else
+            {
+                var enclosingType = GetEnclosingType(model, location, cancellationToken);
+                allOverloads = model.LookupSymbols(location, instance.Type, method.Name).OfType<IMethodSymbol>();
+                if (DerivesFromOrEqualTo(instance.Type, enclosingType) || instance is IInstanceReferenceOperation)
+                {
+                    allOverloads = allOverloads.Union(model.LookupBaseMembers(location, method.Name).OfType<IMethodSymbol>());
+                }
+            }
+
+            return allOverloads.Where(x => x.IsStatic == method.IsStatic && SymbolEqualityComparer.Default.Equals(x.ReturnType, method.ReturnType));
+
+            static INamedTypeSymbol GetEnclosingType(SemanticModel model, int location, CancellationToken cancellationToken)
+            {
+                ISymbol symbol = model.GetEnclosingSymbol(location, cancellationToken);
+                if (symbol is not INamedTypeSymbol type)
+                    type = symbol.ContainingType;
+
+                return type;
+            }
+        }
+
+        private static bool DerivesFromOrEqualTo(ITypeSymbol derived, ITypeSymbol candidateBase)
+        {
+            return derived.DerivesFrom(candidateBase, baseTypesOnly: true) || SymbolEqualityComparer.Default.Equals(derived, candidateBase);
         }
 
         //  Use struct to avoid allocations.
@@ -153,103 +293,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, Substring1) ||
                     SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, Substring2);
             }
-
-            /// <summary>
-            /// Attempts to find an overload of the invoked method that has the same signature, but with
-            /// ReadOnlySpan{char} in all positions that were Substring invocations in the invoked member.
-            /// </summary>
-            public bool TryGetEquivalentSpanBasedOverload(IInvocationOperation invocation, [NotNullWhen(true)] out IMethodSymbol? spanBasedOverload)
-            {
-                spanBasedOverload = null;
-                var method = invocation.TargetMethod;
-                if (method.Parameters.IsEmpty)
-                    return false;
-                ITypeSymbol[] expectedSignature = new ITypeSymbol[method.Parameters.Length];
-                for (int index = 0; index < method.Parameters.Length; index++)
-                    expectedSignature[index] = method.Parameters[index].Type;
-
-                foreach (var argument in invocation.Arguments)
-                {
-                    if (IsAnySubstringInvocation(argument.Value))
-                        expectedSignature[argument.Parameter.Ordinal] = RoscharType;
-                }
-
-                var comparer = SymbolEqualityComparer.Default;
-                spanBasedOverload = method.ContainingType.GetMembers(method.Name)
-                    .OfType<IMethodSymbol>()
-                    .Where(x =>
-                    {
-                        return comparer.Equals(x.ReturnType, method.ReturnType) &&
-                        x.IsStatic == method.IsStatic;
-                    })
-                    .GetFirstOrDefaultMemberWithParameterTypes(expectedSignature);
-                return spanBasedOverload is not null;
-            }
-
-            public ImmutableSortedDictionary<int, ImmutableArray<IMethodSymbol>> GetCandidateOverloads(IInvocationOperation invocation)
-            {
-                var method = invocation.TargetMethod;
-                int substringCalls = 0;
-                //  Whether the argument corrasponding to the parameter at the specified ordinal is a Substring invocation.
-                Span<bool> isSubstringLookup = stackalloc bool[method.Parameters.Length];
-                foreach (var argument in invocation.Arguments)
-                {
-                    var value = WalkDownImplicitConversions(argument.Value);
-                    if (IsAnySubstringInvocation(value))
-                    {
-                        isSubstringLookup[argument.Parameter.Ordinal] = true;
-                        ++substringCalls;
-                    }
-                }
-
-                if (substringCalls == 0)
-                    return ImmutableSortedDictionary<int, ImmutableArray<IMethodSymbol>>.Empty;
-
-                var results = new SortedDictionary<int, ImmutableArray<IMethodSymbol>.Builder>();
-                var overloads = method.ContainingType.GetMembers(method.Name)
-                    .OfType<IMethodSymbol>()
-                    .Where(x => x.IsStatic == method.IsStatic && SymbolEqualityComparer.Default.Equals(x.ReturnType, method.ReturnType));
-                foreach (var candidate in overloads)
-                {
-                    int replacedSubstringCalls = CountReplacedSubstringCalls(isSubstringLookup, RoscharType, candidate);
-                    if (replacedSubstringCalls == -1)
-                        continue;
-                    if (!results.TryGetValue(replacedSubstringCalls, out var builder))
-                    {
-                        builder = ImmutableArray.CreateBuilder<IMethodSymbol>();
-                        results.Add(replacedSubstringCalls, builder);
-                    }
-                    builder.Add(candidate);
-                }
-
-                return results.ToImmutableSortedDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToImmutable(),
-                    ReverseComparer);
-
-                int CountReplacedSubstringCalls(ReadOnlySpan<bool> isSubstringLookup, INamedTypeSymbol roscharType, IMethodSymbol candidate)
-                {
-                    RoslynDebug.Assert(method is not null);
-
-                    if (candidate.Parameters.Length != method.Parameters.Length)
-                        return -1;
-                    int replacedSubstringCalls = 0;
-                    foreach (var parameter in candidate.Parameters)
-                    {
-                        if (isSubstringLookup[parameter.Ordinal] && SymbolEqualityComparer.Default.Equals(parameter.Type, roscharType))
-                        {
-                            ++replacedSubstringCalls;
-                        }
-                        else if (!SymbolEqualityComparer.Default.Equals(parameter.Type, method.Parameters[parameter.Ordinal].Type))
-                        {
-                            return -1;
-                        }
-                    }
-                    return replacedSubstringCalls;
-                }
-            }
-
-            private static readonly Comparer<int> ReverseComparer = Comparer<int>.Create((x, y) => Comparer<int>.Default.Compare(y, x));
         }
 
         private static LocalizableString CreateResource(string resourceName)

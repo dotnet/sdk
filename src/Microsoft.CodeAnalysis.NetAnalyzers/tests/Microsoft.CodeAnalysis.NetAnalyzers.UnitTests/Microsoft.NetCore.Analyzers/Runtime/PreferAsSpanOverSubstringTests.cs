@@ -20,7 +20,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public class PreferAsSpanOverSubstringTests
     {
-        #region Reports Diagnostic
         public static IEnumerable<object[]> Data_SubstringAsSpanPair_CS
         {
             get
@@ -1066,9 +1065,7 @@ public class R
             };
             return test.RunAsync();
         }
-        #endregion
 
-        #region No Diagnostic
         public static IEnumerable<object[]> Data_NoRoscharOverload_CS
         {
             get
@@ -1298,29 +1295,292 @@ public class WrongReturnType
             return test.RunAsync();
         }
 
-        //  No VB counterpart because VB doesn't support ref-like types in APIs, which means we have to put the callable methods
-        //  in a C# assembly, and apparently Roslyn doesn't produce symbols for inaccessible types in metadata. We could 
-        //  use InternalsVisibleTo, but then the overload would be accessible, defeating the purpose of the test.
-        [Fact]
-        public Task InaccessibleOverload_NoDiagnostic()
+        [Theory]
+        [InlineData("parent.Private")]
+        [InlineData("sibling.Private")]
+        [InlineData("base.Private")]
+        [InlineData("this.Private")]
+        [InlineData("Private")]
+        [InlineData("parent.ProtectedAndInternal")]
+        [InlineData("sibling.ProtectedAndInternal")]
+        [InlineData("base.ProtectedAndInternal")]
+        [InlineData("this.ProtectedAndInternal")]
+        [InlineData("ProtectedAndInternal")]
+        [InlineData("parent.Internal")]
+        [InlineData("sibling.Internal")]
+        [InlineData("base.Internal")]
+        [InlineData("this.Internal")]
+        [InlineData("Internal")]
+        [InlineData("parent.Protected")]
+        [InlineData("parent.ProtectedOrInternal")]
+        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_CS(string methodCallWithoutArgumentList)
         {
-            string receiver = CS.Usings + @"
-public class Receiver
+            string testCode = CS.Usings + @"
+public class ExternalSubclass : External
 {
-    public static void Consume(string text) { }
-    private static void Consume(Roschar span) { }
+    private string foo;
+    private External parent;
+    private ExternalSubclass sibling;
+    public void NoDiagnostic()
+    {
+        " + methodCallWithoutArgumentList + @"(foo.Substring(1));
+    }
 }";
+            var project = new ProjectState("ExternalProject", LanguageNames.CSharp, "external", "cs")
+            {
+                Sources = { CS.ExternalBaseClass }
+            };
+
             var test = new VerifyCS.Test
             {
                 TestState =
                 {
-                    Sources = { CS.WithBody(@"Receiver.Consume(foo.Substring(1));"), receiver }
+                    Sources = { testCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name }
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             return test.RunAsync();
         }
-        #endregion
+
+        [Theory]
+        [InlineData("parent.Private")]
+        [InlineData("sibling.Private")]
+        [InlineData("MyBase.Private")]
+        [InlineData("Me.Private")]
+        [InlineData("[Private]")]
+        [InlineData("parent.ProtectedAndInternal")]
+        [InlineData("sibling.ProtectedAndInternal")]
+        [InlineData("MyBase.ProtectedAndInternal")]
+        [InlineData("Me.ProtectedAndInternal")]
+        [InlineData("ProtectedAndInternal")]
+        [InlineData("parent.Internal")]
+        [InlineData("sibling.Internal")]
+        [InlineData("MyBase.Internal")]
+        [InlineData("Me.Internal")]
+        [InlineData("parent.Protected")]
+        [InlineData("parent.ProtectedOrInternal")]
+        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_VB(string methodCallWithoutArgumentList)
+        {
+            string testCode = VB.Usings + @"
+Public Class ExternalSubclass : Inherits External
+
+    Private foo As String
+    Private parent As External
+    Private sibling As ExternalSubclass
+    Public Sub NoDiagnostic()
+
+        " + methodCallWithoutArgumentList + @"(foo.Substring(1))
+    End Sub
+End Class";
+            var project = new ProjectState("ExternalProject", LanguageNames.CSharp, "external", "cs")
+            {
+                Sources = { CS.ExternalBaseClass }
+            };
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("sibling.Protected")]
+        [InlineData("base.Protected")]
+        [InlineData("this.Protected")]
+        [InlineData("Protected")]
+        [InlineData("sibling.ProtectedOrInternal")]
+        [InlineData("base.ProtectedOrInternal")]
+        [InlineData("this.ProtectedOrInternal")]
+        [InlineData("ProtectedOrInternal")]
+        public Task Accessibility_ExternalBaseClass_WithDiagnostics_CS(string methodCallWithoutArgumentList)
+        {
+            string testCode = CS.Usings + @"
+public class ExternalSubclass : External
+{
+    private string foo;
+    private ExternalSubclass sibling;
+    public void Diagnostic()
+    {
+        {|#0:" + methodCallWithoutArgumentList + @"(foo.Substring(1))|};
+    }
+}";
+            string fixedCode = CS.Usings + @"
+public class ExternalSubclass : External
+{
+    private string foo;
+    private ExternalSubclass sibling;
+    public void Diagnostic()
+    {
+        " + methodCallWithoutArgumentList + @"(foo.AsSpan(1));
+    }
+}";
+            var project = new ProjectState("ExternalProject", LanguageNames.CSharp, "external", "cs")
+            {
+                Sources = { CS.ExternalBaseClass }
+            };
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name },
+                    ExpectedDiagnostics = { CS.DiagnosticAt(0) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("sibling.Protected")]
+        [InlineData("MyBase.Protected")]
+        [InlineData("Me.Protected")]
+        [InlineData("[Protected]")]
+        [InlineData("sibling.ProtectedOrInternal")]
+        [InlineData("MyBase.ProtectedOrInternal")]
+        [InlineData("Me.ProtectedOrInternal")]
+        [InlineData("ProtectedOrInternal")]
+        public Task Accessibility_ExternalBaseClass_WithDiagnostics_VB(string methodCallWithoutArgumentList)
+        {
+            string testCode = VB.Usings + @"
+Public Class ExternalSubclass : Inherits External
+
+    Private foo As String
+    Private sibling As ExternalSubclass
+    Private Sub Diagnostic()
+
+        {|#0:" + methodCallWithoutArgumentList + @"(foo.Substring(1))|}
+    End Sub
+End Class";
+            string fixedCode = VB.Usings + @"
+Public Class ExternalSubclass : Inherits External
+
+    Private foo As String
+    Private sibling As ExternalSubclass
+    Private Sub Diagnostic()
+
+        " + methodCallWithoutArgumentList + @"(foo.AsSpan(1))
+    End Sub
+End Class";
+            var project = new ProjectState("ExternalProject", LanguageNames.CSharp, "external", "cs")
+            {
+                Sources = { CS.ExternalBaseClass }
+            };
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name },
+                    ExpectedDiagnostics = { VB.DiagnosticAt(0) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        //  No VB counterpart because VB doesn't support ref-like types in APIs.
+        [Theory]
+        [InlineData("parent.Private")]
+        [InlineData("sibling.Private")]
+        [InlineData("base.Private")]
+        [InlineData("this.Private")]
+        [InlineData("Private")]
+        [InlineData("parent.Protected")]
+        public Task Accessibility_InternalBaseClass_WithoutDiagnostics_CS(string methodCallWithoutArgumentList)
+        {
+            string testCode = CS.Usings + @"
+public class InternalSubclass : Internal
+{
+    private string foo;
+    private Internal parent;
+    private InternalSubclass sibling;
+    public void NoDiagnostic()
+    {
+        " + methodCallWithoutArgumentList + @"(foo.Substring(1));
+    }
+}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode, CS.InternalBaseClass }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        //  No VB counterpart because VB doesn't support ref-like types in APIs.
+        [Theory]
+        [InlineData("sibling.Protected")]
+        [InlineData("base.Protected")]
+        [InlineData("this.Protected")]
+        [InlineData("Protected")]
+        public Task Accessibility_InternalBaseClass_WithDiagnostics_CS(string methodCallWithoutArgumentList)
+        {
+            string testCode = CS.Usings + @"
+public class InternalSubclass : Internal
+{
+    private string foo;
+    private InternalSubclass sibling;
+    public void Diagnostic()
+    {
+        {|#0:" + methodCallWithoutArgumentList + @"(foo.Substring(1))|};
+    }
+}";
+            string fixedCode = CS.Usings + @"
+public class InternalSubclass : Internal
+{
+    private string foo;
+    private InternalSubclass sibling;
+    public void Diagnostic()
+    {
+        " + methodCallWithoutArgumentList + @"(foo.AsSpan(1));
+    }
+}";
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode, CS.InternalBaseClass },
+                    ExpectedDiagnostics = { CS.DiagnosticAt(0) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode, CS.InternalBaseClass }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
 
         #region Helpers
         private static class CS
@@ -1328,6 +1588,33 @@ public class Receiver
             public const string Usings = @"
 using System;
 using Roschar = System.ReadOnlySpan<char>;";
+            public const string ExternalBaseClass = CS.Usings + @"
+public class External
+{
+    public void ProtectedOrInternal(string text) { }
+    protected internal void ProtectedOrInternal(Roschar span) { }
+
+    public void Protected(string text) { }
+    protected void Protected(Roschar span) { }
+
+    public void Internal(string text) { }
+    internal void Internal(Roschar span) { }
+
+    public void ProtectedAndInternal(string text) { }
+    private protected void ProtectedAndInternal(Roschar span) { }
+
+    public void Private(string text) { }
+    private void Private(Roschar span) { }
+}";
+            public const string InternalBaseClass = CS.Usings + @"
+public class Internal
+{
+    public void Private(string text) { }
+    private void Private(Roschar span) { }
+
+    public void Protected(string text) { }
+    protected void Protected(Roschar span) { }
+}";
 
             public static string WithBody(string statements, bool includeUsings = true)
             {
@@ -1362,6 +1649,9 @@ public partial class Body
 
         private static class VB
         {
+            public const string Usings = @"
+Imports System";
+
             public static string WithBody(string statements, bool includeImports = true)
             {
                 const string indent = "        ";
