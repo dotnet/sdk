@@ -181,15 +181,18 @@ namespace Microsoft.NET.Build.Tasks
                 // unless an explicit PublishReadyToRunEmitSymbols flag is enabled by the app developer. There is also another way to profile that the runtime supports, which does
                 // not rely on the native PDBs/Map files, so creating them is really an opt-in option, typically used by advanced users.
                 // For debugging, only the IL PDBs are required.
-                if (outputPDBImage != null && (!ReadyToRunUseCrossgen2 || crossgen2IsVersion5))
+                if (outputPDBImage != null)
                 {
-                    // This TaskItem is the R2R->R2RPDB entry, for a R2R image that was just created, and for which we need to create native PDBs. This will be used as
-                    // an input to the ReadyToRunCompiler task
-                    TaskItem pdbCompilationEntry = new TaskItem(file);
-                    pdbCompilationEntry.ItemSpec = outputR2RImage;
-                    pdbCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
-                    pdbCompilationEntry.SetMetadata(MetadataKeys.CreatePDBCommand, crossgen1CreatePDBCommand);
-                    symbolsCompilationList.Add(pdbCompilationEntry);
+                    if (!ReadyToRunUseCrossgen2 || crossgen2IsVersion5)
+                    {
+                        // This TaskItem is the R2R->R2RPDB entry, for a R2R image that was just created, and for which we need to create native PDBs. This will be used as
+                        // an input to the ReadyToRunCompiler task
+                        TaskItem pdbCompilationEntry = new TaskItem(file);
+                        pdbCompilationEntry.ItemSpec = outputR2RImage;
+                        pdbCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
+                        pdbCompilationEntry.SetMetadata(MetadataKeys.CreatePDBCommand, crossgen1CreatePDBCommand);
+                        symbolsCompilationList.Add(pdbCompilationEntry);
+                    }
 
                     // This TaskItem corresponds to the output PDB image. It is equivalent to the input TaskItem, only the ItemSpec for it points to the new path
                     // for the newly created PDB image.
