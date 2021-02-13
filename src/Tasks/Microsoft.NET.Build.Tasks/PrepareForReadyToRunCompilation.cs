@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -168,6 +168,34 @@ namespace Microsoft.NET.Build.Tasks
                     compositeR2RFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                     compositeR2RFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositeR2RImageRelativePath);
                     r2rFilesPublishList.Add(compositeR2RFileToPublish);
+
+                    string compositePDBImage = null;
+                    string compositePDBRelativePath = null;
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && hasValidDiaSymReaderLib)
+                    {
+                        compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.pdb");
+                        compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.pdb");
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.map");
+                        compositePDBRelativePath = Path.ChangeExtension(compositePDBImageRelativePath, ".ni.map");
+                    }
+                    
+                    if (compositePDBImage != null)
+                    {
+                        // Publish composite PDB file
+                        TaskItem r2rSymbolsFileToPublish = new TaskItem(file);
+                        r2rSymbolsFileToPublish.ItemSpec = compositePDBImage;
+                        r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositePDBImageRelativePath);
+                        r2rSymbolsFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
+                        if (!IncludeSymbolsInSingleFile)
+                        {
+                            r2rSymbolsFileToPublish.SetMetadata(MetadataKeys.ExcludeFromSingleFile, "true");
+                        }
+    
+                        r2rFilesPublishList.Add(r2rSymbolsFileToPublish);
+                    }
                 }
 
                 // This TaskItem corresponds to the output R2R image. It is equivalent to the input TaskItem, only the ItemSpec for it points to the new path
