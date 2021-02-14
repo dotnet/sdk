@@ -35,21 +35,5 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Dim newNameSyntax = SyntaxFactory.IdentifierName(newArgumentName)
             editor.ReplaceNode(oldNameSyntax, newNameSyntax)
         End Sub
-
-        Private Protected Overrides Function IsNamespaceImported(editor As DocumentEditor, namespaceName As String) As Boolean
-
-            Dim options = TryCast(editor.OriginalDocument.Project.CompilationOptions, VisualBasicCompilationOptions)
-            If options IsNot Nothing AndAlso options.GlobalImports.Any(Function(x) x.Name = namespaceName) Then
-                Return True
-            End If
-
-            Dim clauses = editor.Generator.GetNamespaceImports(editor.OriginalRoot).SelectMany(
-                Function(x)
-                    Dim importsStatement = TryCast(x, ImportsStatementSyntax)
-                    If importsStatement Is Nothing Then Return Enumerable.Empty(Of SimpleImportsClauseSyntax)
-                    Return importsStatement.ImportsClauses.OfType(Of SimpleImportsClauseSyntax)
-                End Function)
-            Return clauses.Any(Function(x) x.Name.ToString() = namespaceName)
-        End Function
     End Class
 End Namespace

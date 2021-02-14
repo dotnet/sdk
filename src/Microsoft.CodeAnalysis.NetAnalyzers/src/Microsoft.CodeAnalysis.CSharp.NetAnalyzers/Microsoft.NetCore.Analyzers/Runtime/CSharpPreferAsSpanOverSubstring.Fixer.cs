@@ -31,11 +31,5 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             var newNameSyntax = SyntaxFactory.IdentifierName(newArgumentName);
             editor.ReplaceNode(oldNameSyntax, newNameSyntax);
         }
-
-        private protected override bool IsNamespaceImported(DocumentEditor editor, string namespaceName)
-        {
-            var imports = editor.Generator.GetNamespaceImports(editor.OriginalRoot);
-            return imports.Any(x => x is UsingDirectiveSyntax @using && @using.Name.ToString() == namespaceName);
-        }
     }
 }

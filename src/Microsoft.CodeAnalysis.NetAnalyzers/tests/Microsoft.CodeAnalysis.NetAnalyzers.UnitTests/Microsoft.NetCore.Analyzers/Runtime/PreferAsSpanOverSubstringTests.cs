@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -756,7 +757,7 @@ public class C
         }
 
         [Fact]
-        public Task MissingUsings_AreAdded_CS()
+        public Task SystemNamespace_IsAdded_WhenMissing_CS()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -784,7 +785,7 @@ public class C
         }
 
         [Fact]
-        public Task MissingUsings_AreAdded_WhenNotIncludedGlobally_VB()
+        public Task SystemNamespace_IsAdded_WhenNotIncludedGlobally_VB()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -820,7 +821,7 @@ public class C
         }
 
         [Fact]
-        public Task MissingUsings_AreNotAdded_WhenIncludedGlobally_VB()
+        public Task SystemNamespace_IsNotAdded_WhenIncludedGlobally_VB()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -862,6 +863,125 @@ public class C
                 options = options.WithGlobalImports(globalSystemImport);
                 return solution.WithProjectCompilationOptions(id, options);
             });
+            return test.RunAsync();
+        }
+
+        //  No VB counterpart because imports must precede all declarations in VB.
+        [Fact]
+        public Task SystemNamespace_IsNotAdded_WhenImportedWithinNamespaceDeclaration_CS()
+        {
+            string format = @"
+using Roschar = System.ReadOnlySpan<char>;
+
+namespace Testopolis
+{{
+    using System;
+
+    public class Body
+    {{
+        public void Consume(string text) {{ }}
+        public void Consume(Roschar span) {{ }}
+        public void Run(string foo)
+        {{
+            {0}
+        }}
+    }}
+}}";
+            string testCode = string.Format(CultureInfo.InvariantCulture, format, @"{|#0:Consume(foo.Substring(1))|};");
+            string fixedCode = string.Format(CultureInfo.InvariantCulture, format, @"Consume(foo.AsSpan(1));");
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { CS.DiagnosticAt(0) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("System")]
+        [InlineData("System.Widgets")]
+        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_CS(string namespaceDeclaration)
+        {
+            string format = @"
+using Roschar = System.ReadOnlySpan<char>;
+
+namespace " + namespaceDeclaration + @"
+{{
+    public class Body
+    {{
+        public void Consume(string text) {{ }}
+        public void Consume(Roschar span) {{ }}
+        public void Run(string foo)
+        {{
+            {0}
+        }}
+    }}
+}}";
+            string testCode = string.Format(CultureInfo.InvariantCulture, format, @"{|#0:Consume(foo.Substring(1))|};");
+            string fixedCode = string.Format(CultureInfo.InvariantCulture, format, @"Consume(foo.AsSpan(1));");
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { CS.DiagnosticAt(0) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("System")]
+        [InlineData("System.Widgets")]
+        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_VB(string namespaceDeclaration)
+        {
+            string helper = @"
+using Roschar = System.ReadOnlySpan<char>;
+
+public class Helper
+{
+    public void Consume(string text) { }
+    public void Consume(Roschar span) { }
+}";
+            var project = new ProjectState("HelperProject", LanguageNames.CSharp, "helper", "cs")
+            {
+                Sources = { helper }
+            };
+            string format = @"
+Namespace " + namespaceDeclaration + @"
+
+    Public Class Body
+
+        Private helper As Helper
+        Public Sub Run(foo As String)
+
+            {0}
+        End Sub
+    End Class
+End Namespace";
+            string testCode = string.Format(CultureInfo.InvariantCulture, format, @"{|#0:helper.Consume(foo.Substring(1))|}");
+            string fixedCode = string.Format(CultureInfo.InvariantCulture, format, @"helper.Consume(foo.AsSpan(1))");
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name },
+                    ExpectedDiagnostics = { VB.DiagnosticAt(0) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                    AdditionalProjects = { { project.Name, project } },
+                    AdditionalProjectReferences = { project.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
             return test.RunAsync();
         }
 
@@ -1588,7 +1708,7 @@ public class InternalSubclass : Internal
             public const string Usings = @"
 using System;
 using Roschar = System.ReadOnlySpan<char>;";
-            public const string ExternalBaseClass = CS.Usings + @"
+            public const string ExternalBaseClass = Usings + @"
 public class External
 {
     public void ProtectedOrInternal(string text) { }
@@ -1606,7 +1726,7 @@ public class External
     public void Private(string text) { }
     private void Private(Roschar span) { }
 }";
-            public const string InternalBaseClass = CS.Usings + @"
+            public const string InternalBaseClass = Usings + @"
 public class Internal
 {
     public void Private(string text) { }

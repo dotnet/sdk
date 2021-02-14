@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -21,8 +22,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private protected abstract void ReplaceInvocationMethodName(SyntaxEditor editor, SyntaxNode memberInvocation, string newName);
 
         private protected abstract void ReplaceNamedArgumentName(SyntaxEditor editor, SyntaxNode invocation, string oldArgumentName, string newArgumentName);
-
-        private protected abstract bool IsNamespaceImported(DocumentEditor editor, string namespaceName);
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PreferAsSpanOverSubstring.RuleId);
 
@@ -74,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 //  Import System namespace if necessary.
-                if (!IsNamespaceImported(editor, nameof(System)))
+                if (!IsMemoryExtensionsInScope(symbols, reportedInvocation))
                 {
                     SyntaxNode withoutSystemImport = editor.GetChangedRoot();
                     SyntaxNode systemNamespaceImportStatement = editor.Generator.NamespaceImportDeclaration(nameof(System));
@@ -87,5 +86,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+
+        private static bool IsMemoryExtensionsInScope(in RequiredSymbols symbols, IInvocationOperation invocation)
+        {
+            var model = invocation.SemanticModel;
+            int position = invocation.Syntax.SpanStart;
+            const string name = nameof(MemoryExtensions);
+
+            return model.LookupNamespacesAndTypes(position, name: name)
+                .Contains(symbols.MemoryExtensionsType, SymbolEqualityComparer.Default);
+        }
     }
 }

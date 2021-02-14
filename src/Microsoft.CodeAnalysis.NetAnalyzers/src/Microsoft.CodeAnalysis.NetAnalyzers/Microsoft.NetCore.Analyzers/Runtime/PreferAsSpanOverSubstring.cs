@@ -189,7 +189,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 allOverloads = model.LookupStaticMembers(location, method.ContainingType, method.Name).OfType<IMethodSymbol>();
             }
-            else
+            else if (instance is not null)
             {
                 var enclosingType = GetEnclosingType(model, location, cancellationToken);
                 allOverloads = model.LookupSymbols(location, instance.Type, method.Name).OfType<IMethodSymbol>();
@@ -197,6 +197,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     allOverloads = allOverloads.Union(model.LookupBaseMembers(location, method.Name).OfType<IMethodSymbol>());
                 }
+            }
+            //  This can happen when compiling invalid code.
+            else
+            {
+                allOverloads = Enumerable.Empty<IMethodSymbol>();
             }
 
             return allOverloads.Where(x => x.IsStatic == method.IsStatic && SymbolEqualityComparer.Default.Equals(x.ReturnType, method.ReturnType));
@@ -223,11 +228,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             private RequiredSymbols(
                 INamedTypeSymbol stringType, INamedTypeSymbol roscharType,
+                INamedTypeSymbol memoryExtensionsType,
                 IMethodSymbol substring1, IMethodSymbol substring2,
                 IMethodSymbol asSpan1, IMethodSymbol asSpan2)
             {
                 StringType = stringType;
                 RoscharType = roscharType;
+                MemoryExtensionsType = memoryExtensionsType;
                 Substring1 = substring1;
                 Substring2 = substring2;
                 AsSpan1 = asSpan1;
@@ -274,6 +281,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 symbols = new RequiredSymbols(
                     stringType, roscharType,
+                    memoryExtensionsType,
                     substring1, substring2,
                     asSpan1, asSpan2);
                 return true;
@@ -281,6 +289,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             public INamedTypeSymbol StringType { get; }
             public INamedTypeSymbol RoscharType { get; }
+            public INamedTypeSymbol MemoryExtensionsType { get; }
             public IMethodSymbol Substring1 { get; }
             public IMethodSymbol Substring2 { get; }
             public IMethodSymbol AsSpan1 { get; }
