@@ -4,55 +4,34 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.CodeAnalysis.Razor.Serialization
 {
     internal static class JsonReaderExtensions
     {
-        public static bool ReadTokenAndAdvance(this JsonReader reader, JsonToken expectedTokenType, out object value)
+        public static string ReadNextStringProperty(this ref Utf8JsonReader reader, string propertyName)
         {
-            value = reader.Value;
-            return reader.TokenType == expectedTokenType && reader.Read();
-        }
-
-        public static void ReadProperties(this JsonReader reader, Action<string> onProperty)
-        {
-            while (reader.Read())
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                switch (reader.TokenType)
+                if (reader.TokenType == JsonTokenType.PropertyName && reader.ValueTextEquals(propertyName))
                 {
-                    case JsonToken.PropertyName:
-                        var propertyName = reader.Value.ToString();
-                        onProperty(propertyName);
-                        break;
-                    case JsonToken.EndObject:
-                        return;
-                }
-            }
-        }
-
-        public static string ReadNextStringProperty(this JsonReader reader, string propertyName)
-        {
-            while (reader.Read())
-            {
-                switch (reader.TokenType)
-                {
-                    case JsonToken.PropertyName:
-                        Debug.Assert(reader.Value.ToString() == propertyName);
-                        if (reader.Read())
-                        {
-                            var value = (string)reader.Value;
-                            return value;
-                        }
-                        else
-                        {
-                            return null;
-                        }
+                    return reader.Read() ? reader.GetString() : null;
                 }
             }
 
-            throw new JsonSerializationException($"Could not find string property '{propertyName}'.");
+            throw new JsonException($"Could not find string property '{propertyName}'.");
+        }
+
+        public static bool IsValidStartObject(this ref Utf8JsonReader reader)
+        {
+            return reader.Read() && reader.TokenType == JsonTokenType.StartObject;
+        }
+
+        public static bool IsValidStartArray(this ref Utf8JsonReader reader)
+        {
+            return reader.Read() && reader.TokenType == JsonTokenType.StartArray;
         }
     }
 }

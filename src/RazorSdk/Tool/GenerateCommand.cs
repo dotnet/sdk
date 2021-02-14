@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
-using Newtonsoft.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -301,17 +301,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 return Array.Empty<TagHelperDescriptor>();
             }
 
-            using (var stream = File.OpenRead(tagHelperManifest))
-            {
-                var reader = new JsonTextReader(new StreamReader(stream));
-
-                var serializer = new JsonSerializer();
-                serializer.Converters.Add(new RazorDiagnosticJsonConverter());
-                serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
-
-                var descriptors = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
-                return descriptors;
-            }
+            var descriptors = JsonSerializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(File.ReadAllText(tagHelperManifest), new JsonSerializerOptions() {
+                Converters = { new RazorDiagnosticJsonConverter(), new TagHelperDescriptorJsonConverter() }
+            });
+            return descriptors;
+            
         }
 
         private static SourceItem[] GetSourceItems(List<string> sources, List<string> outputs, List<string> relativePath, List<string> fileKinds, List<string> cssScopeSources, List<string> cssScopeValues)

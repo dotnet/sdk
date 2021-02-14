@@ -4,12 +4,12 @@
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.CodeAnalysis.Razor.Serialization
 {
-    internal class RazorDiagnosticJsonConverter : JsonConverter
+    internal class RazorDiagnosticJsonConverter : JsonConverter<RazorDiagnostic>
     {
         public static readonly RazorDiagnosticJsonConverter Instance = new RazorDiagnosticJsonConverter();
         private const string RazorDiagnosticMessageKey = "Message";
@@ -19,24 +19,26 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             return typeof(RazorDiagnostic).IsAssignableFrom(objectType);
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override RazorDiagnostic Read(ref Utf8JsonReader reader, Type objectType, JsonSerializerOptions options)
         {
-            if (reader.TokenType != JsonToken.StartObject)
+            if (reader.TokenType != JsonTokenType.StartObject)
             {
                 return null;
             }
 
-            var diagnostic = JObject.Load(reader);
-            var id = diagnostic[nameof(RazorDiagnostic.Id)].Value<string>();
-            var severity = diagnostic[nameof(RazorDiagnostic.Severity)].Value<int>();
-            var message = diagnostic[RazorDiagnosticMessageKey].Value<string>();
+            using var doc = JsonDocument.ParseValue(ref reader);
+            JsonElement root = doc.RootElement;
 
-            var span = diagnostic[nameof(RazorDiagnostic.Span)].Value<JObject>();
-            var filePath = span[nameof(SourceSpan.FilePath)].Value<string>();
-            var absoluteIndex = span[nameof(SourceSpan.AbsoluteIndex)].Value<int>();
-            var lineIndex = span[nameof(SourceSpan.LineIndex)].Value<int>();
-            var characterIndex = span[nameof(SourceSpan.CharacterIndex)].Value<int>();
-            var length = span[nameof(SourceSpan.Length)].Value<int>();
+            var id = root.GetProperty(nameof(RazorDiagnostic.Id)).GetString();
+            var severity = root.GetProperty(nameof(RazorDiagnostic.Severity)).GetInt32();
+            var message = root.GetProperty(RazorDiagnosticMessageKey).GetString();
+
+            var span = root.GetProperty(nameof(RazorDiagnostic.Span));
+            var filePath = span.GetProperty(nameof(SourceSpan.FilePath)).GetString();
+            var absoluteIndex = span.GetProperty(nameof(SourceSpan.AbsoluteIndex)).GetInt32();
+            var lineIndex = span.GetProperty(nameof(SourceSpan.LineIndex)).GetInt32();
+            var characterIndex = span.GetProperty(nameof(SourceSpan.CharacterIndex)).GetInt32();
+            var length = span.GetProperty(nameof(SourceSpan.Length)).GetInt32();
 
             var descriptor = new RazorDiagnosticDescriptor(id, () => message, (RazorDiagnosticSeverity)severity);
             var sourceSpan = new SourceSpan(filePath, absoluteIndex, lineIndex, characterIndex, length);
@@ -44,31 +46,23 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             return RazorDiagnostic.Create(descriptor, sourceSpan);
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, RazorDiagnostic diagnostic, JsonSerializerOptions options)
         {
-            var diagnostic = (RazorDiagnostic)value;
-
             writer.WriteStartObject();
-            WriteProperty(writer, nameof(RazorDiagnostic.Id), diagnostic.Id);
-            WriteProperty(writer, nameof(RazorDiagnostic.Severity), (int)diagnostic.Severity);
-            WriteProperty(writer, RazorDiagnosticMessageKey, diagnostic.GetMessage(CultureInfo.CurrentCulture));
+            writer.WriteString(nameof(RazorDiagnostic.Id), diagnostic.Id);
+            writer.WriteNumber(nameof(RazorDiagnostic.Severity), (int) diagnostic.Severity);
+            writer.WriteString(RazorDiagnosticMessageKey, diagnostic.GetMessage(CultureInfo.CurrentCulture));
 
             writer.WritePropertyName(nameof(RazorDiagnostic.Span));
             writer.WriteStartObject();
-            WriteProperty(writer, nameof(SourceSpan.FilePath), diagnostic.Span.FilePath);
-            WriteProperty(writer, nameof(SourceSpan.AbsoluteIndex), diagnostic.Span.AbsoluteIndex);
-            WriteProperty(writer, nameof(SourceSpan.LineIndex), diagnostic.Span.LineIndex);
-            WriteProperty(writer, nameof(SourceSpan.CharacterIndex), diagnostic.Span.CharacterIndex);
-            WriteProperty(writer, nameof(SourceSpan.Length), diagnostic.Span.Length);
+            writer.WriteString(nameof(SourceSpan.FilePath), diagnostic.Span.FilePath);
+            writer.WriteNumber(nameof(SourceSpan.AbsoluteIndex), diagnostic.Span.AbsoluteIndex);
+            writer.WriteNumber(nameof(SourceSpan.LineIndex), diagnostic.Span.LineIndex);
+            writer.WriteNumber(nameof(SourceSpan.CharacterIndex), diagnostic.Span.CharacterIndex);
+            writer.WriteNumber(nameof(SourceSpan.Length), diagnostic.Span.Length);
             writer.WriteEndObject();
 
             writer.WriteEndObject();
-        }
-
-        private void WriteProperty<T>(JsonWriter writer, string key, T value)
-        {
-            writer.WritePropertyName(key);
-            writer.WriteValue(value);
         }
     }
 }

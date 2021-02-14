@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
-using Newtonsoft.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -212,13 +212,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private static void Serialize(Stream stream, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
-            using (var writer = new StreamWriter(stream, Encoding.UTF8, bufferSize: 4096, leaveOpen: true))
+            using (var writer = new Utf8JsonWriter(stream))
             {
-                var serializer = new JsonSerializer();
-                serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
-                serializer.Converters.Add(new RazorDiagnosticJsonConverter());
-
-                serializer.Serialize(writer, tagHelpers);
+                JsonSerializer.Serialize<IReadOnlyList<TagHelperDescriptor>>(writer, tagHelpers, new JsonSerializerOptions() {
+                    Converters = { new TagHelperDescriptorJsonConverter(), new RazorDiagnosticJsonConverter() }
+                });
             }
         }
     }
