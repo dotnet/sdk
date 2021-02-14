@@ -405,7 +405,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                            Crossgen2Tool="@(Crossgen2Tool)"
                            UseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
                            Crossgen2Composite="$(PublishReadyToRunComposite)"
-                           EmitSymbols="$(PublishReadyToRunEmitSymbols)"
                            Crossgen2ExtraCommandLineArgs="$(PublishReadyToRunCrossgen2ExtraArgs)"
                            ImplementationAssemblyReferences="@(_ReadyToRunAssembliesToReference)"
                            ShowCompilerWarnings="$(PublishReadyToRunShowWarnings)"

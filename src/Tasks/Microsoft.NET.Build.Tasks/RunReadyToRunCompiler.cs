@@ -23,12 +23,12 @@ namespace Microsoft.NET.Build.Tasks
         public bool ShowCompilerWarnings { get; set; }
         public bool UseCrossgen2 { get; set; }
         public bool Crossgen2Composite { get; set; }
-        public bool EmitSymbols { get; set; }
         public string Crossgen2ExtraCommandLineArgs { get; set; }
 
         [Output]
         public bool WarningsDetected { get; set; }
 
+        private bool _emitSymbols;
         private string _inputAssembly;
         private string _outputR2RImage;
         private string _outputPDBImage;
@@ -76,6 +76,8 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override bool ValidateParameters()
         {
+            string emitSymbolsMetadata = CompilationEntry.GetMetadata(MetadataKeys.EmitSymbols);
+            _emitSymbols = !string.IsNullOrEmpty(emitSymbolsMetadata) && bool.Parse(emitSymbolsMetadata);
             _createPDBCommand = CompilationEntry.GetMetadata(MetadataKeys.CreatePDBCommand);
 
             if (IsPdbCompilation && CrossgenTool == null)
@@ -153,10 +155,11 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            _outputPDBImage = CompilationEntry.GetMetadata(MetadataKeys.OutputPDBImage);
+
             if (IsPdbCompilation)
             {
                 _outputR2RImage = CompilationEntry.ItemSpec;
-                _outputPDBImage = CompilationEntry.GetMetadata(MetadataKeys.OutputPDBImage);
 
                 if (!String.IsNullOrEmpty(DiaSymReader) && !File.Exists(DiaSymReader))
                 {
@@ -191,6 +194,11 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     Log.LogError(Strings.MissingOutputR2RImageFileName);
                     return false;
+                }
+                
+                if (_emitSymbols && string.IsNullOrEmpty(_outputPDBImage))
+                {
+                    Log.LogError(Strings.MissingOutputPDBImagePath);
                 }
             }
 
@@ -289,15 +297,17 @@ namespace Microsoft.NET.Build.Tasks
             result.AppendLine("-O");
             
             // 5.0 Crossgen2 doesn't support PDB generation.
-            if (!Crossgen2IsVersion5 && EmitSymbols)
+            if (!Crossgen2IsVersion5 && _emitSymbols)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     result.AppendLine("--pdb");
+                    result.AppendLine($"--pdb-path:{_outputPDBImage}");
                 }
                 else
                 {
                     result.AppendLine("--perfmap");
+                    result.AppendLine("--perfmap-path:{_outputPDBImage}");
                 }
             }
 

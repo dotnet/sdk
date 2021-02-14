@@ -48,6 +48,8 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] ReadyToRunAssembliesToReference => _r2rReferences.ToArray();
 
+        private bool _crossgen2IsVersion5;
+
         private List<ITaskItem> _compileList = new List<ITaskItem>();
         private List<ITaskItem> _symbolsCompileList = new List<ITaskItem>();
         private List<ITaskItem> _r2rFiles = new List<ITaskItem>();
@@ -59,15 +61,27 @@ namespace Microsoft.NET.Build.Tasks
             string diaSymReaderPath = CrossgenTool?.GetMetadata(MetadataKeys.DiaSymReader);
             bool hasValidDiaSymReaderLib = !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(diaSymReaderPath);
 
+            if (ReadyToRunUseCrossgen2)
+            {
+                string isVersion5 = Crossgen2Tool.GetMetadata(MetadataKeys.IsVersion5);
+                _crossgen2IsVersion5 = !string.IsNullOrEmpty(isVersion5) && bool.Parse(isVersion5);
+
+                if (Crossgen2Composite && EmitSymbols && _crossgen2IsVersion5)
+                {
+                    Log.LogError(Strings.Crossgen5CannotEmitSymbolsInCompositeMode);
+                    return;
+                }
+            }
+
             // Process input lists of files
             ProcessInputFileList(Assemblies, _compileList, _symbolsCompileList, _r2rFiles, _r2rReferences, hasValidDiaSymReaderLib);
         }
 
         private void ProcessInputFileList(
-            ITaskItem[] inputFiles, 
+            ITaskItem[] inputFiles,
             List<ITaskItem> imageCompilationList,
             List<ITaskItem> symbolsCompilationList,
-            List<ITaskItem> r2rFilesPublishList, 
+            List<ITaskItem> r2rFilesPublishList,
             List<ITaskItem> r2rReferenceList,
             bool hasValidDiaSymReaderLib)
         {
@@ -97,12 +111,6 @@ namespace Microsoft.NET.Build.Tasks
 
                 var outputR2RImageRelativePath = file.GetMetadata(MetadataKeys.RelativePath);
                 var outputR2RImage = Path.Combine(OutputPath, outputR2RImageRelativePath);
-                bool crossgen2IsVersion5 = false;
-                if (ReadyToRunUseCrossgen2)
-                {
-                    string isVersion5 = Crossgen2Tool.GetMetadata(MetadataKeys.IsVersion5);
-                    crossgen2IsVersion5 = !string.IsNullOrEmpty(isVersion5) && bool.Parse(isVersion5);
-                }
 
                 string outputPDBImage = null;
                 string outputPDBImageRelativePath = null;
@@ -137,7 +145,7 @@ namespace Microsoft.NET.Build.Tasks
                     // an input to the ReadyToRunCompiler task
                     TaskItem r2rCompilationEntry = new TaskItem(file);
                     r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, outputR2RImage);
-                    if (outputPDBImage != null && ReadyToRunUseCrossgen2 && !crossgen2IsVersion5)
+                    if (outputPDBImage != null && ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
                     {
                         r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
                         r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
@@ -152,23 +160,6 @@ namespace Microsoft.NET.Build.Tasks
                     compositeR2RImageRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, "r2r" + Path.GetExtension(compositeR2RImageRelativePath));
                     var compositeR2RImage = Path.Combine(OutputPath, compositeR2RImageRelativePath);
 
-                    TaskItem r2rCompilationEntry = new TaskItem(file);
-                    r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImage);
-                    if (outputPDBImage != null && ReadyToRunUseCrossgen2 && !crossgen2IsVersion5)
-                    {
-                        r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
-                        r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
-                    }
-                    r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
-                    imageCompilationList.Add(r2rCompilationEntry);
-
-                    // Publish it
-                    TaskItem compositeR2RFileToPublish = new TaskItem(file);
-                    compositeR2RFileToPublish.ItemSpec = compositeR2RImage;
-                    compositeR2RFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
-                    compositeR2RFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositeR2RImageRelativePath);
-                    r2rFilesPublishList.Add(compositeR2RFileToPublish);
-
                     string compositePDBImage = null;
                     string compositePDBRelativePath = null;
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && hasValidDiaSymReaderLib)
@@ -179,11 +170,16 @@ namespace Microsoft.NET.Build.Tasks
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
                         compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.map");
-                        compositePDBRelativePath = Path.ChangeExtension(compositePDBRelativePath, ".ni.map");
+                        compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.map");
                     }
-                    
-                    if (compositePDBImage != null)
+
+                    TaskItem r2rCompilationEntry = new TaskItem(file);
+                    r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImage);
+                    if (compositePDBImage != null && ReadyToRunUseCrossgen2 && !_crossgen2IsVersion5)
                     {
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, compositePDBImage);
+
                         // Publish composite PDB file
                         TaskItem r2rSymbolsFileToPublish = new TaskItem(file);
                         r2rSymbolsFileToPublish.ItemSpec = compositePDBImage;
@@ -196,6 +192,15 @@ namespace Microsoft.NET.Build.Tasks
     
                         r2rFilesPublishList.Add(r2rSymbolsFileToPublish);
                     }
+                    r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
+                    imageCompilationList.Add(r2rCompilationEntry);
+
+                    // Publish it
+                    TaskItem compositeR2RFileToPublish = new TaskItem(file);
+                    compositeR2RFileToPublish.ItemSpec = compositeR2RImage;
+                    compositeR2RFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
+                    compositeR2RFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositeR2RImageRelativePath);
+                    r2rFilesPublishList.Add(compositeR2RFileToPublish);
                 }
 
                 // This TaskItem corresponds to the output R2R image. It is equivalent to the input TaskItem, only the ItemSpec for it points to the new path
@@ -211,7 +216,7 @@ namespace Microsoft.NET.Build.Tasks
                 // For debugging, only the IL PDBs are required.
                 if (!Crossgen2Composite && outputPDBImage != null)
                 {
-                    if (!ReadyToRunUseCrossgen2 || crossgen2IsVersion5)
+                    if (!ReadyToRunUseCrossgen2 || _crossgen2IsVersion5)
                     {
                         // This TaskItem is the R2R->R2RPDB entry, for a R2R image that was just created, and for which we need to create native PDBs. This will be used as
                         // an input to the ReadyToRunCompiler task

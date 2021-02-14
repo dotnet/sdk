@@ -279,6 +279,11 @@
         <target state="translated">NETSDK1151: Crossgen2Tool musí být specifikován, pokud je UseCrossgen2 nastaven (true).</target>
         <note>{StrBegin="NETSDK1151: "}</note>
       </trans-unit>
+      <trans-unit id="Crossgen5CannotEmitSymbolsInCompositeMode">
+        <source>NETSDK1163: Crossgen2 5.0 doesn't support emitting symbols in composite mode</source>
+        <target state="translated">NETSDK1163: Crossgen2 5.0 nepodporuje výstup symbolů v kompozitním módu</target>
+        <note>{StrBegin="NETSDK1163: "}</note>
+      </trans-unit>
       <trans-unit id="CrossgenToolExecutableNotFound">
         <source>NETSDK1157: CrossgenTool executable '{0}' not found.</source>
         <target state="translated">NETSDK1157: Spustitelný soubor CrossgenTool '{0}' nebyl nalezen.</target>
